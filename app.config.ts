@@ -15,7 +15,7 @@ function required(key: string): string {
 }
 
 function optional(key: string, fallback = ''): string {
-  return process.env[key] ?? fallback;
+  return process.env[key] || fallback;
 }
 
 const toBoolean = (value?: string) => value === '1' || value === 'true' || value === 'TRUE';
