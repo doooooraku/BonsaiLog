@@ -1,0 +1,11 @@
+{{APP_NAME}} description (max 4000 chars).
+
+Key features:
+- Feature A
+- Feature B
+- Feature C
+
+What sets us apart:
+- Local-first (no servers)
+- Privacy-respecting
+- Available in 19 languages

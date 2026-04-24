@@ -1,0 +1,84 @@
+name: Build iOS & Submit to TestFlight
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-submit:
+    name: Build & Submit IPA
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create .env file
+        run: |
+          cat <<'DOTENV' > .env
+          APP_NAME=${{ vars.APP_NAME }}
+          APP_SLUG=${{ vars.APP_SLUG }}
+          IOS_BUNDLE_IDENTIFIER=${{ vars.IOS_BUNDLE_IDENTIFIER }}
+          ANDROID_PACKAGE=${{ vars.ANDROID_PACKAGE }}
+          ADMOB_IOS_APP_ID=${{ secrets.ADMOB_IOS_APP_ID }}
+          ADMOB_IOS_BANNER_ID=${{ secrets.ADMOB_IOS_BANNER_ID }}
+          REVENUECAT_IOS_API_KEY=${{ secrets.REVENUECAT_IOS_API_KEY }}
+          DOTENV
+
+      - name: Verify code quality
+        run: pnpm lint && pnpm type-check && pnpm test -- --passWithNoTests
+
+      - name: Build iOS IPA
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas build --platform ios --profile production --local --non-interactive --output=app.ipa
+
+      - name: Setup ASC API Key
+        run: |
+          mkdir -p secrets
+          echo "${{ secrets.ASC_API_KEY_P8_BASE64 }}" | base64 -d > secrets/AuthKey.p8
+
+      - name: Submit to TestFlight
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas submit --platform ios --path app.ipa --profile production --non-interactive --no-wait
+
+      - name: Upload IPA artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: iOS-IPA-${{ github.run_id }}
+          path: app.ipa
+          retention-days: 7
+
+      - name: Post build summary
+        if: success()
+        run: |
+          echo "## iOS Build & Submit Successful" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **IPA**: app.ipa" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Profile**: production" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Submitted to**: TestFlight" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Check App Store Connect → TestFlight for the new build" >> "$GITHUB_STEP_SUMMARY"

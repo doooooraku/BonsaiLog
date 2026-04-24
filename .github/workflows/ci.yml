@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+      - name: Create .env for CI
+        run: cp .env.example .env
+      - name: Audit dependencies
+        run: pnpm audit --audit-level=high || true
+      - name: Verify
+        run: pnpm verify
+
+  template-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Verify placeholder integrity
+        run: |
+          ALLOWED="APP_NAME APP_SLUG ANDROID_PACKAGE IOS_BUNDLE_IDENTIFIER APP_SCHEME DESCRIPTION EAS_PROJECT_ID PLACEHOLDER"
+          FOUND=$(grep -roh '{{[A-Z_]*}}' \
+            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' \
+            --include='*.json' --include='*.md' --include='*.yml' --include='*.yaml' \
+            --include='*.sh' --include='*.env*' \
+            --exclude-dir=node_modules --exclude-dir=.git \
+            2>/dev/null | sed 's/{{//;s/}}//' | sort -u || true)
+
+          EXIT=0
+          for placeholder in $FOUND; do
+            if ! echo "$ALLOWED" | grep -qw "$placeholder"; then
+              echo "ERROR: Unknown placeholder {{$placeholder}}"
+              EXIT=1
+            fi
+          done
+
+          if [ "$EXIT" -ne 0 ]; then
+            exit 1
+          fi
+          echo "All placeholders are from the allowed set: $FOUND"

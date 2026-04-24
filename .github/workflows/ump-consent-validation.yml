@@ -1,0 +1,102 @@
+name: UMP Consent Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Target platform for validation checklist'
+        required: true
+        type: choice
+        default: android
+        options:
+          - android
+          - ios
+      debug_geography:
+        description: 'Expected UMP debug geography'
+        required: true
+        type: choice
+        default: EEA
+        options:
+          - EEA
+          - NOT_EEA
+          - DISABLED
+          - REGULATED_US_STATE
+          - OTHER
+      test_device_ids:
+        description: 'Comma-separated UMP test device IDs'
+        required: true
+        type: string
+      notes:
+        description: 'Optional notes for this run'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      TARGET_PLATFORM: ${{ inputs.platform }}
+      TARGET_DEBUG_GEOGRAPHY: ${{ inputs.debug_geography }}
+      TARGET_TEST_DEVICE_IDS: ${{ inputs.test_device_ids }}
+      TARGET_NOTES: ${{ inputs.notes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate UMP validation checklist
+        run: |
+          mkdir -p ump-artifacts
+          node scripts/ump-consent-check.mjs \
+            --platform "$TARGET_PLATFORM" \
+            --debug-geography "$TARGET_DEBUG_GEOGRAPHY" \
+            --test-device-ids "$TARGET_TEST_DEVICE_IDS" \
+            --notes "$TARGET_NOTES" \
+            --out ump-artifacts/ump-consent-checklist.md \
+            --json > ump-artifacts/ump-consent-checklist.json
+
+      - name: Publish summary
+        run: |
+          node -e '
+          const fs = require("node:fs");
+          const report = JSON.parse(fs.readFileSync("ump-artifacts/ump-consent-checklist.json", "utf8"));
+          const lines = [
+            "## UMP validation summary",
+            "",
+            `- platform: ${report.platform}`,
+            `- debugGeography: ${report.debugGeography}`,
+            `- testDeviceIdsCount: ${report.testDeviceIds.length}`,
+            `- passed: ${report.passed ? "yes" : "no"}`,
+            "",
+            "### Failed checks",
+          ];
+          if (report.failedChecks.length === 0) {
+            lines.push("- none");
+          } else {
+            for (const check of report.failedChecks) {
+              lines.push(`- ${check.label} (actual: ${check.actual})`);
+            }
+          }
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${lines.join("\\n")}\\n`);
+          '
+
+      - name: Upload validation artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ump-consent-validation-${{ github.run_id }}
+          path: ump-artifacts

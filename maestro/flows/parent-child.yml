@@ -1,0 +1,63 @@
+# maestro/flows/parent-child.yml
+# Parent-child CRUD flow — demonstrates the items + attachments pattern.
+#
+# Tests:
+#   1. Create an item
+#   2. Tap to view its attachments panel
+#   3. Long-press to delete (cascade-deletes attachments)
+#
+# Wire ExampleScreen into your router as a tab to make this work:
+#   app/(tabs)/example.tsx → exports ExampleScreen
+#
+# Run:
+#   pnpm test:e2e -- maestro/flows/parent-child.yml
+
+appId: '{{ANDROID_PACKAGE}}'
+name: 'Parent-Child CRUD flow'
+tags:
+  - parent-child
+  - smoke
+
+steps:
+  # 1. Launch app cleanly
+  - launchApp:
+      clearState: true
+      label: 'アプリをクリーン起動する'
+
+  # 2. Verify home screen is visible
+  - assertVisible:
+      id: 'e2e_home_screen'
+      label: 'ホーム画面（e2e_home_screen）が表示されていることを確認'
+      optional: true
+
+  # 3. Create the first item via the main action button
+  - tapOn:
+      id: 'e2e_main_action'
+      label: '"作成" ボタンをタップして新規アイテム作成'
+
+  # 4. Verify the item list shows at least one item
+  - assertVisible:
+      id: 'e2e_main_result'
+      label: 'アイテムリストが表示されていることを確認'
+
+  # 5. Create a second item
+  - tapOn:
+      id: 'e2e_main_action'
+      label: '2 つ目のアイテムを作成'
+
+  # 6. Tap the first item row to expand its attachments panel
+  - tapOn:
+      text: 'New item 1'
+      label: '1 つ目のアイテムをタップして子要素パネルを表示'
+      optional: true
+
+  # 7. Verify attachments panel is visible (the e2e_attachments_panel testID
+  #    only appears when an item is selected)
+  - assertVisible:
+      id: 'e2e_attachments_panel'
+      label: '子要素パネルが表示されていることを確認'
+      optional: true
+
+  # 8. Stop the app
+  - stopApp:
+      label: 'アプリを終了する'

@@ -1,0 +1,154 @@
+/**
+ * App-specific configuration for store screenshot generation.
+ *
+ * This file is the SINGLE SOURCE OF TRUTH for all app-specific values.
+ * The generation scripts (generate.ts, lib/*.ts) are fully generic --
+ * only this file needs to change when adapting for a different app.
+ *
+ * Setup:
+ *   1. Copy this file to screenshot-config.ts
+ *   2. Fill in all TODO sections below
+ *   3. Run Phase 0 to generate marketing text (see README.md)
+ *   4. Capture raw screenshots with Maestro (Phase 1)
+ *   5. Run `pnpm store-screenshots` to composite final images (Phase 2)
+ */
+
+// ---------------------------------------------------------------------------
+// Type definitions
+// ---------------------------------------------------------------------------
+
+export interface ScreenDef {
+  /** Screenshot filename without extension (e.g. '01_home') */
+  id: string;
+  /** Key in MarketingText interface (e.g. 'screen1') */
+  key: string;
+  /** Human-readable screen name */
+  name: string;
+  /** What this screen shows (used by Claude Code to understand the screenshot) */
+  description: string;
+  /** What marketing message to convey (used by Claude Code to write copy) */
+  marketingFocus: string;
+}
+
+export interface ScreenshotConfig {
+  app: {
+    name: string;
+    packageId: string;
+    description: string;
+  };
+  persona: {
+    /** Who is the target user? */
+    target: string;
+    /** In what context do they use the app? */
+    context: string;
+    /** What tone should the marketing text use? */
+    tone: string;
+    /** What to avoid in the text */
+    avoid: string;
+  };
+  screens: ScreenDef[];
+  textGuidelines: {
+    /** Approximate max character count per line */
+    maxChars: { cjk: number; latin: number };
+    /** How to approach multi-language text */
+    style: string;
+    /** Core requirement for the text */
+    requirement: string;
+    /** ASO (App Store Optimization) note */
+    asoNote: string;
+  };
+  /** BCP-47 locale codes to generate */
+  locales: string[];
+  /** Locale code -> raw screenshot directory name mapping */
+  localeDirMap: Record<string, string>;
+  capture: {
+    /** Pixels to crop from top of raw screenshot (Android status bar) */
+    cropTop: number;
+    /** Pixels to crop from bottom of raw screenshot (Android gesture bar) */
+    cropBottom: number;
+    /** Device used for capture (for documentation) */
+    deviceNote: string;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// App configuration
+// ---------------------------------------------------------------------------
+
+export const screenshotConfig: ScreenshotConfig = {
+  // TODO: Replace with your app's information
+  app: {
+    name: 'MyApp',
+    packageId: 'com.example.myapp',
+    description: 'Brief description of your app for marketing text generation context.',
+  },
+
+  // TODO: Define your target user persona for marketing text generation
+  persona: {
+    target: 'Who is the target user?',
+    context: 'In what context do they use the app?',
+    tone: 'What tone should the marketing text use? (e.g. professional, casual, friendly)',
+    avoid: 'What to avoid in the text (e.g. jargon, hype)',
+  },
+
+  // TODO: Define each screenshot screen (typically 4-8 screens)
+  // Each screen corresponds to a raw screenshot captured by Maestro.
+  // The `id` becomes the filename (e.g. '01_home' -> '01_home.png').
+  // The `key` is used to look up marketing text (e.g. 'screen1').
+  screens: [
+    {
+      id: '01_home',
+      key: 'screen1',
+      name: 'Home',
+      description: 'What this screen shows.',
+      marketingFocus: 'What benefit to highlight.',
+    },
+    // TODO: Add more screens as needed
+    // {
+    //   id: '02_detail',
+    //   key: 'screen2',
+    //   name: 'Detail',
+    //   description: 'What this screen shows.',
+    //   marketingFocus: 'What benefit to highlight.',
+    // },
+  ],
+
+  // TODO: Adjust text guidelines for your app's marketing copy
+  textGuidelines: {
+    maxChars: { cjk: 18, latin: 45 },
+    style:
+      'Craft text independently per language (not translated from one base language). Use words natural to native speakers.',
+    requirement:
+      'Each text is a catchphrase that corresponds 1:1 with the screenshot content. 1-2 lines max.',
+    asoNote:
+      'Naturally include relevant search keywords for each language.',
+  },
+
+  // TODO: List all BCP-47 locale codes you want to support
+  locales: [
+    'en',
+    'ja',
+    // TODO: Add more locales as needed
+    // 'fr', 'es', 'de', 'it', 'pt', 'ru',
+    // 'zh-Hans', 'zh-Hant', 'ko', 'hi', 'id', 'th', 'vi', 'tr', 'nl', 'pl', 'sv',
+  ],
+
+  // TODO: Map each locale code to the directory name used for raw screenshots.
+  // The directory name is typically in the format: '<locale>_<native name>'
+  localeDirMap: {
+    en: 'en_English',
+    ja: 'ja_日本語',
+    // TODO: Add entries for all locales listed above
+    // fr: 'fr_Français',
+    // es: 'es_Español',
+    // de: 'de_Deutsch',
+  },
+
+  // TODO: Set crop values based on your capture device.
+  // Measure the status bar and gesture bar height in pixels from a raw screenshot.
+  capture: {
+    cropTop: 56,
+    cropBottom: 32,
+    deviceNote: 'Device model and resolution (e.g. Pixel 8a, 720x1520)',
+  },
+};

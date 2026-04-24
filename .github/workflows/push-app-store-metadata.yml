@@ -1,0 +1,144 @@
+name: Push App Store Metadata
+
+# 用途: App Store Connect の 19 言語ローカライズ済みメタデータを fastlane で送る
+# 関連: docs/how-to/workflow/store_app_store_metadata.md (TBD)
+#
+# トリガー:
+#   - workflow_dispatch                    : 手動実行 (任意のタイミングで強制実行)
+#   - pull_request (fastlane/** に変更)     : PR バリデーション (precheck のみ・upload しない)
+#   - push to main (fastlane/metadata/**)  : 本番 push (upload する)
+#
+# 安全設計:
+#   - PR では precheck_metadata レーン (upload しない・読み取りのみ)
+#   - main push と workflow_dispatch では push_metadata レーン (実際に upload)
+#   - submit_for_review は CI からは絶対に実行しない (人間が ASC で押す)
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'What to push (metadata-only or screenshots-only)'
+        type: choice
+        options:
+          - metadata
+          - screenshots
+        default: metadata
+  pull_request:
+    branches: [main]
+    paths:
+      - 'fastlane/**'
+      - 'Gemfile'
+      - 'Gemfile.lock'
+      - '.github/workflows/push-app-store-metadata.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'fastlane/metadata/**'
+      - 'fastlane/screenshots/**'
+      - 'fastlane/Fastfile'
+      - 'fastlane/Appfile'
+      - 'Gemfile'
+      - 'Gemfile.lock'
+      - '.github/workflows/push-app-store-metadata.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  fastlane:
+    name: fastlane (precheck on PR, push on main)
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Ruby + bundler cache
+        uses: ruby/setup-ruby@0cb964fd540e0a24c900370abf38a33466142735 # v1.305.0
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Decode ASC API Key
+        env:
+          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+        run: |
+          mkdir -p fastlane
+          if [ -z "${ASC_API_KEY_P8_BASE64}" ]; then
+            echo "::error::Secret ASC_API_KEY_P8_BASE64 is not set"
+            exit 1
+          fi
+          echo "${ASC_API_KEY_P8_BASE64}" | base64 --decode > fastlane/AuthKey.p8
+          if ! head -n1 fastlane/AuthKey.p8 | grep -q "BEGIN PRIVATE KEY"; then
+            echo "::error::Decoded AuthKey.p8 is not a valid PEM"
+            exit 1
+          fi
+
+      - name: Run precheck (PR — no upload)
+        if: github.event_name == 'pull_request'
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+        run: |
+          if [ ! -d fastlane/metadata ]; then
+            echo "::warning::fastlane/metadata/ がまだ存在しません。Stage 1c で fastlane deliver init を実行してください。precheck をスキップします。"
+            exit 0
+          fi
+          bundle exec fastlane precheck_metadata
+
+      - name: Push metadata (main push / manual metadata mode)
+        if: github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.mode == 'metadata')
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+        run: |
+          if [ ! -d fastlane/metadata ]; then
+            echo "::warning::fastlane/metadata/ がまだ存在しません。push をスキップします。"
+            exit 0
+          fi
+          bundle exec fastlane push_metadata
+
+      - name: Push screenshots (manual screenshots mode only)
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'screenshots'
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+        run: |
+          if [ ! -d fastlane/screenshots ]; then
+            echo "::error::fastlane/screenshots/ が存在しません。"
+            exit 1
+          fi
+          bundle exec fastlane push_screenshots
+
+      - name: Cleanup decoded API key
+        if: always()
+        run: rm -f fastlane/AuthKey.p8
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## App Store Metadata Workflow"
+            echo ""
+            echo "- **Trigger:** \`${{ github.event_name }}\`"
+            echo "- **Ref:** \`${{ github.ref }}\`"
+            echo "- **SHA:** \`${{ github.sha }}\`"
+            echo ""
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "### Mode: Precheck only (no upload)"
+              echo ""
+              echo "PR では fastlane precheck_metadata だけが走ります。"
+              echo "実際の App Store Connect への upload は main マージ後に行われます。"
+            else
+              echo "### Mode: Push to App Store Connect"
+              echo ""
+              echo "fastlane push_metadata が完了しました。"
+              echo "App Store Connect → 配信 で各言語のローカライズを目視確認してください。"
+              echo ""
+              echo "**次のステップ:**"
+              echo "1. ASC で各言語のテキストが想定通りか確認"
+              echo "2. 問題なければ ASC の「審査へ提出」ボタンを **手動で** 押す"
+              echo "3. 承認後、必要なら自動公開ではなく手動で公開"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

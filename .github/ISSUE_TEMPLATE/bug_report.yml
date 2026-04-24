@@ -1,0 +1,196 @@
+name: 'Bug report（不具合）'
+description: '不具合を報告する（再現手順＋合否条件まで）'
+title: '[Bug]: '
+labels: ['bug', 'triage']
+type: 'bug'
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ありがとうございます。**このフォームは「再現できる」「合否が判定できる（ACがある）」バグ報告**にするためのものです。
+
+        - 迷ったら：docs/reference/constraints.md（前提/制約）と docs/adr（意思決定ログ）を確認
+        - **空のIssueは禁止**（テンプレ外のIssueは運用上扱いません）
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: '事前確認（提出に必須）'
+      description: 'チェックが付かないと提出できません（運用のブレ防止）'
+      options:
+        - label: '同じ内容のIssueが無いか検索しました（重複防止）'
+          required: true
+        - label: '再現手順を、第三者がそのまま実行できる形で書きます'
+          required: true
+        - label: '合否判定できる受け入れ条件（AC）を必ず書きます'
+          required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: '優先度（P0〜P3）'
+      description: '※フォームの仕様上、先頭が初期選択になりやすいです。必要なら必ず変更してください。'
+      options:
+        - 'P2（通常：回避可能）'
+        - 'P0（緊急：起動不能/データ消失/課金や広告が壊れる）'
+        - 'P1（高：主要機能が詰まる/多数ユーザー）'
+        - 'P3（低：軽微/見た目/後回し）'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: plan
+    attributes:
+      label: '影響するプラン'
+      options:
+        - 'Free'
+        - 'Pro'
+        - 'Free/Pro 両方'
+        - '不明'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: '影響する領域（主なもの1つ）'
+      options:
+        - 'UI/表示崩れ'
+        - '入力/操作'
+        - 'データ保存（SQLite/SecureStore）'
+        - 'i18n（多言語）'
+        - '課金（RevenueCat）'
+        - '広告（AdMob）'
+        - 'テスト/CI（Jest/Maestro）'
+        - 'その他'
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: '何が起きた？（現象）'
+      description: '1〜5行でOK。まずは結論から。'
+      placeholder: |
+        例：
+        設定画面で言語を nl（オランダ語）にすると、ボタンが画面外にはみ出す
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: '再現手順（REQUIRED）'
+      description: '番号付きで。『誰でも同じ手順で再現できる』が合格ライン。'
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: '期待結果（Expected）'
+      placeholder: '例：ボタンが画面内に収まり、押せる'
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: '実際結果（Actual）'
+      placeholder: '例：ボタンが画面外にはみ出し押せない'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: 'OS'
+      options:
+        - 'iOS'
+        - 'Android'
+        - '両方'
+        - '不明'
+    validations:
+      required: true
+
+  - type: input
+    id: app_version
+    attributes:
+      label: 'アプリ版 / ビルド情報（分かる範囲で）'
+      description: '例：v1.0.0 / commit / TestFlight など'
+      placeholder: '例：v1.0.0 (123) / main@abcdef'
+    validations:
+      required: false
+
+  - type: input
+    id: device
+    attributes:
+      label: '端末（分かる範囲で）'
+      placeholder: '例：iPhone 14 / Pixel 8'
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: i18n_flags
+    attributes:
+      label: 'i18nチェック（該当のみ）'
+      description: '言語が絡むバグならチェック。nl は重要（あなたの決定）。'
+      options:
+        - label: '言語 nl（オランダ語）で発生する'
+          required: false
+        - label: '複数言語で発生する（再現言語を本文に書く）'
+          required: false
+        - label: 'RTL（右から左）は対象外（今回は関係ない）'
+          required: false
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: '証拠（スクショ/動画/ログ）'
+      description: 'リンクでもOK。ログはコピペOK。'
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: '受け入れ条件（Acceptance Criteria / REQUIRED）'
+      description: '『合格/不合格を判定できる条件』で。後で Jest / Maestro に落とせる形が理想。'
+      placeholder: |
+        - [ ] AC1: nl でも設定画面の全ボタンが画面内に収まり、タップ可能
+        - [ ] AC2: Free/Pro で表示差分がない（または差分が仕様通り）
+        - [ ] AC3: 関連テスト（Jest/Maestro）が緑
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: docs_adr
+    attributes:
+      label: 'Docs/ADR への影響（提出に必須：判断だけでも）'
+      description: '本文は短く。理由は ADR、合否はテストへ。'
+      options:
+        - label: 'この修正は docs 更新が不要（内部のみ、外部仕様に影響なし）'
+          required: false
+        - label: 'constraints（前提/制約）を更新する可能性がある'
+          required: false
+        - label: 'ADR が必要（後で蒸し返されそう：比較/却下理由が必要）'
+          required: false
+        - label: 'テスト観点が増える（Jest/Maestro 追加が必要）'
+          required: false
+
+  - type: textarea
+    id: risk
+    attributes:
+      label: 'リスクとロールバック（短くでOK）'
+      description: '『失敗したらどう戻す？』を先に書くと安全になります。'
+      placeholder: |
+        想定リスク：
+        検知方法：
+        戻し方（revert/フラグOFF/前の挙動へ）：
+    validations:
+      required: true

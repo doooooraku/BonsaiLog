@@ -1,0 +1,73 @@
+# maestro/flows/smoke.yml
+# App Factory 共通スモークテスト
+
+appId: '{{ANDROID_PACKAGE}}' # setup.sh で自動置換される
+name: 'Smoke - main flow' # テスト名（レポートでの表示名）
+tags:
+  - smoke # 簡易テストであることを示すタグ
+
+steps:
+  # 1. アプリ起動
+  - launchApp:
+      clearState: true
+      label: 'アプリをクリーン起動する'
+
+  # 2. ホーム画面表示確認
+  - assertVisible:
+      id: 'e2e_home_screen'
+      label: 'ホーム画面（e2e_home_screen）が表示されていることを確認'
+
+  # 3. 主要機能を 1 回実行
+  - tapOn:
+      id: 'e2e_main_action'
+      label: '主要機能を実行するボタンをタップ'
+
+  - assertVisible:
+      id: 'e2e_main_result'
+      optional: true
+      label: '主要機能の結果表示（e2e_main_result）が見えていることを確認（あれば確認）'
+
+  # 4. 課金画面（RevenueCat）を開く（ある場合だけ）
+  - tapOn:
+      id: 'e2e_open_premium'
+      optional: true
+      label: '課金画面への入口（e2e_open_premium）をタップ（存在する場合だけ実行）'
+
+  - assertVisible:
+      id: 'e2e_premium_screen'
+      optional: true
+      label: '課金画面（e2e_premium_screen）が開いたことを確認（存在する場合だけ確認）'
+
+  # 5. 広告を開く（ある場合だけ）
+  - tapOn:
+      id: 'e2e_open_ad'
+      optional: true
+      label: '広告表示のトリガー（e2e_open_ad）をタップ（存在する場合だけ実行）'
+
+  - assertVisible:
+      id: 'e2e_ad_container'
+      optional: true
+      label: '広告コンテナ（e2e_ad_container）が表示されていることを確認（存在する場合だけ確認）'
+
+  # 6. 設定画面を開く
+  - tapOn:
+      id: 'e2e_open_settings'
+      label: '設定画面への入口（e2e_open_settings）をタップ'
+
+  - assertVisible:
+      id: 'e2e_settings_screen'
+      label: '設定画面（e2e_settings_screen）が表示されていることを確認'
+
+  # 7. モーダルや画面を閉じて終了
+  - tapOn:
+      id: 'e2e_close_modal'
+      optional: true
+      label: 'モーダルを閉じるボタン（e2e_close_modal）があればタップ'
+
+  - tapOn:
+      id: 'e2e_back_to_home'
+      optional: true
+      label: 'ホームへ戻るボタン（e2e_back_to_home）があればタップ'
+
+  - stopApp:
+      label: 'アプリを終了する'

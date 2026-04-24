@@ -1,0 +1,240 @@
+name: 'Feature request（機能要望）'
+description: '新機能/改善を提案する（目的・範囲・ACまで）'
+title: '[Feat]: '
+labels: ['enhancement', 'triage']
+type: 'feature'
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ありがとうございます。**このフォームは「仕様を生かし続ける」ために、起票時点で AC / 影響 / リスク / ADR要否 を揃える**目的です。
+
+        - 価値・スコープ境界：docs/explanation/product_strategy.md
+        - 前提/制約（不変条件）：docs/reference/constraints.md
+        - “なぜそうしたか”：docs/adr（ADR）
+
+  - type: checkboxes
+    id: preflight_feature
+    attributes:
+      label: '事前確認（提出に必須）'
+      options:
+        - label: 'プロダクト戦略（価値/スコープ境界）に照らして提案します'
+          required: true
+        - label: '受け入れ条件（AC）を必ず書きます（合否判定できる形）'
+          required: true
+        - label: '『やらないこと（非ゴール）』も書きます（スコープ膨張防止）'
+          required: true
+
+  - type: dropdown
+    id: priority_feature
+    attributes:
+      label: '優先度（P0〜P3）'
+      description: '※必要なら必ず変更してください。'
+      options:
+        - 'P2（通常：価値はあるが今すぐではない）'
+        - 'P0（緊急：収益/致命的UX/継続利用が崩れる）'
+        - 'P1（高：主要価値を押し上げる）'
+        - 'P3（低：後でよい）'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: plan_feature
+    attributes:
+      label: '対象プラン（Free/Pro）'
+      options:
+        - 'Free'
+        - 'Pro'
+        - 'Free/Pro 両方'
+        - '要検討'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: monetization
+    attributes:
+      label: '収益/課金/広告への関係'
+      options:
+        - '関係なし'
+        - '課金（RevenueCat）に関係'
+        - '広告（AdMob）に関係'
+        - '両方に関係'
+        - '要検討'
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: '背景・目的（Why / REQUIRED）'
+      description: '困っていること→何が良くなるか。1〜10行でOK。'
+      placeholder: |
+        背景：
+        目的：
+    validations:
+      required: true
+
+  - type: textarea
+    id: user_story
+    attributes:
+      label: 'ユーザーストーリー（任意だが推奨）'
+      placeholder: |
+        例：
+        ユーザーとして、毎日やることを迷わないように、今日やる習慣を上に出したい
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: '提案内容（What / REQUIRED）'
+      description: '何を追加/変更する？画面・導線・データなど。'
+      placeholder: |
+        例：
+        - ホームに「今日やる」セクションを追加
+        - 習慣ごとに「優先度」を持てる
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: 'スコープ（やる範囲 / REQUIRED）'
+      placeholder: |
+        やること：
+        - 
+        やらないこと：
+        -
+    validations:
+      required: true
+
+  - type: textarea
+    id: related_specs
+    attributes:
+      label: '関連仕様（Reference/ADR）'
+      description: 'どの仕様に影響するかを明記（basic_spec / functional_spec / constraints / ADR）'
+      placeholder: |
+        - docs/reference/basic_spec.md
+        - docs/reference/functional_spec.md
+        - docs/reference/constraints.md
+        - docs/adr/ADR-XXXX.md
+    validations:
+      required: false
+
+  - type: input
+    id: figma
+    attributes:
+      label: 'デザイン参照（Figmaなど）'
+      description: '次回以降 UI は Figma を正にしたい方針に合わせる'
+      placeholder: 'URL（無ければ空でOK）'
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance_feature
+    attributes:
+      label: '受け入れ条件（Acceptance Criteria / REQUIRED）'
+      description: '合否判定できる条件で。後で Jest / Maestro に落とせる形が理想。'
+      placeholder: |
+        - [ ] AC1:
+        - [ ] AC2:
+        - [ ] AC3:
+    validations:
+      required: true
+
+  - type: textarea
+    id: task_breakdown
+    attributes:
+      label: 'タスク分割（チェックリスト / 推奨）'
+      description: 'Issue内で実行単位まで分割（大きければサブIssue化）'
+      placeholder: |
+        - [ ] タスク1
+        - [ ] タスク2
+        - [ ] タスク3
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: test_strategy
+    attributes:
+      label: 'テスト方針（推奨）'
+      description: '“仕様をテストに寄せる” をここで宣言しておくと、後でズレにくい'
+      options:
+        - label: 'Jest（ロジック/ユニット）で守れる部分がある'
+          required: false
+        - label: 'Maestro（E2E）で守れる画面フローがある'
+          required: false
+        - label: '手動確認が必要（理由は本文に書く）'
+          required: false
+
+  - type: checkboxes
+    id: docs_adr_feature
+    attributes:
+      label: 'Docs/ADR への影響（判断）'
+      description: '本文は短く。理由は ADR、合否はテストへ。'
+      options:
+        - label: 'constraints（前提/制約）に影響する可能性がある'
+          required: false
+        - label: 'glossary（用語）追加が必要になりそう'
+          required: false
+        - label: 'ADR が必要（比較/却下理由が後で必要）'
+          required: false
+        - label: 'release 手順（配布/申請/審査）に影響する可能性がある'
+          required: false
+
+  - type: textarea
+    id: risks_feature
+    attributes:
+      label: 'リスクとロールバック（短くでOK / REQUIRED）'
+      placeholder: |
+        想定リスク：
+        検知方法：
+        戻し方（revert/フラグOFF/段階適用など）：
+    validations:
+      required: true
+
+  - type: textarea
+    id: context_for_codex
+    attributes:
+      label: 'Context for Codex（実装エージェント向け / W-05.5 で埋める）'
+      description: 'Claude Code の /plan Skill が W-05.5 でこのセクションを埋める。Codex はこれを読んで実装する。'
+      placeholder: |
+        ## Context for Codex
+
+        ### Acceptance Criteria (must pass)
+        (上の受け入れ条件をチェックボックス形式で再掲)
+        - [ ] AC1:
+        - [ ] AC2:
+
+        ### Files to read first (for context)
+        - src/features/...
+        - docs/reference/constraints.md
+        - docs/adr/ADR-xxxx-...md
+
+        ### Files likely to change
+        - src/features/<feature>/<Feature>Screen.tsx — 変更内容
+        - src/db/schema.ts — 変更内容
+        - src/core/i18n/locales/*.ts — 新キー名
+
+        ### Constraints
+        - pnpm 必須（npm 禁止）
+        - API キー直書き禁止
+        - 既存の vertical slice パターンに従う
+        - i18n キーは全 19 言語に明示的に追加
+
+        ### Test strategy
+        - Unit: __tests__/<feature>.test.ts
+        - E2E: maestro/flows/<feature>.yml (if user-facing)
+
+        ### Suggested implementation order
+        1. DB schema（必要なら）
+        2. Repository（親子関係考慮）
+        3. Service 層
+        4. UI コンポーネント
+        5. i18n キー
+        6. テスト
+
+        ### Related ADRs
+        - ADR-XXXX: タイトル
+    validations:
+      required: false

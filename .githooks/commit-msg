@@ -1,0 +1,9 @@
+#!/bin/bash
+MSG_FILE="$1"
+
+# Only append Co-Authored-By when running inside Claude Code
+if [ -n "$CLAUDE_CODE" ]; then
+  if ! grep -q "^Co-Authored-By:" "$MSG_FILE"; then
+    printf '\nCo-Authored-By: Claude <noreply@anthropic.com>\n' >> "$MSG_FILE"
+  fi
+fi

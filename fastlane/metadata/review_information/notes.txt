@@ -1,0 +1,6 @@
+No login required. The app can be used immediately after launch.
+
+If your app requires authentication, update this file with:
+- Demo account credentials (demo_user.txt / demo_password.txt)
+- Any special instructions for the reviewer
+- Steps to access paid features (if applicable)
