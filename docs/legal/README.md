@@ -33,8 +33,8 @@ cp docs/legal/terms-of-use.template.html docs/legal/terms-of-use.html
 
 公開後の URL:
 
-- `https://doooooraku.github.io/{{APP_SLUG}}/legal/privacy-policy.html`
-- `https://doooooraku.github.io/{{APP_SLUG}}/legal/terms-of-use.html`
+- `https://doooooraku.github.io/bonsailog/legal/privacy-policy.html`
+- `https://doooooraku.github.io/bonsailog/legal/terms-of-use.html`
 
 ### 4. アプリと Store に URL を設定
 

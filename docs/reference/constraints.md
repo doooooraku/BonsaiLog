@@ -1,6 +1,6 @@
-# {{APP_NAME}} constraints（前提 / 制約 / 不変条件） - Reference
+# BonsaiLog constraints（前提 / 制約 / 不変条件） - Reference
 
-この文書は {{APP_NAME}} の「前提 / 制約 / 不変条件 / 非ゴール」を 1枚に集約した “ルールブック（Reference）” です。
+この文書は BonsaiLog の「前提 / 制約 / 不変条件 / 非ゴール」を 1枚に集約した “ルールブック（Reference）” です。
 仕様書が形骸化する最大要因である「ズレやすい情報まで抱え込む」を避けるため、
 この文書は **変わりにくい“方針”と、変えるときに必ず全体へ影響する“決め”だけ**を扱います。
 
@@ -50,7 +50,7 @@
 
 <!-- TODO: Fill in your app's specific details -->
 
-- {{APP_NAME}} は **ローカル志向のアプリ** とする（自前バックエンドは持たない）
+- BonsaiLog は **ローカル志向のアプリ** とする（自前バックエンドは持たない）
 - ユーザー登録（メール/パスワード）を持たない
 - ネットワークは “必要最小限” に限定する（課金/広告など）
 
@@ -58,7 +58,9 @@
 
 ### 1-2. データ保存の原則（端末内のみ）
 
-- Habit / HabitLog：SQLite に保存する
+<!-- TODO: Fill in your app's data model -->
+
+- ドメインデータ：SQLite に保存する
 - Settings / ProState：SecureStore（端末の暗号化ストレージ）に保存する
 - v1.x は「アプリ内の全データ削除」ボタンを持たない（原則アンインストールで全削除）
 

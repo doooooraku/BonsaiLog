@@ -1,6 +1,6 @@
 # ADR（Architecture Decision Records）運用ガイド
 
-このディレクトリ（`docs/adr/`）は、{{APP_NAME}} の「重要な意思決定」を、あとで読み返せる形で残す場所です。
+このディレクトリ（`docs/adr/`）は、BonsaiLog の「重要な意思決定」を、あとで読み返せる形で残す場所です。
 
 - constraints（前提/制約）= ルールブック（“何が正か”）
 - ADR = ルールを「なぜそうしたか」の理由メモ（蒸し返し防止）

@@ -18,8 +18,8 @@ AdMob バナー広告をアプリに統合する手順。`react-native-google-mo
 
 1. AdMob コンソール → アプリ → アプリを追加
 2. プラットフォームごとに登録:
-   - **Android**: パッケージ名 = `{{ANDROID_PACKAGE}}`
-   - **iOS**: バンドル ID = `{{IOS_BUNDLE_IDENTIFIER}}`
+   - **Android**: パッケージ名 = `com.doooooraku.bonsailog`
+   - **iOS**: バンドル ID = `com.doooooraku.bonsailog`
 3. App ID をメモ（`ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY` 形式）
 
 ## 3. 広告ユニットの作成

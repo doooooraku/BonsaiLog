@@ -181,4 +181,4 @@ Repolog アプリの開発・リリースで得たノウハウを、次アプリ
 2. `pnpm type-check` が通る
 3. `pnpm test` が通る（28 tests / 3 suites）
 4. Repolog 固有の用語が残っていないこと
-5. プレースホルダー（`{{APP_NAME}}` 等）の整合性
+5. プレースホルダー（`BonsaiLog` 等）の整合性

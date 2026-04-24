@@ -1,4 +1,4 @@
-# Claude Code Rules — {{APP_NAME}}
+# Claude Code Rules — BonsaiLog
 
 > **Primary source**: Read `AGENTS.md` at the repository root first.
 > This file extends `AGENTS.md` with Claude Code-specific behavior.

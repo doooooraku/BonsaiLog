@@ -1,7 +1,7 @@
 # maestro/flows/smoke.yml
 # App Factory 共通スモークテスト
 
-appId: '{{ANDROID_PACKAGE}}' # setup.sh で自動置換される
+appId: 'com.doooooraku.bonsailog' # setup.sh で自動置換される
 name: 'Smoke - main flow' # テスト名（レポートでの表示名）
 tags:
   - smoke # 簡易テストであることを示すタグ

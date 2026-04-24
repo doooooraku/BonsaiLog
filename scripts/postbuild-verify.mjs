@@ -31,6 +31,14 @@ const INFO_KEYS = [
 
 // ---------------------------------------------------------------------------
 
+// SKIP_KEYS=1: Phase 3 の初回ビルド時はAPIキー未設定のためチェックをスキップ
+if (process.env.SKIP_KEYS === '1') {
+  console.log(
+    '\x1b[33m⚠ SKIP_KEYS=1 set — bypassing post-build verification (Phase 3 mode)\x1b[0m',
+  );
+  process.exit(0);
+}
+
 const archivePath = process.argv[2];
 if (!archivePath) {
   console.error('Usage: node scripts/postbuild-verify.mjs <path-to-apk-aab-or-ipa>');

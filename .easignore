@@ -1,0 +1,57 @@
+# EAS Build ignore — based on .gitignore but .env is INCLUDED
+# so that local builds can read APP_NAME, APP_SLUG, etc.
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+# .env           ← intentionally NOT excluded (needed for local builds)
+.env*.local
+
+# secrets (EAS Submit service account keys, etc.)
+secrets/
+
+# typescript
+*.tsbuildinfo
+
+app-example
+
+# generated native folders
+/ios
+/android
+
+# Tamagui generated
+.tamagui/
+
+# Debug sessions
+.debug-sessions/
+
+# Store screenshots output
+screenshots/

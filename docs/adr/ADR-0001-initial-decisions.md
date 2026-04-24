@@ -2,8 +2,8 @@
 
 - Status: Accepted
 - Date: 2026-01-17
-- Deciders: {{APP_NAME}} core
-- Scope: {{APP_NAME}} v1.x（仕様のベースライン）
+- Deciders: BonsaiLog core
+- Scope: BonsaiLog v1.x（仕様のベースライン）
 - Related:
   - docs/reference/constraints.md（前提/制約の正）
   - docs/adr/README.md（ADR運用ルール）
@@ -14,7 +14,7 @@
 
 ## 0. このADRは「何のためにある？」（超重要）
 
-この ADR-0001 は、{{APP_NAME}} の「もう決まっていること（=ブレない土台）」を **”初期の基準点”** として残すための文書です。
+この ADR-0001 は、BonsaiLog の「もう決まっていること（=ブレない土台）」を **”初期の基準点”** として残すための文書です。
 
 ### 0-1. いつ読む？
 
@@ -64,7 +64,7 @@
 
 <!-- TODO: Fill in your app's specific details -->
 
-- {{APP_NAME}} は **ローカル志向のアプリ** とする（自前バックエンドを持たない）
+- BonsaiLog は **ローカル志向のアプリ** とする（自前バックエンドを持たない）
 - **ユーザー登録（メール/パスワード）を持たない**
 
 #### (B) データ保存は「端末内のみ」

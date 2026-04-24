@@ -1,4 +1,4 @@
-# Project Agent Rules — {{APP_NAME}}
+# Project Agent Rules — BonsaiLog
 
 These rules apply to **ALL AI agents** working on this project:
 
@@ -86,10 +86,10 @@ When in doubt, follow this priority:
 
 ### 2.3 Project Identity
 
-- App name: `{{APP_NAME}}`
-- Description: `{{DESCRIPTION}}`
-- iOS bundle ID: `{{IOS_BUNDLE_IDENTIFIER}}`
-- Android package: `{{ANDROID_PACKAGE}}`
+- App name: `BonsaiLog`
+- Description: `樹種×地域気候×作業履歴を、鉢1本ずつ一生分記録する、オフライン完結の盆栽台帳アプリ。`
+- iOS bundle ID: `com.doooooraku.bonsailog`
+- Android package: `com.doooooraku.bonsailog`
 
 ---
 
