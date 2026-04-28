@@ -91,6 +91,17 @@ When in doubt, follow this priority:
 - iOS bundle ID: `com.doooooraku.bonsailog`
 - Android package: `com.doooooraku.bonsailog`
 
+### 2.4 Project Paths
+
+プロンプトテンプレート (`docs/how-to/workflow/prompts/`) 内の `{PROJECT_ROOT}` は以下の絶対パスに置換する:
+
+```
+PROJECT_ROOT=/home/doooo/04_app-factory/apps/BonsaiLog
+```
+
+Codex に Issue を渡す際、すべてのファイルパスをこの絶対パスで記載すること。
+相対パスでは Codex が `.codex/` 内のファイルと混同するリスクがある。
+
 ---
 
 ## 3. Forbidden Actions
