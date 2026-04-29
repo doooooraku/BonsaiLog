@@ -9,8 +9,16 @@
 
 ## テンプレート
 
-```markdown
-## Issue: #{番号} {タイトル}
+Openになっている以下リポジトリのIssueに対して
+内容を確認して実装のほう進めてください。
+調査してもわからない点、ないしは決めてほしい点ある際は
+背景を基に僕が判断しやすいような情報を提供してください。
+
+■リポジトリ
+
+- gh CLI: 使用許可済み（doooooraku アカウントでログイン済み）
+- 権限: admin / push / pull 確認済み
+- 作業権限: Issue作成・ブランチ作成・PR作成・push・マージ・クローズ すべて許可
 
 ### 受け入れ条件（AC）
 
@@ -24,28 +32,28 @@
 
 #### 必須（実装前に必ず読むこと）
 
-| ファイル                                                           | なぜ読むか                              |
-| ------------------------------------------------------------------ | --------------------------------------- |
-| `{PROJECT_ROOT}/docs/reference/constraints.md`                     | プロジェクトの不変条件                  |
-| `{PROJECT_ROOT}/docs/reference/basic_spec.md` セクション {X}       | この機能の仕様                          |
-| `{PROJECT_ROOT}/docs/how-to/workflow/git_workflow.md`              | ブランチ命名・コミット規則・PR 作成手順 |
-| `{PROJECT_ROOT}/docs/how-to/workflow/whole_workflow.md` W-06〜W-10 | 実装→PR の進め方                        |
-| `{PROJECT_ROOT}/docs/how-to/development/coding_rules.md`           | フォルダ構造・命名・TS ルール           |
-| `{PROJECT_ROOT}/docs/reference/tasks/lessons.md`                   | 過去の失敗パターン                      |
+| ファイル                                             | なぜ読むか                              |
+| ---------------------------------------------------- | --------------------------------------- |
+| `/docs/reference/constraints.md`                     | プロジェクトの不変条件                  |
+| `/docs/reference/basic_spec.md` セクション {X}       | この機能の仕様                          |
+| `/docs/how-to/workflow/git_workflow.md`              | ブランチ命名・コミット規則・PR 作成手順 |
+| `/docs/how-to/workflow/whole_workflow.md` W-06〜W-10 | 実装→PR の進め方                        |
+| `/docs/how-to/development/coding_rules.md`           | フォルダ構造・命名・TS ルール           |
+| `/docs/reference/tasks/lessons.md`                   | 過去の失敗パターン                      |
 
 #### 関連ファイル（この機能に関連する既存コード）
 
-| ファイル                                | なぜ読むか           |
-| --------------------------------------- | -------------------- |
-| `{PROJECT_ROOT}/src/{関連ファイル}`     | 既存パターンの踏襲   |
-| `{PROJECT_ROOT}/docs/adr/ADR-{番号}.md` | この設計になった理由 |
+| ファイル                  | なぜ読むか           |
+| ------------------------- | -------------------- |
+| `/src/{関連ファイル}`     | 既存パターンの踏襲   |
+| `/docs/adr/ADR-{番号}.md` | この設計になった理由 |
 
 ### 変更予定ファイル
 
-| ファイル                             | 変更内容                |
-| ------------------------------------ | ----------------------- |
-| `{PROJECT_ROOT}/src/types/models.ts` | {型の追加/変更}         |
-| `{PROJECT_ROOT}/src/db/schema.ts`    | {テーブル/カラムの追加} |
+| ファイル               | 変更内容                |
+| ---------------------- | ----------------------- |
+| `/src/types/models.ts` | {型の追加/変更}         |
+| `/src/db/schema.ts`    | {テーブル/カラムの追加} |
 
 ### 絶対にやってはいけないこと
 
@@ -73,11 +81,13 @@
 4. コミット: Conventional Commits 形式（`{type}({scope}): {subject}`）
 5. push: `git push -u origin {ブランチ名}`
 6. PR 作成: `.github/pull_request_template.md` に沿う
+
 ```
 
 ## 使い方の注意
 
-- `{PROJECT_ROOT}` は AGENTS.md §2.4 で定義された絶対パスに置換する
+- `` は AGENTS.md §2.4 で定義された絶対パスに置換する
 - Issue 本文が 2000 文字を超える場合、AC と「読むべきファイル」だけ残し、
   詳細な背景は Issue コメントまたはリンクで別途提供する
 - 1 Issue = 1 目的（whole_workflow.md W-02 準拠）。大きければサブ Issue に分割
+```
