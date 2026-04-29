@@ -69,14 +69,16 @@
 ### 1-3. 個人情報（PII）をアプリとして取得しない
 
 - 氏名/メール/住所/電話/正確な GPS 座標など “直接個人が特定できる情報” をアプリ要件として取得しない
-- 位置情報は **USDA Hardiness Zone（地域コード）レベルのみ**保持する（緯度経度は取得しない）
+- 位置情報を**一切保持しない**（緯度経度・気候帯・国コード等を取得しない）
 - ログ・デバッグ出力に個人特定情報を含めない
 
 ### 1-4. AI 非搭載原則（「診断しない、記録する」）
 
 - AI 画像同定 / AI 病害虫診断 / AI 作業提案などの AI 機能を **搭載しない**
-- アプリの立ち位置は「**台帳**（記録するもの）」であり、「**判定するもの**」ではない
+- **決定論的な推奨機能も搭載しない**: ユーザーの判断に介入する機能（自動的に作業日を計算/提案する、地域気候から季節を反転する、予定を自動分散する 等）は AI 同等にリスク扱い、不採用
+- アプリの立ち位置は「**台帳**（記録するもの）」であり、「**判定するもの**」「**推奨するもの**」ではない
 - これに違反する UI 文言（後述 §5-2 の禁止語）は CI で検出して落とす
+- **例外**: ユーザーが**自分で指定した日時**の通知（F-07 針金がけ外し予定日時、F-16 リマインダー手動設定）は OK。装着期間経過の事実通知（「装着期間 6 週経過しました」）も OK。「外しましょう」「水やりが足りません」など命令/判定は禁止。
 
 ---
 
@@ -97,7 +99,6 @@
 | ----------------------------- | ---------------- | -------------- |
 | 樹木登録数                    | **無制限**       | 無制限         |
 | 写真（1 樹あたり）            | **3 枚まで**     | 無制限         |
-| 樹種別作業タイミング計算      | 不可             | 可             |
 | CSV / PDF エクスポート        | 不可             | 可             |
 | QR コード印刷（樹に貼る用）   | 不可             | 可             |
 | リマインダー分散アルゴリズム  | 簡易版           | 完全版         |
@@ -236,10 +237,8 @@
 | ---- | --------------------------------------------- |
 | F-01 | 盆栽の登録・管理                              |
 | F-02 | 作業履歴記録（13 種のイベント）               |
-| F-03 | 樹種別作業タイミング計算（初期ガイド）        |
 | F-04 | 水やり履歴の可視化                            |
 | F-05 | リマインダー分散                              |
-| F-06 | 地域気候・半球対応（USDA Hardiness Zone）     |
 | F-07 | 針金がけ記録・外し時期表示                    |
 | F-08 | 写真管理（年次タイムライン）                  |
 | F-09 | 検索・タグ                                    |
@@ -274,7 +273,6 @@
 - RevenueCat Restore Purchases: https://www.revenuecat.com/docs/getting-started/restoring-purchases
 - react-native-google-mobile-ads（テスト ID 等）: https://docs.page/invertase/react-native-google-mobile-ads/displaying-ads
 - react-native-zip-archive: https://www.npmjs.com/package/react-native-zip-archive
-- USDA Plant Hardiness Zone Map: https://planthardiness.ars.usda.gov/
 - GitHub Branch protection: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/managing-a-branch-protection-rule
 - IANA Language Subtag Registry: https://www.iana.org/assignments/language-subtag-registry
 - RFC 5646 (BCP47): https://datatracker.ietf.org/doc/html/rfc5646
