@@ -49,7 +49,7 @@
 1 つでも当てはまれば更新:
 
 - 新しい画面・設定項目・制約が増えた
-- 既存の挙動（例: 分散アルゴリズムの閾値、Free 制限）が変わった
+- 既存の挙動（例: 「気遣い型」ポップアップの閾値、Free 制限）が変わった
 - テストの期待値が変わった
 - Pro / 課金 / 広告 / レビュー要求など、審査に関わる動作が変わった
 
@@ -64,24 +64,22 @@
 
 ## §3. 全体の機能マップ（basic_spec.md F 番号との対応）
 
-| F 番号 | 機能名                       | 本書 § |
-| ------ | ---------------------------- | ------ |
-| F-01   | 盆栽の登録・管理             | §6     |
-| F-02   | 作業履歴記録                 | §7     |
-| F-03   | 樹種別作業タイミング計算     | §8     |
-| F-04   | 水やり履歴の可視化           | §9     |
-| F-05   | リマインダー分散             | §10    |
-| F-06   | 地域気候・半球対応           | §11    |
-| F-07   | 針金がけ記録・外し時期表示   | §12    |
-| F-08   | 写真管理（年次タイムライン） | §13    |
-| F-09   | 検索・タグ                   | §14    |
-| F-10   | エクスポート（CSV / PDF）    | §15    |
-| F-11   | お引っ越し機能               | §16    |
-| F-12   | 多言語対応                   | §17    |
-| F-13   | 課金（サブスク + 買切）      | §18    |
-| F-14   | Home 下部バナー広告          | §19    |
-| F-15   | ダークモード / 屋外モード    | §20    |
-| F-16   | ローカル通知                 | §21    |
+| F 番号 | 機能名                           | 本書 § |
+| ------ | -------------------------------- | ------ |
+| F-01   | 盆栽の登録・管理                 | §6     |
+| F-02   | 作業履歴記録                     | §7     |
+| F-04   | 水やり履歴の可視化               | §9     |
+| F-05   | 「気遣い型」予定確認ポップアップ | §10    |
+| F-07   | 針金がけ記録・外し時期通知       | §12    |
+| F-08   | 写真管理（年次タイムライン）     | §13    |
+| F-09   | 検索・タグ                       | §14    |
+| F-10   | エクスポート（CSV / PDF）        | §15    |
+| F-11   | お引っ越し機能                   | §16    |
+| F-12   | 多言語対応                       | §17    |
+| F-13   | 課金（サブスク + 買切）          | §18    |
+| F-14   | Home 下部バナー広告              | §19    |
+| F-15   | ダークモード / 屋外モード        | §20    |
+| F-16   | ローカル通知                     | §21    |
 
 ---
 
@@ -613,172 +611,9 @@ const handleSave = async (input: CreateEventInput) => {
 
 ---
 
-## §8. F-03 樹種別作業タイミング計算
+## §8. （欠番）
 
-### §8.1 目的
-
-樹種と地域気候に基づき、次回推奨作業日を決定論アルゴリズムで計算する。**AI 非搭載**。
-
-### §8.2 画面 / 入口
-
-- 盆栽詳細の「次の作業」セクション
-- 新規盆栽登録直後の「初期ガイドカード」モーダル（30 日分の作業カレンダー）
-- 設定 → タイミングテンプレート編集（Pro 限定）
-
-### §8.3 期待動作
-
-#### §8.3.1 初期ガイド生成フロー
-
-```mermaid
-flowchart TD
-  Save[盆栽保存] --> Check[樹種 species_id が設定済み?]
-  Check -- Yes --> Lookup[species_tasks テーブル lookup]
-  Check -- No --> Skip[初期ガイドをスキップ、「樹種を設定してください」表示]
-  Lookup --> Climate[F-06 気候帯取得]
-  Climate --> Filter[半球 + 気候帯でフィルタ]
-  Filter --> Gen[30 日間の作業カレンダー生成]
-  Gen --> Display[初期ガイドカードモーダル表示]
-  Display --> Save2[reminders テーブルに登録]
-  Save2 --> Notify[F-16 ローカル通知スケジュール]
-```
-
-#### §8.3.2 計算アルゴリズム（決定論）
-
-```typescript
-// domain/schedule/computeNextTask.ts
-export function computeNextTask(params: {
-  bonsaiId: string;
-  species: Species;
-  lastEvents: Event[];
-  climate: Climate;
-  today: Date; // 引数で受ける（純粋関数）
-}): NextTaskSuggestion[] {
-  const { species, lastEvents, climate, today } = params;
-  const hemisphere = climate.hemisphere;
-  const month = adjustMonthForHemisphere(today.getMonth() + 1, climate.latitude);
-
-  const suggestions: NextTaskSuggestion[] = [];
-
-  for (const taskType of ALL_TASK_TYPES) {
-    const template = getSpeciesTaskTemplate(species.id, taskType, hemisphere);
-    if (!template) continue;
-
-    const lastDone = findLastEvent(lastEvents, taskType);
-    const recommendation = template.monthlyRecommendation[month]; // 'strongly_recommended' | 'recommended' | 'optional' | 'avoid'
-
-    if (recommendation === 'avoid') continue;
-
-    const daysSinceLastDone = lastDone ? differenceInDays(today, lastDone.occurredAt) : Infinity;
-
-    const minInterval = template.minIntervalDays;
-    if (daysSinceLastDone < minInterval) continue;
-
-    // 推奨日は「幅」を持つ
-    const windowStart = addDays(today, 0);
-    const windowEnd = addDays(today, 7);
-
-    suggestions.push({
-      type: taskType,
-      windowStart,
-      windowEnd,
-      recommendation,
-      reason: template.reasonText[t.currentLocale], // 多言語
-    });
-  }
-
-  return suggestions.sort(byRecommendationPriority);
-}
-```
-
-#### §8.3.3 初期ガイドカード
-
-新規盆栽登録直後（§6.3.1 の Detail 到達時）に自動表示:
-
-```
-┌──────────────────────────────┐
-│  🌲 黒松「翁」の最初の 30 日   │
-├──────────────────────────────┤
-│  Day 1-3                      │
-│  🏡 置き場所を決める            │
-│  日光が当たる屋外、東〜南向き   │
-│                               │
-│  Day 5-7                      │
-│  💧 水やり確認                  │
-│  毎日、朝の 1 回を目安          │
-│                               │
-│  Day 10                       │
-│  🌿 葉の色チェック              │
-│  黄変・茶変があれば環境見直し   │
-│                               │
-│  Day 30                       │
-│  ✅ 1 ヶ月経過チェック          │
-│  枯れていなければ生着           │
-├──────────────────────────────┤
-│  [ この計画を保存 ]            │
-│  [ 保存しない ]                │
-└──────────────────────────────┘
-```
-
-「この計画を保存」で `reminders` テーブルに 4 件登録 + ローカル通知スケジュール。
-
-#### §8.3.4 推奨日の再計算タイミング
-
-| トリガ                  | 再計算対象                 |
-| ----------------------- | -------------------------- |
-| 作業記録追加            | その盆栽の同一作業種別のみ |
-| 盆栽の樹種変更          | その盆栽の全作業           |
-| 気候帯手動変更（F-06）  | その盆栽の全作業           |
-| 設定 → 推奨日一括再計算 | 全盆栽の全作業             |
-
-#### §8.3.5 Free / Pro 分岐
-
-- **Free**: 樹種別の「一般的な作業時期」を文字で表示（「春に植替え」など）、具体的な次回推奨日は**表示しない**
-- **Pro**: 個別の次回推奨日（「4/28〜5/5 に水やり」）+ ユーザーオーバーライド可能
-
-#### §8.3.6 根拠の表示
-
-推奨カードをタップすると、根拠テキストを表示:
-
-- 「黒松は春に植替えが基本。芽膨張前の 2〜3 月が目安。（出典: 盆栽春秋 2024 年 3 月号）」
-- **出典テキストは species_tasks テーブルに格納、多言語**
-
-#### §8.3.7 ユーザーオーバーライド
-
-推奨カードの「手動で日付を設定」ボタンから、個別の `reminders.next_scheduled_at` を上書き可能。以降の自動再計算はこの盆栽・作業種別では無効化（`reminders.override = 1`）。
-
-### §8.4 境界値テーブル
-
-| 項目                     | 境界 | 期待動作                                             |
-| ------------------------ | ---- | ---------------------------------------------------- |
-| 樹種未設定               | 境界 | 初期ガイドをスキップ、「樹種を設定してください」案内 |
-| species_tasks にデータ無 | 境界 | 「この樹種のタイミングデータは準備中です」           |
-| `minIntervalDays = 0`    | 特殊 | 制約なし（水やりなど）                               |
-| 推奨月 = `avoid`         | 境界 | 候補から除外                                         |
-| 購入日 < 30 日前         | 境界 | 初期ガイドは購入日から 30 日分計算                   |
-| 購入日 > 30 日前         | 境界 | 初期ガイドをスキップ（既に定着済み推定）             |
-| Free プランでタップ      | 境界 | Paywall 遷移（F-13）                                 |
-
-### §8.5 エラーフロー
-
-| エラー               | 表示                                       | 対応         |
-| -------------------- | ------------------------------------------ | ------------ |
-| 樹種 DB 読み込み失敗 | 「タイミングデータを取得できませんでした」 | アプリ再起動 |
-| 計算中に樹種変更     | 最新樹種で再計算                           | –            |
-| タイムゾーン変更中   | 計算後に再レンダリング                     | §5.2         |
-
-### §8.6 受け入れ条件
-
-- [ ] 黒松登録 → 30 日ガイド表示 → 水やり記録 → 次回推奨日更新
-- [ ] 南半球で登録すると月が反転する（4 月の南半球 = 秋）
-- [ ] ユーザーオーバーライドが永続化
-- [ ] Free ユーザーに個別推奨日は表示されない
-- [ ] AI 的な断定語（「必要です」「すべき」）が UI に出ない
-- [ ] 樹種未設定盆栽で初期ガイドがスキップされる
-
-### §8.7 対応テスト
-
-- Jest: `__tests__/domain/schedule/computeNextTask.test.ts`, `starter_guide.test.ts`, `override.test.ts`
-- Jest PBT: `__tests__/domain/schedule/computeNextTask.pbt.test.ts`（任意の樹種+気候で `recommendation !== 'avoid'` が保証）
+> F-03 は v1.0 で実装しない。詳細経緯は ADR-0011 を参照。
 
 ---
 
@@ -882,373 +717,150 @@ graph LR
 
 ---
 
-## §10. F-05 リマインダー分散
+## §10. F-05 「気遣い型」予定確認ポップアップ
 
 ### §10.1 目的
 
-同じ週に複数の盆栽の作業が集中しないよう、推奨日を自動で分散する。Bonsai Care App の「リマインダー 2/23 と 3/23 に集中」問題（痛み🩹3）への直接回答。
+ユーザーが 1 日に 6 件目の予定を登録しようとした時に、「無理のない範囲で進めてくださいね」とソフトに声かけする（押し付けがましくないリマインド）。
 
 ### §10.2 画面 / 入口
 
-- バックグラウンド計算（UI 直接入口なし）
-- カレンダー UI（`(tabs)/calendar`）で結果表示
-- ドラッグで個別調整
+- 任意の予定登録画面（盆栽詳細 → 作業を記録 → 予定として保存、または status='planned' で記録）
 
 ### §10.3 期待動作
 
-#### §10.3.1 分散アルゴリズム（純粋関数）
+#### §10.3.1 発火条件
 
-```typescript
-// domain/schedule/distribute.ts
-export interface DistributeInput {
-  tasks: Array<{
-    bonsaiId: string;
-    type: EventType;
-    idealDate: Date;
-    locked: boolean; // ユーザー固定は移動しない
-  }>;
-  weeklyLimit: number; // 既定 3、1〜10
-  seed: number; // 決定的な再現性のため引数で受ける
-}
+- 同一日（occurred_at_utc の日付） に既に **5 件以上の予定 (status='planned' or 'logged')** が存在する状態で、6 件目を登録しようとした時
+- ユーザーが「今後表示しない」を選択した後は発火しない
 
-export function distributeReminders(input: DistributeInput): Array<{
-  bonsaiId: string;
-  type: EventType;
-  scheduledDate: Date;
-}> {
-  const { tasks, weeklyLimit } = input;
-  const byWeek = new Map<number, typeof tasks>();
-
-  // Step 1: 週ごとにグルーピング
-  for (const t of tasks) {
-    const wk = getISOWeek(t.idealDate);
-    if (!byWeek.has(wk)) byWeek.set(wk, []);
-    byWeek.get(wk)!.push(t);
-  }
-
-  const result: Array<{ bonsaiId: string; type: EventType; scheduledDate: Date }> = [];
-
-  // Step 2: 各週を制限内に収める
-  for (const [wk, weekTasks] of byWeek) {
-    if (weekTasks.length <= weeklyLimit) {
-      result.push(
-        ...weekTasks.map((t) => ({
-          bonsaiId: t.bonsaiId,
-          type: t.type,
-          scheduledDate: t.idealDate,
-        })),
-      );
-      continue;
-    }
-
-    // 超過分を次週へずらす（locked は動かさない）
-    const fixed = weekTasks.filter((t) => t.locked);
-    const movable = weekTasks.filter((t) => !t.locked);
-    const keepCount = Math.max(0, weeklyLimit - fixed.length);
-    const keep = movable.slice(0, keepCount);
-    const shift = movable.slice(keepCount);
-
-    result.push(
-      ...[...fixed, ...keep].map((t) => ({
-        bonsaiId: t.bonsaiId,
-        type: t.type,
-        scheduledDate: t.idealDate,
-      })),
-    );
-    // 後ろにずらす
-    result.push(
-      ...shift.map((t) => ({
-        bonsaiId: t.bonsaiId,
-        type: t.type,
-        scheduledDate: addDays(t.idealDate, 7),
-      })),
-    );
-  }
-
-  return result.sort(byDate);
-}
-```
-
-#### §10.3.2 再計算タイミング
-
-```mermaid
-flowchart TD
-  Trigger{再計算トリガ}
-  Trigger -->|盆栽追加| T1[全盆栽の将来タスクで再計算]
-  Trigger -->|作業記録| T2[その盆栽の次回タスクのみ再計算]
-  Trigger -->|リマインダー設定変更| T3[全盆栽の全タスクで再計算]
-  Trigger -->|ユーザー手動| T4[全盆栽全タスク]
-
-  T1 --> Distribute[distributeReminders 呼び出し]
-  T2 --> Local[ローカル再計算のみ、分散は全体再計算で]
-  T3 --> Distribute
-  T4 --> Distribute
-
-  Distribute --> WriteDB[withExclusiveTransactionAsync で reminders 更新]
-  WriteDB --> Notif[F-16 通知スケジュール更新]
-  Notif --> Invalidate[invalidate 'reminders', 'bonsai.list']
-```
-
-#### §10.3.3 不変条件（Property-Based Testing で保証）
-
-1. どの週も作業数 ≦ 上限値（weeklyLimit）
-2. `locked = true` のタスクは動かない
-3. 純粋関数（`Math.random()` / `Date.now()` 未使用、seed 引数で決定的）
-4. 入力順が変わっても同じ seed なら同じ出力
-5. ずらすのは常に「後ろ」（過去にずらさない）
-
-#### §10.3.4 カレンダー UI
+#### §10.3.2 ポップアップ仕様
 
 ```
-┌──────────────────────────────────┐
-│  2026 年 5 月                    │
-├──────────────────────────────────┤
-│  月 火 水 木 金 土 日             │
-│   4  5  6  7  8  9 10             │
-│  🌲 🌿 🌿 🪴 💧 💧                 │
-│      ↑上限 3 件で分散済           │
-│  11 12 13 14 15 16 17             │
-│  🪴 💧 💧 🌱                      │
-└──────────────────────────────────┘
+┌─────────────────────────────────┐
+│ お知らせ                          │
+├─────────────────────────────────┤
+│ この日は既に 5 件の予定があります。│
+│ 無理のない範囲で進めてくださいね 🌱 │
+├─────────────────────────────────┤
+│ [ そのまま登録 ]  ← デフォルト    │
+│ [ 一覧を見る ]                    │
+│ [ 今後表示しない ]                │
+└─────────────────────────────────┘
 ```
 
-- タスクをドラッグで前後週に移動可能
-- 移動後は `locked = true` になり、以降の自動分散で動かない
+#### §10.3.3 設定
 
-#### §10.3.5 Free / Pro 分岐
+- デフォルト ON
+- Settings → 通知設定 → 「予定が多い時の確認ポップアップ」トグルで OFF 可能（盆栽園プロ等の業務利用者向け抑制）
 
-- **Free**: 分散アルゴリズム**OFF**（ideal date のまま）、カレンダー表示のみ
-- **Pro**: 分散アルゴリズム有効、ドラッグ調整可、weeklyLimit 変更可（1〜10）
+### §10.4 境界値
 
-### §10.4 境界値テーブル
+| 項目                     | 境界       | 期待動作                                     |
+| ------------------------ | ---------- | -------------------------------------------- |
+| 同一日 4 件              | 境界       | 発火しない                                   |
+| 同一日 5 件 → 6 件目登録 | 発火       | ポップアップ表示                             |
+| 同一日 100 件            | 既に発火済 | 「今後表示しない」が押されていれば発火しない |
+| 「今後表示しない」選択後 | 抑制       | Settings で再有効化されるまで発火しない      |
+| OFF 設定時               | 無効       | 発火しない                                   |
 
-| 項目                      | 境界     | 期待動作                                              |
-| ------------------------- | -------- | ----------------------------------------------------- |
-| weeklyLimit = 1           | 下限     | 全タスクが別週に分散（超過なら先送り）                |
-| weeklyLimit = 3           | 既定     | 同週 3 件まで OK                                      |
-| weeklyLimit = 10          | 上限     | 上限超の盆栽数でも全部同週                            |
-| weeklyLimit = 11          | 上限超   | 設定 UI で変更不可                                    |
-| 同週 3 件（上限ピッタリ） | 境界     | 分散なし、全部同週                                    |
-| 同週 4 件（上限 +1）      | 境界     | 1 件後週                                              |
-| 同週 100 件               | 極端     | 1 件残し 99 件を後週 → さらに後週の上限超なら再帰的に |
-| 全タスクが locked         | 境界     | 分散なし、上限超でもそのまま                          |
-| 盆栽 0 本                 | 境界     | 分散処理スキップ                                      |
-| seed 固定                 | 不変条件 | 同入力 → 同出力                                       |
+### §10.5 受け入れ条件
 
-### §10.5 エラーフロー
+- [ ] 6 件目の予定登録時にポップアップ発火
+- [ ] 文言が「この日は既に 5 件の予定があります。無理のない範囲で進めてくださいね」
+- [ ] 「そのまま登録」がデフォルト操作（左寄り、目立つ）
+- [ ] 「今後表示しない」を押すと以降発火しない
+- [ ] Settings → 通知設定 で再有効化可能
+- [ ] OFF 設定時はポップアップ発火しない
 
-| エラー                               | 表示                                 | 対応                            |
-| ------------------------------------ | ------------------------------------ | ------------------------------- |
-| `withExclusiveTransactionAsync` 失敗 | トースト「分散再計算に失敗しました」 | 次回のトリガで再計算            |
-| 通知スケジュール失敗                 | ログのみ、UI 通知なし                | DB 正、通知は次回起動時に再試行 |
+### §10.6 対応テスト
 
-### §10.6 受け入れ条件
-
-- [ ] 10 本が同週に集中 → 上限 3 で分散 → すべての週が上限内
-- [ ] PBT: 200 回ランダム入力で不変条件全成立
-- [ ] 純粋関数（seed 固定で決定的、`Math.random`/`Date.now` 未使用）
-- [ ] ユーザーがドラッグで動かしたタスクは次回再計算で動かない（`locked=true`）
-- [ ] Free で分散 OFF、Pro で ON
-- [ ] 再計算後、通知スケジュールが reminders テーブルと一致
-
-### §10.7 対応テスト
-
-- Jest: `__tests__/domain/schedule/distribute.test.ts`
-- Jest PBT: `__tests__/domain/schedule/distribute.pbt.test.ts`（fast-check、200 回、seed 固定）
+- Jest: `__tests__/features/reminders/popupTrigger.test.ts`
+- Maestro: `maestro/flows/popup_5_events.yml`
 
 ---
 
-## §11. F-06 地域気候・半球対応
+## §11. （欠番）
 
-### §11.1 目的
-
-端末のタイムゾーンから気候帯を推定し、推奨作業日の季節を自動調整する。Bonsai Care App「南半球設定が逆」問題（🩹4）への回答。
-
-### §11.2 画面 / 入口
-
-- 初回起動時（オンボーディング）で自動検出
-- 設定 → 地域設定で手動変更
-
-### §11.3 期待動作
-
-#### §11.3.1 気候判定フロー
-
-```mermaid
-flowchart TD
-  Start[アプリ起動] --> Check{設定に地域が保存済み?}
-  Check -- Yes --> Load[保存値をロード]
-  Check -- No --> AutoDetect[自動検出]
-
-  AutoDetect --> GetTz[Localization.getCalendars timeZone]
-  GetTz --> TzToCountry[zone1970.tab 静的テーブル参照]
-  TzToCountry --> CountryToLat[国重心緯度経度取得]
-  CountryToLat --> Hemisphere[lat >= 0 ? north : south]
-  Hemisphere --> ClimateZone[緯度絶対値から気候帯分類]
-  ClimateZone --> Save[AsyncStorage 保存]
-  Save --> Apply[F-03 計算に適用]
-```
-
-#### §11.3.2 判定擬似コード
-
-```typescript
-// domain/climate/detect.ts
-export function detectClimate(): Climate {
-  const tz = Localization.getCalendars()[0]?.timeZone ?? 'UTC';
-  const country = TZ_TO_COUNTRY[tz] ?? 'US'; // フォールバック
-  const { lat, lon } = COUNTRY_CENTROIDS[country] ?? { lat: 0, lon: 0 };
-
-  const hemisphere: 'north' | 'south' = lat >= 0 ? 'north' : 'south';
-  const absLat = Math.abs(lat);
-
-  const climateType: ClimateType =
-    absLat < 23.5 ? 'tropical' : absLat < 35 ? 'subtropical' : absLat < 50 ? 'temperate' : 'boreal';
-
-  const usdaZone = USDA_RASTER_LOOKUP(lat, lon) ?? estimateZoneFromLatitude(lat);
-
-  return { hemisphere, climateType, usdaZone, latitude: lat, longitude: lon, source: 'auto' };
-}
-```
-
-#### §11.3.3 半球反転ロジック
-
-```typescript
-// domain/climate/hemisphere.ts
-export function adjustMonthForHemisphere(month: number, latitude: number): number {
-  // 南半球: 月を 6 ヶ月ずらす (1 <-> 7, 2 <-> 8, ...)
-  if (latitude < 0) return ((month - 1 + 6) % 12) + 1;
-  // 熱帯 (|lat| < 10) は反転しない（季節性が弱い）
-  return month;
-}
-```
-
-#### §11.3.4 手動オーバーライド
-
-設定画面:
-
-```
-┌────────────────────────────┐
-│  地域設定                   │
-├────────────────────────────┤
-│  自動検出                   │
-│  日本 / 北半球 / 温帯       │
-│  USDA Zone 9a               │
-│  [編集]                     │
-├────────────────────────────┤
-│  手動設定                   │
-│  緯度: [35.65] 経度: [139.74]│
-│  半球: [北] [南]             │
-│  気候帯: [温帯 ▾]            │
-└────────────────────────────┘
-```
-
-手動変更後は `Climate.source = 'manual'`、自動再検出で上書きされない。
-
-### §11.4 境界値テーブル
-
-| 項目                      | 境界           | 期待動作                                       |
-| ------------------------- | -------------- | ---------------------------------------------- |
-| 赤道直下（lat 0）         | 境界           | 北半球扱い、tropical                           |
-| lat = -0.1                | 境界           | 南半球扱い                                     |
-| lat = 66.5（北極圏）      | 境界           | boreal                                         |
-| lat = -66.5（南極圏）     | 境界           | boreal、南半球                                 |
-| tz = 'UTC'                | フォールバック | US にマップ                                    |
-| tz = 未知の値             | フォールバック | US にマップ + 警告ログ                         |
-| 国コード → 緯度データ欠損 | フォールバック | lat=0, lon=0、tropical、ユーザーに手動設定促す |
-| 緯度手動 > 90             | 無効           | バリデーション NG                              |
-| 緯度手動 < -90            | 無効           | バリデーション NG                              |
-
-### §11.5 エラーフロー
-
-| エラー                  | 表示                     | 対応         |
-| ----------------------- | ------------------------ | ------------ |
-| zone1970.tab ロード失敗 | ログのみ、UI は UTC 扱い | アプリ再起動 |
-| 緯度経度不正            | インラインエラー         | 修正         |
-| 端末 timezone API 失敗  | UTC フォールバック       | –            |
-
-### §11.6 受け入れ条件
-
-- [ ] `Asia/Tokyo` 起動 → 北半球 / 温帯 / USDA 9 前後
-- [ ] `Australia/Sydney` 起動 → 南半球 / 温帯、月が 6 ヶ月反転
-- [ ] `Asia/Singapore` 起動 → tropical、月反転なし
-- [ ] 手動変更後に自動再検出で上書きされない
-- [ ] オフライン動作（zone1970.tab はアプリバンドル）
-
-### §11.7 対応テスト
-
-- Jest: `__tests__/domain/climate/hemisphere.test.ts`, `tz_to_country.test.ts`, `zone_estimate.test.ts`, `manual_override.test.ts`
+> F-06 は v1.0 で実装しない。詳細経緯は ADR-0011 を参照。
 
 ---
 
-## §12. F-07 針金がけ記録・外し時期表示
+## §12. F-07 針金がけ記録・外し時期通知
 
 ### §12.1 目的
 
-針金がけ日を記録すると、外し時期（樹種別標準経過週数）を自動表示する。Marcus 型ペルソナの「針金食い込みで永久傷」実害（🩹6）への回答。
+針金がけ作業を記録した際に、ユーザーが**任意で「外す予定日時」を指定**できる。指定日時に通知を発火し、加えて装着期間経過の事実通知も対応する。Marcus 型ペルソナの「針金食い込みで永久傷」実害（🩹6）への回答。
+
+> 「外しましょう」等の推奨/命令文言は禁止（事実通知のみ）。
 
 ### §12.2 画面 / 入口
 
 - 盆栽詳細 → 作業記録 → wiring 選択
 - 盆栽詳細 → 未外しの針金一覧
-- 設定 → 全盆栽横断「未外しの針金」リスト（Pro 限定）
+- 設定 → 全盆栽横断「未外しの針金」リスト
 
 ### §12.3 期待動作
 
-#### §12.3.1 針金レコード状態遷移
+#### §12.3.1 針金記録フロー
 
 ```mermaid
 stateDiagram-v2
-  [*] --> Active: 針金がけ記録 (wiring event)
-  Active --> WarningSoon: 経過週数 >= 推奨 * 0.8
-  WarningSoon --> WarningNow: 経過週数 >= 推奨
-  WarningNow --> Overdue: 経過週数 >= 推奨 * 1.2
+  [*] --> InputForm: 針金がけ記録開始
+  InputForm --> SetUnwireDate: 「外す予定日時」入力（任意）
+  SetUnwireDate --> Save: 保存
+  InputForm --> Save: 「外す予定日時」未入力でも保存可
+  Save --> Active: events INSERT 完了
+  Active --> NotificationScheduled: 外す予定日時が指定されていれば通知スケジュール
+  Active --> WeeklyFactNotice: 装着期間 6 週経過時に事実通知（任意機能）
   Active --> Unwired: 針金外し記録 (unwiring event)
-  WarningSoon --> Unwired
-  WarningNow --> Unwired
-  Overdue --> Unwired
   Unwired --> [*]
 ```
 
-#### §12.3.2 樹種別標準経過週数
-
-| 樹種                                                 | 針金推奨期間        |
-| ---------------------------------------------------- | ------------------- |
-| Pinus thunbergii（黒松）・Pinus parviflora（五葉松） | 12-26 週            |
-| Juniperus chinensis（真柏）                          | 12-18 週            |
-| Juniperus procumbens nana                            | 6-12 週             |
-| Acer palmatum（モミジ）                              | 6-10 週（成長速い） |
-| Ficus retusa                                         | 8-16 週             |
-| Chinese Elm                                          | 8-16 週             |
-| Default                                              | 12 週               |
-
-#### §12.3.3 針金 event のペイロード
+#### §12.3.2 針金 event のペイロード
 
 ```typescript
 interface WiringPayload {
   wire_size_mm: number; // 0.5, 1, 1.5, 2, 2.5, 3, 4
   body_part: 'trunk' | 'branch_primary' | 'branch_secondary' | 'apex' | 'other';
   photo_ids: string[]; // 写真 ID
+  scheduled_unwire_at: string | null; // ISO UTC、ユーザー指定の外し予定日時
   linked_unwiring_event_id: string | null; // 外し記録が付いたら埋める
 }
 ```
 
-#### §12.3.4 外し時期アラート（Pro 限定）
+#### §12.3.3 外し時期通知（指定日時 / 事実通知）
 
-経過週数が推奨の 0.8 倍に達したら、ローカル通知:
+**ユーザー指定日時通知**:
 
 ```typescript
-// 黒松、wiring 12 週前、推奨 16 週 → 12.8 週（80%）時点で通知
-await Notifications.scheduleNotificationAsync({
-  identifier: `bonsai_${bonsaiId}_unwire_${wiringEventId}`,
-  content: {
-    title: t('wire.unwire_approaching.title', { bonsaiName }),
-    body: t('wire.unwire_approaching.body', { weeks: 12 }),
-    data: { bonsai_id: bonsaiId, event_type: 'unwiring', wiring_event_id: wiringEventId },
-  },
-  trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: warningDate },
-});
+// ユーザーが「外す予定日時」を 2026-06-15 09:00 と指定した場合
+if (payload.scheduled_unwire_at) {
+  await Notifications.scheduleNotificationAsync({
+    identifier: `bonsai_${bonsaiId}_unwire_${wiringEventId}`,
+    content: {
+      title: t('wire.scheduled.title', { bonsaiName }),
+      body: t('wire.scheduled.body', {
+        date: formatLocal(payload.scheduled_unwire_at, tzIana, locale),
+      }),
+      data: { bonsai_id: bonsaiId, event_type: 'unwiring', wiring_event_id: wiringEventId },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: payload.scheduled_unwire_at,
+    },
+  });
+}
 ```
 
-#### §12.3.5 外し記録の紐付け
+**通知文言（推奨ではなく事実）**:
+
+- ✅ 「針金の指定日時です（◯月◯日設定）」 (`wire.scheduled.body`)
+- ✅ 「装着期間 6 週経過しました」 (`wire.weeks_elapsed.body`)
+- ❌ 「針金を外しましょう」（推奨/命令、禁止）
+- ❌ 「作業してください」（推奨/命令、禁止）
+
+#### §12.3.4 外し記録の紐付け
 
 ```mermaid
 sequenceDiagram
@@ -1257,25 +869,23 @@ sequenceDiagram
   UI->>UI: 未外しの針金一覧で wiring event を選択
   UI->>UI: 「外し記録」タップ
   UI->>DB: INSERT events (type='unwiring', payload.linked_wiring_event_id=wId)
-  UI->>DB: UPDATE events SET payload=jsonSet(payload, 'linked_unwiring_event_id', ?) WHERE id=wId
+  UI->>DB: UPDATE events SET payload.linked_unwiring_event_id=? WHERE id=wId
   DB-->>UI: 完了
   UI->>UI: 通知 identifier キャンセル
 ```
 
 ### §12.4 境界値テーブル
 
-| 項目                            | 境界   | 期待動作                                 |
-| ------------------------------- | ------ | ---------------------------------------- |
-| wire_size_mm = 0.5              | 最細   | OK                                       |
-| wire_size_mm = 4                | 最太   | OK                                       |
-| wire_size_mm = 0                | 無効   | バリデーション NG                        |
-| body_part = 不明値              | 無効   | enum にマップ、不一致はバリデーション NG |
-| 針金がけから 0 週               | 境界   | Active 状態                              |
-| 推奨 0.8 倍（例: 黒松 12.8 週） | 境界   | WarningSoon、通知                        |
-| 推奨ピッタリ                    | 境界   | WarningNow                               |
-| 推奨 1.2 倍                     | 境界   | Overdue、強調表示                        |
-| 外し記録を複数回                | 異常   | 最初の 1 件のみ linked、2 件目は警告     |
-| 外し前に針金 event を削除       | 整合性 | CASCADE 削除、関連通知キャンセル         |
+| 項目                           | 境界   | 期待動作                                   |
+| ------------------------------ | ------ | ------------------------------------------ |
+| wire_size_mm = 0.5             | 最細   | OK                                         |
+| wire_size_mm = 4               | 最太   | OK                                         |
+| wire_size_mm = 0               | 無効   | バリデーション NG                          |
+| body_part = 不明値             | 無効   | enum にマップ、不一致は NG                 |
+| scheduled_unwire_at = 過去日時 | 無効   | バリデーション NG                          |
+| scheduled_unwire_at = null     | 任意   | 通知スケジュールなし、装着期間経過のみ通知 |
+| 装着期間 6 週経過              | 境界   | 事実通知（任意機能、Settings で OFF 可能） |
+| 外し前に針金 event 削除        | 整合性 | CASCADE 削除、関連通知キャンセル           |
 
 ### §12.5 エラーフロー
 
@@ -1283,18 +893,22 @@ sequenceDiagram
 | ------------------------------ | ---------------- | ------------------------------ |
 | 通知スケジュール失敗           | ログのみ         | DB 正、起動時に再試行          |
 | 外し記録の紐付け先が存在しない | インラインエラー | 適切な wiring event を選び直す |
+| scheduled_unwire_at が過去     | インラインエラー | 修正                           |
 
 ### §12.6 受け入れ条件
 
-- [ ] 真柏に針金記録 → 12 週後に WarningSoon 通知（Pro）
-- [ ] 外し記録で該当針金レコードが Unwired 状態
-- [ ] Unwired 後は通知キャンセル、一覧から消える
+- [ ] 針金記録時に「外す予定日時」入力欄が表示される（任意入力）
+- [ ] 指定日時に通知発火、文言が「針金の指定日時です（◯月◯日設定）」
+- [ ] 装着期間 6 週経過で事実通知発火、文言が「装着期間 6 週経過しました」
+- [ ] 「外しましょう」「作業してください」等の禁止語が含まれない（CI で `i18n:audit` で検出）
+- [ ] 外し記録で該当針金レコードが Unwired 状態、通知キャンセル
 - [ ] 針金 event 削除で CASCADE、通知もキャンセル
-- [ ] Free でアラート通知なし、手動一覧のみ閲覧可
+- [ ] scheduled_unwire_at 未入力時は事実通知のみ動作
 
 ### §12.7 対応テスト
 
-- Jest: `__tests__/features/wiring/record.test.ts`, `unwire_reminder.test.ts`, `link_events.test.ts`
+- Jest: `__tests__/features/wiring/record.test.ts`, `scheduledNotification.test.ts`, `weeksElapsedNotice.test.ts`, `forbiddenWords.test.ts`
+- Maestro: `maestro/flows/wiring_with_schedule.yml`
 
 ---
 
@@ -1747,7 +1361,7 @@ backup-<ISO8601>.zip
 ### §16.4 暗号化方針
 
 - **暗号化なし**（生 JSON + 生 JPEG + 生 SQLite）
-- 位置情報は USDA Hardiness Zone レベルのみ保持（緯度経度を取得しない、constraints §1-3）→ PII リスク低
+- 位置情報を**一切保持しない**（緯度経度を取得しない、constraints §1-3）→ PII リスクなし
 - UI で「バックアップは暗号化されません。クラウドに保存する場合はパスワードで保護されたフォルダにご保管ください」を明示（19 言語で）
 - iOS の `usesNonExemptEncryption: false`（ADR-0005）を維持
 
@@ -2146,7 +1760,6 @@ flowchart TD
 │  🌱 BonsaiLog Pro          │
 ├─────────────────────────────┤
 │  ・写真 3 枚/本の制限撤廃    │
-│  ・樹種別タイミング計算      │
 │  ・CSV / PDF エクスポート    │
 │  ・年次タイムライン画像      │
 │  ・広告非表示                │
@@ -2818,7 +2431,6 @@ flowchart TD
 | BL-006 | MIGRATION_HASH_MISMATCH | F-11     | 「データが破損しています」                 |
 | BL-007 | MIGRATION_SCHEMA_FUTURE | F-11     | 「アプリを更新してください」               |
 | BL-008 | NOTIFICATION_LIMIT      | F-16     | 自動削減 + ログ                            |
-| BL-009 | CLIMATE_TZ_UNKNOWN      | F-06     | US フォールバック + ログ                   |
 | BL-010 | TRANSLATION_MISSING     | F-12     | キー文字列表示 + ログ                      |
 
 ### §24.3 Expo / RN 既知エラー
@@ -2871,21 +2483,15 @@ flowchart TD
 
 1. **作業記録の写真は盆栽写真と別カウント？**
    - 現状: §7.3.5 で「盆栽単位カウントに含める」と決定。ただし UX 実装で迂回の抜け道がないか要確認。
-2. **樹種未設定盆栽の扱い**
-   - 現状: §8.4 で「初期ガイドをスキップ、警告表示」と決定。将来 AI 非搭載のまま「簡易ガイド」を出すかは未定。
-3. **分散アルゴリズムの再帰呼び出し上限**
-   - 現状: §10.4 で「超過分を次週へ」と決定。極端ケース（全盆栽が同週）では無限再帰ではないが、UI 上の推奨表示が数ヶ月先になる可能性 → UX 検討要。
-4. **針金外し時期の warning 閾値**
-   - 現状: §12.3.4 で「推奨の 0.8 倍で通知」と決定。樹種によって閾値を変えるべきか？（速成長樹 vs 遅成長樹） → データ蓄積後に ADR。
-5. **お引っ越しの iOS↔Android クロス**
+2. **お引っ越しの iOS↔Android クロス**
    - 現状: §16.4 で「v1.0 未対応」と明記。実装上の障壁は低いが、DB ファイルが同一 SQLite 形式であることを保証すれば可能。v1.1 検討。
-6. **365 日水やり履歴の FlashList 性能**
+3. **365 日水やり履歴の FlashList 性能**
    - 現状: §9 では触れていない。365 本棒グラフのレンダリング性能要検証（VictoryNative / Recharts いずれか）。
-7. **言語切替中のメモ欄入力中ドラフト**
+4. **言語切替中のメモ欄入力中ドラフト**
    - 現状: §17 では触れていない。切替時に入力中テキストが消える可能性 → 要検証。
-8. **Lifetime 購入のオフライン挙動**
+5. **Lifetime 購入のオフライン挙動**
    - 現状: §18.3.7 で「Offline Entitlements 対象外」と明記。RC サーバダウン時に Lifetime 購入が失敗するケースの UX 要設計。
-9. **通知許可の二度拒否後の再プロンプト UX**
+6. **通知許可の二度拒否後の再プロンプト UX**
    - 現状: §21.3.1 で「設定誘導」と決定。ただし Android 13+ で `canAskAgain=false` の閾値が Android バージョンで異なる挙動 → 実機検証要。
 
 ## 付録D：本書を生かし続けるためのチェック（最短版）

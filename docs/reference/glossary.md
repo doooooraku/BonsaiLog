@@ -68,7 +68,7 @@
 
 ### BonsaiLog
 
-- 定義：樹種 × 地域気候 × 作業履歴を **鉢 1 本ずつ一生分**記録するオフライン完結の盆栽台帳アプリ
+- 定義：樹種 × 作業履歴を **鉢 1 本ずつ一生分**記録するオフライン完結の盆栽台帳アプリ
 - 同義語：なし（本アプリ名は固有名詞、翻訳禁止）
 - 禁止語：診断 / 判定 / 推奨 / べき / 危険 / 病気 / 治療 / reminder / tracker / alert（§7-2 参照）
 
@@ -84,13 +84,13 @@
 - 定義：盆栽の樹種マスタ。学名（scientific_name）を主キー的に持つ静的データ
 - 同義語：scientific_name は **学名**、common_name は **通称名**
 - 例：黒松（Pinus thunbergii）、真柏（Juniperus chinensis）、Ficus retusa（ガジュマル）
-- 最低限の属性：`id` / `scientific_name` / `family` / `climate_zone_min` / `climate_zone_max` / `default_tasks (JSON)`
-- 関連：F-03、F-06
+- 最低限の属性：`id` / `scientific_name` / `family` / `default_tasks (JSON)`
+- 関連：F-12（参考情報として 50 種、推奨計算には使わない）
 
 ### 樹種通称（Species Names）
 
 - 定義：locale × species で 19 言語の通称名を保持するテーブル
-- 関連：F-03、F-12
+- 関連：F-12
 
 ### 作業（Event / Care Event）
 
@@ -149,28 +149,24 @@
 - 例：`Chokkan`（直幹）、`Moyogi`（模様木）、`Shakan`（斜幹）、`Kengai`（懸崖）、`Han-Kengai`（半懸崖）、`Bunjin`（文人木）、`Sokan`（双幹）
 - 関連：F-01
 
-### USDA Hardiness Zone（地域気候帯）
+### 「気遣い型」ポップアップ（Caring Popup）
 
-- 定義：米国農務省の植物耐寒性ゾーン（1a〜13b）。BonsaiLog では **位置情報の唯一の保存形式**
-- 同義語：気候帯、Zone、ゾーン
-- 例：東京 = `9a`、ニューヨーク = `7a`
-- 関連：F-06
-
-### 半球（Hemisphere）
-
-- 定義：作業タイミングの季節判定に使用。`north` / `south` / `tropical`
-- 関連：F-06
-
-### 初期ガイド（Initial Guide）
-
-- 定義：盆栽登録時に樹種から推奨作業スケジュールの雛形を生成する機能
-- 関連：F-03
-
-### 分散（Reminder Distribution）
-
-- 定義：複数盆栽の作業日が同日に集中しないよう、日付を分散させるアルゴリズム
+- 定義：ユーザーが 1 日に 6 件目の予定を登録しようとした時に表示する確認ポップアップ
+- 文言：「この日は既に 5 件の予定があります。無理のない範囲で進めてくださいね」
+- 設定：デフォルト ON、Settings → 通知設定で OFF 可能（盆栽園プロ等の業務利用者向け抑制）
 - 関連：F-05
-- Free 版：簡易版アルゴリズム / Pro 版：完全版
+
+### 装着期間経過通知（Weeks Elapsed Notice）
+
+- 定義：針金がけ event の装着期間が一定週数（既定 6 週）経過した時の事実通知
+- 文言：「装着期間 6 週経過しました」（推奨ではなく事実、「外しましょう」等の命令禁止）
+- 関連：F-07
+
+### 外し予定日時（Scheduled Unwire At）
+
+- 定義：針金がけ event のペイロードに含まれる「ユーザーが任意で指定した外す予定日時」（ISO UTC、`scheduled_unwire_at` フィールド）
+- 通知文言：「針金の指定日時です（◯月◯日設定）」（推奨ではなく事実）
+- 関連：F-07
 
 ### お引っ越し機能（Device Migration）
 
@@ -217,11 +213,6 @@
 - 定義：`events.note` 全文検索用 SQLite FTS5 仮想テーブル（trigram tokenizer）
 - 関連：F-09
 
-### 推奨度（Recommendation Level）
-
-- 定義：作業のタイミングに対する強度。`strongly_recommended` / `recommended` / `optional` / `avoid` の 4 段階
-- 関連：F-03
-
 ### 針金: 装着中 / クローズ
 
 - 定義：F-07 で針金がけイベントを管理する 2 状態
@@ -239,8 +230,7 @@
 - 不変条件（要点）：
   - 樹木登録は **無制限**
   - 写真は **1 樹あたり 3 枚まで**
-  - 樹種別作業タイミング計算 / CSV / PDF / QR 印刷は **不可**
-  - 分散アルゴリズムは **簡易版**
+  - CSV / PDF / QR 印刷は **不可**
   - お引っ越し機能（F-11）は **可**
   - 広告：ホーム下部にバナーを **常時表示**
 
@@ -248,7 +238,7 @@
 
 - 定義：サブスクリプション or 買い切り（Lifetime）で購入済みの状態
 - 不変条件（要点）：
-  - Free の制限を **全て解除**（写真無制限、CSV/PDF/QR 可、分散完全版）
+  - Free の制限を **全て解除**（写真無制限、CSV/PDF/QR 可）
   - 広告は **完全非表示**（広告コンポーネント自体をマウントしない）
 
 ### サブスクリプション（Subscription）
