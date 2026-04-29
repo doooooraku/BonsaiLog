@@ -58,7 +58,9 @@ On any new session, Claude Code should:
 1. Read `AGENTS.md` (root) for core project rules
 2. Read `.claude/CLAUDE.md` (this file) for Claude Code extensions
 3. Read recent `docs/reference/tasks/lessons.md` entries for project-specific learnings
-4. If Plan mode: read `docs/reference/constraints.md` + relevant ADRs
+4. **Read `.claude/recurrence-prevention.md` for behavioral rules (R-1〜R-12)** — 必読、行動 lesson
+5. **Read `docs/reference/personas.md` if exists** — 議論時にペルソナ評価で使用
+6. If Plan mode: read `docs/reference/constraints.md` + relevant ADRs
 
 ---
 

@@ -42,6 +42,28 @@ jobs:
       - name: Config check (verify:config)
         run: pnpm verify:config
 
+  docs-cleanliness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Detect historical leftovers in docs (R-2)
+        run: |
+          # 仕様書（explanation / reference / how-to）に取り消し線・削除お知らせブロックが残っていないか検出
+          # ADR / lessons / reports / personas / recurrence-prevention は除外（履歴を残してよい場所）
+          LEFTOVERS=$(grep -rnE "~~F-[0-9]+~~|~~.+~~ — \*\*ADR-[0-9]+|削除お知らせ|履歴のため残置|旧 F-[0-9]+ 仕様" \
+            docs/explanation docs/reference/basic_spec.md docs/reference/functional_spec.md \
+            docs/reference/constraints.md docs/reference/glossary.md docs/how-to \
+            2>/dev/null || true)
+          if [ -n "$LEFTOVERS" ]; then
+            echo "ERROR: 仕様書に削除履歴の痕跡が残っています。ADR にのみ集約してください (R-2)："
+            echo "$LEFTOVERS"
+            echo ""
+            echo "解決方法: 仕様書から取り消し線・削除お知らせブロックを完全削除し、履歴は ADR ファイルにのみ残す"
+            exit 1
+          fi
+          echo "✓ 仕様書に削除履歴の痕跡なし"
+
   template-check:
     runs-on: ubuntu-latest
     steps:
