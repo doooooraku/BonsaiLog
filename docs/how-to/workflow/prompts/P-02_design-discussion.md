@@ -8,17 +8,11 @@
 
 ## 使い方
 
-```
 /discuss
-
-{以下のテンプレートを貼り付け、{変数} を置換する}
-```
-
-## テンプレート
 
 ### 議題
 
-{機能名} のアーキテクチャを決めたい。
+本アプリの機能のアーキテクチャを決めたい。
 
 ### 背景
 
@@ -33,17 +27,20 @@
    - ライブラリのライセンス料は発生しないか？
    - 外部 API の従量課金はあるか？ あるなら月額上限の見積もり
    - **「無料枠の範囲内だから OK」は不可**。無料枠が変更/廃止された場合のリスクも評価すること
-   - クラウドサービス依存がある場合、セルフホスト可能か？
+   - コスト(金)はかからないか
 3. **依存の方向**: 既存レイヤー構造（coding_rules.md）にどう組み込むか？
 4. **テスタビリティ**: ユニットテストが書ける設計か？
 5. **エッジケース**: {この機能固有のリスク}
 
 ### 参照すべきドキュメント
 
-- `{PROJECT_ROOT}/docs/reference/constraints.md`
-- `{PROJECT_ROOT}/docs/reference/basic_spec.md`
-- `{PROJECT_ROOT}/docs/how-to/development/coding_rules.md`
-- `{PROJECT_ROOT}/docs/reference/tasks/lessons.md`
+- `/docs/explanation/product_strategy.md`
+- `/docs/reference/basic_spec.md`
+- `/docs/reference/functional_spec.md`
+- `/docs/reports/product-strategy-research-v1.md`
+- `/docs/reports/product-strategy-research-v2.md`
+- `/docs/reports/basic-spec-research.md`
+- `/docs/reports/functional-spec-research.md`
 
 ### 期待するアウトプット
 
