@@ -26,14 +26,14 @@
 - 1 sub-agent = 1 task
 - Use parallel sub-agents for independent queries (up to 5 concurrent)
 
-**Project subagents** (installed at `~/.claude/agents/` via `setup.sh`):
+**Project subagents** (installed at `~/.claude/agents/`):
 
 | Agent              | Tools                  | Model | When to use                                               |
 | ------------------ | ---------------------- | ----- | --------------------------------------------------------- |
 | `eas-build-doctor` | Bash, Read, Glob, Grep | haiku | Before any local/remote EAS build — env validation        |
 | `commit-helper`    | Bash, Read             | haiku | Drafting Conventional Commits messages with user approval |
 
-> **Note**: Claude Code currently only loads subagents from `~/.claude/agents/` (user scope), not from `<repo>/.claude/agents/`. The template ships master copies under `.claude/agents/` and `setup.sh` installs them with `cp -n` (existing user customizations are preserved). Verified 2026-04-11.
+> **Note**: Claude Code currently only loads subagents from `~/.claude/agents/` (user scope), not from `<repo>/.claude/agents/`. Master copies are kept under `.claude/agents/` for reference; copy them with `cp -n .claude/agents/*.md ~/.claude/agents/` if you need to (re)install. Verified 2026-04-11.
 
 ### 3. Self-Improvement Loop
 

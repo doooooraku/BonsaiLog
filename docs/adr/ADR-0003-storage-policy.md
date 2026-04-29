@@ -1,8 +1,8 @@
 # ADR-0003: データ保存方針（AsyncStorage vs SecureStore の使い分け）
 
-- Status: Proposed
-- Date: YYYY-MM-DD
-- Deciders: @your-handle
+- Status: Accepted
+- Date: 2026-04-29
+- Deciders: @doooooraku
 - Related: constraints
 
 ---

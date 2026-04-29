@@ -1,8 +1,8 @@
 # ADR-0006: アプリ内レビュー促進のタイミング設計
 
-- Status: Proposed
-- Date: YYYY-MM-DD
-- Deciders: @your-handle
+- Status: Accepted
+- Date: 2026-04-29
+- Deciders: @doooooraku
 - Related: constraints / product strategy
 
 ---

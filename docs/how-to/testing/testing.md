@@ -90,7 +90,7 @@ pnpm test:e2e
 
 ### 3.1.1 セットアップ後の確認
 
-- `maestro/flows/smoke.yml` の `appId` は `setup.sh` 実行時に自動で置換されます
+- `maestro/flows/smoke.yml` の `appId` は BonsaiLog の bundle ID（`com.doooooraku.bonsailog`）に置換済み
 - E2Eで使う `testID` が実装側にあるか確認する（無ければ追加）
 
 ### 3.2 ここが注意（詰まりやすい）

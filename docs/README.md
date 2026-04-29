@@ -41,7 +41,6 @@
 
 **ルート**（テンプレート全体に関わる）
 
-- `docs/how-to/template-usage-guide.md` — テンプレートの使い方完全ガイド（Phase 0〜4）
 - `docs/how-to/quickstart.md` — プロジェクトの初期セットアップ手順
 
 **development/**（開発時に頻繁に参照）
