@@ -1,8 +1,8 @@
 # ADR-0002: 収益モデルの選択（広告 + サブスクリプション）
 
-- Status: Proposed
-- Date: YYYY-MM-DD
-- Deciders: @your-handle
+- Status: Accepted
+- Date: 2026-04-29
+- Deciders: @doooooraku
 - Related: constraints / reference
 
 ---

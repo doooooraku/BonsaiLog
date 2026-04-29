@@ -29,8 +29,18 @@ jobs:
         run: cp .env.example .env
       - name: Audit dependencies
         run: pnpm audit --audit-level=high || true
-      - name: Verify
-        run: pnpm verify
+      - name: Lint (verify:lint)
+        run: pnpm verify:lint
+      - name: Type check (verify:type-check)
+        run: pnpm verify:type-check
+      - name: Format check (verify:format)
+        run: pnpm verify:format
+      - name: Tests (verify:test)
+        run: pnpm verify:test
+      - name: i18n check (verify:i18n)
+        run: pnpm verify:i18n
+      - name: Config check (verify:config)
+        run: pnpm verify:config
 
   template-check:
     runs-on: ubuntu-latest

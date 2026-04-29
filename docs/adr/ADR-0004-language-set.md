@@ -1,8 +1,8 @@
 # ADR-0004: ローカライズ範囲の決定（19 言語、RTL 除外）
 
-- Status: Proposed
-- Date: YYYY-MM-DD
-- Deciders: @your-handle
+- Status: Accepted
+- Date: 2026-04-29
+- Deciders: @doooooraku
 - Related: constraints / reference
 
 ---

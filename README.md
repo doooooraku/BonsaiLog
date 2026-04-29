@@ -1,17 +1,13 @@
-# App Factory テンプレート
+# BonsaiLog（盆栽台帳）
 
-Expo SDK 55 + React Native 0.83.4 の全部入りテンプレートです。
+Expo SDK 55 + React Native 0.83.4 で作る、樹種 × 地域気候 × 作業履歴を鉢 1 本ずつ一生分記録するオフライン完結の盆栽台帳アプリ。
 
-> **このテンプレートを使う方へ** セットアップの手順は [TEMPLATE_README.md](TEMPLATE_README.md) をご覧ください。
+> プロダクト戦略は `docs/explanation/product_strategy.md`、機能仕様は `docs/reference/basic_spec.md` / `docs/reference/functional_spec.md` を参照。
 
 ## クイックスタート
 
 ```bash
-# 1. このテンプレートから新しいリポジトリを作成（GitHub の「Use this template」ボタン）
-# 2. クローンしてセットアップスクリプトを実行
-bash setup.sh
-
-# 3. 開発を始める
+pnpm install
 pnpm dev
 ```
 

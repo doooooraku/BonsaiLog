@@ -17,7 +17,13 @@
     "config:check": "node scripts/config-check.mjs",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
-    "verify": "pnpm lint && pnpm type-check && pnpm format:check && pnpm test && pnpm i18n:check && pnpm config:check",
+    "verify:lint": "pnpm lint",
+    "verify:type-check": "pnpm type-check",
+    "verify:format": "pnpm format:check",
+    "verify:test": "pnpm test",
+    "verify:i18n": "pnpm i18n:check",
+    "verify:config": "pnpm config:check",
+    "verify": "pnpm verify:lint && pnpm verify:type-check && pnpm verify:format && pnpm verify:test && pnpm verify:i18n && pnpm verify:config",
     "prepare": "git config core.hooksPath .githooks",
     "prebuild": "expo prebuild",
     "build:android": "expo prebuild --platform android && cd android && ./gradlew bundleRelease",
@@ -43,19 +49,25 @@
     "@tamagui/lucide-icons": "1.144.3",
     "@tamagui/portal": "1.144.3",
     "@tanstack/react-query": "^5.90.10",
+    "date-fns": "^4.1.0",
     "dotenv": "^17.4.2",
     "expo": "~55.0.9",
     "expo-build-properties": "^55.0.10",
     "expo-constants": "~55.0.9",
     "expo-dev-client": "~55.0.19",
+    "expo-file-system": "^55.0.17",
     "expo-font": "~55.0.4",
     "expo-haptics": "~55.0.9",
     "expo-image": "~55.0.6",
+    "expo-image-manipulator": "^55.0.15",
+    "expo-image-picker": "^55.0.19",
     "expo-linking": "~55.0.9",
     "expo-localization": "~55.0.9",
     "expo-notifications": "^55.0.14",
+    "expo-print": "^55.0.13",
     "expo-router": "~55.0.8",
     "expo-secure-store": "^55.0.9",
+    "expo-sharing": "^55.0.18",
     "expo-splash-screen": "~55.0.13",
     "expo-sqlite": "^55.0.11",
     "expo-status-bar": "~55.0.4",
@@ -76,6 +88,7 @@
     "react-native-web": "~0.21.0",
     "react-native-webview": "^13.16.0",
     "react-native-worklets": "0.7.2",
+    "react-native-zip-archive": "7.0.2",
     "tamagui": "1.144.3",
     "zustand": "^5.0.12"
   },
@@ -119,6 +132,11 @@
   "packageManager": "pnpm@10.23.0",
   "engines": {
     "node": ">=22.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "react-native-zip-archive": "7.0.2"
+    }
   },
   "private": true
 }

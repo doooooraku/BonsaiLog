@@ -1,8 +1,8 @@
 # ADR-0005: iOS 暗号化エクスポートコンプライアンス（usesNonExemptEncryption: false）
 
-- Status: Proposed
-- Date: YYYY-MM-DD
-- Deciders: @your-handle
+- Status: Accepted
+- Date: 2026-04-29
+- Deciders: @doooooraku
 
 ---
 

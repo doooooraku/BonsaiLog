@@ -48,49 +48,73 @@
 
 ### 1-1. ローカル志向（Local-first）
 
-<!-- TODO: Fill in your app's specific details -->
-
-- BonsaiLog は **ローカル志向のアプリ** とする（自前バックエンドは持たない）
+- BonsaiLog は **完全ローカル保存のオフライン完結アプリ** とする（自前バックエンドは持たない）
 - ユーザー登録（メール/パスワード）を持たない
-- ネットワークは “必要最小限” に限定する（課金/広告など）
+- ネットワークは “必要最小限” に限定する（課金/広告/AdMob UMP 同意取得など）
+- クラウド同期は v1.x で **採用しない**（非ゴール、§4 参照）
 
 > 変更する場合：必ず ADR を起票し、プライバシー/法務/テスト/ストア申請まで波及する前提で扱う。
 
 ### 1-2. データ保存の原則（端末内のみ）
 
-<!-- TODO: Fill in your app's data model -->
-
-- ドメインデータ：SQLite に保存する
-- Settings / ProState：SecureStore（端末の暗号化ストレージ）に保存する
+- ドメインデータ（盆栽 / 樹種 / 作業履歴 / 写真メタ / リマインダー / タグ）：**SQLite** に保存する
+- Settings / ProState（言語上書き / Free 制限カウンタ等）：**AsyncStorage** に保存する（参照頻度高、暗号化不要）
+- 機微情報（RevenueCat 関連トークン等、必要時のみ）：**SecureStore**（端末の暗号化ストレージ）
+- 写真ファイル：`Paths.document/photos/<bonsaiId>/<photoId>.jpg` に保存。**DB には相対パスのみを格納**（絶対パス禁止）
+- 日時：**UTC ISO 8601 TEXT** + `tz_offset_min INTEGER` 形式で保存
+- 主キー：**UUID v4 TEXT**（連番禁止）
+- SQLite 起動時に `PRAGMA foreign_keys = ON` を必ず有効化
 - v1.x は「アプリ内の全データ削除」ボタンを持たない（原則アンインストールで全削除）
 
 ### 1-3. 個人情報（PII）をアプリとして取得しない
 
-- 氏名/メール/住所/電話など “直接個人が特定できる情報” をアプリ要件として取得しない
+- 氏名/メール/住所/電話/正確な GPS 座標など “直接個人が特定できる情報” をアプリ要件として取得しない
+- 位置情報は **USDA Hardiness Zone（地域コード）レベルのみ**保持する（緯度経度は取得しない）
 - ログ・デバッグ出力に個人特定情報を含めない
+
+### 1-4. AI 非搭載原則（「診断しない、記録する」）
+
+- AI 画像同定 / AI 病害虫診断 / AI 作業提案などの AI 機能を **搭載しない**
+- アプリの立ち位置は「**台帳**（記録するもの）」であり、「**判定するもの**」ではない
+- これに違反する UI 文言（後述 §5-2 の禁止語）は CI で検出して落とす
 
 ---
 
 ## 2. 収益モデルとプラン（Free / Pro）
 
-### 2-1. 収益の柱（2本だけ）
+### 2-1. 収益の柱（3本）
 
-- 収益は **サブスクリプション（Pro）** と **広告（Free向けバナー）** の2本柱
+- 収益は **3 本柱**:
+  1. **サブスクリプション（Pro 月額 / 年額）** — RevenueCat 経由
+  2. **買切（Lifetime）** — 一括購入で永続 Pro
+  3. **バナー広告（Free 向け、ホーム下部のみ）** — AdMob
 - **全画面広告（インタースティシャル）は採用しない**（体験劣化が大きい）
+- **リワード広告も採用しない**
 
 ### 2-2. Free / Pro の不変差分（ここを崩さない）
 
-- Free：習慣は **3つまで**
-- Pro：習慣は **無制限**
-- Free：ホーム画面下部にバナー広告を表示（常時）
-- Pro：広告は **一切表示しない**（広告コンポーネントをマウントしない）
-- 課金は RevenueCat 経由で行い、**復元（Restore purchases）を提供**する
+| 機能                          | Free             | Pro            |
+| ----------------------------- | ---------------- | -------------- |
+| 樹木登録数                    | **無制限**       | 無制限         |
+| 写真（1 樹あたり）            | **3 枚まで**     | 無制限         |
+| 樹種別作業タイミング計算      | 不可             | 可             |
+| CSV / PDF エクスポート        | 不可             | 可             |
+| QR コード印刷（樹に貼る用）   | 不可             | 可             |
+| リマインダー分散アルゴリズム  | 簡易版           | 完全版         |
+| お引っ越し機能（F-11）        | 可               | 可             |
+| 広告                          | ホーム下部バナー | **完全非表示** |
+| 課金復元（Restore purchases） | -                | 提供必須       |
 
-### 2-3. AdMob（次回以降はマスト）
+> 上記の数値（写真 3 枚 等）を変更する場合は ADR 必須。
 
-- 次回リリース以降：Free に **バナー広告（AdMob）を必ず組み込む**（Pro は常に広告ゼロ）
+### 2-3. AdMob 運用ルール
+
 - 開発中は **テスト広告**を使う（本番広告を開発で表示しない）
-- 本番の広告ユニットIDは **ソースへ直書きしない**（ビルド設定/Secrets/環境注入）
+- 本番の広告ユニット ID は **ソースへ直書きしない**（ビルド設定 / Secrets / 環境注入）
+- バナーは **アダプティブバナー**（固定サイズ禁止）
+- 広告周囲に **16dp 以上の余白**、X ボタンは **48dp 以上**のタッチ領域
+- センシティブ広告カテゴリは **全拒否**
+- UMP（同意取得）を実装する（GDPR / CCPA 対応）
 
 ---
 
@@ -98,17 +122,40 @@
 
 ### 3-1. 対応言語（v1.x）
 
-- v1.x は **18言語対応**（アラビア語は除外）
-- レイアウトは **LTR のみ**（RTL はサポート外）
+- v1.x は **19 言語対応**（Repolog アプリの実装に合わせる）
+- レイアウトは **LTR のみ**（RTL はサポート外、§4 非ゴール）
 
-対象言語（v1.0 ベース）：
+対象言語（v1.0 から全 19 言語フル展開）:
 
-- en, ja, fr, es, de, it, pt, ru, zhHans, zhHant, ko, th, id, vi, hi, tr, pl, sv
+| #   | コード    | 言語         |
+| --- | --------- | ------------ |
+| 1   | `en`      | 英語         |
+| 2   | `ja`      | 日本語       |
+| 3   | `fr`      | フランス語   |
+| 4   | `es`      | スペイン語   |
+| 5   | `de`      | ドイツ語     |
+| 6   | `it`      | イタリア語   |
+| 7   | `pt`      | ポルトガル   |
+| 8   | `ru`      | ロシア語     |
+| 9   | `zh-Hans` | 簡体字中国語 |
+| 10  | `zh-Hant` | 繁体字中国語 |
+| 11  | `ko`      | 韓国語       |
+| 12  | `hi`      | ヒンディー   |
+| 13  | `id`      | インドネシア |
+| 14  | `th`      | タイ語       |
+| 15  | `vi`      | ベトナム語   |
+| 16  | `tr`      | トルコ語     |
+| 17  | `nl`      | オランダ語   |
+| 18  | `pl`      | ポーランド   |
+| 19  | `sv`      | スウェーデン |
+
+> アラビア語（ar）は **対応しない**（RTL 必須化を回避するため、§4 非ゴール）。
 
 ### 3-2. 言語コードの正（規格準拠）
 
 - 言語タグは **BCP 47 / IANA Language Subtag Registry** を正とする
 - オランダ語は **`nl`** が正（Dutch / Flemish）
+- 中国語は `zh-Hans` / `zh-Hant`（簡体 / 繁体を区別）
 
 ---
 
@@ -116,19 +163,48 @@
 
 次は v1.0〜v1.x のスコープ外として扱う（「ある前提」で仕様を書かない）。
 
-- ウィジェット（ホームウィジェット）
-- アプリアイコン変更（Pro限定アイコン等）
-- RTL 対応
-- アプリ内の OSS ライセンス一覧画面（必要なら別途方針決定）
+1. **AI 画像同定**（樹種を写真から自動判定する）
+2. **AI 病害虫診断**（葉の写真から症状を判定する）
+3. **AI 作業提案**（次にやるべきことをレコメンドする）
+4. **クラウド同期 / マルチデバイス自動同期**（Local-first 哲学）
+5. **ユーザー間通信 / コミュニティ機能**（SNS, タイムライン等）
+6. **販売マーケットプレイス**（盆栽売買）
+7. **農薬推奨 / 治療提案**（医薬品的助言禁止）
+8. **自動判定型「水やりリマインダー」**（記録ベースの目安提示まで）
+9. **リアルタイム通信 / ライブ配信**
+10. **温湿度センサー直結制御 / IoT 連携**
+11. **SNS 直接投稿ボタン**（標準 Share Sheet で代替）
+12. **リワード広告 / インタースティシャル広告**（バナーのみ）
+13. **RTL 完全対応 / アラビア語対応**（v1.x で全期間非ゴール）
+14. **ホームウィジェット**（iOS / Android）
+15. **Apple Watch / Wear OS 連携**
+16. **アプリ内の OSS ライセンス一覧画面**（必要なら別途方針決定）
 
 ---
 
 ## 5. セキュリティ / 秘密情報（絶対ルール）
 
+### 5-1. 秘密情報の取り扱い
+
 - 課金情報（カード情報等）はストアが管理し、アプリは保持しない
-- RevenueCat APIキー / AdMob 広告ユニットID 等は **直書き禁止**
+- RevenueCat API キー / AdMob 広告ユニット ID 等は **直書き禁止**（ビルド設定 / Secrets / 環境注入）
 - 通信は HTTPS（TLS）前提（HTTP は使用しない）
 - ログに個人特定情報を出さない
+- バックアップ ZIP（F-11 お引っ越し機能）は **暗号化なし**（位置情報は Zone レベルのため、ADR-0007）。UI で「クラウド保存時はユーザー責任」を明示する
+
+### 5-2. UI 文言の禁止語 / 許可語
+
+「診断しない、記録する」原則（§1-4）を UI レベルで強制するため、以下を CI（`pnpm i18n:audit`）で検出して落とす。
+
+**禁止語**:
+
+- 診断 / 判定 / 推奨 / べき / 危険 / 病気 / 治療
+- reminder / tracker / alert（医療的・命令的ニュアンス）
+
+**許可語（推奨）**:
+
+- 記録 / 履歴 / 整理 / 参考 / 目安 / テンプレート / 台帳
+- log / journal / record / note
 
 ---
 
@@ -136,6 +212,7 @@
 
 - UI の「見た目の正」は **Figma** とする（仕様書は “何ができるか/できないか” の合意まで）
 - 仕様書にピクセル単位の細部を固定記述しない（Figma へ寄せる）
+- ダークモード / 屋外モード（高輝度モード）を提供する（F-15）
 
 ---
 
@@ -151,12 +228,53 @@
 
 ---
 
-## 8. 参照リンク（一次情報）
+## 8. 機能 ID と仕様書連携（ID 一覧）
+
+仕様書・Issue・PR で参照する機能 ID は以下に固定する（詳細は `glossary.md` および `basic_spec.md` §F-XX）。
+
+| ID   | 機能名                                        |
+| ---- | --------------------------------------------- |
+| F-01 | 盆栽の登録・管理                              |
+| F-02 | 作業履歴記録（13 種のイベント）               |
+| F-03 | 樹種別作業タイミング計算（初期ガイド）        |
+| F-04 | 水やり履歴の可視化                            |
+| F-05 | リマインダー分散                              |
+| F-06 | 地域気候・半球対応（USDA Hardiness Zone）     |
+| F-07 | 針金がけ記録・外し時期表示                    |
+| F-08 | 写真管理（年次タイムライン）                  |
+| F-09 | 検索・タグ                                    |
+| F-10 | エクスポート（CSV / PDF）                     |
+| F-11 | お引っ越し機能（ZIP + Share Sheet、ADR-0007） |
+| F-12 | 多言語対応（19 言語）                         |
+| F-13 | 課金（サブスク + 買切）                       |
+| F-14 | Home 下部バナー広告                           |
+| F-15 | ダークモード / 屋外モード                     |
+| F-16 | ローカル通知                                  |
+
+### 作業イベント種別（13 種、F-02）
+
+`watering` / `pruning` / `wiring` / `unwiring` / `repotting` / `fertilizing` / `pest_control` / `leaf_trimming` / `defoliation` / `deshoot` / `candle_cut` / `moss_care` / `position_change`
+
+---
+
+## 9. テスト / 品質ゲート
+
+- カバレッジ閾値は `package.json` の Jest 設定を正とする
+- F-11 のような **2 端末 + クロス OS 転送**を要する機能は、E2E（Maestro）では画面到達のみ。**手動 E2E 必須**を Issue / PR で明示する
+- CI 必須ゲート: lint / type-check / test / i18n:check / config:check（`pnpm verify` で一括、CI では個別 step に分割）
+
+---
+
+## 10. 参照リンク（一次情報）
 
 - Expo SecureStore: https://docs.expo.dev/versions/latest/sdk/securestore/
 - Expo SQLite: https://docs.expo.dev/versions/latest/sdk/sqlite/
+- Expo FileSystem (新 API): https://docs.expo.dev/versions/latest/sdk/filesystem/
+- Expo Sharing: https://docs.expo.dev/versions/latest/sdk/sharing/
 - RevenueCat Restore Purchases: https://www.revenuecat.com/docs/getting-started/restoring-purchases
-- react-native-google-mobile-ads（テストID等）: https://docs.page/invertase/react-native-google-mobile-ads/displaying-ads
+- react-native-google-mobile-ads（テスト ID 等）: https://docs.page/invertase/react-native-google-mobile-ads/displaying-ads
+- react-native-zip-archive: https://www.npmjs.com/package/react-native-zip-archive
+- USDA Plant Hardiness Zone Map: https://planthardiness.ars.usda.gov/
 - GitHub Branch protection: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/managing-a-branch-protection-rule
 - IANA Language Subtag Registry: https://www.iana.org/assignments/language-subtag-registry
 - RFC 5646 (BCP47): https://datatracker.ietf.org/doc/html/rfc5646
