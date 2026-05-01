@@ -41,13 +41,32 @@
 - Write rules to prevent repeating the same mistakes
 - Review lessons at session start
 
-### 4. Discussion Mode
+### 4. Discussion Mode (議論モード必須チェックリスト)
 
 When the user asks to discuss / explore / plan (not implement):
 
 - Use `/discuss` Skill
 - Do NOT write code until explicitly approved
 - Multiple expert viewpoints + bias removal + simulation
+
+**議論開始前の必須チェック (R-13/R-14/R-16/R-17/R-20)**:
+
+- [ ] **(R-13)** 議論冒頭で「本議論で **N 件質問**します、想定 **M ラウンド** です」を予告
+- [ ] **(R-14)** ユーザーが「わからない」「専門用語多い」と発言したら、以降の応答で専門用語に「やさしい言い換え」併記強制
+- [ ] **(R-16)** Design / モックアップ参照時は「Design は下書き、ADR が正」を冒頭明示
+- [ ] **(R-20)** 「念のため」「再検証」「再議論」プロンプト時は議論開始前に既存 ADR / functional_spec の該当セクションを必ず Read
+- [ ] **(R-7)** 議論深さ 3 ラウンド以上、(R-8) フラット視点専門家 1 名以上、(R-10) 4 ペルソナ評価必須
+- [ ] **(R-17)** 「全部推薦で OK」回答受領しても即時実行禁止、TaskCreate → 計画提示 → 承認 → 実行 の 4 段階強制
+
+**ファイル編集時の必須チェック (R-18 / R-1 自動化)**:
+
+- [ ] **(R-18)** Edit / Write 前に必ず Read。`.claude/hooks/check-read-before-edit.mjs` が PreToolUse で block する
+- [ ] **(R-1)** 一括編集後 `pnpm docs:lint` で取り消し線 / Codex 言及 / ADR 連番チェック (PostToolUse hook で自動 grep)
+
+**Engram 保存時の制約 (R-19)**:
+
+- [ ] **(R-19)** mem_save の content は 1KB (1024 文字) 以内、長文は ADR / Issue 本文に書く
+- [ ] **(R-15)** mem_save が 30 秒以上応答ない場合はハング扱い、ユーザーに即時報告
 
 ---
 
@@ -57,8 +76,8 @@ On any new session, Claude Code should:
 
 1. Read `AGENTS.md` (root) for core project rules
 2. Read `.claude/CLAUDE.md` (this file) for Claude Code extensions
-3. Read recent `docs/reference/tasks/lessons.md` entries for project-specific learnings
-4. **Read `.claude/recurrence-prevention.md` for behavioral rules (R-1〜R-12)** — 必読、行動 lesson
+3. Read `docs/reference/tasks/lessons.md` (索引) — 必要な領域のみ `lessons/<domain>.md` を Read
+4. **Read `.claude/recurrence-prevention.md` for behavioral rules (R-1〜R-20)** — 必読、行動 lesson
 5. **Read `docs/reference/personas.md` if exists** — 議論時にペルソナ評価で使用
 6. If Plan mode: read `docs/reference/constraints.md` + relevant ADRs
 
@@ -87,10 +106,11 @@ Implementation Skills (Claude Code 単独運用、2026-05-01 から両系統 Ski
 ## Commands
 
 - `pnpm dev` — start Metro
-- `pnpm verify` — full check (lint + type-check + format + test + i18n + config)
+- `pnpm verify` — full check (lint + type-check + format + test + i18n + config + **docs:lint**)
 - `pnpm test` — Jest unit tests
 - `pnpm test:e2e` — Maestro E2E
 - `pnpm build:android:apk:local` — local APK build (`SKIP_KEYS=1` for first build)
 - `pnpm build:android:aab:local` — local AAB build for production
 - `pnpm i18n:check` — verify all locale keys are present
+- `pnpm docs:lint` — Codex 言及残存 / ADR 番号歯抜け / 取り消し線 / lessons.md 肥大化チェック
 - `pnpm metadata:check` — validate `fastlane/metadata/`
