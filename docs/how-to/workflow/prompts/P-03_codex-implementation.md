@@ -1,9 +1,10 @@
-# P-03: Codex 実装指示テンプレート
+# P-03: 実装指示テンプレート (Claude Code 単独運用)
 
-- **渡す先**: Codex（Issue 本文の `## Context for Codex` セクションとして記載）
-- **タイミング**: Claude Code が `/plan` で Issue を作成した後
-- **目的**: Codex が迷わず正しい実装ができるだけの情報を渡す
+- **渡す先**: Claude Code 自身（次セッション or 別ワーカー、Issue 本文の `## Context` セクションとして記載）
+- **タイミング**: `/plan` で Issue を作成した後
+- **目的**: 迷わず正しい実装ができるだけの情報を渡す
 - **制約**: Issue 本文は **2000 文字以内**。詳細は「読むべきファイル」に委ねる
+- **2026-05-01 変更**: Codex 不採用、Claude Code 単独運用（ファイル名 `P-03_codex-implementation.md` は履歴互換のため維持）
 
 ---
 
@@ -71,7 +72,7 @@ Openになっている以下リポジトリのIssueに対して
 2. {次の層}（例: `src/db/schema.ts` にマイグレーション追加）
 3. {リポジトリ/サービス層}
 4. {テスト}（例: `__tests__/xxx.test.ts` を作成）
-5. UI 層（`app/` 配下）は **Codex の担当外**。ロジックのみ実装する
+5. UI 層（`app/` 配下）も Claude Code が実装する（Codex 不採用、Claude Code 単独運用）
 
 ### GitHub Flow（git_workflow.md 準拠）
 

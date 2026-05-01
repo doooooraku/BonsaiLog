@@ -42,7 +42,7 @@ adb exec-out screencap -p > screenshot_$(date +%Y%m%d_%H%M%S).png
 問題を発見したら **P-08（実機バグトリアージ）** に移行する。
 
 P-08 の Phase 1（Claude Code による解析）を開始し、
-根本原因を特定してから Codex に修正を指示すること。
+根本原因を特定してから自分で修正を実装すること（Claude Code 単独運用）。
 
 ## 4. 結果の記録
 

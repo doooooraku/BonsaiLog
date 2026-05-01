@@ -37,14 +37,13 @@
 BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリース」** のサイクルで回し続け、
 **ドキュメントが古くならない（＝仕様が死なない）**状態を作る。
 
-## 0.5. 役割分担: Claude Code / Codex（重要）
+## 0.5. 役割: Claude Code 単独運用（2026-05-01 確定）
 
-このプロジェクトは **Claude Code + Codex の 2 エージェント** で回す前提です。
-各 W ステップの担当は以下の通り。
+このプロジェクトは **Claude Code 単独** で全 W ステップを回す。Codex は使用しない。
 
 ```
 ┌──────────────────────────────────────┐
-│  Claude Code（計画 + レビュー）       │
+│  Claude Code（計画 + 実装 + レビュー）│
 │                                       │
 │  W-00 フィードバック収集              │
 │  W-01 課題の発見                      │
@@ -52,36 +51,24 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
 │  W-03 優先度付け                      │
 │  W-04 ブランチ準備                    │
 │  W-05 仕様の結論 + AC 定義            │
-│  W-05.5 Codex 引き継ぎ                │
-└──────────────────────────────────────┘
-                    ↓ Issue + Context for Codex
-┌──────────────────────────────────────┐
-│  Codex（実装）                        │
-│                                       │
+│  W-05.5 セルフ Context メモ           │
 │  W-06 実装                            │
 │  W-07 テスト作成                      │
 │  W-08 ローカル検証 (pnpm verify)      │
-│  W-08a CI 失敗リカバリ（2 回まで）   │
+│  W-08a CI 失敗リカバリ                │
 │  W-09 コミット + push                 │
 │  W-10 PR 作成                         │
-└──────────────────────────────────────┘
-                    ↓ PR URL
-┌──────────────────────────────────────┐
-│  Claude Code（レビュー + マージ）    │
-│                                       │
-│  W-10.5 PR レビュー（/review-pr）    │
+│  W-10.5 PR セルフレビュー（/review-pr）│
 │  W-11 マージ（人間承認 or auto-merge）│
 │  W-11.5 仕様棚卸し（マイルストーン時）│
 │  W-12 リリース（週次 or ms 完了時）  │
 └──────────────────────────────────────┘
 ```
 
-対応する Skill:
+対応する Skill (Claude Code が両方使う):
 
-- Claude Code: `/discuss`, `/plan`, `/review-pr`, `/retro`, `/progress`, `/store-text`, `/release-check`
-- Codex: `/implement`, `/fix-ci`, `/i18n-add`
-
-**Codex 導入は優先度低**（2026-04-11 決定）。まず Claude Code 単独で 2 週間運用してから検証。
+- **Thinking**: `/discuss`, `/plan`, `/review-pr`, `/retro`, `/progress`, `/store-text`, `/release-check`
+- **Doing**: `/implement`, `/fix-ci`, `/i18n-add`
 
 ## 1. 参照する“正（ソース・オブ・トゥルース）”
 
@@ -174,10 +161,10 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
 - **完了条件**: Issue 本文を読むだけで実装できる状態
 - **担当**: Claude Code (`/plan` Skill)
 
-### 工程 W-05.5: Codex への引き継ぎ（NEW）
+### 工程 W-05.5: セルフ Context メモ（自分への引き継ぎ）
 
 - **トリガーキー**: W-05 完了
-- **作業内容**: Issue 本文に `## Context for Codex` セクションを追加:
+- **作業内容**: Issue 本文に `## Context` セクションを追加 (将来の自分セッション or 別エージェントへの引き継ぎ):
   - Acceptance Criteria（チェックボックス形式）
   - Files to read first（関連ファイル一覧）
   - Files likely to change（変更予想ファイル）
@@ -186,18 +173,18 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
   - Suggested implementation order
   - Related ADRs
 - **INPUT**: W-05 の成果物
-- **OUTPUT**: Codex が着手可能な Issue
-- **完了条件**: `gh issue view <番号>` で Codex が全情報を取得できる
+- **OUTPUT**: 着手可能な Issue
+- **完了条件**: `gh issue view <番号>` で全情報を取得できる
 - **担当**: Claude Code (`/plan` Skill 内の最後のステップ)
 
 ### 工程 W-06：実装（小さく刻む）
 
 - **トリガーキー**: W-05.5 完了
 - **作業内容**: 実装ルールに従って変更する（命名 / 設計 / 責務分離など）
-- **INPUT**: Issue（`## Context for Codex` 含む）
+- **INPUT**: Issue（`## Context` 含む）
 - **OUTPUT**: コード差分
 - **完了条件**: ローカルで最低限の確認ができる
-- **担当**: **Codex (`/implement` Skill)**
+- **担当**: **Claude Code (`/implement` Skill)**
 
 ### 工程W-07：受け入れ条件をテストへ落とす（“合否を機械化”）
 
@@ -206,10 +193,10 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
 - **INPUT**: Issue の AC
 - **OUTPUT**: `__tests__/**` 追加 / 更新
 - **完了条件**: テストが落ちれば「何がダメか」が分かる
-- **担当**: **Codex (`/implement` Skill)**
+- **担当**: **Claude Code (`/implement` Skill)**
 - **ポイント**: 仕様本文に「合格条件の長文」を置くのではなく、**テストが合否を持つ**。
 
-### 工程 W-08：ローカル検証（5 ゲート）
+### 工程 W-08：ローカル検証（6 ゲート）
 
 - **トリガーキー**: コミットを出す前
 - **作業内容**: `pnpm verify` を実行（内部で 6 ゲート）:
@@ -222,17 +209,17 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
 - **INPUT**: 実装差分
 - **OUTPUT**: 全ゲート緑
 - **完了条件**: 6 ゲート全てパス
-- **担当**: **Codex (`/implement` Skill)**
+- **担当**: **Claude Code (`/implement` Skill)**
 
-### 工程 W-08a: CI 失敗リカバリ（NEW）
+### 工程 W-08a: CI 失敗リカバリ
 
 - **トリガーキー**: `pnpm verify` が 2 回連続失敗
 - **作業内容**: `/fix-ci` Skill で慎重モード（根本原因特定 → 修正 → リグレッションテスト追加）
 - **INPUT**: 失敗ログ
 - **OUTPUT**: 修正 commit
 - **完了条件**: `pnpm verify` 緑
-- **エスカレーション**: 3 回目失敗で Claude Code の `/discuss` に引き継ぎ
-- **担当**: **Codex (`/fix-ci` Skill)**
+- **エスカレーション**: 3 回目失敗で `/discuss` Skill に切替えて再設計
+- **担当**: **Claude Code (`/fix-ci` Skill)**
 
 ### 工程 W-09：コミット → push（CI を回す）
 
@@ -241,18 +228,18 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
 - **INPUT**: 差分
 - **OUTPUT**: GitHub 上にブランチ
 - **完了条件**: CI が動き、結果が見える
-- **担当**: **Codex (`/implement` Skill)**
+- **担当**: **Claude Code (`/implement` Skill)**
 
 ### 工程 W-10：PR 作成（レビューと強制）
 
 - **トリガーキー**: プッシュ完了
-- **作業内容**: PR テンプレに沿って提出し、`/review-pr` を Claude Code に依頼
+- **作業内容**: PR テンプレに沿って提出し、続けて `/review-pr` でセルフレビュー
 - **INPUT**: Issue、差分、CI 結果、PR テンプレ
 - **OUTPUT**: PR
 - **完了条件**: Required checks が全部通る（ブランチ保護で強制）
-- **担当**: **Codex (`/implement` Skill)**
+- **担当**: **Claude Code (`/implement` Skill)**
 
-### 工程 W-10.5: PR レビュー（Claude Code が受け取る, NEW）
+### 工程 W-10.5: PR セルフレビュー
 
 - **トリガーキー**: W-10 完了（PR 作成）
 - **作業内容**: Claude Code が `/review-pr` Skill で以下を確認:
@@ -287,7 +274,7 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
 - **INPUT**：mainの最新仕様書
 - **OUTPUT**：追加Issue（必要な場合）
 - **完了条件**：Issue化の漏れが無い／無ければ次工程へ
-- **担当**：人間（あなた）＋ Codex
+- **担当**：人間（あなた）＋ Claude Code
 
 ### 工程W-12：リリース（EAS/Store手順に従う）
 

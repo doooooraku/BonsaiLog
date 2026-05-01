@@ -2,7 +2,7 @@
 
 - **渡す先**: Claude Code
 - **タイミング**: Claude Design のハンドオフバンドル受取後
-- **前提**: Codex がロジック層（Repository / Service / Store）を先にマージ済み
+- **前提**: ロジック層（Repository / Service / Store）が先にマージ済み（Claude Code 単独運用、同じセッションで両層実装可）
 
 ---
 
@@ -28,13 +28,13 @@ React Native (Expo Router) + UI ライブラリで実装してください。
 
 ### コンポーネント設計
 
-- `app/` 配下は薄く保つ（ロジックは Codex が実装済みの `src/` を import）
+- `app/` 配下は薄く保つ（ロジックは別セッションで実装済みの `src/` を import）
 - 文字列直書き禁止 → i18n キー経由
 - `testID` を主要な操作要素に付与（Maestro E2E テスト用）
 
 ### データバインディング
 
-- Codex が実装した Store / Repository を import して使う
+- 別セッションで実装した Store / Repository を import して使う
 - 自前でデータ取得ロジックを書き直さない
 
 ### 状態表示
