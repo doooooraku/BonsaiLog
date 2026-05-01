@@ -195,26 +195,36 @@
 
 ### F-04 水やり履歴の可視化
 
-水やり記録を**棒グラフ**と「最後の水やりから X 日」表示で可視化する。
+水やり記録を**ヒートマップ**と「最後の水やりから X 日」表示で可視化する（ADR-0013、Free / Pro 全機能利用可）。
 
 #### できること
 
-- 水やり記録の**日別棒グラフ**（過去 30 日 / 90 日 / 365 日切替）
-- 「最後の水やりから X 日」の大きな表示（盆栽詳細画面）
-- 全盆栽の水やり頻度比較（Pro 限定）
-- データ欠損期間の可視化（記録されていない日は空欄、埋めない）
+- **ヒートマップ表示**（年モード 7×52、月モード 7×5、`@shopify/react-native-skia` の Atlas API）
+- 「最後の水やりから X 日」の大きな表示（24-28pt Bold、盆栽詳細画面、AAA 7:1）
+- **全盆栽集約ヒートマップ**（stats タブ、達成率 % で公平な色濃さ）
+- **フィルター**（F1+F3 ハイブリッド: シンプルドロップダウン → 検索付きシート、「最近見た 3 本」表示）
+- **タップで Apple Health 風 BottomSheet** 詳細表示（`@gorhom/bottom-sheet`、画面遷移なし）
+- データ欠損期間の可視化（記録されていない日は灰色 `#F5F8F5`）
+- ColorBrewer Greens 4-class（色弱対応）+ 数字併記（"1" "2" "3+"）
+- 凡例画面下部常時表示（K5 ハイブリッド: 個別=回数 / 集約=達成率%）
+- 月 / 年切替（セグメンテッドコントロール）
+- 年間サマリー数字（記録日数 X / 365 日 (Y%)）+ データ件数（N 件）
 
 #### できないこと（明示）
 
-- **「水が足りません」の自動判定**（理由: 原則 P2、環境要因が多すぎて機械判定不可）
-- **水量（ml）の記録・可視化**（v1 ではイベント発生のみ記録、量は v1.1+ 検討）
-- **気象データとの相関表示**（理由: オフライン原則）
+- **「水が足りません」の自動判定**（constraints §1-4 / §5-2、判定/推奨機能 NG）
+- **水量（ml）の記録・可視化**（v1 ではイベント発生のみ記録、量は v1.x で要望が来たら検討）
+- **気象データ / 温湿度との相関表示**（オフライン完結原則 + ADR-0013 で対応不要確定）
+- **未来予定の表示**（過去のみ、未来予定はタイムラインタブで表示）
+- **Streak（連続日数）の連続記録煽り表示**（依存性問題、constraints §1-4 / §5-2）
 
 #### 受け入れ条件（テストで担保）
 
-- `__tests__/features/care/watering_chart.test.ts`
-- `__tests__/features/care/days_since.test.ts`
-- 主要シナリオ: 水やり 10 件記録 → 30 日棒グラフ表示 → 5 日経過 → 「最後の水やりから 5 日」表示
+- `__tests__/features/care/aggregateWatering.test.ts`（純関数集計、TZ 境界、複数回水やり）
+- `__tests__/features/care/daysSinceWatering.test.ts`（しきい値分岐）
+- `__tests__/features/care/heatmapData.test.ts`（K5 ハイブリッド凡例）
+- `maestro/flows/watering_heatmap.yml`（ヒートマップ → セルタップ → BottomSheet）
+- 主要シナリオ: 水やり 10 件記録 → 30 日ヒートマップで 10 マス緑表示 → 5 日経過 → 「最後の水やりから 5 日」表示
 
 ---
 
@@ -244,29 +254,33 @@
 
 ---
 
-### F-07 針金がけ記録・外し時期表示
+### F-07 針金がけ記録・外し予定日時の F-02 統合（ADR-0011 / ADR-0014）
 
-針金がけ日を記録すると、外し時期（樹種別の標準経過週数）を自動表示する。
+針金がけ日を記録時、ユーザーが任意で「外す予定日時」を入力できる。F-02 status='planned' に統合され、F-16 当日まとめ通知に含まれる。装着期間経過は**アプリ内事実表示のみ**（通知発火なし、ADR-0014）。
 
 #### できること
 
 - 針金がけ作業の記録（対象枝の部位タグ、針金サイズ mm、写真）
-- 樹種別の**標準経過週数**から外し時期を計算（例: 真柏 → 12-18 週、Juniperus → 6-12 週）
-- 外し時期の**接近アラート**（通知、Pro 限定）
-- 外し記録で該当針金レコードをクローズ
+- ユーザー任意の「外す予定日時」入力 → F-02 status='planned' (種別 'unwiring') として自動登録
+- F-16 当日まとめ通知に「N 件の作業予定があります」として集約配信
+- **装着期間アプリ内表示**: 盆栽詳細 → 針金一覧で「装着期間: X 週 Y 日 (経過済 / あと N 週 / 完了)」表示
+- 外し記録 (unwiring event) で該当針金をクローズ、F-02 planned event もキャンセル
 - 未外しの針金一覧（全盆栽横断）
 
-#### できないこと（明示）
+#### できないこと（明示、ADR-0014 で削除）
 
-- **食い込み判定**（理由: AI 非搭載。時間経過のみで判断）
+- **装着期間経過通知の発火**（ユーザーフィードバック「6 週後通知が鬱陶しい」 → アプリ内表示のみで代替）
+- **個別の針金外し通知**（F-02 当日まとめに統合）
+- **食い込み判定**（AI 非搭載）
+- **樹種別標準経過週数からの自動外し時期計算**（ADR-0011「記録のみ」哲学、推奨機能 NG）
 - **針金再利用の最適化提案**
-- **金属製針金と銅線の区別自動判定**（手動タグで対応）
 
 #### 受け入れ条件（テストで担保）
 
 - `__tests__/features/wiring/record.test.ts`
-- `__tests__/features/wiring/unwire_reminder.test.ts`
-- 主要シナリオ: 真柏に針金記録 → 12 週後にアラート → 外し記録 → クローズ表示
+- `__tests__/features/wiring/scheduledPlanned.test.ts`（F-02 統合）
+- `__tests__/features/wiring/weeksElapsedDisplay.test.ts`（アプリ内表示）
+- 主要シナリオ: 針金記録 + 外す予定日時入力 → F-02 planned event 自動登録 → 当日 F-16 まとめ通知に集約 → 外し記録 → 針金クローズ + F-02 planned キャンセル
 
 ---
 
@@ -302,39 +316,56 @@
 
 ### F-09 検索・タグ
 
-盆栽名・樹種・メモ・タグで検索する。
+盆栽名・樹種・メモを 3 段組みで並列検索 + ユーザー定義タグで AND フィルタ (ADR-0008 / functional_spec §14、Free / Pro 全機能利用可)。
 
 #### できること
 
-- 盆栽名・樹種名での検索
-- **作業メモの全文検索**（FTS5 + trigram tokenizer、2 文字以上で検索可能）
-- ユーザー定義タグの付与（例: `#展示会候補` `#ベランダ` `#要注意`）
-- タグによるフィルタリング
-- 検索履歴（端末内、最大 20 件）
+- **3 段組み検索結果表示**（盆栽名 LIKE + 樹種名 19 言語通称 LIKE + 作業メモ FTS5 trigram MATCH、Things 3 / Apple Notes 業界標準）
+- **作業メモの全文検索**（FTS5 + trigram tokenizer、`detail=column` で容量 54% 削減 + column filter 維持、2 文字以上）
+- **検索結果ハイライト**（FTS5 snippet 関数で `<b>` 強調）
+- ユーザー定義タグの付与（例: `#展示会候補` `#ベランダ` `#要注意`、case-insensitive + NFC 正規化で重複防止）
+- 1 盆栽あたり最大 10 タグ、タグ名最大 32 文字、アプリ全体タグ数制限なし
+- 盆栽編集画面で **最近使われた 3 タグ候補チップ**（直近 30 日 INSERT 上位 3 件）
+- Home 上部にタグチップ（使用頻度順、上位 10 + 「もっと見る」）、複数選択で AND フィルタ
+- テキスト + タグ AND フィルタ同時適用可
+- 検索履歴（AsyncStorage、最大 20 件 FIFO、削除可）
+- 検索バー Home 上部 + `/search` 全画面遷移、検索画面に戻ると結果保持
+- Settings → タグ管理でタグ rename
+- 検索結果に盆栽サムネイル (F-08 cover_photo) 表示
+- event タップで盆栽詳細 + 該当 event ハイライト
+- シニア UX: 検索バー高 48dp+、フォント 17pt+、debounce 300ms、タッチ 48×48dp
+- 19 言語ローカライズ (placeholder「盆栽名・樹種・メモで検索」、0 件「該当する記録はありません」)
 
 #### できないこと（明示）
 
-- **1 文字検索**（理由: trigram tokenizer の制約、UI で「2 文字以上」ガイド表示）
+- **1 文字検索**（trigram tokenizer の制約、UI で「2 文字以上」ガイド表示）
+- **アーカイブ済盆栽の検索**（archived_at IS NOT NULL 除外、Y1）
+- **ゴミ箱 events の検索**（deleted_at IS NOT NULL 除外、Y2、Settings → ゴミ箱から個別検索）
+- **events.payload_json の検索**（構造化データはタグで代替、Y3）
 - **音声検索 / ファジー検索**（v1 は単純部分一致）
-- **クラウド横断検索**（完全ローカル）
+- **クラウド横断検索**（完全ローカル、constraints §1-1）
+- **タグの色設定**（v1.0 で実装しない、灰色チップ統一、v1.x 候補）
+- **タグの階層構造** (`#parent/child` Bear 風、シニア UX 重視で v1.x 候補)
 
 #### 受け入れ条件（テストで担保）
 
-- `__tests__/features/search/bonsai_name.test.ts`
-- `__tests__/features/search/fts5_memo.test.ts`
-- `__tests__/features/search/tag_filter.test.ts`
-- 主要シナリオ: 「黒松」で検索 → 該当 3 本表示 / メモに「根腐れ」と書いた作業 5 件を検索 → 全件ヒット
+- `__tests__/features/search/multiSearch.test.ts`（3 段組み + 各セクション集計）
+- `__tests__/features/search/fts5Snippet.test.ts`（trigram + snippet ハイライト）
+- `__tests__/features/search/tagFilter.test.ts`（AND フィルタ + name_normalized 重複防止）
+- `__tests__/features/search/tagLimit.test.ts`（1000/5000/10000 タグ性能計測、TG1 限界把握）
+- `maestro/flows/search_flow.yml`（Home 検索バー → /search → 結果タップ → 戻るで検索画面復帰）
+- 主要シナリオ: 「黒松」検索 → 樹種・盆栽名・メモの 3 段組み表示 / メモに「根腐れ」5 件 → snippet で `<b>根腐れ</b>` 強調 / タグ「#展示会候補」追加で 5 本フィルタ → AND 「#ベランダ」追加で 2 本に絞り込み
 
 ---
 
 ### F-10 エクスポート（CSV / PDF）
 
-全データを CSV・PDF 形式でエクスポートする。
+全データを CSV・PDF 形式でエクスポートする。**Pro 限定** (ADR-0009 / ADR-0011 / ADR-0016、Free でタップ → Paywall)。Repolog 既存実装流用 (3 段階フォールバック + タイムアウト + ストレージチェック + カスタムエラー)。7 画面構成 (Hub / Options / Progress / Share / Preview×3)。個別盆栽選択機能 v1.0 採用 (Y4)。詳細は ADR-0016 を正とする。
 
 #### できること
 
-- **CSV エクスポート**（盆栽一覧 / 作業履歴 / 樹種別サマリ、UTF-8 BOM 付き）
-- **PDF エクスポート**（樹 1 本ずつの 1 ページサマリ、または全盆栽リスト）
+- **CSV エクスポート 3 種**（盆栽一覧 / 作業履歴 / 樹種別サマリ、UTF-8 BOM + CRLF + RFC 4180、写真関連列なし）
+- **PDF エクスポート 2 種**（個別盆栽レポート / 全盆栽リスト、A4 縦、3 段階フォールバック、CJK フォント明示）
 - **Restore Purchases ボタン**（§12 Apple 規約対応）の独立配置は F-13 に記載
 - CSV インポート（v1 は独自フォーマット .csv のみ、Excel/Notion 互換性は努力目標）
 - エクスポートファイルの iOS Share Sheet / Android Intent での共有
@@ -495,15 +526,19 @@ Free プランのホーム画面下部にアダプティブバナー広告を表
 
 ### F-15 ダークモード / 屋外モード
 
-システム設定連動のダークモードと、手動切替の屋外（ハイコントラスト）モードを提供する。
+4 mode (Auto / Light / Dark / Outdoor) でテーマを切り替える (ADR-0015、Free / Pro 全機能利用可)。Material 3 baseline + 屋外モード緑単色 #1B5E20 + 全画面ヘッダー右上太陽アイコン。
 
 #### できること
 
 - **システム / ライト / ダーク**の 3 択（既定: システム）
-- **屋外モード**の手動切替（設定 + ステータスバーからワンタップ）
-- 屋外モードは**コントラスト AAA (7:1)** 目標、Primary `#000080`、文字 `#000000`
-- ダークモードは**OLED 焼き付き配慮**（純黒 `#000000` ではなく `#0A0E1A`）
-- ダークモード遷移アニメーション（reduced motion 設定時はカット）
+- **屋外モード**の手動切替（**全画面ヘッダー右上太陽アイコン** + Settings、48×48dp タッチ領域、OA1）
+- 屋外モードは**コントラスト AAA (7:1)** 達成、accent `#1B5E20` (緑単色、9.7:1)、文字 `#000000` (21:1) (OC1、青系撤回)
+- ダークモードは**Material 3 baseline `#121212`** (BD1、shadow 視認 + eye strain 軽減、純黒/独自値撤回)
+- アニメーション 200ms、reduced motion 設定時 0ms (A1)
+- F-04 ヒートマップ 3 mode 自動切替 (`bonsai_heatmap_l0..l3` トークン)
+- F-08 写真自体は変更なし、UI 枠のみテーマ追従 (Y3、PH1)
+- AsyncStorage `theme.mode` 永続化、F-11 引継ぎで移行 (Y10)
+- ESLint `no-direct-hex-in-jsx` ルールで直 hex 禁止、theme.color 参照強制 (EL1)
 
 #### できないこと（明示）
 
@@ -717,18 +752,16 @@ src/core/i18n/locales/
 
 ### 8.2 Free / Pro 差分
 
-| 機能                           | Free           | Pro                                          |
-| ------------------------------ | -------------- | -------------------------------------------- |
-| 盆栽登録数                     | 無制限         | 無制限                                       |
-| 写真 1 本あたり                | 3 枚まで       | 無制限                                       |
-| 作業履歴記録                   | 可             | 可                                           |
-| 水やり履歴グラフ（F-04）       | 直近 30 日のみ | 全期間                                       |
-| リマインダー分散（F-05）       | 簡易版         | 完全版                                       |
-| 針金外し時期アラート（F-07）   | 手動のみ       | 自動通知                                     |
-| 年次タイムライン画像（F-08）   | 不可           | 可                                           |
-| CSV / PDF エクスポート（F-10） | 不可           | 可                                           |
-| お引っ越し機能（F-11）         | **可**         | **可**（データ保護は基本権利、有料化しない） |
-| Home 下部バナー広告            | 表示           | **完全非表示**                               |
+| 機能                           | Free     | Pro                                          |
+| ------------------------------ | -------- | -------------------------------------------- |
+| 盆栽登録数                     | 無制限   | 無制限                                       |
+| 写真 1 本あたり                | 3 枚まで | 無制限                                       |
+| 作業履歴記録                   | 可       | 可                                           |
+| リマインダー分散（F-05）       | 簡易版   | 完全版                                       |
+| 年次タイムライン画像（F-08）   | 不可     | 可                                           |
+| CSV / PDF エクスポート（F-10） | 不可     | 可                                           |
+| お引っ越し機能（F-11）         | **可**   | **可**（データ保護は基本権利、有料化しない） |
+| Home 下部バナー広告            | 表示     | **完全非表示**                               |
 
 詳細は `constraints.md` を正とする。
 
@@ -836,22 +869,22 @@ src/features/**: lines 70, branches 60
 
 ### 11.3 F 番号 → テストパス逆引き表
 
-| F 番号 | Jest パス                                                 | Maestro フロー                                       |
-| ------ | --------------------------------------------------------- | ---------------------------------------------------- |
-| F-01   | `__tests__/features/bonsai/**`                            | `maestro/flows/add_bonsai.yaml`                      |
-| F-02   | `__tests__/features/event/**`                             | `maestro/flows/log_watering.yaml`                    |
-| F-04   | `__tests__/features/care/watering_chart.test.ts`          | –                                                    |
-| F-05   | `__tests__/domain/schedule/distribute.{test,pbt.test}.ts` | –                                                    |
-| F-07   | `__tests__/features/wiring/**`                            | –                                                    |
-| F-08   | `__tests__/features/photo/**`                             | `maestro/flows/add_photo.yaml`                       |
-| F-09   | `__tests__/features/search/**`                            | –                                                    |
-| F-10   | `__tests__/features/export/**`                            | –                                                    |
-| F-11   | `__tests__/features/migration/**`                         | `maestro/flows/migration_same_wifi.yaml`（実機のみ） |
-| F-12   | `__tests__/i18n/**` + `scripts/i18n-check.mjs`            | –                                                    |
-| F-13   | `__tests__/features/purchase/**`                          | `maestro/flows/paywall_to_purchase.yaml`             |
-| F-14   | `__tests__/features/ads/**`                               | `maestro/flows/first_launch_consent.yaml`            |
-| F-15   | `__tests__/features/theme/**`                             | –                                                    |
-| F-16   | `__tests__/features/notification/**`                      | `maestro/flows/notification_permission.yaml`         |
+| F 番号 | Jest パス                                                                                                 | Maestro フロー                                               |
+| ------ | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| F-01   | `__tests__/features/bonsai/**`                                                                            | `maestro/flows/add_bonsai.yaml`                              |
+| F-02   | `__tests__/features/event/**`                                                                             | `maestro/flows/log_watering.yaml`                            |
+| F-04   | `__tests__/features/care/aggregateWatering.test.ts` + `daysSinceWatering.test.ts` + `heatmapData.test.ts` | `maestro/flows/watering_heatmap.yml` + `watering_filter.yml` |
+| F-05   | `__tests__/domain/schedule/distribute.{test,pbt.test}.ts`                                                 | –                                                            |
+| F-07   | `__tests__/features/wiring/**`                                                                            | –                                                            |
+| F-08   | `__tests__/features/photo/**`                                                                             | `maestro/flows/add_photo.yaml`                               |
+| F-09   | `__tests__/features/search/**`                                                                            | –                                                            |
+| F-10   | `__tests__/features/export/**`                                                                            | –                                                            |
+| F-11   | `__tests__/features/migration/**`                                                                         | `maestro/flows/migration_same_wifi.yaml`（実機のみ）         |
+| F-12   | `__tests__/i18n/**` + `scripts/i18n-check.mjs`                                                            | –                                                            |
+| F-13   | `__tests__/features/purchase/**`                                                                          | `maestro/flows/paywall_to_purchase.yaml`                     |
+| F-14   | `__tests__/features/ads/**`                                                                               | `maestro/flows/first_launch_consent.yaml`                    |
+| F-15   | `__tests__/features/theme/**`                                                                             | –                                                            |
+| F-16   | `__tests__/features/notification/**`                                                                      | `maestro/flows/notification_permission.yaml`                 |
 
 ### 11.4 必須 CI ゲート
 

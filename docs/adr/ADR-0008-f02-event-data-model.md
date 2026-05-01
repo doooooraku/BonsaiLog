@@ -3,7 +3,7 @@
 
 # ADR-0008: F-02 作業履歴記録のデータモデル + 仕組み化（STI + Drizzle ORM + 30 日ゴミ箱 + TZ 3 層防御）
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-04-29
 - Deciders: @doooooraku
 - Related:
@@ -56,9 +56,11 @@ F-02 を以下の構成で実装する。
 
 ### 検索 (FTS5)
 
-9. **FTS5 trigram tokenizer** + **fts5vocab + LIKE 'query%' OR 展開** で 1〜2 文字検索対応（盆栽固有の 1 文字「松」「水」検索 UX 必須）。
-10. **`detail=none`** で trigram インデックス容量を半減。
+9. **FTS5 trigram tokenizer** (SQLite docs §4.3.4、3.34+ ビルトイン) + **fts5vocab + LIKE 'query%' OR 展開** で **2 文字検索**対応。**1 文字検索は trigram 仕様上 MATCH 不可**のため、UI ガイドで「2 文字以上で検索」を表示 (functional_spec §14.3.1)。
+10. **`detail=column`** で trigram インデックス容量を 54% 削減しつつ column filter (`note: 黒松` 等) を維持。**`detail=none` は採用しない**（容量最小だが**「植え替え」「黒松「太郎」」等の 3 文字超 token の MATCH が不可になる罠**あり、F-09 リサーチで発見）。
 11. **external content table 同期**: `events` への INSERT / UPDATE / DELETE を `events_fts` に同期する trigger 3 本を必須実装。
+12. **タグ表 `tags`**: 列 `id (ULID PK) / name TEXT NOT NULL / name_normalized TEXT NOT NULL UNIQUE / color TEXT NULL (v1.0 未使用) / created_at / updated_at`。**case-insensitive + Unicode NFC 正規化**で重複検知 (`name_normalized = name.toLowerCase().normalize('NFC')`)、UNIQUE 制約で SQL レベル防止 (Bear / Things / Notion 業界標準)。
+13. **junction 表 `bonsai_tags`**: 列 `bonsai_id / tag_id / created_at`、PK = (bonsai_id, tag_id)、双方向 index (`(tag_id, bonsai_id)` + `(bonsai_id, tag_id)`)。CASCADE 削除 = 盆栽 or タグ削除時に該当行を自動削除。
 
 ### 取り消し UX
 
@@ -220,7 +222,7 @@ F-02 を以下の構成で実装する。
 - Issue: #<TBD>
 - External docs:
   - [Martin Fowler - Single Table Inheritance](https://martinfowler.com/eaaCatalog/singleTableInheritance.html)
-  - [SQLite FTS5 公式 (trigram §4.3.6)](https://www.sqlite.org/fts5.html)
+  - [SQLite FTS5 公式 (trigram §4.3.4、detail §4.6、external content §4.4.3、bm25 §5.1.1、fts5vocab §8)](https://www.sqlite.org/fts5.html)
   - [SQLite JSON1 (json_extract / generated columns)](https://www.sqlite.org/json1.html)
   - [Drizzle ORM Expo SQLite docs](https://orm.drizzle.team/docs/connect-expo-sqlite)
   - [Drizzle Kit migrations](https://orm.drizzle.team/docs/migrations)
@@ -246,6 +248,9 @@ F-02 を以下の構成で実装する。
 
 1. **25 万件シード性能**: ランダム events 25 万件を投入し、`(bonsai_id, occurred_at_utc DESC) LIMIT 500` の応答時間を計測。300ms 未満を確認。
 2. **FTS5 trigram の絵文字挙動**: `note` に `💧 ✂️ 🪴` を含むデータをインデックス、検索時の MATCH 動作を実機検証。
+   2-A. **19 言語 trigram 動作**: Latin 拡張 (フランス語アクセント等)、キリル文字 (ロシア語)、タイ文字での MATCH 動作を実機検証 (F-09 PoC 拡張)。
+   2-B. **タグ + 検索 2 段階フィルタ性能**: events_fts MATCH + tags AND の CTE 2 段階クエリで 25 万行 + 1000 タグ規模での応答時間計測 (F-09 PoC 拡張)。
+   2-C. **タグ全体最大数の性能限界把握**: 1000 / 5000 / 10000 タグ投入時の挿入・検索・チップ表示性能計測 (F-09 ユーザー要望)。
 3. **Hermes Intl 動作確認**: `formatInTimeZone('Asia/Tokyo', d, 'yyyy-MM-dd HH:mm zzz')` が iOS / Android で `RangeError` を吐かないこと。吐く場合は `@formatjs/intl-*` polyfill 追加。
 4. **`useLiveQuery` の動作**: Drizzle のリアクティブクエリが optimistic update なしで実用的か確認。
 

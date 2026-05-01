@@ -3,7 +3,7 @@
 
 # ADR-0010: F-14 Home 下部バナー広告設計（Pro 誘導の心理装置として再定義）
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-04-29
 - Deciders: @doooooraku
 - Related:

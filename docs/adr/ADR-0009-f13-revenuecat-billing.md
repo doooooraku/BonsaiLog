@@ -3,7 +3,7 @@
 
 # ADR-0009: F-13 課金設計（RevenueCat 月/年/買切 + Pocket Casts Champion 方式 + Billing Library 8 移行）
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-04-29
 - Deciders: @doooooraku
 - Related:
