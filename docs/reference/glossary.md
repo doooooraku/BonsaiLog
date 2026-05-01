@@ -4,7 +4,7 @@
 “同じものを違う言い方で呼ぶ”/“人によって意味がズレる” を防ぎます。
 
 - 種別（Diátaxis）：Reference（参照）
-- 読者：未来の自分 / 共同開発者 / Codex（AI）/ レビュワー / テスター
+- 読者：未来の自分 / 共同開発者 / Claude Code（AI）/ レビュワー / テスター
 - 目的：迷ったらここを見て「用語の意味」と「同義語/禁止語」が1分で分かること
 
 ---
@@ -317,6 +317,334 @@
 
 - ダークモード：通常の暗色テーマ
 - 屋外モード：高輝度モード（直射日光下での視認性向上、F-15）
+
+### ヒートマップ（Heatmap）
+
+- 定義：データの量を色濃淡で表現する図表。F-04 では水やり実績を 7 行 × 52 列（年）/ 7 行 × 5 列（月）で表示
+- 形状: GitHub Contribution Graph 風（ADR-0013）
+- 配色: ColorBrewer 2.0 Greens 4-class（color-blind safe）
+
+### Skia / Skia Atlas
+
+- Skia: Google が開発した 2D 描画エンジン（Chrome / Android 標準）。React Native では `@shopify/react-native-skia` で利用
+- Skia Atlas: 同形状のスプライト（小さな絵）を一括 GPU 描画する API。F-04 ヒートマップで 365 セルを 60-120 FPS 描画
+
+### BottomSheet（ボトムシート）
+
+- 定義：画面下からせり上がる「シート型モーダル」。iOS 13+ の標準 UI、Apple Health 等で採用
+- ライブラリ: `@gorhom/bottom-sheet`（業界標準、a11y 対応、TypeScript 完全）
+- F-04 ではヒートマップセルタップ時の日別詳細表示に使用
+
+### セグメンテッドコントロール（Segmented Control）
+
+- 定義：横並びの 2-3 個から 1 個選ぶボタン群（iOS 標準 UI）
+- F-04 では `[ 月 ] [ 年 ]` の期間切替に使用
+
+### ColorBrewer
+
+- 定義：Cynthia Brewer 教授（Penn State 大学）が地図のために設計した「色弱の人にも識別できる配色集」。学術標準
+- 公式: https://colorbrewer2.org/
+- F-04 では Greens 4-class（`#F5F8F5 / #BAE4B3 / #74C476 / #238B45`）採用
+
+### 凡例（Legend、K5 ハイブリッド）
+
+- 定義：ヒートマップの色 → 意味の対応表。画面下部に常時表示
+- K5 ハイブリッド（ADR-0013）:
+  - 個別盆栽: `凡例 (この盆栽への水やり回数): □ 0回 ■ 1回 ■ 2回 ■ 3+回`
+  - 全盆栽集約: `凡例 (持っている盆栽のうち水やった割合): □ 0% ■ 1-33% ■ 34-66% ■ 67-100%`
+
+### 達成率（Achievement Rate）
+
+- 定義：「持っている盆栽のうち水やった割合 %」。ライトユーザー（1 本持ち）と盆栽園プロ（100 本持ち）の達成感格差を解消する正規化指標
+- F-04 stats タブ集約モードで使用（K2、ADR-0013）
+
+### Apple Health 風 BottomSheet
+
+- 定義：iPhone 標準ヘルスケアアプリのデータタップ時 UI を踏襲。背景にうっすら元画面が残り、シートを下にスワイプで閉じる
+- F-04 ヒートマップセルタップで採用、画面遷移なしのシニア UX
+
+### 「最後から X 日」（Days Since Watering）
+
+- 定義：最後の水やり日からの経過日数を大きく表示（24-28pt Bold、AAA 7:1）
+- しきい値:
+  - 0 件: 「まだ記録がありません」
+  - 0 日: 「今日、水やりしました」
+  - 1-30 日: 「最後の水やりから X 日」（28pt Bold）
+  - 31-365 日: 「最後の水やりから X 日」（24pt Regular、`#4A4A4A`）
+  - 365 日超: 「最後の水やりから 1 年以上」
+- 集約モード（stats タブ）では非表示（ADR-0013 §X1）
+
+### 当日まとめ通知（Daily Summary Notification）
+
+- 定義：毎日朝 X 時 (デフォルト 07:00) に発火する 1 件の通知。当日の F-02 planned events を集計し「N 件の作業予定があります」と配信（ADR-0014）
+- ライブラリ: expo-notifications DATE trigger
+- タップ後遷移: 作業予定カレンダー (S-08) 当日選択状態
+- 0 件の日: 通知発火しない（キャンセル）
+
+### 水やり繰り返し通知（Watering Daily Notification）
+
+- 定義：毎日同じ時刻に発火する繰り返し通知。本文「水やりの時間です」（ADR-0014）
+- ライブラリ: expo-notifications DAILY trigger
+- 1 日 1〜5 回まで設定可、各時刻独立
+- 全盆栽共通（個別盆栽の水やり時刻は持たない）
+
+### 7 日ローリング予約（7-Day Rolling Schedule）
+
+- 定義：当日 + 6 日先までの当日まとめ通知を予約し続ける方式（ADR-0014）
+- 再予約タイミング: アプリ起動時のみ (R2、シンプル原則)
+- メモリ消費: 最大 7 件 + 水やり 5 件 = 12 件（約 1.2KB）
+- iOS 64 件上限の 1/5 で余裕、enforceIosLimit ロジック不要
+
+### DAILY trigger / DATE trigger
+
+- DAILY trigger: 毎日同じ時刻に発火する繰り返し通知（expo-notifications）。水やり通知で使用
+- DATE trigger: 特定日時に 1 回発火する通知。当日まとめ通知で使用
+
+### iOS 64 件上限
+
+- 定義：iPhone は 1 アプリにつき pending 通知を最大 64 件保持可能（Apple OS 仕様）
+- 64 件超過: OS が古い順に自動削除
+- BonsaiLog 対応: 7 日ローリング + 水やり 5 件で最大 12 件 → 構造的に解消（ADR-0014）
+
+### Notification Channel（Android 8+）
+
+- 定義：通知のカテゴリ分け仕組み。ユーザーがカテゴリ別に音/振動/ON/OFF を変更可能
+- BonsaiLog の 2 チャネル: `WATERING`（水やり）/ `DAILY_SUMMARY`（当日まとめ）
+- importance: 全 DEFAULT（heads-up なし、控えめ）
+- 作成後の importance 変更不可（delete + recreate のみ）
+
+### interruption level（iOS 通知優先度）
+
+- `.passive`: サイレント（通知センターのみ）
+- `.active`（BonsaiLog 採用）: 通常通知、Focus / DnD でブロックされる
+- `.timeSensitive`: Focus 突破（entitlement 申請必須、不採用）
+- `.critical`: 緊急（Apple 個別承認、医療/防災用、不採用）
+
+### Doze モード（Android）
+
+- 定義：画面 OFF + 静止 + 充電なし状態で発動する省電力モード
+- 通知遅延: 最大 15 分（許容範囲、ADR-0014）
+
+### SCHEDULE_EXACT_ALARM（Android 14+）
+
+- 定義：分単位精度の通知予約に必要な権限、デフォルト deny
+- BonsaiLog: 要求しない（inexact alarm で十分、シニア「気遣い型」哲学整合）
+
+### 現地時刻自動切替（Local Time Auto-switch）
+
+- 定義：海外旅行で TZ 変更時、通知を現地時刻基準に自動再予約（ADR-0014 B1）
+- 取得方法: `Intl.DateTimeFormat().resolvedOptions().timeZone` で TZ 検出
+- ADR-0008 datetime ラッパー `getTzIana()` を流用
+- アプリ起動時に再予約（R2）
+
+### 作業予定カレンダー（S-08、Calendar Screen）
+
+- 定義：月単位で全作業予定 + 実績を表示する独立画面（ADR-0014）
+- 画面 ID: S-08
+- 配置: F-02 タイムラインタブから push（タブバー追加なし、4 タブ維持）
+- 通知タップ後の遷移先（当日選択状態で開く）
+- 構造: 月単位カレンダー + dot 件数表現（1=`•`、2=`••`、3+=`•••`）+ 当日選択時に下部リスト表示
+- F-04 ヒートマップ（年俯瞰、水やり実績のみ）と役割分離
+
+### Step 5 通知（Onboarding Step 5）
+
+- 定義：オンボーディング 5 ステップの最終 Step、通知設定（ADR-0014、ADR-0011 で 4 → 5 拡張）
+- アイコン: 🔔 ベル
+- タイトル: 「通知で水やりを忘れない」
+- メインボタン「通知を有効にする」 → OS 許可リクエスト → Step 5-B 水やり時刻設定
+- サブリンク「あとで」 → 通知 OFF 状態で完了
+- スキップ時のデフォルト: 通知マスタートグル OFF（K1）
+
+### 装着期間アプリ内表示（Wiring Period In-App Display）
+
+- 定義：針金がけ日からの経過時間を盆栽詳細 → 針金一覧で表示（ADR-0014、旧装着期間経過通知の代替）
+- 表示: 「装着期間: X 週 Y 日 (経過済 / あと N 週 / 完了)」
+- 通知発火なし: ユーザーが自発的にアプリを開いて確認
+
+### Vacation モード（不採用）
+
+- 旅行中の通知一時停止機能（Habitify が代表）
+- BonsaiLog: 採用しない（V3）、OS 標準 Settings の通知 OFF で代替（ADR-0014）
+
+### snippet 関数（FTS5）
+
+- 定義：FTS5 のマッチ部分を `<b>` 等のタグで強調する SQL 関数（ADR-0008 / functional_spec §14）
+- 例: `snippet(events_fts, 0, '<b>', '</b>', '...', 8)` で「水やり」マッチ時に「`<b>水やり</b>` をした」が返る
+- F-09 検索結果のハイライト表示で使用
+
+### NFC 正規化（Unicode Normalization Form C）
+
+- 定義：Unicode 文字を「同じ意味なら同じバイト列」に揃える正規化方式
+- 例: `が` を 1 文字 (U+304C) vs 2 文字 (U+304B + U+3099) で表現可能 → NFC で統一
+- F-09 タグ重複防止に使用 (`name.toLowerCase().normalize('NFC')`)
+
+### name_normalized（タグ重複防止列）
+
+- 定義：tags テーブルの正規化済タグ名列（ADR-0008 §12）
+- 計算式: `name_normalized = name.toLowerCase().normalize('NFC')`
+- UNIQUE 制約で SQL レベル重複防止（case-insensitive + NFC）
+- 業界標準 (Bear / Things / Notion)
+
+### detail オプション（FTS5）
+
+- 定義：FTS5 インデックスの詳細度設定 (`full` / `column` / `none` の 3 段階)
+- BonsaiLog 採用: **detail=column** (容量 54% 削減 + column filter 維持、ADR-0008 §10)
+- detail=none は容量最小だが「植え替え」等の 3 文字超 token MATCH が不可になる罠あり、不採用
+
+### 3 段組み検索結果表示（Multi-Section Search Result）
+
+- 定義：F-09 検索結果を「盆栽名 N 件 / 樹種名 N 件 / メモ N 件」の 3 セクションに分割表示（functional_spec §14.3.2）
+- Things 3 / Apple Notes 業界標準
+- 0 件のセクションは非表示（動的に表示数変化、SE1）
+
+### 最近使われた 3 タグ候補チップ
+
+- 定義：盆栽編集画面で「タグを追加」入力欄上部に直近 30 日 INSERT 上位 3 タグをチップ表示
+- タップで即追加（Bear / Things 業界標準、G1 採用）
+- ライトユーザー (タグ 0 件) は非表示
+
+### Material 3 baseline（ダークモード背景 #121212）
+
+- 定義：Google Material Design 3 が定める「ダークモード推奨背景色」(ADR-0015 BD1)
+- 純黒 #000000 ではなく濃灰 #121212 を採用する理由: shadow が見える + light text 上の eye strain 軽減
+- BonsaiLog 採用: dark theme background = #121212、surface = #1E1E1E (+1 elevation) / #242424 (+2)
+
+### monochromatic palette（単色濃淡配色）
+
+- 定義：1 色相の明度濃淡だけで階調を表現する配色方式
+- BonsaiLog 採用: F-04 ヒートマップ + F-15 屋外モード accent (緑単色 #1B5E20)
+- 利点: 色覚異常者 (P 型/D 型 = 日本男性 4-6.5%) も識別可、老眼者の青-紫弁別困難回避 (ADR-0015 OC1)
+
+### userInterfaceStyle（Expo / iOS）
+
+- 定義：アプリ全体のテーマモード設定。`automatic` / `light` / `dark` の 3 値
+- BonsaiLog 採用: `automatic` (OS 設定追従、ADR-0015 SP1)
+- 設定場所: app.config.ts
+
+### useColorScheme（React Native）
+
+- 定義：OS のダークモード設定を読む React Native 標準フック
+- 戻り値: `'light' | 'dark' | null`
+- null フォールバック: BonsaiLog は **light** (シニア初見「真っ暗 = 故障?」回避、ADR-0015 IM1-A)
+
+### DynamicColorIOS（React Native iOS 専用）
+
+- 定義：iOS で「light 時 #FFF、dark 時 #000」のように動的に色を変える API
+- BonsaiLog 採用: 通常モードのみ、Outdoor モードは独自 (OS スコープ外)
+
+### OLED 焼き付き
+
+- 定義：OLED ディスプレイで「同じ画面を長時間表示すると残像が残る」問題
+- 純黒 #000000 は省電力だが薄黒は焼き付きリスク低 (両論あり)
+- BonsaiLog dark theme は Material 3 baseline #121212 採用 (ADR-0015 BD1、純黒/独自値撤回)
+
+### Reduced Motion
+
+- 定義：iOS / Android の「動きを減らす」アクセシビリティ設定 (アニメ酔い対策)
+- BonsaiLog: ON 時にテーマ切替アニメ 0ms (A1)
+- 検知: `useReducedMotion()` (react-native-reanimated)
+
+### surface elevation（Material 3）
+
+- 定義：UI レイヤの「高さ」を表現する surface トークン階層
+- Material 3 推奨: surface (基本) / surface +1 / +2 / +3 / +4 / +5 で elevation 増
+- BonsaiLog dark theme: surface = #1E1E1E (+1) / surface2 = #242424 (+2) を採用 (ADR-0015)
+
+### bonsai\_\* プレフィクス（Tamagui トークン命名）
+
+- 定義：Tamagui 標準キー (background / color 等) と独自トークンを区別するプレフィクス (ADR-0015 TN1)
+- 例: `bonsai_heatmap_l0..l3` (F-04 ヒートマップ 3 モード対応)、`bonsai_today_border` (今日のセル太枠)
+- 目的: 将来 Tamagui アップデート時のトークン名衝突回避
+
+### no-direct-hex-in-jsx（ESLint カスタムルール）
+
+- 定義：JSX 内の `color` / `backgroundColor` / `borderColor` プロパティに直 hex (`#xxx`) を禁止するルール (ADR-0015 EL1)
+- 強制: `useTheme()` 経由のみ
+- 例外: tamagui.config.ts 内の tokens 定義のみ許可
+- 目的: テーマ追加時の漏れ検出、構造的品質保護
+
+### BOM (Byte Order Mark)
+
+- 定義：UTF-8 ファイルの先頭 3 バイト `﻿` (`0xEF 0xBB 0xBF`)、文字コード判定の目印
+- BonsaiLog F-10 採用: CSV ファイルに必須 (Excel 日本語版が UTF-8 と判定するため、ADR-0016)
+- BOM なしだと Excel が Shift_JIS と誤判定 → 日本語が文字化け
+
+### RFC 4180
+
+- 定義：CSV (Comma-Separated Values) の国際規格 (IETF 標準)
+- BonsaiLog 採用 (ADR-0016):
+  - フィールド区切り: `,`
+  - レコード終端: CRLF (`\r\n`)
+  - quote escape: `,` / `"` / 改行を含むフィールドは `"..."` で囲む、内部 `"` は `""` 2 連
+- MIME type: `text/csv` (RFC 4180 §3 IANA 登録)
+
+### CRLF (`\r\n`)
+
+- 定義：Windows 標準改行コード (Carriage Return + Line Feed)
+- RFC 4180 で CSV 改行コードに規定
+- BonsaiLog F-10 採用 (Q18 LB1、ADR-0016)
+
+### WKWebView 制約 (iOS)
+
+- 定義：iOS の標準ブラウザエンジン WKWebView は `<img src="file://path/to/photo.jpg" />` のローカルパス読み込み**不可** (Issue #1308)
+- 回避策: 写真を base64 化して `<img src="data:image/jpeg;base64,..." />` で HTML に inline (ADR-0016 Q1 W1)
+- BonsaiLog F-10 PDF 生成で必須対応
+
+### SAF (StorageAccessFramework)
+
+- 定義：Android 4.4+ のファイルストレージアクセス API、ユーザーが保存場所 (Drive / Local / Dropbox 等) を選択
+- BonsaiLog F-10 採用 (Q15 SAF1、ADR-0016): Android のみ SAF、iOS は Share Sheet
+- API: `LegacyFileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync()` + `createFileAsync()`
+
+### 3 段階フォールバック (PDF 生成)
+
+- 定義：F-10 PDF 生成時に OOM / blank PDF / hang 検出時に自動で品質を落として再試行する仕組み (Repolog 流用、ADR-0016 Q11 FB1)
+- attempt 1: full quality (system fonts、画像 1200/1600px @ 0.80)
+- attempt 2: reduced images (system fonts、画像縮小)
+- attempt 3: tiny images (system fonts、最小画像)
+- fallback cooldown 300ms (native heap 解放待ち)
+
+### PdfHangError / PdfStorageLowError / BlankPdfError
+
+- 定義：F-10 PDF 生成のカスタムエラー (Repolog 流用、ADR-0016)
+- `PdfHangError`: `printToFileAsync` が指定タイムアウト内に応答しない (Promise.race timeout)
+- `PdfStorageLowError`: 端末空き容量 100MB 未満 (フォールバック不可、即時エラー)
+- `BlankPdfError`: 生成された PDF が 1024 byte 未満 (Android Chromium 印刷エンジンの silent failure)
+
+### Forbidden chars (ファイル名)
+
+- 定義：Windows ファイル名で使用禁止の文字 `[\/\\:*?"<>|]`
+- BonsaiLog F-10 採用 (Q14 NM3、Repolog 流用): `_` に自動置換、連続 `_` を 1 つに圧縮、端の `_` を除去
+- Microsoft 公式 docs に基づく
+
+### page-break-after / -webkit-page-break-after
+
+- 定義：CSS の改ページ指示。WebKit (iOS Safari / WKWebView) は `-webkit-` プレフィクス必須 (Issue #8843)
+- BonsaiLog F-10 採用 (Q2、ADR-0016): 両方併記必須
+  ```css
+  page-break-after: always;
+  -webkit-page-break-after: always;
+  ```
+
+### data URI (data:image/jpeg;base64,...)
+
+- 定義：画像をテキスト化 (base64 エンコード) して HTML に inline する形式
+- BonsaiLog F-10 採用 (Q1 W1): iOS WKWebView の file:// パス制約回避
+- expo-image-manipulator で 800×800 px / JPEG quality 75 にリサイズ後 base64 化
+
+### cacheDirectory (一時保存場所)
+
+- 定義：expo-file-system の `Paths.cache` (`cacheDirectory`)、OS が任意のタイミングで削除可能な一時保存場所
+- BonsaiLog F-10 採用: PDF / CSV を一時生成 → Share Sheet → `file.delete()` で後始末 (Q7、ADR-0016)
+- ADR-0007 (F-11) と同思想 (cacheDirectory + Share Sheet + 後始末)
+
+### data portability (データポータビリティ)
+
+- 定義：ユーザーが自分のデータを別の形式 / 別のサービスに持ち出せる権利・仕組み
+- BonsaiLog F-10 のキャッチ「あなたの記録を、あなたの手元へ。」(Design 参考)
+- GDPR / 業界標準で重視される概念
+
+### Apple Health 風 BottomSheet（再掲）
 
 ---
 

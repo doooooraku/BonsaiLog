@@ -70,13 +70,13 @@ On any new session, Claude Code should:
 | ---------------- | ------------------------------------------------------------------- |
 | `/discuss`       | User wants to discuss / explore / compare options (no code changes) |
 | `/plan`          | W-01〜W-05: Turn a problem into a ready-to-implement Issue          |
-| `/review-pr`     | W-10.5: Review a PR created by Codex                                |
+| `/review-pr`     | W-10.5: Review a PR (self-review or another Claude Code session)    |
 | `/retro`         | Milestone / release retrospective                                   |
 | `/progress`      | 3-axis audit (planning / integration / quality)                     |
 | `/store-text`    | Generate App Store / Google Play listing text                       |
 | `/release-check` | Pre-release final check                                             |
 
-Skills that belong to **Codex** (don't use these directly from Claude Code):
+Implementation Skills (Claude Code 単独運用、2026-05-01 から両系統 Skill を Claude Code が使う):
 
 - `/implement` — W-06〜W-10 implementation
 - `/fix-ci` — W-08a CI recovery

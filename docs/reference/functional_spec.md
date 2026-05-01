@@ -621,13 +621,12 @@ const handleSave = async (input: CreateEventInput) => {
 
 ### §9.1 目的
 
-水やり記録を棒グラフと「最後の水やりから X 日」で可視化する。盆栽健康問題の 98% が水やり由来（Bonsai Direct 公式）ゆえ、記録習慣がコア価値。
+水やり記録を**ヒートマップ**と「最後の水やりから X 日」で可視化する。盆栽健康問題の 98% が水やり由来（Bonsai Direct 公式）ゆえ、記録習慣がコア価値。Free / Pro 関係なく全機能利用可（ADR-0013）。
 
 ### §9.2 画面 / 入口
 
-- 盆栽詳細のサマリセクション（最後の水やりから X 日）
-- 盆栽詳細のグラフセクション（直近 30 日の棒グラフ、切替可能）
-- 全盆栽水やり比較（Pro 限定、`(tabs)/stats`）
+- 盆栽詳細のサマリセクション（「最後の水やりから X 日」テキスト + ヒートマップ + フィルター）
+- 全盆栽サマリータブ（`(tabs)/stats`、全盆栽集約ヒートマップ + フィルターで個別表示も可）
 
 ### §9.3 期待動作
 
@@ -636,84 +635,165 @@ const handleSave = async (input: CreateEventInput) => {
 ```typescript
 // components/DaysSinceWatering.tsx
 export function DaysSinceWatering({ bonsaiId }: { bonsaiId: string }) {
-  const { data: lastEvent } = useQuery({
-    queryKey: ['bonsai', 'last_watering', bonsaiId],
-    queryFn: () => db.getFirstAsync<Event>(
-      `SELECT * FROM events WHERE bonsai_id = ? AND type = 'watering'
-       ORDER BY occurred_at DESC LIMIT 1`,
-      [bonsaiId]
-    ),
-  })
+  const { data: lastEvent } = useLiveQuery(
+    db.select().from(events)
+      .where(and(
+        eq(events.bonsai_id, bonsaiId),
+        eq(events.type, 'watering'),
+        eq(events.status, 'logged'),
+        isNull(events.deleted_at)
+      ))
+      .orderBy(desc(events.occurred_at_utc))
+      .limit(1)
+  );
 
-  if (!lastEvent) return <Text>{t('water.never')}</Text>
+  if (!lastEvent) return <Text size="$6">{t('water.never')}</Text>;
 
-  const days = differenceInDays(new Date(), new Date(lastEvent.occurredAt))
+  const days = differenceInLocalDays(new Date(), lastEvent.occurred_at_utc, lastEvent.tz_offset_min);
 
-  if (days === 0) return <Text size="$8">{t('water.today')}</Text>
-  return <Text size="$8">{t('water.days_ago', { count: days })}</Text>
+  if (days === 0) return <Text size="$10" weight="bold">{t('water.today')}</Text>;
+  if (days <= 30) return <Text size="$10" weight="bold">{t('water.days_ago', { count: days })}</Text>;
+  if (days <= 365) return <Text size="$8" weight="regular" color="$color10">{t('water.days_ago', { count: days })}</Text>;
+  return <Text size="$8" weight="regular" color="$color10">{t('water.over_year')}</Text>;
 }
 ```
 
-#### §9.3.2 棒グラフ仕様
+- フォントサイズ: 24-28pt Bold（0-30 日）/ 24pt Regular（31-365 日 + 1 年超）
+- コントラスト: WCAG AAA 7:1 以上（`#1A1A1A` on `#FFFFFF`）
+- 集約モード（stats タブ全盆栽集約時）では非表示（ADR-0013 §X1）
 
-- 横軸: 日（直近 30/90/365 日、ボトムタブで切替）
-- 縦軸: その日の水やり回数（0〜5、通常は 0 or 1）
-- 空の日は**棒なし**（0 で埋めない、記録欠損の可視化）
-- **判定は行わない**（「少なすぎます」等の警告を出さない、原則 P2）
-- Pro 限定: 365 日表示、全盆栽横断比較
+#### §9.3.2 ヒートマップ仕様
+
+- 描画: `@shopify/react-native-skia` の `<Atlas>` API で 365 セル一括 GPU 描画
+- 形状: **年モード = 7 行 × 52 列**（GitHub Contribution Graph 風）/ **月モード = 7 行 × 5 列**
+- 期間切替: セグメンテッドコントロール `[ 月 ] [ 年 ]`、年送り `[◀ 2025] [2026] [2027 ▶]` / 月送り併設
+- 配色: ColorBrewer 2.0 Greens 4-class（color-blind safe）
+  - L0 (空): `#F5F8F5` / L1: `#BAE4B3` / L2: `#74C476` / L3: `#238B45`
+- 数字併記: 各セルに白文字オーバーレイ（"1" "2" "3+"）— WCAG 1.4.1 / Apple Differentiate Without Color 評価基準
+- 今日のセル: 太枠 2dp `#238B45` でハイライト
+- 未来日: 灰色 `#E0E0E0` で「未来」と区別
+- 過去のみ表示（status='logged' のみ、未来予定 status='planned' は F-02 タイムラインタブで表示）
+- **判定は行わない**（「少なすぎます」等の警告を出さない、constraints §5-2 禁止語）
 
 ```mermaid
 graph LR
-  A[SQLite events WHERE type='watering'] --> B[groupBy dateKey]
-  B --> C[今日から N 日前まで配列を埋める]
-  C --> D[空日は null で保持]
-  D --> E[VictoryNative / Recharts で棒グラフ描画]
+  A[SQLite events WHERE type='watering' AND status='logged'] --> B[aggregateByDay 純関数]
+  B --> C[ローカル日付で 365 / 30 配列に変換]
+  C --> D[K5 ハイブリッド凡例指標を計算]
+  D --> E[Skia Atlas で sprite 描画]
 ```
 
-#### §9.3.3 切替 UI
+#### §9.3.3 凡例（K5 ハイブリッド、画面下部常時表示）
+
+- **盆栽詳細画面（個別 1 本）**:
+  ```
+  凡例 (この盆栽への水やり回数):
+  □ 0 回  ■ 1 回  ■ 2 回  ■ 3+ 回
+  ```
+- **stats タブ（全盆栽集約）**:
+  ```
+  凡例 (持っている盆栽のうち水やった割合):
+  □ 0%  ■ 1-33%  ■ 34-66%  ■ 67-100%
+  ```
+- **stats タブで個別盆栽選択時**: K1（回数）に切替、凡例ラベルも同時更新
+
+#### §9.3.4 タップ詳細（Apple Health 風 BottomSheet）
+
+- ライブラリ: `@gorhom/bottom-sheet`
+- ヒートマップセルをタップ → 下から BottomSheet がせり上がる（画面遷移なし、シニア UX◎）
+- シート内容:
+  - 日付（"2026年4月15日 (水)"）
+  - 水やり回数
+  - その日の events リスト（時刻 + 盆栽名）
+  - `[ + この日に水やり記録 ]` ボタン
+- 閉じる操作: 下スワイプ / シート外タップ / 背景タップ / OS 戻るボタン
+
+#### §9.3.5 フィルター（F1+F3 ハイブリッド、stats タブのみ）
+
+- ヒートマップ下に「すべての盆栽 (N本) ▼」シンプルドロップダウン（F1 由来）
+- タップで下から検索付きシート展開（F3 由来）:
+  - 検索ボックス
+  - 「最近見た 3 本」セクション
+  - 「すべての盆栽（アイウエオ順）」セクション
+- 「すべての盆栽」がデフォルト（高橋 62 歳即使用可）
+
+#### §9.3.6 画面構成 UI
 
 ```
-┌────────────────────────────────┐
-│  最後の水やりから 3 日           │
-├────────────────────────────────┤
-│  ▁▁█▁▁█▁▁▁█▁▁▁▁█▁▁█▁▁  ← 30 日 │
-│                                 │
-│  [30日] [90日] [365日★]         │
-└────────────────────────────────┘
-★ = Pro 限定マーク
+┌─────────────────────────────────────┐
+│ ←  黒松「太郎」                  ⋮  │
+├─────────────────────────────────────┤
+│        最後の水やりから              │
+│            3 日                      │  ← 28pt Bold
+│    [ 💧 今日の水やりを記録 ]         │
+├─────────────────────────────────────┤
+│  📊 2026年の水やり実績               │
+│  [ 月 ] [ 年 ]                       │  ← セグメンテッドコントロール
+│  [◀ 2025] [2026] [2027 ▶]           │
+│                                      │
+│  月  ■■□■■■□■□■■■■■■■■□■■  │  ← Skia ヒートマップ 7×52
+│  ...                                  │
+│                                      │
+│  凡例 (この盆栽への水やり回数):       │
+│  □ 0回  ■ 1回  ■ 2回  ■ 3+回      │
+│                                      │
+│  記録日数: 87 / 365 日 (24%)         │  ← 提案 F: 年間サマリー数字
+│  記録件数: 95 件                     │  ← 提案 H: データ件数
+└─────────────────────────────────────┘
 ```
 
 ### §9.4 境界値テーブル
 
-| 項目                      | 境界 | 期待動作                                      |
-| ------------------------- | ---- | --------------------------------------------- |
-| 水やり記録 0 件           | 下限 | 「まだ記録がありません」+ 記録ボタン          |
-| 水やり記録 1 件（今日）   | 境界 | 「今日、水やりしました」                      |
-| 水やり記録 1 件（昨日）   | 境界 | 「最後の水やりから 1 日」                     |
-| 水やり記録 1 件（1 年前） | 境界 | 「最後の水やりから 365 日」（警告表示しない） |
-| 同日 2 回の水やり         | 境界 | 棒グラフで棒高さ 2（積み上げ）                |
-| 未来日時の記録            | 異常 | バリデーション NG（F-02 で対処）              |
-| Free で 365 日タップ      | 境界 | Paywall 遷移                                  |
+| 項目                        | 境界 | 期待動作                                      |
+| --------------------------- | ---- | --------------------------------------------- |
+| 水やり記録 0 件             | 下限 | 「まだ記録がありません」+ 記録ボタン          |
+| 水やり記録 1 件（今日）     | 境界 | 「今日、水やりしました」                      |
+| 水やり記録 1 件（昨日）     | 境界 | 「最後の水やりから 1 日」                     |
+| 水やり記録 1 件（1 年前）   | 境界 | 「最後の水やりから 365 日」（警告表示しない） |
+| 水やり記録 1 件（1 年超）   | 境界 | 「最後の水やりから 1 年以上」                 |
+| 同日 2 回の水やり           | 境界 | ヒートマップセル内に "2" 数字オーバーレイ     |
+| 同日 4 回以上の水やり       | 境界 | ヒートマップセル内に "3+" 数字オーバーレイ    |
+| 未来日時の記録              | 異常 | バリデーション NG（F-02 で対処、ADR-0008）    |
+| TZ 境界（JST 23:55 水やり） | 境界 | ローカル日付で当日のセルにカウント            |
+| 全盆栽集約モード            | 境界 | 「最後から X 日」非表示、達成率 % 表示        |
+| 100 本フィルター切替        | 性能 | 60 FPS でスムーズアニメ                       |
 
 ### §9.5 エラーフロー
 
-| エラー            | 表示                             | 対応                      |
-| ----------------- | -------------------------------- | ------------------------- |
-| グラフ描画失敗    | 「グラフを読み込めませんでした」 | 再試行                    |
-| events データ破損 | 「データを修復してください」     | 設定 → 整合性チェック機能 |
+| エラー               | 表示                              | 対応                      |
+| -------------------- | --------------------------------- | ------------------------- |
+| ヒートマップ描画失敗 | 「データを読み込めませんでした」  | 再試行                    |
+| events データ破損    | 「データを修復してください」      | 設定 → 整合性チェック機能 |
+| Hermes Intl エラー   | フォールバックで `MM/DD` 形式表示 | @formatjs polyfill 追加   |
 
 ### §9.6 受け入れ条件
 
-- [ ] 水やり記録 10 件 → 棒グラフに 10 本表示
-- [ ] 記録のない日は棒なし（0 で埋めない）
-- [ ] 「警告」「不足」等の判定語が UI に出ない
-- [ ] Free で 365 日切替 → Paywall 表示
-- [ ] Pro 購入後、365 日表示即有効
+- [ ] ヒートマップが 7×52（年）/ 7×5（月）で表示される
+- [ ] ColorBrewer Greens 4 段階配色 + 数字併記が機能する
+- [ ] 凡例が画面下部に常時表示、画面ごとに動的（K1 個別 / K2 集約）
+- [ ] 「最後から X 日」が画面上部に 24-28pt Bold で表示
+- [ ] 集約モードで「最後から X 日」非表示
+- [ ] セルタップ → BottomSheet で日別詳細表示
+- [ ] フィルター（F1+F3 ハイブリッド）が動作
+- [ ] 月 / 年セグメンテッドコントロール切替動作
+- [ ] 過去のみ表示（未来予定は非表示）
+- [ ] 「警告」「不足」「べき」等の判定語が UI に出ない（CI `pnpm i18n:forbidden`）
+- [ ] Free / Pro 関係なく全機能利用可
+- [ ] 19 言語ローカライズ（月名 / 曜日名 / 凡例ラベル / 「最後から X 日」）
+- [ ] WCAG AAA 7:1 / 44pt セル / 8dp 間隔
+- [ ] iOS Color Filters Grayscale モードで数字併記が機能（手動チェック）
 
 ### §9.7 対応テスト
 
-- Jest: `__tests__/features/care/watering_chart.test.ts`, `days_since.test.ts`
-- Jest: `__tests__/domain/stats/group_by_date.test.ts`
+- Jest: `__tests__/features/care/aggregateWatering.test.ts`（純関数集計、TZ 境界、空日、複数回水やり）
+- Jest: `__tests__/features/care/daysSinceWatering.test.ts`（しきい値分岐 0/1/2-30/31-365/365+ 日）
+- Jest: `__tests__/features/care/heatmapData.test.ts`（K5 ハイブリッド: K1 個別 / K2 達成率）
+- Jest: `__tests__/features/care/i18nForbiddenWords.test.ts`（禁止語検出）
+- Maestro: `maestro/flows/watering_heatmap.yml`（盆栽詳細 → ヒートマップ → セルタップ → BottomSheet）
+- Maestro: `maestro/flows/watering_filter.yml`（フィルターシート → 検索 → 個別選択 → 凡例切替）
+- Maestro: `maestro/flows/watering_period_switch.yml`（月 / 年セグメンテッドコントロール切替）
+
+詳細は ADR-0013 を正とする。
 
 ---
 
@@ -829,36 +909,43 @@ interface WiringPayload {
 }
 ```
 
-#### §12.3.3 外し時期通知（指定日時 / 事実通知）
+#### §12.3.3 外し時期の扱い（ADR-0014 で個別通知 → F-02 統合 + アプリ内表示に変更）
 
-**ユーザー指定日時通知**:
+**ユーザー指定外し日時**: F-02 status='planned' に統合 (ADR-0014 F1)
 
 ```typescript
-// ユーザーが「外す予定日時」を 2026-06-15 09:00 と指定した場合
+// ユーザーが「外す予定日時」を 2026-06-15 と指定した場合
 if (payload.scheduled_unwire_at) {
-  await Notifications.scheduleNotificationAsync({
-    identifier: `bonsai_${bonsaiId}_unwire_${wiringEventId}`,
-    content: {
-      title: t('wire.scheduled.title', { bonsaiName }),
-      body: t('wire.scheduled.body', {
-        date: formatLocal(payload.scheduled_unwire_at, tzIana, locale),
-      }),
-      data: { bonsai_id: bonsaiId, event_type: 'unwiring', wiring_event_id: wiringEventId },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DATE,
-      date: payload.scheduled_unwire_at,
-    },
+  // F-02 events に status='planned' で登録 (種別 'unwiring')
+  // 個別通知は発火させず、F-16 当日まとめ通知に集約される
+  await db.insert(events).values({
+    id: ulid(),
+    bonsai_id: bonsaiId,
+    type: 'unwiring',
+    status: 'planned',
+    occurred_at_utc: new Date(payload.scheduled_unwire_at).toISOString(),
+    tz_offset_min: getTzOffsetMin(),
+    tz_iana: getTzIana(),
+    payload_json: JSON.stringify({ linked_wiring_event_id: wiringEventId }),
   });
+  // F-16 invalidator パターンで当日まとめ通知を再生成
+  await invalidateBonsaiNotifications(bonsaiId);
 }
 ```
 
-**通知文言（推奨ではなく事実）**:
+**装着期間経過の表示**: 通知ではなくアプリ内事実表示 (ADR-0014 で確定)
 
-- ✅ 「針金の指定日時です（◯月◯日設定）」 (`wire.scheduled.body`)
-- ✅ 「装着期間 6 週経過しました」 (`wire.weeks_elapsed.body`)
-- ❌ 「針金を外しましょう」（推奨/命令、禁止）
-- ❌ 「作業してください」（推奨/命令、禁止）
+- 盆栽詳細画面 → 針金一覧セクション
+- 各針金 event に対して以下を表示:
+  - 6 週未経過: 「装着期間: X 週 Y 日 (あと N 週)」
+  - 6 週経過済: 「装着期間: X 週 Y 日 (経過済)」
+  - 外し記録あり: 「装着期間: X 週 (完了)」
+- 通知発火なし: ユーザーが自発的にアプリを開いて確認
+
+**禁止文言（旧仕様で記載されていた通知文言は削除、ADR-0014 整合）**:
+
+- ❌ 「針金を外しましょう」「外してください」「作業してください」（推奨/命令、禁止）
+- ✅ 「装着期間: 6 週 3 日 (経過済)」（事実、アプリ内表示）
 
 #### §12.3.4 外し記録の紐付け
 
@@ -895,20 +982,21 @@ sequenceDiagram
 | 外し記録の紐付け先が存在しない | インラインエラー | 適切な wiring event を選び直す |
 | scheduled_unwire_at が過去     | インラインエラー | 修正                           |
 
-### §12.6 受け入れ条件
+### §12.6 受け入れ条件（ADR-0014 反映）
 
 - [ ] 針金記録時に「外す予定日時」入力欄が表示される（任意入力）
-- [ ] 指定日時に通知発火、文言が「針金の指定日時です（◯月◯日設定）」
-- [ ] 装着期間 6 週経過で事実通知発火、文言が「装着期間 6 週経過しました」
-- [ ] 「外しましょう」「作業してください」等の禁止語が含まれない（CI で `i18n:audit` で検出）
-- [ ] 外し記録で該当針金レコードが Unwired 状態、通知キャンセル
-- [ ] 針金 event 削除で CASCADE、通知もキャンセル
-- [ ] scheduled_unwire_at 未入力時は事実通知のみ動作
+- [ ] 「外す予定日時」入力時に F-02 status='planned' (種別 'unwiring') として登録
+- [ ] 該当日の F-16 当日まとめ通知に「N 件の作業予定があります」として集約される
+- [ ] 装着期間 6 週経過時に **通知発火しない** (ADR-0014 で削除)
+- [ ] 盆栽詳細 → 針金一覧で「装着期間: X 週 Y 日 (経過済 / あと N 週 / 完了)」がアプリ内表示
+- [ ] 「外しましょう」「作業してください」等の禁止語が UI / 通知文言に含まれない（CI で `pnpm i18n:forbidden` で検出）
+- [ ] 外し記録 (unwiring event) で該当針金レコードが完了状態、F-02 planned event もキャンセル
+- [ ] 針金 event 削除で CASCADE、関連 F-02 planned event 削除、F-16 通知再生成
 
 ### §12.7 対応テスト
 
-- Jest: `__tests__/features/wiring/record.test.ts`, `scheduledNotification.test.ts`, `weeksElapsedNotice.test.ts`, `forbiddenWords.test.ts`
-- Maestro: `maestro/flows/wiring_with_schedule.yml`
+- Jest: `__tests__/features/wiring/record.test.ts`, `scheduledPlanned.test.ts`, `weeksElapsedDisplay.test.ts`, `forbiddenWords.test.ts`
+- Maestro: `maestro/flows/wiring_with_schedule.yml`（針金記録 → F-02 planned 確認 → 当日 F-16 通知に集約 → 外し記録）
 
 ---
 
@@ -1114,75 +1202,204 @@ flowchart TD
   Rank --> Display[上位 50 件表示]
 ```
 
-#### §14.3.2 2 文字クエリ対応（trigram + fts5vocab）
+#### §14.3.2 検索カバー範囲（3 段組みグループ表示、ADR-0008 / リサーチ反映）
+
+検索クエリは以下 **3 ターゲット**を並列検索し、**Things 3 / Apple Notes 風の 3 段組みグループ表示**で結果を返す:
+
+| ターゲット                                           | 検索方式                                                       | 想定応答 (25 万行 events) |
+| ---------------------------------------------------- | -------------------------------------------------------------- | ------------------------- |
+| **盆栽名 (`bonsai.name`)**                           | LIKE 走査 (200 行レベル、index 不要)                           | ~1ms                      |
+| **樹種名 (`species_names.common_name` 19 言語通称)** | LIKE 走査 (1,000 行レベル)                                     | ~5ms                      |
+| **作業メモ (`events.note`)**                         | FTS5 trigram MATCH (2 文字 → vocab 展開、3 文字+ → 直接 MATCH) | ~50ms                     |
+
+**結果表示**:
+
+- 「盆栽 N 件 / 樹種 N 件 / メモ N 件」をセクション分け
+- 0 件のセクションは非表示 (動的に表示数変化)
+- 各セクション内 bm25 降順 → 同スコア時 `updated_at` 降順
+- 上限 50 件 (各セクション合算)
+- FTS5 `snippet(events_fts, 0, '<b>', '</b>', '...', 8)` でマッチ部分を `<b>` で強調
+
+#### §14.3.2.1 検索カバー擬似コード
 
 ```typescript
-// domain/search/fts.ts
-export async function searchBonsai(q: string): Promise<Bonsai[]> {
-  if ([...q].length < 2) return [];
+// domain/search/multiSearch.ts
+export interface SearchResult {
+  bonsai: Bonsai[]; // セクション 1: 盆栽名一致
+  species: SpeciesName[]; // セクション 2: 樹種名一致
+  notes: NoteHit[]; // セクション 3: メモ一致 (snippet 含む)
+}
 
-  if ([...q].length >= 3) {
-    return db.getAllAsync<Bonsai>(
-      `SELECT b.* FROM events_fts f
-       JOIN events e ON e.rowid = f.rowid
-       JOIN bonsai b ON b.id = e.bonsai_id
-       WHERE events_fts MATCH ?
-       ORDER BY bm25(events_fts)
-       LIMIT 50`,
-      [q],
-    );
-  }
+export async function search(rawQuery: string): Promise<SearchResult> {
+  const q = rawQuery.trim(); // Y4: 前後空白 trim
+  if ([...q].length < 2) return { bonsai: [], species: [], notes: [] };
 
-  // 2 文字: vocab から trigram 前方一致を拾う
-  const tokens = await db.getAllAsync<{ term: string }>(
-    `SELECT term FROM events_fts_vocab
-     WHERE term LIKE ? ESCAPE '\\'
-     LIMIT 200`,
-    [q.replace(/[%_\\]/g, '\\$&') + '%'],
+  // case-insensitive 統一: SQLite COLLATE NOCASE + LOWER() (Y5)
+  const qLower = q.toLowerCase();
+
+  // 盆栽名: LIKE (アーカイブ除外、Y1)
+  const bonsai = await db.getAllAsync<Bonsai>(
+    `SELECT * FROM bonsai WHERE archived_at IS NULL AND deleted_at IS NULL
+     AND LOWER(name) LIKE ? ORDER BY updated_at DESC LIMIT 50`,
+    [`%${qLower}%`],
   );
 
-  if (tokens.length === 0) return [];
+  // 樹種名: LIKE (19 言語通称、現在ロケール優先 + 全言語フォールバック)
+  const species = await db.getAllAsync<SpeciesName>(
+    `SELECT * FROM species_names WHERE LOWER(common_name) LIKE ?
+     ORDER BY (locale = ?) DESC LIMIT 50`,
+    [`%${qLower}%`, currentLocale],
+  );
 
-  const matchExpr = tokens.map((t) => `"${t.term}"`).join(' OR ');
-  return db.getAllAsync<Bonsai>(
-    `SELECT b.* FROM events_fts f
+  // メモ: FTS5 (deleted_at NULL のみ = ゴミ箱除外、Y2 / payload 検索なし、Y3)
+  const notes = await searchNotesFts(q);
+
+  return { bonsai, species, notes };
+}
+
+async function searchNotesFts(q: string): Promise<NoteHit[]> {
+  let matchExpr: string;
+  if ([...q].length >= 3) {
+    matchExpr = q; // 直接 MATCH
+  } else {
+    // 2 文字: vocab から trigram 前方一致を OR 展開
+    const tokens = await db.getAllAsync<{ term: string }>(
+      `SELECT term FROM events_fts_vocab WHERE term LIKE ? ESCAPE '\\' LIMIT 200`,
+      [q.replace(/[%_\\]/g, '\\$&') + '%'],
+    );
+    if (tokens.length === 0) return [];
+    matchExpr = tokens.map((t) => `"${t.term}"`).join(' OR ');
+  }
+
+  return db.getAllAsync<NoteHit>(
+    `SELECT
+       b.id AS bonsai_id, b.name, b.cover_photo_id,
+       e.id AS event_id, e.type, e.occurred_at_utc,
+       snippet(events_fts, 0, '<b>', '</b>', '...', 8) AS snippet
+     FROM events_fts f
      JOIN events e ON e.rowid = f.rowid
      JOIN bonsai b ON b.id = e.bonsai_id
      WHERE events_fts MATCH ?
-     ORDER BY bm25(events_fts) LIMIT 50`,
+       AND e.deleted_at IS NULL          -- Y2 ゴミ箱除外
+       AND b.archived_at IS NULL          -- Y1 アーカイブ除外
+       AND b.deleted_at IS NULL
+     ORDER BY bm25(events_fts), e.occurred_at_utc DESC
+     LIMIT 50`,
     [matchExpr],
   );
 }
 ```
 
-#### §14.3.3 タグ機能
+#### §14.3.3 タグ機能（ADR-0008 / リサーチ反映）
 
-- ユーザー定義タグ（例: `#展示会候補`、`#ベランダ`、`#要注意`）
-- `tags` テーブル（id, name）と `bonsai_tags`（bonsai_id, tag_id）の多対多
-- Home 上部にタグチップ、複数選択で AND フィルタ
+**データモデル** (ADR-0008 §12-13):
+
+- `tags`: `id ULID PK / name TEXT NOT NULL / name_normalized TEXT NOT NULL UNIQUE / color TEXT NULL (v1.0 未使用) / created_at / updated_at`
+- `bonsai_tags`: `bonsai_id / tag_id / created_at`、PK = (bonsai_id, tag_id)、双方向 index
+
+**重複防止**: `name_normalized = name.toLowerCase().normalize('NFC')` で UNIQUE 制約 (case-insensitive + NFC 正規化、Bear / Things 業界標準)
+
+**タグ作成タイミング**: **G1 都度作成**（盆栽編集画面で「タグを追加」入力 → 既存マッチなら再利用、なければ新規作成）
+
+- ❌ Settings → タグ管理画面で先に作成 (Notion 風) は採用しない (シニア UX 重視)
+
+**最近使われた 3 タグ候補チップ** (盆栽編集画面、入力欄上部):
+
+```sql
+-- 直近 30 日で bonsai_tags への INSERT 上位 3 件
+SELECT t.id, t.name, COUNT(*) AS cnt
+FROM bonsai_tags bt
+JOIN tags t ON t.id = bt.tag_id
+WHERE bt.created_at > date('now', '-30 days')
+GROUP BY t.id ORDER BY cnt DESC LIMIT 3;
+```
+
+- ライトユーザー (タグ 0 件) の場合は非表示
+- チップタップで即追加、Bear / Things 業界標準
+
+**Home 上部にタグチップ**:
+
+- 複数選択で AND フィルタ (junction table COUNT(DISTINCT) = 選択数 SQL)
+- 並び順: **使用頻度の多い順 (上位 10 個 + 「もっと見る」)** (TC1)
 - タグは言語非依存（ユーザー入力）、翻訳キー経由しない
+
+**色設定**: v1.0 で**実装しない (C1)**、灰色チップ統一 (v1.x で要望が来たら追加)
+
+**タグ削除時 (R1+R3 ハイブリッド)**:
+
+- 確認モーダル: 「このタグを N 本の盆栽から外します。よろしいですか?」(DM1) + [キャンセル] [外す]
+- 確定 → `bonsai_tags` 該当行 CASCADE 削除 (盆栽自体は残る)
+
+**タグ rename 機能 (Y9)**: Settings → タグ管理画面で誤入力修正可
+
+**制約**:
+
+- 1 盆栽あたり最大 **10 タグ** (TM1、Bear / Things 業界標準)
+- アプリ全体タグ最大: **制限なし** (TG1)、ただし性能限界把握テスト用意 (`tagLimit.test.ts` で 1000/5000/10000 タグ性能計測)
+- タグ名最大 **32 文字** (TL1、Bear / Notion 慣行)
+- タグ名 0 文字: バリデーション NG
 
 #### §14.3.4 検索履歴
 
 - 端末内、最大 20 件（AsyncStorage に保存）
 - 最古が落ちる FIFO
 - 「履歴を削除」ボタン
+- 検索画面表示時、クエリ 0 文字なら履歴 + 「最近の検索」見出し表示
+
+#### §14.3.5 シニア UX 数値仕様（リサーチ発見、必須）
+
+| 要素             | 値                                                                    | 根拠                                                |
+| ---------------- | --------------------------------------------------------------------- | --------------------------------------------------- |
+| 検索バー高       | **48 dp 以上**                                                        | WCAG 2.5.5 AAA / シニア対応                         |
+| フォントサイズ   | **17 pt 以上**                                                        | Apple HIG body                                      |
+| クリア × ボタン  | **48 × 48 dp タッチ領域**                                             | WCAG 2.5.5 AAA                                      |
+| debounce         | **300 ms**                                                            | シニアタイプミス耐性 (Things 3 ms オーダーより緩め) |
+| 結果リスト項目高 | **72 dp**                                                             | タイトル 18pt + サブ 14pt + 余白                    |
+| サムネイル写真   | **56 × 56 dp** (Y8、F-08 cover_photo)                                 | 視認性                                              |
+| placeholder 文言 | **「盆栽名・樹種・メモで検索」** (PH1)                                | 何が検索できるか明示、19 言語                       |
+| 0 件時の文言     | **「該当する記録はありません。別のキーワードを試してください」** (N1) | 中立 + ヒント、constraints §5-2 整合                |
+
+**検索バー配置** (P1):
+
+- Home 上部に常時表示 (sticky)
+- タップで検索画面 (`/search`) 全画面遷移
+- 検索画面で結果タップ → 盆栽詳細遷移 → 戻る → **検索画面に戻る (クエリ + 結果保持、BK1)**
+
+**event タップ時の挙動 (Y10)**:
+
+- 盆栽詳細画面に遷移 + 該当 event をハイライト表示 (Apple Notes 標準動作)
+
+**キーボード「検索」キー対応 (Y6)**:
+
+- debounce + Enter 両対応 (Enter 即時実行、debounce 待たない)
+
+**検索画面でテキスト + タグ AND フィルタ (Y7)**: 検索クエリとタグチップを同時適用可
 
 ### §14.4 境界値テーブル
 
-| 項目                     | 境界     | 期待動作                             |
-| ------------------------ | -------- | ------------------------------------ |
-| クエリ 0 文字            | 下限     | 全件表示（検索バー空）               |
-| クエリ 1 文字            | 下限未満 | ガイド表示、検索不実行               |
-| クエリ 2 文字            | 下限     | vocab 展開で検索                     |
-| クエリ 3 文字            | 下限超   | 直接 fts5 MATCH                      |
-| クエリ 100 文字          | 上限なし | 実行（結果は少数か 0）               |
-| 検索結果 0 件            | 境界     | 「該当なし」+ タイプミス示唆         |
-| 検索結果 50 件           | 上限     | 上位 50 件のみ表示                   |
-| タグ 0 個                | 境界     | タグチップ非表示                     |
-| タグ 100 個              | 極端     | 横スクロール表示                     |
-| 同名タグ重複作成         | 異常     | 既存タグを再利用（大文字小文字区別） |
-| クエリに `"`/`*`/`(`/`)` | 特殊     | エスケープして実行                   |
+| 項目                            | 境界     | 期待動作                                                             |
+| ------------------------------- | -------- | -------------------------------------------------------------------- |
+| クエリ 0 文字                   | 下限     | 検索履歴 + 「最近の検索」見出し表示                                  |
+| クエリ 1 文字                   | 下限未満 | ガイド表示、検索不実行                                               |
+| クエリ 2 文字                   | 下限     | vocab 展開で検索                                                     |
+| クエリ 3 文字                   | 下限超   | 3 段組み (盆栽名 LIKE + 樹種名 LIKE + メモ FTS5 MATCH)               |
+| クエリ 100 文字                 | 上限なし | 実行（結果は少数か 0）                                               |
+| クエリ前後空白 (例「 黒松 」)   | 正規化   | trim して検索 (Y4)                                                   |
+| クエリ大文字小文字混在          | 正規化   | LOWER() で case-insensitive (Y5)                                     |
+| Enter キー (キーボード検索)     | 確定     | debounce 待たず即時実行 (Y6)                                         |
+| 検索結果 0 件                   | 境界     | 「該当する記録はありません。別のキーワードを試してください」(N1)     |
+| 検索結果セクション 0 件         | 境界     | 該当セクション非表示 (SE1、動的に表示数変化)                         |
+| 検索結果 50 件                  | 上限     | 上位 50 件のみ表示 (3 段組み合算)                                    |
+| タグ 0 個                       | 境界     | Home タグチップ非表示                                                |
+| タグ全体 1000 / 5000 / 10000 個 | 性能     | tagLimit.test.ts で性能計測 (TG1 制限なし、テスト用意)               |
+| 1 盆栽あたりタグ 11 個目        | 異常     | 「最大 10 タグまで」インラインエラー (TM1)                           |
+| タグ名 33 文字目                | 異常     | 「最大 32 文字まで」インラインエラー (TL1)                           |
+| タグ名 0 文字                   | 異常     | バリデーション NG                                                    |
+| 同名タグ重複作成                | 異常     | name_normalized UNIQUE 制約で既存タグ再利用 (case-insensitive + NFC) |
+| アーカイブ済盆栽                | 除外     | 検索結果に出ない (Y1、archived_at IS NOT NULL)                       |
+| ゴミ箱内 events                 | 除外     | 検索結果に出ない (Y2、deleted_at IS NOT NULL)                        |
+| events.payload_json 検索        | 除外     | 検索対象外 (Y3、note のみ)                                           |
+| クエリに `"`/`*`/`(`/`)`        | 特殊     | エスケープして実行                                                   |
 
 ### §14.5 エラーフロー
 
@@ -1193,12 +1410,29 @@ export async function searchBonsai(q: string): Promise<Bonsai[]> {
 
 ### §14.6 受け入れ条件
 
-- [ ] 「黒松」で検索 → 該当盆栽表示
+- [ ] 3 段組み表示「盆栽 N 件 / 樹種 N 件 / メモ N 件」、0 件セクションは非表示 (S1 / SE1)
+- [ ] 「黒松」で検索 → 樹種「黒松」+ 盆栽名「黒松「太郎」」+ メモ内「黒松」が各セクションに表示
 - [ ] 2 文字「水や」で検索 → vocab 展開で結果表示
-- [ ] 1 文字 → 「2 文字以上で検索」ガイド
-- [ ] 盆栽 1,000 本 + 作業 50,000 件で検索 < 300ms
-- [ ] タグ複数選択で AND フィルタ動作
+- [ ] 1 文字 → 「2 文字以上で検索」ガイド (1 文字 NG、SQL 実行しない)
+- [ ] 盆栽 1,000 本 + 作業 25 万件で検索 P95 < 150ms (リサーチ実測根拠、Andrew Mara ベンチ)
+- [ ] タグ複数選択で AND フィルタ動作 (junction COUNT(DISTINCT) = 選択数)
 - [ ] 検索履歴 20 件超で FIFO
+- [ ] 検索バー高 48dp、フォント 17pt、debounce 300ms (シニア UX)
+- [ ] FTS5 snippet 関数でマッチ部分 `<b>` 強調表示
+- [ ] アーカイブ盆栽・ゴミ箱 events・payload_json は検索結果に出ない (Y1/Y2/Y3)
+- [ ] クエリ前後空白 trim、case-insensitive、Enter 即時実行 (Y4/Y5/Y6)
+- [ ] テキスト + タグ AND フィルタ動作 (Y7)
+- [ ] 検索結果に盆栽サムネイル写真 (cover_photo) 表示 (Y8、F-08 連動)
+- [ ] event タップ → 盆栽詳細 + 該当 event ハイライト (Y10)
+- [ ] 検索結果から盆栽詳細遷移 → 戻るで検索画面復帰 (BK1、クエリ + 結果保持)
+- [ ] 盆栽編集画面で「タグを追加」入力欄上部に最近使われた 3 タグ候補チップ表示 (G1)
+- [ ] 1 盆栽 11 タグ目で「最大 10 タグまで」インラインエラー (TM1)
+- [ ] タグ名 33 文字目で「最大 32 文字まで」インラインエラー (TL1)
+- [ ] 同名タグ作成 (case-insensitive + NFC) で既存タグ再利用 (name_normalized UNIQUE)
+- [ ] タグ削除時に確認モーダル「このタグを N 本の盆栽から外します。よろしいですか?」(DM1)
+- [ ] Settings → タグ管理画面でタグ rename 可 (Y9)
+- [ ] 19 言語ローカライズ (placeholder + 0 件文言 + 確認モーダル)
+- [ ] ストア審査禁止語が UI に出ない (CI `pnpm i18n:forbidden`)
 
 ### §14.7 対応テスト
 
@@ -1210,76 +1444,266 @@ export async function searchBonsai(q: string): Promise<Bonsai[]> {
 
 ### §15.1 目的
 
-全データを CSV・PDF 形式でエクスポートする。展示会出品記録・青色申告・データポータビリティ対応。
+全データを CSV・PDF 形式でエクスポートする。展示会出品記録・青色申告・データポータビリティ対応。**Pro 限定** (ADR-0009 / ADR-0011 / ADR-0016)。Repolog 既存実装 (`/home/doooo/04_app-factory/apps/Repolog/src/features/pdf/`) の堅牢性 (3 段階フォールバック + タイムアウト + ストレージチェック) を流用。
 
-### §15.2 画面 / 入口
+### §15.2 画面 / 入口 (7 画面構成)
 
-- 設定 → データ → エクスポート（Pro 限定）
+1. **Settings → エクスポート (Hub)**: 5 種類 (CSV×3 / PDF×2) を CSV/PDF セクション分け表示、キャッチ「あなたの記録を、あなたの手元へ。」
+2. **Options Sheet (BottomSheet)**: エクスポート種類タップで開く、盆栽選択 (全件 vs 個別、Y4) + 種類別オプション
+3. **Generating Overlay**: 進捗バー + 「キャンセル」ボタン (Y2)
+4. **Share Sheet**: iOS / Android 標準共有 UI (OS 委譲)
+5. **CSV Preview**: Excel 風スプレッドシート + 生テキスト両表示 (生成前確認)
+6. **PDF Bonsai Preview** (個別): A4 比縮小表示で 1 本ずつのレポート構成確認
+7. **PDF List Preview** (全盆栽): A4 比縮小表示で表紙 + リスト + 統計確認
 
 ### §15.3 期待動作
 
-#### §15.3.1 エクスポート種類
+#### §15.3.1 エクスポート種類 (5 種類、ADR-0016)
 
-| 種類             | フォーマット | 内容                         |
-| ---------------- | ------------ | ---------------------------- |
-| 盆栽一覧         | CSV          | 全盆栽の基本情報             |
-| 作業履歴         | CSV          | 全作業履歴（盆栽結合済み）   |
-| 樹種別サマリ     | CSV          | 樹種ごとの保有数・最終作業   |
-| 個別盆栽レポート | PDF          | 1 本ずつの 1 ページサマリ    |
-| 全盆栽リスト     | PDF          | 全盆栽のリスト（複数ページ） |
+| key           | フォーマット | タイトル         | 列数/構成                                                                                                             | サイズ目安   | 用途                        |
+| ------------- | ------------ | ---------------- | --------------------------------------------------------------------------------------------------------------------- | ------------ | --------------------------- |
+| `bonsai_csv`  | CSV          | 盆栽一覧         | 9 列 (id/name/species_scientific/species_common/acquired_on/style/archived_at/created_at/updated_at)                  | ~3KB/100本   | データポータビリティ        |
+| `events_csv`  | CSV          | 作業履歴         | 11 列 (盆栽ID/名前/作業/日時/部位/量/メモ/created_at/updated_at/status/occurred_at_utc)、**写真件数列なし (Q17 PC2)** | ~12KB/1000件 | 青色申告 / 経年比較         |
+| `species_csv` | CSV          | 樹種別サマリ     | 8 列 (樹種学名/通称/保有数/最終水やり/最終剪定/最終植替え/最終施肥/最古取得日)                                        | ~1KB         | コレクション俯瞰            |
+| `bonsai_pdf`  | PDF          | 個別盆栽レポート | A4 縦、1 ページ/盆栽 (カバー写真+基本情報+作業履歴サマリ+メモ)                                                        | ~480KB/5本   | 展示会出品票 / 譲渡継承書類 |
+| `list_pdf`    | PDF          | 全盆栽リスト     | A4 縦、表紙+サムネイル付きリスト+統計                                                                                 | ~210KB/5本   | 保有資産一覧 / 棚整理       |
 
-#### §15.3.2 CSV 仕様
+#### §15.3.2 CSV 仕様 (RFC 4180 準拠)
 
-- **UTF-8 BOM 付き**（Excel 日本語版の文字化け対策）
-- カンマ区切り、RFC 4180 準拠
-- ヘッダ行あり（多言語、エクスポート時の言語で出力）
-- 日時は ISO 8601 UTC
+- **UTF-8 BOM 付き** (`﻿` プレフィクス、Excel 日本語版文字化け対策)
+- **改行コード CRLF (`\r\n`)** (Q18 LB1: RFC 4180 準拠)
+- **Quote escape**: `,` / `"` / `\r` / `\n` を含むフィールドは `"..."` で囲む、内部 `"` は `""` 2 連
+- **ヘッダ行**: エクスポート時の言語で出力 (Q19 H1: 19 言語 i18n キー経由)
+- **数値フォーマット**: 機械可読 (小数点 `.`、桁区切りなし、例 `1234.56`、Q20 NF1)
+- **日時フォーマット**: ISO 8601 UTC (例 `2026-04-30T07:00:00Z`)
+- **写真関連列を一切含めない (Q8 PH4)**: 写真は F-11 ZIP バックアップで完全分離
 
 ```csv
 "id","name","species_scientific","species_common","acquired_on","style","archived_at","created_at","updated_at"
-"abc-123","翁","Pinus thunbergii","黒松","2020-03-15","chokkan","","2026-04-23T10:30:00Z","2026-04-23T10:30:00Z"
+"01HXXXXXX","翁","Pinus thunbergii","黒松","2020-03-15","chokkan","","2026-04-23T10:30:00Z","2026-04-23T10:30:00Z"
 ```
 
-#### §15.3.3 PDF 仕様
+```typescript
+// src/features/export/csvWriter.ts (自前 30 行、ライブラリ追加なし)
+const BOM = '﻿';
+const CRLF = '\r\n';
 
-- A4 縦向き
-- `expo-print` 使用、HTML → PDF 変換
-- 1 ページ/盆栽: 名前、樹種、購入日、カバー写真、作業履歴サマリ、メモ
-- 多言語対応（エクスポート時の言語で出力）
+function escapeField(v: string | number | null | undefined): string {
+  if (v == null) return '';
+  const s = String(v);
+  if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
 
-#### §15.3.4 共有
+export function rowsToCsv(headers: string[], rows: Array<Array<string | number | null>>): string {
+  const head = headers.map(escapeField).join(',');
+  const body = rows.map((r) => r.map(escapeField).join(',')).join(CRLF);
+  return BOM + head + CRLF + body + CRLF;
+}
+```
 
-- iOS: Share Sheet
-- Android: Intent.ACTION_SEND
-- 保存先: `cacheDirectory`（一時）、共有後に自動削除可
+#### §15.3.3 PDF 仕様 (Repolog 流用 + iOS WKWebView 互換)
+
+- **expo-print `printToFileAsync({ html, width, height })` 使用** (新規ライブラリ追加なし)
+- **A4 縦固定** (PG1): width 595px、height 842px (210mm × 297mm @ 72dpi)
+- **HTML `<!DOCTYPE html>` 必須** (Q4): Issue #7435 余分な空ページ問題回避
+- **写真 base64 data URI inline** (Q1 W1): iOS WKWebView の `file://` パス読み込み不可制約 (Issue #1308)
+  - `expo-image-manipulator` で 800×800 px / JPEG quality 75 にリサイズ
+  - 100 枚 PDF で 5-8MB に収まる
+- **page-break: WebKit プレフィクス併記** (Q2):
+  ```css
+  .bonsai-page {
+    page-break-after: always;
+    -webkit-page-break-after: always;
+  }
+  .bonsai-page:last-child {
+    page-break-after: auto;
+  }
+  ```
+- **CJK フォント明示指定** (Q3、フォント埋込なし、Repolog Issue #292 教訓):
+  ```css
+  font-family:
+    -apple-system, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans CJK JP', 'Noto Sans JP',
+    'PingFang SC', 'Apple SD Gothic Neo', system-ui, sans-serif;
+  ```
+- **絵文字対応** (Q21 EM1): system フォント任せ (iOS Apple Color Emoji / Android Noto Color Emoji 自動利用)
+- **CSS `@page`** (Repolog 流用): `@page { size: A4 portrait; margin: 15mm 12mm 18mm 12mm; }`
+- **ページ番号** (Q10 PN1): flow フッター方式 (各 `.bonsai-page` 末尾に `<div class="page-footer">{{i}} / {{total}}</div>`、`position: fixed` 不使用、iOS WebKit 制約回避)
+
+#### §15.3.4 3 段階フォールバック (Q11 FB1: Repolog 流用)
+
+```typescript
+// src/features/export/pdfService.ts (Repolog pdfService.ts 流用)
+const attempts = [
+  { label: 'full quality', options: { ...input, skipFontEmbedding: true } },
+  {
+    label: 'reduced images',
+    options: { ...input, skipFontEmbedding: true, imagePreset: 'reduced' },
+  },
+  { label: 'tiny images', options: { ...input, skipFontEmbedding: true, imagePreset: 'tiny' } },
+];
+
+for (let index = 0; index < attempts.length; index += 1) {
+  const timeoutMs = calculatePrintTimeoutMs(input.photos.length, index);
+  try {
+    const html = await buildPdfHtml(attempts[index].options);
+    return await printHtml(html, input.paperSize, timeoutMs);
+  } catch (error) {
+    if (!isRecoverablePdfError(error) || index === attempts.length - 1) throw error;
+    await sleep(300); // fallback cooldown
+  }
+}
+```
+
+- **OOM / BlankPdfError / PdfHangError 検出時に自動次 attempt へ**
+- **3 attempt 全て失敗で最終エラー throw**
+- **fallback cooldown 300ms** (native heap 解放待ち)
+
+#### §15.3.5 タイムアウト戦略 (Q12 TO1: Repolog 流用)
+
+- **動的計算**: `30 秒 + 写真数 × 1 秒`
+- **attempt 1 のみ 10 秒キャップ** (Issue #298 hang バグ対策、正常時は 1 秒以内に完了)
+- **`Promise.race` でタイムアウト強制** (printToFileAsync は hang したら resolve も reject も来ない)
+
+#### §15.3.6 ストレージ事前チェック (Q13 ST1: Repolog 流用)
+
+- **`getFreeDiskStorageAsync()` で 100MB 必須**: 不足なら `PdfStorageLowError` で即時エラー (フォールバック不可)
+- **`getFreeDiskStorageAsync` 自体が失敗時はチェックスキップ** (古い端末や権限問題対応)
+
+#### §15.3.7 カスタムエラー (Repolog 流用)
+
+```typescript
+class BlankPdfError extends Error {
+  /* 1024 byte 未満 */
+}
+class PdfHangError extends Error {
+  /* Promise.race timeout */
+}
+class PdfStorageLowError extends Error {
+  /* 100MB 不足 */
+}
+```
+
+`assertPdfLooksValid()`: 生成された PDF サイズが 1024 byte 未満なら blank と判定 → `BlankPdfError` で再試行。
+
+#### §15.3.8 ファイル名規則 (Q14 NM3)
+
+- **形式**: `bonsailog-{kind}-{YYYYMMDD-HHMM}.{csv|pdf}`
+  - 例: `bonsailog-bonsai-list-20260430-1730.csv`
+  - 例: `bonsailog-bonsai-pdf-20260430-1730.pdf`
+- **ASCII 文字のみ** (Windows 予約文字回避)
+- **タイムスタンプは端末ローカル時刻** (`expo-localization.getCalendars()[0]?.timeZone`)
+- **Repolog の Forbidden chars 置換ロジック流用**:
+  - 禁止文字 `[\/\\:*?"<>|]` を `_` に置換
+  - 連続 `_` を 1 つに圧縮
+  - 端の `_` を除去
+
+#### §15.3.9 共有 / 保存 (Q15 SAF1: Repolog 流用)
+
+- **iOS**: `Sharing.shareAsync(uri, { UTI, mimeType })` で Share Sheet
+  - PDF: `UTI: 'com.adobe.pdf'`、`mimeType: 'application/pdf'`
+  - CSV: `UTI: 'public.comma-separated-values-text'`、`mimeType: 'text/csv'`
+- **Android**: `LegacyFileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync()` で保存場所選択 → `createFileAsync()` + `writeAsStringAsync({ encoding: Base64 })` で書込
+- **共有後の後始末** (Q7): `file.delete()` で必ず cacheDirectory から削除 (ADR-0007 と同思想)
+
+#### §15.3.10 Pro ガート (Q5: Repolog 流用)
+
+```typescript
+import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
+import Purchases from 'react-native-purchases';
+
+export async function exportFlow(kind: string) {
+  // Pro チェック
+  const customerInfo = await Purchases.getCustomerInfo();
+  const isPro = customerInfo.entitlements.active['pro'] != null;
+  if (!isPro) {
+    const result = await RevenueCatUI.presentPaywallIfNeeded({
+      requiredEntitlementIdentifier: 'pro',
+    });
+    if (result !== PAYWALL_RESULT.PURCHASED && result !== PAYWALL_RESULT.RESTORED) {
+      return; // 無音終了 (押し付けがましさ排除)
+    }
+  }
+  // エクスポート実行...
+}
+```
 
 ### §15.4 境界値テーブル
 
-| 項目           | 境界 | 期待動作                                 |
-| -------------- | ---- | ---------------------------------------- |
-| 盆栽 0 本      | 境界 | 「エクスポートするデータがありません」   |
-| 盆栽 1,000 本  | 中量 | 3 秒以内に生成                           |
-| 盆栽 10,000 本 | 極端 | プログレスバー表示、バックグラウンド生成 |
-| PDF 100 ページ | 極端 | 生成可、メモリ警告あれば分割提案         |
-| Free プラン    | 境界 | Paywall 遷移                             |
+| 項目                       | 境界 | 期待動作                                                |
+| -------------------------- | ---- | ------------------------------------------------------- |
+| 盆栽 0 本                  | 境界 | 「エクスポートするデータがありません」                  |
+| 盆栽 1,000 本              | 中量 | 3 秒以内に CSV 生成、PDF は 30s+1s/枚                   |
+| 盆栽 10,000 本             | 極端 | プログレスバー表示、3 段階フォールバック                |
+| PDF 100 ページ             | 極端 | 3 段階フォールバックで生成可、メモリ不足時 reduced/tiny |
+| Free プラン                | 境界 | Paywall 遷移 (Pro 限定維持、Q16 PR2)                    |
+| Pro 加入直後               | 境界 | 即時エクスポート開始 (Marcus UX)                        |
+| ストレージ 100MB 未満      | 異常 | `PdfStorageLowError` + 「100MB 以上空けてください」     |
+| iOS 16 (SIGTRAP)           | 異常 | 3 段階フォールバックで attempt 1 失敗 → attempt 2 へ    |
+| Android base64 フォント    | 異常 | フォント埋込なし、blank PDF 回避 (Repolog Issue #292)   |
+| iOS hang (Issue #298)      | 異常 | attempt 1 は 10 秒タイムアウトキャップで早期失敗        |
+| 生成失敗 3 attempt 全滅    | 異常 | 「PDF を作成できませんでした」(Q22 EN1)                 |
+| Share Sheet キャンセル     | 境界 | 無音終了                                                |
+| ファイル名 Forbidden chars | 異常 | `_` に自動置換 (Repolog 流用)                           |
+| Android SAF 拒否           | 境界 | 保存中止、無音 (ユーザー選択尊重)                       |
+| 個別選択 0 本              | 境界 | 「盆栽を選択してください」                              |
 
 ### §15.5 エラーフロー
 
-| エラー                 | 表示     | 対応           |
-| ---------------------- | -------- | -------------- |
-| 生成失敗（メモリ不足） | トースト | 件数絞込を提案 |
-| Share Sheet キャンセル | 無音     | –              |
+| エラー                    | 表示                                                                      | 対応                   |
+| ------------------------- | ------------------------------------------------------------------------- | ---------------------- |
+| 生成失敗 (3 attempt 全滅) | 「PDF を作成できませんでした。盆栽の数を減らしてお試しください」(Q22 EN1) | 盆栽数を減らして再実行 |
+| ストレージ不足            | 「ストレージ容量が不足しています。100MB 以上空けてください」(Q22 ES1)     | OS 設定で空き容量確保  |
+| Share Sheet キャンセル    | 無音                                                                      | –                      |
+| Pro 未加入                | Paywall 遷移                                                              | 加入 or キャンセル無音 |
 
 ### §15.6 受け入れ条件
 
-- [ ] CSV エクスポート → UTF-8 BOM → Excel 日本語で文字化けなし
-- [ ] PDF エクスポート → Share Sheet で保存可能
-- [ ] 盆栽 100 本で CSV 生成 < 1 秒
-- [ ] Free でタップ → Paywall 遷移
+- [ ] Pro 限定維持 (Free でタップ → Paywall、ADR-0009 整合、Q16 PR2)
+- [ ] 5 種類エクスポート (bonsai_csv / events_csv / species_csv / bonsai_pdf / list_pdf)
+- [ ] CSV: UTF-8 BOM + CRLF + RFC 4180 quote escape + ロケール対応ヘッダ
+- [ ] CSV に写真関連列を含めない (Q8 PH4 + Q17 PC2)
+- [ ] PDF: A4 縦 + DOCTYPE + base64 写真 + WebKit page-break + CJK フォント明示 (フォント埋込なし)
+- [ ] 3 段階フォールバック (full → reduced → tiny) 動作 (Q11 FB1)
+- [ ] タイムアウト動的計算 (30s + 1s/枚、attempt1=10s、Q12 TO1)
+- [ ] ストレージ事前チェック 100MB (Q13 ST1)
+- [ ] BlankPdfError / PdfHangError / PdfStorageLowError 動作
+- [ ] ファイル名 `bonsailog-{kind}-{YYYYMMDD-HHMM}.{csv|pdf}` (Q14 NM3)
+- [ ] iOS Share Sheet (UTI / mimeType 両指定) + Android SAF (Q15 SAF1)
+- [ ] cacheDirectory 後始末 (file.delete() Q7)
+- [ ] 7 画面構成 (Hub / Options / Progress / Share / CSV Preview / PDF Bonsai / PDF List)
+- [ ] 個別選択機能 (Y4、全件 vs 個別ラジオ + 複数選択チェックボックス)
+- [ ] エクスポート履歴保持しない (Y1)
+- [ ] 進捗画面キャンセルボタン (Y2)
+- [ ] エクスポート完了通知なし (Y3、F-16 連動なし)
+- [ ] エラー文言「PDF を作成できませんでした」「ストレージ容量が不足」(Q22 EN1+ES1)
+- [ ] 数値フォーマット機械可読 1234.56 (Q20 NF1)
+- [ ] 絵文字 system フォント任せ (Q21 EM1)
+- [ ] 19 言語ローカライズ (CSV ヘッダ + UI 文言、`pnpm i18n:check` 0 missing)
+- [ ] 禁止語検出 (`pnpm i18n:forbidden` 緑)
+- [ ] F-15 連動 (UI 画面のみテーマ追従、PDF レイアウトは light 固定)
+- [ ] F-11 連動 (機能分離、CSV に写真関連列なし)
+- [ ] Excel 日本語版で文字化けなし (UTF-8 BOM 効果確認、手動 PoC)
+- [ ] 100 本盆栽の bonsai_pdf 生成で 60 FPS (実機 Pixel 7 / iPhone 13)
 
 ### §15.7 対応テスト
 
-- Jest: `__tests__/features/export/csv.test.ts`, `pdf.test.ts`, `free_limit.test.ts`
+- Jest: `__tests__/features/export/csvWriter.test.ts` (BOM / CRLF / quote escape)
+- Jest: `__tests__/features/export/csvBonsai.test.ts` (9 列、写真関連列なし PH4)
+- Jest: `__tests__/features/export/csvEvents.test.ts` (11 列、写真件数列なし PC2)
+- Jest: `__tests__/features/export/csvSpecies.test.ts` (8 列)
+- Jest: `__tests__/features/export/pdfBonsai.test.ts` (DOCTYPE + base64 + page-break)
+- Jest: `__tests__/features/export/pdfFallback.test.ts` (3 段階フォールバック + cooldown)
+- Jest: `__tests__/features/export/pdfTimeout.test.ts` (TO1 + attempt1 10s)
+- Jest: `__tests__/features/export/pdfStorage.test.ts` (ST1 100MB)
+- Jest: `__tests__/features/export/proGate.test.ts` (Q5 + Pro 限定 PR2)
+- Jest: `__tests__/features/export/fileNameRule.test.ts` (NM3 + Forbidden chars)
+- Jest: `__tests__/features/export/i18nForbiddenWords.test.ts`
+- Maestro: `maestro/flows/export_csv_flow.yml` (Hub → CSV → Pro → 生成 → Share)
+- Maestro: `maestro/flows/export_pdf_flow.yml` (Hub → PDF → 個別選択 → 生成 → Share)
+- Maestro: `maestro/flows/export_paywall_flow.yml` (Free → Paywall → キャンセル → 無音)
+- Maestro: `maestro/flows/export_progress_cancel.yml` (生成中キャンセル → 中断)
+- 詳細は ADR-0016 を正とする。
 
 ---
 
@@ -1999,47 +2423,47 @@ await mobileAds().setRequestConfiguration({
 
 ### §20.1 目的
 
-システム設定連動のダークモードと、手動切替の屋外（ハイコントラスト）モードを提供する。
+4 mode (Auto / Light / Dark / Outdoor) でテーマを切り替える。Material 3 baseline + 屋外モード緑単色 + 全画面ヘッダー右上太陽アイコン (ADR-0015、Free / Pro 全機能利用可)。
 
 ### §20.2 画面 / 入口
 
-- 設定 → 外観 → テーマ（システム / ライト / ダーク）
-- 設定 → 外観 → 屋外モード（手動切替）
-- ステータスバーのクイックアクセス（屋外モード）
+- Settings → 外観 → テーマ（セグメンテッドコントロール: システム / ライト / ダーク）+ 屋外モード（独立トグル）
+- **全画面のヘッダー右上 太陽アイコン**（ワンタップで屋外モード ON/OFF、48×48dp タッチ領域）
+- チュートリアル中は太陽アイコン非表示 + Settings 遷移不可（常に light 固定、TT2）
 
 ### §20.3 期待動作
 
-#### §20.3.1 テーマ切替フロー
+#### §20.3.1 テーマ切替フロー（4 mode、ADR-0015）
 
 ```mermaid
 stateDiagram-v2
-  [*] --> System: 初期値
-  System --> Light: ユーザー選択
-  System --> Dark: ユーザー選択
-  Light --> System: 選択
-  Dark --> System: 選択
-  Light --> Outdoor: 屋外モード ON
+  [*] --> Auto: 初期値 (system 追従、null フォールバック light)
+  Auto --> Light: ユーザー選択
+  Auto --> Dark: ユーザー選択
+  Light --> Auto: 選択
+  Dark --> Auto: 選択
+  Light --> Outdoor: 屋外モード ON (太陽アイコン or Settings)
   Dark --> Outdoor: 屋外モード ON
-  System --> Outdoor: 屋外モード ON
-  Outdoor --> Light: 屋外モード OFF (light ベース)
-  Outdoor --> Dark: 屋外モード OFF (dark ベース)
-  Outdoor --> System: 屋外モード OFF (system ベース)
+  Auto --> Outdoor: 屋外モード ON
+  Outdoor --> Light: 屋外モード OFF (前回モードが light)
+  Outdoor --> Dark: 屋外モード OFF (前回モードが dark)
+  Outdoor --> Auto: 屋外モード OFF (前回モードが auto)
 ```
+
+**前回モードは `previousMode` として AsyncStorage に保存** (BR1)。
 
 #### §20.3.2 Tamagui テーマ統合
 
 ```tsx
 // app/_layout.tsx
-export default function RootLayout() {
-  const themeMode = useSettingsStore((s) => s.themeMode); // 'system' | 'light' | 'dark'
-  const isOutdoor = useSettingsStore((s) => s.isOutdoor);
-  const systemScheme = useColorScheme();
+import { Appearance, useColorScheme } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
-  const resolved = useMemo(() => {
-    if (isOutdoor) return 'outdoor';
-    if (themeMode === 'system') return systemScheme ?? 'light';
-    return themeMode;
-  }, [themeMode, isOutdoor, systemScheme]);
+export default function RootLayout() {
+  const themeMode = useThemeStore((s) => s.themeMode); // 'auto' | 'light' | 'dark' | 'outdoor'
+  const systemScheme = useColorScheme(); // 'light' | 'dark' | null
+
+  const resolved = useMemo(() => resolveTheme(themeMode, systemScheme), [themeMode, systemScheme]);
 
   return (
     <TamaguiProvider config={config} defaultTheme={resolved}>
@@ -2047,52 +2471,159 @@ export default function RootLayout() {
     </TamaguiProvider>
   );
 }
+
+// src/core/theme/resolveTheme.ts (純関数)
+export function resolveTheme(
+  mode: 'auto' | 'light' | 'dark' | 'outdoor',
+  systemColorScheme: 'light' | 'dark' | null,
+): 'light' | 'dark' | 'outdoor' {
+  if (mode === 'outdoor') return 'outdoor';
+  if (mode === 'auto') return systemColorScheme === 'dark' ? 'dark' : 'light'; // null → light (IM1-A)
+  return mode;
+}
 ```
 
-#### §20.3.3 色トークン（WCAG AA/AAA 準拠）
+#### §20.3.3 色トークン（ADR-0015、WCAG AAA 7:1 必達）
 
-| トークン         | light              | dark    | outdoor          |
-| ---------------- | ------------------ | ------- | ---------------- |
-| `bg.primary`     | #FFFFFF            | #0A0E1A | #FFFFFF          |
-| `bg.secondary`   | #F5EBDA（和紙）    | #141820 | #FFFF00          |
-| `text.primary`   | #1A1A1A (17.4:1)   | #F5F5F5 | #000000 (21:1)   |
-| `text.secondary` | #4A5568 (8.7:1)    | #A0AEC0 | #0F1419          |
-| `primary`        | #0F5132 (9.6:1 緑) | #4ADE80 | #000080 (15.3:1) |
-| `warning`        | #B45309 (5.0:1)    | #FBBF24 | #CC0000          |
-| `danger`         | #B91C1C (6.1:1)    | #F87171 | #FF0000          |
+| トークン              | light                      | dark (Material 3)               | outdoor (純白+純黒+緑単色)  |
+| --------------------- | -------------------------- | ------------------------------- | --------------------------- |
+| `background`          | #FFFFFF                    | **#121212** (M3 baseline)       | #FFFFFF                     |
+| `surface`             | #FAFAFA                    | #1E1E1E                         | #FFFFFF (装飾排除、影 OFF)  |
+| `surface2`            | #F5F5F5                    | #242424                         | #FFFFFF                     |
+| `color`               | #1A1A1A (16:1 AAA)         | #E1E1E1 (14.5:1 AAA)            | **#000000 (21:1 理論上限)** |
+| `muted`               | #4A4A4A (8.6:1 AAA)        | #A0A0A0 (8.5:1 AAA)             | #000000 (純黒)              |
+| `borderColor`         | #E0E0E0                    | #2C2C2C                         | #000000 (純黒、線幅 2dp+)   |
+| `accent`              | #2E7D32 (Mat green、7.4:1) | **#7BC97D** (M3 tone 80、8.5:1) | **#1B5E20** (緑単色、9.7:1) |
+| `bonsai_heatmap_l0`   | #F5F8F5 (ADR-0013 継続)    | #1E1E1E                         | #FFFFFF                     |
+| `bonsai_heatmap_l1`   | #BAE4B3                    | #2D4A2E                         | #A8D5A8                     |
+| `bonsai_heatmap_l2`   | #74C476                    | #4A8A4D                         | #4A8A4D                     |
+| `bonsai_heatmap_l3`   | #238B45 (4.7:1 + 数字併記) | #7BC97D (8.5:1 AAA)             | #1B5E20 (9.7:1 AAA)         |
+| `bonsai_today_border` | #238B45 太枠 2dp           | #7BC97D 太枠 2dp                | #000000 太枠 2dp            |
 
-#### §20.3.4 Reduced Motion 対応
+**屋外モード追加要件**:
+
+- フォントウェイト強制 600+ (細字を屋外で読ませない)
+- 線幅最小 2dp
+- 影 (shadow) 完全 OFF
+- アイコンサイズ + 4dp 拡大
+
+#### §20.3.4 Reduced Motion 対応 (A1)
 
 ```tsx
 const reduceMotion = useReducedMotion(); // react-native-reanimated
-const duration = reduceMotion ? 0 : 300;
+const duration = reduceMotion ? 0 : 200; // F-15: 200ms 標準 (Tamagui quick)
+```
+
+#### §20.3.5 全画面ヘッダー太陽アイコン (OA1)
+
+```tsx
+// src/components/HeaderSunIcon.tsx
+import { Sun, SunDim } from '@tamagui/lucide-icons';
+import { useThemeStore } from '@/core/theme/themeStore';
+import { useTheme } from 'tamagui';
+
+export function HeaderSunIcon() {
+  const { themeMode, setThemeMode, previousMode } = useThemeStore();
+  const theme = useTheme();
+  const isOutdoor = themeMode === 'outdoor';
+  const Icon = isOutdoor ? SunDim : Sun;
+
+  return (
+    <Pressable
+      onPress={() => {
+        if (isOutdoor) {
+          setThemeMode(previousMode); // BR1: 前回モード復帰
+        } else {
+          setThemeMode('outdoor'); // 前回モードを保存してから outdoor に
+        }
+      }}
+      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} // 48×48dp タッチ領域
+      accessibilityLabel="屋外モードを切り替える"
+      accessibilityRole="button"
+    >
+      <Icon size={24} color={theme.color.val} />
+    </Pressable>
+  );
+}
+```
+
+#### §20.3.6 スプラッシュ + ステータスバー (SP1 + SB1)
+
+```ts
+// app.config.ts
+export default {
+  expo: {
+    userInterfaceStyle: 'automatic', // SP1: OS dark mode 追従
+    // ...
+  },
+};
+
+// app/_layout.tsx
+import { StatusBar } from 'expo-status-bar';
+
+const statusBarStyle = resolved === 'dark' ? 'light' : 'dark'; // SB1
+return (
+  <>
+    <StatusBar style={statusBarStyle} />
+    <Slot />
+  </>
+);
 ```
 
 ### §20.4 境界値テーブル
 
-| 項目                             | 境界     | 期待動作                |
-| -------------------------------- | -------- | ----------------------- |
-| システム = dark、モード = system | 境界     | dark 適用               |
-| システム = light、モード = dark  | 強制     | dark 適用               |
-| 屋外モード ON + dark ベース      | 境界     | outdoor 適用            |
-| reduced motion ON                | 境界     | アニメーション 0ms      |
-| コントラスト 4.5:1（下限）       | 境界     | WCAG AA OK              |
-| コントラスト 3:1                 | 境界未満 | UI 要素のみ OK、本文 NG |
+| 項目                                  | 境界     | 期待動作                                                 |
+| ------------------------------------- | -------- | -------------------------------------------------------- |
+| 初回起動 (mode=auto + system=null)    | 境界     | light フォールバック (IM1-A)                             |
+| 初回起動 (mode=auto + system=dark)    | 境界     | dark 適用                                                |
+| 手動 light 選択 + system=dark         | 強制     | light 適用 (Appearance.setColorScheme)                   |
+| 屋外モード ON + 前回モード=dark       | 境界     | outdoor 適用、previousMode='dark' 保存                   |
+| 屋外モード OFF (前回 dark)            | 境界     | dark に復帰 (BR1)                                        |
+| reduced motion ON                     | 境界     | アニメーション 0ms (A1)                                  |
+| AAA 7:1 (light color #1A1A1A on #FFF) | 達成     | 16:1 (楽勝)                                              |
+| AAA 7:1 (outdoor color)               | 達成     | 21:1 (理論上限)                                          |
+| ヒートマップ L0 vs L1 (outdoor)       | 1.4.11   | 1.6:1、数字「1」併記 + 枠線 1dp 黒で識別補完             |
+| AsyncStorage 保存失敗                 | 異常     | 無音 + Sentry ログ、セッション内反映、再起動で戻る (PE1) |
+| OS dark mode 切替時 (auto モード)     | 境界     | 即時アプリ再描画、ヒートマップも 1 フレーム以内 (RD1)    |
+| TZ 変更                               | 影響なし | F-15 はテーマのみ、F-04/F-16 は ADR-0014 で対応          |
 
 ### §20.5 エラーフロー
 
-| エラー                | 表示 | 対応                             |
-| --------------------- | ---- | -------------------------------- |
-| AsyncStorage 保存失敗 | 無音 | セッション内は反映、再起動で戻る |
+| エラー                 | 表示                                   | 対応                             |
+| ---------------------- | -------------------------------------- | -------------------------------- |
+| AsyncStorage 保存失敗  | 無音 (Sentry ログのみ)                 | セッション内反映、再起動で前回値 |
+| Tamagui theme 解決失敗 | light フォールバック                   | Sentry ログ、ユーザー無通知      |
+| 直 hex 違反 (CI 検出)  | ESLint エラー (`no-direct-hex-in-jsx`) | コード修正必須、CI block         |
 
 ### §20.6 受け入れ条件
 
-- [ ] システム = dark → アプリもダーク
-- [ ] 手動で light 選択 → システム設定に関わらず light
-- [ ] 屋外モード ON → コントラスト AAA（7:1 以上）
-- [ ] reduced motion ON → トランジション瞬時
-- [ ] 切替時に画面点滅なし
-- [ ] 全画面で WCAG AA 以上
+- [ ] tamagui.config.ts に light / dark / outdoor の 3 themes (neonPink/cyberBlue 削除確認)
+- [ ] 全 themes で 11 トークン (background / surface / surface2 / color / muted / borderColor / accent / bonsai_heatmap_l0..l3 / bonsai_today_border) 保持
+- [ ] light: AAA 16:1 (color on background)
+- [ ] dark: Material 3 #121212 + AAA 14.5:1
+- [ ] outdoor: 21:1 (理論上限) + 緑単色 #1B5E20 (9.7:1)
+- [ ] 4 mode 切替 (Auto / Light / Dark / Outdoor) 動作
+- [ ] Auto モード = OS dark mode 即時追従
+- [ ] null フォールバック light (IM1-A)
+- [ ] 屋外モード ON で前モード保存、OFF で前モード復帰 (BR1)
+- [ ] アニメ 200ms、Reduced Motion ON で 0ms (A1)
+- [ ] スプラッシュが OS dark mode 追従 (SP1、`userInterfaceStyle: 'automatic'`)
+- [ ] ステータスバーがモード別自動切替 (SB1)
+- [ ] AsyncStorage 永続化失敗時無音 (PE1)
+- [ ] Settings UI セグメント (3 つ) + 屋外トグル (UI1)
+- [ ] 全画面ヘッダー右上太陽アイコン (OA1)、48×48dp タッチ
+- [ ] F-04 ヒートマップが 3 mode で即時再描画 (RD1、Skia Atlas worklet 内 1 フレーム)
+- [ ] F-08 写真自体は変更なし、UI 枠のみテーマ追従 (PH1)
+- [ ] BottomSheet が屋外モード時 純白/純黒 (BS1)
+- [ ] Lucide アイコン全 theme.color 参照 (IC1)
+- [ ] チュートリアル中は light 固定、太陽アイコン非表示 (TT2 + Y5)
+- [ ] AdMob 広告は色変えない (Y4 確定)
+- [ ] テーマプリセット (春/秋/和風) v1.0 不採用 (Y2)
+- [ ] Home トグル提供しない、Settings + ヘッダー太陽のみ (Y1)
+- [ ] F-11 引継ぎで AsyncStorage `theme.mode` 移行 (Y10)
+- [ ] ESLint `no-direct-hex-in-jsx` で直 hex 検出 (EL1)
+- [ ] トークン命名規約: 標準キー + bonsai\_\* プレフィクス (TN1)
+- [ ] Maestro snapshot で各モード主要画面確認 (Y11)
 
 ### §20.7 対応テスト
 
@@ -2104,13 +2635,13 @@ const duration = reduceMotion ? 0 : 300;
 
 ### §21.1 目的
 
-作業リマインダーをローカル通知で配信する。サーバ非依存。
+作業の通知をローカル配信する（サーバ非依存、Local-first）。当日まとめ通知 + 水やり繰り返し通知の **2 系統**で構成、Free / Pro 全機能利用可。詳細は ADR-0014 を正とする。
 
 ### §21.2 画面 / 入口
 
-- 設定 → 通知 → 許可 / 不許可
-- 設定 → 通知 → チャネル別設定（Android 13+）
-- 通知タップで Deep Link → 盆栽詳細の該当作業画面
+- 設定 → 通知 → マスタートグル + 水やり通知サブセクション + 当日まとめ通知時刻
+- 通知タップ → **作業予定カレンダー (S-08)** の当日選択状態
+- オンボーディング Step 5 (ADR-0011 改訂) で初回設定
 
 ### §21.3 期待動作
 
@@ -2118,133 +2649,133 @@ const duration = reduceMotion ? 0 : 300;
 
 ```mermaid
 stateDiagram-v2
-  [*] --> 未要求: アプリ初回起動
-  未要求 --> チャネル作成: Android: initNotificationChannels
-  チャネル作成 --> 要求中: requestPermissionsAsync
-  未要求 --> 要求中: iOS 直接
-  要求中 --> 許可: granted
-  要求中 --> 拒否_再要求可: denied && canAskAgain
-  要求中 --> 拒否_ブロック: canAskAgain=false
-  拒否_再要求可 --> 要求中: UI「通知を有効にする」
-  拒否_ブロック --> 設定誘導: Linking.openSettings()
-  設定誘導 --> 許可: 設定で ON
-  許可 --> OS無効化: OS 設定で OFF
-  OS無効化 --> 許可: OS 設定で ON
+  [*] --> Step5: オンボーディング Step 5 表示
+  Step5 --> 要求中: 「通知を有効にする」タップ
+  Step5 --> 完了_OFF: 「あとで」タップ
+  要求中 --> 許可: granted → Step5_B 水やり時刻設定
+  要求中 --> 拒否: denied → トースト「通知を有効にしませんでした」
+  許可 --> 完了_ON: Step5_B 「始める」
+  拒否 --> 完了_OFF
+  完了_OFF --> OS設定変更: ユーザー判断で OS Settings → ON
+  OS設定変更 --> 許可
 ```
 
-#### §21.3.2 通知チャネル（Android 13+）
+通知拒否後の挙動: **何もしない (C3)**。アプリ内に「設定を開く」誘導なし、ユーザーが OS Settings から自発的に ON。
+
+#### §21.3.2 通知チャネル（Android 13+、2 種に削減）
 
 ```typescript
 // notifications/channels.ts
 export const CHANNELS = {
-  WATER: 'bonsai_water',
-  FERTILIZE: 'bonsai_fertilize',
-  PESTICIDE: 'bonsai_pesticide',
-  WIRING: 'bonsai_wiring',
+  WATERING: 'bonsai_watering', // 水やり繰り返し通知
+  DAILY_SUMMARY: 'bonsai_daily_summary', // 当日まとめ通知
 } as const;
 
 export async function initNotificationChannels() {
   if (Platform.OS !== 'android') return;
   // ⚠️ 権限要求より前に必ず実行
-  await Notifications.setNotificationChannelAsync(CHANNELS.WATER, {
-    name: '水やりリマインダー',
-    importance: Notifications.AndroidImportance.DEFAULT,
-    vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#4CAF50',
-  });
-  await Notifications.setNotificationChannelAsync(CHANNELS.PESTICIDE, {
-    name: '消毒リマインダー',
-    importance: Notifications.AndroidImportance.HIGH, // heads-up
-  });
-  await Notifications.setNotificationChannelAsync(CHANNELS.FERTILIZE, {
-    name: '施肥リマインダー',
+  await Notifications.setNotificationChannelAsync(CHANNELS.WATERING, {
+    name: '水やり通知',
     importance: Notifications.AndroidImportance.DEFAULT,
   });
-  await Notifications.setNotificationChannelAsync(CHANNELS.WIRING, {
-    name: '針金外しリマインダー',
+  await Notifications.setNotificationChannelAsync(CHANNELS.DAILY_SUMMARY, {
+    name: '当日まとめ通知',
     importance: Notifications.AndroidImportance.DEFAULT,
   });
 }
 ```
 
-#### §21.3.3 スケジューリング擬似コード
+#### §21.3.3 スケジューリング擬似コード（7 日ローリング、enforceIosLimit 不要）
 
 ```typescript
-// notifications/schedule.ts
-const IOS_SAFE_LIMIT = 60; // 64 の余裕枠
+// notifications/scheduleSummary.ts
+const ROLLING_DAYS = 7; // 当日 + 6 日先まで予約
 
-export async function scheduleBonsaiNotification(params: {
-  bonsaiId: string;
-  eventType: EventType;
-  date: Date;
-  channelId: string;
-  title: string;
-  body: string;
-}) {
-  const identifier = `bonsai_${params.bonsaiId}_${params.eventType}_${formatYYYYMMDD(params.date)}`;
+export async function rescheduleSummaryNotifications() {
+  // アプリ起動時のみ実行 (R2、シンプル原則)
+  const tzIana = getTzIana(); // ADR-0008 datetime ラッパー
+  const today = startOfLocalDay(now(), tzIana);
 
-  await Notifications.scheduleNotificationAsync({
-    identifier,
-    content: {
-      title: params.title,
-      body: params.body,
-      data: {
-        bonsai_id: params.bonsaiId,
-        event_type: params.eventType,
-      },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DATE,
-      date: params.date,
-      channelId: params.channelId,
-    },
-  });
-}
-
-export async function rescheduleBonsai(bonsaiId: string, plans: Plan[]) {
-  // 既存の通知を取得
+  // 既存の当日まとめ通知を全キャンセル (prefix マッチ)
   const existing = await Notifications.getAllScheduledNotificationsAsync();
-  // 対象盆栽の既存通知を全削除（prefix マッチ）
-  const targets = existing.filter((n) => n.identifier.startsWith(`bonsai_${bonsaiId}_`));
+  const summaries = existing.filter((n) => n.identifier.startsWith('daily_summary_'));
   await Promise.all(
-    targets.map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+    summaries.map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
   );
-  // 新規計画を登録
-  for (const p of plans) {
-    await scheduleBonsaiNotification(p);
+
+  // events.status='planned' から 7 日先まで集計、N 件以上の日のみ通知予約
+  const horizon = addDays(today, ROLLING_DAYS - 1);
+  const plannedEvents =
+    await db.query(/* status='planned' AND occurred_at_utc BETWEEN today AND horizon */);
+  const byDate = aggregateByLocalDay(plannedEvents, tzIana); // 純関数化
+
+  const summaryHour = await getSummaryNotificationTime(); // Settings 値、デフォルト 07:00
+
+  for (const [dateKey, events] of Object.entries(byDate)) {
+    if (events.length === 0) continue;
+    const fireDate = setHourMinute(parseLocalDate(dateKey, tzIana), summaryHour);
+    await Notifications.scheduleNotificationAsync({
+      identifier: `daily_summary_${dateKey}`,
+      content: {
+        title: 'BonsaiLog',
+        body: t('notification.summary.body', { count: events.length }),
+        // 例: 「3 件の作業予定があります」
+        data: { type: 'daily_summary', date: dateKey },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: fireDate,
+        channelId: CHANNELS.DAILY_SUMMARY,
+      },
+    });
   }
-  // iOS 64 件上限対策
-  await enforceIosLimit();
 }
 
-async function enforceIosLimit() {
-  if (Platform.OS !== 'ios') return;
-  const all = await Notifications.getAllScheduledNotificationsAsync();
-  if (all.length <= IOS_SAFE_LIMIT) return;
-
-  // 遠い未来の低優先度通知を削除
-  const sorted = all.sort((a, b) => {
-    const dateA = (a.trigger as any).date?.getTime() ?? 0;
-    const dateB = (b.trigger as any).date?.getTime() ?? 0;
-    return dateA - dateB;
-  });
-  const toRemove = sorted.slice(IOS_SAFE_LIMIT);
+// notifications/scheduleWatering.ts
+export async function rescheduleWateringNotifications(
+  times: Array<{ hour: number; minute: number }>,
+) {
+  // 既存の水やり通知を全キャンセル
+  const existing = await Notifications.getAllScheduledNotificationsAsync();
+  const watering = existing.filter((n) => n.identifier.startsWith('daily_watering_'));
   await Promise.all(
-    toRemove.map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+    watering.map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
   );
+
+  // 各時刻で DAILY trigger 登録 (最大 5 件)
+  for (const { hour, minute } of times.slice(0, 5)) {
+    await Notifications.scheduleNotificationAsync({
+      identifier: `daily_watering_${hour}_${minute}`,
+      content: {
+        title: 'BonsaiLog',
+        body: t('notification.watering.body'), // 「水やりの時間です」
+        data: { type: 'watering' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour,
+        minute,
+        channelId: CHANNELS.WATERING,
+      },
+    });
+  }
 }
 ```
 
-#### §21.3.4 通知タップ → Deep Link
+**最大通知数**: 水やり 5 件 + 当日まとめ 7 件 = **最大 12 件**（iOS 64 件上限の 1/5、enforceIosLimit ロジック不要）。
+
+#### §21.3.4 通知タップ → Deep Link（作業予定カレンダー S-08）
 
 ```typescript
 // app/_layout.tsx
 useEffect(() => {
   const redirect = (notif: Notifications.Notification) => {
-    const data = notif.request.content.data as { bonsai_id?: string; event_type?: string };
-    if (data.bonsai_id) {
-      router.push(`/bonsai/${data.bonsai_id}?event=${data.event_type}`);
-    }
+    const data = notif.request.content.data as { type?: string; date?: string };
+    // 通知タップ → 直接「作業予定カレンダー」(S-08) に遷移、当日選択状態
+    // 戻るボタンでホームタブ復帰のため、画面スタックにホームを事前 push
+    const targetDate = data.date ?? formatLocalDate(now(), getTzIana());
+    router.push(`/(tabs)`); // ホームを画面スタックの下に
+    router.push(`/calendar?date=${targetDate}`); // S-08 作業予定カレンダーへ
   };
 
   // 完全停止からの復帰: listener 登録前に発火するため必須
@@ -2261,51 +2792,66 @@ useEffect(() => {
 }, []);
 ```
 
-#### §21.3.5 通知設定の既定値
+#### §21.3.5 通知設定の既定値（ADR-0014 確定）
 
-- 水やり: 毎朝 8:00（ユーザー変更可）
-- 施肥: 対象日 8:00
-- 消毒: 対象日 8:00（HIGH importance）
-- 針金外し: 対象日 8:00（Pro 限定）
+- **通知マスタートグル**: チュートリアル「通知を有効にする」選択時に ON、「あとで」/スキップ時は OFF (K1)
+- **水やり通知**: チュートリアル Step 5-B でユーザー入力（デフォルト 1 回 / 朝 07:00）、Settings で 1〜5 回・各時刻変更可
+- **当日まとめ通知時刻**: デフォルト朝 07:00、Settings で 24 時間どこでも変更可 (H6)
+- **通知音 / 振動**: OS デフォルト固定 (S1)
+- **設定状態保持**: AsyncStorage キー `notification.master`, `notification.watering.times`, `notification.summary.time` で永続化、OFF→ON で前回設定復元
 
 ### §21.4 境界値テーブル
 
 | 項目                               | 境界   | 期待動作                                           |
 | ---------------------------------- | ------ | -------------------------------------------------- |
 | 通知 0 件                          | 下限   | OK                                                 |
-| iOS pending 63 件                  | 境界   | OK                                                 |
-| iOS pending 64 件（上限）          | 境界   | 既定動作だが BonsaiLog は 60 件で抑制              |
-| iOS pending 100 件                 | 上限超 | 60 件に絞り込み、残りは次回起動時に補充            |
-| Android pending 1,000 件           | 高負荷 | OK（OS 上限なし）                                  |
+| iOS pending 12 件 (最大想定)       | 余裕   | OK (上限 64 の 1/5)                                |
+| 水やり通知 6 件目登録              | 上限超 | 「最大 5 回」インラインエラー                      |
+| 当日 planned events 0 件           | 境界   | 当日まとめ通知をキャンセル                         |
+| 当日 planned events 100 件         | 上限   | 「100 件の作業予定があります」                     |
 | 通知時刻 = 過去                    | 異常   | バリデーション NG                                  |
-| 通知時刻 = 2030 年                 | 未来   | OK                                                 |
-| タイムゾーン変更後                 | 境界   | AppState=active で再スケジュール                   |
-| 端末バッテリー最適化 ON（Android） | 境界   | Inexact alarm で最大 15 分遅延                     |
+| タイムゾーン変更後                 | 境界   | AppState=active で現地時刻に再スケジュール (B1)    |
+| 端末バッテリー最適化 ON（Android） | 境界   | Inexact alarm で最大 15 分遅延 (許容)              |
 | 通知許可 granted                   | 境界   | 通知表示                                           |
-| 通知許可 denied                    | 境界   | scheduleNotificationAsync は成功するが配信されない |
+| 通知許可 denied                    | 境界   | scheduleNotificationAsync 成功、ただし配信されない |
+| 通知 OFF → ON 切替                 | 境界   | AsyncStorage から水やり時刻設定復元                |
+| 7 日連続アプリ未起動               | 境界   | 通知停止 → アプリ起動瞬間に再予約で復活            |
+| 海外 TZ 切替（日本 → ハワイ）      | 境界   | 起動時に現地時刻 07:00 に再予約                    |
+| F-11 引継ぎ後初回起動              | 境界   | 自動 OS 通知許可リクエスト (D2)                    |
+| 予定削除                           | 境界   | 該当日の通知再生成 (E1)                            |
+| 盆栽削除                           | 境界   | 関連 planned events 削除 → 通知再生成              |
 
 ### §21.5 エラーフロー
 
-| エラー                    | 表示                         | 対応                             |
-| ------------------------- | ---------------------------- | -------------------------------- |
-| 権限拒否（ブロック）      | 「設定から許可してください」 | `Linking.openSettings()`         |
-| スケジュール失敗          | ログのみ                     | 次回起動時に再試行               |
-| チャネル作成失敗          | ログのみ                     | DEFAULT チャネルにフォールバック |
-| 通知タップ → 盆栽削除済み | Home にフォールバック        | 「盆栽が見つかりません」トースト |
+| エラー                          | 表示                                          | 対応                               |
+| ------------------------------- | --------------------------------------------- | ---------------------------------- |
+| 権限拒否                        | 何もしない (C3)                               | ユーザーが OS Settings → ON で復活 |
+| スケジュール失敗                | ログのみ (Sentry `NotificationScheduleError`) | 次回起動時に再試行                 |
+| チャネル作成失敗                | ログのみ                                      | DEFAULT チャネルにフォールバック   |
+| 通知タップ → 該当日 events 0 件 | 作業予定カレンダー当日選択で空表示            | 「予定はありません」表示           |
+| Hermes Intl 月名 RangeError     | フォールバックで `MM/DD` 表示                 | @formatjs polyfill 追加判断        |
 
 ### §21.6 受け入れ条件
 
-- [ ] 盆栽登録 → 水やり通知スケジュール → 翌日 8:00 に配信
-- [ ] 通知タップ → 該当盆栽詳細の作業画面へ
-- [ ] 完全停止状態からの通知タップで正しく遷移
-- [ ] iOS で 60 件超スケジュール時に自動削減
-- [ ] Android 13+ でチャネル未作成だと権限プロンプトが表示されない（既知挙動）
-- [ ] タイムゾーン変更後、AppState=active で自動再スケジュール
+- [ ] 通知 ON で水やり時刻 1〜5 件設定可
+- [ ] 水やり通知が指定時刻に発火、本文「水やりの時間です」
+- [ ] 当日まとめ通知が朝 7:00 (デフォルト) に発火、本文「N 件の作業予定があります」
+- [ ] 通知タップで作業予定カレンダー (S-08) が当日選択状態で開く
+- [ ] 戻るボタンでホームタブ復帰 (G1)
+- [ ] 通知マスター OFF→ON で水やり時刻設定が保持される
+- [ ] 海外 TZ 変更時に現地時刻で通知発火 (B1)
+- [ ] 予定削除/盆栽削除時に通知が自動再生成 (E1)
+- [ ] F-11 引継ぎ後に OS 通知許可リクエスト発火 (D2)
+- [ ] 装着期間経過通知が発火しない (アプリ内表示のみ、ADR-0014)
+- [ ] 「水やりが必要」等の判定語が UI に出ない (CI `pnpm i18n:forbidden`)
+- [ ] 19 言語ローカライズ (`pnpm i18n:check` 0 missing)
+- [ ] iOS pending 通知が 12 件以下
+- [ ] チュートリアル Step 5「通知を有効にする」/「あとで」/OS 拒否の 3 パターン動作
 
 ### §21.7 対応テスト
 
-- Jest: `__tests__/features/notification/schedule.test.ts`, `channel_android.test.ts`, `deep_link.test.ts`, `ios_64_limit.test.ts`
-- Maestro: `maestro/flows/notification_permission.yaml`
+- Jest: `__tests__/features/notification/scheduleSummary.test.ts`, `scheduleWatering.test.ts`, `persistSettings.test.ts`, `deepLink.test.ts`, `i18nForbiddenWords.test.ts`
+- Maestro: `maestro/flows/notification_permission.yaml`, `notification_summary_tap.yaml`, `watering_settings.yaml`, `notification_off_on.yaml`, `onboarding_notification.yaml`
 
 ---
 
@@ -2383,17 +2929,18 @@ flowchart TD
 
 ### §23.2 URL パターン
 
-| URL                                      | 画面                  | Stack 構築                               |
-| ---------------------------------------- | --------------------- | ---------------------------------------- |
-| `bonsailog://`                           | Home                  | `(tabs)/index`                           |
-| `bonsailog://bonsai/[id]`                | 盆栽詳細              | `(tabs)/index` → `bonsai/[id]`           |
-| `bonsailog://bonsai/[id]?event=watering` | 盆栽詳細 + 作業選択済 | → 作業シート表示                         |
-| `bonsailog://event/[id]`                 | 作業詳細              | → `bonsai/[bonsaiId]` → `event/[id]`     |
-| `bonsailog://settings`                   | 設定                  | `(tabs)/settings`                        |
-| `bonsailog://settings/theme`             | テーマ設定            | → `settings/theme`                       |
-| `bonsailog://settings/language`          | 言語設定              | → `settings/language`                    |
-| `bonsailog://paywall`                    | Paywall               | + `(modals)/paywall`                     |
-| `bonsailog://migration`                  | お引っ越し            | `(tabs)/settings` → `(modals)/migration` |
+| URL                                      | 画面                    | Stack 構築                                                          |
+| ---------------------------------------- | ----------------------- | ------------------------------------------------------------------- |
+| `bonsailog://`                           | Home                    | `(tabs)/index`                                                      |
+| `bonsailog://bonsai/[id]`                | 盆栽詳細                | `(tabs)/index` → `bonsai/[id]`                                      |
+| `bonsailog://bonsai/[id]?event=watering` | 盆栽詳細 + 作業選択済   | → 作業シート表示                                                    |
+| `bonsailog://event/[id]`                 | 作業詳細                | → `bonsai/[bonsaiId]` → `event/[id]`                                |
+| `bonsailog://settings`                   | 設定                    | `(tabs)/settings`                                                   |
+| `bonsailog://settings/theme`             | テーマ設定              | → `settings/theme`                                                  |
+| `bonsailog://settings/language`          | 言語設定                | → `settings/language`                                               |
+| `bonsailog://paywall`                    | Paywall                 | + `(modals)/paywall`                                                |
+| `bonsailog://migration`                  | お引っ越し              | `(tabs)/settings` → `(modals)/migration`                            |
+| `bonsailog://calendar?date=YYYY-MM-DD`   | 作業予定カレンダー S-08 | `(tabs)/index` → `calendar?date=YYYY-MM-DD` (ADR-0014 通知タップ用) |
 
 ### §23.3 失敗時の挙動
 
@@ -2485,8 +3032,8 @@ flowchart TD
    - 現状: §7.3.5 で「盆栽単位カウントに含める」と決定。ただし UX 実装で迂回の抜け道がないか要確認。
 2. **お引っ越しの iOS↔Android クロス**
    - 現状: §16.4 で「v1.0 未対応」と明記。実装上の障壁は低いが、DB ファイルが同一 SQLite 形式であることを保証すれば可能。v1.1 検討。
-3. **365 日水やり履歴の FlashList 性能**
-   - 現状: §9 では触れていない。365 本棒グラフのレンダリング性能要検証（VictoryNative / Recharts いずれか）。
+3. **365 セルヒートマップ + 100 本同時の Skia 描画性能**
+   - 現状: §9 で `@shopify/react-native-skia` の `<Atlas>` API 採用（ADR-0013）。1825 件 events + 100 本対応の 60 FPS は Phase 0 PoC で実機（Pixel 7 / iPhone 13）検証必須。
 4. **言語切替中のメモ欄入力中ドラフト**
    - 現状: §17 では触れていない。切替時に入力中テキストが消える可能性 → 要検証。
 5. **Lifetime 購入のオフライン挙動**
