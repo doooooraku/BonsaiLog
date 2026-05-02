@@ -1,0 +1,342 @@
+/**
+ * 作業イベント (events) Repository (P2-03 PR-C)。
+ *
+ * Related:
+ * - Issue #17 F-02 foundation (PR-C)
+ * - schema.ts: events + tags + event_tags + events_fts (PR-B)
+ * - payloadValidator.ts: 13 種別 Valibot
+ * - filePathUtils はファイル系ではないため不要
+ *
+ * 設計方針:
+ * - ULID 主キー、UTC ISO 8601 タイムスタンプ、tz_offset_min + tz_iana で TZ 三層防御
+ * - status 遷移: planned → logged (タップ) / planned → cancelled (左スワイプ)
+ * - 30 日ゴミ箱: deleted_at セット、起動時に 30 日経過分を物理削除
+ * - FTS5 trigger は本 Repository 内で INSERT/UPDATE/DELETE 時に手動同期 (trigger 配線が SQLite trigger だと冪等性難しいため、Repository で明示制御)
+ * - tags M:N は Repository 経由でのみ操作 (event_tags 直接いじらない)
+ */
+import { ulid } from 'ulid';
+
+import { getTzIana, getTzOffsetMin, nowUtc } from '@/src/core/datetime';
+
+import { getDb } from './db';
+import { serializeEventPayload, validateEventPayload } from '@/src/features/event/payloadValidator';
+import type { Event, EventStatus, EventType } from './schema';
+
+/** 30 日ゴミ箱の保持日数 (ADR-0008、Issue #17 AC4)。 */
+export const TRASH_RETENTION_DAYS = 30;
+
+// ---------------------------------------------------------------------------
+// 型定義
+// ---------------------------------------------------------------------------
+
+export type CreateEventInput = {
+  bonsaiId: string;
+  type: EventType;
+  status?: EventStatus; // default 'logged'
+  occurredAtUtc?: string; // 省略時は now (logged) / planned 時は明示必須
+  durationMin?: number | null;
+  payload?: unknown; // Valibot で validate
+  note?: string | null;
+};
+
+export type UpdateEventInput = {
+  status?: EventStatus;
+  occurredAtUtc?: string;
+  durationMin?: number | null;
+  payload?: unknown;
+  note?: string | null;
+};
+
+// ---------------------------------------------------------------------------
+// 作成
+// ---------------------------------------------------------------------------
+
+export async function createEvent(input: CreateEventInput): Promise<Event> {
+  // payload バリデーション (Valibot)
+  validateEventPayload(input.type, input.payload ?? {});
+  const payloadJson = serializeEventPayload(input.type, input.payload ?? {});
+
+  const db = await getDb();
+  const now = nowUtc() as string;
+  const id = ulid();
+  const status: EventStatus = input.status ?? 'logged';
+  const occurredAt = input.occurredAtUtc ?? now;
+  const tzOffset = getTzOffsetMin();
+  const tzIana = getTzIana();
+
+  await db.runAsync(
+    `INSERT INTO events
+       (id, bonsai_id, type, status, occurred_at_utc, tz_offset_min, tz_iana, duration_min, payload_json, note, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+    [
+      id,
+      input.bonsaiId,
+      input.type,
+      status,
+      occurredAt,
+      tzOffset as number,
+      tzIana as string,
+      input.durationMin ?? null,
+      payloadJson,
+      input.note ?? null,
+      now,
+      now,
+    ],
+  );
+
+  // FTS5 同期 (INSERT)
+  await db.runAsync(
+    'INSERT INTO events_fts (event_id, bonsai_id, note, payload_text) VALUES (?, ?, ?, ?);',
+    [id, input.bonsaiId, input.note ?? '', payloadJson ?? ''],
+  );
+
+  return {
+    id,
+    bonsaiId: input.bonsaiId,
+    type: input.type,
+    status,
+    occurredAtUtc: occurredAt,
+    tzOffsetMin: tzOffset as number,
+    tzIana: tzIana as string,
+    durationMin: input.durationMin ?? null,
+    payloadJson,
+    note: input.note ?? null,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// 取得
+// ---------------------------------------------------------------------------
+
+export async function getEventById(id: string): Promise<Event | null> {
+  const db = await getDb();
+  return db.getFirstAsync<Event>('SELECT * FROM events WHERE id = ?;', [id]);
+}
+
+/**
+ * 盆栽の active events (deleted_at IS NULL) を occurred_at 降順で取得。
+ */
+export async function getActiveEventsByBonsai(bonsaiId: string): Promise<Event[]> {
+  const db = await getDb();
+  return db.getAllAsync<Event>(
+    'SELECT * FROM events WHERE bonsai_id = ? AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;',
+    [bonsaiId],
+  );
+}
+
+/**
+ * ゴミ箱 (deleted_at NOT NULL) を deleted_at 降順で取得。
+ */
+export async function getTrashedEvents(bonsaiId?: string): Promise<Event[]> {
+  const db = await getDb();
+  if (bonsaiId) {
+    return db.getAllAsync<Event>(
+      'SELECT * FROM events WHERE bonsai_id = ? AND deleted_at IS NOT NULL ORDER BY deleted_at DESC;',
+      [bonsaiId],
+    );
+  }
+  return db.getAllAsync<Event>(
+    'SELECT * FROM events WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC;',
+  );
+}
+
+/**
+ * status 別取得 (タイムライン UI、F-04 ヒートマップ集計用)。
+ */
+export async function getEventsByStatus(bonsaiId: string, status: EventStatus): Promise<Event[]> {
+  const db = await getDb();
+  return db.getAllAsync<Event>(
+    'SELECT * FROM events WHERE bonsai_id = ? AND status = ? AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;',
+    [bonsaiId, status],
+  );
+}
+
+/**
+ * type 別取得 (例: F-04 水やりヒートマップ用 = type='watering' AND status='logged')。
+ */
+export async function getEventsByType(
+  bonsaiId: string,
+  type: EventType,
+  options?: { status?: EventStatus },
+): Promise<Event[]> {
+  const db = await getDb();
+  if (options?.status) {
+    return db.getAllAsync<Event>(
+      'SELECT * FROM events WHERE bonsai_id = ? AND type = ? AND status = ? AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;',
+      [bonsaiId, type, options.status],
+    );
+  }
+  return db.getAllAsync<Event>(
+    'SELECT * FROM events WHERE bonsai_id = ? AND type = ? AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;',
+    [bonsaiId, type],
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 更新
+// ---------------------------------------------------------------------------
+
+export async function updateEvent(id: string, input: UpdateEventInput): Promise<void> {
+  const db = await getDb();
+  const event = await getEventById(id);
+  if (!event) throw new Error(`Event not found: ${id}`);
+
+  const now = nowUtc() as string;
+  const fields: string[] = ['updated_at = ?'];
+  const values: (string | number | null)[] = [now];
+
+  if (input.status !== undefined) {
+    fields.push('status = ?');
+    values.push(input.status);
+  }
+  if (input.occurredAtUtc !== undefined) {
+    fields.push('occurred_at_utc = ?');
+    values.push(input.occurredAtUtc);
+  }
+  if (input.durationMin !== undefined) {
+    fields.push('duration_min = ?');
+    values.push(input.durationMin);
+  }
+  if (input.payload !== undefined) {
+    const payloadJson = serializeEventPayload(event.type, input.payload);
+    fields.push('payload_json = ?');
+    values.push(payloadJson);
+  }
+  if (input.note !== undefined) {
+    fields.push('note = ?');
+    values.push(input.note);
+  }
+
+  values.push(id);
+  await db.runAsync(`UPDATE events SET ${fields.join(', ')} WHERE id = ?;`, values);
+
+  // FTS5 同期 (note or payload 変化時)
+  if (input.note !== undefined || input.payload !== undefined) {
+    await db.runAsync('DELETE FROM events_fts WHERE event_id = ?;', [id]);
+    const updated = await getEventById(id);
+    if (updated && updated.deletedAt === null) {
+      await db.runAsync(
+        'INSERT INTO events_fts (event_id, bonsai_id, note, payload_text) VALUES (?, ?, ?, ?);',
+        [updated.id, updated.bonsaiId, updated.note ?? '', updated.payloadJson ?? ''],
+      );
+    }
+  }
+}
+
+/**
+ * status 遷移ヘルパー (タイムライン UI 用)。
+ * - planned → logged: occurred_at を now に更新
+ * - planned → cancelled: occurred_at は変更なし
+ */
+export async function markEventLogged(id: string): Promise<void> {
+  const now = nowUtc() as string;
+  await updateEvent(id, { status: 'logged', occurredAtUtc: now });
+}
+
+export async function markEventCancelled(id: string): Promise<void> {
+  await updateEvent(id, { status: 'cancelled' });
+}
+
+// ---------------------------------------------------------------------------
+// 30 日ゴミ箱 (Issue #17 AC4)
+// ---------------------------------------------------------------------------
+
+/**
+ * 論理削除 (deleted_at セット)。FTS5 から除外。
+ */
+export async function softDeleteEvent(id: string): Promise<void> {
+  const db = await getDb();
+  const now = nowUtc() as string;
+  await db.runAsync('UPDATE events SET deleted_at = ?, updated_at = ? WHERE id = ?;', [
+    now,
+    now,
+    id,
+  ]);
+  // FTS5 から削除 (再表示時の検索ノイズ防止)
+  await db.runAsync('DELETE FROM events_fts WHERE event_id = ?;', [id]);
+}
+
+/**
+ * ゴミ箱から復元 (deleted_at NULL に戻す)。FTS5 に再 INSERT。
+ */
+export async function restoreEvent(id: string): Promise<void> {
+  const db = await getDb();
+  const now = nowUtc() as string;
+  await db.runAsync('UPDATE events SET deleted_at = NULL, updated_at = ? WHERE id = ?;', [now, id]);
+  const event = await getEventById(id);
+  if (event) {
+    await db.runAsync(
+      'INSERT INTO events_fts (event_id, bonsai_id, note, payload_text) VALUES (?, ?, ?, ?);',
+      [event.id, event.bonsaiId, event.note ?? '', event.payloadJson ?? ''],
+    );
+  }
+}
+
+/**
+ * 物理削除 (Repository 内部用、通常は purgeOldTrash 経由)。
+ */
+export async function deleteEventHard(id: string): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM events_fts WHERE event_id = ?;', [id]);
+  await db.runAsync('DELETE FROM events WHERE id = ?;', [id]);
+}
+
+/**
+ * 30 日経過したゴミ箱 events を物理削除 (アプリ起動時に呼出推奨)。
+ * @returns 削除した件数
+ */
+export async function purgeOldTrash(now?: Date): Promise<number> {
+  const db = await getDb();
+  const baseDate = now ?? Date.now();
+  const baseMs = typeof baseDate === 'number' ? baseDate : baseDate.getTime();
+  const cutoffMs = baseMs - TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+  const cutoff = new Date(cutoffMs).toISOString();
+
+  // 対象 ID 取得 → FTS5 削除 → events 削除
+  const targets = await db.getAllAsync<{ id: string }>(
+    'SELECT id FROM events WHERE deleted_at IS NOT NULL AND deleted_at <= ?;',
+    [cutoff],
+  );
+  for (const { id } of targets) {
+    await db.runAsync('DELETE FROM events_fts WHERE event_id = ?;', [id]);
+    await db.runAsync('DELETE FROM events WHERE id = ?;', [id]);
+  }
+  return targets.length;
+}
+
+// ---------------------------------------------------------------------------
+// FTS5 検索 (Issue #17 AC6、F-09 検索の核)
+// ---------------------------------------------------------------------------
+
+/**
+ * FTS5 で events を検索。3 文字以上推奨 (trigram の特性)。
+ * 1〜2 文字検索は PR-D で `fts5vocab + LIKE` フォールバックを実装予定。
+ */
+export async function searchEvents(query: string, bonsaiId?: string): Promise<Event[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  const db = await getDb();
+  // FTS5 MATCH で event_id を取得 → events から本体取得 (deleted_at IS NULL のみ)
+  const ids = bonsaiId
+    ? await db.getAllAsync<{ event_id: string }>(
+        'SELECT event_id FROM events_fts WHERE events_fts MATCH ? AND bonsai_id = ?;',
+        [trimmed, bonsaiId],
+      )
+    : await db.getAllAsync<{ event_id: string }>(
+        'SELECT event_id FROM events_fts WHERE events_fts MATCH ?;',
+        [trimmed],
+      );
+
+  if (ids.length === 0) return [];
+
+  const idList = ids.map((r) => r.event_id);
+  const placeholders = idList.map(() => '?').join(',');
+  return db.getAllAsync<Event>(
+    `SELECT * FROM events WHERE id IN (${placeholders}) AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;`,
+    idList,
+  );
+}
