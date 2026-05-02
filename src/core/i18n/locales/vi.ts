@@ -220,5 +220,20 @@ const vi: Partial<Record<TranslationKey, string>> = {
   searchEmpty: 'No results found.',
   searchBonsaiSection: 'Bonsai',
   searchEventSection: 'Care logs',
+
+  // --- F-10 Export Phase A (events CSV、English fallback) ---
+  settingsExportSection: 'Export',
+  exportCsvTitle: 'Export care logs to CSV',
+  exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
+  exportCsvAction: 'Export CSV',
+  exportCsvSuccess: 'Export complete.',
+  exportCsvSuccessDetail: 'Exported {count} care logs.',
+  exportCsvFailed: 'Export failed.',
+  exportCsvShareTitle: 'BonsaiLog care logs CSV',
+  exportProRequiredTitle: 'Pro feature',
+  exportProRequiredBody: 'CSV export is available for Pro members. Upgrade to unlock.',
+  exportShareUnavailableTitle: 'Sharing is not available',
+  exportShareUnavailableBody:
+    'Sharing is not available on this device. Please update the OS and try again.',
 };
 export default vi;
