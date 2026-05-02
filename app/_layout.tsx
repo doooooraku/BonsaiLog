@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
@@ -7,6 +7,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ensureNotificationChannels } from '@/src/features/notification/scheduler';
 import { initializeAds } from '@/src/services/adService';
+import { useOnboardingStore } from '@/src/stores/onboardingStore';
 import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
@@ -50,10 +51,22 @@ export default function RootLayout() {
     });
   }, [proInitialized, isPro]);
 
+  // F-26 Phase B (Issue #26, ADR-0018): オンボ未完了 → /onboarding/welcome へリダイレクト
+  const onboardingCompleted = useOnboardingStore((s) => s.completed);
+  const router = useRouter();
+  const segments = useSegments() as string[];
+  useEffect(() => {
+    if (onboardingCompleted) return;
+    const inOnboarding = segments[0] === 'onboarding';
+    if (inOnboarding) return;
+    router.replace('/onboarding/welcome' as Href);
+  }, [onboardingCompleted, segments, router]);
+
   return (
     <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />
