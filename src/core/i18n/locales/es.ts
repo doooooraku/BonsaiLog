@@ -241,6 +241,9 @@ const es: Partial<Record<TranslationKey, string>> = {
   wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
+  // --- F-09 Search recent tags chips (Phase B、English fallback) ---
+  searchRecentTagsLabel: 'Recent tags',
+
   // --- F-13 Settings → Account / Paywall entry (Phase 1b、English fallback) ---
   settingsAccountSection: 'Account',
   settingsAccountProActive: 'Pro member',

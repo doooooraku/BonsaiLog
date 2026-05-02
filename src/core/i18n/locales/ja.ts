@@ -244,6 +244,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastManyDays: '最後の水やりから {days} 日',
   wateringLastOverYear: '最後の水やりから 1 年以上',
 
+  // --- F-09 検索 最近 3 タグチップ (Phase B、Issue #31、ADR-0008 改訂) ---
+  searchRecentTagsLabel: '最近のタグ',
+
   // --- F-13 設定 → アカウント / Paywall 導線 (Phase 1b、Issue #20、ADR-0009) ---
   settingsAccountSection: 'アカウント',
   settingsAccountProActive: 'Pro メンバー',
