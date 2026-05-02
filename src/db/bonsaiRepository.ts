@@ -14,7 +14,7 @@
 import { ulid } from 'ulid';
 
 import { getDb } from './db';
-import type { Bonsai, BonsaiInsert, BonsaiStyle } from './schema';
+import type { Bonsai, BonsaiStyle } from './schema';
 import { getSpeciesById, type SpeciesWithName } from './speciesRepository';
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,56 @@
+# maestro/flows/bonsai-list.yml
+# F-01 盆栽タブ到達 + 空一覧 + 新規登録 + 詳細閲覧 + アーカイブ確認
+
+appId: 'com.doooooraku.bonsailog'
+name: 'F-01 - bonsai CRUD flow'
+tags:
+  - foundation
+  - f-01
+
+steps:
+  - launchApp:
+      clearState: true
+      label: 'アプリをクリーン起動する (DB 初期化)'
+
+  - tapOn:
+      text: '盆栽'
+      label: '盆栽タブをタップ'
+
+  - assertVisible:
+      text: 'まだ盆栽が登録されていません'
+      optional: true
+      label: '空一覧の見出しが表示されることを確認 (初回起動時)'
+
+  - tapOn:
+      text: '盆栽を登録'
+      label: '新規登録ボタンをタップ'
+
+  - tapOn:
+      id: 'name'
+      label: '名前フィールドにフォーカス'
+      optional: true
+
+  - inputText:
+      text: 'テスト盆栽 黒松'
+      label: '盆栽名を入力'
+
+  - tapOn:
+      text: '黒松'
+      label: '樹種「黒松」を選択'
+      optional: true
+
+  - tapOn:
+      text: '保存'
+      label: '保存ボタンをタップ'
+
+  - assertVisible:
+      text: 'テスト盆栽 黒松'
+      label: '詳細画面に登録した盆栽名が表示されることを確認'
+
+  - tapOn:
+      text: 'アーカイブ'
+      label: 'アーカイブボタンをタップ'
+
+  - tapOn:
+      text: 'アーカイブ'
+      label: '確認ダイアログでアーカイブを確定'
