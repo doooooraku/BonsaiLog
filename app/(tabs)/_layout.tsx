@@ -24,6 +24,14 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="bonsai"
+        options={{
+          title: '盆栽',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="leaf.fill" color={color} />,
+          headerShown: false,
+        }}
+      />
     </Tabs>
   );
 }

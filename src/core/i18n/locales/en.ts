@@ -79,6 +79,32 @@ const baseEn = {
   errorLoadFailed: 'Failed to load data.',
   errorSaveFailed: 'Failed to save.',
   errorDeleteFailed: 'Failed to delete.',
+
+  // --- F-01 Bonsai (P2-01 PR-D) ---
+  bonsaiTab: 'Bonsai',
+  bonsaiListEmptyTitle: 'No bonsai registered yet',
+  bonsaiListEmptyDesc: 'Tap below to register your first bonsai.',
+  bonsaiCreateNew: 'Add bonsai',
+  bonsaiFieldName: 'Name',
+  bonsaiFieldNamePlaceholder: 'Tree name (e.g., Black Pine in the corner)',
+  bonsaiFieldSpecies: 'Species',
+  bonsaiFieldSpeciesSearch: 'Search species…',
+  bonsaiFieldStyle: 'Style',
+  bonsaiFieldAcquiredAt: 'Acquired on',
+  bonsaiFieldUpdatedAt: 'Last updated',
+  bonsaiArchive: 'Archive',
+  bonsaiArchiveConfirmTitle: 'Archive this bonsai?',
+  bonsaiArchiveConfirmDesc: 'You can restore it later from Settings.',
+  bonsaiStyle_chokkan: 'Formal upright (chokkan)',
+  bonsaiStyle_moyogi: 'Informal upright (moyogi)',
+  bonsaiStyle_shakan: 'Slanting (shakan)',
+  bonsaiStyle_kengai: 'Cascade (kengai)',
+  bonsaiStyle_han_kengai: 'Semi-cascade (han-kengai)',
+  bonsaiStyle_bunjingi: 'Literati (bunjingi)',
+  bonsaiStyle_fukinagashi: 'Windswept (fukinagashi)',
+  bonsaiStyle_sokan: 'Twin-trunk (sokan)',
+  bonsaiStyle_kabudachi: 'Multi-trunk (kabudachi)',
+  bonsaiStyle_ishitsuki: 'On rock (ishitsuki)',
 };
 
 export type TranslationKey = keyof typeof baseEn;
