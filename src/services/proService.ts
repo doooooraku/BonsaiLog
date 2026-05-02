@@ -28,8 +28,12 @@ export type PriceDetails = {
   lifetime?: PriceDetail;
 };
 
-const PRO_STATE_KEY = 'app_pro_state_v1';
-const ENTITLEMENT_ID = 'Pro_Plan';
+// F-13 Phase 1a (Issue #20): ADR-0009 §44 / §289 命名マッピングに従い変更。
+// - ENTITLEMENT_ID: 'Pro_Plan' → 'premium' (RevenueCat Dashboard Entitlement 名と一致)
+// - PRO_STATE_KEY: 'app_pro_state_v1' → 'bonsailog_pro_state_v1' (SecureStore キーをアプリ識別子付きに)
+// 既存の Sandbox tester データは Restore Purchases で復元可能 (本番未ローンチのため影響なし)。
+const PRO_STATE_KEY = 'bonsailog_pro_state_v1';
+const ENTITLEMENT_ID = 'premium';
 let configured = false;
 
 const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
