@@ -20,6 +20,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-na
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import { requestNotificationPermission } from '@/src/features/notification/scheduler';
 import { showAdPrivacyOptionsForm } from '@/src/services/adService';
 import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
@@ -33,7 +34,53 @@ export default function SettingsScreen() {
   const setThemeMode = useSettingsStore((s) => s.setThemeMode);
   const outdoorMode = useSettingsStore((s) => s.outdoorMode);
   const setOutdoorMode = useSettingsStore((s) => s.setOutdoorMode);
+  // F-16 Phase B (Issue #30, ADR-0014): 通知設定 ON/OFF + 時刻表示
+  const notifSummaryEnabled = useSettingsStore((s) => s.notificationDailySummaryEnabled);
+  const setNotifSummaryEnabled = useSettingsStore((s) => s.setNotificationDailySummaryEnabled);
+  const notifSummaryTime = useSettingsStore((s) => s.notificationDailySummaryTime);
+  const notifWateringEnabled = useSettingsStore((s) => s.notificationWateringRepeatEnabled);
+  const setNotifWateringEnabled = useSettingsStore((s) => s.setNotificationWateringRepeatEnabled);
+  const notifWateringTimes = useSettingsStore((s) => s.notificationWateringRepeatTimes);
   const isPro = useProStore((s) => s.isPro);
+
+  // ON 時に OS permission をリクエスト、拒否されたら state を戻す。Phase C で datetimepicker による時刻編集を追加。
+  const handleToggleNotifSummary = React.useCallback(
+    async (enabled: boolean) => {
+      if (!enabled) {
+        setNotifSummaryEnabled(false);
+        return;
+      }
+      const granted = await requestNotificationPermission();
+      if (granted) {
+        setNotifSummaryEnabled(true);
+      } else {
+        Alert.alert(
+          t('settingsNotifPermissionDeniedTitle'),
+          t('settingsNotifPermissionDeniedBody'),
+        );
+      }
+    },
+    [setNotifSummaryEnabled, t],
+  );
+
+  const handleToggleNotifWatering = React.useCallback(
+    async (enabled: boolean) => {
+      if (!enabled) {
+        setNotifWateringEnabled(false);
+        return;
+      }
+      const granted = await requestNotificationPermission();
+      if (granted) {
+        setNotifWateringEnabled(true);
+      } else {
+        Alert.alert(
+          t('settingsNotifPermissionDeniedTitle'),
+          t('settingsNotifPermissionDeniedBody'),
+        );
+      }
+    },
+    [setNotifWateringEnabled, t],
+  );
 
   const handleAdPrivacyOptionsPress = React.useCallback(async () => {
     try {
@@ -145,6 +192,42 @@ export default function SettingsScreen() {
               testID="e2e_event_overload_toggle"
               value={eventOverloadEnabled}
               onValueChange={setEventOverloadEnabled}
+            />
+          </View>
+
+          {/* F-16 Phase B (Issue #30, ADR-0014): 当日まとめ通知 + 水やり繰り返し通知トグル */}
+          <View style={styles.toggleRow} testID="e2e_notif_summary_toggle_row">
+            <View style={styles.toggleLabelBox}>
+              <ThemedText type="defaultSemiBold">{t('settingsNotifSummaryToggle')}</ThemedText>
+              <ThemedText style={styles.entryDesc}>
+                {t('settingsNotifSummaryToggleDesc').replace('{time}', notifSummaryTime)}
+              </ThemedText>
+            </View>
+            <Switch
+              accessibilityRole="switch"
+              accessibilityLabel={t('settingsNotifSummaryToggle')}
+              testID="e2e_notif_summary_toggle"
+              value={notifSummaryEnabled}
+              onValueChange={(v) => void handleToggleNotifSummary(v)}
+            />
+          </View>
+
+          <View style={styles.toggleRow} testID="e2e_notif_watering_toggle_row">
+            <View style={styles.toggleLabelBox}>
+              <ThemedText type="defaultSemiBold">{t('settingsNotifWateringToggle')}</ThemedText>
+              <ThemedText style={styles.entryDesc}>
+                {t('settingsNotifWateringToggleDesc').replace(
+                  '{times}',
+                  notifWateringTimes.join(', '),
+                )}
+              </ThemedText>
+            </View>
+            <Switch
+              accessibilityRole="switch"
+              accessibilityLabel={t('settingsNotifWateringToggle')}
+              testID="e2e_notif_watering_toggle"
+              value={notifWateringEnabled}
+              onValueChange={(v) => void handleToggleNotifWatering(v)}
             />
           </View>
         </View>

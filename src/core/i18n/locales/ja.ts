@@ -244,6 +244,15 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastManyDays: '最後の水やりから {days} 日',
   wateringLastOverYear: '最後の水やりから 1 年以上',
 
+  // --- F-16 通知設定 (Phase B、Issue #30、ADR-0014) ---
+  settingsNotifSummaryToggle: '当日まとめ通知',
+  settingsNotifSummaryToggleDesc: '予定がある日に {time} に 1 件のまとめ通知を受け取ります。',
+  settingsNotifWateringToggle: '水やり通知',
+  settingsNotifWateringToggleDesc: '{times} に水やり通知を受け取ります。',
+  settingsNotifPermissionDeniedTitle: '通知の許可が必要です',
+  settingsNotifPermissionDeniedBody:
+    '端末の設定で通知が無効になっています。設定から許可してください。',
+
   // --- F-14 広告バナーラベル (Phase B、Issue #22、functional_spec §19) ---
   adBannerLabel: '広告',
 
