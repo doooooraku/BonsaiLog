@@ -244,6 +244,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastManyDays: '最後の水やりから {days} 日',
   wateringLastOverYear: '最後の水やりから 1 年以上',
 
+  // --- F-07 装着期間アプリ内表示 (Phase B、Issue #24、ADR-0014) ---
+  wiringDurationWithinWeeks: '装着期間: {weeks} 週',
+  wiringDurationOverdueLabel: '装着期間: {weeks} 週 (経過済)',
+
   // --- F-LEGAL-001 広告のプライバシー (Phase A、Issue #37、ADR-0017) ---
   settingsAdPrivacySection: '広告のプライバシー',
   settingsAdPrivacyOptionsTitle: '広告のプライバシー設定',

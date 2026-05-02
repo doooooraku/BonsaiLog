@@ -6,6 +6,7 @@ import {
   DEFAULT_WIRING_OVERDUE_THRESHOLD_DAYS,
   getDaysSinceWired,
   getScheduledUnwireAt,
+  getWeeksSinceWired,
 } from '@/src/features/wiring/wiringDuration';
 import type { Event } from '@/src/db/schema';
 
@@ -109,5 +110,31 @@ describe('classifyWiringDuration', () => {
 
   test('threshold constant exposes 42 (6 weeks)', () => {
     expect(DEFAULT_WIRING_OVERDUE_THRESHOLD_DAYS).toBe(42);
+  });
+});
+
+describe('getWeeksSinceWired (Phase B)', () => {
+  test('0 日 → 0 週', () => {
+    expect(getWeeksSinceWired(0)).toBe(0);
+  });
+
+  test('6 日 → 0 週 (1 週未満切り捨て)', () => {
+    expect(getWeeksSinceWired(6)).toBe(0);
+  });
+
+  test('7 日 → 1 週', () => {
+    expect(getWeeksSinceWired(7)).toBe(1);
+  });
+
+  test('42 日 → 6 週 (しきい値ちょうど)', () => {
+    expect(getWeeksSinceWired(42)).toBe(6);
+  });
+
+  test('100 日 → 14 週', () => {
+    expect(getWeeksSinceWired(100)).toBe(14);
+  });
+
+  test('負値は 0 にクランプ', () => {
+    expect(getWeeksSinceWired(-5)).toBe(0);
   });
 });

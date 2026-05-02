@@ -34,6 +34,11 @@ import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
 import { LastWateredText } from '@/src/features/watering/LastWateredText';
 import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import {
+  classifyWiringDuration,
+  getDaysSinceWired,
+  getWeeksSinceWired,
+} from '@/src/features/wiring/wiringDuration';
 import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
@@ -314,29 +319,47 @@ export default function BonsaiDetailScreen() {
             <ThemedText style={styles.emptyPhotos}>{t('eventEmpty')}</ThemedText>
           )}
 
-          {events.slice(0, 50).map((ev) => (
-            <Pressable
-              key={ev.id}
-              style={styles.eventRow}
-              accessibilityRole="button"
-              accessibilityLabel={t(`eventType_${ev.type}` as TranslationKey)}
-              onLongPress={() => confirmDeleteEvent(ev)}
-            >
-              <View style={styles.eventRowMain}>
-                <ThemedText type="defaultSemiBold">
-                  {t(`eventType_${ev.type}` as TranslationKey)}
-                </ThemedText>
-                <ThemedText style={styles.eventRowDate}>
-                  {formatDate(ev.occurredAtUtc, lang)}
-                </ThemedText>
-              </View>
-              {ev.note && (
-                <ThemedText style={styles.eventRowNote} numberOfLines={2}>
-                  {ev.note}
-                </ThemedText>
-              )}
-            </Pressable>
-          ))}
+          {events.slice(0, 50).map((ev) => {
+            // F-07 Phase B (Issue #24, ADR-0014): wiring の場合のみ「装着期間 X 週 (経過済)」をアプリ内表示。
+            // 通知は ADR-0014 で削除済 (鬱陶しいフィードバックを受けて事実表示に変更)。
+            let wiringDurationLabel: string | null = null;
+            if (ev.type === 'wiring' && ev.status === 'logged') {
+              const days = getDaysSinceWired(ev, new Date(nowUtc() as string));
+              const weeks = getWeeksSinceWired(days);
+              const kind = classifyWiringDuration(days);
+              const key =
+                kind === 'overdue' ? 'wiringDurationOverdueLabel' : 'wiringDurationWithinWeeks';
+              wiringDurationLabel = t(key).replace('{weeks}', String(weeks));
+            }
+            return (
+              <Pressable
+                key={ev.id}
+                style={styles.eventRow}
+                accessibilityRole="button"
+                accessibilityLabel={t(`eventType_${ev.type}` as TranslationKey)}
+                onLongPress={() => confirmDeleteEvent(ev)}
+              >
+                <View style={styles.eventRowMain}>
+                  <ThemedText type="defaultSemiBold">
+                    {t(`eventType_${ev.type}` as TranslationKey)}
+                  </ThemedText>
+                  <ThemedText style={styles.eventRowDate}>
+                    {formatDate(ev.occurredAtUtc, lang)}
+                  </ThemedText>
+                </View>
+                {wiringDurationLabel && (
+                  <ThemedText style={styles.eventRowNote} testID={`e2e_wiring_duration_${ev.id}`}>
+                    {wiringDurationLabel}
+                  </ThemedText>
+                )}
+                {ev.note && (
+                  <ThemedText style={styles.eventRowNote} numberOfLines={2}>
+                    {ev.note}
+                  </ThemedText>
+                )}
+              </Pressable>
+            );
+          })}
         </View>
 
         <View style={styles.section}>
