@@ -241,6 +241,12 @@ const ru: Partial<Record<TranslationKey, string>> = {
   wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
+  // --- F-13 Settings → Account / Paywall entry (Phase 1b、English fallback) ---
+  settingsAccountSection: 'Account',
+  settingsAccountProActive: 'Pro member',
+  settingsAccountProActiveDesc: 'Manage your subscription from here.',
+  settingsAccountProInactiveDesc: 'See plans and upgrade.',
+
   // --- F-04 Watering heatmap (Phase B、English fallback) ---
   wateringHeatmapLegendLabel: 'Watering counts (last 12 weeks)',
   wateringHeatmapLegend0: '0',

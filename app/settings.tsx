@@ -90,6 +90,27 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* --- F-13 Phase 1b Pro / Paywall 導線 (Issue #20、ADR-0009) --- */}
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+            {t('settingsAccountSection')}
+          </ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('proTitle')}
+            testID="e2e_open_paywall"
+            style={styles.entry}
+            onPress={() => router.push('/pro' as Href)}
+          >
+            <ThemedText type="defaultSemiBold">
+              {isPro ? t('settingsAccountProActive') : t('proTitle')}
+            </ThemedText>
+            <ThemedText style={styles.entryDesc}>
+              {isPro ? t('settingsAccountProActiveDesc') : t('settingsAccountProInactiveDesc')}
+            </ThemedText>
+          </Pressable>
+        </View>
+
         {/* --- F-05 通知設定 (Issue #25、ADR-0011) --- */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>

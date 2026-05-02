@@ -239,6 +239,12 @@ const baseEn = {
   wateringLastManyDays: '{days} days since last watering',
   wateringLastOverYear: 'Over a year since last watering',
 
+  // --- F-13 Settings → Account / Paywall entry (Phase 1b, Issue #20, ADR-0009) ---
+  settingsAccountSection: 'Account',
+  settingsAccountProActive: 'Pro member',
+  settingsAccountProActiveDesc: 'Manage your subscription from here.',
+  settingsAccountProInactiveDesc: 'See plans and upgrade.',
+
   // --- F-04 Watering heatmap (Phase B simple View grid, Issue #29, ADR-0013) ---
   wateringHeatmapLegendLabel: 'Watering counts (last 12 weeks)',
   wateringHeatmapLegend0: '0',
