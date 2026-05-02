@@ -188,8 +188,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ADMOB_IOS_BANNER_ID: optional('ADMOB_IOS_BANNER_ID'),
       ADMOB_CONSENT_DEBUG_GEOGRAPHY: optional('ADMOB_CONSENT_DEBUG_GEOGRAPHY'),
       ADMOB_CONSENT_TEST_DEVICE_IDS: optional('ADMOB_CONSENT_TEST_DEVICE_IDS'),
-      LEGAL_PRIVACY_URL: optional('LEGAL_PRIVACY_URL'),
-      LEGAL_TERMS_URL: optional('LEGAL_TERMS_URL'),
+      LEGAL_PRIVACY_URL: optional(
+        'LEGAL_PRIVACY_URL',
+        'https://doooooraku.github.io/bonsailog/legal/privacy-policy.html',
+      ),
+      LEGAL_TERMS_URL: optional(
+        'LEGAL_TERMS_URL',
+        'https://doooooraku.github.io/bonsailog/legal/terms-of-use.html',
+      ),
       supportsRTL,
       forcesRTL,
     },
