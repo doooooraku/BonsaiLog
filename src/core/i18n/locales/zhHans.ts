@@ -147,6 +147,35 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   eventType_candle_cut: 'Candle cut',
   eventType_moss_care: 'Moss care',
   eventType_position_change: 'Position change',
-};
 
+  // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
+  settingsTitle: '设置',
+  settingsBackupSection: '搬家',
+  backupTitle: '搬家',
+  backupExportTitle: '创建备份',
+  backupExportDesc:
+    '将盆栽记录、照片和养护日志保存为单个 ZIP 文件。可通过共享菜单发送到 iCloud Drive、Google Drive、邮件或聊天应用。',
+  backupExportAction: '创建备份',
+  backupExportSuccess: '已创建备份。',
+  backupExportFailed: '创建备份失败。',
+  backupImportTitle: '从备份恢复',
+  backupImportDesc: '从先前创建的 ZIP 文件恢复。新记录会被添加，现有记录不会被修改。',
+  backupImportAction: '恢复',
+  backupImportWarningTitle: '从备份恢复？',
+  backupImportWarningBody: '新记录将被添加到现有数据中。现有记录不会被覆盖或删除。',
+  backupImportSuccess: '恢复完成。',
+  backupImportSuccessDetail: '已添加 {bonsai} 盆栽、{events} 养护日志、{photos} 张照片。',
+  backupImportFailed: '从备份恢复失败。',
+  backupSchemaMismatchTitle: '不支持的备份版本',
+  backupSchemaMismatchBody: '此备份由不同版本创建。请使用相同版本的应用进行恢复。',
+  backupInvalidTitle: '备份文件已损坏',
+  backupInvalidBody: '所选文件不是有效的备份，或部分数据缺失。请选择其他文件。',
+  backupSizeLimitTitle: '备份过大',
+  backupSizeLimitBody: '超过 200 MB 的备份无法共享。请减少照片数量后重试。',
+  backupShareUnavailableTitle: '共享不可用',
+  backupShareUnavailableBody: '此设备无法使用共享功能。请更新操作系统后重试。',
+  backupUnsupportedTitle: '暂不支持',
+  backupUnsupportedBody: '此平台不支持备份功能。',
+  backupEncryptionWarning: '备份未加密。保存到云服务时，请保管在您控制的安全文件夹内。',
+};
 export default zhHans;

@@ -147,6 +147,44 @@ const ja: Partial<Record<TranslationKey, string>> = {
   errorLoadFailed: 'データの読み込みに失敗しました。',
   errorSaveFailed: '保存に失敗しました。',
   errorDeleteFailed: '削除に失敗しました。',
+
+  // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
+  settingsTitle: '設定',
+  settingsBackupSection: 'お引っ越し',
+  backupTitle: 'お引っ越し',
+  backupExportTitle: 'バックアップを作成',
+  backupExportDesc:
+    '盆栽の記録・写真・作業履歴をひとつの ZIP ファイルにまとめます。共有メニューから iCloud Drive / Google Drive / メール / メッセージアプリへ送れます。',
+  backupExportAction: 'バックアップを作成',
+  backupExportSuccess: 'バックアップを作成しました。',
+  backupExportFailed: 'バックアップの作成に失敗しました。',
+  backupImportTitle: 'バックアップから復元',
+  backupImportDesc:
+    '以前作成した ZIP ファイルから復元します。新しい記録は追加されますが、既存の記録は変更されません。',
+  backupImportAction: '復元する',
+  backupImportWarningTitle: 'バックアップから復元しますか?',
+  backupImportWarningBody:
+    '新しい記録が既存のデータに追加されます。既存の記録は上書き・削除されません。',
+  backupImportSuccess: '復元が完了しました。',
+  backupImportSuccessDetail:
+    '盆栽 {bonsai} 件、作業履歴 {events} 件、写真 {photos} 件を追加しました。',
+  backupImportFailed: 'バックアップからの復元に失敗しました。',
+  backupSchemaMismatchTitle: '対応していないバックアップ形式',
+  backupSchemaMismatchBody:
+    'このバックアップは別のバージョンで作成されています。同じバージョンのアプリで復元してください。',
+  backupInvalidTitle: 'バックアップファイルが壊れています',
+  backupInvalidBody:
+    '選択したファイルは正しいバックアップではないか、データが欠けています。別のファイルを選んでください。',
+  backupSizeLimitTitle: 'バックアップが大きすぎます',
+  backupSizeLimitBody:
+    '200 MB を超えるバックアップは共有できません。写真の枚数を減らして、もう一度お試しください。',
+  backupShareUnavailableTitle: '共有を利用できません',
+  backupShareUnavailableBody:
+    'この端末では共有機能を利用できません。OS を最新にしてお試しください。',
+  backupUnsupportedTitle: 'ご利用いただけません',
+  backupUnsupportedBody: 'このプラットフォームではバックアップ機能はご利用いただけません。',
+  backupEncryptionWarning:
+    'バックアップは暗号化されません。クラウドに保存する場合は、ご自身で管理できる安全なフォルダに保管してください。',
 };
 
 export default ja;

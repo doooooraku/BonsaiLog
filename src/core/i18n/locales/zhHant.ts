@@ -147,6 +147,35 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   eventType_candle_cut: 'Candle cut',
   eventType_moss_care: 'Moss care',
   eventType_position_change: 'Position change',
-};
 
+  // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
+  settingsTitle: '設定',
+  settingsBackupSection: '搬家',
+  backupTitle: '搬家',
+  backupExportTitle: '建立備份',
+  backupExportDesc:
+    '將盆栽紀錄、相片和養護紀錄儲存為單一 ZIP 檔案。可透過分享選單傳送至 iCloud Drive、Google Drive、電子郵件或通訊軟體。',
+  backupExportAction: '建立備份',
+  backupExportSuccess: '已建立備份。',
+  backupExportFailed: '建立備份失敗。',
+  backupImportTitle: '從備份還原',
+  backupImportDesc: '從先前建立的 ZIP 檔案還原。新紀錄會被新增，現有紀錄不會被變更。',
+  backupImportAction: '還原',
+  backupImportWarningTitle: '從備份還原？',
+  backupImportWarningBody: '新紀錄將會被新增到現有資料中。現有紀錄不會被覆寫或刪除。',
+  backupImportSuccess: '還原完成。',
+  backupImportSuccessDetail: '已新增 {bonsai} 盆栽、{events} 養護紀錄、{photos} 張相片。',
+  backupImportFailed: '從備份還原失敗。',
+  backupSchemaMismatchTitle: '不支援的備份版本',
+  backupSchemaMismatchBody: '此備份由不同版本建立。請使用對應版本的應用程式還原。',
+  backupInvalidTitle: '備份檔案已損毀',
+  backupInvalidBody: '所選檔案不是有效的備份，或部分資料缺失。請選擇其他檔案。',
+  backupSizeLimitTitle: '備份過大',
+  backupSizeLimitBody: '超過 200 MB 的備份無法分享。請減少相片數量後重試。',
+  backupShareUnavailableTitle: '無法使用分享',
+  backupShareUnavailableBody: '此裝置無法使用分享功能。請更新作業系統後再試。',
+  backupUnsupportedTitle: '暫不支援',
+  backupUnsupportedBody: '此平台不支援備份功能。',
+  backupEncryptionWarning: '備份不會加密。儲存至雲端服務時，請存放在您可控管的安全資料夾。',
+};
 export default zhHant;
