@@ -27,6 +27,14 @@ export default function SettingsScreen() {
   const router = useRouter();
   const eventOverloadEnabled = useSettingsStore((s) => s.eventOverloadEnabled);
   const setEventOverloadEnabled = useSettingsStore((s) => s.setEventOverloadEnabled);
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const setThemeMode = useSettingsStore((s) => s.setThemeMode);
+
+  const themeOptions: { value: 'system' | 'light' | 'dark'; labelKey: string }[] = [
+    { value: 'system', labelKey: 'settingsThemeSystem' },
+    { value: 'light', labelKey: 'settingsThemeLight' },
+    { value: 'dark', labelKey: 'settingsThemeDark' },
+  ];
 
   return (
     <ThemedView style={styles.container} testID="e2e_settings_screen">
@@ -34,6 +42,36 @@ export default function SettingsScreen() {
         <ThemedText type="title" style={styles.title}>
           {t('settingsTitle')}
         </ThemedText>
+
+        {/* --- F-15 Phase A テーマ (Issue #32、ADR-0015) --- */}
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+            {t('settingsThemeSection')}
+          </ThemedText>
+          <View style={styles.themeRow} testID="e2e_theme_mode_row">
+            {themeOptions.map((opt) => {
+              const selected = themeMode === opt.value;
+              return (
+                <Pressable
+                  key={opt.value}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={t(opt.labelKey as Parameters<typeof t>[0])}
+                  testID={`e2e_theme_mode_${opt.value}`}
+                  style={[styles.themeChip, selected && styles.themeChipSelected]}
+                  onPress={() => setThemeMode(opt.value)}
+                >
+                  <ThemedText
+                    type={selected ? 'defaultSemiBold' : 'default'}
+                    style={selected ? styles.themeChipTextSelected : undefined}
+                  >
+                    {t(opt.labelKey as Parameters<typeof t>[0])}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
 
         {/* --- F-05 通知設定 (Issue #25、ADR-0011) --- */}
         <View style={styles.section}>
@@ -113,4 +151,22 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   toggleLabelBox: { flex: 1, gap: 4 },
+  themeRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  themeChip: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    alignItems: 'center',
+  },
+  themeChipSelected: {
+    backgroundColor: '#2E7D32',
+    borderColor: '#2E7D32',
+  },
+  themeChipTextSelected: { color: '#FFFFFF' },
 });

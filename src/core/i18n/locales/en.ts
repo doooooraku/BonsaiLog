@@ -195,6 +195,12 @@ const baseEn = {
   backupEncryptionWarning:
     'Backups are not encrypted. When you save them to a cloud service, please keep them in a secure folder under your control.',
 
+  // --- F-15 Theme settings (Phase A: system/light/dark, ADR-0015) ---
+  settingsThemeSection: 'Appearance',
+  settingsThemeSystem: 'System',
+  settingsThemeLight: 'Light',
+  settingsThemeDark: 'Dark',
+
   // --- F-04 Watering history (Phase A: LastWateredText only, ADR-0013) ---
   wateringSectionTitle: 'Watering',
   wateringLastNoRecord: 'No watering records yet',

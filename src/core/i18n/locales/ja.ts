@@ -199,6 +199,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   backupEncryptionWarning:
     'バックアップは暗号化されません。クラウドに保存する場合は、ご自身で管理できる安全なフォルダに保管してください。',
 
+  // --- F-15 テーマ設定 (Phase A、ADR-0015) ---
+  settingsThemeSection: '表示',
+  settingsThemeSystem: 'システム',
+  settingsThemeLight: 'ライト',
+  settingsThemeDark: 'ダーク',
+
   // --- F-04 水やり履歴 (Phase A、ADR-0013) ---
   wateringSectionTitle: '水やり',
   wateringLastNoRecord: 'まだ水やりの記録がありません',
