@@ -243,6 +243,15 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastSeveralDays: '最後の水やりから {days} 日',
   wateringLastManyDays: '最後の水やりから {days} 日',
   wateringLastOverYear: '最後の水やりから 1 年以上',
+
+  // --- F-LEGAL-001 広告のプライバシー (Phase A、Issue #37、ADR-0017) ---
+  settingsAdPrivacySection: '広告のプライバシー',
+  settingsAdPrivacyOptionsTitle: '広告のプライバシー設定',
+  settingsAdPrivacyOptionsDesc:
+    'EU・英国・スイス・米国の規制対象州にお住まいの方は、同意の選択をやり直せます。',
+  settingsAdPrivacyOptionsUnavailableTitle: 'お住まいの地域では設定不要です',
+  settingsAdPrivacyOptionsUnavailableBody: 'この地域では広告同意の設定は不要です。',
+  settingsAdPrivacyOptionsFailedBody: '広告のプライバシー設定を開けませんでした。',
 };
 
 export default ja;

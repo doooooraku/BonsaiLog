@@ -238,6 +238,15 @@ const baseEn = {
   wateringLastSeveralDays: '{days} days since last watering',
   wateringLastManyDays: '{days} days since last watering',
   wateringLastOverYear: 'Over a year since last watering',
+
+  // --- F-LEGAL-001 Ad privacy (Phase A: Settings entry only, Issue #37, ADR-0017) ---
+  settingsAdPrivacySection: 'Ad privacy',
+  settingsAdPrivacyOptionsTitle: 'Ad privacy settings',
+  settingsAdPrivacyOptionsDesc:
+    'Reopen the consent dialog if you live in the EU, UK, Switzerland, or a regulated US state.',
+  settingsAdPrivacyOptionsUnavailableTitle: 'Not required in your region',
+  settingsAdPrivacyOptionsUnavailableBody: 'Ad consent settings are not required in your region.',
+  settingsAdPrivacyOptionsFailedBody: 'Could not open the ad privacy settings.',
 };
 
 export type TranslationKey = keyof typeof baseEn;
