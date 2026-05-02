@@ -205,5 +205,11 @@ const th: Partial<Record<TranslationKey, string>> = {
   wateringLastSeveralDays: '{days} days since last watering',
   wateringLastManyDays: '{days} days since last watering',
   wateringLastOverYear: 'Over a year since last watering',
+
+  // --- F-15 Theme settings (Phase A、English fallback) ---
+  settingsThemeSection: 'Appearance',
+  settingsThemeSystem: 'System',
+  settingsThemeLight: 'Light',
+  settingsThemeDark: 'Dark',
 };
 export default th;
