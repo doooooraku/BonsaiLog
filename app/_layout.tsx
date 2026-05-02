@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ensureNotificationChannels } from '@/src/features/notification/scheduler';
 import { initializeAds } from '@/src/services/adService';
 import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
@@ -30,6 +31,14 @@ export default function RootLayout() {
   useEffect(() => {
     initPro();
   }, [initPro]);
+
+  // F-16 Phase A (Issue #30, ADR-0014): Android 通知チャネル (WATERING / DAILY_SUMMARY) を起動時に確保。
+  // permission リクエストと reschedule は Settings 操作時 (Phase B) に呼ぶ。
+  useEffect(() => {
+    ensureNotificationChannels().catch(() => {
+      // チャネル作成失敗は致命的ではない (iOS は no-op)
+    });
+  }, []);
 
   useEffect(() => {
     if (!proInitialized) return;
