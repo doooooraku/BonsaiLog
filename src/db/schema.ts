@@ -23,7 +23,7 @@
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -69,6 +69,35 @@ export const speciesNames = sqliteTable(
 );
 
 /**
+ * 写真 (photos) - F-08 foundation。
+ * Repolog PR #281 教訓: relative_path で保存 (絶対パス禁止、iOS Store 更新で container UUID 変動)。
+ * Free 制限: bonsai 1 件あたり 3 枚まで (Repository 層で enforce、F-13 完成後に Paywall 接続)。
+ */
+export const photos = sqliteTable(
+  'photos',
+  {
+    id: text('id').primaryKey().notNull(), // ULID
+    bonsaiId: text('bonsai_id')
+      .notNull()
+      .references(() => bonsai.id, { onDelete: 'cascade' }),
+    eventId: text('event_id'), // F-02 events FK (event 削除で SET NULL)、events テーブル未作成のため FK 無効
+    relativePath: text('relative_path').notNull(), // 例: bonsailog/photos/<bonsaiId>/<photoId>.jpg
+    takenAt: text('taken_at'), // ISO 8601 UTC TEXT (撮影日時、EXIF or 手動)
+    isCover: integer('is_cover').notNull().default(0), // 0/1、bonsai 1 件あたり 1 枚のみ ON
+    width: integer('width'),
+    height: integer('height'),
+    orderIndex: integer('order_index').notNull().default(0),
+    caption: text('caption'),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => ({
+    bonsaiIdIdx: index('idx_photos_bonsai_id').on(table.bonsaiId, table.orderIndex),
+    isCoverIdx: index('idx_photos_is_cover').on(table.bonsaiId, table.isCover),
+    takenAtIdx: index('idx_photos_taken_at').on(table.takenAt),
+  }),
+);
+
+/**
  * 盆栽 (BonsaiLog の中核エンティティ)。樹種への FK + 取得日 + 樹形 + 鉢情報 + アーカイブ機能。
  */
 export const bonsai = sqliteTable(
@@ -107,10 +136,18 @@ export const speciesNamesRelations = relations(speciesNames, ({ one }) => ({
   }),
 }));
 
-export const bonsaiRelations = relations(bonsai, ({ one }) => ({
+export const bonsaiRelations = relations(bonsai, ({ one, many }) => ({
   species: one(species, {
     fields: [bonsai.speciesId],
     references: [species.id],
+  }),
+  photos: many(photos),
+}));
+
+export const photosRelations = relations(photos, ({ one }) => ({
+  bonsai: one(bonsai, {
+    fields: [photos.bonsaiId],
+    references: [bonsai.id],
   }),
 }));
 
@@ -177,6 +214,37 @@ CREATE INDEX IF NOT EXISTS idx_bonsai_archived_at ON bonsai(archived_at);
 CREATE INDEX IF NOT EXISTS idx_bonsai_updated_at ON bonsai(updated_at);
 `;
 
+/**
+ * Migration v3: photos テーブル新規作成 (F-08 foundation)。
+ *
+ * - bonsai_id FK + ON DELETE CASCADE (盆栽削除時に写真も削除)
+ * - relative_path のみ保存 (絶対パス禁止、Repolog PR #281 lesson)
+ * - is_cover フラグでカバー写真管理 (Repository 層で 1 件のみに制約)
+ * - event_id は F-02 events 完成後に FK 化 (現状 nullable TEXT)
+ */
+export const schemaV3 = `
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS photos (
+  id TEXT PRIMARY KEY NOT NULL,
+  bonsai_id TEXT NOT NULL,
+  event_id TEXT,
+  relative_path TEXT NOT NULL,
+  taken_at TEXT,
+  is_cover INTEGER NOT NULL DEFAULT 0,
+  width INTEGER,
+  height INTEGER,
+  order_index INTEGER NOT NULL DEFAULT 0,
+  caption TEXT,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (bonsai_id) REFERENCES bonsai(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_photos_bonsai_id ON photos(bonsai_id, order_index);
+CREATE INDEX IF NOT EXISTS idx_photos_is_cover ON photos(bonsai_id, is_cover);
+CREATE INDEX IF NOT EXISTS idx_photos_taken_at ON photos(taken_at);
+`;
+
 // ---------------------------------------------------------------------------
 // TypeScript types (Drizzle inferSelect / inferInsert は PR-C Repository で使用)
 // ---------------------------------------------------------------------------
@@ -187,6 +255,8 @@ export type SpeciesName = typeof speciesNames.$inferSelect;
 export type SpeciesNameInsert = typeof speciesNames.$inferInsert;
 export type Bonsai = typeof bonsai.$inferSelect;
 export type BonsaiInsert = typeof bonsai.$inferInsert;
+export type Photo = typeof photos.$inferSelect;
+export type PhotoInsert = typeof photos.$inferInsert;
 
 /**
  * 樹形スタイル (Issue #14 で予定、UI 側で enum 化)

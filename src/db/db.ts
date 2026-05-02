@@ -19,7 +19,7 @@
  */
 import * as SQLite from 'expo-sqlite';
 
-import { SCHEMA_VERSION, schemaV2 } from './schema';
+import { SCHEMA_VERSION, schemaV2, schemaV3 } from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -100,7 +100,18 @@ async function migrate(db: SQLite.SQLiteDatabase) {
   await seedSpeciesIfNeeded(db);
 
   // ---------------------------------------------------------------------------
-  // Migration v3 example: ALTER TABLE ADD COLUMN (non-idempotent — needs guard)
+  // Migration v3 (F-08 foundation: photos テーブル新規作成)
+  //
+  // bonsai_id FK + ON DELETE CASCADE、relative_path で保存 (Repolog PR #281 lesson)。
+  // events テーブルは F-02 (#17) で導入予定、event_id は現状 nullable TEXT (FK なし)。
+  // ---------------------------------------------------------------------------
+  if (version < 3) {
+    await db.execAsync(schemaV3);
+    version = 3;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v4 example: ALTER TABLE ADD COLUMN (non-idempotent — needs guard)
   //
   // ⚠ DO NOT do this:
   //   await db.execAsync('ALTER TABLE bonsai ADD COLUMN new_column TEXT;');
