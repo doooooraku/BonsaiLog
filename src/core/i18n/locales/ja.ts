@@ -278,6 +278,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeBody: '盆栽 1 鉢ずつの作業・写真・樹種を記録。オフライン完結、19 言語対応。',
   onboardingWelcomeCta: 'はじめる',
   onboardingSkip: 'あとで',
+  onboardingLanguageTitle: '言語を選んでください',
+  onboardingLanguageDesc: 'タップですぐにプレビューできます。あとで設定からも変更できます。',
+  onboardingLanguageOsBadge: '端末の言語',
+  next: '次へ',
 
   // --- F-15 屋外モード (Phase B、Issue #32、ADR-0015) ---
   settingsOutdoorMode: '屋外モード',

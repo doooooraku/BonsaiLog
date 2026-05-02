@@ -11,25 +11,22 @@
  * - 機能チュート 5 ステップ (Step 1-5)
  * - F-15 light 固定 + 太陽アイコン非表示 + 200ms アニメ
  */
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { useOnboardingStore } from '@/src/stores/onboardingStore';
 
 export default function OnboardingWelcomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const setCompleted = useOnboardingStore((s) => s.setCompleted);
 
   const handleStart = React.useCallback(() => {
-    setCompleted(true);
-    // ルート切替は _layout.tsx の hook が拾うが、即座にホームへ遷移
-    router.replace('/');
-  }, [router, setCompleted]);
+    // Phase C: 言語選択画面へ遷移、completed は言語選択完了時にセット
+    router.push('/onboarding/language' as Href);
+  }, [router]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']} testID="e2e_onboarding_welcome">

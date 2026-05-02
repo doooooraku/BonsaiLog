@@ -269,12 +269,16 @@ const baseEn = {
   // --- F-14 Ad banner label (Phase B, Issue #22, functional_spec §19) ---
   adBannerLabel: 'Ad',
 
-  // --- F-26 Onboarding (Phase A copy only, Issue #26, ADR-0018) ---
+  // --- F-26 Onboarding (Phase A copy + Phase C language picker, Issue #26, ADR-0018) ---
   onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
   onboardingWelcomeBody:
     'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
   onboardingWelcomeCta: 'Get started',
   onboardingSkip: 'Later',
+  onboardingLanguageTitle: 'Choose your language',
+  onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
+  onboardingLanguageOsBadge: 'Device',
+  next: 'Next',
 
   // --- F-15 Outdoor mode (Phase B, Issue #32, ADR-0015) ---
   settingsOutdoorMode: 'Outdoor mode',
