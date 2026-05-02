@@ -244,6 +244,13 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastManyDays: '最後の水やりから {days} 日',
   wateringLastOverYear: '最後の水やりから 1 年以上',
 
+  // --- F-04 水やりヒートマップ (Phase B 簡易グリッド、Issue #29、ADR-0013) ---
+  wateringHeatmapLegendLabel: '水やり回数 (過去 12 週)',
+  wateringHeatmapLegend0: '0',
+  wateringHeatmapLegend1: '1',
+  wateringHeatmapLegend2: '2',
+  wateringHeatmapLegend3: '3+',
+
   // --- F-07 装着期間アプリ内表示 (Phase B、Issue #24、ADR-0014) ---
   wiringDurationWithinWeeks: '装着期間: {weeks} 週',
   wiringDurationOverdueLabel: '装着期間: {weeks} 週 (経過済)',

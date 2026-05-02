@@ -240,6 +240,13 @@ const th: Partial<Record<TranslationKey, string>> = {
   wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
+  // --- F-04 Watering heatmap (Phase B、English fallback) ---
+  wateringHeatmapLegendLabel: 'Watering counts (last 12 weeks)',
+  wateringHeatmapLegend0: '0',
+  wateringHeatmapLegend1: '1',
+  wateringHeatmapLegend2: '2',
+  wateringHeatmapLegend3: '3+',
+
   // --- F-07 Wiring duration in-app display (Phase B、English fallback) ---
   wiringDurationWithinWeeks: 'Wire on for {weeks} weeks',
   wiringDurationOverdueLabel: 'Wire on for {weeks} weeks (overdue)',
