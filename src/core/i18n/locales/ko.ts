@@ -147,6 +147,43 @@ const ko: Partial<Record<TranslationKey, string>> = {
   eventType_candle_cut: 'Candle cut',
   eventType_moss_care: 'Moss care',
   eventType_position_change: 'Position change',
-};
 
+  // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
+  settingsTitle: '설정',
+  settingsBackupSection: '이사',
+  backupTitle: '이사',
+  backupExportTitle: '백업 만들기',
+  backupExportDesc:
+    '분재 기록, 사진, 관리 기록을 하나의 ZIP 파일로 저장합니다. 공유 메뉴를 사용하여 iCloud Drive, Google Drive, 이메일 또는 메신저로 보낼 수 있습니다.',
+  backupExportAction: '백업 만들기',
+  backupExportSuccess: '백업이 생성되었습니다.',
+  backupExportFailed: '백업 생성에 실패했습니다.',
+  backupImportTitle: '백업에서 복원',
+  backupImportDesc:
+    '이전에 만든 ZIP 파일에서 복원합니다. 새 기록은 추가되며 기존 기록은 변경되지 않습니다.',
+  backupImportAction: '복원',
+  backupImportWarningTitle: '백업에서 복원하시겠습니까?',
+  backupImportWarningBody:
+    '기존 데이터에 새 기록이 추가됩니다. 기존 기록은 덮어쓰거나 삭제되지 않습니다.',
+  backupImportSuccess: '복원이 완료되었습니다.',
+  backupImportSuccessDetail:
+    '분재 {bonsai}건, 관리 기록 {events}건, 사진 {photos}장을 추가했습니다.',
+  backupImportFailed: '백업에서 복원하지 못했습니다.',
+  backupSchemaMismatchTitle: '지원되지 않는 백업 버전',
+  backupSchemaMismatchBody:
+    '이 백업은 다른 버전에서 만들어졌습니다. 같은 버전의 앱으로 복원하세요.',
+  backupInvalidTitle: '백업 파일이 손상되었습니다',
+  backupInvalidBody:
+    '선택한 파일이 올바른 백업이 아니거나 데이터가 누락되었습니다. 다른 파일을 선택해 주세요.',
+  backupSizeLimitTitle: '백업이 너무 큽니다',
+  backupSizeLimitBody:
+    '200MB가 넘는 백업은 공유할 수 없습니다. 사진 수를 줄이고 다시 시도해 주세요.',
+  backupShareUnavailableTitle: '공유를 사용할 수 없습니다',
+  backupShareUnavailableBody:
+    '이 기기에서는 공유를 사용할 수 없습니다. OS를 업데이트한 후 다시 시도하세요.',
+  backupUnsupportedTitle: '지원되지 않음',
+  backupUnsupportedBody: '이 플랫폼에서는 백업 기능을 사용할 수 없습니다.',
+  backupEncryptionWarning:
+    '백업은 암호화되지 않습니다. 클라우드 서비스에 저장할 때는 사용자가 관리할 수 있는 안전한 폴더에 보관하세요.',
+};
 export default ko;

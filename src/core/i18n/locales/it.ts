@@ -148,6 +148,42 @@ const it: Partial<Record<TranslationKey, string>> = {
   eventType_candle_cut: 'Candle cut',
   eventType_moss_care: 'Moss care',
   eventType_position_change: 'Position change',
-};
 
+  // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
+  settingsTitle: 'Settings',
+  settingsBackupSection: 'Move data',
+  backupTitle: 'Move data',
+  backupExportTitle: 'Create a backup',
+  backupExportDesc:
+    'Save all your bonsai records, photos, and care log to a single ZIP file. Use the Share Sheet to send it to iCloud Drive, Google Drive, email, or messaging apps.',
+  backupExportAction: 'Create backup',
+  backupExportSuccess: 'Backup created.',
+  backupExportFailed: 'Failed to create the backup.',
+  backupImportTitle: 'Restore from a backup',
+  backupImportDesc:
+    'Restore from a previously created ZIP file. New records are added; existing records are not changed.',
+  backupImportAction: 'Restore',
+  backupImportWarningTitle: 'Restore from backup?',
+  backupImportWarningBody:
+    'New records will be added to the existing data. Existing records will not be overwritten or deleted.',
+  backupImportSuccess: 'Restore complete.',
+  backupImportSuccessDetail: 'Added {bonsai} bonsai, {events} care logs, and {photos} photos.',
+  backupImportFailed: 'Failed to restore from the backup.',
+  backupSchemaMismatchTitle: 'Unsupported backup version',
+  backupSchemaMismatchBody:
+    'This backup was created with a different app version. Please use the matching app version to restore.',
+  backupInvalidTitle: 'The backup file is broken',
+  backupInvalidBody:
+    'The selected file is not a valid backup, or some data is missing. Please choose another file.',
+  backupSizeLimitTitle: 'Backup is too large',
+  backupSizeLimitBody:
+    'Backup files larger than 200 MB cannot be shared. Please reduce the number of photos and try again.',
+  backupShareUnavailableTitle: 'Sharing is not available',
+  backupShareUnavailableBody:
+    'Sharing is not available on this device. Please update the OS and try again.',
+  backupUnsupportedTitle: 'Not supported',
+  backupUnsupportedBody: 'Backup is not available on this platform.',
+  backupEncryptionWarning:
+    'Backups are not encrypted. When you save them to a cloud service, please keep them in a secure folder under your control.',
+};
 export default it;
