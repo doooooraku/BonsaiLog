@@ -30,8 +30,10 @@ import {
   getActiveEventsByBonsai,
   softDeleteEvent,
 } from '@/src/db/eventRepository';
-import { nowUtc } from '@/src/core/datetime';
+import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
+import { LastWateredText } from '@/src/features/watering/LastWateredText';
+import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
@@ -51,6 +53,13 @@ export default function BonsaiDetailScreen() {
   const [photoGroups, setPhotoGroups] = useState<{ year: number; photos: PhotoRead[] }[]>([]);
   const [photoCount, setPhotoCount] = useState(0);
   const [events, setEvents] = useState<Event[]>([]);
+
+  // F-04 Phase A: 「最後の水やりから X 日」(ADR-0013、純関数の説明は wateringHeatmap.ts)
+  const daysSinceLastWatering = React.useMemo(() => {
+    const tzOffsetMin = getTzOffsetMin();
+    const todayLocalKey = toLocalDateKey(nowUtc() as string, tzOffsetMin);
+    return getDaysSinceLastWatering(events, todayLocalKey, tzOffsetMin);
+  }, [events]);
 
   const reload = useCallback(async () => {
     if (!id) return;
@@ -214,6 +223,12 @@ export default function BonsaiDetailScreen() {
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ThemedText type="title">{item.name}</ThemedText>
+
+        {/* F-04 Phase A: 「最後の水やりから X 日」テキスト (ADR-0013) */}
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold">{t('wateringSectionTitle')}</ThemedText>
+          <LastWateredText daysSinceLast={daysSinceLastWatering} />
+        </View>
 
         {item.species && (
           <View style={styles.section}>

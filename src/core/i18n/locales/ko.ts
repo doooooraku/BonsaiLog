@@ -197,5 +197,14 @@ const ko: Partial<Record<TranslationKey, string>> = {
   backupUnsupportedBody: '이 플랫폼에서는 백업 기능을 사용할 수 없습니다.',
   backupEncryptionWarning:
     '백업은 암호화되지 않습니다. 클라우드 서비스에 저장할 때는 사용자가 관리할 수 있는 안전한 폴더에 보관하세요.',
+
+  // --- F-04 Watering history (Phase A、English fallback for now) ---
+  wateringSectionTitle: 'Watering',
+  wateringLastNoRecord: 'No watering records yet',
+  wateringLastToday: 'Watered today',
+  wateringLastOneDay: '1 day since last watering',
+  wateringLastSeveralDays: '{days} days since last watering',
+  wateringLastManyDays: '{days} days since last watering',
+  wateringLastOverYear: 'Over a year since last watering',
 };
 export default ko;

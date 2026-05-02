@@ -197,5 +197,14 @@ const nl: Partial<Record<TranslationKey, string>> = {
   backupUnsupportedBody: 'Backup is not available on this platform.',
   backupEncryptionWarning:
     'Backups are not encrypted. When you save them to a cloud service, please keep them in a secure folder under your control.',
+
+  // --- F-04 Watering history (Phase A、English fallback for now) ---
+  wateringSectionTitle: 'Watering',
+  wateringLastNoRecord: 'No watering records yet',
+  wateringLastToday: 'Watered today',
+  wateringLastOneDay: '1 day since last watering',
+  wateringLastSeveralDays: '{days} days since last watering',
+  wateringLastManyDays: '{days} days since last watering',
+  wateringLastOverYear: 'Over a year since last watering',
 };
 export default nl;

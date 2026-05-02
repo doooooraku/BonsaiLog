@@ -189,5 +189,14 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   backupUnsupportedTitle: '暫不支援',
   backupUnsupportedBody: '此平台不支援備份功能。',
   backupEncryptionWarning: '備份不會加密。儲存至雲端服務時，請存放在您可控管的安全資料夾。',
+
+  // --- F-04 Watering history (Phase A、English fallback for now) ---
+  wateringSectionTitle: 'Watering',
+  wateringLastNoRecord: 'No watering records yet',
+  wateringLastToday: 'Watered today',
+  wateringLastOneDay: '1 day since last watering',
+  wateringLastSeveralDays: '{days} days since last watering',
+  wateringLastManyDays: '{days} days since last watering',
+  wateringLastOverYear: 'Over a year since last watering',
 };
 export default zhHant;

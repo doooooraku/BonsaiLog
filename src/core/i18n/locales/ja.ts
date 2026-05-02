@@ -198,6 +198,15 @@ const ja: Partial<Record<TranslationKey, string>> = {
   backupUnsupportedBody: 'このプラットフォームではバックアップ機能はご利用いただけません。',
   backupEncryptionWarning:
     'バックアップは暗号化されません。クラウドに保存する場合は、ご自身で管理できる安全なフォルダに保管してください。',
+
+  // --- F-04 水やり履歴 (Phase A、ADR-0013) ---
+  wateringSectionTitle: '水やり',
+  wateringLastNoRecord: 'まだ水やりの記録がありません',
+  wateringLastToday: '今日、水やりしました',
+  wateringLastOneDay: '最後の水やりから 1 日',
+  wateringLastSeveralDays: '最後の水やりから {days} 日',
+  wateringLastManyDays: '最後の水やりから {days} 日',
+  wateringLastOverYear: '最後の水やりから 1 年以上',
 };
 
 export default ja;

@@ -189,5 +189,14 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   backupUnsupportedTitle: '暂不支持',
   backupUnsupportedBody: '此平台不支持备份功能。',
   backupEncryptionWarning: '备份未加密。保存到云服务时，请保管在您控制的安全文件夹内。',
+
+  // --- F-04 Watering history (Phase A、English fallback for now) ---
+  wateringSectionTitle: 'Watering',
+  wateringLastNoRecord: 'No watering records yet',
+  wateringLastToday: 'Watered today',
+  wateringLastOneDay: '1 day since last watering',
+  wateringLastSeveralDays: '{days} days since last watering',
+  wateringLastManyDays: '{days} days since last watering',
+  wateringLastOverYear: 'Over a year since last watering',
 };
 export default zhHans;
