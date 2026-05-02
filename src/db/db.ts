@@ -21,7 +21,7 @@ import * as SQLite from 'expo-sqlite';
 
 import { nowUtc } from '@/src/core/datetime';
 
-import { SCHEMA_VERSION, schemaV2, schemaV3 } from './schema';
+import { SCHEMA_VERSION, schemaV2, schemaV3, schemaV4 } from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -113,7 +113,19 @@ async function migrate(db: SQLite.SQLiteDatabase) {
   }
 
   // ---------------------------------------------------------------------------
-  // Migration v4 example: ALTER TABLE ADD COLUMN (non-idempotent — needs guard)
+  // Migration v4 (F-02 foundation: events + tags + event_tags + events_fts)
+  //
+  // STI 16 種別、status (planned/logged/cancelled)、30 日ゴミ箱 (deleted_at)、
+  // FTS5 trigram (note + payload_text)、tags M:N。
+  // CHECK 制約と partial index で性能 + 整合性を担保。
+  // ---------------------------------------------------------------------------
+  if (version < 4) {
+    await db.execAsync(schemaV4);
+    version = 4;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v5 example: ALTER TABLE ADD COLUMN (non-idempotent — needs guard)
   //
   // ⚠ DO NOT do this:
   //   await db.execAsync('ALTER TABLE bonsai ADD COLUMN new_column TEXT;');
