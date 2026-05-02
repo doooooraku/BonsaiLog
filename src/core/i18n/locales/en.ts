@@ -239,6 +239,11 @@ const baseEn = {
   wateringLastManyDays: '{days} days since last watering',
   wateringLastOverYear: 'Over a year since last watering',
 
+  // --- F-15 Outdoor mode (Phase B, Issue #32, ADR-0015) ---
+  settingsOutdoorMode: 'Outdoor mode',
+  settingsOutdoorModeDesc:
+    'When on, the app uses a high-contrast palette for outdoor visibility (full implementation in next update).',
+
   // --- F-10 PDF export (Phase B, Issue #33, ADR-0016) ---
   exportPdfTitle: 'Export bonsai to PDF',
   exportPdfDesc: 'Generate a PDF report for each bonsai (Pro feature).',

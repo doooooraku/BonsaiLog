@@ -241,6 +241,11 @@ const it: Partial<Record<TranslationKey, string>> = {
   wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
+  // --- F-15 Outdoor mode (Phase B、English fallback) ---
+  settingsOutdoorMode: 'Outdoor mode',
+  settingsOutdoorModeDesc:
+    'When on, the app uses a high-contrast palette for outdoor visibility (full implementation in next update).',
+
   // --- F-10 PDF export (Phase B、English fallback) ---
   exportPdfTitle: 'Export bonsai to PDF',
   exportPdfDesc: 'Generate a PDF report for each bonsai (Pro feature).',

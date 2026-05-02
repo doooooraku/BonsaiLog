@@ -16,10 +16,12 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   // F-15 Phase A: themeMode が 'system' なら OS 連動、それ以外はユーザー選択を強制 (ADR-0015)。
-  // 'outdoor' は Phase B で Tamagui themes 全面再設計とともに導入予定 (本 PR では Light fallback)。
+  // F-15 Phase B (Issue #32): outdoorMode が true のときは Light fallback で動作 (Phase C で
+  // Tamagui themes 全面再設計時に純白+純黒+緑単色パレットを適用)。
   const systemScheme = useColorScheme();
   const themeMode = useSettingsStore((s) => s.themeMode);
-  const effectiveScheme = themeMode === 'system' ? systemScheme : themeMode;
+  const outdoorMode = useSettingsStore((s) => s.outdoorMode);
+  const effectiveScheme = outdoorMode ? 'light' : themeMode === 'system' ? systemScheme : themeMode;
   const isDark = effectiveScheme === 'dark';
 
   // F-LEGAL-001 Phase A (Issue #37, ADR-0017): Pro 状態を初期化し、Free 時のみ ATT/UMP + AdMob 初期化。

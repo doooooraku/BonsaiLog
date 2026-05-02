@@ -244,6 +244,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastManyDays: '最後の水やりから {days} 日',
   wateringLastOverYear: '最後の水やりから 1 年以上',
 
+  // --- F-15 屋外モード (Phase B、Issue #32、ADR-0015) ---
+  settingsOutdoorMode: '屋外モード',
+  settingsOutdoorModeDesc: '屋外で見やすい高コントラスト配色を使います (本実装は次回更新で対応)。',
+
   // --- F-10 PDF エクスポート (Phase B、Issue #33、ADR-0016) ---
   exportPdfTitle: '盆栽を PDF でエクスポート',
   exportPdfDesc: '個別盆栽のレポート PDF を生成します (Pro 機能)。',
