@@ -239,6 +239,13 @@ const baseEn = {
   wateringLastManyDays: '{days} days since last watering',
   wateringLastOverYear: 'Over a year since last watering',
 
+  // --- F-26 Onboarding (Phase A copy only, Issue #26, ADR-0018) ---
+  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeBody:
+    'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
+  onboardingWelcomeCta: 'Get started',
+  onboardingSkip: 'Later',
+
   // --- F-15 Outdoor mode (Phase B, Issue #32, ADR-0015) ---
   settingsOutdoorMode: 'Outdoor mode',
   settingsOutdoorModeDesc:
