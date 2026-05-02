@@ -241,6 +241,9 @@ const ko: Partial<Record<TranslationKey, string>> = {
   wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
+  // --- F-14 Ad banner label (Phase B、English fallback) ---
+  adBannerLabel: 'Ad',
+
   // --- F-26 Onboarding (Phase A copy、English fallback) ---
   onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
   onboardingWelcomeBody:

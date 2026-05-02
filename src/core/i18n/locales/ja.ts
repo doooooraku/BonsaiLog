@@ -244,6 +244,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastManyDays: '最後の水やりから {days} 日',
   wateringLastOverYear: '最後の水やりから 1 年以上',
 
+  // --- F-14 広告バナーラベル (Phase B、Issue #22、functional_spec §19) ---
+  adBannerLabel: '広告',
+
   // --- F-26 オンボーディング (Phase A 文言のみ、Issue #26、ADR-0018) ---
   onboardingWelcomeTitle: '鉢 1 本ずつ、一生分。',
   onboardingWelcomeBody: '盆栽 1 鉢ずつの作業・写真・樹種を記録。オフライン完結、19 言語対応。',
