@@ -239,6 +239,16 @@ const baseEn = {
   wateringLastManyDays: '{days} days since last watering',
   wateringLastOverYear: 'Over a year since last watering',
 
+  // --- F-09 Tags manager (Phase C, Issue #31, ADR-0008 改訂) ---
+  tagsManagerTitle: 'Manage tags',
+  tagsManagerDesc: 'Tags help you organize care logs and find them in search.',
+  tagsAddPlaceholder: 'New tag name',
+  tagsAddAction: 'Add',
+  tagsAddFailedBody: 'Could not add the tag.',
+  tagsEmpty: 'No tags yet.',
+  tagsDeleteConfirmTitle: 'Delete this tag?',
+  tagsDeleteConfirmBody: 'Tag "{name}" and all of its links to care logs will be removed.',
+
   // --- F-16 Notification settings (Phase B, Issue #30, ADR-0014) ---
   settingsNotifSummaryToggle: 'Daily summary notification',
   settingsNotifSummaryToggleDesc:

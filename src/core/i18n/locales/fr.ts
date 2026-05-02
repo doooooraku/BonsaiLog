@@ -241,6 +241,16 @@ const fr: Partial<Record<TranslationKey, string>> = {
   wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
+  // --- F-09 Tags manager (Phase C、English fallback) ---
+  tagsManagerTitle: 'Manage tags',
+  tagsManagerDesc: 'Tags help you organize care logs and find them in search.',
+  tagsAddPlaceholder: 'New tag name',
+  tagsAddAction: 'Add',
+  tagsAddFailedBody: 'Could not add the tag.',
+  tagsEmpty: 'No tags yet.',
+  tagsDeleteConfirmTitle: 'Delete this tag?',
+  tagsDeleteConfirmBody: 'Tag "{name}" and all of its links to care logs will be removed.',
+
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: 'Daily summary notification',
   settingsNotifSummaryToggleDesc:
