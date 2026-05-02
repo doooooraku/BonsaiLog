@@ -199,6 +199,22 @@ const ja: Partial<Record<TranslationKey, string>> = {
   backupEncryptionWarning:
     'バックアップは暗号化されません。クラウドに保存する場合は、ご自身で管理できる安全なフォルダに保管してください。',
 
+  // --- F-10 エクスポート Phase A (events CSV、Pro 限定、ADR-0016) ---
+  settingsExportSection: 'エクスポート',
+  exportCsvTitle: '作業ログを CSV で出力',
+  exportCsvDesc: 'すべての作業ログを CSV ファイルにエクスポートします (Pro 機能)。',
+  exportCsvAction: 'CSV を出力',
+  exportCsvSuccess: 'エクスポートが完了しました。',
+  exportCsvSuccessDetail: '{count} 件の作業ログを書き出しました。',
+  exportCsvFailed: 'エクスポートに失敗しました。',
+  exportCsvShareTitle: 'BonsaiLog 作業ログ CSV',
+  exportProRequiredTitle: 'Pro 機能',
+  exportProRequiredBody:
+    'CSV エクスポートは Pro メンバー向けの機能です。Pro にアップグレードするとご利用いただけます。',
+  exportShareUnavailableTitle: '共有を利用できません',
+  exportShareUnavailableBody:
+    'この端末では共有を利用できません。OS をアップデートしてからお試しください。',
+
   // --- F-09 検索 (Phase A、ADR-0008 改訂) ---
   settingsSearchSection: '検索',
   searchAction: '検索する',

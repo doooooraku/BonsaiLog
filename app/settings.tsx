@@ -95,6 +95,23 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* --- F-10 エクスポート Phase A (Issue #33、ADR-0016) --- */}
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+            {t('settingsExportSection')}
+          </ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('exportCsvTitle')}
+            testID="e2e_open_export_csv"
+            style={styles.entry}
+            onPress={() => router.push('/export/csv' as Href)}
+          >
+            <ThemedText type="defaultSemiBold">{t('exportCsvTitle')}</ThemedText>
+            <ThemedText style={styles.entryDesc}>{t('exportCsvDesc')}</ThemedText>
+          </Pressable>
+        </View>
+
         {/* --- F-09 検索 (Issue #31、ADR-0008 改訂) --- */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>

@@ -195,6 +195,21 @@ const baseEn = {
   backupEncryptionWarning:
     'Backups are not encrypted. When you save them to a cloud service, please keep them in a secure folder under your control.',
 
+  // --- F-10 Export Phase A (events CSV, Pro-only, ADR-0016) ---
+  settingsExportSection: 'Export',
+  exportCsvTitle: 'Export care logs to CSV',
+  exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
+  exportCsvAction: 'Export CSV',
+  exportCsvSuccess: 'Export complete.',
+  exportCsvSuccessDetail: 'Exported {count} care logs.',
+  exportCsvFailed: 'Export failed.',
+  exportCsvShareTitle: 'BonsaiLog care logs CSV',
+  exportProRequiredTitle: 'Pro feature',
+  exportProRequiredBody: 'CSV export is available for Pro members. Upgrade to unlock.',
+  exportShareUnavailableTitle: 'Sharing is not available',
+  exportShareUnavailableBody:
+    'Sharing is not available on this device. Please update the OS and try again.',
+
   // --- F-09 Search (Phase A: bonsai name LIKE + events FTS5, ADR-0008 改訂) ---
   settingsSearchSection: 'Search',
   searchAction: 'Search',
