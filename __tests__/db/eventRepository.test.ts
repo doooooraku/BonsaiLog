@@ -5,11 +5,17 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { TRASH_RETENTION_DAYS } from '../../src/db/eventRepository';
+import { EVENT_OVERLOAD_THRESHOLD, TRASH_RETENTION_DAYS } from '../../src/db/eventRepository';
 
 describe('TRASH_RETENTION_DAYS', () => {
   test('30 日と確定 (ADR-0008、Issue #17 AC4)', () => {
     expect(TRASH_RETENTION_DAYS).toBe(30);
+  });
+});
+
+describe('EVENT_OVERLOAD_THRESHOLD (F-05、Issue #25、ADR-0011)', () => {
+  test('閾値は 5 件 (5 件超 = 6 件目で発火)', () => {
+    expect(EVENT_OVERLOAD_THRESHOLD).toBe(5);
   });
 });
 
@@ -35,6 +41,7 @@ describe('eventRepository file structure', () => {
       'deleteEventHard',
       'purgeOldTrash',
       'searchEvents',
+      'countSameDayPlannedOrLoggedEvents',
     ];
     for (const name of requiredExports) {
       expect(source).toMatch(new RegExp(`export\\s+(async\\s+)?function\\s+${name}`));
@@ -84,5 +91,40 @@ describe('eventRepository file structure', () => {
     const fnMatch = source.match(/restoreEvent[\s\S]+?^}/m);
     expect(fnMatch).not.toBeNull();
     expect(fnMatch![0]).toMatch(/INSERT\s+INTO\s+events_fts/);
+  });
+});
+
+describe('countSameDayPlannedOrLoggedEvents (F-05、Issue #25、ADR-0011)', () => {
+  // 実 DB 接続テストは Maestro E2E でカバー (expo-sqlite は React Native 環境専用)。
+  // 本テストは静的解析でクエリ構造の正しさを検証。
+  const fs = require('node:fs') as typeof import('node:fs');
+  const path = require('node:path') as typeof import('node:path');
+  const source = fs.readFileSync(
+    path.resolve(__dirname, '../../src/db/eventRepository.ts'),
+    'utf-8',
+  );
+
+  test('planned + logged のみカウント (cancelled は対象外)', () => {
+    const fnMatch = source.match(/countSameDayPlannedOrLoggedEvents[\s\S]+?^}/m);
+    expect(fnMatch).not.toBeNull();
+    expect(fnMatch![0]).toMatch(/status\s+IN\s*\(\s*'planned',\s*'logged'\s*\)/);
+    expect(fnMatch![0]).not.toMatch(/'cancelled'/);
+  });
+
+  test('deleted_at IS NULL (ゴミ箱は対象外)', () => {
+    const fnMatch = source.match(/countSameDayPlannedOrLoggedEvents[\s\S]+?^}/m);
+    expect(fnMatch![0]).toMatch(/deleted_at\s+IS\s+NULL/);
+  });
+
+  test('local 日キーで比較 (TZ 防御、strftime + tzOffset)', () => {
+    const fnMatch = source.match(/countSameDayPlannedOrLoggedEvents[\s\S]+?^}/m);
+    // strftime('%s', occurred_at_utc) を分単位に変換、tzOffset を加えて 1440 (= 24h * 60min) で日キーを算出
+    expect(fnMatch![0]).toMatch(/strftime\('%s',\s*occurred_at_utc\)/);
+    expect(fnMatch![0]).toMatch(/1440/);
+  });
+
+  test('?? で getTzOffsetMin() のフォールバック (引数 tzOffsetMin 優先)', () => {
+    const fnMatch = source.match(/countSameDayPlannedOrLoggedEvents[\s\S]+?^}/m);
+    expect(fnMatch![0]).toMatch(/options\?\.tzOffsetMin\s*\?\?\s*\(getTzOffsetMin\(\)/);
   });
 });

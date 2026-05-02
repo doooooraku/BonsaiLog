@@ -25,6 +25,9 @@ import type { Event, EventStatus, EventType } from './schema';
 /** 30 日ゴミ箱の保持日数 (ADR-0008、Issue #17 AC4)。 */
 export const TRASH_RETENTION_DAYS = 30;
 
+/** F-05 気遣い型ポップアップの発火閾値 (Issue #25、ADR-0011)。5 件超 = 6 件目で発火。 */
+export const EVENT_OVERLOAD_THRESHOLD = 5;
+
 // ---------------------------------------------------------------------------
 // 型定義
 // ---------------------------------------------------------------------------
@@ -305,6 +308,48 @@ export async function purgeOldTrash(now?: Date): Promise<number> {
     await db.runAsync('DELETE FROM events WHERE id = ?;', [id]);
   }
   return targets.length;
+}
+
+// ---------------------------------------------------------------------------
+// F-05 気遣い型ポップアップ用件数カウント (Issue #25、ADR-0011)
+// ---------------------------------------------------------------------------
+
+/**
+ * 指定 UTC タイムスタンプと**同じローカル日**に存在する planned / logged events の件数を返す。
+ *
+ * F-05 「気遣い型」予定確認ポップアップ (ADR-0011) の発火判定に使用:
+ * - 同じローカル日に既に 5 件以上ある状態で 6 件目を登録するとポップアップ発火
+ * - bonsaiId 指定なし (ユーザーの 1 日全体の予定 + 実績で判定)
+ * - cancelled は対象外 (取消済は無視)
+ * - deleted_at IS NULL のみ対象 (ゴミ箱は対象外)
+ *
+ * TZ 取扱 (lessons/db.md / ADR-0008 §TZ 3 層防御):
+ * - tzOffsetMin: 引数 occurredAtUtc を含む「現地日付」を決めるオフセット (分)。
+ *   未指定時は端末の現在 TZ (`getTzOffsetMin()`)、JST=+540 / PST=-480。
+ * - 「同じローカル日」 = `floor((utcMs + offsetMin*60_000) / 86_400_000)` が同じ値
+ * - SQL では `CAST((strftime('%s', occurred_at_utc)/60 + ?) / 1440 AS INTEGER)` で日キーを算出
+ *
+ * @param occurredAtUtc - 判定対象の UTC ISO 8601 タイムスタンプ
+ * @param options.tzOffsetMin - 現地日を決めるオフセット (分)、省略時は端末 TZ
+ * @returns その日の planned + logged の件数 (deleted_at 除外、cancelled 除外)
+ */
+export async function countSameDayPlannedOrLoggedEvents(
+  occurredAtUtc: string,
+  options?: { tzOffsetMin?: number },
+): Promise<number> {
+  const tzOffset = options?.tzOffsetMin ?? (getTzOffsetMin() as number);
+  // strftime('%s', ...) は秒、/60 で分に揃える。+ tzOffset で local 分、/1440 で local 日キー。
+  // 1440 = 60 * 24 (1 日 = 1440 分)
+  const db = await getDb();
+  const result = await db.getFirstAsync<{ cnt: number }>(
+    `SELECT COUNT(*) AS cnt FROM events
+       WHERE deleted_at IS NULL
+         AND status IN ('planned', 'logged')
+         AND CAST((strftime('%s', occurred_at_utc) / 60 + ?) / 1440 AS INTEGER)
+           = CAST((strftime('%s', ?) / 60 + ?) / 1440 AS INTEGER);`,
+    [tzOffset, occurredAtUtc, tzOffset],
+  );
+  return result?.cnt ?? 0;
 }
 
 // ---------------------------------------------------------------------------

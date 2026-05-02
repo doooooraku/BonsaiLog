@@ -135,6 +135,12 @@ const sv: Partial<Record<TranslationKey, string>> = {
   eventEmpty: 'No events recorded yet.',
   eventDeleteConfirmTitle: 'Move this event to trash?',
   eventDeleteConfirmDesc: 'Trashed events are permanently removed after 30 days.',
+  // --- F-05 Event overload popup (Issue #25, ADR-0011, English fallback for v1.0) ---
+  eventOverloadTitle: 'A quick note',
+  eventOverloadBody: 'You already have {count} entries on this day. Take it at your own pace.',
+  eventOverloadActionConfirm: 'Save anyway',
+  eventOverloadActionViewList: 'See the list',
+  eventOverloadActionNeverShow: 'Don’t show again',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
   eventType_wiring: 'Wiring',
@@ -148,6 +154,12 @@ const sv: Partial<Record<TranslationKey, string>> = {
   eventType_candle_cut: 'Candle cut',
   eventType_moss_care: 'Moss care',
   eventType_position_change: 'Position change',
+
+  // --- Settings sections (F-05 notification + F-11 move, English fallback for v1.0) ---
+  settingsNotificationSection: 'Notifications',
+  settingsEventOverloadToggle: 'Confirm when there are many entries',
+  settingsEventOverloadToggleDesc:
+    'When this is on, a gentle confirmation appears when you log the 6th entry on the same day.',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: 'Settings',

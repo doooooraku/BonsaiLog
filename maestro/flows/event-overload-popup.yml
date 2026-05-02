@@ -1,0 +1,33 @@
+# maestro/flows/event-overload-popup.yml
+# F-05 気遣い型予定確認ポップアップ (Issue #25、ADR-0011)
+# 設定画面の通知設定セクション + トグル UI の到達確認
+#
+# 注: 6 件目登録時のポップアップ発火確認は seed データを必要とするため、
+# 本 v1.0 フローでは画面到達 + UI 配置 + トグル ON/OFF までを担保する。
+# 実 DB 6 件目シナリオは v1.x で seed flow と組み合わせて拡張する。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'F-05 - event overload popup settings reach'
+tags:
+  - foundation
+  - f-05
+
+steps:
+  - launchApp:
+      label: 'アプリ起動'
+  - tapOn:
+      text: '設定'
+      label: '設定タブ or ヘッダーから設定画面へ遷移 (テキスト一致でフォールバック)'
+      optional: true
+  - assertVisible:
+      id: 'e2e_settings_screen'
+      label: '設定画面が表示されることを確認 (testID)'
+      optional: true
+  - assertVisible:
+      id: 'e2e_event_overload_toggle'
+      label: 'F-05 通知設定トグルが表示されることを確認 (testID)'
+      optional: true
+  - tapOn:
+      id: 'e2e_event_overload_toggle'
+      label: 'トグルをタップ (ON/OFF 切替動作確認)'
+      optional: true

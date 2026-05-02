@@ -23,9 +23,17 @@ import {
   setCoverPhoto,
   type PhotoRead,
 } from '@/src/db/photoRepository';
-import { createEvent, getActiveEventsByBonsai, softDeleteEvent } from '@/src/db/eventRepository';
+import {
+  countSameDayPlannedOrLoggedEvents,
+  createEvent,
+  EVENT_OVERLOAD_THRESHOLD,
+  getActiveEventsByBonsai,
+  softDeleteEvent,
+} from '@/src/db/eventRepository';
+import { nowUtc } from '@/src/core/datetime';
 import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
 import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
+import { useSettingsStore } from '@/src/stores/settingsStore';
 
 /**
  * 盆栽詳細画面 (P2-01 PR-D + P2-02 PR-C)。
@@ -349,7 +357,63 @@ export default function BonsaiDetailScreen() {
     );
   }
 
+  /**
+   * 作業を記録する。
+   *
+   * F-05 気遣い型ポップアップ (Issue #25、ADR-0011):
+   * - 同じローカル日に planned + logged が既に 5 件以上ある場合 (= 6 件目)、
+   *   登録前にソフトな声かけ Alert を表示。3 ボタンで:
+   *   1. そのまま登録 (default): 普通に作成
+   *   2. 一覧を見る: 登録せずに dismiss (詳細画面で既に履歴が見える)
+   *   3. 今後表示しない: ポップアップを永続 OFF にしてから作成
+   * - 設定 OFF (eventOverloadEnabled=false) なら閾値判定をスキップして即作成
+   */
   async function logEvent(type: EventType) {
+    if (!item) return;
+    const overloadEnabled = useSettingsStore.getState().eventOverloadEnabled;
+    if (overloadEnabled) {
+      try {
+        const occurredAtUtc = nowUtc() as string;
+        const sameDayCount = await countSameDayPlannedOrLoggedEvents(occurredAtUtc);
+        if (sameDayCount >= EVENT_OVERLOAD_THRESHOLD) {
+          showEventOverloadPopup(type);
+          return;
+        }
+      } catch {
+        // 件数取得が失敗しても登録は止めない (記録のみ哲学、ADR-0011)
+      }
+    }
+    await persistEvent(type);
+  }
+
+  function showEventOverloadPopup(type: EventType) {
+    Alert.alert(
+      t('eventOverloadTitle'),
+      t('eventOverloadBody').replace('{count}', String(EVENT_OVERLOAD_THRESHOLD)),
+      [
+        {
+          text: t('eventOverloadActionConfirm'),
+          onPress: () => void persistEvent(type),
+        },
+        {
+          text: t('eventOverloadActionViewList'),
+          // 一覧を見る: 詳細画面下部に既に作業履歴一覧が表示されているため dismiss のみ。
+          // ユーザーは確認後に再度「+ 作業を記録」をタップできる。
+          style: 'cancel',
+        },
+        {
+          text: t('eventOverloadActionNeverShow'),
+          onPress: () => {
+            useSettingsStore.getState().setEventOverloadEnabled(false);
+            void persistEvent(type);
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+  }
+
+  async function persistEvent(type: EventType) {
     if (!item) return;
     try {
       await createEvent({ bonsaiId: item.id, type, status: 'logged' });
