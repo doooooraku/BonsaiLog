@@ -1,9 +1,12 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { initializeAds } from '@/src/services/adService';
+import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
 export const unstable_settings = {
@@ -17,6 +20,24 @@ export default function RootLayout() {
   const themeMode = useSettingsStore((s) => s.themeMode);
   const effectiveScheme = themeMode === 'system' ? systemScheme : themeMode;
   const isDark = effectiveScheme === 'dark';
+
+  // F-LEGAL-001 Phase A (Issue #37, ADR-0017): Pro 状態を初期化し、Free 時のみ ATT/UMP + AdMob 初期化。
+  // Pro 加入者は ATT/UMP を発火させない (ADR-0010 / Repolog 教訓)。実機検証は Phase B + 人間タスク。
+  const initPro = useProStore((s) => s.init);
+  const isPro = useProStore((s) => s.isPro);
+  const proInitialized = useProStore((s) => s.initialized);
+
+  useEffect(() => {
+    initPro();
+  }, [initPro]);
+
+  useEffect(() => {
+    if (!proInitialized) return;
+    if (isPro) return;
+    initializeAds().catch(() => {
+      // 同意取得失敗時は no-op (adService 内で fallback 済)
+    });
+  }, [proInitialized, isPro]);
 
   return (
     <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>

@@ -15,11 +15,13 @@
  */
 import { useRouter, type Href } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import { showAdPrivacyOptionsForm } from '@/src/services/adService';
+import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
 export default function SettingsScreen() {
@@ -29,6 +31,21 @@ export default function SettingsScreen() {
   const setEventOverloadEnabled = useSettingsStore((s) => s.setEventOverloadEnabled);
   const themeMode = useSettingsStore((s) => s.themeMode);
   const setThemeMode = useSettingsStore((s) => s.setThemeMode);
+  const isPro = useProStore((s) => s.isPro);
+
+  const handleAdPrivacyOptionsPress = React.useCallback(async () => {
+    try {
+      const shown = await showAdPrivacyOptionsForm();
+      if (!shown) {
+        Alert.alert(
+          t('settingsAdPrivacyOptionsUnavailableTitle'),
+          t('settingsAdPrivacyOptionsUnavailableBody'),
+        );
+      }
+    } catch {
+      Alert.alert(t('error'), t('settingsAdPrivacyOptionsFailedBody'));
+    }
+  }, [t]);
 
   const themeOptions: { value: 'system' | 'light' | 'dark'; labelKey: string }[] = [
     { value: 'system', labelKey: 'settingsThemeSystem' },
@@ -128,6 +145,25 @@ export default function SettingsScreen() {
             <ThemedText style={styles.entryDesc}>{t('searchDesc')}</ThemedText>
           </Pressable>
         </View>
+
+        {/* --- F-LEGAL-001 Phase A 広告のプライバシー設定 (Issue #37、ADR-0017、Free のみ表示) --- */}
+        {!isPro && (
+          <View style={styles.section}>
+            <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+              {t('settingsAdPrivacySection')}
+            </ThemedText>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('settingsAdPrivacyOptionsTitle')}
+              testID="e2e_open_ad_privacy_options"
+              style={styles.entry}
+              onPress={handleAdPrivacyOptionsPress}
+            >
+              <ThemedText type="defaultSemiBold">{t('settingsAdPrivacyOptionsTitle')}</ThemedText>
+              <ThemedText style={styles.entryDesc}>{t('settingsAdPrivacyOptionsDesc')}</ThemedText>
+            </Pressable>
+          </View>
+        )}
 
         {/* --- F-11 お引っ越し --- */}
         <View style={styles.section}>

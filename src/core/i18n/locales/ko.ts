@@ -240,5 +240,14 @@ const ko: Partial<Record<TranslationKey, string>> = {
   // --- F-07 Wiring duration (Phase A、English fallback) ---
   wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
+
+  // --- F-LEGAL-001 Ad privacy (Phase A、English fallback) ---
+  settingsAdPrivacySection: 'Ad privacy',
+  settingsAdPrivacyOptionsTitle: 'Ad privacy settings',
+  settingsAdPrivacyOptionsDesc:
+    'Reopen the consent dialog if you live in the EU, UK, Switzerland, or a regulated US state.',
+  settingsAdPrivacyOptionsUnavailableTitle: 'Not required in your region',
+  settingsAdPrivacyOptionsUnavailableBody: 'Ad consent settings are not required in your region.',
+  settingsAdPrivacyOptionsFailedBody: 'Could not open the ad privacy settings.',
 };
 export default ko;
