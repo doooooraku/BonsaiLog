@@ -15,6 +15,8 @@
  */
 import { ulid } from 'ulid';
 
+import { nowUtc } from '@/src/core/datetime';
+
 import { getDb } from './db';
 import { toAbsolutePath, toRelativePath } from './filePathUtils';
 import type { Photo } from './schema';
@@ -78,7 +80,7 @@ export async function canAddPhoto(bonsaiId: string, isPro: boolean): Promise<boo
  */
 export async function insertPhoto(input: CreatePhotoInput): Promise<Photo> {
   const db = await getDb();
-  const now = new Date().toISOString();
+  const now = nowUtc() as string;
   const id = ulid();
   const relativePath = toRelativePath(input.absoluteUri, PHOTO_PATH_ANCHOR);
 

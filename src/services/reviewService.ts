@@ -57,6 +57,7 @@ export async function maybeRequestReview(): Promise<void> {
     await StoreReview.requestReview();
 
     await saveState({
+      // eslint-disable-next-line no-restricted-syntax -- v1.x で nowUtc() に移行予定 (Issue #17 PR-A 後)
       lastPromptedAt: new Date().toISOString(),
       promptCount: state.promptCount + 1,
     });

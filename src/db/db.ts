@@ -19,6 +19,8 @@
  */
 import * as SQLite from 'expo-sqlite';
 
+import { nowUtc } from '@/src/core/datetime';
+
 import { SCHEMA_VERSION, schemaV2, schemaV3 } from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
@@ -51,7 +53,7 @@ async function seedSpeciesIfNeeded(db: SQLite.SQLiteDatabase) {
     return;
   }
 
-  const now = new Date().toISOString();
+  const now = nowUtc() as string;
   for (const seed of SPECIES_SEED) {
     await db.runAsync(
       `INSERT OR IGNORE INTO species
