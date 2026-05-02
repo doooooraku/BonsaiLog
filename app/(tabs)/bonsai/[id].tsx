@@ -1,6 +1,8 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'expo-image';
 import React, { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -12,11 +14,23 @@ import {
   getBonsaiWithSpecies,
   type BonsaiWithSpecies,
 } from '@/src/db/bonsaiRepository';
+import {
+  canAddPhoto,
+  deletePhoto,
+  FREE_PHOTO_LIMIT_PER_BONSAI,
+  getPhotosByBonsaiGroupedByYear,
+  insertPhoto,
+  setCoverPhoto,
+  type PhotoRead,
+} from '@/src/db/photoRepository';
+import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
 
 /**
- * 盆栽詳細画面 (P2-01 PR-D)。
- * - 基本情報のみ (作業履歴は F-02、写真は F-08)
- * - アーカイブ操作 (Issue #14 AC4)
+ * 盆栽詳細画面 (P2-01 PR-D + P2-02 PR-C)。
+ * - 基本情報 + 写真年次タイムライン
+ * - 写真追加 (カメラ + ライブラリ、Free 3 枚制限)
+ * - 写真タップでアクション (カバー写真設定 / 削除)
+ * - アーカイブ (Issue #14 AC4)
  */
 export default function BonsaiDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -24,6 +38,8 @@ export default function BonsaiDetailScreen() {
   const router = useRouter();
   const [item, setItem] = useState<BonsaiWithSpecies | null>(null);
   const [loading, setLoading] = useState(true);
+  const [photoGroups, setPhotoGroups] = useState<{ year: number; photos: PhotoRead[] }[]>([]);
+  const [photoCount, setPhotoCount] = useState(0);
 
   const reload = useCallback(async () => {
     if (!id) return;
@@ -31,6 +47,9 @@ export default function BonsaiDetailScreen() {
     try {
       const data = await getBonsaiWithSpecies(id, lang);
       setItem(data);
+      const groups = await getPhotosByBonsaiGroupedByYear(id);
+      setPhotoGroups(groups);
+      setPhotoCount(groups.reduce((sum, g) => sum + g.photos.length, 0));
     } finally {
       setLoading(false);
     }
@@ -57,6 +76,109 @@ export default function BonsaiDetailScreen() {
     ]);
   }, [item, router, t]);
 
+  // F-13 課金完成までは isPro=false 固定 (PR-C 暫定)
+  const isPro = false;
+
+  const pickAndSavePhoto = useCallback(
+    async (source: 'camera' | 'library') => {
+      if (!item) return;
+      const allowed = await canAddPhoto(item.id, isPro);
+      if (!allowed) {
+        Alert.alert(
+          t('photoLimitTitle'),
+          t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_BONSAI)),
+          [{ text: t('ok') }],
+        );
+        return;
+      }
+
+      const permission =
+        source === 'camera'
+          ? await ImagePicker.requestCameraPermissionsAsync()
+          : await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert(t('photoPermissionTitle'), t('photoPermissionDesc'), [{ text: t('ok') }]);
+        return;
+      }
+
+      const result =
+        source === 'camera'
+          ? await ImagePicker.launchCameraAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              quality: 0.85,
+            })
+          : await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              quality: 0.85,
+            });
+      if (result.canceled || !result.assets || result.assets.length === 0) return;
+
+      const asset = result.assets[0];
+      try {
+        const { absoluteUri } = await persistPhotoFile(asset.uri, item.id);
+        await insertPhoto({
+          bonsaiId: item.id,
+          absoluteUri,
+          width: asset.width ?? null,
+          height: asset.height ?? null,
+        });
+        await reload();
+      } catch (err) {
+        Alert.alert(t('error'), String(err));
+      }
+    },
+    [item, isPro, t, reload],
+  );
+
+  const showAddPhotoMenu = useCallback(() => {
+    Alert.alert(t('photoAddTitle'), undefined, [
+      { text: t('photoAddCamera'), onPress: () => void pickAndSavePhoto('camera') },
+      { text: t('photoAddLibrary'), onPress: () => void pickAndSavePhoto('library') },
+      { text: t('cancel'), style: 'cancel' },
+    ]);
+  }, [pickAndSavePhoto, t]);
+
+  const showPhotoActions = useCallback(
+    (photo: PhotoRead) => {
+      if (!item) return;
+      Alert.alert(
+        t('photoActionTitle'),
+        undefined,
+        [
+          photo.isCover === 1
+            ? null
+            : {
+                text: t('photoActionSetCover'),
+                onPress: async () => {
+                  await setCoverPhoto(photo.id, item.id);
+                  await reload();
+                },
+              },
+          {
+            text: t('photoActionDelete'),
+            style: 'destructive' as const,
+            onPress: () => {
+              Alert.alert(t('photoDeleteConfirmTitle'), t('photoDeleteConfirmDesc'), [
+                { text: t('cancel'), style: 'cancel' },
+                {
+                  text: t('delete'),
+                  style: 'destructive',
+                  onPress: async () => {
+                    await deletePhoto(photo.id);
+                    await deletePhotoFile(photo.absoluteUri);
+                    await reload();
+                  },
+                },
+              ]);
+            },
+          },
+          { text: t('cancel'), style: 'cancel' as const },
+        ].filter((x): x is NonNullable<typeof x> => x !== null),
+      );
+    },
+    [item, t, reload],
+  );
+
   if (loading) {
     return (
       <ThemedView style={styles.center}>
@@ -72,6 +194,8 @@ export default function BonsaiDetailScreen() {
       </ThemedView>
     );
   }
+
+  const remainingFreeSlots = isPro ? null : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - photoCount);
 
   return (
     <ThemedView style={styles.container}>
@@ -99,6 +223,53 @@ export default function BonsaiDetailScreen() {
             <ThemedText>{formatDate(item.acquiredAt, lang)}</ThemedText>
           </View>
         )}
+
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold">
+            {t('bonsaiFieldPhotos')}
+            {remainingFreeSlots !== null && ` (${photoCount} / ${FREE_PHOTO_LIMIT_PER_BONSAI})`}
+          </ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('photoAddCta')}
+            style={styles.photoAddBtn}
+            onPress={showAddPhotoMenu}
+          >
+            <ThemedText style={styles.photoAddText}>+ {t('photoAddCta')}</ThemedText>
+          </Pressable>
+
+          {photoGroups.length === 0 && (
+            <ThemedText style={styles.emptyPhotos}>{t('photoEmpty')}</ThemedText>
+          )}
+
+          {photoGroups.map((group) => (
+            <View key={group.year} style={styles.yearBlock}>
+              <ThemedText type="defaultSemiBold" style={styles.yearLabel}>
+                {group.year}
+              </ThemedText>
+              <FlatList
+                data={group.photos}
+                horizontal
+                keyExtractor={(p) => p.id}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.photoRow}
+                renderItem={({ item: photo }) => (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={photo.caption ?? `photo-${photo.id}`}
+                    onPress={() => showPhotoActions(photo)}
+                  >
+                    <Image
+                      source={{ uri: photo.absoluteUri }}
+                      style={[styles.photoThumb, photo.isCover === 1 && styles.photoCover]}
+                      contentFit="cover"
+                    />
+                  </Pressable>
+                )}
+              />
+            </View>
+          ))}
+        </View>
 
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldUpdatedAt')}</ThemedText>
@@ -131,7 +302,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   scrollContent: { padding: 16, gap: 16 },
-  section: { gap: 4 },
+  section: { gap: 8 },
   sci: { fontStyle: 'italic', opacity: 0.7, fontSize: 13 },
   archiveBtn: {
     marginTop: 24,
@@ -144,4 +315,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   archiveText: { color: '#8B2E2E', fontSize: 15, fontWeight: '500' },
+  photoAddBtn: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#2E7D32',
+    alignItems: 'center',
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  photoAddText: { color: '#2E7D32', fontSize: 15, fontWeight: '500' },
+  emptyPhotos: { opacity: 0.6, textAlign: 'center', paddingVertical: 12 },
+  yearBlock: { gap: 8 },
+  yearLabel: { fontSize: 13, opacity: 0.7 },
+  photoRow: { gap: 8 },
+  photoThumb: {
+    width: 96,
+    height: 96,
+    borderRadius: 12,
+    backgroundColor: '#F5F5F5',
+  },
+  photoCover: {
+    borderWidth: 2,
+    borderColor: '#2E7D32',
+  },
 });
