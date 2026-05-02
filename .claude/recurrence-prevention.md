@@ -138,6 +138,30 @@
 - **根拠**: F-09 / F-10 議論で既存 ADR-0008 / functional_spec §15 を読み込む前に subagent リサーチを起動 → 既存決定事項を再発見する非効率が発生。
 - **自動化**: `.claude/hooks/discuss-mode-check.mjs` で UserPromptSubmit に「念のため」検知 → 関連 ADR を Read するシステムリマインダー注入。
 
+### R-21. 並列サブエージェントは worktree 隔離必須
+
+- **ルール**: `Agent` ツールを `run_in_background=true` で起動する際、`isolation: "worktree"` を **必ず指定する**。foreground (1 件ずつ実行) なら不要。read-only / 専用エージェント (Explore / Plan / commit-helper 等) は対象外。
+- **根拠**: 2026-05-02 セッションで 5 サブエージェントが同 working directory を共有し、互いの git stash / checkout / edit が衝突 → F-09 / F-10 / F-32 が完成不能、F-15 エージェントが eventRepository.ts を 45 行誤削除しかけた。並列エージェント完了報告 6 件中 4 件が「並列カオスで完了不能」と報告。
+- **自動化**: `.claude/hooks/check-agent-isolation.mjs` で PreToolUse Agent / Task tool 起動時に isolation チェック、未指定なら exit 2 で block。
+
+### R-22. pnpm verify を background で実行する時の exit code 保全
+
+- **ルール**: `pnpm verify` を `2>&1 | tail -N` 形式でパイプしない。失敗の exit code が tail の 0 で隠蔽される。代わりに `> /tmp/log 2>&1; echo EXIT=$?; tail -N /tmp/log` 形式で必ず exit code を確認。
+- **根拠**: 2026-05-02 F-13 Phase 0 で `pnpm verify 2>&1 | tail -100` の background 起動 → 完了通知では exit 0 だったが、実際は format fail。誤って「全 7 ゲート緑」と報告しかけた。
+- **自動化**: なし (Bash パイプ全般を block するのは過剰)、応答時の自己強制。
+
+### R-23. 既存スキーマフィールド名を変更前に grep / Read で検証
+
+- **ルール**: DB スキーマ由来の型 (Drizzle `$inferSelect`、Valibot output) のフィールド名を初めて使う時、必ず schema.ts を Read して実際のフィールド名を確認する。型推論まかせで書かない。
+- **根拠**: 2026-05-02 F-04 純関数で `Event.kind` (実際は `Event.type`) / `occurredAtTzOffsetMin` (実際は `tzOffsetMin`) を書いてしまい type-check fail。Edit で修正必要だった。
+- **自動化**: ESLint `no-restricted-syntax` で頻出する誤用パターン (`event.kind` 等) を error にする。本セッションで導入済 (eslint.config.js)。
+
+### R-24. lessons.md / recurrence-prevention.md の肥大化防止
+
+- **ルール**: lessons/<area>.md = **200 行以内**、recurrence-prevention.md = **250 行以内** を維持。超過したら新ファイル分割 or 既存を hook / ESLint / CI に昇華して削除。同一テーマで 3 件以上たまったら自動化への昇華を必須化。
+- **根拠**: lessons.md が膨大になると重要部分が読まれない (ユーザー指摘 2026-05-03)。注意で済ませず構造的に防ぐ。
+- **自動化**: `scripts/docs-lint.mjs` の `checkRuleDocsLineLimit()` で行数上限を error 検出。
+
 ---
 
 ## 運用ルール
@@ -145,8 +169,9 @@
 1. **本ファイルはセッション開始時に必読**（`AGENTS.md` Session Start Checklist 経由）。
 2. **新たな再発パターンが見つかったら本ファイルに追記**（lessons.md ではなく）。
 3. **R-N の番号は変更しない**（既存参照を破壊しない、削除する場合は「~~R-N: 削除~~」と注記）。
-4. **項目が 30 を超えたら別ファイル分割を検討**（230 行以内を維持、現状 R-1〜R-20）。
+4. **項目が 30 を超えたら別ファイル分割を検討**（**250 行以内** を維持、現状 R-1〜R-24）。`scripts/docs-lint.mjs` で自動検出。
 5. **R-13 以降は Hook で構造的に防止**（注意ではなく仕組み化、`.claude/hooks/` 参照）。
+6. **3 回再発で昇華必須**（CLAUDE.md §9 記憶の昇華ルール）: 同一テーマが lessons / recurrence-prevention に 3 件以上溜まったら、hook / ESLint / CI / 型システムで構造的に防ぐ仕組みに昇華し、下位記憶からは該当記述を削除する。
 
 ## 関連ファイル
 
