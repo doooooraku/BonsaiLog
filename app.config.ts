@@ -197,11 +197,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ADMOB_CONSENT_TEST_DEVICE_IDS: optional('ADMOB_CONSENT_TEST_DEVICE_IDS'),
       LEGAL_PRIVACY_URL: optional(
         'LEGAL_PRIVACY_URL',
-        'https://doooooraku.github.io/bonsailog/legal/privacy-policy.html',
+        'https://doooooraku.github.io/BonsaiLog/legal/privacy-policy.html',
       ),
       LEGAL_TERMS_URL: optional(
         'LEGAL_TERMS_URL',
-        'https://doooooraku.github.io/bonsailog/legal/terms-of-use.html',
+        'https://doooooraku.github.io/BonsaiLog/legal/terms-of-use.html',
       ),
       supportsRTL,
       forcesRTL,

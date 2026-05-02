@@ -9,19 +9,25 @@
 
 ## ファイル
 
-| ファイル                       | 用途                                                                            |
-| ------------------------------ | ------------------------------------------------------------------------------- |
-| `privacy-policy.template.html` | プライバシーポリシーのテンプレート（HTML、`{{APP_NAME}}` プレースホルダー含む） |
-| `terms-of-use.template.html`   | 利用規約 (EULA) のテンプレート（HTML、Apple 審査ガイドライン 3.1.2 準拠）       |
-| `privacy-policy.html`          | **(未生成)** 公開用、テンプレから生成 + 個人情報埋め (ユーザー手動)             |
-| `terms-of-use.html`            | **(未生成)** 公開用、テンプレから生成 + 個人情報埋め (ユーザー手動)             |
+| ファイル                       | 用途                                                   |
+| ------------------------------ | ------------------------------------------------------ |
+| `privacy-policy.template.html` | プライバシーポリシーのテンプレート（HTML、雛形保管用） |
+| `terms-of-use.template.html`   | 利用規約 (EULA) のテンプレート（HTML、雛形保管用）     |
+| `privacy-policy.html`          | **公開用 (日本語)** — GitHub Pages で配信中            |
+| `privacy-policy.en.html`       | **公開用 (English)** — GitHub Pages で配信中           |
+| `terms-of-use.html`            | **公開用 (日本語)** — GitHub Pages で配信中            |
+| `terms-of-use.en.html`         | **公開用 (English)** — GitHub Pages で配信中           |
 
-## 公開先 (デフォルト)
+## 公開先 (GitHub Pages、有効化済 2026-05-02)
 
-- `https://doooooraku.github.io/bonsailog/legal/privacy-policy.html`
-- `https://doooooraku.github.io/bonsailog/legal/terms-of-use.html`
+- 日本語:
+  - <https://doooooraku.github.io/BonsaiLog/legal/privacy-policy.html>
+  - <https://doooooraku.github.io/BonsaiLog/legal/terms-of-use.html>
+- English:
+  - <https://doooooraku.github.io/BonsaiLog/legal/privacy-policy.en.html>
+  - <https://doooooraku.github.io/BonsaiLog/legal/terms-of-use.en.html>
 
-`app.config.ts` の `LEGAL_PRIVACY_URL` / `LEGAL_TERMS_URL` extras にデフォルト値として設定済 (env で上書き可)。
+`app.config.ts` の `LEGAL_PRIVACY_URL` / `LEGAL_TERMS_URL` extras にデフォルト値として設定済 (env で上書き可)。GitHub Pages の Source は `main` ブランチの `/docs` フォルダ。
 
 ## 使い方 (ユーザー手動)
 
