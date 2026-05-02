@@ -6,3 +6,6 @@ ios/
 .claude/
 *.lock
 pnpm-lock.yaml
+
+# Agent tool source skills may include upstream bundled assets with their own formatting.
+agent-tools/skills/
