@@ -199,6 +199,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   backupEncryptionWarning:
     'バックアップは暗号化されません。クラウドに保存する場合は、ご自身で管理できる安全なフォルダに保管してください。',
 
+  // --- F-07 針金がけ装着期間 (Phase A、純関数出力文言、ADR-0011) ---
+  // 将来用途: しきい値超過時の事実通知文言 (推奨/命令禁止、constraints §5-2)
+  wiringDurationOverdueWeeks: '装着期間 {weeks} 週経過しました',
+  wiringScheduledUnwireSet: '外す予定日時: {date}',
+
   // --- F-10 エクスポート Phase A (events CSV、Pro 限定、ADR-0016) ---
   settingsExportSection: 'エクスポート',
   exportCsvTitle: '作業ログを CSV で出力',

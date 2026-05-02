@@ -236,5 +236,9 @@ const nl: Partial<Record<TranslationKey, string>> = {
   exportShareUnavailableTitle: 'Sharing is not available',
   exportShareUnavailableBody:
     'Sharing is not available on this device. Please update the OS and try again.',
+
+  // --- F-07 Wiring duration (Phase A、English fallback) ---
+  wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
+  wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 };
 export default nl;
