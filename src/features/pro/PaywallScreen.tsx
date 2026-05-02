@@ -125,6 +125,17 @@ export default function PaywallScreen() {
           <ThemedText type="defaultSemiBold">{proStateLabel}</ThemedText>
         </View>
 
+        {/* F-13 Phase 1c (Issue #20, ADR-0009): Pro 機能比較表 (CTA 前に配置) */}
+        <View style={styles.comparison} testID="e2e_paywall_comparison">
+          <ThemedText type="defaultSemiBold" style={styles.comparisonTitle}>
+            {t('proComparisonTitle')}
+          </ThemedText>
+          <ComparisonRow label={t('proComparisonPhotos')} />
+          <ComparisonRow label={t('proComparisonCsv')} />
+          <ComparisonRow label={t('proComparisonPdf')} />
+          <ComparisonRow label={t('proComparisonNoAds')} />
+        </View>
+
         {!hideSubscriptions && (
           <PlanCard
             testID="e2e_plan_monthly"
@@ -194,6 +205,15 @@ type PlanCardProps = {
   onPress: () => void;
 };
 
+function ComparisonRow({ label }: { label: string }) {
+  return (
+    <View style={styles.comparisonRow}>
+      <ThemedText style={styles.comparisonCheck}>✓</ThemedText>
+      <ThemedText style={styles.comparisonLabel}>{label}</ThemedText>
+    </View>
+  );
+}
+
 function PlanCard({ testID, title, badge, price, cta, busy, disabled, onPress }: PlanCardProps) {
   return (
     <View style={styles.card} testID={testID}>
@@ -231,6 +251,18 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
     alignItems: 'center',
   },
+  comparison: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#F1F8F2',
+    gap: 8,
+  },
+  comparisonTitle: { fontSize: 14, marginBottom: 4 },
+  comparisonRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  comparisonCheck: { color: '#2E7D32', fontSize: 16, fontWeight: '700' },
+  comparisonLabel: { flex: 1, fontSize: 14, lineHeight: 20 },
   card: {
     padding: 16,
     borderRadius: 12,

@@ -241,6 +241,13 @@ const de: Partial<Record<TranslationKey, string>> = {
   wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
+  // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
+  proComparisonTitle: 'What you get with Pro',
+  proComparisonPhotos: 'Unlimited photos per bonsai',
+  proComparisonCsv: 'Export care logs to CSV',
+  proComparisonPdf: 'Export bonsai records to PDF',
+  proComparisonNoAds: 'No ads',
+
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
   tagsManagerDesc: 'Tags help you organize care logs and find them in search.',
