@@ -39,7 +39,25 @@ module.exports = defineConfig([
           message:
             'Hardcoded RevenueCat Android key detected. Use app.config.ts extra + .env instead.',
         },
+        // ADR-0008 §TZ 3 層防御: 直接呼出禁止、core/datetime 経由必須 (Issue #17 AC2-1/AC2-2)
+        {
+          selector: "NewExpression[callee.name='Date'][arguments.length=0]",
+          message:
+            'new Date() 引数なしの直接呼出禁止 (ADR-0008 §TZ 3 層防御)。src/core/datetime/clock.ts の nowUtc() を使用してください。',
+        },
+        {
+          selector: "MemberExpression[property.name='getTimezoneOffset']",
+          message:
+            'getTimezoneOffset() 直接呼出禁止 (ADR-0008 §TZ 3 層防御、符号反転の罠)。src/core/datetime/tz.ts の getTzOffsetMin() を使用してください。',
+        },
       ],
+    },
+  },
+  // 例外: src/core/datetime/ 内部は実装上 new Date() / getTimezoneOffset() を使用する必要あり
+  {
+    files: ['src/core/datetime/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
   },
 ]);

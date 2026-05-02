@@ -13,6 +13,8 @@
  */
 import { ulid } from 'ulid';
 
+import { nowUtc } from '@/src/core/datetime';
+
 import { getDb } from './db';
 import type { Bonsai, BonsaiStyle } from './schema';
 import { getSpeciesById, type SpeciesWithName } from './speciesRepository';
@@ -44,7 +46,7 @@ export type UpdateBonsaiInput = Partial<CreateBonsaiInput>;
  */
 export async function createBonsai(input: CreateBonsaiInput): Promise<Bonsai> {
   const db = await getDb();
-  const now = new Date().toISOString();
+  const now = nowUtc() as string;
   const id = ulid();
 
   const potInfoStr = input.potInfo ? JSON.stringify(input.potInfo) : null;
@@ -146,7 +148,7 @@ export async function getAllActiveBonsaiWithSpecies(locale: string): Promise<Bon
  */
 export async function updateBonsai(id: string, updates: UpdateBonsaiInput): Promise<void> {
   const db = await getDb();
-  const now = new Date().toISOString();
+  const now = nowUtc() as string;
   const fields: string[] = ['updated_at = ?'];
   const values: (string | number | null)[] = [now];
 
@@ -184,7 +186,7 @@ export async function updateBonsai(id: string, updates: UpdateBonsaiInput): Prom
  */
 export async function archiveBonsai(id: string): Promise<void> {
   const db = await getDb();
-  const now = new Date().toISOString();
+  const now = nowUtc() as string;
   await db.runAsync('UPDATE bonsai SET archived_at = ?, updated_at = ? WHERE id = ?;', [
     now,
     now,
@@ -197,7 +199,7 @@ export async function archiveBonsai(id: string): Promise<void> {
  */
 export async function restoreBonsai(id: string): Promise<void> {
   const db = await getDb();
-  const now = new Date().toISOString();
+  const now = nowUtc() as string;
   await db.runAsync('UPDATE bonsai SET archived_at = NULL, updated_at = ? WHERE id = ?;', [
     now,
     id,

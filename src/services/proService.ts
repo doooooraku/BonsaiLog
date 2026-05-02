@@ -70,6 +70,7 @@ function toProState(info: CustomerInfo): ProState {
   return {
     isPro,
     anonUserId: info.originalAppUserId ?? null,
+    // eslint-disable-next-line no-restricted-syntax -- v1.x で nowUtc() に移行予定 (Issue #17 PR-A 後)
     lastCheckAt: new Date().toISOString(),
     planType: isPro
       ? derivePlanType(entitlement?.productIdentifier, entitlement?.expirationDate != null)
