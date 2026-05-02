@@ -381,6 +381,44 @@ Repolog ADR-0008 は UMP 主体、ATT は明示的な決定事項なし (Expo pl
 - 詳細は `docs/adr/ADR-0018-onboarding-flow-integration.md` §⑧ 参照
 - 本 ADR Decision 変更なし、ADR-0018 で具体的な発火動線を補強
 
+### F-LEGAL-003 iOS Privacy Manifest 実装記録 (Notes 追記、2026-05-02)
+
+Issue #39 (F-LEGAL-003) で本 ADR §⑤ Privacy Manifest を実装した記録。
+
+**実装方式**: Expo SDK 55 の `@expo/config-plugins` `withPrivacyInfo` 経由で `app.config.ts` の
+`ios.privacyManifests` から `ios/BonsaiLog/PrivacyInfo.xcprivacy` を prebuild 時に自動生成
+（手動配置や独自 Config Plugin は不要、Expo 標準機能を利用）。
+
+**Repolog との差分（ADR-0017 §⑤22 ミラー方針からの差分理由）**:
+
+| 項目                        | Repolog `ios/Repolog/PrivacyInfo.xcprivacy`                        | BonsaiLog `app.config.ts` `ios.privacyManifests`                | 差分理由                                                                                   |
+| --------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `NSPrivacyTracking`         | `false`                                                            | `true`                                                          | BonsaiLog は AdMob 配線あり (ADR-0010 / F-14)、Repolog は AdMob 未配線時の状態のため       |
+| `NSPrivacyTrackingDomains`  | `[]` (空)                                                          | 7 ドメイン (doubleclick.net 等)                                 | 上記同様、AdMob 利用のため `NSPrivacyTracking: true` に伴う必須宣言                        |
+| `NSPrivacyAccessedAPITypes` | 4 種別 (FileTimestamp / SystemBootTime / DiskSpace / UserDefaults) | 4 種別 (同じ Reason コード `C617.1` `35F9.1` `E174.1` `CA92.1`) | Reason コードは Apple 必須最小、両プロジェクトで同一                                       |
+| `FileTimestamp` Reason      | `C617.1` + `3B52.1`                                                | `C617.1` のみ                                                   | BonsaiLog は backup 機能で `3B52.1` (バックアップ・復元) も将来必要、F-09 完了時に追加予定 |
+| `DiskSpace` Reason          | `E174.1` + `85F4.1`                                                | `E174.1` のみ                                                   | BonsaiLog は `85F4.1` (ユーザー初期化処理) を現状利用していないため、必要時に追加          |
+
+**実装方針上の差分** (Repolog が `ios/<project>/PrivacyInfo.xcprivacy` 直接配置に対し、BonsaiLog は `app.config.ts` 経由生成):
+
+- 同一の最終バンドル出力になる (Expo prebuild の `withPrivacyInfo` が同じ XML を生成)
+- `app.config.ts` 経由は `prebuild --clean` で常に同期、手動メンテ不要
+- Repolog は EAS managed → bare 移行履歴の都合で直接配置、BonsaiLog は managed 維持なので
+  `app.config.ts` 経由が clean
+
+**Repolog 同期方針 (ADR-0017 §⑤22 補強)**:
+
+- AdMob 配線完了時 (Repolog 側で本格運用開始時) に Repolog `PrivacyInfo.xcprivacy` を更新
+- Repolog 更新後、BonsaiLog `app.config.ts` の `NSPrivacyTrackingDomains` を再確認
+- `react-native-google-mobile-ads` バージョンアップ時は両プロジェクトで同時確認
+  （`docs/how-to/development/ios-privacy-manifest-validation.md` §6 のチェックリスト参照）
+
+**人間検証残タスク**:
+
+- 実機 (iPhone 13+) で iOS local build 実施 + Xcode Organizer で Privacy Report 警告ゼロ確認
+- App Store Connect 提出時に Privacy Manifest 警告ゼロ確認
+- 詳細手順は `docs/how-to/development/ios-privacy-manifest-validation.md` 参照
+
 ### 議論経緯 (2 ラウンド)
 
 1. ラウンド 1: Phase 1 計画提示で ATT/UMP/オンボーディングの用語確認 + Repolog 流用方針確定 (5 質問承認)
