@@ -239,6 +239,16 @@ const baseEn = {
   wateringLastManyDays: '{days} days since last watering',
   wateringLastOverYear: 'Over a year since last watering',
 
+  // --- F-16 Notification settings (Phase B, Issue #30, ADR-0014) ---
+  settingsNotifSummaryToggle: 'Daily summary notification',
+  settingsNotifSummaryToggleDesc:
+    'Receive a single summary at {time} when you have planned events on that day.',
+  settingsNotifWateringToggle: 'Watering notification',
+  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
+  settingsNotifPermissionDeniedTitle: 'Notification permission needed',
+  settingsNotifPermissionDeniedBody:
+    'Notifications are disabled in your device settings. Enable them to use this feature.',
+
   // --- F-14 Ad banner label (Phase B, Issue #22, functional_spec §19) ---
   adBannerLabel: 'Ad',
 
