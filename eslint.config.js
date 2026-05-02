@@ -50,6 +50,34 @@ module.exports = defineConfig([
           message:
             'getTimezoneOffset() 直接呼出禁止 (ADR-0008 §TZ 3 層防御、符号反転の罠)。src/core/datetime/tz.ts の getTzOffsetMin() を使用してください。',
         },
+        // P7 Event.kind 誤参照防止 (Issue retro 2026-05-03 L3 由来)。
+        // schema.ts 上の Event 型は `type` フィールドを持ち、`kind` は存在しない。
+        // 本セッションで F-04 純関数で `event.kind` を 2 箇所書いてしまい type-check fail で気付いた。
+        // 構造的に防ぐため、events と思われる変数の `.kind` アクセスを禁止する。
+        // 例外: 他テーブル (例えば `eventOverloadKind` 等) で `kind` という名のローカル変数は別物なので、
+        //       `Identifier[name=/^(event|wiringEvent|wateringEvent|ev)s?$/]` 限定で検査する。
+        {
+          selector:
+            "MemberExpression[object.name=/^(event|wiringEvent|wateringEvent|ev)s?$/][property.name='kind']",
+          message:
+            'Event 型に kind フィールドはありません (schema.ts 参照、`type` を使ってください、Issue retro 2026-05-03 L3)。',
+        },
+      ],
+      // P3 expo-file-system の旧 namespace import 禁止 (Issue retro 2026-05-03 L4 由来)。
+      // expo SDK 55 から新 API (`{ File, Paths, Directory }`) が正、`import * as FileSystem` の
+      // namespace import は `cacheDirectory` / `EncodingType` が解決できず lint fail。
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'expo-file-system',
+              importNames: ['default'],
+              message:
+                'expo-file-system の namespace / default import は旧 API です。`import { File, Paths, Directory } from "expo-file-system"` を使用してください (SDK 55+、Issue retro 2026-05-03 L4)。',
+            },
+          ],
+        },
       ],
     },
   },
@@ -58,6 +86,34 @@ module.exports = defineConfig([
     files: ['src/core/datetime/**/*.ts'],
     rules: {
       'no-restricted-syntax': 'off',
+    },
+  },
+  // app/ 配下にも no-restricted-imports と Event.kind 禁止を適用
+  {
+    files: ['app/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'expo-file-system',
+              importNames: ['default'],
+              message:
+                'expo-file-system の namespace / default import は旧 API です。`import { File, Paths, Directory } from "expo-file-system"` を使用してください (SDK 55+、Issue retro 2026-05-03 L4)。',
+            },
+          ],
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "MemberExpression[object.name=/^(event|wiringEvent|wateringEvent|ev)s?$/][property.name='kind']",
+          message:
+            'Event 型に kind フィールドはありません (schema.ts 参照、`type` を使ってください、Issue retro 2026-05-03 L3)。',
+        },
+      ],
     },
   },
 ]);

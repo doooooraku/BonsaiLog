@@ -120,11 +120,37 @@ function checkLessonsIndex() {
   }
 }
 
+// Check 5: lessons/<area>.md と recurrence-prevention.md の行数上限 (Issue retro 2026-05-03 P5)。
+// 肥大化すると重要な部分が読まれなくなるため、構造的に防ぐ。
+function checkRuleDocsLineLimit() {
+  const limits = [
+    { path: 'docs/reference/tasks/lessons/build.md', max: 200 },
+    { path: 'docs/reference/tasks/lessons/db.md', max: 200 },
+    { path: 'docs/reference/tasks/lessons/docs.md', max: 200 },
+    { path: 'docs/reference/tasks/lessons/runtime.md', max: 200 },
+    { path: 'docs/reference/tasks/lessons/store.md', max: 200 },
+    { path: '.claude/recurrence-prevention.md', max: 250 },
+  ];
+  for (const { path, max } of limits) {
+    const file = join(ROOT, path);
+    if (!existsSync(file)) continue;
+    const lines = readFileSync(file, 'utf8').split('\n').length;
+    if (lines > max) {
+      errors.push(
+        `[行数上限] ${path}: ${lines} 行 (上限 ${max} 行)\n` +
+          `  → 同テーマで 3 件以上溜まったら hook / ESLint / CI へ昇華 (CLAUDE.md §9 / 記憶の昇華ルール)。\n` +
+          `  → recurrence-prevention.md 250 行超は新ファイル分割を検討。`,
+      );
+    }
+  }
+}
+
 // 実行
 checkCodexReferences();
 checkAdrSequence();
 checkStrikethrough();
 checkLessonsIndex();
+checkRuleDocsLineLimit();
 
 // 結果出力
 if (errors.length > 0) {

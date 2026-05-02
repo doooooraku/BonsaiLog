@@ -10,6 +10,25 @@
             "command": "node .claude/hooks/check-read-before-edit.mjs"
           }
         ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/check-agent-isolation.mjs"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/session-end-cleanup-check.mjs"
+          }
+        ]
       }
     ],
     "PostToolUse": [
