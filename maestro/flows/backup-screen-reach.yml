@@ -1,0 +1,81 @@
+appId: 'com.doooooraku.bonsailog'
+name: 'E2E - F-11 backup screens reach'
+tags:
+  - e2e
+  - backup
+  - settings
+
+---
+- launchApp:
+    clearState: true
+    label: 'クリーン起動'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_screen'
+    timeout: 60000
+    label: 'Home の初期描画を待機'
+
+# Home → Settings ルート (router.push('/settings'))
+- runFlow:
+    when:
+      visible:
+        id: 'e2e_open_settings'
+    commands:
+      - tapOn:
+          id: 'e2e_open_settings'
+          label: '設定を開く'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_settings_screen'
+    timeout: 30000
+    label: '設定画面を待機'
+
+- assertVisible:
+    id: 'e2e_settings_screen'
+    label: '設定画面を確認'
+
+# Settings → Backup Export
+- tapOn:
+    id: 'e2e_open_backup_export'
+    label: 'バックアップ作成画面を開く'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_backup_export_screen'
+    timeout: 30000
+    label: 'バックアップ作成画面を待機'
+
+- assertVisible:
+    id: 'e2e_backup_export_screen'
+    label: 'バックアップ作成画面に到達'
+
+- back:
+    label: '設定へ戻る'
+
+- assertVisible:
+    id: 'e2e_settings_screen'
+    label: '設定画面へ復帰'
+
+# Settings → Backup Import
+- tapOn:
+    id: 'e2e_open_backup_import'
+    label: 'バックアップ復元画面を開く'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_backup_import_screen'
+    timeout: 30000
+    label: 'バックアップ復元画面を待機'
+
+- assertVisible:
+    id: 'e2e_backup_import_screen'
+    label: 'バックアップ復元画面に到達'
+
+- back:
+    label: '設定へ戻る'
+
+- assertVisible:
+    id: 'e2e_settings_screen'
+    label: '設定画面へ復帰'
