@@ -244,6 +244,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastManyDays: '最後の水やりから {days} 日',
   wateringLastOverYear: '最後の水やりから 1 年以上',
 
+  // --- F-26 オンボーディング (Phase A 文言のみ、Issue #26、ADR-0018) ---
+  onboardingWelcomeTitle: '鉢 1 本ずつ、一生分。',
+  onboardingWelcomeBody: '盆栽 1 鉢ずつの作業・写真・樹種を記録。オフライン完結、19 言語対応。',
+  onboardingWelcomeCta: 'はじめる',
+  onboardingSkip: 'あとで',
+
   // --- F-15 屋外モード (Phase B、Issue #32、ADR-0015) ---
   settingsOutdoorMode: '屋外モード',
   settingsOutdoorModeDesc: '屋外で見やすい高コントラスト配色を使います (本実装は次回更新で対応)。',

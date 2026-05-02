@@ -241,6 +241,13 @@ const tr: Partial<Record<TranslationKey, string>> = {
   wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
+  // --- F-26 Onboarding (Phase A copy、English fallback) ---
+  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeBody:
+    'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
+  onboardingWelcomeCta: 'Get started',
+  onboardingSkip: 'Later',
+
   // --- F-15 Outdoor mode (Phase B、English fallback) ---
   settingsOutdoorMode: 'Outdoor mode',
   settingsOutdoorModeDesc:
