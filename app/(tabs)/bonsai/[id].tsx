@@ -38,6 +38,7 @@ import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/waterin
 import {
   classifyWiringDuration,
   getDaysSinceWired,
+  getScheduledUnwireAt,
   getWeeksSinceWired,
 } from '@/src/features/wiring/wiringDuration';
 import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
@@ -329,6 +330,9 @@ export default function BonsaiDetailScreen() {
             // F-07 Phase B (Issue #24, ADR-0014): wiring の場合のみ「装着期間 X 週 (経過済)」をアプリ内表示。
             // 通知は ADR-0014 で削除済 (鬱陶しいフィードバックを受けて事実表示に変更)。
             let wiringDurationLabel: string | null = null;
+            // F-07 Phase C (Issue #24): payload_json の scheduled_unwire_at が設定済の場合に
+            // 「外す予定: YYYY-MM-DD」を表示。F-02 status='planned' 統合は Phase D。
+            let scheduledUnwireLabel: string | null = null;
             if (ev.type === 'wiring' && ev.status === 'logged') {
               const days = getDaysSinceWired(ev, new Date(nowUtc() as string));
               const weeks = getWeeksSinceWired(days);
@@ -336,6 +340,13 @@ export default function BonsaiDetailScreen() {
               const key =
                 kind === 'overdue' ? 'wiringDurationOverdueLabel' : 'wiringDurationWithinWeeks';
               wiringDurationLabel = t(key).replace('{weeks}', String(weeks));
+              const scheduled = getScheduledUnwireAt(ev);
+              if (scheduled) {
+                scheduledUnwireLabel = t('wiringScheduledUnwireSet').replace(
+                  '{date}',
+                  scheduled.slice(0, 10),
+                );
+              }
             }
             return (
               <Pressable
@@ -356,6 +367,11 @@ export default function BonsaiDetailScreen() {
                 {wiringDurationLabel && (
                   <ThemedText style={styles.eventRowNote} testID={`e2e_wiring_duration_${ev.id}`}>
                     {wiringDurationLabel}
+                  </ThemedText>
+                )}
+                {scheduledUnwireLabel && (
+                  <ThemedText style={styles.eventRowNote} testID={`e2e_wiring_scheduled_${ev.id}`}>
+                    {scheduledUnwireLabel}
                   </ThemedText>
                 )}
                 {ev.note && (
