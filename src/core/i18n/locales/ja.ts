@@ -244,6 +244,17 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastManyDays: '最後の水やりから {days} 日',
   wateringLastOverYear: '最後の水やりから 1 年以上',
 
+  // --- F-10 PDF エクスポート (Phase B、Issue #33、ADR-0016) ---
+  exportPdfTitle: '盆栽を PDF でエクスポート',
+  exportPdfDesc: '個別盆栽のレポート PDF を生成します (Pro 機能)。',
+  exportPdfAction: 'PDF',
+  exportPdfHeaderDate: '日付',
+  exportPdfHeaderType: '種類',
+  exportPdfHeaderNote: 'メモ',
+  exportPdfFooterNote: 'BonsaiLog で生成',
+  exportPdfShareTitle: 'BonsaiLog 盆栽 PDF',
+  exportPdfFailedBody: 'PDF の生成に失敗しました。',
+
   // --- F-09 検索 最近 3 タグチップ (Phase B、Issue #31、ADR-0008 改訂) ---
   searchRecentTagsLabel: '最近のタグ',
 
