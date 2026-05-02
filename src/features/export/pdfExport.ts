@@ -1,20 +1,20 @@
 /**
- * F-10 Phase B — PDF エクスポート (Issue #33 / ADR-0016)。
+ * F-10 Phase B/C — PDF エクスポート (Issue #33 / ADR-0016)。
  *
- * Phase B (本 PR): 個別盆栽 PDF の HTML 純関数 + 生成サービス
- *  - HTML テンプレートは純関数 (Jest テスト容易)
- *  - PDF 生成は expo-print printToFileAsync、共有は expo-sharing shareAsync
- *  - Pro 限定 (呼出側 UI で useProStore.isPro guard)
+ * Phase B: 個別盆栽 PDF の HTML 純関数 + 生成サービス (テキストのみ)
+ * Phase C (本 PR): 写真 base64 inline (iOS WKWebView 制約)
+ *  - readPhotoAsBase64 で file URI → base64 → data: URI
+ *  - HTML テンプレートに <img> セクションを追加
  *
- * Phase C 以降スコープ (Repolog 流用):
+ * Phase D 以降:
  *  - 全盆栽リスト PDF (表紙 + リスト + 統計)
- *  - 写真 base64 inline (iOS WKWebView 制約)
- *  - 3 段階フォールバック (full → reduced → tiny)
+ *  - 3 段階フォールバック (full → reduced → tiny、Repolog Issue #298 教訓)
  *  - 動的タイムアウト + 進捗バー
- *  - フォント解決 (CJK 明示、絵文字 system 任せ)
- *  - PDF 7 画面構成
+ *  - フォント解決 (CJK 明示、絵文字 system 任せ) の完全実装
+ *  - PDF 7 画面構成 UI
  */
 
+import * as LegacyFileSystem from 'expo-file-system/legacy';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
@@ -51,14 +51,38 @@ export type BonsaiPdfData = {
   bonsai: Pick<Bonsai, 'name' | 'style' | 'acquiredAt'>;
   speciesCommonName?: string | null;
   events: readonly Pick<Event, 'occurredAtUtc' | 'type' | 'note'>[];
+  /** Phase C: 写真の data: URI 配列 (base64 inline)。空 / 未指定なら写真セクション非表示。 */
+  photoDataUris?: readonly string[];
+  /** Phase C: 写真セクションのラベル (H2 見出し)。 */
+  labelPhotosTitle?: string;
 };
+
+/**
+ * Phase C: 写真ファイルを読み込んで data:image/jpeg;base64,... 形式の URI を返す。
+ *
+ * iOS WKWebView は file:// 直接参照で写真が表示されないため、base64 inline 必須 (ADR-0016)。
+ * BonsaiLog の写真はすべて jpg (F-08 仕様、photoFileService) のため image/jpeg 固定。
+ *
+ * @param absoluteUri 写真の絶対 URI (PhotoRead.absoluteUri)
+ * @returns 失敗時は null (UI 層で「写真が見つからない場合は無視」)
+ */
+export async function readPhotoAsBase64(absoluteUri: string): Promise<string | null> {
+  try {
+    const base64 = await LegacyFileSystem.readAsStringAsync(absoluteUri, {
+      encoding: LegacyFileSystem.EncodingType.Base64,
+    });
+    return `data:image/jpeg;base64,${base64}`;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * 個別盆栽 PDF の HTML 純関数。
  *
  * - DOCTYPE 必須 (iOS WKWebView 制約、ADR-0016)
  * - CJK フォント明示 (フォント埋込なし、Repolog Issue #292 教訓)
- * - 写真は Phase C で base64 inline 追加
+ * - Phase C: 写真は base64 inline (data: URI) で <img> 描画
  * - page-break: WebKit プレフィクス併記
  */
 export function buildBonsaiPdfHtml(input: BonsaiPdfData & BonsaiPdfTexts): string {
@@ -66,6 +90,8 @@ export function buildBonsaiPdfHtml(input: BonsaiPdfData & BonsaiPdfTexts): strin
     bonsai,
     speciesCommonName,
     events,
+    photoDataUris,
+    labelPhotosTitle,
     title,
     labelSpecies,
     labelStyle,
@@ -76,6 +102,14 @@ export function buildBonsaiPdfHtml(input: BonsaiPdfData & BonsaiPdfTexts): strin
     labelEventNote,
     footerNote,
   } = input;
+
+  const photosHtml =
+    photoDataUris && photoDataUris.length > 0 && labelPhotosTitle
+      ? `<h2>${escapeHtml(labelPhotosTitle)}</h2>
+  <div class="photos">
+${photoDataUris.map((uri) => `    <img src="${uri}" alt="" />`).join('\n')}
+  </div>`
+      : '';
 
   const eventRows = events
     .map(
@@ -108,6 +142,8 @@ export function buildBonsaiPdfHtml(input: BonsaiPdfData & BonsaiPdfTexts): strin
   .meta { font-size: 11pt; line-height: 1.6; }
   .meta dt { font-weight: 600; float: left; width: 5em; }
   .meta dd { margin: 0 0 4pt 5em; }
+  .photos { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8pt; page-break-inside: avoid; -webkit-column-break-inside: avoid; }
+  .photos img { width: 30%; max-width: 200px; height: auto; border-radius: 4px; border: 1px solid #E0E0E0; }
   .footer { margin-top: 24pt; font-size: 9pt; color: #666; border-top: 1px solid #E0E0E0; padding-top: 6pt; }
 </style>
 </head>
@@ -118,6 +154,8 @@ export function buildBonsaiPdfHtml(input: BonsaiPdfData & BonsaiPdfTexts): strin
     ${bonsai.style ? `<dt>${escapeHtml(labelStyle)}</dt><dd>${escapeHtml(bonsai.style)}</dd>` : ''}
     ${bonsai.acquiredAt ? `<dt>${escapeHtml(labelAcquiredAt)}</dt><dd>${escapeHtml(bonsai.acquiredAt.slice(0, 10))}</dd>` : ''}
   </dl>
+
+  ${photosHtml}
 
   <h2>${escapeHtml(labelEventsTitle)}</h2>
   ${

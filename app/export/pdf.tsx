@@ -23,8 +23,13 @@ import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { getAllActiveBonsai, getBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getActiveEventsByBonsai } from '@/src/db/eventRepository';
+import { getPhotosByBonsai } from '@/src/db/photoRepository';
 import type { Bonsai } from '@/src/db/schema';
-import { buildBonsaiPdfHtml, generateAndShareBonsaiPdf } from '@/src/features/export/pdfExport';
+import {
+  buildBonsaiPdfHtml,
+  generateAndShareBonsaiPdf,
+  readPhotoAsBase64,
+} from '@/src/features/export/pdfExport';
 import { useProStore } from '@/src/stores/proStore';
 
 export default function ExportPdfScreen() {
@@ -51,10 +56,18 @@ export default function ExportPdfScreen() {
     try {
       const detail = await getBonsaiWithSpecies(bonsai.id, lang);
       const events = await getActiveEventsByBonsai(bonsai.id);
+      // Phase C: 写真を base64 inline で取得 (iOS WKWebView 制約、ADR-0016)。
+      // 失敗した写真は配列から除外、HTML テンプレート側は空配列なら写真セクション非表示。
+      const photos = await getPhotosByBonsai(bonsai.id);
+      const photoDataUris = (
+        await Promise.all(photos.map((p) => readPhotoAsBase64(p.absoluteUri)))
+      ).filter((uri): uri is string => uri !== null);
       const html = buildBonsaiPdfHtml({
         bonsai: { name: bonsai.name, style: bonsai.style, acquiredAt: bonsai.acquiredAt },
         speciesCommonName: detail?.species?.commonName ?? null,
         events,
+        photoDataUris,
+        labelPhotosTitle: t('bonsaiFieldPhotos'),
         title: t('exportPdfTitle'),
         labelSpecies: t('bonsaiFieldSpecies'),
         labelStyle: t('bonsaiFieldStyle'),

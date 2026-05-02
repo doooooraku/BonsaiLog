@@ -104,6 +104,40 @@ describe('buildBonsaiPdfHtml', () => {
     expect(html).not.toContain('<dt>取得日</dt>');
   });
 
+  test('Phase C: photoDataUris 0 件 / 未指定では <img> 非表示', () => {
+    const html = buildBonsaiPdfHtml({
+      bonsai: { name: 'Test', style: null, acquiredAt: null },
+      events: [],
+      ...baseTexts,
+    });
+    expect(html).not.toContain('<img');
+    expect(html).not.toContain('class="photos"');
+  });
+
+  test('Phase C: photoDataUris + labelPhotosTitle で <img> 出力', () => {
+    const html = buildBonsaiPdfHtml({
+      bonsai: { name: 'Test', style: null, acquiredAt: null },
+      events: [],
+      photoDataUris: ['data:image/jpeg;base64,AAAA', 'data:image/jpeg;base64,BBBB'],
+      labelPhotosTitle: '写真',
+      ...baseTexts,
+    });
+    expect(html).toContain('<h2>写真</h2>');
+    expect(html).toContain('<img src="data:image/jpeg;base64,AAAA"');
+    expect(html).toContain('<img src="data:image/jpeg;base64,BBBB"');
+    expect(html).toContain('class="photos"');
+  });
+
+  test('Phase C: labelPhotosTitle なしでは <img> 非表示', () => {
+    const html = buildBonsaiPdfHtml({
+      bonsai: { name: 'Test', style: null, acquiredAt: null },
+      events: [],
+      photoDataUris: ['data:image/jpeg;base64,AAAA'],
+      ...baseTexts,
+    });
+    expect(html).not.toContain('<img');
+  });
+
   test('species 提供時は dt/dd 表示', () => {
     const html = buildBonsaiPdfHtml({
       bonsai: { name: 'Test', style: 'chokkan', acquiredAt: '2026-04-01T00:00:00.000Z' },
