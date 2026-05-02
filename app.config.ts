@@ -154,6 +154,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         usesNonExemptEncryption: false,
       },
       privacyManifests: {
+        // ADR-0017 §⑤ 21 — iOS 17+ Privacy Manifest required reasons + AdMob tracking
         NSPrivacyAccessedAPITypes: [
           {
             NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryDiskSpace',
@@ -171,6 +172,20 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults',
             NSPrivacyAccessedAPITypeReasons: ['CA92.1'],
           },
+        ],
+        // ADR-0017 §⑤ 21 — AdMob 利用のため tracking 有効、UMP 同意で最終的に on/off が決まる
+        NSPrivacyTracking: true,
+        // AdMob / Google Mobile Ads SDK が接続するトラッキングドメイン
+        // SDK 同梱の PrivacyInfo.xcprivacy は app 側にマージされない仕様のため、アプリで明示宣言する必要がある
+        // (Apple Developer Documentation: each bundle declares its own domains)
+        NSPrivacyTrackingDomains: [
+          'doubleclick.net',
+          'googleadservices.com',
+          'googlesyndication.com',
+          'google-analytics.com',
+          'googletagmanager.com',
+          'app-measurement.com',
+          '2mdn.net',
         ],
       },
     },
