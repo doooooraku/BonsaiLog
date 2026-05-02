@@ -13,6 +13,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import { HEATMAP_COLORS } from '@/src/core/theme/colors';
 import {
   buildHeatmapDateKeys,
   getDailyWateringCounts,
@@ -23,12 +24,7 @@ import type { Event } from '@/src/db/schema';
 
 const HEATMAP_DAYS = 84; // 7 × 12
 
-const LEVEL_COLORS: Record<WateringHeatmapLevel, string> = {
-  L0: '#F5F8F5',
-  L1: '#BAE4B3',
-  L2: '#74C476',
-  L3: '#238B45',
-};
+const LEVEL_COLORS: Record<WateringHeatmapLevel, string> = HEATMAP_COLORS;
 
 type Props = {
   events: readonly Event[];
