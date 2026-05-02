@@ -95,10 +95,7 @@ describe('rescheduleDailySummaryNotifications', () => {
     expect(scheduled).toBe(2);
     const args = mockSchedule.mock.calls.map((c) => c[0]);
     const idents = args.map((a) => a.identifier);
-    expect(idents).toEqual([
-      'daily_summary_2026-05-02',
-      'daily_summary_2026-05-03',
-    ]);
+    expect(idents).toEqual(['daily_summary_2026-05-02', 'daily_summary_2026-05-03']);
     expect(args[0].content.body).toBe('2 件'); // 5/2 = 2 件
     expect(args[1].content.body).toBe('1 件'); // 5/3 = 1 件
     expect(args[0].trigger.type).toBe('date');

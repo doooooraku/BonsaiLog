@@ -66,7 +66,9 @@ describe('buildWateringIdentifier', () => {
 describe('buildWateringSchedules', () => {
   test('正常入力 1 件', () => {
     const result = buildWateringSchedules([{ hour: 7, minute: 0 }]);
-    expect(result).toEqual([{ identifier: `${WATERING_IDENTIFIER_PREFIX}07_00`, hour: 7, minute: 0 }]);
+    expect(result).toEqual([
+      { identifier: `${WATERING_IDENTIFIER_PREFIX}07_00`, hour: 7, minute: 0 },
+    ]);
   });
 
   test('5 件丁度', () => {
@@ -111,7 +113,9 @@ describe('buildWateringSchedules', () => {
       { hour: Number.NaN, minute: 0 },
     ];
     const result = buildWateringSchedules(times);
-    expect(result).toEqual([{ identifier: `${WATERING_IDENTIFIER_PREFIX}07_00`, hour: 7, minute: 0 }]);
+    expect(result).toEqual([
+      { identifier: `${WATERING_IDENTIFIER_PREFIX}07_00`, hour: 7, minute: 0 },
+    ]);
   });
 
   test('空配列は空仕様', () => {
