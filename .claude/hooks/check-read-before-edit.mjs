@@ -5,15 +5,19 @@
  * PreToolUse hook (Edit / Write 対象)
  * - stdin から JSON {tool_name, tool_input, transcript_path} を受け取る
  * - tool_input.file_path が直近 transcript で Read されたか確認
+ *   - 親セッション transcript + 同セッション配下 subagent transcript 群を走査
+ *   - sub-agent (Task tool 経由) でも Read 履歴を拾えるよう subagents/*.jsonl も対象
  * - 未 Read なら exit 2 + stderr で block + ガイド出力
- *
- * Hook が読む transcript: Claude Code はセッション履歴を transcript_path に渡す。
- * その JSON 配列を末尾から走査し、Read ツールで同じ path を呼んだ tool_use を探す。
  *
  * 例外:
  * - 新規ファイル作成 (Write で path が存在しない) は Read 不要 → 通す
+ *
+ * 履歴 (2026-05-02):
+ * - sub-agent から Edit/Write した際、親 transcript には Read が記録されないため誤検知が頻発。
+ * - 同セッション ID 配下の `subagents/agent-*.jsonl` も走査するよう拡張 (Issue #12 F-11 着手時)。
  */
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { dirname, basename, join } from 'node:path';
 
 const input = JSON.parse(readFileSync(0, 'utf8'));
 const { tool_name, tool_input, transcript_path } = input;
@@ -33,40 +37,62 @@ if (tool_name === 'Write' && !existsSync(targetPath)) {
   process.exit(0);
 }
 
-// transcript を読み込み、Read tool_use で targetPath があるか確認
-if (!transcript_path || !existsSync(transcript_path)) {
+if (!transcript_path) {
   process.exit(0); // transcript なし、判定不能 (本番では block しない)
 }
 
-let lines;
+// 走査対象: 親 transcript + 同セッション subagent transcript 群
+const transcripts = [];
+if (existsSync(transcript_path)) {
+  transcripts.push(transcript_path);
+}
 try {
-  lines = readFileSync(transcript_path, 'utf8').trim().split('\n');
+  const dir = dirname(transcript_path);
+  const baseFile = basename(transcript_path, '.jsonl');
+  const subDir = join(dir, baseFile, 'subagents');
+  if (existsSync(subDir)) {
+    for (const f of readdirSync(subDir)) {
+      if (f.endsWith('.jsonl')) {
+        transcripts.push(join(subDir, f));
+      }
+    }
+  }
 } catch {
-  process.exit(0);
+  // best-effort、subagent 走査の失敗は致命的ではない
 }
 
 let hasRead = false;
-for (const line of lines) {
+for (const tPath of transcripts) {
+  let lines;
   try {
-    const entry = JSON.parse(line);
-    // tool_use エントリで Read かつ同じ path を探す
-    if (entry?.type === 'tool_use' && entry?.name === 'Read' && entry?.input?.file_path === targetPath) {
-      hasRead = true;
-      break;
-    }
-    // assistant message 内の content 配列も走査
-    if (entry?.message?.content) {
-      for (const c of entry.message.content) {
-        if (c?.type === 'tool_use' && c?.name === 'Read' && c?.input?.file_path === targetPath) {
-          hasRead = true;
-          break;
+    lines = readFileSync(tPath, 'utf8').trim().split('\n');
+  } catch {
+    continue;
+  }
+
+  for (const line of lines) {
+    try {
+      const entry = JSON.parse(line);
+      // tool_use エントリで Read かつ同じ path を探す
+      if (entry?.type === 'tool_use' && entry?.name === 'Read' && entry?.input?.file_path === targetPath) {
+        hasRead = true;
+        break;
+      }
+      // assistant message 内の content 配列も走査
+      if (entry?.message?.content) {
+        for (const c of entry.message.content) {
+          if (c?.type === 'tool_use' && c?.name === 'Read' && c?.input?.file_path === targetPath) {
+            hasRead = true;
+            break;
+          }
         }
       }
+      if (hasRead) break;
+    } catch {
+      // JSON parse 失敗は無視
     }
-    if (hasRead) break;
-  } catch {
-    // JSON parse 失敗は無視
   }
+  if (hasRead) break;
 }
 
 if (!hasRead) {
