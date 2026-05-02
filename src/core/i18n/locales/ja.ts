@@ -244,6 +244,16 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastManyDays: '最後の水やりから {days} 日',
   wateringLastOverYear: '最後の水やりから 1 年以上',
 
+  // --- F-09 タグ管理 (Phase C、Issue #31、ADR-0008 改訂) ---
+  tagsManagerTitle: 'タグを管理',
+  tagsManagerDesc: 'タグを付けると作業ログを整理でき、検索からもすぐ見つけられます。',
+  tagsAddPlaceholder: '新しいタグ名',
+  tagsAddAction: '追加',
+  tagsAddFailedBody: 'タグの追加に失敗しました。',
+  tagsEmpty: 'まだタグがありません。',
+  tagsDeleteConfirmTitle: 'このタグを削除しますか?',
+  tagsDeleteConfirmBody: 'タグ「{name}」と作業ログとの紐付けが削除されます。',
+
   // --- F-16 通知設定 (Phase B、Issue #30、ADR-0014) ---
   settingsNotifSummaryToggle: '当日まとめ通知',
   settingsNotifSummaryToggleDesc: '予定がある日に {time} に 1 件のまとめ通知を受け取ります。',

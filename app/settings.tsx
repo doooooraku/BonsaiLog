@@ -274,6 +274,16 @@ export default function SettingsScreen() {
             <ThemedText type="defaultSemiBold">{t('searchAction')}</ThemedText>
             <ThemedText style={styles.entryDesc}>{t('searchDesc')}</ThemedText>
           </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('tagsManagerTitle')}
+            testID="e2e_open_tags"
+            style={styles.entry}
+            onPress={() => router.push('/tags' as Href)}
+          >
+            <ThemedText type="defaultSemiBold">{t('tagsManagerTitle')}</ThemedText>
+            <ThemedText style={styles.entryDesc}>{t('tagsManagerDesc')}</ThemedText>
+          </Pressable>
         </View>
 
         {/* --- F-LEGAL-001 Phase A 広告のプライバシー設定 (Issue #37、ADR-0017、Free のみ表示) --- */}
