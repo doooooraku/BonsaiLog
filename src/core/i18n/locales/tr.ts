@@ -127,6 +127,27 @@ const tr: Partial<Record<TranslationKey, string>> = {
   photoActionDelete: 'Delete photo',
   photoDeleteConfirmTitle: 'Delete this photo?',
   photoDeleteConfirmDesc: 'This action cannot be undone.',
+
+  // --- F-02 Events (P2-03 PR-D, English fallback for v1.0) ---
+  eventsTitle: 'Care log',
+  eventLogCta: 'Log a care event',
+  eventTypePickerDesc: 'Choose what you did:',
+  eventEmpty: 'No events recorded yet.',
+  eventDeleteConfirmTitle: 'Move this event to trash?',
+  eventDeleteConfirmDesc: 'Trashed events are permanently removed after 30 days.',
+  eventType_watering: 'Watering',
+  eventType_pruning: 'Pruning',
+  eventType_wiring: 'Wiring',
+  eventType_unwiring: 'Unwiring',
+  eventType_repotting: 'Repotting',
+  eventType_fertilizing: 'Fertilizing',
+  eventType_pest_control: 'Pest control',
+  eventType_leaf_trimming: 'Leaf trimming',
+  eventType_defoliation: 'Defoliation',
+  eventType_deshoot: 'Bud removal',
+  eventType_candle_cut: 'Candle cut',
+  eventType_moss_care: 'Moss care',
+  eventType_position_change: 'Position change',
 };
 
 export default tr;

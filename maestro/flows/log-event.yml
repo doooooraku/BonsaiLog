@@ -1,0 +1,41 @@
+# maestro/flows/log-event.yml
+# F-02 作業記録 → 一覧表示 → ゴミ箱動線 (P2-03 PR-D)
+
+appId: 'com.doooooraku.bonsailog'
+name: 'F-02 - log event flow'
+tags:
+  - foundation
+  - f-02
+
+steps:
+  - launchApp:
+      label: 'アプリ起動 (盆栽が 1 件登録されている前提、bonsai-list.yml で作成済)'
+
+  - tapOn:
+      text: '盆栽'
+      label: '盆栽タブをタップ'
+
+  - tapOn:
+      index: 0
+      label: '一覧の先頭の盆栽をタップ'
+      optional: true
+
+  - assertVisible:
+      text: '作業履歴'
+      label: '作業履歴セクションが表示されることを確認'
+
+  - tapOn:
+      text: '+ 作業を記録'
+      label: '作業記録ボタンをタップ'
+
+  - assertVisible:
+      text: '何をしましたか?'
+      label: '種別選択の Alert が表示されることを確認'
+
+  - tapOn:
+      text: '水やり'
+      label: '水やりを選択'
+
+  - assertVisible:
+      text: '水やり'
+      label: '記録された作業がタイムラインに表示されることを確認'
