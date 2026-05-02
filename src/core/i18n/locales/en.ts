@@ -239,6 +239,9 @@ const baseEn = {
   wateringLastManyDays: '{days} days since last watering',
   wateringLastOverYear: 'Over a year since last watering',
 
+  // --- F-14 Ad banner label (Phase B, Issue #22, functional_spec §19) ---
+  adBannerLabel: 'Ad',
+
   // --- F-26 Onboarding (Phase A copy only, Issue #26, ADR-0018) ---
   onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
   onboardingWelcomeBody:
