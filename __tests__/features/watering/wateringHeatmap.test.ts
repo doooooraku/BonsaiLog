@@ -2,9 +2,12 @@
  * F-04 wateringHeatmap.ts 純関数テスト (Phase A、Issue #29 / ADR-0013)。
  */
 import {
+  buildHeatmapDateKeys,
   classifyLastWatered,
   diffDayKeys,
+  getDailyWateringCounts,
   getDaysSinceLastWatering,
+  getHeatmapLevel,
   getLastWatering,
   toLocalDateKey,
 } from '@/src/features/watering/wateringHeatmap';
@@ -175,5 +178,63 @@ describe('classifyLastWatered', () => {
   });
   test('366 → overYear', () => {
     expect(classifyLastWatered(366)).toBe('overYear');
+  });
+});
+
+describe('getDailyWateringCounts (Phase B)', () => {
+  test('空配列 → 空 Map', () => {
+    expect(getDailyWateringCounts([], JST).size).toBe(0);
+  });
+
+  test('watering / logged のみカウント', () => {
+    const events = [
+      makeEvent({ id: 'a', occurredAtUtc: '2026-05-03T01:00:00.000Z' }),
+      makeEvent({ id: 'b', type: 'pruning', occurredAtUtc: '2026-05-03T02:00:00.000Z' }),
+      makeEvent({ id: 'c', status: 'planned', occurredAtUtc: '2026-05-03T03:00:00.000Z' }),
+      makeEvent({ id: 'd', deletedAt: '2026-05-03T04:00:00.000Z' }),
+    ];
+    const counts = getDailyWateringCounts(events, JST);
+    expect(counts.size).toBe(1);
+    expect(counts.get('2026-05-03')).toBe(1);
+  });
+
+  test('同日複数回はカウント加算', () => {
+    const events = [
+      makeEvent({ id: 'a', occurredAtUtc: '2026-05-03T00:00:00.000Z' }),
+      makeEvent({ id: 'b', occurredAtUtc: '2026-05-03T05:00:00.000Z' }),
+      makeEvent({ id: 'c', occurredAtUtc: '2026-05-03T10:00:00.000Z' }),
+    ];
+    expect(getDailyWateringCounts(events, JST).get('2026-05-03')).toBe(3);
+  });
+});
+
+describe('getHeatmapLevel (Phase B)', () => {
+  test('0 → L0', () => expect(getHeatmapLevel(0)).toBe('L0'));
+  test('1 → L1', () => expect(getHeatmapLevel(1)).toBe('L1'));
+  test('2 → L2', () => expect(getHeatmapLevel(2)).toBe('L2'));
+  test('3 → L3', () => expect(getHeatmapLevel(3)).toBe('L3'));
+  test('10 → L3', () => expect(getHeatmapLevel(10)).toBe('L3'));
+  test('負値 → L0', () => expect(getHeatmapLevel(-1)).toBe('L0'));
+});
+
+describe('buildHeatmapDateKeys (Phase B)', () => {
+  test('today + 3 days', () => {
+    expect(buildHeatmapDateKeys('2026-05-03', 3)).toEqual([
+      '2026-05-03',
+      '2026-05-02',
+      '2026-05-01',
+    ]);
+  });
+
+  test('months crossing', () => {
+    expect(buildHeatmapDateKeys('2026-05-01', 3)).toEqual([
+      '2026-05-01',
+      '2026-04-30',
+      '2026-04-29',
+    ]);
+  });
+
+  test('84 days = 12 weeks', () => {
+    expect(buildHeatmapDateKeys('2026-05-03', 84).length).toBe(84);
   });
 });

@@ -33,6 +33,7 @@ import {
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
 import { LastWateredText } from '@/src/features/watering/LastWateredText';
+import { WateringHeatmap } from '@/src/features/watering/WateringHeatmap';
 import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 import {
   classifyWiringDuration,
@@ -229,10 +230,15 @@ export default function BonsaiDetailScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ThemedText type="title">{item.name}</ThemedText>
 
-        {/* F-04 Phase A: 「最後の水やりから X 日」テキスト (ADR-0013) */}
+        {/* F-04 Phase A/B: 「最後の水やりから X 日」+ 過去 12 週ヒートマップ (ADR-0013) */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold">{t('wateringSectionTitle')}</ThemedText>
           <LastWateredText daysSinceLast={daysSinceLastWatering} />
+          <WateringHeatmap
+            events={events}
+            todayLocalKey={toLocalDateKey(nowUtc() as string, getTzOffsetMin())}
+            tzOffsetMin={getTzOffsetMin()}
+          />
         </View>
 
         {item.species && (

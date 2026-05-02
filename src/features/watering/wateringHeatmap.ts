@@ -128,3 +128,58 @@ export function classifyLastWatered(daysSinceLast: number | null): LastWateredKi
   if (daysSinceLast <= 365) return 'manyDays';
   return 'overYear';
 }
+
+/**
+ * Phase B: events 配列から「日別水やり回数 (count)」マップを返す純関数。
+ *
+ * - kind='watering' / status='logged' / deletedAt=null のみカウント。
+ * - 同日に複数回水やった場合はカウント加算 (= count >= 2)。
+ * - キーは toLocalDateKey で算出した YYYY-MM-DD (ユーザー TZ ベース)。
+ */
+export function getDailyWateringCounts(
+  events: readonly Event[],
+  tzOffsetMin: number,
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const event of events) {
+    if (event.type !== 'watering') continue;
+    if (event.status !== 'logged') continue;
+    if (event.deletedAt != null) continue;
+    const key = toLocalDateKey(event.occurredAtUtc, tzOffsetMin);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return counts;
+}
+
+/**
+ * Phase B: 配色レベル (L0-L3) を返す純関数 (ColorBrewer Greens 4-class、color-blind safe)。
+ *
+ * - 0 → 'L0' (空) / 1 → 'L1' / 2 → 'L2' / 3+ → 'L3'
+ * 配色値の RGB マッピングは WateringHeatmap.tsx 側で行う。
+ */
+export type WateringHeatmapLevel = 'L0' | 'L1' | 'L2' | 'L3';
+
+export function getHeatmapLevel(count: number): WateringHeatmapLevel {
+  if (count <= 0) return 'L0';
+  if (count === 1) return 'L1';
+  if (count === 2) return 'L2';
+  return 'L3';
+}
+
+/**
+ * Phase B: today から 過去 N 日分の YYYY-MM-DD キー配列を返す (新しい順 = today が index 0)。
+ */
+export function buildHeatmapDateKeys(todayLocalKey: string, days: number): string[] {
+  const keys: string[] = [];
+  const todayUtc = Date.UTC(
+    Number(todayLocalKey.slice(0, 4)),
+    Number(todayLocalKey.slice(5, 7)) - 1,
+    Number(todayLocalKey.slice(8, 10)),
+  );
+  for (let i = 0; i < days; i++) {
+    const ms = todayUtc - i * 86_400_000;
+    const d = new Date(ms);
+    keys.push(d.toISOString().slice(0, 10));
+  }
+  return keys;
+}

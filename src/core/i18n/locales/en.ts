@@ -239,6 +239,13 @@ const baseEn = {
   wateringLastManyDays: '{days} days since last watering',
   wateringLastOverYear: 'Over a year since last watering',
 
+  // --- F-04 Watering heatmap (Phase B simple View grid, Issue #29, ADR-0013) ---
+  wateringHeatmapLegendLabel: 'Watering counts (last 12 weeks)',
+  wateringHeatmapLegend0: '0',
+  wateringHeatmapLegend1: '1',
+  wateringHeatmapLegend2: '2',
+  wateringHeatmapLegend3: '3+',
+
   // --- F-07 Wiring duration in-app display (Phase B, Issue #24, ADR-0014) ---
   wiringDurationWithinWeeks: 'Wire on for {weeks} weeks',
   wiringDurationOverdueLabel: 'Wire on for {weeks} weeks (overdue)',
