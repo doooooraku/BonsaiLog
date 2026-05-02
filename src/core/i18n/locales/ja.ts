@@ -244,6 +244,13 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastManyDays: '最後の水やりから {days} 日',
   wateringLastOverYear: '最後の水やりから 1 年以上',
 
+  // --- F-13 Paywall 機能比較表 (Phase 1c、Issue #20、ADR-0009) ---
+  proComparisonTitle: 'Pro でできること',
+  proComparisonPhotos: '盆栽 1 鉢あたりの写真が無制限',
+  proComparisonCsv: '作業ログを CSV で出力',
+  proComparisonPdf: '盆栽記録を PDF で出力',
+  proComparisonNoAds: '広告非表示',
+
   // --- F-09 タグ管理 (Phase C、Issue #31、ADR-0008 改訂) ---
   tagsManagerTitle: 'タグを管理',
   tagsManagerDesc: 'タグを付けると作業ログを整理でき、検索からもすぐ見つけられます。',

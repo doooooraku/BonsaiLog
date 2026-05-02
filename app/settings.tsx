@@ -165,9 +165,16 @@ export default function SettingsScreen() {
             style={styles.entry}
             onPress={() => router.push('/pro' as Href)}
           >
-            <ThemedText type="defaultSemiBold">
-              {isPro ? t('settingsAccountProActive') : t('proTitle')}
-            </ThemedText>
+            <View style={styles.proRow}>
+              <ThemedText type="defaultSemiBold" style={styles.proRowLabel}>
+                {isPro ? t('settingsAccountProActive') : t('proTitle')}
+              </ThemedText>
+              {isPro && (
+                <View style={styles.proBadge} testID="e2e_settings_pro_badge">
+                  <ThemedText style={styles.proBadgeText}>{t('proBadgeShort')}</ThemedText>
+                </View>
+              )}
+            </View>
             <ThemedText style={styles.entryDesc}>
               {isPro ? t('settingsAccountProActiveDesc') : t('settingsAccountProInactiveDesc')}
             </ThemedText>
@@ -379,4 +386,13 @@ const styles = StyleSheet.create({
     borderColor: '#2E7D32',
   },
   themeChipTextSelected: { color: '#FFFFFF' },
+  proRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  proRowLabel: { flex: 1 },
+  proBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    backgroundColor: '#2E7D32',
+  },
+  proBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
 });

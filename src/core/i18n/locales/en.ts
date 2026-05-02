@@ -239,6 +239,13 @@ const baseEn = {
   wateringLastManyDays: '{days} days since last watering',
   wateringLastOverYear: 'Over a year since last watering',
 
+  // --- F-13 Paywall comparison table (Phase 1c, Issue #20, ADR-0009) ---
+  proComparisonTitle: 'What you get with Pro',
+  proComparisonPhotos: 'Unlimited photos per bonsai',
+  proComparisonCsv: 'Export care logs to CSV',
+  proComparisonPdf: 'Export bonsai records to PDF',
+  proComparisonNoAds: 'No ads',
+
   // --- F-09 Tags manager (Phase C, Issue #31, ADR-0008 改訂) ---
   tagsManagerTitle: 'Manage tags',
   tagsManagerDesc: 'Tags help you organize care logs and find them in search.',
