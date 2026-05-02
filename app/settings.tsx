@@ -148,6 +148,16 @@ export default function SettingsScreen() {
             <ThemedText type="defaultSemiBold">{t('exportCsvTitle')}</ThemedText>
             <ThemedText style={styles.entryDesc}>{t('exportCsvDesc')}</ThemedText>
           </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('exportPdfTitle')}
+            testID="e2e_open_export_pdf"
+            style={styles.entry}
+            onPress={() => router.push('/export/pdf' as Href)}
+          >
+            <ThemedText type="defaultSemiBold">{t('exportPdfTitle')}</ThemedText>
+            <ThemedText style={styles.entryDesc}>{t('exportPdfDesc')}</ThemedText>
+          </Pressable>
         </View>
 
         {/* --- F-09 検索 (Issue #31、ADR-0008 改訂) --- */}
