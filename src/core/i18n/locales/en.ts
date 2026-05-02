@@ -195,6 +195,11 @@ const baseEn = {
   backupEncryptionWarning:
     'Backups are not encrypted. When you save them to a cloud service, please keep them in a secure folder under your control.',
 
+  // --- F-07 Wiring duration (Phase A: pure function output strings, ADR-0011) ---
+  // Future use: notification body when wiring exceeds the threshold (no instructive language).
+  wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
+  wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
+
   // --- F-10 Export Phase A (events CSV, Pro-only, ADR-0016) ---
   settingsExportSection: 'Export',
   exportCsvTitle: 'Export care logs to CSV',
