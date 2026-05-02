@@ -18,12 +18,14 @@
  *
  * SCHEMA_VERSION 履歴:
  * - v1: template items/attachments (Issue #14 で削除、本番ユーザー 0)
- * - v2: bonsai + species + species_names (本 PR で導入、F-01 foundation)
+ * - v2: bonsai + species + species_names (F-01 foundation、PR #46)
+ * - v3: photos (F-08 foundation、PR #49)
+ * - v4: events + tags + event_tags + events_fts (F-02 foundation、本 PR-B)
  */
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -152,6 +154,113 @@ export const photosRelations = relations(photos, ({ one }) => ({
 }));
 
 // ---------------------------------------------------------------------------
+// F-02 events (P2-03 PR-B、ADR-0008 STI 準拠)
+// ---------------------------------------------------------------------------
+
+/**
+ * 作業イベント (events) - F-02 foundation。
+ *
+ * STI (Single Table Inheritance) 設計:
+ * - 共通列: id / bonsai_id / type / status / occurred_at_utc / tz_offset_min / tz_iana / duration_min / note
+ * - 種別固有: payload_json (Valibot Discriminated Union で型安全、PR-C で実装)
+ * - 30 日ゴミ箱: deleted_at セット → 起動時に 30 日経過分を物理削除 (PR-C)
+ *
+ * 16 種別 (basic_spec.md §F-02 + ADR-0011):
+ * watering / pruning / wiring / unwiring / repotting / fertilizing / pest_control /
+ * leaf_trimming / defoliation / deshoot / candle_cut / moss_care / position_change
+ *
+ * 注: status='planned' は未来日許容、'logged' は過去日のみ (CHECK 制約)
+ */
+export const events = sqliteTable(
+  'events',
+  {
+    id: text('id').primaryKey().notNull(), // ULID (時系列ソート可)
+    bonsaiId: text('bonsai_id')
+      .notNull()
+      .references(() => bonsai.id, { onDelete: 'cascade' }),
+    type: text('type').notNull(), // EVENT_TYPES enum
+    status: text('status').notNull().default('logged'), // planned / logged / cancelled
+    occurredAtUtc: text('occurred_at_utc').notNull(), // ISO 8601 UTC
+    tzOffsetMin: integer('tz_offset_min').notNull(), // JST=+540, PST=-480
+    tzIana: text('tz_iana').notNull(), // "Asia/Tokyo" 等、DST 対応
+    durationMin: integer('duration_min'),
+    payloadJson: text('payload_json'), // Valibot validated JSON (PR-C で型付け)
+    note: text('note'), // 自由記述、最大 2000 文字 (UI で enforce)、FTS5 対象
+    deletedAt: text('deleted_at'), // 30 日ゴミ箱、partial index で除外
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => ({
+    activeIdx: index('idx_events_active').on(table.bonsaiId, table.occurredAtUtc),
+    statusIdx: index('idx_events_status').on(table.status, table.occurredAtUtc),
+    typeIdx: index('idx_events_type').on(table.type, table.bonsaiId),
+  }),
+);
+
+/**
+ * タグマスタ (M:N for events、F-09 検索・タグの基盤、ADR-0008 改訂)。
+ * name は重複可、name_normalized で case-insensitive 一意性確保 (PR-C で UNIQUE 制約)。
+ */
+export const tags = sqliteTable(
+  'tags',
+  {
+    id: text('id').primaryKey().notNull(), // ULID
+    name: text('name').notNull(),
+    nameNormalized: text('name_normalized').notNull().unique(), // lowercase / trim / normalize
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => ({
+    normalizedIdx: index('idx_tags_normalized').on(table.nameNormalized),
+  }),
+);
+
+/**
+ * events ⇄ tags 中間テーブル (M:N)。
+ */
+export const eventTags = sqliteTable(
+  'event_tags',
+  {
+    eventId: text('event_id')
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    tagId: text('tag_id')
+      .notNull()
+      .references(() => tags.id, { onDelete: 'cascade' }),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.eventId, table.tagId] }),
+    tagIdIdx: index('idx_event_tags_tag_id').on(table.tagId),
+  }),
+);
+
+// ---------------------------------------------------------------------------
+// events relations
+// ---------------------------------------------------------------------------
+
+export const eventsRelations = relations(events, ({ one, many }) => ({
+  bonsai: one(bonsai, {
+    fields: [events.bonsaiId],
+    references: [bonsai.id],
+  }),
+  tags: many(eventTags),
+}));
+
+export const tagsRelations = relations(tags, ({ many }) => ({
+  events: many(eventTags),
+}));
+
+export const eventTagsRelations = relations(eventTags, ({ one }) => ({
+  event: one(events, {
+    fields: [eventTags.eventId],
+    references: [events.id],
+  }),
+  tag: one(tags, {
+    fields: [eventTags.tagId],
+    references: [tags.id],
+  }),
+}));
+
+// ---------------------------------------------------------------------------
 // Raw SQL DDL (db.ts migration runner で使用)
 // ---------------------------------------------------------------------------
 
@@ -245,6 +354,88 @@ CREATE INDEX IF NOT EXISTS idx_photos_is_cover ON photos(bonsai_id, is_cover);
 CREATE INDEX IF NOT EXISTS idx_photos_taken_at ON photos(taken_at);
 `;
 
+/**
+ * Migration v4: events + tags + event_tags + events_fts (F-02 foundation、ADR-0008 STI)。
+ *
+ * - events: STI 16 種別、status (planned/logged/cancelled)、30 日ゴミ箱 (deleted_at)
+ * - tags: M:N、name_normalized で case-insensitive 一意性
+ * - event_tags: 中間テーブル (M:N)
+ * - events_fts: FTS5 trigram、note + payload 検索 (PR-C で trigger 配線、本 PR では table のみ)
+ *
+ * CHECK 制約:
+ * - status は (planned, logged, cancelled) のいずれか
+ * - planned 以外は occurred_at_utc が現在以下 (DB レベルで強制、テストは PR-C)
+ *
+ * partial index:
+ * - WHERE deleted_at IS NULL でゴミ箱以外を高速化
+ */
+export const schemaV4 = `
+PRAGMA foreign_keys = ON;
+
+-- ---------------------------------------------------------------------------
+-- events (作業履歴、STI)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS events (
+  id TEXT PRIMARY KEY NOT NULL,
+  bonsai_id TEXT NOT NULL,
+  type TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'logged',
+  occurred_at_utc TEXT NOT NULL,
+  tz_offset_min INTEGER NOT NULL,
+  tz_iana TEXT NOT NULL,
+  duration_min INTEGER,
+  payload_json TEXT,
+  note TEXT,
+  deleted_at TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  CHECK (status IN ('planned', 'logged', 'cancelled')),
+  FOREIGN KEY (bonsai_id) REFERENCES bonsai(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_active ON events(bonsai_id, occurred_at_utc) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_events_status ON events(status, occurred_at_utc) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_events_type ON events(type, bonsai_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_events_deleted_at ON events(deleted_at) WHERE deleted_at IS NOT NULL;
+
+-- ---------------------------------------------------------------------------
+-- tags (M:N、F-09 検索・タグ基盤)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS tags (
+  id TEXT PRIMARY KEY NOT NULL,
+  name TEXT NOT NULL,
+  name_normalized TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_tags_normalized ON tags(name_normalized);
+
+-- ---------------------------------------------------------------------------
+-- event_tags (events ⇄ tags の中間)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS event_tags (
+  event_id TEXT NOT NULL,
+  tag_id TEXT NOT NULL,
+  PRIMARY KEY (event_id, tag_id),
+  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+  FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_event_tags_tag_id ON event_tags(tag_id);
+
+-- ---------------------------------------------------------------------------
+-- events_fts (FTS5 trigram、note + payload を検索対象)
+-- ---------------------------------------------------------------------------
+-- note: external content table、PR-C で INSERT/UPDATE/DELETE trigger を配線
+CREATE VIRTUAL TABLE IF NOT EXISTS events_fts USING fts5(
+  event_id UNINDEXED,
+  bonsai_id UNINDEXED,
+  note,
+  payload_text,
+  tokenize = "trigram"
+);
+`;
+
 // ---------------------------------------------------------------------------
 // TypeScript types (Drizzle inferSelect / inferInsert は PR-C Repository で使用)
 // ---------------------------------------------------------------------------
@@ -257,6 +448,38 @@ export type Bonsai = typeof bonsai.$inferSelect;
 export type BonsaiInsert = typeof bonsai.$inferInsert;
 export type Photo = typeof photos.$inferSelect;
 export type PhotoInsert = typeof photos.$inferInsert;
+export type Event = typeof events.$inferSelect;
+export type EventInsert = typeof events.$inferInsert;
+export type Tag = typeof tags.$inferSelect;
+export type TagInsert = typeof tags.$inferInsert;
+export type EventTag = typeof eventTags.$inferSelect;
+
+/**
+ * 16 種別の作業イベント (constraints.md §8 + basic_spec.md §F-02、ADR-0011 で F-03 削除済)
+ */
+export const EVENT_TYPES = [
+  'watering', // 水やり
+  'pruning', // 剪定
+  'wiring', // 針金がけ
+  'unwiring', // 針金外し
+  'repotting', // 植替え
+  'fertilizing', // 施肥
+  'pest_control', // 防除・消毒
+  'leaf_trimming', // 葉刈り
+  'defoliation', // 葉抜き
+  'deshoot', // 芽摘み
+  'candle_cut', // 芽切り (松類)
+  'moss_care', // 苔の手入れ
+  'position_change', // 配置変更
+] as const;
+
+export type EventType = (typeof EVENT_TYPES)[number];
+
+/**
+ * イベントステータス (ADR-0008、Things 3 / Apple Reminders ライク)
+ */
+export const EVENT_STATUSES = ['planned', 'logged', 'cancelled'] as const;
+export type EventStatus = (typeof EVENT_STATUSES)[number];
 
 /**
  * 樹形スタイル (Issue #14 で予定、UI 側で enum 化)
