@@ -12,7 +12,7 @@
  * - 押し付けがましい文言禁止 (constraints §5-2)
  * - 検索結果 0 件は空メッセージで穏やかに
  */
-import { useRouter, type Href } from 'expo-router';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
@@ -21,6 +21,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { searchBonsaiByName } from '@/src/db/bonsaiRepository';
 import { searchEvents } from '@/src/db/eventRepository';
+import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
 import type { Bonsai, Event } from '@/src/db/schema';
 
 export default function SearchScreen() {
@@ -31,9 +32,19 @@ export default function SearchScreen() {
   const [eventResults, setEventResults] = useState<Event[]>([]);
   const [searched, setSearched] = useState(false);
   const [busy, setBusy] = useState(false);
+  // F-09 Phase B (Issue #31, ADR-0008 改訂): 最近 3 タグ候補チップ
+  const [recentTags, setRecentTags] = useState<TagRecord[]>([]);
 
-  const runSearch = async () => {
-    const trimmed = query.trim();
+  useFocusEffect(
+    React.useCallback(() => {
+      getRecentTags(3)
+        .then(setRecentTags)
+        .catch(() => setRecentTags([]));
+    }, []),
+  );
+
+  const runSearchWith = async (raw: string) => {
+    const trimmed = raw.trim();
     if (!trimmed) {
       setBonsaiResults([]);
       setEventResults([]);
@@ -53,6 +64,8 @@ export default function SearchScreen() {
       setBusy(false);
     }
   };
+
+  const runSearch = () => runSearchWith(query);
 
   return (
     <ThemedView style={styles.container} testID="e2e_search_screen">
@@ -82,6 +95,29 @@ export default function SearchScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
+        {recentTags.length > 0 && !searched && (
+          <View style={styles.tagsRow} testID="e2e_search_recent_tags">
+            <ThemedText style={styles.recentTagsLabel}>{t('searchRecentTagsLabel')}</ThemedText>
+            <View style={styles.tagsChipRow}>
+              {recentTags.map((tg) => (
+                <Pressable
+                  key={tg.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={tg.name}
+                  testID={`e2e_search_tag_chip_${tg.id}`}
+                  style={styles.tagChip}
+                  onPress={() => {
+                    setQuery(tg.name);
+                    void runSearchWith(tg.name);
+                  }}
+                >
+                  <ThemedText style={styles.tagChipText}>{tg.name}</ThemedText>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
+
         {searched && bonsaiResults.length === 0 && eventResults.length === 0 && (
           <ThemedText style={styles.empty}>{t('searchEmpty')}</ThemedText>
         )}
@@ -177,4 +213,16 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
+  tagsRow: { gap: 8 },
+  recentTagsLabel: { fontSize: 12, opacity: 0.7 },
+  tagsChipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  tagChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#2E7D32',
+    backgroundColor: '#F1F8F2',
+  },
+  tagChipText: { fontSize: 13, color: '#2E7D32', fontWeight: '500' },
 });
