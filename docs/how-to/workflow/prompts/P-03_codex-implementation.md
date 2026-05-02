@@ -12,7 +12,7 @@
 
 Openになっている以下リポジトリのIssueに対して
 内容を確認して実装のほう進めてください。
-調査してもわからない点、ないしは決めてほしい点ある際は
+調査してもわからない点、ないしは僕(人間)に決めてほしい点ある際は
 背景を基に僕が判断しやすいような情報を提供してください。
 
 ■リポジトリ
@@ -29,7 +29,7 @@ Openになっている以下リポジトリのIssueに対して
 - [ ] `pnpm verify` が全パス（lint + type-check + test + i18n:check + config:check）
 - [ ] 新規翻訳キーがある場合、全対応言語に追加済み
 
-### 読むべきファイル（絶対パス）
+### 読むべきファイル
 
 #### 必須（実装前に必ず読むこと）
 
@@ -41,6 +41,7 @@ Openになっている以下リポジトリのIssueに対して
 | `/docs/how-to/workflow/whole_workflow.md` W-06〜W-10 | 実装→PR の進め方                        |
 | `/docs/how-to/development/coding_rules.md`           | フォルダ構造・命名・TS ルール           |
 | `/docs/reference/tasks/lessons.md`                   | 過去の失敗パターン                      |
+| `https://github.com/doooooraku/BonsaiLog`            | Issue/PR など                           |
 
 #### 関連ファイル（この機能に関連する既存コード）
 
