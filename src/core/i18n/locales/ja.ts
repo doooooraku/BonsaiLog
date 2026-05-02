@@ -244,6 +244,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastManyDays: '最後の水やりから {days} 日',
   wateringLastOverYear: '最後の水やりから 1 年以上',
 
+  // --- F-13 設定 → アカウント / Paywall 導線 (Phase 1b、Issue #20、ADR-0009) ---
+  settingsAccountSection: 'アカウント',
+  settingsAccountProActive: 'Pro メンバー',
+  settingsAccountProActiveDesc: 'ここからサブスクリプションを管理できます。',
+  settingsAccountProInactiveDesc: 'プランを見てアップグレード。',
+
   // --- F-04 水やりヒートマップ (Phase B 簡易グリッド、Issue #29、ADR-0013) ---
   wateringHeatmapLegendLabel: '水やり回数 (過去 12 週)',
   wateringHeatmapLegend0: '0',
