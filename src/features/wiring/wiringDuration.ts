@@ -60,3 +60,19 @@ export function classifyWiringDuration(
 ): WiringDurationKind {
   return daysSinceWired >= thresholdDays ? 'overdue' : 'within';
 }
+
+/**
+ * 経過日数を「週単位 (切り捨て)」に変換する純関数。
+ *
+ * UI 層 (盆栽詳細画面 → 針金 event 行) で「装着期間: X 週」表示に使う。
+ * Phase B (Issue #24): ADR-0014 で F-07 装着期間経過通知を削除し、アプリ内事実表示に変更したため。
+ *
+ * @example getWeeksSinceWired(0) === 0
+ * @example getWeeksSinceWired(6) === 0  // 1 週未満
+ * @example getWeeksSinceWired(7) === 1
+ * @example getWeeksSinceWired(42) === 6 // しきい値ちょうど
+ */
+export function getWeeksSinceWired(daysSinceWired: number): number {
+  if (daysSinceWired < 0) return 0;
+  return Math.floor(daysSinceWired / 7);
+}

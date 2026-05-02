@@ -241,6 +241,10 @@ const es: Partial<Record<TranslationKey, string>> = {
   wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
+  // --- F-07 Wiring duration in-app display (Phase B、English fallback) ---
+  wiringDurationWithinWeeks: 'Wire on for {weeks} weeks',
+  wiringDurationOverdueLabel: 'Wire on for {weeks} weeks (overdue)',
+
   // --- F-LEGAL-001 Ad privacy (Phase A、English fallback) ---
   settingsAdPrivacySection: 'Ad privacy',
   settingsAdPrivacyOptionsTitle: 'Ad privacy settings',
