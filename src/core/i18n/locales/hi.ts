@@ -212,5 +212,14 @@ const hi: Partial<Record<TranslationKey, string>> = {
   settingsThemeSystem: 'System',
   settingsThemeLight: 'Light',
   settingsThemeDark: 'Dark',
+
+  // --- F-09 Search (Phase A、English fallback) ---
+  settingsSearchSection: 'Search',
+  searchAction: 'Search',
+  searchDesc: 'Search bonsai by name and care logs by note text.',
+  searchPlaceholder: 'Search...',
+  searchEmpty: 'No results found.',
+  searchBonsaiSection: 'Bonsai',
+  searchEventSection: 'Care logs',
 };
 export default hi;

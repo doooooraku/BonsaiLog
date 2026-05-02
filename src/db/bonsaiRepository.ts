@@ -215,6 +215,26 @@ export async function deleteBonsaiHard(id: string): Promise<void> {
   await db.runAsync('DELETE FROM bonsai WHERE id = ?;', [id]);
 }
 
+/**
+ * F-09 Phase A: 盆栽名による LIKE 検索 (Issue #31、ADR-0008 改訂)。
+ * archived_at IS NULL のアクティブ盆栽のみ対象。Phase B で FTS5 trigram + tags M:N に拡張予定。
+ *
+ * @param query 検索クエリ (前後の空白除去、空文字なら空配列)
+ * @param limit 最大件数 (デフォルト 50)
+ */
+export async function searchBonsaiByName(query: string, limit = 50): Promise<Bonsai[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  const db = await getDb();
+  // LIKE のメタ文字 (% _ \) をエスケープ。日本語の case-insensitive は Phase B (name_normalized) で改善。
+  const escaped = trimmed.replace(/[\\%_]/g, (c) => '\\' + c);
+  const like = `%${escaped}%`;
+  return db.getAllAsync<Bonsai>(
+    "SELECT * FROM bonsai WHERE name LIKE ? ESCAPE '\\' AND archived_at IS NULL ORDER BY name LIMIT ?;",
+    [like, limit],
+  );
+}
+
 // ---------------------------------------------------------------------------
 // JSON helper (pot_info のパース、UI で使用)
 // ---------------------------------------------------------------------------

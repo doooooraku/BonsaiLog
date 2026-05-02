@@ -195,6 +195,15 @@ const baseEn = {
   backupEncryptionWarning:
     'Backups are not encrypted. When you save them to a cloud service, please keep them in a secure folder under your control.',
 
+  // --- F-09 Search (Phase A: bonsai name LIKE + events FTS5, ADR-0008 改訂) ---
+  settingsSearchSection: 'Search',
+  searchAction: 'Search',
+  searchDesc: 'Search bonsai by name and care logs by note text.',
+  searchPlaceholder: 'Search...',
+  searchEmpty: 'No results found.',
+  searchBonsaiSection: 'Bonsai',
+  searchEventSection: 'Care logs',
+
   // --- F-15 Theme settings (Phase A: system/light/dark, ADR-0015) ---
   settingsThemeSection: 'Appearance',
   settingsThemeSystem: 'System',

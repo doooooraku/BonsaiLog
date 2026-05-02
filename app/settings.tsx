@@ -95,6 +95,23 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* --- F-09 検索 (Issue #31、ADR-0008 改訂) --- */}
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+            {t('settingsSearchSection')}
+          </ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('searchAction')}
+            testID="e2e_open_search"
+            style={styles.entry}
+            onPress={() => router.push('/search' as Href)}
+          >
+            <ThemedText type="defaultSemiBold">{t('searchAction')}</ThemedText>
+            <ThemedText style={styles.entryDesc}>{t('searchDesc')}</ThemedText>
+          </Pressable>
+        </View>
+
         {/* --- F-11 お引っ越し --- */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
