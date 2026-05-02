@@ -39,6 +39,23 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bonsaiStyle_kabudachi: '株立ち',
   bonsaiStyle_ishitsuki: '石付き',
 
+  // --- F-08 Photos (P2-02 PR-C) ---
+  bonsaiFieldPhotos: '写真',
+  photoAddCta: '写真を追加',
+  photoAddTitle: '写真を追加',
+  photoAddCamera: 'カメラで撮影',
+  photoAddLibrary: 'ライブラリから選ぶ',
+  photoEmpty: 'まだ写真がありません。',
+  photoLimitTitle: 'Free プランの上限です',
+  photoLimitDesc: 'Free プランは盆栽 1 つにつき {count} 枚まで。Pro にすると無制限になります。',
+  photoPermissionTitle: '許可が必要です',
+  photoPermissionDesc: '設定からカメラと写真の利用を許可してください。',
+  photoActionTitle: '写真の操作',
+  photoActionSetCover: 'カバー写真にする',
+  photoActionDelete: '写真を削除',
+  photoDeleteConfirmTitle: 'この写真を削除しますか?',
+  photoDeleteConfirmDesc: 'この操作は取り消せません。',
+
   // --- Settings ---
   settings: '設定',
   language: '言語',

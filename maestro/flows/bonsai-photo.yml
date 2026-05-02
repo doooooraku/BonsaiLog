@@ -1,0 +1,43 @@
+# maestro/flows/bonsai-photo.yml
+# F-08 写真追加 + 削除動線 (P2-02 PR-C)
+# 注: カメラ・ライブラリの実機権限は Maestro 単体で完結しないため optional 中心。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'F-08 - photo add/delete flow'
+tags:
+  - foundation
+  - f-08
+
+steps:
+  - launchApp:
+      label: 'アプリ起動 (DB は前のテストから再利用、写真ゼロ想定)'
+
+  - tapOn:
+      text: '盆栽'
+      label: '盆栽タブをタップ'
+
+  - tapOn:
+      index: 0
+      label: '一覧の先頭の盆栽をタップ'
+      optional: true
+
+  - assertVisible:
+      text: '写真'
+      label: '写真セクションが表示されることを確認'
+
+  - assertVisible:
+      text: 'まだ写真がありません。'
+      optional: true
+      label: '空状態メッセージ確認 (写真なしの場合)'
+
+  - tapOn:
+      text: '+ 写真を追加'
+      label: '写真追加ボタンをタップ'
+
+  - assertVisible:
+      text: '写真を追加'
+      label: '追加メニューが表示されることを確認'
+
+  - tapOn:
+      text: 'キャンセル'
+      label: 'キャンセルでメニューを閉じる'

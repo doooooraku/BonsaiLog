@@ -108,6 +108,24 @@ const vi: Partial<Record<TranslationKey, string>> = {
   bonsaiStyle_sokan: 'Twin-trunk (sokan)',
   bonsaiStyle_kabudachi: 'Multi-trunk (kabudachi)',
   bonsaiStyle_ishitsuki: 'On rock (ishitsuki)',
+
+  // --- F-08 Photos (P2-02 PR-C, English fallback for v1.0) ---
+  bonsaiFieldPhotos: 'Photos',
+  photoAddCta: 'Add photo',
+  photoAddTitle: 'Add a photo',
+  photoAddCamera: 'Take a photo',
+  photoAddLibrary: 'Choose from library',
+  photoEmpty: 'No photos yet.',
+  photoLimitTitle: 'Free limit reached',
+  photoLimitDesc:
+    'Free plan allows {count} photos per bonsai. Upgrade to Pro for unlimited photos.',
+  photoPermissionTitle: 'Permission needed',
+  photoPermissionDesc: 'Please allow camera and photo library access in Settings.',
+  photoActionTitle: 'Photo actions',
+  photoActionSetCover: 'Set as cover photo',
+  photoActionDelete: 'Delete photo',
+  photoDeleteConfirmTitle: 'Delete this photo?',
+  photoDeleteConfirmDesc: 'This action cannot be undone.',
 };
 
 export default vi;

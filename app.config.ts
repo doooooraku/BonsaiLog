@@ -128,6 +128,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   plugins = ensurePlugin(plugins, 'expo-sqlite');
   plugins = ensurePlugin(plugins, 'expo-web-browser');
 
+  plugins = ensurePlugin(plugins, 'expo-image-picker', {
+    cameraPermission: 'BonsaiLog uses your camera to take photos of your bonsai.',
+    photosPermission:
+      'BonsaiLog accesses your photo library so you can attach existing photos to your bonsai.',
+    microphonePermission: false,
+  });
+
   plugins = ensurePlugin(plugins, 'react-native-google-mobile-ads', {
     androidAppId: admobAndroidAppId,
     iosAppId: admobIosAppId,
