@@ -56,6 +56,27 @@ const ja: Partial<Record<TranslationKey, string>> = {
   photoDeleteConfirmTitle: 'この写真を削除しますか?',
   photoDeleteConfirmDesc: 'この操作は取り消せません。',
 
+  // --- F-02 Events (P2-03 PR-D) ---
+  eventsTitle: '作業履歴',
+  eventLogCta: '作業を記録',
+  eventTypePickerDesc: '何をしましたか?',
+  eventEmpty: 'まだ記録がありません。',
+  eventDeleteConfirmTitle: 'この記録をゴミ箱に移しますか?',
+  eventDeleteConfirmDesc: 'ゴミ箱の記録は 30 日後に自動的に削除されます。',
+  eventType_watering: '水やり',
+  eventType_pruning: '剪定',
+  eventType_wiring: '針金がけ',
+  eventType_unwiring: '針金外し',
+  eventType_repotting: '植替え',
+  eventType_fertilizing: '施肥',
+  eventType_pest_control: '防除・消毒',
+  eventType_leaf_trimming: '葉刈り',
+  eventType_defoliation: '葉抜き',
+  eventType_deshoot: '芽摘み',
+  eventType_candle_cut: '芽切り',
+  eventType_moss_care: '苔の手入れ',
+  eventType_position_change: '配置変更',
+
   // --- Settings ---
   settings: '設定',
   language: '言語',

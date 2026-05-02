@@ -23,6 +23,8 @@ import {
   setCoverPhoto,
   type PhotoRead,
 } from '@/src/db/photoRepository';
+import { createEvent, getActiveEventsByBonsai, softDeleteEvent } from '@/src/db/eventRepository';
+import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
 import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
 
 /**
@@ -40,6 +42,7 @@ export default function BonsaiDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [photoGroups, setPhotoGroups] = useState<{ year: number; photos: PhotoRead[] }[]>([]);
   const [photoCount, setPhotoCount] = useState(0);
+  const [events, setEvents] = useState<Event[]>([]);
 
   const reload = useCallback(async () => {
     if (!id) return;
@@ -50,6 +53,8 @@ export default function BonsaiDetailScreen() {
       const groups = await getPhotosByBonsaiGroupedByYear(id);
       setPhotoGroups(groups);
       setPhotoCount(groups.reduce((sum, g) => sum + g.photos.length, 0));
+      const evs = await getActiveEventsByBonsai(id);
+      setEvents(evs);
     } finally {
       setLoading(false);
     }
@@ -272,6 +277,46 @@ export default function BonsaiDetailScreen() {
         </View>
 
         <View style={styles.section}>
+          <ThemedText type="defaultSemiBold">{t('eventsTitle')}</ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('eventLogCta')}
+            style={styles.eventAddBtn}
+            onPress={() => showEventTypePicker()}
+          >
+            <ThemedText style={styles.eventAddText}>+ {t('eventLogCta')}</ThemedText>
+          </Pressable>
+
+          {events.length === 0 && (
+            <ThemedText style={styles.emptyPhotos}>{t('eventEmpty')}</ThemedText>
+          )}
+
+          {events.slice(0, 50).map((ev) => (
+            <Pressable
+              key={ev.id}
+              style={styles.eventRow}
+              accessibilityRole="button"
+              accessibilityLabel={t(`eventType_${ev.type}` as TranslationKey)}
+              onLongPress={() => confirmDeleteEvent(ev)}
+            >
+              <View style={styles.eventRowMain}>
+                <ThemedText type="defaultSemiBold">
+                  {t(`eventType_${ev.type}` as TranslationKey)}
+                </ThemedText>
+                <ThemedText style={styles.eventRowDate}>
+                  {formatDate(ev.occurredAtUtc, lang)}
+                </ThemedText>
+              </View>
+              {ev.note && (
+                <ThemedText style={styles.eventRowNote} numberOfLines={2}>
+                  {ev.note}
+                </ThemedText>
+              )}
+            </Pressable>
+          ))}
+        </View>
+
+        <View style={styles.section}>
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldUpdatedAt')}</ThemedText>
           <ThemedText>{formatDate(item.updatedAt, lang)}</ThemedText>
         </View>
@@ -287,6 +332,46 @@ export default function BonsaiDetailScreen() {
       </ScrollView>
     </ThemedView>
   );
+
+  function showEventTypePicker() {
+    if (!item) return;
+    Alert.alert(
+      t('eventLogCta'),
+      t('eventTypePickerDesc'),
+      [
+        ...EVENT_TYPES.map((type) => ({
+          text: t(`eventType_${type}` as TranslationKey),
+          onPress: () => void logEvent(type),
+        })),
+        { text: t('cancel'), style: 'cancel' as const },
+      ],
+      { cancelable: true },
+    );
+  }
+
+  async function logEvent(type: EventType) {
+    if (!item) return;
+    try {
+      await createEvent({ bonsaiId: item.id, type, status: 'logged' });
+      await reload();
+    } catch (err) {
+      Alert.alert(t('error'), String(err));
+    }
+  }
+
+  function confirmDeleteEvent(ev: Event) {
+    Alert.alert(t('eventDeleteConfirmTitle'), t('eventDeleteConfirmDesc'), [
+      { text: t('cancel'), style: 'cancel' },
+      {
+        text: t('delete'),
+        style: 'destructive',
+        onPress: async () => {
+          await softDeleteEvent(ev.id);
+          await reload();
+        },
+      },
+    ]);
+  }
 }
 
 function formatDate(iso: string, locale: string): string {
@@ -339,4 +424,24 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#2E7D32',
   },
+  eventAddBtn: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#2E7D32',
+    alignItems: 'center',
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  eventAddText: { color: '#2E7D32', fontSize: 15, fontWeight: '500' },
+  eventRow: {
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    gap: 4,
+  },
+  eventRowMain: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  eventRowDate: { fontSize: 12, opacity: 0.6 },
+  eventRowNote: { fontSize: 13, opacity: 0.8 },
 });
