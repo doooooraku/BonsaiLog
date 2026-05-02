@@ -1,84 +1,207 @@
-export const SCHEMA_VERSION = 1;
+/**
+ * BonsaiLog database schema (SCHEMA_VERSION = 2).
+ *
+ * Related:
+ * - Issue #14 F-01 foundation (本 PR-B: bonsai + species + species_names)
+ * - ADR-0008 (F-02 events STI、本 PR では未実装、PR-D 以降で events テーブル追加予定)
+ * - basic_spec.md §10 (樹種マスタ 50 種以上 + 19 言語通称)
+ * - constraints.md §1-2 (UUID v4 / UTC ISO 8601 / PRAGMA foreign_keys、本 PR では ULID 採用)
+ *
+ * Hybrid design:
+ * - Drizzle ORM テーブル定義: TypeScript 型推論 + query builder で Repository 実装に使用 (PR-C)
+ * - Raw SQL DDL (`schemaV2`): expo-sqlite の migration runner (db.ts) で実行
+ *
+ * Lessons from Repolog (PR #213):
+ * 1. PRAGMA user_version は migration if-block の外で**常に**設定 (db.ts 参照)
+ * 2. CREATE TABLE は IF NOT EXISTS 必須 (idempotent)
+ * 3. ALTER TABLE は hasColumn() ガード必須 (本 PR では ALTER 不使用)
+ *
+ * SCHEMA_VERSION 履歴:
+ * - v1: template items/attachments (Issue #14 で削除、本番ユーザー 0)
+ * - v2: bonsai + species + species_names (本 PR で導入、F-01 foundation)
+ */
+import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
+import { relations } from 'drizzle-orm';
+
+export const SCHEMA_VERSION = 2;
+
+// ---------------------------------------------------------------------------
+// Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
+// ---------------------------------------------------------------------------
 
 /**
- * Initial schema — create your tables here.
- *
- * This template demonstrates a parent-child relationship pattern (items + attachments)
- * which is the most common pattern in real apps (reports + photos, recipes + steps,
- * playlists + tracks, etc.).
- *
- * Guidelines:
- * - Use TEXT PRIMARY KEY with UUID (not auto-increment) — survives backup/restore
- * - Use TEXT for dates (ISO 8601) — easy to compare and serialize
- * - Use INTEGER for booleans (0/1) — SQLite has no native bool
- * - Use REAL for floats (lat/lng, prices)
- * - Always add created_at / updated_at — useful for sync and debugging
- * - Add indexes for columns used in WHERE / ORDER BY / JOIN
- * - Use ON DELETE CASCADE for child rows when the parent is deleted
- *
- * Lesson from Repolog (PR #281):
- *   File paths (photos, audio) MUST be stored as RELATIVE paths.
- *   Use src/db/filePathUtils.ts when saving and reading.
- *   Absolute paths break on iOS Store updates (container UUID changes).
+ * 樹種マスタ。学名を unique key として保持、family / 気候帯 / 標準作業情報を含む。
+ * 通称は species_names テーブル (M:1) で 19 言語ローカライズ可能。
  */
-export const schemaV1 = `
+export const species = sqliteTable(
+  'species',
+  {
+    id: text('id').primaryKey().notNull(), // ULID
+    scientificName: text('scientific_name').notNull().unique(),
+    family: text('family'),
+    climateZoneMin: integer('climate_zone_min'),
+    climateZoneMax: integer('climate_zone_max'),
+    defaultTasks: text('default_tasks'), // JSON 文字列 (将来拡張用、v1.0 では空)
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => ({
+    scientificNameIdx: index('idx_species_scientific_name').on(table.scientificName),
+  }),
+);
+
+/**
+ * 樹種の通称 (locale × species_id 複合主キー)。19 言語ローカライズ対応。
+ */
+export const speciesNames = sqliteTable(
+  'species_names',
+  {
+    speciesId: text('species_id')
+      .notNull()
+      .references(() => species.id, { onDelete: 'cascade' }),
+    locale: text('locale').notNull(), // BCP 47 (例: ja, en, zh-Hans)
+    commonName: text('common_name').notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.speciesId, table.locale] }),
+    localeIdx: index('idx_species_names_locale').on(table.locale),
+  }),
+);
+
+/**
+ * 盆栽 (BonsaiLog の中核エンティティ)。樹種への FK + 取得日 + 樹形 + 鉢情報 + アーカイブ機能。
+ */
+export const bonsai = sqliteTable(
+  'bonsai',
+  {
+    id: text('id').primaryKey().notNull(), // ULID
+    name: text('name').notNull(),
+    speciesId: text('species_id').references(() => species.id, { onDelete: 'set null' }),
+    acquiredAt: text('acquired_at'), // ISO 8601 UTC TEXT
+    style: text('style'), // 樹形 (例: chokkan, moyogi, shakan, kengai, han-kengai, bunjingi)
+    potInfo: text('pot_info'), // JSON 文字列 (鉢の形状/色/サイズ/メーカー等)
+    archivedAt: text('archived_at'), // ISO 8601 UTC TEXT (NULL ならアクティブ)
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => ({
+    speciesIdIdx: index('idx_bonsai_species_id').on(table.speciesId),
+    archivedAtIdx: index('idx_bonsai_archived_at').on(table.archivedAt),
+    updatedAtIdx: index('idx_bonsai_updated_at').on(table.updatedAt),
+  }),
+);
+
+// ---------------------------------------------------------------------------
+// Drizzle relations
+// ---------------------------------------------------------------------------
+
+export const speciesRelations = relations(species, ({ many }) => ({
+  names: many(speciesNames),
+  bonsai: many(bonsai),
+}));
+
+export const speciesNamesRelations = relations(speciesNames, ({ one }) => ({
+  species: one(species, {
+    fields: [speciesNames.speciesId],
+    references: [species.id],
+  }),
+}));
+
+export const bonsaiRelations = relations(bonsai, ({ one }) => ({
+  species: one(species, {
+    fields: [bonsai.speciesId],
+    references: [species.id],
+  }),
+}));
+
+// ---------------------------------------------------------------------------
+// Raw SQL DDL (db.ts migration runner で使用)
+// ---------------------------------------------------------------------------
+
+/**
+ * Migration v2: bonsai + species + species_names テーブル新規作成。
+ *
+ * 注意: SCHEMA_VERSION = 2 への移行で v1 (template items/attachments) は削除される。
+ * 本番ユーザー 0 のため影響なし (Issue #14 リスク欄)。
+ */
+export const schemaV2 = `
 PRAGMA foreign_keys = ON;
 
 -- ---------------------------------------------------------------------------
--- Parent table: items
--- TODO: Rename to your domain entity (reports, recipes, playlists, etc.)
+-- 樹種マスタ (species)
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS items (
+CREATE TABLE IF NOT EXISTS species (
   id TEXT PRIMARY KEY NOT NULL,
+  scientific_name TEXT NOT NULL UNIQUE,
+  family TEXT,
+  climate_zone_min INTEGER,
+  climate_zone_max INTEGER,
+  default_tasks TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_species_scientific_name ON species(scientific_name);
+
+-- ---------------------------------------------------------------------------
+-- 樹種通称 (species_names) - 19 言語ローカライズ用
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS species_names (
+  species_id TEXT NOT NULL,
+  locale TEXT NOT NULL,
+  common_name TEXT NOT NULL,
+  PRIMARY KEY (species_id, locale),
+  FOREIGN KEY (species_id) REFERENCES species(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_species_names_locale ON species_names(locale);
+
+-- ---------------------------------------------------------------------------
+-- 盆栽 (bonsai) - BonsaiLog の中核エンティティ
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS bonsai (
+  id TEXT PRIMARY KEY NOT NULL,
+  name TEXT NOT NULL,
+  species_id TEXT,
+  acquired_at TEXT,
+  style TEXT,
+  pot_info TEXT,
+  archived_at TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
-  title TEXT NOT NULL DEFAULT '',
-  status TEXT NOT NULL DEFAULT 'active',
-  -- Add your domain-specific columns here
-  -- e.g., description, lat, lng, weather, comment
-  pinned INTEGER NOT NULL DEFAULT 0
+  FOREIGN KEY (species_id) REFERENCES species(id) ON DELETE SET NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_items_updated_at ON items(updated_at);
-CREATE INDEX IF NOT EXISTS idx_items_pinned ON items(pinned, updated_at);
-
--- ---------------------------------------------------------------------------
--- Child table: attachments (photos, audio, etc.)
--- TODO: Rename to your child entity (photos, steps, tracks, etc.)
---
--- Pattern notes:
--- - ON DELETE CASCADE: when parent is deleted, all children are deleted too
--- - order_index: for user-controlled ordering (drag/drop, up/down buttons)
--- - local_uri: ALWAYS store as RELATIVE path (use filePathUtils.ts)
--- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS attachments (
-  id TEXT PRIMARY KEY NOT NULL,
-  item_id TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  order_index INTEGER NOT NULL DEFAULT 0,
-  local_uri TEXT NOT NULL,
-  width INTEGER,
-  height INTEGER,
-  caption TEXT NOT NULL DEFAULT '',
-  FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_attachments_item_id ON attachments(item_id, order_index);
+CREATE INDEX IF NOT EXISTS idx_bonsai_species_id ON bonsai(species_id);
+CREATE INDEX IF NOT EXISTS idx_bonsai_archived_at ON bonsai(archived_at);
+CREATE INDEX IF NOT EXISTS idx_bonsai_updated_at ON bonsai(updated_at);
 `;
 
-// --- Future schema versions ---
-//
-// Pattern for ALTER TABLE migrations (since SQLite has no IF NOT EXISTS for ALTER):
-//
-// export const schemaV2 = `
-//   ALTER TABLE items ADD COLUMN new_column TEXT;
-// `;
-//
-// Then in db.ts, wrap it with a hasColumn() guard for idempotency:
-//
-//   if (version < 2) {
-//     if (!(await hasColumn(db, 'items', 'new_column'))) {
-//       await db.execAsync(schemaV2);
-//     }
-//     version = 2;
-//   }
+// ---------------------------------------------------------------------------
+// TypeScript types (Drizzle inferSelect / inferInsert は PR-C Repository で使用)
+// ---------------------------------------------------------------------------
+
+export type Species = typeof species.$inferSelect;
+export type SpeciesInsert = typeof species.$inferInsert;
+export type SpeciesName = typeof speciesNames.$inferSelect;
+export type SpeciesNameInsert = typeof speciesNames.$inferInsert;
+export type Bonsai = typeof bonsai.$inferSelect;
+export type BonsaiInsert = typeof bonsai.$inferInsert;
+
+/**
+ * 樹形スタイル (Issue #14 で予定、UI 側で enum 化)
+ */
+export const BONSAI_STYLES = [
+  'chokkan', // 直幹
+  'moyogi', // 模様木
+  'shakan', // 斜幹
+  'kengai', // 懸崖
+  'han_kengai', // 半懸崖
+  'bunjingi', // 文人木
+  'fukinagashi', // 吹き流し
+  'sokan', // 双幹
+  'kabudachi', // 株立ち
+  'ishitsuki', // 石付き
+] as const;
+
+export type BonsaiStyle = (typeof BONSAI_STYLES)[number];
