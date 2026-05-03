@@ -5,6 +5,7 @@ import { FlatList, Pressable, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 
 import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 
@@ -39,6 +40,7 @@ export default function BonsaiListScreen() {
   if (loading) {
     return (
       <ThemedView style={styles.container}>
+        <OutdoorToggleButton testIdSuffix="bonsai_list_outdoor_toggle" />
         <ThemedText>{t('loading')}</ThemedText>
       </ThemedView>
     );
@@ -47,6 +49,7 @@ export default function BonsaiListScreen() {
   if (items.length === 0) {
     return (
       <ThemedView style={styles.container}>
+        <OutdoorToggleButton testIdSuffix="bonsai_list_outdoor_toggle" />
         <ThemedText type="title">{t('bonsaiListEmptyTitle')}</ThemedText>
         <ThemedText style={styles.emptyDesc}>{t('bonsaiListEmptyDesc')}</ThemedText>
         <Pressable
@@ -63,6 +66,8 @@ export default function BonsaiListScreen() {
 
   return (
     <ThemedView style={styles.listContainer}>
+      {/* F-15 Phase I (Issue #32, ADR-0015 AC4 OA1): 屋外モードトグル */}
+      <OutdoorToggleButton testIdSuffix="bonsai_list_outdoor_toggle" />
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
