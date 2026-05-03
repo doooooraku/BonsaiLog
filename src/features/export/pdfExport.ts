@@ -24,6 +24,8 @@ import {
   PdfHangError,
   assertPdfLooksValid,
   calculatePdfTimeout,
+  reducePhotoCountForAttempt,
+  runWithFallback,
   type AttemptNumber,
 } from './pdfReliability';
 
@@ -226,4 +228,44 @@ export async function generateAndShareBonsaiPdf(
   if (await Sharing.isAvailableAsync()) {
     await Sharing.shareAsync(uri, { mimeType: 'application/pdf', dialogTitle: shareDialogTitle });
   }
+}
+
+/**
+ * Phase H (Issue #33): 3 段階フォールバック付き PDF 生成 + 共有 (AC5 完全対応)。
+ *
+ * Phase E + F + G の純関数を統合した薄いラッパー:
+ * 1. attempt 毎に reducePhotoCountForAttempt で写真件数を縮小
+ * 2. buildHtml(photos) で attempt 専用 HTML を生成
+ * 3. generateAndShareBonsaiPdf で印刷 + サイズ検証 + 共有
+ * 4. BlankPdfError / PdfHangError なら次 attempt へ (runWithFallback)
+ * 5. PdfStorageLowError 等 fallback 不可エラーは即時 throw
+ *
+ * UI 層は本関数を 1 回呼ぶだけで AC5 全機能 (3 段階自動再試行 + エラー分岐) が動く。
+ *
+ * @param params.buildHtml attempt 別の写真配列を受け取り、HTML を返す関数
+ * @param params.photoDataUris 全写真の data URI 配列 (attempt 1 で使用)
+ * @param params.shareDialogTitle Share Sheet タイトル
+ * @param params.attempts 試行 attempt 配列 (default [1, 2, 3])
+ *
+ * @returns 採用された attempt 番号 (UI 層で「写真を縮小して PDF を生成しました」等の表示に利用可)
+ */
+export async function generateBonsaiPdfWithFallback(params: {
+  buildHtml: (photoUris: readonly string[]) => string;
+  photoDataUris: readonly string[];
+  shareDialogTitle: string;
+  attempts?: readonly AttemptNumber[];
+}): Promise<{ attemptUsed: AttemptNumber }> {
+  const attempts = params.attempts ?? ([1, 2, 3] as const);
+
+  const result = await runWithFallback(attempts, async (attempt) => {
+    const photos = reducePhotoCountForAttempt(params.photoDataUris, attempt);
+    const html = params.buildHtml(photos);
+    await generateAndShareBonsaiPdf(html, params.shareDialogTitle, {
+      photoCount: photos.length,
+      attempt,
+    });
+    return undefined;
+  });
+
+  return { attemptUsed: result.attemptUsed };
 }
