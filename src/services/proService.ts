@@ -179,6 +179,46 @@ async function getPriceStrings(): Promise<{
   };
 }
 
+/**
+ * F-13 Phase 2c (AC8 エラーハンドリング細分化)。
+ *
+ * RC `PurchasesError.code` を UI 表示用の分類に変換する純関数。
+ * AC2-4 (cancelled = 無音) と AC2-5 (pending = 「承認待ち」UI) も識別できるよう、
+ * 4 種類のユーザー向け文言 (AC8-1〜AC8-4) + cancelled / pending / unknown を返す。
+ *
+ * @see https://www.revenuecat.com/docs/test-and-launch/errors
+ */
+export type PurchaseErrorKind =
+  | 'cancelled' // PURCHASE_CANCELLED_ERROR (AC2-4 無音)
+  | 'pending' // PAYMENT_PENDING_ERROR (AC2-5 承認待ち UI)
+  | 'network' // NETWORK_ERROR / OFFLINE_CONNECTION_ERROR (AC8-1)
+  | 'alreadyPurchased' // PRODUCT_ALREADY_PURCHASED_ERROR (AC8-2)
+  | 'storeProblem' // STORE_PROBLEM_ERROR (AC8-3)
+  | 'notAllowed' // PURCHASE_NOT_ALLOWED_ERROR (AC8-4)
+  | 'unknown';
+
+export function mapPurchaseErrorCode(code: unknown): PurchaseErrorKind {
+  if (typeof code !== 'string' && typeof code !== 'number') return 'unknown';
+  const c = String(code);
+  switch (c) {
+    case '1':
+      return 'cancelled';
+    case '2':
+      return 'storeProblem';
+    case '3':
+      return 'notAllowed';
+    case '6':
+      return 'alreadyPurchased';
+    case '10':
+    case '35':
+      return 'network';
+    case '20':
+      return 'pending';
+    default:
+      return 'unknown';
+  }
+}
+
 /** Exported for unit testing only. */
 export {
   toProState as _toProState,
