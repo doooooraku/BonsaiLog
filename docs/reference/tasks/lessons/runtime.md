@@ -56,3 +56,10 @@
   1. **シェル初期化ファイルに依存しない**: 環境変数は `.bashrc` / `.profile` ではなく、ツール固有の設定（Claude Code の `settings.local.json` の `env`）で設定する
   2. **修正後は失敗コンテキストで検証する**: ターミナルで動いても Claude Code の Bash で動くとは限らない
   3. **Gradle ビルド前は `./gradlew --stop` + `--no-daemon`**: PATH 変更がデーモンにキャッシュされる問題を回避する
+
+### `gh pr checks` ポーリングは 2 段判定にする
+
+- **何が起きたか**: `until ! gh pr checks <PR> 2>/dev/null | grep -q "pending"; do sleep 25; done` で CI 完了を待つと、PR push 直後の「`no checks reported on the branch`」状態 (`gh` が exit 1) が「pending なし → 完了」と誤判定され、空打ちで終了する。
+- **根本原因**: 単純な `! grep -q pending` は (1) `gh` の非ゼロ exit、(2) 出力空 (checks 未起動)、(3) 全 pass の 3 つを区別できない。
+- **ルール**: 2 段判定にする → `until [ -n "$(gh pr checks <PR> 2>/dev/null | grep -E '^verify\s')" ] && ! gh pr checks <PR> 2>/dev/null | grep -q "pending"; do sleep 25; done`。verify 行が現れるまでは "未起動" として待ち、verify が見えてから pending 消失を判定する。
+- **一次情報**: 本セッションで PR #141 / #142 監視時に発生 (2026-05-03)
