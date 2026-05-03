@@ -21,7 +21,7 @@ import * as SQLite from 'expo-sqlite';
 
 import { nowUtc } from '@/src/core/datetime';
 
-import { SCHEMA_VERSION, schemaV2, schemaV3, schemaV4 } from './schema';
+import { SCHEMA_VERSION, schemaV2, schemaV3, schemaV4, schemaV5 } from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -125,20 +125,17 @@ async function migrate(db: SQLite.SQLiteDatabase) {
   }
 
   // ---------------------------------------------------------------------------
-  // Migration v5 example: ALTER TABLE ADD COLUMN (non-idempotent — needs guard)
+  // Migration v5 (Issue #31、ADR-0008 §4.3.4 整合):
   //
-  // ⚠ DO NOT do this:
-  //   await db.execAsync('ALTER TABLE bonsai ADD COLUMN new_column TEXT;');
-  // → Crashes on second run with "duplicate column name"
-  //
-  // ✅ DO this instead (guarded):
-  // if (version < 3) {
-  //   if (!(await hasColumn(db, 'bonsai', 'new_column'))) {
-  //     await db.execAsync('ALTER TABLE bonsai ADD COLUMN new_column TEXT;');
-  //   }
-  //   version = 3;
-  // }
+  // events_fts を `tokenize='trigram remove_diacritics 1' detail=column` で
+  // 再構築する。virtual table は ALTER 不可なので DROP → CREATE → INSERT で
+  // 既存 events を再インデックス (events 本体は変更なし、deleted_at IS NULL
+  // のみ対象)。
   // ---------------------------------------------------------------------------
+  if (version < 5) {
+    await db.execAsync(schemaV5);
+    version = 5;
+  }
 
   // Always set version UNCONDITIONALLY (not inside an if-block).
   // This is the most important line in this file — see Repolog PR #213.
