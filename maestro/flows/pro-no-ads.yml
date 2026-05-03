@@ -1,0 +1,67 @@
+appId: 'com.doooooraku.bonsailog'
+name: 'E2E - F-LEGAL-001 Pro user has no ads / no ATT / no UMP'
+tags:
+  - e2e
+  - pro
+  - ads
+  - legal
+  - f-legal-001
+
+
+# Issue #37 / ADR-0017 / AC「Pro で広告ゼロ + ATT/UMP 不発火」雛形。
+# Pro 状態 (Lifetime / Yearly / Monthly いずれか) で起動した場合、
+# - AdBanner が完全非表示
+# - ATT ダイアログ非発火 (Pro は initializeAds をスキップ、ADR-0010)
+# - UMP 同意フォーム非発火
+# を確認する。
+# Pro 状態シミュレートには StoreKit Configuration File (iOS) または
+# RC tester アカウントが必要。
+
+---
+- launchApp:
+    clearState: false # Pro 状態を保持
+    label: 'Pro 状態でアプリ起動 (clearState なし)'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_screen'
+    timeout: 60000
+    label: 'Home 描画待機'
+
+# Pro バッジが見える (= Pro 状態確認)
+- assertVisible:
+    id: 'e2e_home_pro_badge'
+    label: 'Home Pro バッジ表示確認'
+
+# AdBanner は非表示
+- assertNotVisible:
+    id: 'e2e_ad_banner'
+    label: 'AdBanner が非表示 (Pro)'
+
+# ATT / UMP ダイアログは出ていないため、Maestro は Home に直接到達
+# (initializeAds が呼ばれていない、ADR-0010 §「Pro 加入者は呼ばない」)
+
+# Home → Settings
+- runFlow:
+    when:
+      visible:
+        id: 'e2e_open_settings'
+    commands:
+      - tapOn:
+          id: 'e2e_open_settings'
+          label: '設定を開く'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_settings_screen'
+    timeout: 30000
+    label: '設定画面待機'
+
+# Pro では「広告のプライバシー設定」セクション自体が非表示
+- assertNotVisible:
+    id: 'e2e_open_ad_privacy_options'
+    label: '広告のプライバシー設定 エントリが非表示 (Pro)'
+# TODO (Sandbox 検証):
+# - StoreKit Configuration File で Lifetime 永続購入をシミュレート
+# - 月額 / 年額の場合は期限まで Pro 維持確認
+# - 期限切れ後 → AdBanner 表示 + ATT/UMP 発火に切替
