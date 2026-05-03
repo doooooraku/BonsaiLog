@@ -158,3 +158,30 @@ export function isFallbackableError(error: unknown): boolean {
   if (error instanceof PdfHangError) return true;
   return false;
 }
+
+/** Attempt 2 (reduced) で許容する写真件数の上限。 */
+export const REDUCED_PHOTO_LIMIT = 5;
+
+/** Attempt 3 (tiny) で許容する写真件数の上限 (= 0、写真なし)。 */
+export const TINY_PHOTO_LIMIT = 0;
+
+/**
+ * Phase F: 3 段階フォールバックでの写真件数を計算する純関数。
+ *
+ * - attempt 1 (full) → 全件返す
+ * - attempt 2 (reduced) → 先頭 5 件まで
+ * - attempt 3 (tiny) → 0 件 (写真完全除外、テキストのみ PDF)
+ *
+ * 元配列を変更しない (immutable)。
+ *
+ * @param photoUris 写真 data URI 配列
+ * @param attempt 1 / 2 / 3
+ */
+export function reducePhotoCountForAttempt<T>(
+  photoUris: readonly T[],
+  attempt: AttemptNumber,
+): T[] {
+  if (attempt === 1) return [...photoUris];
+  if (attempt === 2) return photoUris.slice(0, REDUCED_PHOTO_LIMIT);
+  return photoUris.slice(0, TINY_PHOTO_LIMIT);
+}
