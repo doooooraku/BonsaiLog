@@ -42,6 +42,7 @@ import {
   getWeeksSinceWired,
 } from '@/src/features/wiring/wiringDuration';
 import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
+import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
 /**
@@ -105,8 +106,7 @@ export default function BonsaiDetailScreen() {
     ]);
   }, [item, router, t]);
 
-  // F-13 課金完成までは isPro=false 固定 (PR-C 暫定)
-  const isPro = false;
+  const isPro = useProStore((s) => s.isPro);
 
   const pickAndSavePhoto = useCallback(
     async (source: 'camera' | 'library') => {
