@@ -266,6 +266,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggle: 'Daily summary notification',
   settingsNotifSummaryToggleDesc:
     'Receive a single summary at {time} when you have planned events on that day.',
+  settingsNotifSummaryEditTime: 'Edit notification time',
   settingsNotifWateringToggle: 'Watering notification',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',

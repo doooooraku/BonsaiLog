@@ -13,6 +13,7 @@
  * - 将来 (F-12 言語切替 / F-15 テーマ等) のエントリ追加は別 Issue
  * - 既存 Tab UI を弄らないために app/(tabs) の外に配置 (router.push('/settings') で開く)
  */
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
@@ -20,6 +21,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-na
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import { formatDateToHhmm, parseHhmmToDate } from '@/src/features/notification/notificationTime';
 import { requestNotificationPermission } from '@/src/features/notification/scheduler';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 import { showAdPrivacyOptionsForm } from '@/src/services/adService';
@@ -40,6 +42,9 @@ export default function SettingsScreen() {
   const notifSummaryEnabled = useSettingsStore((s) => s.notificationDailySummaryEnabled);
   const setNotifSummaryEnabled = useSettingsStore((s) => s.setNotificationDailySummaryEnabled);
   const notifSummaryTime = useSettingsStore((s) => s.notificationDailySummaryTime);
+  const setNotifSummaryTime = useSettingsStore((s) => s.setNotificationDailySummaryTime);
+  // F-16 Phase C (Issue #30): DateTimePicker による時刻編集
+  const [showSummaryTimePicker, setShowSummaryTimePicker] = React.useState(false);
   const notifWateringEnabled = useSettingsStore((s) => s.notificationWateringRepeatEnabled);
   const setNotifWateringEnabled = useSettingsStore((s) => s.setNotificationWateringRepeatEnabled);
   const notifWateringTimes = useSettingsStore((s) => s.notificationWateringRepeatTimes);
@@ -260,6 +265,33 @@ export default function SettingsScreen() {
               onValueChange={(v) => void handleToggleNotifSummary(v)}
             />
           </View>
+          {/* F-16 Phase C (Issue #30): 通知時刻変更 (DateTimePicker)、ON 時のみ表示 */}
+          {notifSummaryEnabled && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('settingsNotifSummaryEditTime')}
+              testID="e2e_notif_summary_edit_time"
+              style={styles.entry}
+              onPress={() => setShowSummaryTimePicker(true)}
+            >
+              <ThemedText type="defaultSemiBold">{t('settingsNotifSummaryEditTime')}</ThemedText>
+              <ThemedText style={styles.entryDesc}>{notifSummaryTime}</ThemedText>
+            </Pressable>
+          )}
+          {showSummaryTimePicker && (
+            <DateTimePicker
+              testID="e2e_notif_summary_time_picker"
+              value={parseHhmmToDate(notifSummaryTime, new Date(Date.now()))}
+              mode="time"
+              is24Hour
+              onChange={(event: DateTimePickerEvent, date?: Date) => {
+                setShowSummaryTimePicker(false);
+                if (event.type === 'set' && date) {
+                  setNotifSummaryTime(formatDateToHhmm(date));
+                }
+              }}
+            />
+          )}
 
           <View style={styles.toggleRow} testID="e2e_notif_watering_toggle_row">
             <View style={styles.toggleLabelBox}>
