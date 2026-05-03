@@ -555,3 +555,15 @@ F-15 を以下の構成で実装する。
 - 「Material 3 baseline #121212 はダークモード eye strain 軽減 + shadow 視認の業界標準、純黒 #000000 や独自値 #0A0E1A は出典不明な選択」
 - 「テーマ切替時の Skia Atlas 再生成は worklet 内 sprite 配列更新で 1 フレーム以内反映可能、メモリ最小」
 - 「広告 (AdMob) は配信側で色制御不可、屋外モード対応は周囲枠のみ可能だが UX 違和感残る → v1.x で広告非表示再評価」
+
+### 実装履歴
+
+- **2026-05-02 / 05-03 セッション (前)**: Phase A〜E (theme tokens / resolveEffectiveScheme 純関数 / `_layout` 配線) で foundation を構築
+- **2026-05-03 セッション (本)**: Phase F〜J + Phase K (10 PR) でホーム / Settings / 盆栽一覧 / Search / Tags / Export 全画面に OutdoorToggleButton を配置 + 旧 theme トークン残存 CI チェック追加
+  - PR #134 Phase F: ホーム画面に屋外モード太陽アイコン
+  - PR #135 Phase G: OutdoorToggleButton 共通コンポーネント抽出 (refactor)
+  - PR #136 Phase H: Settings 画面に OutdoorToggleButton 配置
+  - PR #137 Phase I: 盆栽一覧画面に OutdoorToggleButton 配置
+  - PR #138 Phase J: Search/Tags/Export 画面に OutdoorToggleButton 配置
+  - PR #145 Phase K: 旧 theme トークン残存 CI チェック (`scripts/theme-legacy-check.mjs`、`pnpm verify:theme`)
+- **残作業**: ESLint plugin `eslint-plugin-bonsai/no-direct-hex-in-jsx` 自作、tamagui.config の 11 トークン構造的検証スクリプト等は v1.x で評価
