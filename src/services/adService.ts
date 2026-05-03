@@ -145,3 +145,30 @@ export async function showAdPrivacyOptionsForm(): Promise<boolean> {
   await AdsConsent.showPrivacyOptionsForm();
   return true;
 }
+
+/**
+ * F-14 Phase E (Issue #22, ADR-0010 AC7 + AC9): 広告配信モード判定 純関数。
+ *
+ * UI 層 (BannerAd) で `requestNonPersonalizedAdsOnly` フラグの値を決定する用途。
+ *
+ * 判定優先度:
+ * 1. Pro 加入者 → 'none' (広告非表示、AC9-1)
+ * 2. UMP `canRequestAds === false` → 'none' (UMP 拒否時、AC7-3)
+ * 3. ATT 拒否 (`attAuthorized === false`) → 'non_personalized' (Apple 5.1.2(i) 準拠、AC7-2)
+ * 4. それ以外 → 'personalized' (通常配信)
+ *
+ * `attAuthorized === null` は「pre-iOS-14 端末」「未確認」を意味し、personalized として扱う
+ * (AdMob SDK 内部で Android / 古い iOS では NPA 強制されない)。
+ */
+export type AdServingMode = 'personalized' | 'non_personalized' | 'none';
+
+export function resolveAdServingMode(params: {
+  isPro: boolean;
+  attAuthorized: boolean | null;
+  umpCanRequestAds: boolean;
+}): AdServingMode {
+  if (params.isPro === true) return 'none';
+  if (params.umpCanRequestAds === false) return 'none';
+  if (params.attAuthorized === false) return 'non_personalized';
+  return 'personalized';
+}
