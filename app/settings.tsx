@@ -293,6 +293,17 @@ export default function SettingsScreen() {
             <ThemedText type="defaultSemiBold">{t('exportPdfTitle')}</ThemedText>
             <ThemedText style={styles.entryDesc}>{t('exportPdfDesc')}</ThemedText>
           </Pressable>
+          {/* F-10 Phase K (Issue #33, ADR-0016 AC2 list_pdf): 全盆栽リスト PDF 導線 */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('settingsExportListPdfTitle')}
+            testID="e2e_open_export_list_pdf"
+            style={styles.entry}
+            onPress={() => router.push('/export/list-pdf' as Href)}
+          >
+            <ThemedText type="defaultSemiBold">{t('settingsExportListPdfTitle')}</ThemedText>
+            <ThemedText style={styles.entryDesc}>{t('settingsExportListPdfDesc')}</ThemedText>
+          </Pressable>
         </View>
 
         {/* --- F-09 検索 (Issue #31、ADR-0008 改訂) --- */}
