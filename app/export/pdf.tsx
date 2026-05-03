@@ -14,6 +14,7 @@
  * - 進捗バー
  * - 詳細選択 UI (期間 / 樹種フィルタ)
  */
+import * as LegacyFileSystem from 'expo-file-system/legacy';
 import { useFocusEffect } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -30,6 +31,7 @@ import {
   generateAndShareBonsaiPdf,
   readPhotoAsBase64,
 } from '@/src/features/export/pdfExport';
+import { isStorageSufficient } from '@/src/features/export/pdfReliability';
 import { useProStore } from '@/src/stores/proStore';
 
 export default function ExportPdfScreen() {
@@ -51,6 +53,17 @@ export default function ExportPdfScreen() {
     if (!isPro) {
       Alert.alert(t('exportProRequiredTitle'), t('exportProRequiredBody'));
       return;
+    }
+    // F-10 Phase L (Issue #33, ADR-0016 AC7): ストレージ事前チェック
+    // getFreeDiskStorageAsync 失敗時はチェックスキップ (AC7-2 仕様)
+    try {
+      const freeBytes = await LegacyFileSystem.getFreeDiskStorageAsync();
+      if (!isStorageSufficient(freeBytes)) {
+        Alert.alert(t('exportStorageLowTitle'), t('exportStorageLowBody'));
+        return;
+      }
+    } catch {
+      // チェックスキップ
     }
     setBusyId(bonsai.id);
     try {

@@ -7,6 +7,7 @@
  * 3. buildBonsaiListPdfHtml で HTML 生成
  * 4. generateAndShareListPdf で印刷 + 共有
  */
+import * as LegacyFileSystem from 'expo-file-system/legacy';
 import React from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -21,6 +22,7 @@ import {
   type ListPdfStats,
 } from '@/src/features/export/listPdfExport';
 import { generateAndShareListPdf } from '@/src/features/export/pdfExport';
+import { isStorageSufficient } from '@/src/features/export/pdfReliability';
 import { useProStore } from '@/src/stores/proStore';
 
 export default function ExportListPdfScreen() {
@@ -33,6 +35,17 @@ export default function ExportListPdfScreen() {
     if (!isPro) {
       Alert.alert(t('exportProRequiredTitle'), t('exportProRequiredBody'));
       return;
+    }
+    // F-10 Phase L (Issue #33, ADR-0016 AC7): ストレージ事前チェック
+    // getFreeDiskStorageAsync 失敗時はチェックスキップ (AC7-2 仕様)
+    try {
+      const freeBytes = await LegacyFileSystem.getFreeDiskStorageAsync();
+      if (!isStorageSufficient(freeBytes)) {
+        Alert.alert(t('exportStorageLowTitle'), t('exportStorageLowBody'));
+        return;
+      }
+    } catch {
+      // チェックスキップ (PDF 生成側で BlankPdfError 等で対応)
     }
     setBusy(true);
     try {
