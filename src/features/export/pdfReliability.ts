@@ -185,3 +185,62 @@ export function reducePhotoCountForAttempt<T>(
   if (attempt === 2) return photoUris.slice(0, REDUCED_PHOTO_LIMIT);
   return photoUris.slice(0, TINY_PHOTO_LIMIT);
 }
+
+/**
+ * runWithFallback の戻り値: 成功時は result + 採用 attempt。
+ */
+export type RunWithFallbackResult<T> = {
+  result: T;
+  attemptUsed: AttemptNumber;
+};
+
+/**
+ * Phase G: AC5-3 (3 attempt 全失敗で最終エラー throw) の attempt loop 純関数。
+ *
+ * factory(attempt) を順次呼び出し、isFallbackableError が true なら次へ進む。
+ * - 成功 → result + attemptUsed を返す
+ * - フォールバック不可エラー (PdfStorageLowError 等) → 即時 throw (無駄な再試行スキップ)
+ * - 全 attempt 失敗 → 最後のエラーを throw
+ *
+ * factory に副作用を持たせることで、本関数自体は副作用ゼロで attempt loop だけ責務を持つ。
+ * テストでは factory を mock 関数で差し替えて全シナリオをカバー可能。
+ *
+ * @param attempts 試行する attempt 番号配列 (例: [1, 2, 3])
+ * @param factory 各 attempt で呼び出す Promise factory
+ *
+ * @example
+ *   const { result, attemptUsed } = await runWithFallback([1, 2, 3], async (attempt) => {
+ *     const photos = reducePhotoCountForAttempt(photoUris, attempt);
+ *     const html = buildHtml(photos);
+ *     return generateAndShareBonsaiPdf(html, title, { photoCount: photos.length, attempt });
+ *   });
+ */
+export async function runWithFallback<T>(
+  attempts: readonly AttemptNumber[],
+  factory: (attempt: AttemptNumber) => Promise<T>,
+): Promise<RunWithFallbackResult<T>> {
+  if (attempts.length === 0) {
+    throw new Error('runWithFallback: attempts must be non-empty');
+  }
+  let lastError: unknown;
+  for (let i = 0; i < attempts.length; i++) {
+    const attempt = attempts[i];
+    try {
+      const result = await factory(attempt);
+      return { result, attemptUsed: attempt };
+    } catch (err) {
+      lastError = err;
+      // フォールバック不可エラー → 即時 throw
+      if (!isFallbackableError(err)) {
+        throw err;
+      }
+      // 最後の attempt で失敗 → throw
+      if (i === attempts.length - 1) {
+        throw err;
+      }
+      // 次 attempt に進む
+    }
+  }
+  // 理論上到達不可 (上記 loop 内で必ず return か throw)
+  throw lastError;
+}
