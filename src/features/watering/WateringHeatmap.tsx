@@ -1,14 +1,23 @@
 /**
- * F-04 Phase B 簡易ヒートマップ (Issue #29 / ADR-0013)。
+ * F-04 Phase F ヒートマップ (Issue #29 / ADR-0013)。
  *
- * - View ベース (Skia なし) の最小実装。Skia 移行は Phase C で実機 PoC 込みで実施。
+ * - **Skia ベース描画** (Phase F、PR #166 で追加した @shopify/react-native-skia)。
+ *   View per-cell からの移行で、84 セル描画コストを GPU に移譲。
  * - 過去 12 週 (84 日) を 7 行 × 12 列で表示 (GitHub 風、新しい列 = 右端)。
  * - 配色は ColorBrewer Greens 4-class (color-blind safe)。
- * - 数字併記なし (Phase C で WCAG 1.4.1 / Apple Differentiate Without Color 対応)。
+ * - 数字併記なし (Skia 上に追加するのは Phase G 以降で評価)。
  * - 凡例 K1: 「水やり回数: □ 0 ■ 1 ■ 2 ■ 3+」(個別盆栽用)。
  * - constraints §5-2 禁止語 (推奨 / べき / reminder / tracker / alert) を含めない。
+ *
+ * 構造:
+ * - 背面: Skia Canvas (絶対配置、サイズ計算済) + Rect 84 個 (背景塗り)
+ * - 前面: Pressable グリッド (透明背景、tap キャプチャ + a11y label)
+ *
+ * Pressable と Skia Rect は同一座標で重なるため、視覚 = Skia / hit test = Pressable
+ * となる二層構成。
  */
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import { Canvas, Rect } from '@shopify/react-native-skia';
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -76,26 +85,51 @@ export function WateringHeatmap({ events, todayLocalKey, tzOffsetMin, testID }: 
     return result;
   }, [dateKeys, counts]);
 
+  // F-04 Phase F: Canvas 全体サイズ。グリッドは 12 列 × 7 行 で計算。
+  const canvasWidth = 12 * CELL_SIZE + 11 * CELL_GAP;
+  const canvasHeight = 7 * CELL_SIZE + 6 * CELL_GAP;
+
   return (
     <View style={styles.container} testID={testID ?? 'e2e_watering_heatmap'}>
-      <View style={styles.grid}>
-        {cols.map((col, ci) => (
-          <View key={ci} style={styles.col}>
-            {col.map((cell, ri) => (
-              <Pressable
-                key={ri}
-                accessibilityRole="button"
-                accessibilityLabel={t('wateringHeatmapDetailTitle')
-                  .replace('{date}', cell.dateKey)
-                  .replace('{count}', String(cell.count))}
-                style={[styles.cell, { backgroundColor: LEVEL_COLORS[cell.level] }]}
-                testID={`e2e_heatmap_cell_${ci}_${ri}`}
-                onPress={() => handleCellPress(cell.dateKey, cell.count)}
-                hitSlop={4}
+      <View style={[styles.gridWrap, { width: canvasWidth, height: canvasHeight }]}>
+        {/* 背面: Skia Canvas で 84 セル一括描画 (GPU 描画、tap は通過) */}
+        <Canvas
+          style={[StyleSheet.absoluteFill, { width: canvasWidth, height: canvasHeight }]}
+          testID="e2e_heatmap_skia_canvas"
+        >
+          {cols.flatMap((col, ci) =>
+            col.map((cell, ri) => (
+              <Rect
+                key={`${ci}-${ri}`}
+                x={ci * (CELL_SIZE + CELL_GAP)}
+                y={ri * (CELL_SIZE + CELL_GAP)}
+                width={CELL_SIZE}
+                height={CELL_SIZE}
+                color={LEVEL_COLORS[cell.level]}
               />
-            ))}
-          </View>
-        ))}
+            )),
+          )}
+        </Canvas>
+        {/* 前面: Pressable グリッド (透明、tap + a11y) */}
+        <View style={styles.grid}>
+          {cols.map((col, ci) => (
+            <View key={ci} style={styles.col}>
+              {col.map((cell, ri) => (
+                <Pressable
+                  key={ri}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('wateringHeatmapDetailTitle')
+                    .replace('{date}', cell.dateKey)
+                    .replace('{count}', String(cell.count))}
+                  style={styles.cellHitbox}
+                  testID={`e2e_heatmap_cell_${ci}_${ri}`}
+                  onPress={() => handleCellPress(cell.dateKey, cell.count)}
+                  hitSlop={4}
+                />
+              ))}
+            </View>
+          ))}
+        </View>
       </View>
 
       <View style={styles.legend}>
@@ -147,9 +181,12 @@ const CELL_GAP = 3;
 
 const styles = StyleSheet.create({
   container: { paddingVertical: 8, paddingHorizontal: 16, gap: 12 },
+  gridWrap: { position: 'relative' },
   grid: { flexDirection: 'row', gap: CELL_GAP },
   col: { gap: CELL_GAP },
   cell: { width: CELL_SIZE, height: CELL_SIZE, borderRadius: 2 },
+  // F-04 Phase F: Skia Canvas 上の透明 hitbox。背景は Skia 側、サイズだけ確保。
+  cellHitbox: { width: CELL_SIZE, height: CELL_SIZE },
   legend: { gap: 6 },
   legendLabel: { fontSize: 12, opacity: 0.7 },
   legendRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
