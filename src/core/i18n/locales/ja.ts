@@ -381,6 +381,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsTutorialReplayDesc: '5 つの機能チュートリアルを最初から見直せます。',
   searchRecentTitle: '最近の検索',
   searchHistoryClear: '履歴を削除',
+  outdoorModeToggleA11y: '屋外モードを切り替える',
 };
 
 export default ja;

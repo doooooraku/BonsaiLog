@@ -384,5 +384,6 @@ const de: Partial<Record<TranslationKey, string>> = {
   settingsTutorialReplayDesc: 'See the 5 feature tutorial screens again from the beginning.',
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
+  outdoorModeToggleA11y: 'Toggle outdoor mode',
 };
 export default de;
