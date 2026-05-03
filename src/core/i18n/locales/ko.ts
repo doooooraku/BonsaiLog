@@ -326,5 +326,12 @@ const ko: Partial<Record<TranslationKey, string>> = {
   settingsAdPrivacyOptionsUnavailableTitle: 'Not required in your region',
   settingsAdPrivacyOptionsUnavailableBody: 'Ad consent settings are not required in your region.',
   settingsAdPrivacyOptionsFailedBody: 'Could not open the ad privacy settings.',
+  purchaseErrorNetwork: 'Connection error. Please check your network and try again.',
+  purchaseErrorAlreadyPurchased: 'You already own this product. Tap Restore to retrieve it.',
+  purchaseErrorStoreProblem: 'There was a problem with the store. Please try again later.',
+  purchaseErrorNotAllowed:
+    'Purchases are not allowed on this device. Please check your device settings.',
+  purchasePending:
+    'Your purchase is pending approval. We will activate Pro automatically once approved.',
 };
 export default ko;

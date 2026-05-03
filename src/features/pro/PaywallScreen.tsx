@@ -20,9 +20,28 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
-import { useTranslation } from '@/src/core/i18n/i18n';
-import { proService, type PlanType, type PriceDetails } from '@/src/services/proService';
+import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
+import {
+  mapPurchaseErrorCode,
+  proService,
+  type PlanType,
+  type PriceDetails,
+  type PurchaseErrorKind,
+} from '@/src/services/proService';
 import { useProStore } from '@/src/stores/proStore';
+
+// F-13 Phase 2c-2 (Issue #20, ADR-0009 AC8): RC エラーコードを UI 文言キーにマッピング
+const PURCHASE_ERROR_MESSAGE_KEY: Record<
+  Exclude<PurchaseErrorKind, 'cancelled'>,
+  TranslationKey
+> = {
+  pending: 'purchasePending',
+  network: 'purchaseErrorNetwork',
+  alreadyPurchased: 'purchaseErrorAlreadyPurchased',
+  storeProblem: 'purchaseErrorStoreProblem',
+  notAllowed: 'purchaseErrorNotAllowed',
+  unknown: 'purchaseFailed',
+};
 
 export default function PaywallScreen() {
   const router = useRouter();
@@ -71,8 +90,12 @@ export default function PaywallScreen() {
       try {
         await purchasePro(plan);
         Alert.alert(t('purchaseSuccess'));
-      } catch {
-        Alert.alert(t('purchaseFailed'));
+      } catch (err) {
+        const code = (err as { code?: unknown } | null | undefined)?.code;
+        const kind = mapPurchaseErrorCode(code);
+        // AC2-4: 購入キャンセルは無音 (Paywall 維持)
+        if (kind === 'cancelled') return;
+        Alert.alert(t(PURCHASE_ERROR_MESSAGE_KEY[kind]));
       } finally {
         setAction(null);
       }

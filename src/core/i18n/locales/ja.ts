@@ -326,6 +326,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsAdPrivacyOptionsUnavailableTitle: 'お住まいの地域では設定不要です',
   settingsAdPrivacyOptionsUnavailableBody: 'この地域では広告同意の設定は不要です。',
   settingsAdPrivacyOptionsFailedBody: '広告のプライバシー設定を開けませんでした。',
+  purchaseErrorNetwork: '接続エラーです。ネットワーク状況を確認してから再度お試しください。',
+  purchaseErrorAlreadyPurchased: 'すでに購入済みです。「購入を復元」から復元してください。',
+  purchaseErrorStoreProblem: 'ストアで問題が発生しました。しばらく経ってから再度お試しください。',
+  purchaseErrorNotAllowed: 'この端末では購入が許可されていません。端末の設定をご確認ください。',
+  purchasePending: 'お支払い承認待ちです。承認され次第、自動的に Pro を有効化します。',
 };
 
 export default ja;
