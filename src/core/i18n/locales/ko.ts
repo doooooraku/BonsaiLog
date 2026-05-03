@@ -66,6 +66,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   proCtaYearly: '연간 플랜 시작',
   proCtaMonthly: '월간 플랜 시작',
   proCtaStayFree: '무료로 계속 사용',
+  proCtaUpgrade: 'Upgrade to Pro',
   proFinePrint: '구독은 자동으로 갱신됩니다. 계정 설정에서 언제든지 해지할 수 있습니다.',
 
   proPlanLifetimeTitle: '평생',

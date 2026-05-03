@@ -66,6 +66,7 @@ const fr: Partial<Record<TranslationKey, string>> = {
   proCtaYearly: 'Choisir le plan annuel',
   proCtaMonthly: 'Choisir le plan mensuel',
   proCtaStayFree: 'Rester en gratuit',
+  proCtaUpgrade: 'Upgrade to Pro',
   proFinePrint:
     "L'abonnement se renouvelle automatiquement. Vous pouvez annuler à tout moment dans les paramètres de votre compte.",
 

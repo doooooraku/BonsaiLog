@@ -66,6 +66,7 @@ const pt: Partial<Record<TranslationKey, string>> = {
   proCtaYearly: 'Iniciar plano anual',
   proCtaMonthly: 'Iniciar plano mensal',
   proCtaStayFree: 'Continuar grátis',
+  proCtaUpgrade: 'Upgrade to Pro',
   proFinePrint:
     'As assinaturas são renovadas automaticamente. Cancele a qualquer momento nas configurações da sua conta.',
 

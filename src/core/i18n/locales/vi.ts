@@ -66,6 +66,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   proCtaYearly: 'Bắt đầu gói năm',
   proCtaMonthly: 'Bắt đầu gói tháng',
   proCtaStayFree: 'Tiếp tục miễn phí',
+  proCtaUpgrade: 'Upgrade to Pro',
   proFinePrint: 'Gói đăng ký tự động gia hạn. Hủy bất cứ lúc nào trong cài đặt tài khoản.',
 
   proPlanLifetimeTitle: 'Trọn đời',

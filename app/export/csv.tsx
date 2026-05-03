@@ -11,6 +11,7 @@
  */
 import { File, Paths } from 'expo-file-system';
 import * as LegacyFileSystem from 'expo-file-system/legacy';
+import { useRouter, type Href } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -26,6 +27,7 @@ import type { Event } from '@/src/db/schema';
 import { useProStore } from '@/src/stores/proStore';
 
 export default function ExportCsvScreen() {
+  const router = useRouter();
   const { t } = useTranslation();
   const isPro = useProStore((s) => s.isPro);
   const [busy, setBusy] = useState(false);
@@ -33,7 +35,10 @@ export default function ExportCsvScreen() {
   const handleExport = async () => {
     if (busy) return;
     if (!isPro) {
-      Alert.alert(t('exportProRequiredTitle'), t('exportProRequiredBody'));
+      Alert.alert(t('exportProRequiredTitle'), t('exportProRequiredBody'), [
+        { text: t('cancel'), style: 'cancel' },
+        { text: t('proCtaUpgrade'), onPress: () => router.push('/pro' as Href) },
+      ]);
       return;
     }
     // F-10 Phase M (Issue #33, ADR-0016 AC7): ストレージ事前チェック

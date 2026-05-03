@@ -15,7 +15,7 @@
  * - 詳細選択 UI (期間 / 樹種フィルタ)
  */
 import * as LegacyFileSystem from 'expo-file-system/legacy';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -36,6 +36,7 @@ import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 import { useProStore } from '@/src/stores/proStore';
 
 export default function ExportPdfScreen() {
+  const router = useRouter();
   const { t, lang } = useTranslation();
   const isPro = useProStore((s) => s.isPro);
   const [bonsaiList, setBonsaiList] = React.useState<Bonsai[]>([]);
@@ -52,7 +53,10 @@ export default function ExportPdfScreen() {
   const handleExport = async (bonsai: Bonsai) => {
     if (busyId !== null) return;
     if (!isPro) {
-      Alert.alert(t('exportProRequiredTitle'), t('exportProRequiredBody'));
+      Alert.alert(t('exportProRequiredTitle'), t('exportProRequiredBody'), [
+        { text: t('cancel'), style: 'cancel' },
+        { text: t('proCtaUpgrade'), onPress: () => router.push('/pro' as Href) },
+      ]);
       return;
     }
     // F-10 Phase L (Issue #33, ADR-0016 AC7): ストレージ事前チェック

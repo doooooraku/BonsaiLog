@@ -8,6 +8,7 @@
  * 4. generateAndShareListPdf で印刷 + 共有
  */
 import * as LegacyFileSystem from 'expo-file-system/legacy';
+import { useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -27,6 +28,7 @@ import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 import { useProStore } from '@/src/stores/proStore';
 
 export default function ExportListPdfScreen() {
+  const router = useRouter();
   const { t, lang } = useTranslation();
   const isPro = useProStore((s) => s.isPro);
   const [busy, setBusy] = React.useState(false);
@@ -34,7 +36,10 @@ export default function ExportListPdfScreen() {
   const handleExport = async () => {
     if (busy) return;
     if (!isPro) {
-      Alert.alert(t('exportProRequiredTitle'), t('exportProRequiredBody'));
+      Alert.alert(t('exportProRequiredTitle'), t('exportProRequiredBody'), [
+        { text: t('cancel'), style: 'cancel' },
+        { text: t('proCtaUpgrade'), onPress: () => router.push('/pro' as Href) },
+      ]);
       return;
     }
     // F-10 Phase L (Issue #33, ADR-0016 AC7): ストレージ事前チェック

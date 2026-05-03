@@ -66,6 +66,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   proCtaYearly: '開始年度方案',
   proCtaMonthly: '開始月度方案',
   proCtaStayFree: '繼續免費使用',
+  proCtaUpgrade: 'Upgrade to Pro',
   proFinePrint: '訂閱將自動續費。您可以隨時在帳號設定中取消。',
 
   proPlanLifetimeTitle: '永久版',
