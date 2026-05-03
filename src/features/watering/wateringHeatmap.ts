@@ -243,6 +243,69 @@ export function buildHeatmapSummary(
 }
 
 /**
+ * Phase G-1 (AC2-1, AC3-2): 全盆栽集約モード用の日別「水やった盆栽の割合」純関数。
+ *
+ * 仕様 (ADR-0013 §K2):
+ * - 各日について「水やった盆栽数 / 全盆栽数 × 100 (%)」を返す。
+ * - 同日に同盆栽が複数回水やっても 1 盆栽カウント (Set ベース)。
+ * - 全盆栽数 (totalBonsaiCount) は外側で渡す (アーカイブ除外済の active のみ想定)。
+ * - 0 件の日はキー自体を含めない (UI 側で 0% として扱う)。
+ *
+ * @param events 全盆栽の events 配列 (bonsaiId フィルタなし)
+ * @param totalBonsaiCount 全盆栽数 (active のみ、アーカイブ除外済)
+ * @param tzOffsetMin ユーザーローカルの UTC オフセット (分単位)
+ *
+ * @returns Map<YYYY-MM-DD, ratioPercent>。ratioPercent は 0-100 の整数 (Math.round 済)。
+ */
+export function getDailyAggregateRatio(
+  events: readonly Event[],
+  totalBonsaiCount: number,
+  tzOffsetMin: number,
+): Map<string, number> {
+  const result = new Map<string, number>();
+  if (totalBonsaiCount <= 0) return result;
+
+  // 日付ごとに「水やった盆栽 ID の Set」を構築。
+  const wateredByDay = new Map<string, Set<string>>();
+  for (const event of events) {
+    if (event.type !== 'watering') continue;
+    if (event.status !== 'logged') continue;
+    if (event.deletedAt != null) continue;
+    const key = toLocalDateKey(event.occurredAtUtc, tzOffsetMin);
+    const existing = wateredByDay.get(key);
+    if (existing == null) {
+      wateredByDay.set(key, new Set([event.bonsaiId]));
+    } else {
+      existing.add(event.bonsaiId);
+    }
+  }
+
+  for (const [key, bonsaiSet] of wateredByDay) {
+    const ratio = Math.round((bonsaiSet.size / totalBonsaiCount) * 100);
+    result.set(key, ratio);
+  }
+  return result;
+}
+
+/**
+ * Phase G-1 (AC3-2): 集約モード用の配色レベル (L0-L3) を返す純関数。
+ *
+ * 仕様 (ADR-0013 §K2):
+ * - 0%      → 'L0'
+ * - 1-33%   → 'L1'
+ * - 34-66%  → 'L2'
+ * - 67-100% → 'L3'
+ *
+ * `getHeatmapLevel` (回数ベース、K1) と対称関係。
+ */
+export function getAggregateLevel(ratioPercent: number): WateringHeatmapLevel {
+  if (ratioPercent <= 0) return 'L0';
+  if (ratioPercent <= 33) return 'L1';
+  if (ratioPercent <= 66) return 'L2';
+  return 'L3';
+}
+
+/**
  * Phase D-1 (AC5): 指定日 (YYYY-MM-DD) に該当する events を返す純関数 (BottomSheet 詳細用)。
  *
  * - kind フィルタなし (watering / fertilizing / wiring 全て対象)

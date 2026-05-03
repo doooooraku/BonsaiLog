@@ -6,6 +6,8 @@ import {
   buildHeatmapSummary,
   classifyLastWatered,
   diffDayKeys,
+  getAggregateLevel,
+  getDailyAggregateRatio,
   getDailyWateringCounts,
   getDaysSinceLastWatering,
   getEventsForDay,
@@ -380,5 +382,96 @@ describe('getEventsForDay (Phase D-1, AC5 BottomSheet 詳細)', () => {
     ];
     expect(getEventsForDay(events, '2026-05-02', -480).map((e) => e.id)).toEqual(['e1']);
     expect(getEventsForDay(events, '2026-05-03', -480).map((e) => e.id)).toEqual(['e2']);
+  });
+});
+
+describe('getDailyAggregateRatio (Phase G-1, K2)', () => {
+  test('全 3 本中 2 本が水やり → 67%', () => {
+    const events = [
+      makeEvent({ id: 'e1', bonsaiId: 'b1', occurredAtUtc: '2026-05-03T01:00:00.000Z' }),
+      makeEvent({ id: 'e2', bonsaiId: 'b2', occurredAtUtc: '2026-05-03T02:00:00.000Z' }),
+    ];
+    const result = getDailyAggregateRatio(events, 3, JST);
+    expect(result.get('2026-05-03')).toBe(67);
+  });
+
+  test('同盆栽が同日複数回水やっても 1 盆栽カウント (Set 排除)', () => {
+    const events = [
+      makeEvent({ id: 'e1', bonsaiId: 'b1', occurredAtUtc: '2026-05-03T01:00:00.000Z' }),
+      makeEvent({ id: 'e2', bonsaiId: 'b1', occurredAtUtc: '2026-05-03T08:00:00.000Z' }),
+    ];
+    const result = getDailyAggregateRatio(events, 2, JST);
+    expect(result.get('2026-05-03')).toBe(50); // 1/2 = 50%
+  });
+
+  test('totalBonsaiCount=0 で空 Map 返却 (ゼロ除算回避)', () => {
+    const events = [makeEvent({ id: 'e1' })];
+    const result = getDailyAggregateRatio(events, 0, JST);
+    expect(result.size).toBe(0);
+  });
+
+  test('status=planned / deletedAt!=null は除外', () => {
+    const events = [
+      makeEvent({
+        id: 'e1',
+        bonsaiId: 'b1',
+        status: 'planned',
+        occurredAtUtc: '2026-05-03T01:00:00.000Z',
+      }),
+      makeEvent({
+        id: 'e2',
+        bonsaiId: 'b2',
+        deletedAt: '2026-05-03T03:00:00.000Z',
+        occurredAtUtc: '2026-05-03T02:00:00.000Z',
+      }),
+    ];
+    const result = getDailyAggregateRatio(events, 3, JST);
+    expect(result.size).toBe(0);
+  });
+
+  test('複数日の集約 (Map に各日のキーが入る)', () => {
+    const events = [
+      makeEvent({ id: 'e1', bonsaiId: 'b1', occurredAtUtc: '2026-05-01T01:00:00.000Z' }),
+      makeEvent({ id: 'e2', bonsaiId: 'b1', occurredAtUtc: '2026-05-02T01:00:00.000Z' }),
+      makeEvent({ id: 'e3', bonsaiId: 'b2', occurredAtUtc: '2026-05-02T02:00:00.000Z' }),
+    ];
+    const result = getDailyAggregateRatio(events, 4, JST);
+    expect(result.get('2026-05-01')).toBe(25); // 1/4
+    expect(result.get('2026-05-02')).toBe(50); // 2/4
+  });
+
+  test('TZ 跨ぎ: PST -480 で UTC と異なる日付に振り分け', () => {
+    const events = [
+      makeEvent({ id: 'e1', bonsaiId: 'b1', occurredAtUtc: '2026-05-03T05:00:00.000Z' }), // PST 5/2
+      makeEvent({ id: 'e2', bonsaiId: 'b2', occurredAtUtc: '2026-05-03T08:00:00.000Z' }), // PST 5/3
+    ];
+    const result = getDailyAggregateRatio(events, 2, -480);
+    expect(result.get('2026-05-02')).toBe(50);
+    expect(result.get('2026-05-03')).toBe(50);
+  });
+});
+
+describe('getAggregateLevel (Phase G-1, K2)', () => {
+  test('0% → L0', () => {
+    expect(getAggregateLevel(0)).toBe('L0');
+  });
+
+  test('1-33% → L1', () => {
+    expect(getAggregateLevel(1)).toBe('L1');
+    expect(getAggregateLevel(33)).toBe('L1');
+  });
+
+  test('34-66% → L2', () => {
+    expect(getAggregateLevel(34)).toBe('L2');
+    expect(getAggregateLevel(66)).toBe('L2');
+  });
+
+  test('67-100% → L3', () => {
+    expect(getAggregateLevel(67)).toBe('L3');
+    expect(getAggregateLevel(100)).toBe('L3');
+  });
+
+  test('負値も L0 (防御)', () => {
+    expect(getAggregateLevel(-5)).toBe('L0');
   });
 });
