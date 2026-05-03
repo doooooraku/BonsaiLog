@@ -2069,7 +2069,7 @@ export function formatRelativeDays(days: number, locale: string): string {
 
 ### §18.1 目的
 
-月額・年額サブスク + Lifetime 買切で Pro 機能を解放する。
+月額・年額サブスク + Lifetime 買切で Pro 機能を解放する。Lifetime 所持時はサブスク表示を抑止する **Champion 方式** (Pocket Casts) を採用し、Pro→Free 戻り時の既存データ保持には **Notion 方式データ保護** を採用 (詳細は ADR-0009、glossary.md 参照)。
 
 ### §18.2 画面 / 入口
 
@@ -2144,27 +2144,34 @@ export async function buy(pkg: PurchasesPackage): Promise<PurchaseOutcome> {
 }
 ```
 
-#### §18.3.4 CustomerInfoUpdateListener（source of truth）
+#### §18.3.4 状態管理（proStore + proService）
+
+実装は `src/services/proService.ts` (RC SDK ラッパー) + `src/stores/proStore.ts` (zustand) に分離。`isPro` / `planType` / `expirationDate` を購読側で参照する。
 
 ```typescript
-// hooks/usePro.ts
-export function usePro() {
-  const [isPro, setIsPro] = useState(false);
+// src/stores/proStore.ts (抜粋)
+export const useProStore = create<ProStore>((set, get) => ({
+  isPro: false,
+  planType: null, // 'monthly' | 'yearly' | 'lifetime' | null
+  expirationDate: null,
+  init: async () => {
+    const local = await proService.loadLocalState();
+    if (local) set({ ...local });
+  },
+  refresh: async () => {
+    const state = await proService.refreshCustomerInfo();
+    if (state) set({ ...state });
+  },
+  purchase: async (plan) => proService.purchase(plan),
+  restore: async () => proService.restore(),
+}));
 
-  useEffect(() => {
-    // 起動時に現状確認
-    Purchases.getCustomerInfo().then((info) =>
-      setIsPro(info.entitlements.active['premium'] != null),
-    );
-    // リアルタイム更新
-    const handler = (info: CustomerInfo) => setIsPro(info.entitlements.active['premium'] != null);
-    Purchases.addCustomerInfoUpdateListener(handler);
-    return () => Purchases.removeCustomerInfoUpdateListener(handler);
-  }, []);
-
-  return isPro;
-}
+// 利用側 (例: PaywallScreen, Settings, app/(tabs)/bonsai/[id].tsx)
+const isPro = useProStore((s) => s.isPro);
+const planType = useProStore((s) => s.planType);
 ```
+
+`app/_layout.tsx` で `Purchases.addCustomerInfoUpdateListener` を 1 回だけ登録し、proStore に反映する (Apple Review 3.1.1 / 5.0 準拠)。
 
 #### §18.3.5 Restore フロー
 
@@ -2183,22 +2190,30 @@ flowchart TD
 ┌─────────────────────────────┐
 │  🌱 BonsaiLog Pro          │
 ├─────────────────────────────┤
+│  status / Champion バナー   │ ← Lifetime 所持時は👑+「Pro メンバー (買切)」固定バナー
+├─────────────────────────────┤
 │  ・写真 3 枚/本の制限撤廃    │
 │  ・CSV / PDF エクスポート    │
 │  ・年次タイムライン画像      │
 │  ・広告非表示                │
 ├─────────────────────────────┤
-│  [ 年額 ¥3,980 ]  ← 推奨   │ 33%お得バッジ、デフォルト選択
+│  [ 年額 ¥3,980 ]  ← 推奨   │ Lifetime 所持時は非表示
 │   月換算 ¥331/月             │
-│  [ 月額 ¥500 ]               │
-│  [ 買切 ¥9,800 ]            │ 一度だけ、ずっと Pro
+│  [ 月額 ¥500 ]               │ Lifetime 所持時は非表示
+│  [ 買切 ¥9,800 ]            │ Lifetime 所持時は disabled
 ├─────────────────────────────┤
 │  [    購読する    ]          │
 │  購入を復元 | 利用規約 | プライバシー │
 └─────────────────────────────┘
 ```
 
-**Apple Review Guideline 3.1.1 準拠**: 「購入を復元」は **Paywall と Settings 両方** に配置。
+**Apple Review Guideline 3.1.1 準拠**: 「購入を復元」は **Paywall と Settings 両方** に配置 (Lifetime 所持時も常時表示)。
+
+**Apple Review Guideline 5.0 透明性**: 既存サブスク中ユーザーが Lifetime 購入時、購入前ダイアログで「サブスクは自動キャンセルされません。App Store の設定から手動で解約してください」と明示。
+
+**Champion 方式の判定 (純関数)**: `src/features/pro/championMode.ts` の `shouldHideSubscriptions(planType)` が `planType === 'lifetime'` を返すと Paywall が月額/年額カードを描画しない。
+
+**Settings の 3 状態表示**: `planType === 'lifetime'` → 「Pro メンバー (買切)」、`isPro && planType !== 'lifetime'` → 「Pro メンバー」、それ以外 → 「無料プラン」(`settingsAccountProLifetimeTitle` / `settingsAccountProActive` / `proTitle` の i18n キー)。
 
 #### §18.3.7 オフライン挙動
 
@@ -2209,20 +2224,22 @@ flowchart TD
 
 ### §18.4 境界値テーブル
 
-| 項目                      | 境界       | 期待動作                              |
-| ------------------------- | ---------- | ------------------------------------- |
-| 初回起動                  | 境界       | Free プラン、entitlement 空           |
-| 月額購入成功              | 正常       | `premium` active                      |
-| 年額購入成功              | 正常       | `premium` active                      |
-| 買切購入成功              | 正常       | `premium` active、expirationDate なし |
-| 購入キャンセル            | ユーザー   | 無音で Paywall に戻る                 |
-| 承認待ち（Family）        | pending    | 「承認待ち」画面、listener で完了検知 |
-| 既購入（同一 Apple ID）   | 重複       | 「復元」誘導                          |
-| ネットワークエラー        | 異常       | 「後で再試行」、購入未確定            |
-| 月額 → 年額アップグレード | OS 管理    | OS のアップグレード UI                |
-| 年額 → 月額ダウングレード | OS 管理    | 次回更新時に反映                      |
-| 期限切れ                  | 正常遷移   | entitlement inactive、Free に戻る     |
-| 3 日グレースピリオド経過  | オフライン | entitlement inactive 扱い             |
+| 項目                          | 境界        | 期待動作                                                              |
+| ----------------------------- | ----------- | --------------------------------------------------------------------- |
+| 初回起動                      | 境界        | Free プラン、entitlement 空                                           |
+| 月額購入成功                  | 正常        | `premium` active                                                      |
+| 年額購入成功                  | 正常        | `premium` active                                                      |
+| 買切購入成功                  | 正常        | `premium` active、expirationDate なし                                 |
+| 購入キャンセル                | ユーザー    | 無音で Paywall に戻る                                                 |
+| 承認待ち（Family）            | pending     | 「承認待ち」画面、listener で完了検知                                 |
+| 既購入（同一 Apple ID）       | 重複        | 「復元」誘導                                                          |
+| ネットワークエラー            | 異常        | 「後で再試行」、購入未確定                                            |
+| 月額 → 年額アップグレード     | OS 管理     | OS のアップグレード UI                                                |
+| 年額 → 月額ダウングレード     | OS 管理     | 次回更新時に反映                                                      |
+| 期限切れ                      | 正常遷移    | entitlement inactive、Free に戻る                                     |
+| 3 日グレースピリオド経過      | オフライン  | entitlement inactive 扱い                                             |
+| Lifetime 所持時の Paywall     | Champion    | 月額/年額カード非描画、Lifetime のみ disabled、上部に Champion バナー |
+| Pro→Free 戻り (写真 4 枚以上) | Notion 方式 | 既存写真は閲覧可能、新規追加のみ 3 枚制限                             |
 
 ### §18.5 エラーフロー
 
@@ -2240,17 +2257,31 @@ flowchart TD
 
 - [ ] Free ユーザーが Pro 機能タップ → Paywall 表示
 - [ ] 年額購入成功 → `isPro = true` 即時反映
-- [ ] Restore → 過去購入があれば Pro 復元
+- [ ] Restore → 過去購入があれば Pro 復元 (Lifetime 所持時も Restore ボタン常時表示)
 - [ ] Restore → 過去購入がなければ「復元する購入はありません」
-- [ ] オフラインでも Pro 判定が SDK キャッシュから可能
+- [ ] オフラインでも Pro 判定が SDK キャッシュから可能 (Lifetime は Offline Entitlements 対象外)
 - [ ] 購入キャンセルで無音、Paywall 維持
 - [ ] 「購入を復元」ボタンが Paywall と Settings 両方に存在
 - [ ] Lifetime 購入が Non-Consumable として RC Dashboard に登録（事前確認）
+- [ ] **Champion 方式**: Lifetime 所持時、Paywall に月額/年額カード非描画 + 上部 Champion バナー表示 + Settings/ホームで「Pro メンバー (買切)」表示
+- [ ] **Notion 方式**: Pro で写真 10 枚 → Free 戻り → 既存 10 枚閲覧可能、新規追加のみ 3 枚制限
+- [ ] **Apple Review 5.0**: 既存サブスク中ユーザーが Lifetime 購入時、購入前ダイアログで自動キャンセル無しの旨を明示
 
 ### §18.7 対応テスト
 
-- Jest: `__tests__/features/purchase/buy_monthly.test.ts`, `buy_annual.test.ts`, `buy_lifetime.test.ts`, `restore.test.ts`, `listener_update.test.ts`
-- Maestro: `maestro/flows/paywall_to_purchase.yaml`（RevenueCat sandbox）
+- Jest:
+  - `__tests__/services/proService.test.ts` (toProState / derivePlanType / findPackage、Repolog 移植)
+  - `__tests__/services/proPurchaseError.test.ts` (mapPurchaseErrorCode、AC8 7 種分類)
+  - `__tests__/features/pro/championMode.test.ts` (shouldHideSubscriptions、Lifetime/Yearly/Monthly/null の 4 ケース)
+  - `__tests__/features/photos/photoLimit.test.ts` (Free 写真 3 枚制限、`isPro` 切替で動作)
+- Maestro: `maestro/flows/paywall_to_purchase.yaml`（RevenueCat sandbox、未実装）
+
+### §18.8 SDK バージョン (期限付き)
+
+- パッケージ: `react-native-purchases` **^10.x**
+- 経緯: 9.6.6 (Billing Library 7) → 10.x (Billing Library 8) 昇格 (2026/8/31 廃止対応)
+- Breaking Change: one-time product restore 動作変更 → Sandbox 全フロー検証必須
+- 関連: ADR-0009 §80-87
 
 ---
 
