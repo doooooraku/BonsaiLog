@@ -337,6 +337,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   lifetimeWarningBody:
     '既存のサブスクリプションは自動的にキャンセルされません。Apple ID または Google Play の設定からご解約ください。',
   confirm: '確認',
+  attExplainerTitle: '広告のパーソナライズについて',
+  attExplainerBody: '広告のパフォーマンス測定のために、識別子の使用を許可するか選択できます。',
+  attExplainerAllow: '許可した場合: より関連性の高い広告が表示されます。',
+  attExplainerDeny: '許可しない場合: 一般的な広告が表示されます。アプリの機能制限はありません。',
 };
 
 export default ja;
