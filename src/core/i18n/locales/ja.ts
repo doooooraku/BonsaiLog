@@ -341,6 +341,23 @@ const ja: Partial<Record<TranslationKey, string>> = {
   attExplainerBody: '広告のパフォーマンス測定のために、識別子の使用を許可するか選択できます。',
   attExplainerAllow: '許可した場合: より関連性の高い広告が表示されます。',
   attExplainerDeny: '許可しない場合: 一般的な広告が表示されます。アプリの機能制限はありません。',
+  settingsExportListPdfTitle: '全盆栽リスト PDF',
+  settingsExportListPdfDesc: '表紙 + リスト + 統計の A4 縦 PDF',
+  exportListPdfTitle: '全盆栽リスト PDF',
+  exportListPdfDesc: '表紙 + 全盆栽リスト + 統計を A4 縦 1 枚に出力します。',
+  exportListPdfAction: '生成する',
+  exportListPdfFailedBody:
+    'リスト PDF の生成に失敗しました。しばらく経ってから再度お試しください。',
+  exportListPdfShareTitle: '全盆栽リスト PDF を共有',
+  exportListPdfCoverTitle: 'BonsaiLog 全盆栽記録',
+  exportListPdfCoverSubtitle: '全 {count} 本',
+  exportListPdfGeneratedAt: '生成日時:',
+  exportListPdfListSection: '盆栽リスト',
+  exportListPdfStatsSection: '統計',
+  exportListPdfTotal: '総 events 件数: {count}',
+  exportListPdfTypeBreakdown: '種別内訳',
+  exportListPdfSpeciesBreakdown: '樹種内訳',
+  exportListPdfFooter: 'BonsaiLog で生成',
 };
 
 export default ja;
