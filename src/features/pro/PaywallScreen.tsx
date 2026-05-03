@@ -21,6 +21,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
+import { shouldHideSubscriptions } from '@/src/features/pro/championMode';
 import {
   mapPurchaseErrorCode,
   proService,
@@ -81,8 +82,7 @@ export default function PaywallScreen() {
     };
   }, []);
 
-  // Champion 方式 (Pocket Casts): Lifetime 所持時はサブスク非表示。
-  const hideSubscriptions = planType === 'lifetime';
+  const hideSubscriptions = shouldHideSubscriptions(planType);
 
   const startPurchase = React.useCallback(
     async (plan: PlanType) => {
