@@ -379,6 +379,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsHelpSection: 'ヘルプ',
   settingsTutorialReplayTitle: 'チュートリアルを再表示',
   settingsTutorialReplayDesc: '5 つの機能チュートリアルを最初から見直せます。',
+  searchRecentTitle: '最近の検索',
+  searchHistoryClear: '履歴を削除',
 };
 
 export default ja;

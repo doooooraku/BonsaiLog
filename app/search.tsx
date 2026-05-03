@@ -35,6 +35,8 @@ export default function SearchScreen() {
   const [busy, setBusy] = useState(false);
   // F-09 Phase B (Issue #31, ADR-0008 改訂): 最近 3 タグ候補チップ
   const [recentTags, setRecentTags] = useState<TagRecord[]>([]);
+  // F-09 Phase H (AC7-2): 最近の検索履歴チップ
+  const searchHistory = useSearchHistoryStore((s) => s.history);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -99,6 +101,39 @@ export default function SearchScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
+        {/* F-09 Phase H (AC7-2/3): 最近の検索チップ + 履歴削除ボタン */}
+        {searchHistory.length > 0 && !searched && (
+          <View style={styles.tagsRow} testID="e2e_search_recent_history">
+            <View style={styles.historyHeaderRow}>
+              <ThemedText style={styles.recentTagsLabel}>{t('searchRecentTitle')}</ThemedText>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('searchHistoryClear')}
+                testID="e2e_search_history_clear"
+                onPress={() => useSearchHistoryStore.getState().clear()}
+              >
+                <ThemedText style={styles.clearButtonText}>{t('searchHistoryClear')}</ThemedText>
+              </Pressable>
+            </View>
+            <View style={styles.tagsChipRow}>
+              {searchHistory.map((q) => (
+                <Pressable
+                  key={q}
+                  accessibilityRole="button"
+                  accessibilityLabel={q}
+                  testID={`e2e_search_history_chip_${q}`}
+                  style={styles.tagChip}
+                  onPress={() => {
+                    setQuery(q);
+                    void runSearchWith(q);
+                  }}
+                >
+                  <ThemedText style={styles.tagChipText}>{q}</ThemedText>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
         {recentTags.length > 0 && !searched && (
           <View style={styles.tagsRow} testID="e2e_search_recent_tags">
             <ThemedText style={styles.recentTagsLabel}>{t('searchRecentTagsLabel')}</ThemedText>
@@ -219,6 +254,8 @@ const styles = StyleSheet.create({
   entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
   tagsRow: { gap: 8 },
   recentTagsLabel: { fontSize: 12, opacity: 0.7 },
+  historyHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  clearButtonText: { fontSize: 12, opacity: 0.7, color: '#2E7D32', fontWeight: '600' },
   tagsChipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   tagChip: {
     paddingHorizontal: 12,

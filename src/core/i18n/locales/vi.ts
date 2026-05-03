@@ -381,5 +381,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   settingsHelpSection: 'Help',
   settingsTutorialReplayTitle: 'Replay tutorial',
   settingsTutorialReplayDesc: 'See the 5 feature tutorial screens again from the beginning.',
+  searchRecentTitle: 'Recent searches',
+  searchHistoryClear: 'Clear history',
 };
 export default vi;
