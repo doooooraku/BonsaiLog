@@ -269,3 +269,24 @@ export async function generateBonsaiPdfWithFallback(params: {
 
   return { attemptUsed: result.attemptUsed };
 }
+
+/**
+ * Phase J (Issue #33): list_pdf 用統合 API (Issue #33 AC2 list_pdf)。
+ *
+ * 写真なし (テキストのみ) のため 3 段階フォールバック不要、attempt 2 (30s ベース) で
+ * 1 回だけ実行 (リスト件数多くてもテキストのみなので 30s で十分)。
+ *
+ * UI 層は呼出側で `buildBonsaiListPdfHtml` で HTML を組み立て、本関数に渡す。
+ *
+ * @param html buildBonsaiListPdfHtml で生成した HTML
+ * @param shareDialogTitle Share Sheet タイトル
+ */
+export async function generateAndShareListPdf(
+  html: string,
+  shareDialogTitle: string,
+): Promise<void> {
+  await generateAndShareBonsaiPdf(html, shareDialogTitle, {
+    photoCount: 0,
+    attempt: 2, // attempt 1 は 10s キャップだが list は 100 本以上で時間かかる、安全のため 2
+  });
+}
