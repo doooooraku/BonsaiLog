@@ -269,6 +269,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- F-16 通知設定 (Phase B、Issue #30、ADR-0014) ---
   settingsNotifSummaryToggle: '当日まとめ通知',
   settingsNotifSummaryToggleDesc: '予定がある日に {time} に 1 件のまとめ通知を受け取ります。',
+  settingsNotifSummaryEditTime: '通知時刻を変更',
   settingsNotifWateringToggle: '水やり通知',
   settingsNotifWateringToggleDesc: '{times} に水やり通知を受け取ります。',
   settingsNotifPermissionDeniedTitle: '通知の許可が必要です',
