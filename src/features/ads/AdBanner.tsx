@@ -23,7 +23,7 @@ import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { getBannerUnitId, initializeAds } from '@/src/services/adService';
+import { getBannerUnitId, initializeAds, resolveAdServingMode } from '@/src/services/adService';
 import { useProStore } from '@/src/stores/proStore';
 
 export function AdBanner() {
@@ -58,10 +58,22 @@ export function AdBanner() {
   }, []);
 
   if (isWeb) return null;
-  if (isPro) return null;
   if (!proInitialized) return null;
   if (!unitId) return null;
-  if (!ready) return null;
+
+  // F-14 Phase F (Issue #22, ADR-0010 AC7 + AC9): resolveAdServingMode 純関数で
+  // Pro / UMP / ATT 状態から配信モードを決定。
+  // - mode='none' → 描画しない (Pro / UMP 拒否)
+  // - mode='non_personalized' → NPA フラグ付与 (ATT 拒否時、Apple 5.1.2(i))
+  // - mode='personalized' → 通常配信
+  // ATT 状態取得は Phase G で expo-tracking-transparency 連携、それまで null = personalized 扱い
+  const mode = resolveAdServingMode({
+    isPro,
+    attAuthorized: null,
+    umpCanRequestAds: ready,
+  });
+
+  if (mode === 'none') return null;
 
   return (
     <View style={styles.container} testID="e2e_ad_banner">
@@ -71,6 +83,7 @@ export function AdBanner() {
       <BannerAd
         unitId={unitId}
         size={BannerAdSize.INLINE_ADAPTIVE_BANNER}
+        requestOptions={{ requestNonPersonalizedAdsOnly: mode === 'non_personalized' }}
         onAdFailedToLoad={handleAdFailedToLoad}
       />
     </View>
