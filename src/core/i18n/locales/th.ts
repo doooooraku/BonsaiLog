@@ -72,6 +72,8 @@ const th: Partial<Record<TranslationKey, string>> = {
   proPlanLifetimeBadge: 'จ่ายครั้งเดียว',
   proCtaLifetime: 'ซื้อตลอดชีพ',
   proLifetimeFinePrint: 'ซื้อครั้งเดียว ไม่มีการต่ออายุอัตโนมัติ',
+  paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
+  paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
 
   // --- Legal ---
   legalSectionTitle: 'ข้อกฎหมาย',

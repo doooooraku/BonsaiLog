@@ -73,6 +73,8 @@ const de: Partial<Record<TranslationKey, string>> = {
   proPlanLifetimeBadge: 'Einmalzahlung',
   proCtaLifetime: 'Lebenslang kaufen',
   proLifetimeFinePrint: 'Einmaliger Kauf. Keine automatische Verlängerung.',
+  paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
+  paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
 
   // --- Legal ---
   legalSectionTitle: 'Rechtliches',

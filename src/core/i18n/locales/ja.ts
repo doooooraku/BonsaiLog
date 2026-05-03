@@ -144,6 +144,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   proPlanLifetimeBadge: '一度払い',
   proCtaLifetime: '買い切りで購入',
   proLifetimeFinePrint: '一度の購入で永久に利用できます。自動更新はありません。',
+  paywallChampionBannerTitle: 'あなたは Pro メンバー (買切) です',
+  paywallChampionBannerDesc: '買切で Pro を所有しているため、サブスクリプションは表示されません。',
 
   // --- Legal ---
   legalSectionTitle: '法的情報',
