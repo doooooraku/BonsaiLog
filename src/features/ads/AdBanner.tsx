@@ -23,7 +23,12 @@ import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { getBannerUnitId, initializeAds, resolveAdServingMode } from '@/src/services/adService';
+import {
+  getAttStatus,
+  getBannerUnitId,
+  initializeAds,
+  resolveAdServingMode,
+} from '@/src/services/adService';
 import { useProStore } from '@/src/stores/proStore';
 
 export function AdBanner() {
@@ -33,6 +38,7 @@ export function AdBanner() {
   const proInitialized = useProStore((s) => s.initialized);
   const unitId = getBannerUnitId();
   const [ready, setReady] = React.useState(false);
+  const [attAuthorized, setAttAuthorized] = React.useState<boolean | null>(null);
 
   React.useEffect(() => {
     if (isWeb) return;
@@ -45,6 +51,15 @@ export function AdBanner() {
       })
       .catch(() => {
         if (mounted) setReady(false);
+      });
+    // F-LEGAL-001 Phase E (Issue #37、ADR-0017 §④): ATT 状態取得 (iOS 14.5+ で
+    // 標準ダイアログ発火、Android / Web は null = personalized 扱い)。
+    getAttStatus()
+      .then((status) => {
+        if (mounted) setAttAuthorized(status);
+      })
+      .catch(() => {
+        if (mounted) setAttAuthorized(null);
       });
     return () => {
       mounted = false;
@@ -61,15 +76,13 @@ export function AdBanner() {
   if (!proInitialized) return null;
   if (!unitId) return null;
 
-  // F-14 Phase F (Issue #22, ADR-0010 AC7 + AC9): resolveAdServingMode 純関数で
-  // Pro / UMP / ATT 状態から配信モードを決定。
+  // resolveAdServingMode 純関数で Pro / UMP / ATT 状態から配信モードを決定。
   // - mode='none' → 描画しない (Pro / UMP 拒否)
   // - mode='non_personalized' → NPA フラグ付与 (ATT 拒否時、Apple 5.1.2(i))
   // - mode='personalized' → 通常配信
-  // ATT 状態取得は Phase G で expo-tracking-transparency 連携、それまで null = personalized 扱い
   const mode = resolveAdServingMode({
     isPro,
-    attAuthorized: null,
+    attAuthorized,
     umpCanRequestAds: ready,
   });
 
