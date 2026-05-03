@@ -72,6 +72,8 @@ const ko: Partial<Record<TranslationKey, string>> = {
   proPlanLifetimeBadge: '일회성 결제',
   proCtaLifetime: '평생 구매',
   proLifetimeFinePrint: '일회성 구매입니다. 자동 갱신이 없습니다.',
+  paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
+  paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
 
   // --- Legal ---
   legalSectionTitle: '법적 정보',

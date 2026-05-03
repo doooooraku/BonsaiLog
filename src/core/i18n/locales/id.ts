@@ -73,6 +73,8 @@ const id: Partial<Record<TranslationKey, string>> = {
   proPlanLifetimeBadge: 'Bayar sekali',
   proCtaLifetime: 'Beli Seumur Hidup',
   proLifetimeFinePrint: 'Pembelian sekali. Tidak ada perpanjangan otomatis.',
+  paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
+  paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
 
   // --- Legal ---
   legalSectionTitle: 'Hukum',

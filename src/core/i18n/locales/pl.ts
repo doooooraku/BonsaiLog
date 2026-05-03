@@ -73,6 +73,8 @@ const pl: Partial<Record<TranslationKey, string>> = {
   proPlanLifetimeBadge: 'Płatność jednorazowa',
   proCtaLifetime: 'Kup dożywotnio',
   proLifetimeFinePrint: 'Zakup jednorazowy. Brak automatycznego odnowienia.',
+  paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
+  paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
 
   // --- Legal ---
   legalSectionTitle: 'Informacje prawne',

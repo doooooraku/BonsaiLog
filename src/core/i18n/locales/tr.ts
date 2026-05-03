@@ -73,6 +73,8 @@ const tr: Partial<Record<TranslationKey, string>> = {
   proPlanLifetimeBadge: 'Tek seferlik',
   proCtaLifetime: 'Ömür Boyu Satın Al',
   proLifetimeFinePrint: 'Tek seferlik satın alma. Otomatik yenileme yok.',
+  paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
+  paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
 
   // --- Legal ---
   legalSectionTitle: 'Yasal',

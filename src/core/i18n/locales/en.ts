@@ -69,6 +69,8 @@ const baseEn = {
   proCtaStayFree: 'Stay Free',
   proFinePrint: 'Subscriptions auto-renew. Cancel anytime in your account settings.',
   proLifetimeFinePrint: 'One-time purchase. No auto-renewal.',
+  paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
+  paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
 
   // --- Legal ---
   legalSectionTitle: 'Legal',

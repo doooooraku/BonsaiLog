@@ -72,6 +72,8 @@ const vi: Partial<Record<TranslationKey, string>> = {
   proPlanLifetimeBadge: 'Thanh toán một lần',
   proCtaLifetime: 'Mua trọn đời',
   proLifetimeFinePrint: 'Mua một lần. Không tự động gia hạn.',
+  paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
+  paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
 
   // --- Legal ---
   legalSectionTitle: 'Pháp lý',

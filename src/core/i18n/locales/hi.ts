@@ -73,6 +73,8 @@ const hi: Partial<Record<TranslationKey, string>> = {
   proPlanLifetimeBadge: 'एकमुश्त',
   proCtaLifetime: 'आजीवन खरीदें',
   proLifetimeFinePrint: 'एकमुश्त खरीद। कोई स्वत: नवीकरण नहीं।',
+  paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
+  paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
 
   // --- Legal ---
   legalSectionTitle: 'कानूनी जानकारी',

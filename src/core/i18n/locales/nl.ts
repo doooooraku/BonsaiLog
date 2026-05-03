@@ -73,6 +73,8 @@ const nl: Partial<Record<TranslationKey, string>> = {
   proPlanLifetimeBadge: 'Eenmalige betaling',
   proCtaLifetime: 'Levenslang kopen',
   proLifetimeFinePrint: 'Eenmalige aankoop. Geen automatische verlenging.',
+  paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
+  paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
 
   // --- Legal ---
   legalSectionTitle: 'Juridisch',

@@ -72,6 +72,8 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   proPlanLifetimeBadge: '一次付费',
   proCtaLifetime: '购买永久版',
   proLifetimeFinePrint: '一次性购买，永久使用。无自动续费。',
+  paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
+  paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
 
   // --- Legal ---
   legalSectionTitle: '法律信息',

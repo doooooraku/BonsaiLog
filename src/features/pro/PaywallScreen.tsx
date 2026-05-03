@@ -160,9 +160,23 @@ export default function PaywallScreen() {
           <ThemedText type="title">{t('proTitle')}</ThemedText>
         </View>
 
-        <View style={styles.statusBox}>
-          <ThemedText type="defaultSemiBold">{proStateLabel}</ThemedText>
-        </View>
+        {planType === 'lifetime' ? (
+          <View style={styles.championBanner} testID="e2e_paywall_champion_banner">
+            <ThemedText style={styles.championBannerEmoji}>👑</ThemedText>
+            <View style={styles.championBannerTextWrap}>
+              <ThemedText type="defaultSemiBold" style={styles.championBannerTitle}>
+                {t('paywallChampionBannerTitle')}
+              </ThemedText>
+              <ThemedText style={styles.championBannerDesc}>
+                {t('paywallChampionBannerDesc')}
+              </ThemedText>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.statusBox}>
+            <ThemedText type="defaultSemiBold">{proStateLabel}</ThemedText>
+          </View>
+        )}
 
         {/* F-13 Phase 1c (Issue #20, ADR-0009): Pro 機能比較表 (CTA 前に配置) */}
         <View style={styles.comparison} testID="e2e_paywall_comparison">
@@ -290,6 +304,20 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
     alignItems: 'center',
   },
+  championBanner: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#F9A825',
+    backgroundColor: '#FFF8E1',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  championBannerEmoji: { fontSize: 32 },
+  championBannerTextWrap: { flex: 1, gap: 4 },
+  championBannerTitle: { fontSize: 16, color: '#5D4037' },
+  championBannerDesc: { fontSize: 13, color: '#6D4C41', lineHeight: 18 },
   comparison: {
     padding: 16,
     borderRadius: 12,
