@@ -322,6 +322,15 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringHeatmapDetailTitle: '{date}',
   wateringHeatmapDetailCount: '水やり {count} 回',
 
+  // --- F-04 stats tab + aggregate K2 legend (Phase G-2, Issue #29, ADR-0013) ---
+  statsTabTitle: '統計',
+  statsHeaderAllBonsai: 'すべての盆栽 ({count}本)',
+  wateringHeatmapLegendLabelAggregate: '水やった盆栽の割合 (直近12週間)',
+  wateringHeatmapLegendAgg0: '0%',
+  wateringHeatmapLegendAgg1: '1-33%',
+  wateringHeatmapLegendAgg2: '34-66%',
+  wateringHeatmapLegendAgg3: '67-100%',
+
   // --- F-07 装着期間アプリ内表示 (Phase B、Issue #24、ADR-0014) ---
   wiringDurationWithinWeeks: '装着期間: {weeks} 週',
   wiringDurationOverdueLabel: '装着期間: {weeks} 週 (経過済)',

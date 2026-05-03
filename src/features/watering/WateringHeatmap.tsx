@@ -26,6 +26,8 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 import { HEATMAP_COLORS } from '@/src/core/theme/colors';
 import {
   buildHeatmapDateKeys,
+  getAggregateLevel,
+  getDailyAggregateRatio,
   getDailyWateringCounts,
   getHeatmapLevel,
   type WateringHeatmapLevel,
@@ -36,14 +38,32 @@ const HEATMAP_DAYS = 84; // 7 × 12
 
 const LEVEL_COLORS: Record<WateringHeatmapLevel, string> = HEATMAP_COLORS;
 
+/**
+ * Phase G-2: 集約モード対応 (Issue #29 ADR-0013 §K2)。
+ *
+ * - mode='individual' (default): 単一盆栽の回数集計 → K1 凡例 (□ 0 ■ 1 ■ 2 ■ 3+)
+ * - mode='aggregate': 全盆栽の達成率 % → K2 凡例 (□ 0% ■ 1-33% ■ 34-66% ■ 67-100%)
+ *   集約モードでは totalBonsaiCount が必須。
+ */
+export type WateringHeatmapMode = 'individual' | 'aggregate';
+
 type Props = {
   events: readonly Event[];
   todayLocalKey: string;
   tzOffsetMin: number;
+  mode?: WateringHeatmapMode;
+  totalBonsaiCount?: number;
   testID?: string;
 };
 
-export function WateringHeatmap({ events, todayLocalKey, tzOffsetMin, testID }: Props) {
+export function WateringHeatmap({
+  events,
+  todayLocalKey,
+  tzOffsetMin,
+  mode = 'individual',
+  totalBonsaiCount = 0,
+  testID,
+}: Props) {
   const { t } = useTranslation();
   // F-04 Phase E (Issue #29): セルタップで BottomSheet で詳細 (日付 + 水やり回数) を表示
   const sheetRef = React.useRef<BottomSheet>(null);
@@ -66,10 +86,22 @@ export function WateringHeatmap({ events, todayLocalKey, tzOffsetMin, testID }: 
     () => getDailyWateringCounts(events, tzOffsetMin),
     [events, tzOffsetMin],
   );
+  // Phase G-2: 集約モード時は K2 達成率 (%) を計算。individual 時は使われない。
+  const aggregateRatios = React.useMemo(
+    () =>
+      mode === 'aggregate' ? getDailyAggregateRatio(events, totalBonsaiCount, tzOffsetMin) : null,
+    [mode, events, totalBonsaiCount, tzOffsetMin],
+  );
 
   // 7 行 (曜日) × 12 列 (週) のグリッドに配置 (col-major)。
   // セル詳細 (count + dateKey) も同時に保持して BottomSheet で参照。
-  type CellInfo = { level: WateringHeatmapLevel; dateKey: string; count: number };
+  // Phase G-2: 集約モードは ratio (%) を保持、個別モードは count (回数) を保持。
+  type CellInfo = {
+    level: WateringHeatmapLevel;
+    dateKey: string;
+    count: number;
+    ratio?: number; // 集約モードのみ
+  };
   const cols: CellInfo[][] = React.useMemo(() => {
     const result: CellInfo[][] = [];
     for (let c = 0; c < 12; c++) {
@@ -78,12 +110,17 @@ export function WateringHeatmap({ events, todayLocalKey, tzOffsetMin, testID }: 
         const idx = c * 7 + r;
         const key = dateKeys[idx] ?? '';
         const cnt = counts.get(key) ?? 0;
-        col.push({ level: getHeatmapLevel(cnt), dateKey: key, count: cnt });
+        if (mode === 'aggregate' && aggregateRatios != null) {
+          const ratio = aggregateRatios.get(key) ?? 0;
+          col.push({ level: getAggregateLevel(ratio), dateKey: key, count: cnt, ratio });
+        } else {
+          col.push({ level: getHeatmapLevel(cnt), dateKey: key, count: cnt });
+        }
       }
       result.push(col);
     }
     return result;
-  }, [dateKeys, counts]);
+  }, [dateKeys, counts, mode, aggregateRatios]);
 
   // F-04 Phase F: Canvas 全体サイズ。グリッドは 12 列 × 7 行 で計算。
   const canvasWidth = 12 * CELL_SIZE + 11 * CELL_GAP;
@@ -132,13 +169,38 @@ export function WateringHeatmap({ events, todayLocalKey, tzOffsetMin, testID }: 
         </View>
       </View>
 
+      {/* Phase G-2: 凡例ラベル切替 (K1 個別 / K2 集約)、ADR-0013 §K5 */}
       <View style={styles.legend}>
-        <ThemedText style={styles.legendLabel}>{t('wateringHeatmapLegendLabel')}</ThemedText>
+        <ThemedText style={styles.legendLabel}>
+          {mode === 'aggregate'
+            ? t('wateringHeatmapLegendLabelAggregate')
+            : t('wateringHeatmapLegendLabel')}
+        </ThemedText>
         <View style={styles.legendRow}>
-          <LegendItem color={LEVEL_COLORS.L0} label={t('wateringHeatmapLegend0')} />
-          <LegendItem color={LEVEL_COLORS.L1} label={t('wateringHeatmapLegend1')} />
-          <LegendItem color={LEVEL_COLORS.L2} label={t('wateringHeatmapLegend2')} />
-          <LegendItem color={LEVEL_COLORS.L3} label={t('wateringHeatmapLegend3')} />
+          <LegendItem
+            color={LEVEL_COLORS.L0}
+            label={
+              mode === 'aggregate' ? t('wateringHeatmapLegendAgg0') : t('wateringHeatmapLegend0')
+            }
+          />
+          <LegendItem
+            color={LEVEL_COLORS.L1}
+            label={
+              mode === 'aggregate' ? t('wateringHeatmapLegendAgg1') : t('wateringHeatmapLegend1')
+            }
+          />
+          <LegendItem
+            color={LEVEL_COLORS.L2}
+            label={
+              mode === 'aggregate' ? t('wateringHeatmapLegendAgg2') : t('wateringHeatmapLegend2')
+            }
+          />
+          <LegendItem
+            color={LEVEL_COLORS.L3}
+            label={
+              mode === 'aggregate' ? t('wateringHeatmapLegendAgg3') : t('wateringHeatmapLegend3')
+            }
+          />
         </View>
       </View>
 
