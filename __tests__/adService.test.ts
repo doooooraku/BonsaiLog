@@ -19,7 +19,7 @@ jest.mock('react-native-google-mobile-ads', () => ({
     NOT_REQUIRED: 2,
   },
   AdsConsent: {},
-  MaxAdContentRating: { G: 'G' },
+  MaxAdContentRating: { G: 'G', PG: 'PG' },
   TestIds: { ADAPTIVE_BANNER: 'test-adaptive-banner' },
   default: () => ({
     setRequestConfiguration: jest.fn(),
