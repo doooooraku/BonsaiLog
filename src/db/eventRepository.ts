@@ -131,6 +131,22 @@ export async function getActiveEventsByBonsai(bonsaiId: string): Promise<Event[]
 }
 
 /**
+ * 全盆栽の水やり events (status='logged') を取得 (F-04 stats タブ集約モード用)。
+ *
+ * - bonsaiId フィルタなし (全 active 盆栽の events を返す)
+ * - type='watering' / status='logged' / deleted_at IS NULL
+ * - occurred_at_utc 降順
+ *
+ * Related: Issue #29 / ADR-0013 §K2 (stats タブ全盆栽集約)
+ */
+export async function getAllActiveWateringEventsLogged(): Promise<Event[]> {
+  const db = await getDb();
+  return db.getAllAsync<Event>(
+    "SELECT * FROM events WHERE type = 'watering' AND status = 'logged' AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;",
+  );
+}
+
+/**
  * ゴミ箱 (deleted_at NOT NULL) を deleted_at 降順で取得。
  */
 export async function getTrashedEvents(bonsaiId?: string): Promise<Event[]> {

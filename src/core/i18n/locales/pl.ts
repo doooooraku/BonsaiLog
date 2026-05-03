@@ -322,6 +322,15 @@ const pl: Partial<Record<TranslationKey, string>> = {
   wateringHeatmapDetailTitle: '{date}',
   wateringHeatmapDetailCount: 'Watered {count} time(s)',
 
+  // --- F-04 stats tab + aggregate K2 legend (Phase G-2, Issue #29, ADR-0013) ---
+  statsTabTitle: 'Stats',
+  statsHeaderAllBonsai: 'All bonsai ({count})',
+  wateringHeatmapLegendLabelAggregate: 'Bonsai watered (last 12 weeks)',
+  wateringHeatmapLegendAgg0: '0%',
+  wateringHeatmapLegendAgg1: '1-33%',
+  wateringHeatmapLegendAgg2: '34-66%',
+  wateringHeatmapLegendAgg3: '67-100%',
+
   // --- F-07 Wiring duration in-app display (Phase B、English fallback) ---
   wiringDurationWithinWeeks: 'Wire on for {weeks} weeks',
   wiringDurationOverdueLabel: 'Wire on for {weeks} weeks (overdue)',
