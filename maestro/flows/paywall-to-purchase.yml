@@ -1,0 +1,105 @@
+appId: 'com.doooooraku.bonsailog'
+name: 'E2E - F-13 paywall reach + 3 plans + restore'
+tags:
+  - e2e
+  - paywall
+  - billing
+  - f-13
+
+
+# Issue #20 / ADR-0009 / AC10-5 雛形。
+# 本 yaml は「Paywall 到達 + 3 プランカード + Champion バナー条件 + Restore ボタン」
+# まで網羅する screens-reach 系フロー。実購入 (Sandbox) は RC tester アカウント
+# 接続が必要なため、AC9 手動検証ステップで補完する。
+
+---
+- launchApp:
+    clearState: true
+    label: 'クリーン起動 (Free 状態)'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_screen'
+    timeout: 60000
+    label: 'Home の初期描画を待機'
+
+# Home → Settings ルート
+- runFlow:
+    when:
+      visible:
+        id: 'e2e_open_settings'
+    commands:
+      - tapOn:
+          id: 'e2e_open_settings'
+          label: '設定を開く'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_settings_screen'
+    timeout: 30000
+    label: '設定画面を待機'
+
+# Settings → Paywall ルート (Pro エントリ)
+- tapOn:
+    id: 'e2e_open_paywall'
+    label: 'Paywall を開く'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_paywall_screen'
+    timeout: 30000
+    label: 'Paywall 画面を待機'
+
+- assertVisible:
+    id: 'e2e_paywall_screen'
+    label: 'Paywall 画面に到達 (AC3)'
+
+# Free 状態: 機能比較 + 3 プランカード + Restore が見える
+- assertVisible:
+    id: 'e2e_paywall_comparison'
+    label: '機能比較表が見える'
+
+- assertVisible:
+    id: 'e2e_plan_monthly'
+    label: '月額プランカードが見える (Free 状態)'
+
+- assertVisible:
+    id: 'e2e_plan_yearly'
+    label: '年額プランカードが見える (Free 状態)'
+
+- assertVisible:
+    id: 'e2e_plan_lifetime'
+    label: '買切プランカードが見える (Free 状態)'
+
+- assertVisible:
+    id: 'e2e_paywall_restore'
+    label: 'Restore Purchases ボタンが見える (Apple Review 3.1.1)'
+
+# Free 状態では Champion バナーは見えない
+- assertNotVisible:
+    id: 'e2e_paywall_champion_banner'
+    label: 'Free 状態で Champion バナーは表示されない'
+
+# Restore 押下 (過去購入なし → 「復元する購入はありません」Alert)
+# RC sandbox 連携で Free 端末 → 購入履歴ゼロ → restoreNotFound 文言が出る
+- tapOn:
+    id: 'e2e_paywall_restore'
+    label: '購入を復元タップ'
+
+# OS Alert がモーダルで出る (文言は i18n 依存のため文字列マッチは省略)
+# Maestro の Alert 検出は PRD 別途
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- back:
+    label: 'Settings へ戻る'
+
+- assertVisible:
+    id: 'e2e_settings_screen'
+    label: 'Settings に復帰'
+# TODO: Sandbox 連携 (AC9-1〜AC9-6)
+# - 月額購入 → entitlement active → e2e_settings_pro_badge 表示
+# - 年額購入 → 同上 + 期限表示
+# - 買切購入 → Settings に「Pro メンバー (買切)」ラベル + Paywall 上部 Champion バナー
+# - 上記は RC tester アカウント + StoreKit Configuration File が必要
+# - 着手時は this yaml の末尾に追記、別 PR (F-13e-2) で対応
