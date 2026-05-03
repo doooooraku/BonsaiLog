@@ -379,5 +379,8 @@ const ru: Partial<Record<TranslationKey, string>> = {
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
   onboardingTutNext: 'Next',
   skipForLater: 'Skip for later',
+  settingsHelpSection: 'Help',
+  settingsTutorialReplayTitle: 'Replay tutorial',
+  settingsTutorialReplayDesc: 'See the 5 feature tutorial screens again from the beginning.',
 };
 export default ru;

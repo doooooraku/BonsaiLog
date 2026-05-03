@@ -376,6 +376,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
     '当日まとめ通知と水やり通知でうっかり忘れを防ぎます。あとから設定で変更可能です。',
   onboardingTutNext: '次へ',
   skipForLater: 'あとで',
+  settingsHelpSection: 'ヘルプ',
+  settingsTutorialReplayTitle: 'チュートリアルを再表示',
+  settingsTutorialReplayDesc: '5 つの機能チュートリアルを最初から見直せます。',
 };
 
 export default ja;

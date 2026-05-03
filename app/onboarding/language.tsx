@@ -11,7 +11,7 @@
  * - 完了画面 (システム部 → 機能チュート 移行)
  * - スキップ動線 (各画面「あとで」、Welcome / 言語選択は対象外)
  */
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import * as Localization from 'expo-localization';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -20,6 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { setLang, useTranslation } from '@/src/core/i18n/i18n';
 import type { Lang } from '@/src/core/i18n/langCode';
+import { getNextOnboardingStep } from '@/src/features/onboarding/onboardingFlow';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
 
 type LanguageOption = {
@@ -55,7 +56,8 @@ const LANGUAGE_OPTIONS: LanguageOption[] = [
 export default function OnboardingLanguageScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
-  const setCompleted = useOnboardingStore((s) => s.setCompleted);
+  const markDismissed = useOnboardingStore((s) => s.markDismissed);
+  const dismissed = useOnboardingStore((s) => s.dismissed);
 
   // OS 言語タグ (例: 'ja-JP') を取得して、対応する 19 言語のうち最初のマッチを返す。
   const osLangCode = React.useMemo<Lang | null>(() => {
@@ -74,10 +76,24 @@ export default function OnboardingLanguageScreen() {
     setLang(code);
   }, []);
 
+  // F-26 Phase H: language → tut1 動線完成
+  // welcome / language を dismissed 化 → getNextOnboardingStep で tut1 等に遷移
   const handleNext = React.useCallback(() => {
-    setCompleted(true);
-    router.replace('/');
-  }, [router, setCompleted]);
+    markDismissed('welcome');
+    markDismissed('language');
+    const updatedDismissed = { ...dismissed, welcome: true, language: true };
+    const next = getNextOnboardingStep(false, updatedDismissed);
+    if (next === null) {
+      router.replace('/' as Href);
+      return;
+    }
+    if (next === 'welcome' || next === 'language') {
+      // 理論上発生しないが防御
+      router.replace('/' as Href);
+      return;
+    }
+    router.replace(`/onboarding/tut/${next}` as Href);
+  }, [router, markDismissed, dismissed]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']} testID="e2e_onboarding_language">
