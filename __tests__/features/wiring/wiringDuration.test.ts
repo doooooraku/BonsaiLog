@@ -7,6 +7,7 @@ import {
   getDaysSinceWired,
   getScheduledUnwireAt,
   getWeeksSinceWired,
+  validateScheduledUnwireAt,
 } from '@/src/features/wiring/wiringDuration';
 import type { Event } from '@/src/db/schema';
 
@@ -136,5 +137,70 @@ describe('getWeeksSinceWired (Phase B)', () => {
 
   test('負値は 0 にクランプ', () => {
     expect(getWeeksSinceWired(-5)).toBe(0);
+  });
+});
+
+describe('validateScheduledUnwireAt (Phase D, Issue #24 任意項目バリデーション)', () => {
+  const now = new Date('2026-05-03T12:00:00.000Z');
+
+  test('null / undefined / 空文字列は OK (任意項目)', () => {
+    expect(validateScheduledUnwireAt(null, now)).toBeNull();
+    expect(validateScheduledUnwireAt(undefined, now)).toBeNull();
+    expect(validateScheduledUnwireAt('', now)).toBeNull();
+  });
+
+  test('正常な未来日時 → null (エラーなし)', () => {
+    expect(validateScheduledUnwireAt('2026-06-15T09:00:00.000Z', now)).toBeNull();
+    expect(validateScheduledUnwireAt('2026-12-31T23:59:00.000Z', now)).toBeNull();
+  });
+
+  test('過去日時 → past_datetime', () => {
+    expect(validateScheduledUnwireAt('2026-05-03T11:59:59.000Z', now)).toBe('past_datetime');
+    expect(validateScheduledUnwireAt('2025-01-01T00:00:00.000Z', now)).toBe('past_datetime');
+    expect(validateScheduledUnwireAt('1970-01-01T00:00:00.000Z', now)).toBe('past_datetime');
+  });
+
+  test('現在時刻ちょうど (=) は past_datetime ではない (now < parsed が条件)', () => {
+    // parsedMs < nowMs の判定なので、parsedMs === nowMs はエラーなし
+    expect(validateScheduledUnwireAt('2026-05-03T12:00:00.000Z', now)).toBeNull();
+  });
+
+  test('5 年超過 → too_far_future', () => {
+    // now + 5 年 + 1 日 = 2031-05-04 (誤入力ガード対象)
+    expect(validateScheduledUnwireAt('2031-05-05T00:00:00.000Z', now)).toBe('too_far_future');
+    expect(validateScheduledUnwireAt('2099-12-31T00:00:00.000Z', now)).toBe('too_far_future');
+  });
+
+  test('5 年ちょうど境界 → null (5 年ぴったりは OK)', () => {
+    // 5 年 = 5 * 365 日 = 1825 日後
+    const fiveYearsLater = new Date(now.getTime() + 5 * 365 * 86_400_000);
+    expect(validateScheduledUnwireAt(fiveYearsLater.toISOString(), now)).toBeNull();
+  });
+
+  test('不正フォーマット → invalid_format', () => {
+    expect(validateScheduledUnwireAt('not a date', now)).toBe('invalid_format');
+    expect(validateScheduledUnwireAt('abc', now)).toBe('invalid_format');
+    expect(validateScheduledUnwireAt('2026-13-99T00:00:00Z', now)).toBe('invalid_format');
+    // 注: '2026/05/03' は Date.parse() が受理するため (ローカル 0 時として解釈)
+    // → now (12:00 Z) より前なので past_datetime と判定される (バリデーション層では適切な挙動)
+    expect(validateScheduledUnwireAt('2026/05/03', now)).toBe('past_datetime');
+  });
+
+  test('入力型ガード (string 以外、null/undefined 以外) → invalid_format', () => {
+    expect(validateScheduledUnwireAt(123 as unknown as string, now)).toBe('invalid_format');
+    expect(validateScheduledUnwireAt({} as unknown as string, now)).toBe('invalid_format');
+    expect(validateScheduledUnwireAt([] as unknown as string, now)).toBe('invalid_format');
+  });
+
+  test('Issue #24 シナリオ A: ユーザーが 1 ヶ月後を選択 → OK', () => {
+    expect(validateScheduledUnwireAt('2026-06-03T12:00:00.000Z', now)).toBeNull();
+  });
+
+  test('Issue #24 シナリオ B: ユーザーが昨日を誤選択 → past_datetime', () => {
+    expect(validateScheduledUnwireAt('2026-05-02T12:00:00.000Z', now)).toBe('past_datetime');
+  });
+
+  test('Issue #24 シナリオ C: DatePicker ローラー誤回転で 100 年後 → too_far_future', () => {
+    expect(validateScheduledUnwireAt('2126-05-03T12:00:00.000Z', now)).toBe('too_far_future');
   });
 });

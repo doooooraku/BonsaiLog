@@ -76,3 +76,37 @@ export function getWeeksSinceWired(daysSinceWired: number): number {
   if (daysSinceWired < 0) return 0;
   return Math.floor(daysSinceWired / 7);
 }
+
+/**
+ * Phase D (Issue #24): 「外す予定日時」入力バリデーション (任意項目)。
+ *
+ * Issue #24 AC:
+ * - 過去日時はバリデーション NG
+ * - 不正フォーマットも NG
+ * - 任意項目 (空入力は OK = null 返却)
+ *
+ * 5 年以上先の日付は誤入力ガードとして 'too_far_future' を返す
+ * (DatePicker でローラーが大きく回って事故的に遠未来を選択するケース防止)。
+ */
+export type ScheduledUnwireAtError = 'invalid_format' | 'past_datetime' | 'too_far_future' | null;
+
+const FIVE_YEARS_MS = 5 * 365 * 86_400_000;
+
+export function validateScheduledUnwireAt(
+  input: string | null | undefined,
+  now: Date,
+): ScheduledUnwireAtError {
+  // 任意項目: 空 / null / undefined は OK (バリデーションエラーなし)
+  if (input == null || (typeof input === 'string' && input.length === 0)) return null;
+  if (typeof input !== 'string') return 'invalid_format';
+
+  const parsed = new Date(input);
+  const parsedMs = parsed.getTime();
+  if (Number.isNaN(parsedMs)) return 'invalid_format';
+
+  const nowMs = now.getTime();
+  if (parsedMs < nowMs) return 'past_datetime';
+  if (parsedMs > nowMs + FIVE_YEARS_MS) return 'too_far_future';
+
+  return null;
+}
