@@ -26,6 +26,7 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 import { HEATMAP_COLORS } from '@/src/core/theme/colors';
 import {
   buildHeatmapDateKeys,
+  buildHeatmapSummary,
   getAggregateLevel,
   getDailyAggregateRatio,
   getDailyWateringCounts,
@@ -53,6 +54,12 @@ type Props = {
   tzOffsetMin: number;
   mode?: WateringHeatmapMode;
   totalBonsaiCount?: number;
+  /**
+   * Phase G-3: 凡例下サマリー (記録日数 / 件数) 表示。デフォルト false (呼出側オプトイン)。
+   * - true 時: 直近 12 週 (84 日) の `recordedDays / 84 (Y%)` と `totalEvents` を表示
+   * - ADR-0013 §27-28、v1.0 は 12 週固定 (Notes に v1.x 課題明記)
+   */
+  showSummary?: boolean;
   testID?: string;
 };
 
@@ -62,6 +69,7 @@ export function WateringHeatmap({
   tzOffsetMin,
   mode = 'individual',
   totalBonsaiCount = 0,
+  showSummary = false,
   testID,
 }: Props) {
   const { t } = useTranslation();
@@ -121,6 +129,16 @@ export function WateringHeatmap({
     }
     return result;
   }, [dateKeys, counts, mode, aggregateRatios]);
+
+  // Phase G-3: 凡例下サマリー (12 週 = 84 日固定、ADR-0013 §27-28)。
+  // 集約モードでも個別モードでも同じ純関数 buildHeatmapSummary を使用。
+  const summary = React.useMemo(
+    () =>
+      showSummary ? buildHeatmapSummary(events, tzOffsetMin, HEATMAP_DAYS, todayLocalKey) : null,
+    [showSummary, events, tzOffsetMin, todayLocalKey],
+  );
+  const summaryPercent =
+    summary != null ? Math.round((summary.recordedDays / HEATMAP_DAYS) * 100) : 0;
 
   // F-04 Phase F: Canvas 全体サイズ。グリッドは 12 列 × 7 行 で計算。
   const canvasWidth = 12 * CELL_SIZE + 11 * CELL_GAP;
@@ -202,6 +220,23 @@ export function WateringHeatmap({
             }
           />
         </View>
+        {/* Phase G-3 (AC7): 凡例下サマリー、ADR-0013 §27-28、v1.0 は 12 週固定 */}
+        {summary != null && (
+          <View style={styles.summary} testID="e2e_heatmap_summary">
+            <ThemedText style={styles.summaryLine}>
+              {t('wateringHeatmapSummaryRecordedDays')
+                .replace('{days}', String(summary.recordedDays))
+                .replace('{total}', String(HEATMAP_DAYS))
+                .replace('{percent}', String(summaryPercent))}
+            </ThemedText>
+            <ThemedText style={styles.summaryLine}>
+              {t('wateringHeatmapSummaryTotalEvents').replace(
+                '{count}',
+                String(summary.totalEvents),
+              )}
+            </ThemedText>
+          </View>
+        )}
       </View>
 
       {/* F-04 Phase E (Issue #29): セル詳細 BottomSheet (タップで開閉) */}
@@ -255,6 +290,9 @@ const styles = StyleSheet.create({
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   legendSwatch: { width: 12, height: 12, borderRadius: 2 },
   legendItemText: { fontSize: 12 },
+  // Phase G-3: サマリー行 (記録日数 / 件数)
+  summary: { marginTop: 4, gap: 2 },
+  summaryLine: { fontSize: 12, opacity: 0.85 },
   sheetContent: { padding: 16, gap: 8 },
   sheetTitle: { fontSize: 16 },
   sheetCount: { fontSize: 14, opacity: 0.8 },

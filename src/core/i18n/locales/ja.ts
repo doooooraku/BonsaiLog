@@ -331,6 +331,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringHeatmapLegendAgg2: '34-66%',
   wateringHeatmapLegendAgg3: '67-100%',
 
+  // --- F-04 Phase G-3 summary (Issue #29, ADR-0013 §27-28) ---
+  wateringHeatmapSummaryRecordedDays: '記録日数: {days} / {total} 日 ({percent}%)',
+  wateringHeatmapSummaryTotalEvents: '記録件数: {count} 件',
+
   // --- F-07 装着期間アプリ内表示 (Phase B、Issue #24、ADR-0014) ---
   wiringDurationWithinWeeks: '装着期間: {weeks} 週',
   wiringDurationOverdueLabel: '装着期間: {weeks} 週 (経過済)',

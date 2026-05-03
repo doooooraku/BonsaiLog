@@ -60,6 +60,7 @@ export default function StatsScreen() {
           tzOffsetMin={tzOffsetMin}
           mode="aggregate"
           totalBonsaiCount={bonsai.length}
+          showSummary
           testID="e2e_stats_watering_heatmap"
         />
       </ScrollView>
