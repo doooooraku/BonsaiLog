@@ -35,8 +35,6 @@ export const useOnboardingStore = create<OnboardingState>()(
       markDismissed: (step) => set((s) => ({ dismissed: { ...s.dismissed, [step]: true } })),
       resetTutorial: () =>
         set((s) => {
-          const { welcome: _w, language: _l, ...rest } = s.dismissed;
-          // Step 1-5 のみリセット (welcome / language は対象外)
           const tut: Partial<Record<OnboardingStep, boolean>> = {};
           if (s.dismissed.welcome) tut.welcome = true;
           if (s.dismissed.language) tut.language = true;
