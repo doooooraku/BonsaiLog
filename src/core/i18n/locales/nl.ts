@@ -333,5 +333,11 @@ const nl: Partial<Record<TranslationKey, string>> = {
     'Purchases are not allowed on this device. Please check your device settings.',
   purchasePending:
     'Your purchase is pending approval. We will activate Pro automatically once approved.',
+  settingsRestoreTitle: 'Restore purchases',
+  settingsRestoreDesc: 'Already paid on another device? Restore here.',
+  lifetimeWarningTitle: 'Confirm Lifetime purchase',
+  lifetimeWarningBody:
+    'Existing subscriptions are not auto-cancelled. Please manage them in your Apple ID or Google Play settings.',
+  confirm: 'Confirm',
 };
 export default nl;

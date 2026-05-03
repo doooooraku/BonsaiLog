@@ -331,6 +331,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   purchaseErrorStoreProblem: 'ストアで問題が発生しました。しばらく経ってから再度お試しください。',
   purchaseErrorNotAllowed: 'この端末では購入が許可されていません。端末の設定をご確認ください。',
   purchasePending: 'お支払い承認待ちです。承認され次第、自動的に Pro を有効化します。',
+  settingsRestoreTitle: 'ご購入履歴を復元',
+  settingsRestoreDesc: '別の端末で購入済みの方はこちらから復元できます。',
+  lifetimeWarningTitle: 'Lifetime 購入の確認',
+  lifetimeWarningBody:
+    '既存のサブスクリプションは自動的にキャンセルされません。Apple ID または Google Play の設定からご解約ください。',
+  confirm: '確認',
 };
 
 export default ja;

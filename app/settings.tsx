@@ -96,6 +96,22 @@ export default function SettingsScreen() {
     }
   }, [t]);
 
+  // F-13 Phase 2d (Issue #20, ADR-0009 AC4-1): Settings からの「購入を復元」(Apple Review 3.1.1)
+  const restorePro = useProStore((s) => s.restore);
+  const [restoring, setRestoring] = React.useState(false);
+  const handleRestorePress = React.useCallback(async () => {
+    if (restoring) return;
+    setRestoring(true);
+    try {
+      const result = await restorePro();
+      Alert.alert(result.hasActive ? t('restoreSuccess') : t('restoreNotFound'));
+    } catch {
+      Alert.alert(t('restoreFailed'));
+    } finally {
+      setRestoring(false);
+    }
+  }, [restorePro, restoring, t]);
+
   const themeOptions: { value: 'system' | 'light' | 'dark'; labelKey: string }[] = [
     { value: 'system', labelKey: 'settingsThemeSystem' },
     { value: 'light', labelKey: 'settingsThemeLight' },
@@ -178,6 +194,19 @@ export default function SettingsScreen() {
             <ThemedText style={styles.entryDesc}>
               {isPro ? t('settingsAccountProActiveDesc') : t('settingsAccountProInactiveDesc')}
             </ThemedText>
+          </Pressable>
+
+          {/* F-13 Phase 2d (Issue #20, ADR-0009 AC4-1): Settings からの購入復元 (Apple Review 3.1.1) */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('settingsRestoreTitle')}
+            testID="e2e_settings_restore_purchase"
+            style={[styles.entry, restoring && styles.entryDisabled]}
+            disabled={restoring}
+            onPress={handleRestorePress}
+          >
+            <ThemedText type="defaultSemiBold">{t('settingsRestoreTitle')}</ThemedText>
+            <ThemedText style={styles.entryDesc}>{t('settingsRestoreDesc')}</ThemedText>
           </Pressable>
         </View>
 
@@ -357,6 +386,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
+  entryDisabled: { opacity: 0.6 },
   toggleRow: {
     padding: 16,
     borderRadius: 12,

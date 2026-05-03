@@ -84,7 +84,7 @@ export default function PaywallScreen() {
   // Champion 方式 (Pocket Casts): Lifetime 所持時はサブスク非表示。
   const hideSubscriptions = planType === 'lifetime';
 
-  const handlePurchase = React.useCallback(
+  const startPurchase = React.useCallback(
     async (plan: PlanType) => {
       setAction(plan);
       try {
@@ -101,6 +101,22 @@ export default function PaywallScreen() {
       }
     },
     [purchasePro, t],
+  );
+
+  const handlePurchase = React.useCallback(
+    (plan: PlanType) => {
+      // F-13 Phase 2d (Issue #20, ADR-0009 AC5): Apple Review 3.1.2(c) 透明性。
+      // Lifetime 購入時、既存サブスク自動キャンセルされない旨を購入前に明示。
+      if (plan === 'lifetime') {
+        Alert.alert(t('lifetimeWarningTitle'), t('lifetimeWarningBody'), [
+          { text: t('cancel'), style: 'cancel' },
+          { text: t('confirm'), onPress: () => void startPurchase(plan) },
+        ]);
+        return;
+      }
+      void startPurchase(plan);
+    },
+    [startPurchase, t],
   );
 
   const handleRestore = React.useCallback(async () => {
