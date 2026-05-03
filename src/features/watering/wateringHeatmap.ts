@@ -183,3 +183,89 @@ export function buildHeatmapDateKeys(todayLocalKey: string, days: number): strin
   }
   return keys;
 }
+
+/**
+ * Phase D-1 (AC7): events からヒートマップサマリーを算出する純関数。
+ *
+ * @param events 対象 events 配列 (取得側で bonsaiId / 期間フィルタ済を想定)
+ * @param tzOffsetMin ユーザーローカルの UTC オフセット (分単位)
+ * @param windowDays 集計対象日数 (例: 365 なら直近 1 年)、optional
+ * @param todayLocalKey windowDays 指定時の起点 (YYYY-MM-DD)、optional
+ *
+ * @returns
+ *   - recordedDays: 水やり記録があった日数 (1 日複数記録は 1 日カウント)
+ *   - totalEvents: 水やり記録の総件数 (1 日複数記録は加算)
+ *
+ * windowDays 指定時は [todayLocalKey - (windowDays-1) ..= todayLocalKey] の範囲で集計、
+ * 未指定時は全 events を対象。
+ */
+export type HeatmapSummary = {
+  recordedDays: number;
+  totalEvents: number;
+};
+
+export function buildHeatmapSummary(
+  events: readonly Event[],
+  tzOffsetMin: number,
+  windowDays?: number,
+  todayLocalKey?: string,
+): HeatmapSummary {
+  const days = new Set<string>();
+  let total = 0;
+  let windowStartKey: string | null = null;
+
+  if (windowDays != null && todayLocalKey != null) {
+    const startMs =
+      Date.UTC(
+        Number(todayLocalKey.slice(0, 4)),
+        Number(todayLocalKey.slice(5, 7)) - 1,
+        Number(todayLocalKey.slice(8, 10)),
+      ) -
+      (windowDays - 1) * 86_400_000;
+    windowStartKey = new Date(startMs).toISOString().slice(0, 10);
+  }
+
+  for (const event of events) {
+    if (event.type !== 'watering') continue;
+    if (event.status !== 'logged') continue;
+    if (event.deletedAt != null) continue;
+
+    const key = toLocalDateKey(event.occurredAtUtc, tzOffsetMin);
+    if (windowStartKey != null && todayLocalKey != null) {
+      if (key < windowStartKey || key > todayLocalKey) continue;
+    }
+
+    days.add(key);
+    total += 1;
+  }
+
+  return { recordedDays: days.size, totalEvents: total };
+}
+
+/**
+ * Phase D-1 (AC5): 指定日 (YYYY-MM-DD) に該当する events を返す純関数 (BottomSheet 詳細用)。
+ *
+ * - kind フィルタなし (watering / fertilizing / wiring 全て対象)
+ * - status='logged' / deletedAt=null のみ (planned events は別途扱い)
+ * - occurredAtUtc 昇順 (古い時刻が先)
+ *
+ * @param events 対象 events 配列 (取得側で bonsaiId フィルタ済を想定)
+ * @param dateKey 対象日 (YYYY-MM-DD ローカル日付)
+ * @param tzOffsetMin ユーザーローカルの UTC オフセット (分単位)
+ */
+export function getEventsForDay(
+  events: readonly Event[],
+  dateKey: string,
+  tzOffsetMin: number,
+): Event[] {
+  const matched: Event[] = [];
+  for (const event of events) {
+    if (event.status !== 'logged') continue;
+    if (event.deletedAt != null) continue;
+    const key = toLocalDateKey(event.occurredAtUtc, tzOffsetMin);
+    if (key !== dateKey) continue;
+    matched.push(event);
+  }
+  matched.sort((a, b) => (a.occurredAtUtc < b.occurredAtUtc ? -1 : 1));
+  return matched;
+}
