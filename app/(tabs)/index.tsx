@@ -2,11 +2,26 @@ import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useTranslation } from '@/src/core/i18n/i18n';
 import { AdBanner } from '@/src/features/ads/AdBanner';
+import { useProStore } from '@/src/stores/proStore';
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
+  const isPro = useProStore((s) => s.isPro);
+
   return (
     <ThemedView style={styles.container}>
+      {/* F-13 Phase 2e (Issue #20, ADR-0009 AC3-5): ホーム画面右上に小さな Pro バッジを常時表示 */}
+      {isPro && (
+        <View
+          style={styles.proBadge}
+          accessibilityLabel={t('settingsAccountProActive')}
+          testID="e2e_home_pro_badge"
+        >
+          <ThemedText style={styles.proBadgeText}>{t('proBadgeShort')}</ThemedText>
+        </View>
+      )}
       <View style={styles.content}>
         <ThemedText type="title">BonsaiLog</ThemedText>
         <ThemedText>ここからアプリを作り始めましょう。</ThemedText>
@@ -26,4 +41,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
   },
+  // ADR-0009 AC3-5: 小さな「Pro」バッジ。SafeArea ヘッダー外に絶対配置、Settings と同色 (#2E7D32)
+  proBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    backgroundColor: '#2E7D32',
+    zIndex: 10,
+  },
+  proBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
 });
