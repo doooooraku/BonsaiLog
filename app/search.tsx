@@ -24,6 +24,7 @@ import { searchEvents } from '@/src/db/eventRepository';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
 import type { Bonsai, Event } from '@/src/db/schema';
 import { useSearchHistoryStore } from '@/src/features/search/searchHistoryStore';
+import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 
 export default function SearchScreen() {
   const { t } = useTranslation();
@@ -75,6 +76,7 @@ export default function SearchScreen() {
 
   return (
     <ThemedView style={styles.container} testID="e2e_search_screen">
+      <OutdoorToggleButton testIdSuffix="search_outdoor_toggle" />
       <View style={styles.searchBox}>
         <TextInput
           accessibilityLabel={t('searchPlaceholder')}

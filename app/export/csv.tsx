@@ -20,6 +20,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { eventsToCsvString } from '@/src/features/export/csvExport';
 import { isStorageSufficient } from '@/src/features/export/pdfReliability';
+import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 import { getDb } from '@/src/db/db';
 import type { Event } from '@/src/db/schema';
 import { useProStore } from '@/src/stores/proStore';
@@ -85,6 +86,7 @@ export default function ExportCsvScreen() {
 
   return (
     <ThemedView style={styles.container} testID="e2e_export_csv_screen">
+      <OutdoorToggleButton testIdSuffix="export_csv_outdoor_toggle" />
       <ScrollView contentContainerStyle={styles.scroll}>
         <ThemedText type="title" style={styles.title}>
           {t('exportCsvTitle')}
