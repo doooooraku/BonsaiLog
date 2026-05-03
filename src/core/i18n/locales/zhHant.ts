@@ -369,5 +369,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
+  onboardingTutNext: 'Next',
+  skipForLater: 'Skip for later',
 };
 export default zhHant;
