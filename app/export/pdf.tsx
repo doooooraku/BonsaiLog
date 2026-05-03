@@ -15,7 +15,7 @@
  * - 詳細選択 UI (期間 / 樹種フィルタ)
  */
 import * as LegacyFileSystem from 'expo-file-system/legacy';
-import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -32,13 +32,14 @@ import {
   readPhotoAsBase64,
 } from '@/src/features/export/pdfExport';
 import { isStorageSufficient } from '@/src/features/export/pdfReliability';
+import { useGoToPaywall } from '@/src/features/pro/useGoToPaywall';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 import { useProStore } from '@/src/stores/proStore';
 
 export default function ExportPdfScreen() {
-  const router = useRouter();
   const { t, lang } = useTranslation();
   const isPro = useProStore((s) => s.isPro);
+  const goToPaywall = useGoToPaywall();
   const [bonsaiList, setBonsaiList] = React.useState<Bonsai[]>([]);
   const [busyId, setBusyId] = React.useState<string | null>(null);
 
@@ -53,10 +54,7 @@ export default function ExportPdfScreen() {
   const handleExport = async (bonsai: Bonsai) => {
     if (busyId !== null) return;
     if (!isPro) {
-      Alert.alert(t('exportProRequiredTitle'), t('exportProRequiredBody'), [
-        { text: t('cancel'), style: 'cancel' },
-        { text: t('proCtaUpgrade'), onPress: () => router.push('/pro' as Href) },
-      ]);
+      goToPaywall(t('exportProRequiredTitle'), t('exportProRequiredBody'));
       return;
     }
     // F-10 Phase L (Issue #33, ADR-0016 AC7): ストレージ事前チェック
