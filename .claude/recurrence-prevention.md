@@ -162,6 +162,12 @@
 - **根拠**: lessons.md が膨大になると重要部分が読まれない (ユーザー指摘 2026-05-03)。注意で済ませず構造的に防ぐ。
 - **自動化**: `scripts/docs-lint.mjs` の `checkRuleDocsLineLimit()` で行数上限を error 検出。
 
+### R-25. ADR Decision と実コードの整合性チェック (spec-code drift)
+
+- **ルール**: ADR の Decision で具体的な技術仕様 (DB schema、SDK バージョン、tokenize オプション等) が書かれている場合、実装着手前 + Phase 完了前に該当ファイルを Read + grep で ADR と整合確認する。テストや CI 緑だけでは drift 検出できない。
+- **根拠**: 2026-05-03 セッションで `events_fts` の `tokenize="trigram"` (実コード) と ADR-0008 §4.3.4 の `tokenize='trigram remove_diacritics 1' detail=column` (仕様) の乖離を発見。F-09 検索 Phase H まで進んでいたが drift は気付かれず、構造的検出機構が無かった。
+- **自動化候補**: ADR の Decision セクションから「具体的な hex / SQL / バージョン文字列」を抽出して、対応するコード/設定ファイルに対して grep する CI スクリプト (将来検討、現状は人間レビューで対応)。
+
 ---
 
 ## 運用ルール
@@ -169,7 +175,7 @@
 1. **本ファイルはセッション開始時に必読**（`AGENTS.md` Session Start Checklist 経由）。
 2. **新たな再発パターンが見つかったら本ファイルに追記**（lessons.md ではなく）。
 3. **R-N の番号は変更しない**（既存参照を破壊しない、削除する場合は「~~R-N: 削除~~」と注記）。
-4. **項目が 30 を超えたら別ファイル分割を検討**（**250 行以内** を維持、現状 R-1〜R-24）。`scripts/docs-lint.mjs` で自動検出。
+4. **項目が 30 を超えたら別ファイル分割を検討**（**250 行以内** を維持、現状 R-1〜R-25）。`scripts/docs-lint.mjs` で自動検出。
 5. **R-13 以降は Hook で構造的に防止**（注意ではなく仕組み化、`.claude/hooks/` 参照）。
 6. **3 回再発で昇華必須**（CLAUDE.md §9 記憶の昇華ルール）: 同一テーマが lessons / recurrence-prevention に 3 件以上溜まったら、hook / ESLint / CI / 型システムで構造的に防ぐ仕組みに昇華し、下位記憶からは該当記述を削除する。
 
