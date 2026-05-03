@@ -19,6 +19,7 @@ import {
   isFallbackableError,
   isStorageSufficient,
   reducePhotoCountForAttempt,
+  runWithFallback,
 } from '@/src/features/export/pdfReliability';
 
 describe('定数', () => {
@@ -307,5 +308,108 @@ describe('AC5 3 段階フォールバック統合', () => {
     const error = new PdfStorageLowError(50);
     expect(isFallbackableError(error)).toBe(false);
     // 上位層は throw して UI にエラー表示
+  });
+});
+
+describe('Phase G: runWithFallback (AC5-3 attempt loop)', () => {
+  test('attempt 1 で成功 → 1 回呼び出しのみ', async () => {
+    const factory = jest.fn(async () => 'ok');
+    const result = await runWithFallback([1, 2, 3], factory);
+    expect(result).toEqual({ result: 'ok', attemptUsed: 1 });
+    expect(factory).toHaveBeenCalledTimes(1);
+    expect(factory).toHaveBeenCalledWith(1);
+  });
+
+  test('attempt 1 失敗 (BlankPdfError) → attempt 2 で成功', async () => {
+    const factory = jest.fn(async (attempt: number) => {
+      if (attempt === 1) throw new BlankPdfError(500);
+      return 'success at attempt 2';
+    });
+    const result = await runWithFallback([1, 2, 3], factory);
+    expect(result).toEqual({ result: 'success at attempt 2', attemptUsed: 2 });
+    expect(factory).toHaveBeenCalledTimes(2);
+  });
+
+  test('attempt 1, 2 失敗 → attempt 3 で成功', async () => {
+    const factory = jest.fn(async (attempt: number) => {
+      if (attempt < 3) throw new PdfHangError(10000, attempt as 1 | 2);
+      return 'tiny works';
+    });
+    const result = await runWithFallback([1, 2, 3], factory);
+    expect(result).toEqual({ result: 'tiny works', attemptUsed: 3 });
+    expect(factory).toHaveBeenCalledTimes(3);
+  });
+
+  test('全 attempt 失敗 → 最後のエラーを throw', async () => {
+    const factory = jest.fn(async () => {
+      throw new BlankPdfError(100);
+    });
+    await expect(runWithFallback([1, 2, 3], factory)).rejects.toBeInstanceOf(BlankPdfError);
+    expect(factory).toHaveBeenCalledTimes(3);
+  });
+
+  test('フォールバック不可エラー (PdfStorageLowError) → 即時 throw、再試行なし', async () => {
+    const factory = jest.fn(async () => {
+      throw new PdfStorageLowError(50);
+    });
+    await expect(runWithFallback([1, 2, 3], factory)).rejects.toBeInstanceOf(PdfStorageLowError);
+    expect(factory).toHaveBeenCalledTimes(1);
+  });
+
+  test('未知エラー (Error) → フォールバック不可で即時 throw', async () => {
+    const factory = jest.fn(async () => {
+      throw new Error('unknown');
+    });
+    await expect(runWithFallback([1, 2, 3], factory)).rejects.toThrow('unknown');
+    expect(factory).toHaveBeenCalledTimes(1);
+  });
+
+  test('attempts=[1] (単発) → 失敗で即 throw (再試行なし)', async () => {
+    const factory = jest.fn(async () => {
+      throw new BlankPdfError(100);
+    });
+    await expect(runWithFallback([1], factory)).rejects.toBeInstanceOf(BlankPdfError);
+    expect(factory).toHaveBeenCalledTimes(1);
+  });
+
+  test('attempts 空配列 → throw (使用バグ防止)', async () => {
+    const factory = jest.fn();
+    await expect(runWithFallback([], factory)).rejects.toThrow(/non-empty/);
+    expect(factory).not.toHaveBeenCalled();
+  });
+
+  test('attempts=[1, 3] (連続でない) でも順次試行', async () => {
+    const factory = jest.fn(async (attempt: number) => {
+      if (attempt === 1) throw new BlankPdfError(500);
+      return `done at ${attempt}`;
+    });
+    const result = await runWithFallback([1, 3], factory);
+    expect(result.attemptUsed).toBe(3);
+    expect(factory).toHaveBeenCalledTimes(2);
+    expect(factory).toHaveBeenNthCalledWith(1, 1);
+    expect(factory).toHaveBeenNthCalledWith(2, 3);
+  });
+
+  test('AC5-3 統合: 10 枚 → attempt 1 失敗 → reduced (5 枚) で成功', async () => {
+    const photoUris = Array.from({ length: 10 }, (_, i) => `p${i}`);
+    const factory = jest.fn(async (attempt: 1 | 2 | 3) => {
+      const photos = reducePhotoCountForAttempt(photoUris, attempt);
+      if (attempt === 1) throw new BlankPdfError(500);
+      return { kind: getAttemptKind(attempt), count: photos.length };
+    });
+
+    const result = await runWithFallback([1, 2, 3], factory);
+    expect(result.attemptUsed).toBe(2);
+    expect(result.result).toEqual({ kind: 'reduced', count: REDUCED_PHOTO_LIMIT });
+  });
+
+  test('AC5-3 統合: 全 attempt 失敗で最終エラー (BlankPdfError)', async () => {
+    const factory = jest.fn(async () => {
+      throw new BlankPdfError(100);
+    });
+    await expect(runWithFallback([1, 2, 3], factory)).rejects.toBeInstanceOf(BlankPdfError);
+    expect(factory).toHaveBeenCalledTimes(3);
+    // 最後の attempt は 3
+    expect(factory).toHaveBeenLastCalledWith(3);
   });
 });
