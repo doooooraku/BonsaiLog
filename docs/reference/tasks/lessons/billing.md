@@ -22,3 +22,13 @@
 - **何が起きたか**: F-13 Champion バナーの `paywallChampionBannerTitle` / `paywallChampionBannerDesc` を 19 言語に追加する際、Edit を 19 回繰り返すのは非効率かつ漏れリスクがあった。
 - **根本原因**: 手動 Edit は順序ミスや locale 漏れを生む。
 - **ルール**: 新規 i18n キーが 2 件以上 × 17 言語以上の英語フォールバック追加では Node script を一時生成 → 既存アンカー (`proLifetimeFinePrint:` 等) の直後に挿入 → `grep -L <key> src/core/i18n/locales/*.ts` で残存ゼロ確認、の手順 (R-1 一括処理後の目視確認) で行う。
+
+### Free → Paywall 遷移は Alert 2 ボタン + `Href` cast
+
+- **何が起きたか**: F-10 エクスポート 3 画面 (`csv.tsx` / `pdf.tsx` / `list-pdf.tsx`) で「Pro 限定」案内 Alert は当初 OK 1 ボタンだけだったため、Issue #33 AC「Free でタップ → Paywall 遷移」を充足できていなかった。
+- **根本原因**: Alert 1 ボタンでは導線が途切れ、ユーザーは自分で Settings → Pro 画面へ移動する必要があった。Apple Review 観点でも「Pro 機能を提示しただけで購入導線がない」と見なされるリスク。
+- **ルール**:
+  1. Pro 限定機能の Free タップ時は **必ず 2 ボタン Alert** (`{ text: t('cancel'), style: 'cancel' }` + `{ text: t('proCtaUpgrade'), onPress: () => router.push('/pro' as Href) }`) で構成する
+  2. `'/pro'` は `expo-router` の型で受け付けないため **`as Href` キャスト必須** (`import { useRouter, type Href } from 'expo-router'`)
+  3. Pro 画面 (`/pro`) は Paywall を内包し、購入後は proStore reactive で自動的に元の画面に戻れる
+- **一次情報**: ADR-0009 (F-13 Paywall) / ADR-0016 (F-10 Pro 限定) / Apple Review Guideline 3.1.1
