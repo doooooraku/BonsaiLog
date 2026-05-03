@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { resolveEffectiveScheme } from '@/src/core/theme/themeResolver';
 import { ensureNotificationChannels } from '@/src/features/notification/scheduler';
 import { initializeAds } from '@/src/services/adService';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
@@ -16,13 +17,18 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
-  // F-15 Phase A: themeMode が 'system' なら OS 連動、それ以外はユーザー選択を強制 (ADR-0015)。
-  // F-15 Phase B (Issue #32): outdoorMode が true のときは Light fallback で動作 (Phase C で
-  // Tamagui themes 全面再設計時に純白+純黒+緑単色パレットを適用)。
+  // F-15 Phase E (Issue #32, ADR-0015): resolveEffectiveScheme 純関数で
+  // themeMode + systemScheme + outdoorMode から実効スキームを決定。
+  // インライン式 (PR #66 / #80) を純関数に置換し、ロジックを単一の真実点に集約。
   const systemScheme = useColorScheme();
   const themeMode = useSettingsStore((s) => s.themeMode);
   const outdoorMode = useSettingsStore((s) => s.outdoorMode);
-  const effectiveScheme = outdoorMode ? 'light' : themeMode === 'system' ? systemScheme : themeMode;
+  // useColorScheme は 'light' | 'dark' | null | 'unspecified' を返す。
+  // resolveEffectiveScheme は 'light' | 'dark' | null/undefined のみ受理するため、
+  // 'unspecified' は null に正規化 → light フォールバックさせる。
+  const normalizedSystemScheme =
+    systemScheme === 'light' || systemScheme === 'dark' ? systemScheme : null;
+  const effectiveScheme = resolveEffectiveScheme(themeMode, normalizedSystemScheme, outdoorMode);
   const isDark = effectiveScheme === 'dark';
 
   // F-LEGAL-001 Phase A (Issue #37, ADR-0017): Pro 状態を初期化し、Free 時のみ ATT/UMP + AdMob 初期化。
