@@ -380,6 +380,8 @@ const baseEn = {
   settingsHelpSection: 'Help',
   settingsTutorialReplayTitle: 'Replay tutorial',
   settingsTutorialReplayDesc: 'See the 5 feature tutorial screens again from the beginning.',
+  searchRecentTitle: 'Recent searches',
+  searchHistoryClear: 'Clear history',
 };
 
 export type TranslationKey = keyof typeof baseEn;
