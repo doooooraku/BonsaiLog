@@ -61,13 +61,27 @@ export async function getPhotoCountByBonsai(bonsaiId: string): Promise<number> {
 }
 
 /**
+ * 写真追加可否を純関数で判定 (F-13 AC6-3 / ADR-0009 Notion 方式)。
+ *
+ * Notion 方式: Pro → Free 戻りで「既存写真は閲覧可、新規追加のみ Free 制限」。
+ * 既存写真の削除は行わないため、count > limit でも閲覧は可能 (本関数は新規追加判定のみ)。
+ *
+ * @param count 現在の盆栽内写真件数
+ * @param isPro Pro エンタイトルメント保持中なら true
+ * @returns 新規追加可なら true
+ */
+export function canAddPhotoFromCount(count: number, isPro: boolean): boolean {
+  if (isPro) return true;
+  return count < FREE_PHOTO_LIMIT_PER_BONSAI;
+}
+
+/**
  * Free プランで写真追加可能か判定。Pro なら true 即返却。
  * UI 側で呼び、false の場合は Paywall へ誘導 (F-13 完成後)。
  */
 export async function canAddPhoto(bonsaiId: string, isPro: boolean): Promise<boolean> {
-  if (isPro) return true;
   const count = await getPhotoCountByBonsai(bonsaiId);
-  return count < FREE_PHOTO_LIMIT_PER_BONSAI;
+  return canAddPhotoFromCount(count, isPro);
 }
 
 // ---------------------------------------------------------------------------
