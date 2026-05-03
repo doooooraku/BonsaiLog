@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { resolveEffectiveScheme } from '@/src/core/theme/themeResolver';
+import { isOnboardingFinished } from '@/src/features/onboarding/onboardingFlow';
 import { ensureNotificationChannels } from '@/src/features/notification/scheduler';
 import { initializeAds } from '@/src/services/adService';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
@@ -57,16 +58,19 @@ export default function RootLayout() {
     });
   }, [proInitialized, isPro]);
 
-  // F-26 Phase B (Issue #26, ADR-0018): オンボ未完了 → /onboarding/welcome へリダイレクト
+  // F-26 Phase E (Issue #26, ADR-0018): オンボ未完了 → /onboarding/welcome へリダイレクト
+  // isOnboardingFinished 純関数 (#105) で「completed フラグ」または「全 step dismissed」
+  // のいずれかで完了扱いに統一 (4 パターン完了判定の真実点を 1 つに集約)。
   const onboardingCompleted = useOnboardingStore((s) => s.completed);
+  const onboardingDismissed = useOnboardingStore((s) => s.dismissed);
   const router = useRouter();
   const segments = useSegments() as string[];
   useEffect(() => {
-    if (onboardingCompleted) return;
+    if (isOnboardingFinished(onboardingCompleted, onboardingDismissed)) return;
     const inOnboarding = segments[0] === 'onboarding';
     if (inOnboarding) return;
     router.replace('/onboarding/welcome' as Href);
-  }, [onboardingCompleted, segments, router]);
+  }, [onboardingCompleted, onboardingDismissed, segments, router]);
 
   return (
     <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
