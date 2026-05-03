@@ -74,6 +74,8 @@ const ko: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: '일회성 구매입니다. 자동 갱신이 없습니다.',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
   paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
+  settingsAccountProLifetimeTitle: 'Pro Member (Lifetime)',
+  settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 
   // --- Legal ---
   legalSectionTitle: '법적 정보',
