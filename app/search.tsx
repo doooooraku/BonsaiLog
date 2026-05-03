@@ -23,6 +23,7 @@ import { searchBonsaiByName } from '@/src/db/bonsaiRepository';
 import { searchEvents } from '@/src/db/eventRepository';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
 import type { Bonsai, Event } from '@/src/db/schema';
+import { useSearchHistoryStore } from '@/src/features/search/searchHistoryStore';
 
 export default function SearchScreen() {
   const { t } = useTranslation();
@@ -60,6 +61,9 @@ export default function SearchScreen() {
       setBonsaiResults(bonsai);
       setEventResults(events.slice(0, 50));
       setSearched(true);
+      // F-09 Phase G (Issue #31, ADR-0008 改訂): 検索履歴に追加
+      // searchHistoryStore (#119) で normalize + 重複排除 + FIFO 20 件
+      useSearchHistoryStore.getState().push(trimmed);
     } finally {
       setBusy(false);
     }
