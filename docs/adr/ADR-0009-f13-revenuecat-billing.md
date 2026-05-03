@@ -307,3 +307,18 @@ F-13 を以下の構成で実装する。
 - Repolog (9.6.6) → BonsaiLog (10.x) は **逆移植不可** （Billing Lib 7 → 8 の Breaking Change）
 - 互換性は維持しない方針（Repolog は Repolog として維持、BonsaiLog は新基盤で進化）
 - Repolog の lessons.md L427-437 (RC API キー EAS 登録ルール) は BonsaiLog でも踏襲必須
+
+### 実装履歴
+
+- **2026-05-02 セッション (前)**: PR #58 Phase 0 (RC 10.x bump + PoC docs) main マージ。proService.ts (293 行、`mapPurchaseErrorCode` 含む) / proStore.ts / PaywallScreen.tsx / app/pro.tsx は前セッションまでに実装済 (Phase 1〜2c 相当)
+- **2026-05-03 セッション (本)**: 9 PR をマージし、コード側 AC を概ね充足
+  - PR #139 F-13a: `shouldHideSubscriptions` 純関数 + 4 ケーステスト (AC10-3)
+  - PR #140 F-13d: Paywall 上部 Champion バナー + 19 言語 i18n (AC3-2)
+  - PR #141 F-13b: Settings アカウント Pro 状態 3 種表示 + 19 言語 i18n (AC3-4)
+  - PR #142 F-13g: 盆栽詳細画面の `isPro = false` 暫定固定を proStore 配線 (AC6-1 前提)
+  - PR #143 F-13f-1: glossary に Champion 方式 / Notion 方式 / Pro メンバー 2 種を追加
+  - PR #144 F-13f-2: functional_spec §18 を Champion / 10.x / Notion 方式で書き換え
+  - PR #146 F-13e: Maestro `paywall-to-purchase.yml` 雛形 (screens-reach 部分、AC10-5 雛形)
+  - PR #147 F-13 lesson: `lessons/billing.md` 新設 (Repolog 踏襲時のペルソナ再評価 等 3 lesson)
+- **本 ADR Notes 追記 PR**: ADR-0009 Notes に実装履歴を記録 (本 PR)
+- **残作業 (人間 / 実機 / 法務)**: Sandbox 全 12 パターン手動検証 / App Store / Google Play 設定 / Privacy Policy 19 言語更新 / DPA 取得 / Maestro Sandbox 実購入フロー追記。詳細は Issue #20 残作業コメント参照
