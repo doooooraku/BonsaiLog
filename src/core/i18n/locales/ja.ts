@@ -374,6 +374,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Title: '通知を有効にしましょう',
   onboardingTut5Body:
     '当日まとめ通知と水やり通知でうっかり忘れを防ぎます。あとから設定で変更可能です。',
+  onboardingTutNext: '次へ',
+  skipForLater: 'あとで',
 };
 
 export default ja;
