@@ -13,10 +13,25 @@
  *   }
  */
 import { useCallback } from 'react';
-import { Alert } from 'react-native';
+import { Alert, type AlertButton } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
 
 import { useTranslation } from '@/src/core/i18n/i18n';
+
+/**
+ * Paywall 遷移用 Alert ボタン配列を組み立てる純関数。
+ * テスト容易性のため `useGoToPaywall` フックから抽出 (Issue #33)。
+ */
+export function buildPaywallAlertButtons(
+  cancelLabel: string,
+  upgradeLabel: string,
+  onUpgrade: () => void,
+): AlertButton[] {
+  return [
+    { text: cancelLabel, style: 'cancel' },
+    { text: upgradeLabel, onPress: onUpgrade },
+  ];
+}
 
 export function useGoToPaywall() {
   const router = useRouter();
@@ -24,10 +39,10 @@ export function useGoToPaywall() {
 
   return useCallback(
     (title: string, body: string) => {
-      Alert.alert(title, body, [
-        { text: t('cancel'), style: 'cancel' },
-        { text: t('proCtaUpgrade'), onPress: () => router.push('/pro' as Href) },
-      ]);
+      const buttons = buildPaywallAlertButtons(t('cancel'), t('proCtaUpgrade'), () =>
+        router.push('/pro' as Href),
+      );
+      Alert.alert(title, body, buttons);
     },
     [router, t],
   );
