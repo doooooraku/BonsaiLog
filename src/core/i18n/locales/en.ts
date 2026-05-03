@@ -67,6 +67,7 @@ const baseEn = {
   proCtaMonthly: 'Start Monthly Plan',
   proCtaLifetime: 'Buy Lifetime',
   proCtaStayFree: 'Stay Free',
+  proCtaUpgrade: 'Upgrade to Pro',
   proFinePrint: 'Subscriptions auto-renew. Cancel anytime in your account settings.',
   proLifetimeFinePrint: 'One-time purchase. No auto-renewal.',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',

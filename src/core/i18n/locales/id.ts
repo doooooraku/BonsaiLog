@@ -66,6 +66,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   proCtaYearly: 'Mulai paket tahunan',
   proCtaMonthly: 'Mulai paket bulanan',
   proCtaStayFree: 'Tetap gratis',
+  proCtaUpgrade: 'Upgrade to Pro',
   proFinePrint:
     'Langganan diperpanjang secara otomatis. Batalkan kapan saja di pengaturan akun Anda.',
 

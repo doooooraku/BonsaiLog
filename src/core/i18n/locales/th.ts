@@ -66,6 +66,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   proCtaYearly: 'เริ่มแพ็กเกจรายปี',
   proCtaMonthly: 'เริ่มแพ็กเกจรายเดือน',
   proCtaStayFree: 'ใช้งานฟรีต่อไป',
+  proCtaUpgrade: 'Upgrade to Pro',
   proFinePrint: 'การสมัครสมาชิกจะต่ออายุอัตโนมัติ ยกเลิกได้ทุกเมื่อในการตั้งค่าบัญชี',
 
   proPlanLifetimeTitle: 'ตลอดชีพ',

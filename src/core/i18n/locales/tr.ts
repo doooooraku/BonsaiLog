@@ -66,6 +66,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   proCtaYearly: 'Yıllık planı başlat',
   proCtaMonthly: 'Aylık planı başlat',
   proCtaStayFree: 'Ücretsiz kal',
+  proCtaUpgrade: 'Upgrade to Pro',
   proFinePrint:
     'Abonelikler otomatik olarak yenilenir. Hesap ayarlarınızdan istediğiniz zaman iptal edebilirsiniz.',
 

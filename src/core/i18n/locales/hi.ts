@@ -66,6 +66,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   proCtaYearly: 'वार्षिक प्लान शुरू करें',
   proCtaMonthly: 'मासिक प्लान शुरू करें',
   proCtaStayFree: 'निःशुल्क जारी रखें',
+  proCtaUpgrade: 'Upgrade to Pro',
   proFinePrint:
     'सदस्यता स्वचालित रूप से नवीनीकृत होती है। आप अपने खाता सेटिंग्स में कभी भी रद्द कर सकते हैं।',
 
