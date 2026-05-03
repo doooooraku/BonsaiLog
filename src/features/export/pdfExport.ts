@@ -20,6 +20,13 @@ import * as Sharing from 'expo-sharing';
 
 import type { Bonsai, Event } from '@/src/db/schema';
 
+import {
+  PdfHangError,
+  assertPdfLooksValid,
+  calculatePdfTimeout,
+  type AttemptNumber,
+} from './pdfReliability';
+
 /** HTML エスケープ純関数 (XSS 対策、PDF テンプレート用)。 */
 export function escapeHtml(value: string | null | undefined): string {
   if (value == null) return '';
@@ -183,14 +190,39 @@ ${eventRows}
 /**
  * HTML から PDF ファイルを生成し、Share Sheet を起動する。
  *
- * - 失敗は throw (UI 層で catch して i18n エラー表示)
- * - 一時ファイルパスは expo-print が cacheDirectory に作成、共有後の削除は OS 任せ
+ * Phase E (Issue #33): pdfReliability 純関数を配線
+ * - calculatePdfTimeout で動的タイムアウト (Promise.race で強制中断、AC6)
+ * - assertPdfLooksValid で 1024 byte 未満の空 PDF を BlankPdfError 検出 (AC8-1)
+ * - PdfHangError でタイムアウト時の明確なエラー型 (AC8-2)
+ * - 失敗は throw (UI 層で catch、attempt loop は呼出側で実装、AC5)
+ *
+ * @param html PDF にレンダリングする HTML 文字列
+ * @param shareDialogTitle Share Sheet のタイトル
+ * @param options.photoCount 写真件数 (動的タイムアウトの加算用、default 0)
+ * @param options.attempt 1/2/3 (default 1、attempt 1 のみ 10s キャップ)
  */
 export async function generateAndShareBonsaiPdf(
   html: string,
   shareDialogTitle: string,
+  options: { photoCount?: number; attempt?: AttemptNumber } = {},
 ): Promise<void> {
-  const { uri } = await Print.printToFileAsync({ html });
+  const photoCount = options.photoCount ?? 0;
+  const attempt: AttemptNumber = options.attempt ?? 1;
+  const timeoutMs = calculatePdfTimeout(photoCount, attempt);
+
+  const printPromise = Print.printToFileAsync({ html });
+  const timeoutPromise = new Promise<{ uri: string }>((_, reject) => {
+    setTimeout(() => reject(new PdfHangError(timeoutMs, attempt)), timeoutMs);
+  });
+
+  const { uri } = await Promise.race([printPromise, timeoutPromise]);
+
+  // AC8-4: 1024 byte 未満は BlankPdfError → 上位層で次 attempt にフォールバック可能
+  const info = await LegacyFileSystem.getInfoAsync(uri);
+  if (info.exists && typeof (info as { size?: number }).size === 'number') {
+    assertPdfLooksValid((info as { size: number }).size);
+  }
+
   if (await Sharing.isAvailableAsync()) {
     await Sharing.shareAsync(uri, { mimeType: 'application/pdf', dialogTitle: shareDialogTitle });
   }
