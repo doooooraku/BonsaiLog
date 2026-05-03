@@ -20,12 +20,13 @@
  * - v1: template items/attachments (Issue #14 で削除、本番ユーザー 0)
  * - v2: bonsai + species + species_names (F-01 foundation、PR #46)
  * - v3: photos (F-08 foundation、PR #49)
- * - v4: events + tags + event_tags + events_fts (F-02 foundation、本 PR-B)
+ * - v4: events + tags + event_tags + events_fts (F-02 foundation)
+ * - v5: events_fts を `tokenize='trigram remove_diacritics 1' detail=column` に再構築 (Issue #31、ADR-0008 §4.3.4 整合)
  */
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -427,13 +428,44 @@ CREATE INDEX IF NOT EXISTS idx_event_tags_tag_id ON event_tags(tag_id);
 -- events_fts (FTS5 trigram、note + payload を検索対象)
 -- ---------------------------------------------------------------------------
 -- note: external content table、PR-C で INSERT/UPDATE/DELETE trigger を配線
+-- v5 (Issue #31、ADR-0008 §4.3.4) で tokenize に remove_diacritics 1 を追加 +
+-- detail=column で「3 文字超 token MATCH 不可」の罠を回避。
 CREATE VIRTUAL TABLE IF NOT EXISTS events_fts USING fts5(
   event_id UNINDEXED,
   bonsai_id UNINDEXED,
   note,
   payload_text,
-  tokenize = "trigram"
+  tokenize = "trigram remove_diacritics 1",
+  detail = "column"
 );
+`;
+
+/**
+ * Migration v5: events_fts を ADR-0008 §4.3.4 整合の tokenize / detail 設定で
+ * 再構築する (Issue #31)。
+ *
+ * - 旧 v4 の events_fts は `tokenize="trigram"` のみで `remove_diacritics 1`
+ *   と `detail=column` を欠落していた。
+ * - virtual table は ALTER 不可なので DROP → CREATE → INSERT で再インデックス。
+ * - events 本体テーブルは変更しない。
+ * - deleted_at IS NULL の events のみ再インデックス対象。
+ */
+export const schemaV5 = `
+DROP TABLE IF EXISTS events_fts;
+
+CREATE VIRTUAL TABLE events_fts USING fts5(
+  event_id UNINDEXED,
+  bonsai_id UNINDEXED,
+  note,
+  payload_text,
+  tokenize = "trigram remove_diacritics 1",
+  detail = "column"
+);
+
+INSERT INTO events_fts (event_id, bonsai_id, note, payload_text)
+SELECT id, bonsai_id, COALESCE(note, ''), COALESCE(payload_json, '')
+FROM events
+WHERE deleted_at IS NULL;
 `;
 
 // ---------------------------------------------------------------------------
