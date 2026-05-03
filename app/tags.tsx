@@ -20,6 +20,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { getDb } from '@/src/db/db';
 import { createOrFindTag, type TagRecord } from '@/src/db/tagRepository';
+import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 
 export default function TagsManagerScreen() {
   const { t } = useTranslation();
@@ -78,6 +79,7 @@ export default function TagsManagerScreen() {
 
   return (
     <ThemedView style={styles.container} testID="e2e_tags_manager">
+      <OutdoorToggleButton testIdSuffix="tags_outdoor_toggle" />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <ThemedText type="title" style={styles.title}>
           {t('tagsManagerTitle')}
