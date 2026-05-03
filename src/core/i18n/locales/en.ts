@@ -337,6 +337,11 @@ const baseEn = {
   lifetimeWarningBody:
     'Existing subscriptions are not auto-cancelled. Please manage them in your Apple ID or Google Play settings.',
   confirm: 'Confirm',
+  attExplainerTitle: 'About ad personalization',
+  attExplainerBody:
+    'You can choose whether to allow the use of an identifier to help measure ad performance.',
+  attExplainerAllow: 'If allowed: ads may be more relevant to you.',
+  attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
 };
 
 export type TranslationKey = keyof typeof baseEn;
