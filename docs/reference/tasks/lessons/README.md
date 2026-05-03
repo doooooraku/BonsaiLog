@@ -13,6 +13,7 @@
 | [`build.md`](./build.md)     | EAS local build / 環境変数 / API キー / 画像相対パス / CI/CD 検証スクリプト            | ビルド・CI 作業時        |
 | [`runtime.md`](./runtime.md) | デバッグワークフロー / logcat False Positive / Android predictive back / 開発環境 PATH | デバッグ・Android 実装時 |
 | [`store.md`](./store.md)     | App Store / Google Play 申請 / メタデータ / UX 文言 / 法的リンク                       | リリース作業時           |
+| [`billing.md`](./billing.md) | RevenueCat / Pro 状態管理 / Champion 方式 / 別アプリ踏襲時のペルソナ再評価             | 課金実装時               |
 
 ## 運用ルール
 

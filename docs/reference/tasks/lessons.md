@@ -14,6 +14,7 @@
 | [`lessons/build.md`](./lessons/build.md)     | EAS local build / 環境変数 / 画像相対パス / CI  | ビルド・CI 作業時        |
 | [`lessons/runtime.md`](./lessons/runtime.md) | デバッグ / Android / 開発環境 PATH              | デバッグ・Android 実装時 |
 | [`lessons/store.md`](./lessons/store.md)     | ストア申請 / メタデータ / UX 文言               | リリース作業時           |
+| [`lessons/billing.md`](./lessons/billing.md) | RevenueCat / Champion 方式 / ペルソナ再評価     | 課金実装時               |
 
 ## 運用ルール
 
