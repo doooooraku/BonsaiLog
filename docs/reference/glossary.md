@@ -267,6 +267,34 @@
 
 - 定義：Pro 機能利用時に表示する課金誘導画面（S-04）
 
+### Champion 方式（Pocket Casts Champion Mode）
+
+- 定義：Lifetime 買切購入後、Paywall や設定画面でサブスクリプション (月額 / 年額) の表示を抑止する UI 制御方式
+- 出典：Pocket Casts のライフタイム会員 (Champion) 制度を参考に採用
+- 採用箇所：`src/features/pro/championMode.ts` (`shouldHideSubscriptions` 純関数)、PaywallScreen 上部 Champion バナー、Settings 3 状態表示
+- 関連：ADR-0009 §61-67、AC3-1 / AC3-2 / AC3-4
+- 動機：シニアペルソナ (高橋さん 62 歳) 向けに「もう買ったのに購入を促される」UX を完全排除する
+
+### Notion 方式データ保護（Notion Plan Downgrade Pattern）
+
+- 定義：Pro 加入中に作成したデータ (例: 写真 4 枚目以降) を Free 戻り後も閲覧可能とし、新規追加のみ Free 制限を適用する方式
+- 出典：Notion の Plan Downgrade Policy を参考に採用
+- 採用箇所：F-08 写真管理 (`canAddPhoto` の制限ロジック)、ADR-0009 §74-78
+- 関連：ADR-0009 §74-78、AC6-1 / AC6-2 / AC6-3
+- 動機：Pro → Free に戻ったユーザーの既存データを失わせず、ストアレビューの「データ消失」苦情を構造で防ぐ
+
+### Pro メンバー (買切)
+
+- 定義：Lifetime 買切 (`bonsailog_pro_lifetime`) を購入済の Pro 状態。Settings / Paywall 上で「Pro メンバー (買切)」と表示される
+- i18n キー：`settingsAccountProLifetimeTitle` / `paywallChampionBannerTitle`
+- 関連：ADR-0009 §69-72、Champion 方式
+
+### Pro メンバー (年額・期限まで)
+
+- 定義：月額 (`bonsailog_pro_monthly`) または年額 (`bonsailog_pro_yearly`) サブスクリプション加入済の Pro 状態。Settings / Paywall で「Pro メンバー」と表示される
+- i18n キー：`settingsAccountProActive`
+- 関連：ADR-0009 §69-72
+
 ### AdMob
 
 - 定義：広告配信プラットフォーム（Google）
