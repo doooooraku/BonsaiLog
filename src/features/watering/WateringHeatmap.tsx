@@ -8,8 +8,9 @@
  * - 凡例 K1: 「水やり回数: □ 0 ■ 1 ■ 2 ■ 3+」(個別盆栽用)。
  * - constraints §5-2 禁止語 (推奨 / べき / reminder / tracker / alert) を含めない。
  */
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
@@ -35,6 +36,17 @@ type Props = {
 
 export function WateringHeatmap({ events, todayLocalKey, tzOffsetMin, testID }: Props) {
   const { t } = useTranslation();
+  // F-04 Phase E (Issue #29): セルタップで BottomSheet で詳細 (日付 + 水やり回数) を表示
+  const sheetRef = React.useRef<BottomSheet>(null);
+  const [selected, setSelected] = React.useState<{ dateKey: string; count: number } | null>(null);
+  const snapPoints = React.useMemo(() => ['25%'], []);
+  const handleCellPress = React.useCallback((dateKey: string, count: number) => {
+    setSelected({ dateKey, count });
+    sheetRef.current?.snapToIndex(0);
+  }, []);
+  const handleSheetClose = React.useCallback(() => {
+    setSelected(null);
+  }, []);
 
   // 12 週 × 7 日 (右下 = 今日)。dateKeys は新しい順なので reverse して古い → 新しいに並べる。
   const dateKeys = React.useMemo(
@@ -47,15 +59,17 @@ export function WateringHeatmap({ events, todayLocalKey, tzOffsetMin, testID }: 
   );
 
   // 7 行 (曜日) × 12 列 (週) のグリッドに配置 (col-major)。
-  const cols: WateringHeatmapLevel[][] = React.useMemo(() => {
-    const result: WateringHeatmapLevel[][] = [];
+  // セル詳細 (count + dateKey) も同時に保持して BottomSheet で参照。
+  type CellInfo = { level: WateringHeatmapLevel; dateKey: string; count: number };
+  const cols: CellInfo[][] = React.useMemo(() => {
+    const result: CellInfo[][] = [];
     for (let c = 0; c < 12; c++) {
-      const col: WateringHeatmapLevel[] = [];
+      const col: CellInfo[] = [];
       for (let r = 0; r < 7; r++) {
         const idx = c * 7 + r;
-        const key = dateKeys[idx];
+        const key = dateKeys[idx] ?? '';
         const cnt = counts.get(key) ?? 0;
-        col.push(getHeatmapLevel(cnt));
+        col.push({ level: getHeatmapLevel(cnt), dateKey: key, count: cnt });
       }
       result.push(col);
     }
@@ -67,11 +81,17 @@ export function WateringHeatmap({ events, todayLocalKey, tzOffsetMin, testID }: 
       <View style={styles.grid}>
         {cols.map((col, ci) => (
           <View key={ci} style={styles.col}>
-            {col.map((lv, ri) => (
-              <View
+            {col.map((cell, ri) => (
+              <Pressable
                 key={ri}
-                style={[styles.cell, { backgroundColor: LEVEL_COLORS[lv] }]}
+                accessibilityRole="button"
+                accessibilityLabel={t('wateringHeatmapDetailTitle')
+                  .replace('{date}', cell.dateKey)
+                  .replace('{count}', String(cell.count))}
+                style={[styles.cell, { backgroundColor: LEVEL_COLORS[cell.level] }]}
                 testID={`e2e_heatmap_cell_${ci}_${ri}`}
+                onPress={() => handleCellPress(cell.dateKey, cell.count)}
+                hitSlop={4}
               />
             ))}
           </View>
@@ -87,6 +107,28 @@ export function WateringHeatmap({ events, todayLocalKey, tzOffsetMin, testID }: 
           <LegendItem color={LEVEL_COLORS.L3} label={t('wateringHeatmapLegend3')} />
         </View>
       </View>
+
+      {/* F-04 Phase E (Issue #29): セル詳細 BottomSheet (タップで開閉) */}
+      <BottomSheet
+        ref={sheetRef}
+        index={-1}
+        snapPoints={snapPoints}
+        enablePanDownToClose
+        onClose={handleSheetClose}
+      >
+        <BottomSheetView style={styles.sheetContent} testID="e2e_heatmap_cell_detail_sheet">
+          {selected && (
+            <>
+              <ThemedText type="defaultSemiBold" style={styles.sheetTitle}>
+                {t('wateringHeatmapDetailTitle').replace('{date}', selected.dateKey)}
+              </ThemedText>
+              <ThemedText style={styles.sheetCount}>
+                {t('wateringHeatmapDetailCount').replace('{count}', String(selected.count))}
+              </ThemedText>
+            </>
+          )}
+        </BottomSheetView>
+      </BottomSheet>
     </View>
   );
 }
@@ -114,4 +156,7 @@ const styles = StyleSheet.create({
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   legendSwatch: { width: 12, height: 12, borderRadius: 2 },
   legendItemText: { fontSize: 12 },
+  sheetContent: { padding: 16, gap: 8 },
+  sheetTitle: { fontSize: 16 },
+  sheetCount: { fontSize: 14, opacity: 0.8 },
 });
