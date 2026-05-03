@@ -21,6 +21,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { requestNotificationPermission } from '@/src/features/notification/scheduler';
+import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 import { showAdPrivacyOptionsForm } from '@/src/services/adService';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
 import { useProStore } from '@/src/stores/proStore';
@@ -121,6 +122,8 @@ export default function SettingsScreen() {
 
   return (
     <ThemedView style={styles.container} testID="e2e_settings_screen">
+      {/* F-15 Phase H (Issue #32, ADR-0015 AC4 OA1): 全画面ヘッダー右上の屋外モードトグル */}
+      <OutdoorToggleButton testIdSuffix="settings_outdoor_toggle" />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <ThemedText type="title" style={styles.title}>
           {t('settingsTitle')}
