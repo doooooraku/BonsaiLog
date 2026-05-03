@@ -119,9 +119,11 @@ export async function initializeAds(): Promise<boolean> {
   const canRequestAds = await canRequestAdsAfterConsent();
   if (!canRequestAds) return false;
 
+  // F-14 Phase C (Issue #22, ADR-0010 AC8-2): MaxAdContentRating を G → PG に変更
+  // 配信カテゴリを「全年齢」から「保護者同伴可」相当に拡大、収益性とポリシー両立。
   mobileAds().setRequestConfiguration({
     tagForChildDirectedTreatment: false,
-    maxAdContentRating: MaxAdContentRating.G,
+    maxAdContentRating: MaxAdContentRating.PG,
   });
 
   await mobileAds().initialize();

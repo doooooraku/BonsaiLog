@@ -45,7 +45,7 @@ jest.mock('react-native-google-mobile-ads', () => ({
     getConsentInfo: () => mockGetConsentInfo(),
     showPrivacyOptionsForm: () => mockShowPrivacyOptionsForm(),
   },
-  MaxAdContentRating: { G: 'G' },
+  MaxAdContentRating: { G: 'G', PG: 'PG' },
   TestIds: { ADAPTIVE_BANNER: 'test-adaptive-banner' },
 }));
 
@@ -109,7 +109,7 @@ describe('initializeAds (AC: app 起動 hook + Pro 不発火)', () => {
     await expect(initializeAds()).resolves.toBe(true);
     expect(mockSetRequestConfiguration).toHaveBeenCalledWith({
       tagForChildDirectedTreatment: false,
-      maxAdContentRating: 'G',
+      maxAdContentRating: 'PG',
     });
     expect(mockInitialize).toHaveBeenCalledTimes(1);
   });
