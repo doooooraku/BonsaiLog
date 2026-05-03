@@ -10,6 +10,7 @@
  * Phase B (別 PR): bonsai / photos / tags の CSV、PDF (Repolog `pdfService.ts` 流用)、7 画面構成
  */
 import { File, Paths } from 'expo-file-system';
+import * as LegacyFileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -18,6 +19,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { eventsToCsvString } from '@/src/features/export/csvExport';
+import { isStorageSufficient } from '@/src/features/export/pdfReliability';
 import { getDb } from '@/src/db/db';
 import type { Event } from '@/src/db/schema';
 import { useProStore } from '@/src/stores/proStore';
@@ -32,6 +34,17 @@ export default function ExportCsvScreen() {
     if (!isPro) {
       Alert.alert(t('exportProRequiredTitle'), t('exportProRequiredBody'));
       return;
+    }
+    // F-10 Phase M (Issue #33, ADR-0016 AC7): ストレージ事前チェック
+    // pdf.tsx / list-pdf.tsx と同じパターン (Phase L #127)、CSV にも適用
+    try {
+      const freeBytes = await LegacyFileSystem.getFreeDiskStorageAsync();
+      if (!isStorageSufficient(freeBytes)) {
+        Alert.alert(t('exportStorageLowTitle'), t('exportStorageLowBody'));
+        return;
+      }
+    } catch {
+      // チェックスキップ (AC7-2 仕様)
     }
     setBusy(true);
     try {
