@@ -124,6 +124,7 @@ function checkLessonsIndex() {
 // 肥大化すると重要な部分が読まれなくなるため、構造的に防ぐ。
 function checkRuleDocsLineLimit() {
   const limits = [
+    { path: 'docs/reference/tasks/lessons/billing.md', max: 200 },
     { path: 'docs/reference/tasks/lessons/build.md', max: 200 },
     { path: 'docs/reference/tasks/lessons/db.md', max: 200 },
     { path: 'docs/reference/tasks/lessons/docs.md', max: 200 },
