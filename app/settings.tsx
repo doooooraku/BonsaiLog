@@ -22,6 +22,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { requestNotificationPermission } from '@/src/features/notification/scheduler';
 import { showAdPrivacyOptionsForm } from '@/src/services/adService';
+import { useOnboardingStore } from '@/src/stores/onboardingStore';
 import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
@@ -376,6 +377,28 @@ export default function SettingsScreen() {
           >
             <ThemedText type="defaultSemiBold">{t('backupImportTitle')}</ThemedText>
             <ThemedText style={styles.entryDesc}>{t('backupImportDesc')}</ThemedText>
+          </Pressable>
+        </View>
+
+        {/* --- F-26 Phase H ヘルプ (Issue #26、ADR-0018): チュートリアル再表示 --- */}
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+            {t('settingsHelpSection')}
+          </ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('settingsTutorialReplayTitle')}
+            testID="e2e_open_tutorial_replay"
+            style={styles.entry}
+            onPress={() => {
+              // resetTutorial() で tut1-5 をリセット → /onboarding/tut/tut1 へ
+              useOnboardingStore.getState().resetTutorial();
+              useOnboardingStore.getState().setCompleted(false);
+              router.push('/onboarding/tut/tut1' as Href);
+            }}
+          >
+            <ThemedText type="defaultSemiBold">{t('settingsTutorialReplayTitle')}</ThemedText>
+            <ThemedText style={styles.entryDesc}>{t('settingsTutorialReplayDesc')}</ThemedText>
           </Pressable>
         </View>
       </ScrollView>
