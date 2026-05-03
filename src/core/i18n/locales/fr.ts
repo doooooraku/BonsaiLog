@@ -75,6 +75,8 @@ const fr: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: 'Achat unique. Pas de renouvellement automatique.',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
   paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
+  settingsAccountProLifetimeTitle: 'Pro Member (Lifetime)',
+  settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 
   // --- Legal ---
   legalSectionTitle: 'Mentions légales',

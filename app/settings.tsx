@@ -44,6 +44,7 @@ export default function SettingsScreen() {
   const setNotifWateringEnabled = useSettingsStore((s) => s.setNotificationWateringRepeatEnabled);
   const notifWateringTimes = useSettingsStore((s) => s.notificationWateringRepeatTimes);
   const isPro = useProStore((s) => s.isPro);
+  const planType = useProStore((s) => s.planType);
 
   // ON 時に OS permission をリクエスト、拒否されたら state を戻す。Phase C で datetimepicker による時刻編集を追加。
   const handleToggleNotifSummary = React.useCallback(
@@ -187,7 +188,11 @@ export default function SettingsScreen() {
           >
             <View style={styles.proRow}>
               <ThemedText type="defaultSemiBold" style={styles.proRowLabel}>
-                {isPro ? t('settingsAccountProActive') : t('proTitle')}
+                {planType === 'lifetime'
+                  ? t('settingsAccountProLifetimeTitle')
+                  : isPro
+                    ? t('settingsAccountProActive')
+                    : t('proTitle')}
               </ThemedText>
               {isPro && (
                 <View style={styles.proBadge} testID="e2e_settings_pro_badge">
@@ -196,7 +201,11 @@ export default function SettingsScreen() {
               )}
             </View>
             <ThemedText style={styles.entryDesc}>
-              {isPro ? t('settingsAccountProActiveDesc') : t('settingsAccountProInactiveDesc')}
+              {planType === 'lifetime'
+                ? t('settingsAccountProLifetimeDesc')
+                : isPro
+                  ? t('settingsAccountProActiveDesc')
+                  : t('settingsAccountProInactiveDesc')}
             </ThemedText>
           </Pressable>
 

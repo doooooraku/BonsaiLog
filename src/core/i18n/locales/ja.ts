@@ -146,6 +146,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: '一度の購入で永久に利用できます。自動更新はありません。',
   paywallChampionBannerTitle: 'あなたは Pro メンバー (買切) です',
   paywallChampionBannerDesc: '買切で Pro を所有しているため、サブスクリプションは表示されません。',
+  settingsAccountProLifetimeTitle: 'Pro メンバー (買切)',
+  settingsAccountProLifetimeDesc: '買切ライセンスで Pro 機能を永久にご利用いただけます。',
 
   // --- Legal ---
   legalSectionTitle: '法的情報',

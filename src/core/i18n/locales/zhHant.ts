@@ -74,6 +74,8 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: '一次性購買，永久使用。無自動續訂。',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
   paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
+  settingsAccountProLifetimeTitle: 'Pro Member (Lifetime)',
+  settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 
   // --- Legal ---
   legalSectionTitle: '法律資訊',

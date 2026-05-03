@@ -75,6 +75,8 @@ const ru: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: 'Разовая покупка. Без автоматического продления.',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
   paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
+  settingsAccountProLifetimeTitle: 'Pro Member (Lifetime)',
+  settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 
   // --- Legal ---
   legalSectionTitle: 'Правовая информация',

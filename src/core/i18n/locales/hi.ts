@@ -75,6 +75,8 @@ const hi: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: 'एकमुश्त खरीद। कोई स्वत: नवीकरण नहीं।',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
   paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
+  settingsAccountProLifetimeTitle: 'Pro Member (Lifetime)',
+  settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 
   // --- Legal ---
   legalSectionTitle: 'कानूनी जानकारी',
