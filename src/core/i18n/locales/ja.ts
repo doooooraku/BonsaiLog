@@ -358,6 +358,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportListPdfTypeBreakdown: '種別内訳',
   exportListPdfSpeciesBreakdown: '樹種内訳',
   exportListPdfFooter: 'BonsaiLog で生成',
+  exportStorageLowBody:
+    'ストレージ容量が不足しています。100MB 以上の空き容量を確保してから再度お試しください。',
+  exportStorageLowTitle: 'ストレージ容量不足',
 };
 
 export default ja;
