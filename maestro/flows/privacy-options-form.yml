@@ -1,0 +1,65 @@
+appId: 'com.doooooraku.bonsailog'
+name: 'E2E - F-LEGAL-001 Settings privacy options form'
+tags:
+  - e2e
+  - privacy
+  - legal
+  - f-legal-001
+
+
+# Issue #37 / ADR-0017 / AC「Settings → 広告のプライバシー設定 で再選択ダイアログ表示」雛形。
+# Free 状態で Settings → 広告のプライバシー設定 をタップ →
+# UMP 再選択ダイアログ (Privacy Options Form) が出ることを確認する。
+# EEA 等の要件外リージョンでは無音 (Alert で「現在地域では設定できません」)。
+
+---
+- launchApp:
+    clearState: true
+    label: 'クリーン起動 (Free 状態想定)'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_screen'
+    timeout: 60000
+    label: 'Home 描画待機'
+
+# Home → Settings
+- runFlow:
+    when:
+      visible:
+        id: 'e2e_open_settings'
+    commands:
+      - tapOn:
+          id: 'e2e_open_settings'
+          label: '設定を開く'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_settings_screen'
+    timeout: 30000
+    label: '設定画面待機'
+
+# Free のみ表示される「広告のプライバシー設定」セクション
+- assertVisible:
+    id: 'e2e_open_ad_privacy_options'
+    label: '広告のプライバシー設定 エントリが見える (Free)'
+
+- tapOn:
+    id: 'e2e_open_ad_privacy_options'
+    label: '広告のプライバシー設定タップ'
+
+# UMP Privacy Options Form (system-level dialog) または
+# 要件外リージョンの Alert がモーダル表示される
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 戻る → Settings に復帰
+- back:
+    label: 'Settings に戻る'
+
+- assertVisible:
+    id: 'e2e_settings_screen'
+    label: 'Settings 復帰確認'
+# TODO (Sandbox 検証):
+# - EEA 偽装で Privacy Options Form が出る経路
+# - 非 EEA で「現在地域では設定できません」Alert 表示の文言確認

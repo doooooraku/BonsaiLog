@@ -1,0 +1,48 @@
+appId: 'com.doooooraku.bonsailog'
+name: 'E2E - F-LEGAL-001 ATT dialog (iOS first launch)'
+tags:
+  - e2e
+  - att
+  - legal
+  - f-legal-001
+
+
+# Issue #37 / ADR-0017 / AC「iOS で ATT 標準ダイアログ発火」雛形。
+# 本 yaml は iOS 初回起動 (clearState) で ATT 標準ダイアログが
+# 発火することを screen-reach 系で確認する。
+# 実機 / シミュレータ実行が前提で、iOS 14.5+ かつ
+# `userTrackingUsageDescription` が Info.plist にある状態を要求。
+
+---
+- launchApp:
+    clearState: true
+    label: 'iOS クリーン起動 (ATT 未付与状態)'
+
+# OS の ATT ダイアログは Maestro の View 階層外 (system level)。
+# Maestro は OS dialog を直接 detect できないため、
+# 操作可能な「Allow / Don't Allow」ボタンが出るまで
+# 短めの sleep でタイミング確認。
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# OS 上の ATT ダイアログを「Allow Tracking」で許可
+- runFlow:
+    when:
+      visible: 'Allow'
+    commands:
+      - tapOn: 'Allow'
+        label: 'ATT ダイアログ Allow'
+
+# Allow 後 → アプリの Home に到達
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_screen'
+    timeout: 30000
+    label: 'Home 画面に到達 (ATT 後)'
+
+- assertVisible:
+    id: 'e2e_home_screen'
+    label: 'Home 表示確認'
+# TODO (Sandbox 検証):
+# - ATT 拒否ケース ("Don't Allow") → mode='non_personalized' で AdBanner 表示
+# - 二回目起動 → ATT 再表示なし、Settings からのみ変更可能

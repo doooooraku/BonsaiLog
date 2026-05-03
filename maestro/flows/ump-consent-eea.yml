@@ -1,0 +1,52 @@
+appId: 'com.doooooraku.bonsailog'
+name: 'E2E - F-LEGAL-001 UMP consent (EEA debug)'
+tags:
+  - e2e
+  - ump
+  - legal
+  - gdpr
+  - f-legal-001
+
+
+# Issue #37 / ADR-0017 / AC「EEA デバッグで UMP 同意フォーム発火」雛形。
+# `ADMOB_CONSENT_DEBUG_GEOGRAPHY=EEA` 環境変数 + `ADMOB_CONSENT_TEST_DEVICE_IDENTIFIERS`
+# で実機を EEA リージョンに偽装し、UMP 同意フォームが発火することを確認する。
+
+---
+- launchApp:
+    clearState: true
+    label: 'クリーン起動 (UMP 未同意 + EEA 偽装)'
+
+# Home に到達するまでに UMP フォームが OS overlay として出る。
+# Maestro view 階層外なので、フォーム上の「Consent / Manage Options」が
+# 見えるかをタイミング確認 → タップで進める。
+- waitForAnimationToEnd:
+    timeout: 8000
+
+# UMP 同意フォームの「同意」「Consent」「Manage Options」相当ラベルを
+# 検出 (UMP は Google 提供の HTML フォーム、文言は地域依存)
+- runFlow:
+    when:
+      visible: 'Consent'
+    commands:
+      - tapOn: 'Consent'
+        label: 'UMP Consent'
+
+# UMP 後 → Home に到達
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_screen'
+    timeout: 30000
+    label: 'Home 画面に到達 (UMP 同意後)'
+
+- assertVisible:
+    id: 'e2e_home_screen'
+    label: 'Home 表示確認'
+
+# Free 状態で UMP 同意済 → AdBanner が表示される
+- assertVisible:
+    id: 'e2e_ad_banner'
+    label: 'AdBanner 表示確認 (UMP 同意 + Free)'
+# TODO (Sandbox 検証):
+# - UMP 拒否 ("Manage Options" → Reject all) → AdBanner 非表示 (canRequestAds=false)
+# - 同意取消し → Settings → 広告のプライバシー設定 から再選択
