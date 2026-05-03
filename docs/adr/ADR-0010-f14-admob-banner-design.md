@@ -366,6 +366,18 @@ v1.0 リリース後 3 ヶ月で以下を計測:
 - リワード広告で「24 時間 Pro 体験」（任意）
 - AppLovin MAX メディエーション（eCPM +10〜30%、Pro 誘導目的では不要）
 
+### 実装履歴
+
+- **ADR 起票**: PR #23 (`docs: add ADR-0010 (F-14 Home banner ad as Pro funnel)`)
+- **Phase A〜F (前セッションまで)**: 6 PR で AdBanner / Pro 完全非表示判定 / ラベル + 余白 / 広告レーティング / ATT pre-prompt / 配信モード判定の foundation を構築
+  - PR #75 Phase A: Home 下部 AdBanner + Pro 完全非表示
+  - PR #82 Phase B: 「広告」ラベル + 16dp 余白
+  - PR #98 Phase C: MaxAdContentRating G → PG
+  - PR #99 Phase D: ATT pre-prompt 中立説明型 i18n 4 キー
+  - PR #108 Phase E: 広告配信モード判定 純関数
+  - PR #120 Phase F: `resolveAdServingMode` を AdBanner に配線
+- **残作業**: F-LEGAL-001 (#37) の ATT/UMP 配線完了、Sandbox / 実機での広告表示確認、Pro 誘導指標の計測ダッシュボード整備
+
 ### Repolog との同期方針
 
 - Repolog (16.0.0、`__DEV__` 逆運用、`G`、INLINE_ADAPTIVE_BANNER) → BonsaiLog (16.3.3、`__DEV__` 削除、`PG`、ANCHORED_ADAPTIVE_BANNER)
