@@ -17,6 +17,16 @@ jest.mock('expo-constants', () => ({
   default: { expoConfig: { extra: {} }, manifest: null },
 }));
 
+jest.mock('expo-tracking-transparency', () => ({
+  getTrackingPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: 'undetermined', canAskAgain: true, expires: 'never' }),
+  ),
+  requestTrackingPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: 'undetermined', canAskAgain: true, expires: 'never' }),
+  ),
+  PermissionStatus: { GRANTED: 'granted', DENIED: 'denied', UNDETERMINED: 'undetermined' },
+}));
+
 jest.mock('react-native-google-mobile-ads', () => ({
   __esModule: true,
   default: () => ({ setRequestConfiguration: jest.fn(), initialize: jest.fn() }),

@@ -1,5 +1,10 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
+import {
+  getTrackingPermissionsAsync,
+  requestTrackingPermissionsAsync,
+  PermissionStatus,
+} from 'expo-tracking-transparency';
 import mobileAds, {
   AdsConsent,
   AdsConsentDebugGeography,
@@ -171,4 +176,29 @@ export function resolveAdServingMode(params: {
   if (params.umpCanRequestAds === false) return 'none';
   if (params.attAuthorized === false) return 'non_personalized';
   return 'personalized';
+}
+
+/**
+ * F-LEGAL-001 Phase E (Issue #37、ADR-0017 §④ ATT)。
+ *
+ * iOS で ATT (App Tracking Transparency) 状態を取得する。
+ * - iOS 14.5+: 標準ダイアログ発火 → 結果を boolean で返す
+ * - iOS 14.4 以下 / Android / Web: ATT 概念なし → null (personalized 扱い)
+ *
+ * 既に許可/拒否済の場合は再ダイアログを出さず即返却 (OS 動作)。
+ */
+export async function getAttStatus(): Promise<boolean | null> {
+  if (Platform.OS !== 'ios') return null;
+  try {
+    const current = await getTrackingPermissionsAsync();
+    if (current.status === PermissionStatus.GRANTED) return true;
+    if (current.status === PermissionStatus.DENIED) return false;
+    // UNDETERMINED → 標準ダイアログ発火
+    const result = await requestTrackingPermissionsAsync();
+    if (result.status === PermissionStatus.GRANTED) return true;
+    if (result.status === PermissionStatus.DENIED) return false;
+    return null;
+  } catch {
+    return null;
+  }
 }
