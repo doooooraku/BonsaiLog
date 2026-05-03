@@ -311,6 +311,8 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   wateringHeatmapLegend1: '1',
   wateringHeatmapLegend2: '2',
   wateringHeatmapLegend3: '3+',
+  wateringHeatmapDetailTitle: '{date}',
+  wateringHeatmapDetailCount: 'Watered {count} time(s)',
 
   // --- F-07 Wiring duration in-app display (Phase B、English fallback) ---
   wiringDurationWithinWeeks: 'Wire on for {weeks} weeks',

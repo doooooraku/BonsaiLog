@@ -319,6 +319,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringHeatmapLegend1: '1',
   wateringHeatmapLegend2: '2',
   wateringHeatmapLegend3: '3+',
+  wateringHeatmapDetailTitle: '{date}',
+  wateringHeatmapDetailCount: '水やり {count} 回',
 
   // --- F-07 装着期間アプリ内表示 (Phase B、Issue #24、ADR-0014) ---
   wiringDurationWithinWeeks: '装着期間: {weeks} 週',
