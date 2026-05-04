@@ -9,7 +9,7 @@ import 'react-native-get-random-values';
 import { Inter_400Regular, useFonts as useInterFonts } from '@expo-google-fonts/inter';
 import { NotoSansJP_400Regular, NotoSansJP_600SemiBold } from '@expo-google-fonts/noto-sans-jp';
 import { NotoSerifJP_500Medium } from '@expo-google-fonts/noto-serif-jp';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { ThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter, useSegments, type Href } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -17,7 +17,9 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
+import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { buildNavigationTheme } from '@/src/core/theme/buildNavigationTheme';
 import { resolveEffectiveScheme } from '@/src/core/theme/themeResolver';
 import { isOnboardingFinished } from '@/src/features/onboarding/onboardingFlow';
 import { ensureNotificationChannels } from '@/src/features/notification/scheduler';
@@ -64,7 +66,10 @@ export default function RootLayout() {
   const normalizedSystemScheme =
     systemScheme === 'light' || systemScheme === 'dark' ? systemScheme : null;
   const effectiveScheme = resolveEffectiveScheme(themeMode, normalizedSystemScheme, outdoorMode);
-  const isDark = effectiveScheme === 'dark';
+  // Phase B-1b: 旧 DarkTheme/DefaultTheme を捨て、design_system.md §2 整合の
+  // buildNavigationTheme で background/text/primary/card/border を再構築。
+  const navigationTheme = buildNavigationTheme(effectiveScheme);
+  const headerColors = Colors[effectiveScheme];
 
   // F-LEGAL-001 Phase A (Issue #37, ADR-0017): Pro 状態を初期化し、Free 時のみ ATT/UMP + AdMob 初期化。
   // Pro 加入者は ATT/UMP を発火させない (ADR-0010 / Repolog 教訓)。実機検証は Phase B + 人間タスク。
@@ -113,14 +118,22 @@ export default function RootLayout() {
 
   return (
     // F-04 Phase E (Issue #29): @gorhom/bottom-sheet に必要な GestureHandlerRootView を root に配置
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
-        <Stack>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: headerColors.background }}>
+      <ThemeProvider value={navigationTheme}>
+        <Stack
+          screenOptions={{
+            // Phase B-1b: Stack header を Colors 経由 (washi 背景 + 墨テキスト + brand tint)
+            headerStyle: { backgroundColor: headerColors.surface },
+            headerTintColor: headerColors.text,
+            headerTitleStyle: { color: headerColors.text },
+            contentStyle: { backgroundColor: headerColors.background },
+          }}
+        >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         </Stack>
-        <StatusBar style="auto" />
+        <StatusBar style={effectiveScheme === 'dark' ? 'light' : 'dark'} />
       </ThemeProvider>
     </GestureHandlerRootView>
   );
