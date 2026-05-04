@@ -273,21 +273,8 @@ export default function BonsaiDetailScreen() {
           />
         </View>
 
-        {item.species && (
-          <View style={styles.section}>
-            <ThemedText type="subtitle">{t('bonsaiFieldSpecies')}</ThemedText>
-            <ThemedText>{item.species.commonName}</ThemedText>
-            <ThemedText style={styles.sci}>{item.species.scientificName}</ThemedText>
-          </View>
-        )}
-
-        {item.style && (
-          <View style={styles.section}>
-            <ThemedText type="subtitle">{t('bonsaiFieldStyle')}</ThemedText>
-            <ThemedText>{t(`bonsaiStyle_${item.style}` as TranslationKey)}</ThemedText>
-          </View>
-        )}
-
+        {/* 樹種 / 樹形 は BonsaiHero に表示済 (PR #196) のため重複削除。
+            取得日のみ Hero に含まれないので維持。 */}
         {item.acquiredAt && (
           <View style={styles.section}>
             <ThemedText type="subtitle">{t('bonsaiFieldAcquiredAt')}</ThemedText>
