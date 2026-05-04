@@ -232,6 +232,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   searchPlaceholder: '検索...',
   searchEmpty: '見つかりませんでした。',
   searchBonsaiSection: '盆栽',
+  searchSpeciesSection: '樹種',
   searchEventSection: '作業ログ',
 
   // --- F-15 テーマ設定 (Phase A、ADR-0015) ---

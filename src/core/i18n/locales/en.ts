@@ -227,6 +227,7 @@ const baseEn = {
   searchPlaceholder: 'Search...',
   searchEmpty: 'No results found.',
   searchBonsaiSection: 'Bonsai',
+  searchSpeciesSection: 'Species',
   searchEventSection: 'Care logs',
 
   // --- F-15 Theme settings (Phase A: system/light/dark, ADR-0015) ---
