@@ -382,36 +382,42 @@ export default function BonsaiDetailScreen() {
                 accessibilityLabel={t(`eventType_${ev.type}` as TranslationKey)}
                 onLongPress={() => confirmDeleteEvent(ev)}
               >
-                <View style={styles.eventRowMain}>
-                  <View style={styles.eventRowLabelRow}>
-                    <EventIcon type={ev.type as EventType} size={16} />
-                    <ThemedText type="defaultSemiBold">
+                {/* Claude Design `detail-screens.jsx` HistoryTab 整合: icon 40×40 box + content */}
+                <View style={styles.eventIconBox}>
+                  <EventIcon type={ev.type as EventType} size={20} />
+                </View>
+                <View style={styles.eventContent}>
+                  <View style={styles.eventRowMain}>
+                    <ThemedText style={styles.eventLabel}>
                       {t(`eventType_${ev.type}` as TranslationKey)}
                     </ThemedText>
+                    <ThemedText style={styles.eventRowDate}>
+                      {formatDate(ev.occurredAtUtc, lang)}
+                    </ThemedText>
                   </View>
-                  <ThemedText style={styles.eventRowDate}>
-                    {formatDate(ev.occurredAtUtc, lang)}
-                  </ThemedText>
+                  {wiringDuration && (
+                    <WiringPeriodDisplay
+                      weeks={wiringDuration.weeks}
+                      kind={wiringDuration.kind}
+                      isUnwired={wiringDuration.isUnwired}
+                      style={styles.eventRowNote}
+                      testID={`e2e_wiring_duration_${ev.id}`}
+                    />
+                  )}
+                  {scheduledUnwireLabel && (
+                    <ThemedText
+                      style={styles.eventRowNote}
+                      testID={`e2e_wiring_scheduled_${ev.id}`}
+                    >
+                      {scheduledUnwireLabel}
+                    </ThemedText>
+                  )}
+                  {ev.note && (
+                    <ThemedText style={styles.eventRowNote} numberOfLines={2}>
+                      {ev.note}
+                    </ThemedText>
+                  )}
                 </View>
-                {wiringDuration && (
-                  <WiringPeriodDisplay
-                    weeks={wiringDuration.weeks}
-                    kind={wiringDuration.kind}
-                    isUnwired={wiringDuration.isUnwired}
-                    style={styles.eventRowNote}
-                    testID={`e2e_wiring_duration_${ev.id}`}
-                  />
-                )}
-                {scheduledUnwireLabel && (
-                  <ThemedText style={styles.eventRowNote} testID={`e2e_wiring_scheduled_${ev.id}`}>
-                    {scheduledUnwireLabel}
-                  </ThemedText>
-                )}
-                {ev.note && (
-                  <ThemedText style={styles.eventRowNote} numberOfLines={2}>
-                    {ev.note}
-                  </ThemedText>
-                )}
               </Pressable>
             );
           })}
@@ -598,15 +604,44 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   eventAddText: { color: BRAND_GREEN, fontSize: 15, fontWeight: '500' },
+  // Claude Design HistoryTab 整合: 16 padding + 14 gap + minHeight 80、icon 40 box
   eventRow: {
-    paddingVertical: 12,
-    paddingHorizontal: 4,
+    flexDirection: 'row',
+    gap: 14,
+    padding: 16,
+    minHeight: 80,
     borderBottomWidth: 1,
     borderBottomColor: BORDER_DEFAULT,
-    gap: 4,
   },
-  eventRowMain: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  eventRowLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  eventRowDate: { fontSize: 12, opacity: 0.6 },
-  eventRowNote: { fontSize: 13, opacity: 0.8 },
+  eventIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  eventContent: { flex: 1, minWidth: 0 },
+  eventRowMain: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  // bodyL 16/24 + Medium (Claude Design fontSize 16, weight 500)
+  eventLabel: {
+    fontFamily: 'NotoSansJP_600SemiBold',
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  // mono 風 12pt + letterSpacing (Inter で代替)
+  eventRowDate: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    letterSpacing: 0.7,
+    color: TEXT_SECONDARY,
+  },
+  eventRowNote: { fontSize: 13, lineHeight: 20, color: TEXT_SECONDARY, marginTop: 4 },
 });
