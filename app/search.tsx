@@ -19,6 +19,16 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import {
+  BG_PRIMARY,
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  BRAND_GREEN_BG,
+  DISABLED_BG,
+  ON_BRAND,
+  TEXT_SECONDARY,
+} from '@/src/core/theme/colors';
 import { searchBonsaiByName } from '@/src/db/bonsaiRepository';
 import { searchEvents } from '@/src/db/eventRepository';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
@@ -217,55 +227,72 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: BG_PRIMARY },
   searchBox: {
     flexDirection: 'row',
     gap: 8,
     padding: 16,
   },
+  // Issue #31 AC5 シニア UX 数値: 高 48dp+ / fontSize 17pt+ (旧 16pt + paddingV 10)
   input: {
     flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 48,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
-    fontSize: 16,
+    backgroundColor: BG_SURFACE,
+    fontSize: 17,
   },
+  // Issue #31 AC5: searchButton も minHeight 48 + minWidth 64 (タップ領域 48dp 確保)
   searchButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    minHeight: 48,
+    minWidth: 64,
     borderRadius: 12,
-    backgroundColor: '#2E7D32',
+    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  searchButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
-  disabledButton: { opacity: 0.6 },
+  searchButtonText: { color: ON_BRAND, fontSize: 17, fontWeight: '600' },
+  disabledButton: { opacity: 0.6, backgroundColor: DISABLED_BG },
   scroll: { padding: 16, gap: 16 },
   empty: { textAlign: 'center', opacity: 0.7, paddingVertical: 32 },
   section: { gap: 8, marginBottom: 8 },
-  sectionTitle: { fontSize: 14, opacity: 0.7, textTransform: 'uppercase', marginBottom: 4 },
+  sectionTitle: {
+    fontSize: 14,
+    color: TEXT_SECONDARY,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+    letterSpacing: 0.6,
+  },
   entry: {
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
     gap: 4,
+    minHeight: 48,
   },
-  entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
+  entryDesc: { fontSize: 13, color: TEXT_SECONDARY, lineHeight: 18 },
   tagsRow: { gap: 8 },
-  recentTagsLabel: { fontSize: 12, opacity: 0.7 },
+  recentTagsLabel: { fontSize: 12, color: TEXT_SECONDARY },
   historyHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  clearButtonText: { fontSize: 12, opacity: 0.7, color: '#2E7D32', fontWeight: '600' },
+  clearButtonText: { fontSize: 12, color: BRAND_GREEN, fontWeight: '600' },
   tagsChipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  // pill 9999 禁止 (design_system.md §5) → 12 角丸、minHeight 36 (chip 標準)
   tagChip: {
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
+    paddingVertical: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2E7D32',
-    backgroundColor: '#F1F8F2',
+    borderColor: BRAND_GREEN,
+    backgroundColor: BRAND_GREEN_BG,
+    minHeight: 36,
+    justifyContent: 'center',
   },
-  tagChipText: { fontSize: 13, color: '#2E7D32', fontWeight: '500' },
+  tagChipText: { fontSize: 13, color: BRAND_GREEN, fontWeight: '500' },
 });
