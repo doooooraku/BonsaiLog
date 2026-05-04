@@ -335,6 +335,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringHeatmapSummaryRecordedDays: '記録日数: {days} / {total} 日 ({percent}%)',
   wateringHeatmapSummaryTotalEvents: '記録件数: {count} 件',
 
+  // --- F-04 Phase H-2 BonsaiFilterSheet (Issue #29, ADR-0013 §AC6) ---
+  bonsaiFilterSelectAll: 'すべての盆栽',
+  bonsaiFilterSearchPlaceholder: '盆栽を検索',
+  bonsaiFilterRecentSection: '最近見た盆栽',
+  bonsaiFilterAllSection: 'すべての盆栽 (アイウエオ順)',
+
   // --- F-07 装着期間アプリ内表示 (Phase B、Issue #24、ADR-0014) ---
   wiringDurationWithinWeeks: '装着期間: {weeks} 週',
   wiringDurationOverdueLabel: '装着期間: {weeks} 週 (経過済)',
