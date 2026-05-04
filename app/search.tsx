@@ -30,7 +30,11 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { searchBonsaiByName } from '@/src/db/bonsaiRepository';
-import { searchEventsWithSnippet, type EventWithSnippet } from '@/src/db/eventRepository';
+import {
+  searchEventsByTags,
+  searchEventsWithSnippet,
+  type EventWithSnippet,
+} from '@/src/db/eventRepository';
 import { searchSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
 import type { Bonsai } from '@/src/db/schema';
@@ -48,6 +52,8 @@ export default function SearchScreen() {
   const [busy, setBusy] = useState(false);
   // F-09 Phase B (Issue #31, ADR-0008 改訂): 最近 3 タグ候補チップ
   const [recentTags, setRecentTags] = useState<TagRecord[]>([]);
+  // Issue #31 AC3 Y7: タグ AND フィルタ用の選択中タグ ID 集合
+  const [selectedTagIds, setSelectedTagIds] = useState<readonly string[]>([]);
   // F-09 Phase H (AC7-2): 最近の検索履歴チップ
   const searchHistory = useSearchHistoryStore((s) => s.history);
 
@@ -61,9 +67,10 @@ export default function SearchScreen() {
 
   // Issue #31 AC5 シニア UX: debounce 300ms (タイプミス耐性)。
   // Enter (onSubmitEditing) は即時実行 (Y6) のため別経路。
+  // AC3 Y7: selectedTagIds が変化したら再検索 (テキスト + タグ AND)。
   React.useEffect(() => {
     const trimmed = query.trim();
-    if (!trimmed) {
+    if (!trimmed && selectedTagIds.length === 0) {
       setBonsaiResults([]);
       setSpeciesResults([]);
       setEventResults([]);
@@ -76,11 +83,11 @@ export default function SearchScreen() {
     return () => clearTimeout(timer);
     // runSearchWith は useCallback 化していないが、setTimeout cleanup で
     // タイマー破棄するため stale closure 問題は最小化される。
-  }, [query]);
+  }, [query, selectedTagIds]);
 
   const runSearchWith = async (raw: string) => {
     const trimmed = raw.trim();
-    if (!trimmed) {
+    if (!trimmed && selectedTagIds.length === 0) {
       setBonsaiResults([]);
       setSpeciesResults([]);
       setEventResults([]);
@@ -89,25 +96,47 @@ export default function SearchScreen() {
     }
     setBusy(true);
     try {
-      // Issue #31 AC2: 3 段組み (盆栽 + 樹種 + イベント) を並列検索 + snippet
-      const [bonsai, species, events] = await Promise.all([
-        searchBonsaiByName(trimmed, 50),
-        searchSpecies(trimmed, lang),
-        searchEventsWithSnippet(trimmed),
+      // Issue #31 AC2 + AC3 Y7: text と tag の組み合わせで検索
+      const hasText = trimmed.length > 0;
+      const hasTags = selectedTagIds.length > 0;
+      const [bonsai, species, textEvents, tagEvents] = await Promise.all([
+        hasText ? searchBonsaiByName(trimmed, 50) : Promise.resolve<Bonsai[]>([]),
+        hasText ? searchSpecies(trimmed, lang) : Promise.resolve<SpeciesWithName[]>([]),
+        hasText ? searchEventsWithSnippet(trimmed) : Promise.resolve<EventWithSnippet[]>([]),
+        hasTags ? searchEventsByTags(selectedTagIds) : Promise.resolve<EventWithSnippet[]>([]),
       ]);
       setBonsaiResults(bonsai);
       setSpeciesResults(species.slice(0, 50));
-      setEventResults(events.slice(0, 50));
+
+      // event の AND 結合: text & tag 両方ありなら intersect、片方ならそれだけ
+      let mergedEvents: EventWithSnippet[];
+      if (hasText && hasTags) {
+        const tagIdSet = new Set(tagEvents.map((e) => e.id));
+        mergedEvents = textEvents.filter((e) => tagIdSet.has(e.id));
+      } else if (hasText) {
+        mergedEvents = textEvents;
+      } else {
+        // tag のみ: snippet を null で詰める
+        mergedEvents = tagEvents.map((e) => ({ ...e, snippet: null }) as EventWithSnippet);
+      }
+      setEventResults(mergedEvents.slice(0, 50));
       setSearched(true);
-      // F-09 Phase G (Issue #31, ADR-0008 改訂): 検索履歴に追加
-      // searchHistoryStore (#119) で normalize + 重複排除 + FIFO 20 件
-      useSearchHistoryStore.getState().push(trimmed);
+      if (hasText) {
+        // F-09 Phase G (Issue #31, ADR-0008 改訂): 検索履歴に追加
+        useSearchHistoryStore.getState().push(trimmed);
+      }
     } finally {
       setBusy(false);
     }
   };
 
   const runSearch = () => runSearchWith(query);
+
+  const toggleTagFilter = (tagId: string) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId],
+    );
+  };
 
   return (
     <ThemedView style={styles.container} testID="e2e_search_screen">
@@ -171,25 +200,44 @@ export default function SearchScreen() {
             </View>
           </View>
         )}
-        {recentTags.length > 0 && !searched && (
+        {recentTags.length > 0 && (
           <View style={styles.tagsRow} testID="e2e_search_recent_tags">
-            <ThemedText style={styles.recentTagsLabel}>{t('searchRecentTagsLabel')}</ThemedText>
-            <View style={styles.tagsChipRow}>
-              {recentTags.map((tg) => (
+            <View style={styles.historyHeaderRow}>
+              <ThemedText style={styles.recentTagsLabel}>{t('searchRecentTagsLabel')}</ThemedText>
+              {selectedTagIds.length > 0 && (
                 <Pressable
-                  key={tg.id}
                   accessibilityRole="button"
-                  accessibilityLabel={tg.name}
-                  testID={`e2e_search_tag_chip_${tg.id}`}
-                  style={styles.tagChip}
-                  onPress={() => {
-                    setQuery(tg.name);
-                    void runSearchWith(tg.name);
-                  }}
+                  accessibilityLabel={t('searchTagFilterClear')}
+                  testID="e2e_search_tag_filter_clear"
+                  onPress={() => setSelectedTagIds([])}
                 >
-                  <ThemedText style={styles.tagChipText}>{tg.name}</ThemedText>
+                  <ThemedText style={styles.clearButtonText}>
+                    {t('searchTagFilterClear')}
+                  </ThemedText>
                 </Pressable>
-              ))}
+              )}
+            </View>
+            <View style={styles.tagsChipRow}>
+              {recentTags.map((tg) => {
+                const selected = selectedTagIds.includes(tg.id);
+                return (
+                  <Pressable
+                    key={tg.id}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    accessibilityLabel={tg.name}
+                    testID={`e2e_search_tag_chip_${tg.id}`}
+                    style={[styles.tagChip, selected && styles.tagChipSelected]}
+                    onPress={() => toggleTagFilter(tg.id)}
+                  >
+                    <ThemedText
+                      style={[styles.tagChipText, selected && styles.tagChipTextSelected]}
+                    >
+                      {tg.name}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
         )}
@@ -346,4 +394,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tagChipText: { fontSize: 13, color: BRAND_GREEN, fontWeight: '500' },
+  tagChipSelected: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
+  tagChipTextSelected: { color: ON_BRAND, fontWeight: '600' },
 });
