@@ -263,7 +263,7 @@ export default function BonsaiDetailScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* F-04 Phase A/B: 「最後の水やりから X 日」+ 過去 12 週ヒートマップ (ADR-0013) */}
         <View style={styles.section}>
-          <ThemedText type="defaultSemiBold">{t('wateringSectionTitle')}</ThemedText>
+          <ThemedText type="subtitle">{t('wateringSectionTitle')}</ThemedText>
           <LastWateredText daysSinceLast={daysSinceLastWatering} />
           <WateringHeatmap
             events={events}
@@ -275,7 +275,7 @@ export default function BonsaiDetailScreen() {
 
         {item.species && (
           <View style={styles.section}>
-            <ThemedText type="defaultSemiBold">{t('bonsaiFieldSpecies')}</ThemedText>
+            <ThemedText type="subtitle">{t('bonsaiFieldSpecies')}</ThemedText>
             <ThemedText>{item.species.commonName}</ThemedText>
             <ThemedText style={styles.sci}>{item.species.scientificName}</ThemedText>
           </View>
@@ -283,20 +283,20 @@ export default function BonsaiDetailScreen() {
 
         {item.style && (
           <View style={styles.section}>
-            <ThemedText type="defaultSemiBold">{t('bonsaiFieldStyle')}</ThemedText>
+            <ThemedText type="subtitle">{t('bonsaiFieldStyle')}</ThemedText>
             <ThemedText>{t(`bonsaiStyle_${item.style}` as TranslationKey)}</ThemedText>
           </View>
         )}
 
         {item.acquiredAt && (
           <View style={styles.section}>
-            <ThemedText type="defaultSemiBold">{t('bonsaiFieldAcquiredAt')}</ThemedText>
+            <ThemedText type="subtitle">{t('bonsaiFieldAcquiredAt')}</ThemedText>
             <ThemedText>{formatDate(item.acquiredAt, lang)}</ThemedText>
           </View>
         )}
 
         <View style={styles.section}>
-          <ThemedText type="defaultSemiBold">
+          <ThemedText type="subtitle">
             {t('bonsaiFieldPhotos')}
             {remainingFreeSlots !== null && ` (${photoCount} / ${FREE_PHOTO_LIMIT_PER_BONSAI})`}
           </ThemedText>
@@ -343,7 +343,7 @@ export default function BonsaiDetailScreen() {
         </View>
 
         <View style={styles.section}>
-          <ThemedText type="defaultSemiBold">{t('eventsTitle')}</ThemedText>
+          <ThemedText type="subtitle">{t('eventsTitle')}</ThemedText>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('eventLogCta')}
@@ -439,7 +439,7 @@ export default function BonsaiDetailScreen() {
         </View>
 
         <View style={styles.section}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldUpdatedAt')}</ThemedText>
+          <ThemedText type="subtitle">{t('bonsaiFieldUpdatedAt')}</ThemedText>
           <ThemedText>{formatDate(item.updatedAt, lang)}</ThemedText>
         </View>
 
