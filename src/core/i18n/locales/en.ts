@@ -333,6 +333,12 @@ const baseEn = {
   wateringHeatmapSummaryRecordedDays: 'Recorded days: {days} / {total} ({percent}%)',
   wateringHeatmapSummaryTotalEvents: 'Total events: {count}',
 
+  // --- F-04 Phase H-2 BonsaiFilterSheet (Issue #29, ADR-0013 §AC6) ---
+  bonsaiFilterSelectAll: 'All bonsai',
+  bonsaiFilterSearchPlaceholder: 'Search bonsai',
+  bonsaiFilterRecentSection: 'Recently viewed',
+  bonsaiFilterAllSection: 'All bonsai',
+
   // --- F-07 Wiring duration in-app display (Phase B, Issue #24, ADR-0014) ---
   wiringDurationWithinWeeks: 'Wire on for {weeks} weeks',
   wiringDurationOverdueLabel: 'Wire on for {weeks} weeks (overdue)',
