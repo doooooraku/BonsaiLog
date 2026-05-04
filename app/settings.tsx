@@ -21,6 +21,13 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-na
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import {
+  ACCENT_GOLD,
+  BG_PRIMARY,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  ON_BRAND,
+} from '@/src/core/theme/colors';
 import { formatDateToHhmm, parseHhmmToDate } from '@/src/features/notification/notificationTime';
 import { requestNotificationPermission } from '@/src/features/notification/scheduler';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
@@ -451,7 +458,7 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: BG_PRIMARY },
   scroll: { padding: 16, gap: 16 },
   title: { marginBottom: 8 },
   section: { gap: 12 },
@@ -460,7 +467,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: BORDER_DEFAULT,
     gap: 6,
   },
   entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
@@ -469,7 +476,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: BORDER_DEFAULT,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -486,21 +493,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: BORDER_DEFAULT,
     alignItems: 'center',
   },
   themeChipSelected: {
-    backgroundColor: '#2E7D32',
-    borderColor: '#2E7D32',
+    backgroundColor: BRAND_GREEN,
+    borderColor: BRAND_GREEN,
   },
-  themeChipTextSelected: { color: '#FFFFFF' },
+  themeChipTextSelected: { color: ON_BRAND },
   proRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   proRowLabel: { flex: 1 },
   proBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: '#2E7D32',
+    borderRadius: 8,
+    backgroundColor: ACCENT_GOLD,
   },
-  proBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
+  proBadgeText: { color: ON_BRAND, fontSize: 11, fontWeight: '700' },
 });

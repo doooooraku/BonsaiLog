@@ -20,6 +20,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { setLang, useTranslation } from '@/src/core/i18n/i18n';
 import type { Lang } from '@/src/core/i18n/langCode';
+import {
+  BG_PRIMARY,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  BRAND_GREEN_BG,
+  ON_BRAND,
+} from '@/src/core/theme/colors';
 import { getNextOnboardingStep } from '@/src/features/onboarding/onboardingFlow';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
 
@@ -164,20 +171,25 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: BORDER_DEFAULT,
   },
-  rowSelected: { borderColor: '#2E7D32', backgroundColor: '#F1F8F2', borderWidth: 2 },
+  rowSelected: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN_BG, borderWidth: 2 },
   rowMain: { flex: 1, gap: 2 },
   native: { fontSize: 16 },
   latin: { fontSize: 12, opacity: 0.6, fontStyle: 'italic' },
   osBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 999,
-    backgroundColor: '#2E7D32',
+    borderRadius: 8,
+    backgroundColor: BRAND_GREEN,
   },
-  osBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '700' },
-  checkMark: { color: '#2E7D32', fontSize: 20, fontWeight: '700' },
-  cta: { paddingVertical: 16, borderRadius: 12, backgroundColor: '#2E7D32', alignItems: 'center' },
-  ctaText: { color: '#FFFFFF', fontWeight: '600', fontSize: 16 },
+  osBadgeText: { color: ON_BRAND, fontSize: 10, fontWeight: '700' },
+  checkMark: { color: BRAND_GREEN, fontSize: 20, fontWeight: '700' },
+  cta: {
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: BRAND_GREEN,
+    alignItems: 'center',
+  },
+  ctaText: { color: ON_BRAND, fontWeight: '600', fontSize: 16 },
 });
