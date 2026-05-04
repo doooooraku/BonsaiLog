@@ -10,11 +10,17 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { t } = useTranslation();
+  const scheme = colorScheme === 'dark' ? 'dark' : 'light';
+  const c = Colors[scheme];
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme === 'dark' ? 'dark' : 'light'].tint,
+        // Phase B-1b: tabBar の背景・テキスト・ボーダーを Colors 経由 (design_system.md §2)
+        tabBarActiveTintColor: c.tabIconSelected,
+        tabBarInactiveTintColor: c.tabIconDefault,
+        tabBarStyle: { backgroundColor: c.surface, borderTopColor: c.border },
+        tabBarLabelStyle: { color: c.textSecondary },
         headerShown: false,
         tabBarButton: HapticTab,
       }}
