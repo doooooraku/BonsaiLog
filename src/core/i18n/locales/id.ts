@@ -331,6 +331,10 @@ const id: Partial<Record<TranslationKey, string>> = {
   wateringHeatmapLegendAgg2: '34-66%',
   wateringHeatmapLegendAgg3: '67-100%',
 
+  // --- F-04 Phase G-3 summary (Issue #29, ADR-0013 §27-28) ---
+  wateringHeatmapSummaryRecordedDays: 'Recorded days: {days} / {total} ({percent}%)',
+  wateringHeatmapSummaryTotalEvents: 'Total events: {count}',
+
   // --- F-07 Wiring duration in-app display (Phase B、English fallback) ---
   wiringDurationWithinWeeks: 'Wire on for {weeks} weeks',
   wiringDurationOverdueLabel: 'Wire on for {weeks} weeks (overdue)',

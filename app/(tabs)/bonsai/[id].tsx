@@ -239,6 +239,7 @@ export default function BonsaiDetailScreen() {
             events={events}
             todayLocalKey={toLocalDateKey(nowUtc() as string, getTzOffsetMin())}
             tzOffsetMin={getTzOffsetMin()}
+            showSummary
           />
         </View>
 
