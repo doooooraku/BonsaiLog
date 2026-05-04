@@ -10,13 +10,8 @@ import { EventIcon } from '@/src/components/icons';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-import {
-  BG_PRIMARY,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  DANGER,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { BORDER_DEFAULT, BRAND_GREEN, DANGER, TEXT_SECONDARY } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 
 import {
   archiveBonsai,
@@ -67,6 +62,7 @@ export default function BonsaiDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, lang } = useTranslation();
   const router = useRouter();
+  const c = useColors();
   const [item, setItem] = useState<BonsaiWithSpecies | null>(null);
   const [loading, setLoading] = useState(true);
   const [photoGroups, setPhotoGroups] = useState<{ year: number; photos: PhotoRead[] }[]>([]);
@@ -252,7 +248,7 @@ export default function BonsaiDetailScreen() {
   const remainingFreeSlots = isPro ? null : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - photoCount);
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor: c.background }]}>
       <BonsaiHero
         coverUri={coverUri}
         bonsaiName={item.name}
@@ -549,7 +545,8 @@ function formatDate(iso: string, locale: string): string {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG_PRIMARY },
+  // backgroundColor は useColors の c.background で動的指定 (light/dark 両対応)
+  container: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   scrollContent: { padding: 16, gap: 16 },
   section: { gap: 8 },

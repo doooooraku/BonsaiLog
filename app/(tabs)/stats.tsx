@@ -20,6 +20,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
 import { getAllActiveWateringEventsLogged } from '@/src/db/eventRepository';
 import type { Bonsai, Event } from '@/src/db/schema';
@@ -30,6 +31,7 @@ import { useRecentBonsaiStore } from '@/src/stores/recentBonsaiStore';
 
 export default function StatsScreen() {
   const { t } = useTranslation();
+  const c = useColors();
   const [bonsai, setBonsai] = useState<Bonsai[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   // Phase H-3: 個別/集約モード切替 state
@@ -65,7 +67,10 @@ export default function StatsScreen() {
   // ScrollView は不要、View で十分。スクロール可能領域を将来的に確保したい場合は
   // 外側 FlatList の ListHeaderComponent / ListFooterComponent パターンに移行する。
   return (
-    <ThemedView style={styles.container} testID="e2e_stats_screen">
+    <ThemedView
+      style={[styles.container, { backgroundColor: c.background }]}
+      testID="e2e_stats_screen"
+    >
       <View style={styles.content}>
         <ThemedText type="title" style={styles.title}>
           {t('statsTabTitle')}
