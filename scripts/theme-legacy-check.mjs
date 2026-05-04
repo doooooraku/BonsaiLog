@@ -13,7 +13,8 @@ import { join, relative } from 'node:path';
 
 const ROOT = process.cwd();
 const TARGETS = ['src', 'app'];
-const FORBIDDEN = ['neonGreen', 'neonPink', 'cyberBlue', '#39FF14', '#0A0E1A', '#FFFF00'];
+// `#0A0E1A` は design_system.md §2-2 で dark theme bgPrimary として正式採用済 (Phase B-1a で解禁)
+const FORBIDDEN = ['neonGreen', 'neonPink', 'cyberBlue', '#39FF14', '#FFFF00'];
 const errors = [];
 
 function walk(dir, callback) {
