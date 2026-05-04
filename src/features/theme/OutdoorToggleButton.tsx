@@ -18,6 +18,7 @@ import { Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import { ACCENT_GOLD } from '@/src/core/theme/colors';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
 export type OutdoorToggleButtonProps = {
@@ -59,11 +60,12 @@ const styles = StyleSheet.create({
     height: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 999,
+    // 36×36 円形ボタン (radius = size/2 = 18)、design_system.md §5 pill 9999 禁止整合
+    borderRadius: 18,
     zIndex: 10,
   },
   buttonActive: {
-    backgroundColor: '#FFE082',
+    backgroundColor: ACCENT_GOLD,
   },
   icon: { fontSize: 22, lineHeight: 28 },
 });
