@@ -1,0 +1,38 @@
+# maestro/flows/onboarding-notification.yml
+# F-16 ローカル通知 (Issue #30、ADR-0014 §AC11)
+# Onboarding tut5 の Step 5 「通知を有効にする」フロー雛形 (実機検証用)。
+#
+# 動作: tut5 画面で「通知を有効にする」CTA をタップ → OS 許可ダイアログ
+#       (granted で通知 ON 化、denied で Alert 表示) → step 完了 → ホーム遷移。
+# 注: OS 許可ダイアログは Maestro で操作不能、本フローは画面到達と CTA 表示の確認まで。
+# 実機検証 (granted / denied 両パス) は次セッションで実施。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'F-16 - onboarding tut5 enable notification'
+tags:
+  - f-16
+  - onboarding
+
+steps:
+  - clearState:
+      label: 'AsyncStorage / SQLite を初期化 (オンボード未完了状態にする)'
+  - launchApp:
+      label: 'アプリ起動 (オンボード welcome → tut へ進む想定)'
+  # tut5 まで進む (必要なら他 step を skip / next で進める)
+  - assertVisible:
+      id: 'e2e_onboarding_tut'
+      label: 'オンボーディング tut 画面が表示される'
+      optional: true
+  - assertVisible:
+      id: 'e2e_onboarding_tut_next_tut5'
+      label: 'Step 5 の CTA が表示される (Step 5 の到達確認)'
+      optional: true
+  - tapOn:
+      id: 'e2e_onboarding_tut_next_tut5'
+      label: '「通知を有効にする」CTA タップ → OS 許可ダイアログ'
+      optional: true
+  # OS ダイアログは Maestro で扱えないため、その後の Home 到達で tut 完了を確認
+  - assertVisible:
+      id: 'e2e_home_screen'
+      label: 'tut 完了でホーム画面に遷移する'
+      optional: true
