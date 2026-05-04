@@ -163,7 +163,10 @@
   "pnpm": {
     "overrides": {
       "react-native-zip-archive": "7.0.2"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@shopify/react-native-skia"
+    ]
   },
   "private": true
 }
