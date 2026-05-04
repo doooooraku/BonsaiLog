@@ -18,9 +18,21 @@ import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import {
+  BG_PRIMARY,
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  DISABLED_BG,
+  ON_BRAND,
+  TEXT_SECONDARY,
+} from '@/src/core/theme/colors';
 import { getDb } from '@/src/db/db';
 import { createOrFindTag, type TagRecord } from '@/src/db/tagRepository';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
+
+/** Issue #31 AC4-2: タグ名 32 文字制限 (TL1)。 */
+const TAG_NAME_MAX_LENGTH = 32;
 
 export default function TagsManagerScreen() {
   const { t } = useTranslation();
@@ -98,6 +110,7 @@ export default function TagsManagerScreen() {
             returnKeyType="done"
             autoCorrect={false}
             autoCapitalize="none"
+            maxLength={TAG_NAME_MAX_LENGTH}
           />
           <Pressable
             accessibilityRole="button"
@@ -134,39 +147,46 @@ export default function TagsManagerScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: BG_PRIMARY },
   scroll: { padding: 16, gap: 12 },
   title: { marginBottom: 4 },
-  desc: { fontSize: 13, opacity: 0.7, marginBottom: 12, lineHeight: 18 },
+  desc: { fontSize: 13, color: TEXT_SECONDARY, marginBottom: 12, lineHeight: 18 },
   inputRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
+  // Issue #31 AC5 シニア UX: minHeight 48 + fontSize 17
   input: {
     flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 48,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
-    fontSize: 16,
+    backgroundColor: BG_SURFACE,
+    fontSize: 17,
   },
   addBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    minHeight: 48,
+    minWidth: 64,
     borderRadius: 12,
-    backgroundColor: '#2E7D32',
+    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addBtnDisabled: { backgroundColor: '#9E9E9E' },
-  addBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
-  empty: { textAlign: 'center', opacity: 0.7, paddingVertical: 24 },
+  addBtnDisabled: { backgroundColor: DISABLED_BG },
+  addBtnText: { color: ON_BRAND, fontSize: 17, fontWeight: '600' },
+  empty: { textAlign: 'center', color: TEXT_SECONDARY, paddingVertical: 24 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 14,
+    minHeight: 48,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
   },
-  rowDate: { fontSize: 12, opacity: 0.6 },
+  rowDate: { fontSize: 12, color: TEXT_SECONDARY },
 });
