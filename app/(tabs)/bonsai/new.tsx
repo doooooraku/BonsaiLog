@@ -6,6 +6,16 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
+import {
+  BG_PRIMARY,
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  BRAND_GREEN_BG,
+  DISABLED_BG,
+  ON_BRAND,
+  TEXT_SECONDARY,
+} from '@/src/core/theme/colors';
 
 import { createBonsai } from '@/src/db/bonsaiRepository';
 import { BONSAI_STYLES, type BonsaiStyle } from '@/src/db/schema';
@@ -17,6 +27,9 @@ import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository'
  * - 樹種選択は inline ScrollView (50 種、簡易検索付き)
  * - 樹形選択は Picker 風 (10 種)
  * - 取得日は ISO 8601 文字列 (YYYY-MM-DD のみ簡易入力、Phase 2 PoC で DateTimePicker 連携)
+ *
+ * Claude Design `create-screens.jsx` 整合 (ADR-0019 §149-159):
+ *   tokens 経由化 + form フィールド radius / border 整合 + chip radius 12 + submit BRAND_GREEN。
  */
 export default function BonsaiNewScreen() {
   const { t, lang } = useTranslation();
@@ -174,54 +187,58 @@ function toIsoUtc(yyyymmdd: string): string {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: BG_PRIMARY },
   scrollContent: { padding: 16, gap: 16 },
   field: { gap: 8 },
   input: {
     borderWidth: 1,
-    borderColor: '#D9D1BF',
+    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
     padding: 12,
     fontSize: 16,
     minHeight: 48,
+    backgroundColor: BG_SURFACE,
   },
   speciesScroll: {
     maxHeight: 220,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
+    backgroundColor: BG_SURFACE,
   },
   speciesRow: {
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
+    borderBottomColor: BORDER_DEFAULT,
   },
-  speciesRowSelected: { backgroundColor: 'rgba(46,125,50,0.08)' },
+  speciesRowSelected: { backgroundColor: BRAND_GREEN_BG },
   speciesNameSelected: { fontWeight: '600' },
-  speciesSci: { fontSize: 12, opacity: 0.6, fontStyle: 'italic' },
+  speciesSci: { fontSize: 12, color: TEXT_SECONDARY, fontStyle: 'italic' },
   styleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  // chip radius 12 (design_system.md §5 整合、旧 16 → 12)、padding 12 (タップ領域 36+)
   styleChip: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#D9D1BF',
+    borderColor: BORDER_DEFAULT,
     minHeight: 36,
     justifyContent: 'center',
+    backgroundColor: BG_SURFACE,
   },
-  styleChipSelected: { backgroundColor: '#2E7D32', borderColor: '#2E7D32' },
+  styleChipSelected: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
   styleChipText: { fontSize: 13 },
-  styleChipTextSelected: { fontSize: 13, color: '#fff', fontWeight: '600' },
+  styleChipTextSelected: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
   submit: {
     margin: 16,
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: '#2E7D32',
+    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     minHeight: 56,
     justifyContent: 'center',
   },
-  submitDisabled: { backgroundColor: '#9E9E9E' },
-  submitText: { color: '#fff', fontSize: 17, fontWeight: '500' },
+  submitDisabled: { backgroundColor: DISABLED_BG },
+  submitText: { color: ON_BRAND, fontSize: 17, fontWeight: '500', letterSpacing: 0.5 },
 });
