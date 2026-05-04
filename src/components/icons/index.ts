@@ -6,10 +6,12 @@
  */
 export { PotIcon } from './PotIcon';
 export {
+  CompassIcon,
   DropletIcon,
   EventIcon,
   FertilizerIcon,
   PotIconSmall,
   ScissorsIcon,
+  SprayIcon,
   WireIcon,
 } from './EventIcons';

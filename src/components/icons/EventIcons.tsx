@@ -8,7 +8,7 @@
 import React from 'react';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-import { ACCENT_BARK, BRAND_GREEN, SUCCESS } from '@/src/core/theme/colors';
+import { ACCENT_BARK, BRAND_GREEN, DANGER, SUCCESS, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import type { EventType } from '@/src/db/schema';
 
 type IconProps = { size?: number; color?: string };
@@ -99,6 +99,29 @@ export function FertilizerIcon({ size = 16, color = SUCCESS }: IconProps) {
   );
 }
 
+export function SprayIcon({ size = 16, color = DANGER }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      {/* 噴霧器: 容器 + ノズル + 飛沫 */}
+      <Path d="M5 7h4v6H5z" stroke={color} strokeWidth="1.4" strokeLinejoin="round" />
+      <Path d="M5 9h4" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+      <Path d="M9 5l3-2" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
+      <Circle cx="13" cy="3" r="0.6" fill={color} />
+      <Circle cx="14" cy="5" r="0.5" fill={color} />
+      <Circle cx="12" cy="6" r="0.4" fill={color} />
+    </Svg>
+  );
+}
+
+export function CompassIcon({ size = 16, color = TEXT_SECONDARY }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <Circle cx="8" cy="8" r="6" stroke={color} strokeWidth="1.4" />
+      <Path d="M10 6l-1 4-3 1 1-4 3-1z" stroke={color} strokeWidth="1.4" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
 /** Event type → アイコンコンポーネントの対応表。未対応 type は null を返す (v1.x で追加)。 */
 export function EventIcon({
   type,
@@ -124,6 +147,10 @@ export function EventIcon({
       return <PotIconSmall size={size} />;
     case 'fertilizing':
       return <FertilizerIcon size={size} />;
+    case 'pest_control':
+      return <SprayIcon size={size} />;
+    case 'position_change':
+      return <CompassIcon size={size} />;
     default:
       return null;
   }
