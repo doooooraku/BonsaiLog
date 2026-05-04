@@ -408,6 +408,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
+  onboardingTut5Cta: 'Enable notifications',
   onboardingTutNext: 'Next',
   skipForLater: 'Skip for later',
   settingsHelpSection: 'Help',

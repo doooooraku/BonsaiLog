@@ -7,16 +7,20 @@
  * - Phase D `getNextOnboardingStep` (#105) で次画面決定
  * - 「次へ」: markDismissed(step) → 次 step へ navigate
  * - 「あとで」: 残り全 step を dismissed 化 → completed=true → ホームへ
+ * - **Step 5 (tut5)** (F-16 ADR-0014 §41-47): CTA を「通知を有効にする」に切替、
+ *   OS permission リクエスト → 許可で通知 ON、拒否で Alert、いずれも step 完了。
  *
  * 不正な step (welcome/language/未知) は welcome へリダイレクト。
  */
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
+import { BG_PRIMARY, BRAND_GREEN, ON_BRAND, TEXT_SECONDARY } from '@/src/core/theme/colors';
+import { requestNotificationPermission } from '@/src/features/notification/scheduler';
 import { getNextOnboardingStep } from '@/src/features/onboarding/onboardingFlow';
 import {
   TUTORIAL_STEPS,
@@ -24,6 +28,7 @@ import {
   isTutorialStep,
 } from '@/src/features/onboarding/tutorialSteps';
 import { useOnboardingStore, type OnboardingStep } from '@/src/stores/onboardingStore';
+import { useSettingsStore } from '@/src/stores/settingsStore';
 
 export default function OnboardingTutScreen() {
   const { t } = useTranslation();
@@ -36,6 +41,9 @@ export default function OnboardingTutScreen() {
   const markDismissed = useOnboardingStore((s) => s.markDismissed);
   const setCompleted = useOnboardingStore((s) => s.setCompleted);
   const dismissed = useOnboardingStore((s) => s.dismissed);
+  // F-16 Step 5 用: 通知許可後にデフォルト値で ON にする (ADR-0014 §47)
+  const setNotifSummaryEnabled = useSettingsStore((s) => s.setNotificationDailySummaryEnabled);
+  const setNotifWateringEnabled = useSettingsStore((s) => s.setNotificationWateringRepeatEnabled);
 
   // 不正な step → welcome に戻す (Phase B が表示)
   React.useEffect(() => {
@@ -46,8 +54,8 @@ export default function OnboardingTutScreen() {
 
   if (!meta) return null;
 
-  // 「次へ」: この step を dismiss → 次画面決定
-  const handleNext = () => {
+  // 共通: この step を dismiss → 次画面決定
+  const advanceStep = () => {
     markDismissed(meta.step);
     const updatedDismissed = { ...dismissed, [meta.step]: true };
     const next = getNextOnboardingStep(false, updatedDismissed);
@@ -60,6 +68,25 @@ export default function OnboardingTutScreen() {
     router.replace(`/onboarding/tut/${next}` as Href);
   };
 
+  // 「次へ」: 通常 step (tut1-4)
+  const handleNext = () => {
+    advanceStep();
+  };
+
+  // 「通知を有効にする」: Step 5 専用 (ADR-0014 §43)
+  // OS permission を要求 → granted なら summary + watering 通知をデフォルト値で ON 化、
+  // denied なら案内 Alert を出して step 完了 (K1 通り、押し付けがましさ排除)。
+  const handleEnableNotifications = async () => {
+    const granted = await requestNotificationPermission();
+    if (granted) {
+      setNotifSummaryEnabled(true);
+      setNotifWateringEnabled(true);
+    } else {
+      Alert.alert(t('settingsNotifPermissionDeniedTitle'), t('settingsNotifPermissionDeniedBody'));
+    }
+    advanceStep();
+  };
+
   // 「あとで」: 残り全 tut を dismissed 化 → completed → ホームへ
   const handleSkipAll = () => {
     for (const tutMeta of TUTORIAL_STEPS) {
@@ -68,6 +95,10 @@ export default function OnboardingTutScreen() {
     setCompleted(true);
     router.replace('/' as Href);
   };
+
+  const isStep5 = meta.step === 'tut5';
+  const ctaLabel = isStep5 ? t('onboardingTut5Cta') : t('onboardingTutNext');
+  const ctaHandler = isStep5 ? () => void handleEnableNotifications() : handleNext;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']} testID="e2e_onboarding_tut">
@@ -78,21 +109,19 @@ export default function OnboardingTutScreen() {
             {ICON_FALLBACK[meta.icon] ?? '•'}
           </ThemedText>
         </View>
-        <ThemedText type="title" style={styles.title}>
-          {t(meta.titleKey as TranslationKey)}
-        </ThemedText>
+        <ThemedText style={styles.title}>{t(meta.titleKey as TranslationKey)}</ThemedText>
         <ThemedText style={styles.body}>{t(meta.bodyKey as TranslationKey)}</ThemedText>
       </ScrollView>
 
       <View style={styles.actions}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t('onboardingTutNext')}
+          accessibilityLabel={ctaLabel}
           testID={`e2e_onboarding_tut_next_${meta.step}`}
           style={styles.cta}
-          onPress={handleNext}
+          onPress={ctaHandler}
         >
-          <ThemedText style={styles.ctaText}>{t('onboardingTutNext')}</ThemedText>
+          <ThemedText style={styles.ctaText}>{ctaLabel}</ThemedText>
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -118,20 +147,29 @@ const ICON_FALLBACK: Record<string, string> = {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
+  safe: { flex: 1, backgroundColor: BG_PRIMARY },
   scroll: { flexGrow: 1, padding: 24, justifyContent: 'center', gap: 16 },
   iconRow: { alignItems: 'center', marginBottom: 16 },
   iconText: { fontSize: 64, lineHeight: 72 },
-  title: { textAlign: 'center', fontSize: 24, lineHeight: 32 },
-  body: { textAlign: 'center', fontSize: 15, opacity: 0.85, lineHeight: 22 },
+  // displayM 24/32 (design_system.md §3-3、Claude Design Onboarding Wireframes 整合)
+  title: {
+    fontFamily: 'NotoSerifJP_500Medium',
+    fontSize: 24,
+    lineHeight: 32,
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  body: { textAlign: 'center', fontSize: 16, lineHeight: 26, color: TEXT_SECONDARY },
   actions: { padding: 24, gap: 12 },
   cta: {
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: '#2E7D32',
+    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
+    minHeight: 56,
+    justifyContent: 'center',
   },
-  ctaText: { color: '#FFFFFF', fontWeight: '600', fontSize: 16 },
-  skipBtn: { paddingVertical: 12, alignItems: 'center' },
+  ctaText: { color: ON_BRAND, fontWeight: '600', fontSize: 17, letterSpacing: 0.5 },
+  skipBtn: { paddingVertical: 12, alignItems: 'center', minHeight: 48, justifyContent: 'center' },
   skipText: { fontSize: 14, opacity: 0.7 },
 });
