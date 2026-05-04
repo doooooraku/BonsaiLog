@@ -4,6 +4,18 @@
 
 ---
 
+### `ULIDError: Failed to get cryptographically secure random number`
+
+- **何が起きたか**: 盆栽新規登録画面で「保存」ボタン押下時に `Uncaught (in promise, id: 2) ULIDError: Failed t...` の赤バナーが表示され、ID 生成失敗で DB INSERT 不能。実機 (Android) のみ再現、Jest テストでは再現しない (Node v22 には Web Crypto あり)。
+- **根本原因**: `ulid` パッケージ v3 系は `crypto.getRandomValues` (Web Crypto API) で安全な乱数を取得する設計。React Native ランタイムには Web Crypto がデフォルトで搭載されておらず、`crypto` グローバルが undefined → 取得失敗で `ULIDError` を投げる。v2 系には `Math.random()` フォールバックがあったが v3 で撤廃された。
+- **ルール**:
+  1. `ulid` v3 系 (`^3.x.x`) を使う場合は **必ず `react-native-get-random-values` を依存に追加**し、`app/_layout.tsx` の **最上部 (他の import より先)** で `import 'react-native-get-random-values';` を評価する。
+  2. polyfill は「最初の評価時に global.crypto をセット」する設計のため、ulid 等のライブラリより **import 順序が後だと無効**。Babel の hoist で `import` は先に評価されるが、副作用付き import (`'pkg'` 単体) は **記述順** に評価されるため、polyfill を真っ先に書くのが鉄則。
+  3. テストでは Node 標準の Web Crypto により再現しない → 実機 (RN ランタイム) で必ず動作確認する。
+  4. 同種の問題: `crypto-js`、`uuid` v9 系、`@noble/hashes` 等もこの polyfill が必須。
+
+---
+
 ### Android logcat の False Positive パターン
 
 - **何が起きたか**: Android ログ監視で、アプリとは無関係なシステムログがエラーとして検出され、デバッグの邪魔になった
