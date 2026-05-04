@@ -7,6 +7,7 @@ import { Alert, FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { EventIcon } from '@/src/components/icons';
+import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
@@ -78,6 +79,16 @@ export default function BonsaiDetailScreen() {
     const todayLocalKey = toLocalDateKey(nowUtc() as string, tzOffsetMin);
     return getDaysSinceLastWatering(events, todayLocalKey, tzOffsetMin);
   }, [events]);
+
+  // Claude Design `detail-screens.jsx` DetailHero 整合 (Phase B-2): cover photo を抽出
+  // (early return より前で呼ぶ — react-hooks/rules-of-hooks)
+  const coverUri = React.useMemo(() => {
+    for (const g of photoGroups) {
+      const cover = g.photos.find((p) => p.isCover === 1);
+      if (cover) return cover.absoluteUri;
+    }
+    return null;
+  }, [photoGroups]);
 
   const reload = useCallback(async () => {
     if (!id) return;
@@ -242,10 +253,14 @@ export default function BonsaiDetailScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <BonsaiHero
+        coverUri={coverUri}
+        bonsaiName={item.name}
+        speciesCommonName={item.species?.commonName ?? null}
+        speciesScientificName={item.species?.scientificName ?? null}
+        styleLabel={item.style ? t(`bonsaiStyle_${item.style}` as TranslationKey) : null}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Claude Design `detail-screens.jsx` 整合: displayL 32pt NotoSerifJP_500Medium */}
-        <ThemedText style={styles.bonsaiName}>{item.name}</ThemedText>
-
         {/* F-04 Phase A/B: 「最後の水やりから X 日」+ 過去 12 週ヒートマップ (ADR-0013) */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold">{t('wateringSectionTitle')}</ThemedText>
