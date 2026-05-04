@@ -309,6 +309,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
 
   // --- F-09 検索 最近 3 タグチップ (Phase B、Issue #31、ADR-0008 改訂) ---
   searchRecentTagsLabel: '最近のタグ',
+  searchTagFilterClear: 'フィルタを解除',
 
   // --- F-13 設定 → アカウント / Paywall 導線 (Phase 1b、Issue #20、ADR-0009) ---
   settingsAccountSection: 'アカウント',

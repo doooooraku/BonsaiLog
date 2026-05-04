@@ -406,6 +406,28 @@ export async function searchEvents(query: string, bonsaiId?: string): Promise<Ev
 export type EventWithSnippet = Event & { snippet: string | null };
 
 /**
+ * Issue #31 AC3 (Y7): event_tags M:N で AND フィルタした events を返す。
+ *
+ * - tagIds 全てを持つ event のみ抽出 (COUNT(DISTINCT tag_id) = N)
+ * - deleted_at IS NULL のみ
+ * - tagIds が空の場合は [] を返す
+ */
+export async function searchEventsByTags(tagIds: readonly string[]): Promise<Event[]> {
+  if (tagIds.length === 0) return [];
+  const db = await getDb();
+  const placeholders = tagIds.map(() => '?').join(',');
+  return db.getAllAsync<Event>(
+    `SELECT e.* FROM events e
+     INNER JOIN event_tags et ON et.event_id = e.id
+     WHERE et.tag_id IN (${placeholders}) AND e.deleted_at IS NULL
+     GROUP BY e.id
+     HAVING COUNT(DISTINCT et.tag_id) = ?
+     ORDER BY e.occurred_at_utc DESC;`,
+    [...tagIds, tagIds.length],
+  );
+}
+
+/**
  * Issue #31 AC2: FTS5 `snippet()` でマッチ箇所の前後 8 トークンを抜粋して返す。
  *
  * - delimiter は `«` `»` (HTML タグでなく React Native で安全に表示可能)

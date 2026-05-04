@@ -307,6 +307,7 @@ const baseEn = {
 
   // --- F-09 Search recent tags chips (Phase B, Issue #31, ADR-0008 改訂) ---
   searchRecentTagsLabel: 'Recent tags',
+  searchTagFilterClear: 'Clear filter',
 
   // --- F-13 Settings → Account / Paywall entry (Phase 1b, Issue #20, ADR-0009) ---
   settingsAccountSection: 'Account',

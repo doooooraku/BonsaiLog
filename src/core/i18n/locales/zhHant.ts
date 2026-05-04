@@ -301,6 +301,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
 
   // --- F-09 Search recent tags chips (Phase B、English fallback) ---
   searchRecentTagsLabel: 'Recent tags',
+  searchTagFilterClear: 'Clear filter',
 
   // --- F-13 Settings → Account / Paywall entry (Phase 1b、English fallback) ---
   settingsAccountSection: 'Account',
