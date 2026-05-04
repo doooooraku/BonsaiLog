@@ -8,6 +8,13 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
+import {
+  BG_PRIMARY,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  DANGER,
+  TEXT_SECONDARY,
+} from '@/src/core/theme/colors';
 
 import {
   archiveBonsai,
@@ -234,7 +241,8 @@ export default function BonsaiDetailScreen() {
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <ThemedText type="title">{item.name}</ThemedText>
+        {/* Claude Design `detail-screens.jsx` 整合: displayL 32pt NotoSerifJP_500Medium */}
+        <ThemedText style={styles.bonsaiName}>{item.name}</ThemedText>
 
         {/* F-04 Phase A/B: 「最後の水やりから X 日」+ 過去 12 週ヒートマップ (ADR-0013) */}
         <View style={styles.section}>
@@ -514,32 +522,39 @@ function formatDate(iso: string, locale: string): string {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: BG_PRIMARY },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   scrollContent: { padding: 16, gap: 16 },
   section: { gap: 8 },
-  sci: { fontStyle: 'italic', opacity: 0.7, fontSize: 13 },
+  // displayL 32/38 (design_system.md §3-3、Claude Design detail-screens.jsx)
+  bonsaiName: {
+    fontFamily: 'NotoSerifJP_500Medium',
+    fontSize: 32,
+    lineHeight: 38,
+    letterSpacing: 0.4,
+  },
+  sci: { fontStyle: 'italic', opacity: 0.7, fontSize: 13, color: TEXT_SECONDARY },
   archiveBtn: {
     marginTop: 24,
     paddingVertical: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#8B2E2E',
+    borderColor: DANGER,
     alignItems: 'center',
     minHeight: 48,
     justifyContent: 'center',
   },
-  archiveText: { color: '#8B2E2E', fontSize: 15, fontWeight: '500' },
+  archiveText: { color: DANGER, fontSize: 15, fontWeight: '500' },
   photoAddBtn: {
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2E7D32',
+    borderColor: BRAND_GREEN,
     alignItems: 'center',
     minHeight: 44,
     justifyContent: 'center',
   },
-  photoAddText: { color: '#2E7D32', fontSize: 15, fontWeight: '500' },
+  photoAddText: { color: BRAND_GREEN, fontSize: 15, fontWeight: '500' },
   emptyPhotos: { opacity: 0.6, textAlign: 'center', paddingVertical: 12 },
   yearBlock: { gap: 8 },
   yearLabel: { fontSize: 13, opacity: 0.7 },
@@ -548,27 +563,27 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 12,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: BORDER_DEFAULT,
   },
   photoCover: {
     borderWidth: 2,
-    borderColor: '#2E7D32',
+    borderColor: BRAND_GREEN,
   },
   eventAddBtn: {
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2E7D32',
+    borderColor: BRAND_GREEN,
     alignItems: 'center',
     minHeight: 44,
     justifyContent: 'center',
   },
-  eventAddText: { color: '#2E7D32', fontSize: 15, fontWeight: '500' },
+  eventAddText: { color: BRAND_GREEN, fontSize: 15, fontWeight: '500' },
   eventRow: {
     paddingVertical: 12,
     paddingHorizontal: 4,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: BORDER_DEFAULT,
     gap: 4,
   },
   eventRowMain: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
