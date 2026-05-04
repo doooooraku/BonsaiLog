@@ -19,7 +19,6 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
-  BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
@@ -27,6 +26,7 @@ import {
   ON_BRAND,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { getDb } from '@/src/db/db';
 import { createOrFindTag, renameTag, type TagRecord } from '@/src/db/tagRepository';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
@@ -36,6 +36,7 @@ const TAG_NAME_MAX_LENGTH = 32;
 
 export default function TagsManagerScreen() {
   const { t } = useTranslation();
+  const c = useColors();
   const [tags, setTags] = React.useState<TagRecord[]>([]);
   const [input, setInput] = React.useState('');
   const [busy, setBusy] = React.useState(false);
@@ -129,7 +130,10 @@ export default function TagsManagerScreen() {
   };
 
   return (
-    <ThemedView style={styles.container} testID="e2e_tags_manager">
+    <ThemedView
+      style={[styles.container, { backgroundColor: c.background }]}
+      testID="e2e_tags_manager"
+    >
       <OutdoorToggleButton testIdSuffix="tags_outdoor_toggle" />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <ThemedText type="title" style={styles.title}>
@@ -199,7 +203,8 @@ export default function TagsManagerScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG_PRIMARY },
+  // backgroundColor は useColors の c.background で動的指定
+  container: { flex: 1 },
   scroll: { padding: 16, gap: 12 },
   title: { marginBottom: 4 },
   desc: { fontSize: 13, color: TEXT_SECONDARY, marginBottom: 12, lineHeight: 18 },

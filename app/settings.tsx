@@ -21,13 +21,8 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-na
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  ACCENT_GOLD,
-  BG_PRIMARY,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-} from '@/src/core/theme/colors';
+import { ACCENT_GOLD, BORDER_DEFAULT, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { formatDateToHhmm, parseHhmmToDate } from '@/src/features/notification/notificationTime';
 import { requestNotificationPermission } from '@/src/features/notification/scheduler';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
@@ -39,6 +34,7 @@ import { useSettingsStore } from '@/src/stores/settingsStore';
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const c = useColors();
   const eventOverloadEnabled = useSettingsStore((s) => s.eventOverloadEnabled);
   const setEventOverloadEnabled = useSettingsStore((s) => s.setEventOverloadEnabled);
   const themeMode = useSettingsStore((s) => s.themeMode);
@@ -134,7 +130,10 @@ export default function SettingsScreen() {
   ];
 
   return (
-    <ThemedView style={styles.container} testID="e2e_settings_screen">
+    <ThemedView
+      style={[styles.container, { backgroundColor: c.background }]}
+      testID="e2e_settings_screen"
+    >
       {/* F-15 Phase H (Issue #32, ADR-0015 AC4 OA1): 全画面ヘッダー右上の屋外モードトグル */}
       <OutdoorToggleButton testIdSuffix="settings_outdoor_toggle" />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
@@ -458,7 +457,8 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG_PRIMARY },
+  // backgroundColor は useColors の c.background で動的指定
+  container: { flex: 1 },
   scroll: { padding: 16, gap: 16 },
   title: { marginBottom: 8 },
   section: { gap: 12 },

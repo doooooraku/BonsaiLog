@@ -5,14 +5,8 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { BORDER_DEFAULT, ON_BRAND, TEXT_SECONDARY } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 
 import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/bonsaiRepository';
@@ -30,6 +24,7 @@ import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/
 export default function BonsaiListScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
+  const c = useColors();
   const [items, setItems] = useState<BonsaiWithSpecies[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +46,7 @@ export default function BonsaiListScreen() {
 
   if (loading) {
     return (
-      <ThemedView style={styles.container}>
+      <ThemedView style={[styles.container, { backgroundColor: c.background }]}>
         <OutdoorToggleButton testIdSuffix="bonsai_list_outdoor_toggle" />
         <ThemedText>{t('loading')}</ThemedText>
       </ThemedView>
@@ -60,7 +55,7 @@ export default function BonsaiListScreen() {
 
   if (items.length === 0) {
     return (
-      <ThemedView style={styles.container}>
+      <ThemedView style={[styles.container, { backgroundColor: c.background }]}>
         <OutdoorToggleButton testIdSuffix="bonsai_list_outdoor_toggle" />
         <ThemedText type="title">{t('bonsaiListEmptyTitle')}</ThemedText>
         <ThemedText style={styles.emptyDesc}>{t('bonsaiListEmptyDesc')}</ThemedText>
@@ -77,7 +72,7 @@ export default function BonsaiListScreen() {
   }
 
   return (
-    <ThemedView style={styles.listContainer}>
+    <ThemedView style={[styles.listContainer, { backgroundColor: c.background }]}>
       {/* F-15 Phase I (Issue #32, ADR-0015 AC4 OA1): 屋外モードトグル */}
       <OutdoorToggleButton testIdSuffix="bonsai_list_outdoor_toggle" />
       <FlatList
@@ -122,16 +117,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 16,
-    backgroundColor: BG_PRIMARY,
   },
-  listContainer: { flex: 1, backgroundColor: BG_PRIMARY },
+  // backgroundColor は useColors の c.background で動的指定
+  listContainer: { flex: 1 },
   listContent: { padding: 16, gap: 12 },
   emptyDesc: { textAlign: 'center', opacity: 0.7, marginBottom: 16 },
   cta: {
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
+    backgroundColor: '#1F3A2E',
   },
   ctaText: { color: ON_BRAND, fontSize: 17, fontWeight: '500' },
   // Claude Design `BonsaiCard` 整合: NotoSerifJP 22/28、border 16
@@ -140,7 +135,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
+    backgroundColor: '#FFFFFF',
     gap: 4,
   },
   cardName: {
@@ -165,7 +160,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: BRAND_GREEN,
+    backgroundColor: '#1F3A2E',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,

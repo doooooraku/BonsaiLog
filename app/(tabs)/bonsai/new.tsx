@@ -7,7 +7,6 @@ import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
-  BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
@@ -16,6 +15,7 @@ import {
   ON_BRAND,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 
 import { createBonsai } from '@/src/db/bonsaiRepository';
 import { BONSAI_STYLES, type BonsaiStyle } from '@/src/db/schema';
@@ -33,6 +33,7 @@ import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository'
  */
 export default function BonsaiNewScreen() {
   const { t, lang } = useTranslation();
+  const c = useColors();
   const router = useRouter();
   const [name, setName] = useState('');
   const [speciesId, setSpeciesId] = useState<string | null>(null);
@@ -79,7 +80,7 @@ export default function BonsaiNewScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor: c.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.field}>
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldName')} *</ThemedText>
@@ -187,7 +188,8 @@ function toIsoUtc(yyyymmdd: string): string {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG_PRIMARY },
+  // backgroundColor は useColors の c.background で動的指定
+  container: { flex: 1 },
   scrollContent: { padding: 16, gap: 16 },
   field: { gap: 8 },
   input: {
