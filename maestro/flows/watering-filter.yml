@@ -1,0 +1,56 @@
+appId: 'com.doooooraku.bonsailog'
+name: 'E2E - F-04 BonsaiFilterSheet (stats tab filter)'
+tags:
+  - e2e
+  - f-04
+  - watering
+  - filter
+
+
+# Issue #29 / ADR-0013 / AC12-6 雛形。
+# stats タブ → ドロップダウン → 検索ボックス入力 → 個別盆栽選択 →
+# WateringHeatmap が aggregate → individual に切替 (K1 凡例) を
+# screen-reach 系で確認する。
+# 実盆栽データ前提のため、Sandbox 連携は人間タスクで別途検証。
+
+---
+- launchApp:
+    clearState: false
+    label: 'アプリ起動 (既存 DB 利用、テスト盆栽 1 本以上前提)'
+
+- tapOn:
+    text: 'Stats'
+    optional: true
+    label: 'stats タブをタップ (英語)'
+
+- runFlow:
+    when:
+      visible: '統計'
+    commands:
+      - tapOn: '統計'
+        label: 'stats タブをタップ (日本語)'
+
+- assertVisible:
+    id: 'e2e_stats_screen'
+    label: 'stats 画面到達'
+
+- assertVisible:
+    id: 'e2e_filter_dropdown'
+    label: 'ドロップダウン表示 (「すべての盆栽 (N本) ▼」)'
+
+- tapOn:
+    id: 'e2e_filter_dropdown'
+    label: 'ドロップダウンタップ → BottomSheet 展開'
+
+- assertVisible:
+    id: 'e2e_filter_search_input'
+    label: '検索ボックス表示'
+
+- assertVisible:
+    id: 'e2e_filter_select_all'
+    label: '「すべての盆栽」項目表示 (集約モード復帰用)'
+# TODO (Sandbox 連携 / 実データ前提):
+# - 検索ボックスに文字入力 → 該当盆栽のみ表示 (filterBonsaiByQuery)
+# - 「最近見た盆栽」セクション表示 (recentBonsaiStore 連動、3 本以上閲覧後)
+# - 個別盆栽タップ → ドロップダウン文言が盆栽名に切替 + ヒートマップ K1 凡例に切替
+# - 「すべての盆栽」タップで集約モード K2 復帰
