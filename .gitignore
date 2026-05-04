@@ -52,5 +52,8 @@ app-example
 # Debug sessions
 .debug-sessions/
 
+# Claude Code 一時ファイル
+.claude/scheduled_tasks.lock
+
 # Store screenshots output
 screenshots/
