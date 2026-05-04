@@ -18,7 +18,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { PotIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import { ACCENT_GOLD, BG_PRIMARY, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
 import { AdBanner } from '@/src/features/ads/AdBanner';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
@@ -68,9 +70,8 @@ export default function HomeScreen() {
       <View style={styles.content}>
         {bonsaiCount === 0 && (
           <View style={styles.empty} testID="e2e_home_empty_state">
-            <ThemedText type="title" style={styles.emptyTitle}>
-              {t('homeEmptyTitle')}
-            </ThemedText>
+            <PotIcon size={200} />
+            <ThemedText style={styles.emptyTitle}>{t('homeEmptyTitle')}</ThemedText>
             <ThemedText style={styles.emptyBody}>{t('homeEmptyBody')}</ThemedText>
             <Pressable
               accessibilityRole="button"
@@ -91,7 +92,7 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: BG_PRIMARY },
   content: {
     flex: 1,
     padding: 24,
@@ -104,13 +105,17 @@ const styles = StyleSheet.create({
     gap: 16,
     maxWidth: 320,
   },
+  // displayM 24/32 (design_system.md §3-3、Claude Design home-screens.jsx HomeEmptyScreen)
   emptyTitle: {
+    fontFamily: 'NotoSerifJP_500Medium',
+    fontSize: 24,
+    lineHeight: 32,
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
   emptyBody: {
     textAlign: 'center',
     opacity: 0.8,
-    lineHeight: 24,
   },
   emptyCta: {
     marginTop: 16,
@@ -119,27 +124,28 @@ const styles = StyleSheet.create({
     minHeight: 56,
     minWidth: 240,
     borderRadius: 12,
-    backgroundColor: '#1F3A2E',
+    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyCtaText: {
-    color: '#F7F3E8',
+    color: BG_PRIMARY,
     fontSize: 17,
     fontWeight: '500',
     letterSpacing: 0.5,
   },
-  // ADR-0009 AC3-5: 小さな「Pro」バッジ
+  // ADR-0009 AC3-5 + design_system.md §2-1 ACCENT_GOLD (Pro バッジ専用色)、
+  // §5「pill 9999 禁止」整合で borderRadius 8。
   proBadge: {
     position: 'absolute',
     top: 12,
     right: 16,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: '#2E7D32',
+    borderRadius: 8,
+    backgroundColor: ACCENT_GOLD,
     zIndex: 10,
   },
-  proBadgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
+  proBadgeText: { color: ON_BRAND, fontSize: 11, fontWeight: '700' },
   outdoorPosition: { right: 56 },
 });
