@@ -14,7 +14,7 @@
  */
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -59,9 +59,14 @@ export default function StatsScreen() {
 
   const heatmapMode = selectedBonsaiId == null ? 'aggregate' : 'individual';
 
+  // BonsaiFilterSheet 内部で FlatList (VirtualizedList) を使うため、外側を ScrollView に
+  // すると "VirtualizedLists should never be nested inside plain ScrollViews" 警告が出る。
+  // stats タブのコンテンツは少量 (タイトル + フィルター + ヒートマップ + サマリー) のため
+  // ScrollView は不要、View で十分。スクロール可能領域を将来的に確保したい場合は
+  // 外側 FlatList の ListHeaderComponent / ListFooterComponent パターンに移行する。
   return (
     <ThemedView style={styles.container} testID="e2e_stats_screen">
-      <ScrollView contentContainerStyle={styles.content}>
+      <View style={styles.content}>
         <ThemedText type="title" style={styles.title}>
           {t('statsTabTitle')}
         </ThemedText>
@@ -80,13 +85,13 @@ export default function StatsScreen() {
           showSummary
           testID="e2e_stats_watering_heatmap"
         />
-      </ScrollView>
+      </View>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 16, gap: 12 },
+  content: { flex: 1, padding: 16, gap: 12 },
   title: { marginBottom: 4 },
 });
