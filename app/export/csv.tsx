@@ -18,6 +18,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } fro
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import { BG_PRIMARY, BRAND_GREEN, BRAND_GREEN_BG, ON_BRAND } from '@/src/core/theme/colors';
 import { eventsToCsvString } from '@/src/features/export/csvExport';
 import { isStorageSufficient } from '@/src/features/export/pdfReliability';
 import { useGoToPaywall } from '@/src/features/pro/useGoToPaywall';
@@ -121,25 +122,27 @@ export default function ExportCsvScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: BG_PRIMARY },
   scroll: { padding: 16, gap: 16 },
   title: { marginBottom: 8 },
   body: { lineHeight: 22 },
   proNotice: {
     padding: 12,
     borderRadius: 8,
-    backgroundColor: 'rgba(46, 125, 50, 0.08)',
+    backgroundColor: BRAND_GREEN_BG,
     borderWidth: 1,
-    borderColor: 'rgba(46, 125, 50, 0.4)',
+    borderColor: BRAND_GREEN,
   },
   proNoticeText: { fontSize: 13, lineHeight: 18 },
   primaryButton: {
     marginTop: 8,
     paddingVertical: 14,
+    minHeight: 56,
     borderRadius: 12,
-    backgroundColor: '#2E7D32',
+    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  primaryButtonText: { color: '#fff', fontSize: 17, fontWeight: '600' },
+  primaryButtonText: { color: ON_BRAND, fontSize: 17, fontWeight: '600' },
   disabledButton: { opacity: 0.6 },
 });

@@ -21,6 +21,7 @@ import {
   type BonsaiListRow,
   type ListPdfStats,
 } from '@/src/features/export/listPdfExport';
+import { BG_PRIMARY, BRAND_GREEN, DISABLED_BG, ON_BRAND } from '@/src/core/theme/colors';
 import { generateAndShareListPdf } from '@/src/features/export/pdfExport';
 import { isStorageSufficient } from '@/src/features/export/pdfReliability';
 import { useGoToPaywall } from '@/src/features/pro/useGoToPaywall';
@@ -146,7 +147,7 @@ export default function ExportListPdfScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: BG_PRIMARY },
   scroll: { padding: 16, gap: 12 },
   title: { marginBottom: 8 },
   desc: { fontSize: 13, opacity: 0.7, marginBottom: 16, lineHeight: 18 },
@@ -154,10 +155,12 @@ const styles = StyleSheet.create({
   action: {
     paddingHorizontal: 16,
     paddingVertical: 14,
+    minHeight: 56,
     borderRadius: 12,
-    backgroundColor: '#2E7D32',
+    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  actionBusy: { backgroundColor: '#9E9E9E' },
-  actionText: { color: '#FFFFFF', fontWeight: '600' },
+  actionBusy: { backgroundColor: DISABLED_BG },
+  actionText: { color: ON_BRAND, fontWeight: '600' },
 });
