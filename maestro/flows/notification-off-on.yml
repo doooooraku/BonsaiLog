@@ -1,0 +1,42 @@
+# maestro/flows/notification-off-on.yml
+# F-16 ローカル通知 (Issue #30、ADR-0014 §AC9)
+# 通知マスター OFF→ON 切替で水やり時刻設定が保持されることを確認 (実機検証フロー雛形)。
+#
+# 設定永続化は AsyncStorage 経由で `settingsStore` が処理 (PR #168 までで実装済)。
+# 本フローはトグル 2 回切替後も時刻編集ボタンが復活する動線を確認。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'F-16 - notification off-on persistence'
+tags:
+  - f-16
+
+steps:
+  - launchApp:
+      label: 'アプリ起動'
+  - tapOn:
+      text: '設定'
+      label: '設定タブ or ヘッダーから設定画面へ遷移'
+      optional: true
+  # 通知 ON
+  - tapOn:
+      id: 'e2e_notif_summary_toggle'
+      label: '当日まとめ通知トグルを ON に (1 回目)'
+      optional: true
+  - assertVisible:
+      id: 'e2e_notif_summary_edit_time'
+      label: 'ON 時のみ表示される時刻編集ボタンが見える'
+      optional: true
+  # 通知 OFF
+  - tapOn:
+      id: 'e2e_notif_summary_toggle'
+      label: 'もう一度タップで OFF に'
+      optional: true
+  # 通知 ON (2 回目、設定保持確認)
+  - tapOn:
+      id: 'e2e_notif_summary_toggle'
+      label: 'もう一度 ON にして時刻保持確認'
+      optional: true
+  - assertVisible:
+      id: 'e2e_notif_summary_edit_time'
+      label: '時刻編集ボタンが復活 (前回設定が保持されている)'
+      optional: true
