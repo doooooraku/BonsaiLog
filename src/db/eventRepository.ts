@@ -410,7 +410,8 @@ export type EventWithSnippet = Event & { snippet: string | null };
  *
  * - delimiter は `«` `»` (HTML タグでなく React Native で安全に表示可能)
  * - column 0 = note 列のみ snippet 対象
- * - events 本体取得後、event_id でマッチさせて snippet を merge
+ * - SO1 ソート: bm25 ASC (低い = 関連度高) → 同 score 時 occurred_at_utc DESC
+ * - events 本体取得後、event_id でマッチさせて snippet + rank を merge し JS 側で手動ソート
  */
 export async function searchEventsWithSnippet(
   query: string,
@@ -420,24 +421,35 @@ export async function searchEventsWithSnippet(
   if (!trimmed) return [];
 
   const db = await getDb();
+  // bm25(events_fts) は MATCH 行に対して関連度スコアを返す (FTS5 §5.1.1)。
+  // 値が小さいほど関連度高 (Boltor の標準)。同 score 時の tiebreaker は本体取得後の JS 側で実施。
   const rows = bonsaiId
-    ? await db.getAllAsync<{ event_id: string; snippet: string }>(
-        "SELECT event_id, snippet(events_fts, 0, '«', '»', '...', 8) AS snippet FROM events_fts WHERE events_fts MATCH ? AND bonsai_id = ?;",
+    ? await db.getAllAsync<{ event_id: string; snippet: string; rank: number }>(
+        "SELECT event_id, snippet(events_fts, 0, '«', '»', '...', 8) AS snippet, bm25(events_fts) AS rank FROM events_fts WHERE events_fts MATCH ? AND bonsai_id = ?;",
         [trimmed, bonsaiId],
       )
-    : await db.getAllAsync<{ event_id: string; snippet: string }>(
-        "SELECT event_id, snippet(events_fts, 0, '«', '»', '...', 8) AS snippet FROM events_fts WHERE events_fts MATCH ?;",
+    : await db.getAllAsync<{ event_id: string; snippet: string; rank: number }>(
+        "SELECT event_id, snippet(events_fts, 0, '«', '»', '...', 8) AS snippet, bm25(events_fts) AS rank FROM events_fts WHERE events_fts MATCH ?;",
         [trimmed],
       );
 
   if (rows.length === 0) return [];
 
   const snippetMap = new Map(rows.map((r) => [r.event_id, r.snippet]));
+  const rankMap = new Map(rows.map((r) => [r.event_id, r.rank]));
   const idList = rows.map((r) => r.event_id);
   const placeholders = idList.map(() => '?').join(',');
   const events = await db.getAllAsync<Event>(
-    `SELECT * FROM events WHERE id IN (${placeholders}) AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;`,
+    `SELECT * FROM events WHERE id IN (${placeholders}) AND deleted_at IS NULL;`,
     idList,
   );
-  return events.map((ev) => ({ ...ev, snippet: snippetMap.get(ev.id) ?? null }));
+  return events
+    .map((ev) => ({ ...ev, snippet: snippetMap.get(ev.id) ?? null }))
+    .sort((a, b) => {
+      // bm25 ASC (関連度高い順)、同 score 時 occurred_at_utc DESC (新しい順)
+      const ra = rankMap.get(a.id) ?? 0;
+      const rb = rankMap.get(b.id) ?? 0;
+      if (ra !== rb) return ra - rb;
+      return a.occurredAtUtc < b.occurredAtUtc ? 1 : -1;
+    });
 }
