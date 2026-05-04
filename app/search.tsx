@@ -57,6 +57,24 @@ export default function SearchScreen() {
     }, []),
   );
 
+  // Issue #31 AC5 シニア UX: debounce 300ms (タイプミス耐性)。
+  // Enter (onSubmitEditing) は即時実行 (Y6) のため別経路。
+  React.useEffect(() => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setBonsaiResults([]);
+      setEventResults([]);
+      setSearched(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      void runSearchWith(trimmed);
+    }, 300);
+    return () => clearTimeout(timer);
+    // runSearchWith は useCallback 化していないが、setTimeout cleanup で
+    // タイマー破棄するため stale closure 問題は最小化される。
+  }, [query]);
+
   const runSearchWith = async (raw: string) => {
     const trimmed = raw.trim();
     if (!trimmed) {
