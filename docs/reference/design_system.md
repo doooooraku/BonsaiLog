@@ -184,5 +184,5 @@ reminder（medical context） / tracker（health context） / alert（medical）
 
 ---
 
-_このドキュメントは `src/theme/tokens.ts` として TypeScript 定数にも反映される。_
+_このドキュメントは `src/core/theme/colors.ts` として TypeScript 定数にも反映される。_
 _変更時は ADR `docs/adr/YYYY-MM-DD-design-tokens.md` を作成。_
