@@ -1,3 +1,11 @@
+// P0 (盆栽新規登録時 ULIDError 対策): React Native には Web Crypto API が標準搭載
+// されていないため、ulid v3 系が `crypto.getRandomValues` を取得できず
+// `ULIDError: Failed to get cryptographically secure random number` で
+// 起動 / 保存直後にクラッシュする。react-native-get-random-values polyfill を
+// 「他の import より先」に評価して global crypto を提供する。
+// 過去 lesson: docs/reference/tasks/lessons/runtime.md に記録。
+import 'react-native-get-random-values';
+
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter, useSegments, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
