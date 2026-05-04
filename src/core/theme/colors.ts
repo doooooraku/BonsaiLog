@@ -1,28 +1,80 @@
 /**
- * F-15 Phase C カラー トークン (Issue #32 / ADR-0015)。
+ * Design Tokens (BonsaiLog Source of Truth)。
  *
- * Phase C 範囲:
- * - WateringHeatmap (F-04) や PaywallScreen (F-13) 等で重複していた hex 値を一元化
- * - light のみ定義 (本 PR スコープ)、dark / outdoor は Phase D で Tamagui themes 全面再設計時に追加
+ * `docs/reference/design_system.md` と Claude Design `tokens.css` に完全整合。
+ * R-25 drift 解消 (feat/design-tokens-v2-1F3A2E): BRAND_GREEN を Material 緑
+ * `#2E7D32` から ADR/Design 整合の深緑 fukamidori `#1F3A2E` に切替、
+ * washi 背景・accent-gold・text-secondary 等の新規トークンを追加。
  *
- * Phase D 以降:
- * - Tamagui themes 全面再設計 (light / dark / outdoor の 3 themes、トークン 11 個)
- * - dark: #121212 / #E1E1E1 / #7BC97D
- * - outdoor: #FFFFFF + #000000 + #1B5E20 緑単色
- * - ESLint no-restricted-syntax で hex リテラル禁止 (このトークン経由を強制)
- *
- * 設計方針:
- * - 命名規約 TN1: 標準キー (background / color / accent) + 独自プレフィクス bonsai_*
- * - 配色 ColorBrewer Greens 4-class (color-blind safe、F-04 ヒートマップ用)
- * - WCAG AAA 7:1 必達 (light 配色)
+ * Light のみ定義、Dark / Outdoor は `themeResolver.ts` 経由で参照。
  */
 
-/** Brand 緑 (CTA / Pressable / 選択中ボーダー)。WCAG AAA 7.4:1 vs #FFFFFF。 */
-export const BRAND_GREEN = '#2E7D32';
+// =========================================================================
+// Background
+// =========================================================================
+
+/** 背景 (washi 和紙色、Light モード既定)。 */
+export const BG_PRIMARY = '#F7F3E8';
+/** カード背景 (Surface)。 */
+export const BG_SURFACE = '#FFFFFF';
+
+// =========================================================================
+// Text
+// =========================================================================
+
+/** 本文 (sumi 墨色、AAA 16:1 vs BG_SURFACE)。 */
+export const TEXT_PRIMARY = '#1A1A1A';
+/** 補助テキスト (AA 7.7:1 vs BG_SURFACE)。 */
+export const TEXT_SECONDARY = '#5A5248';
+/** 3 次テキスト (AA 4.6:1 vs BG_SURFACE)。 */
+export const TEXT_MUTED = '#8A8274';
+
+/** 旧名 alias (TEXT_PRIMARY と同値、AdBanner 等で利用)。 */
+export const TEXT_DEFAULT = TEXT_PRIMARY;
+
+// =========================================================================
+// Brand (深緑 fukamidori)
+// =========================================================================
+
+/** Brand 緑 (深緑 fukamidori、CTA / Pressable / 選択中ボーダー、AAA 11:1 vs #FFFFFF)。 */
+export const BRAND_GREEN = '#1F3A2E';
+/** Brand 緑 押下時。 */
+export const BRAND_GREEN_HOVER = '#2A4C3D';
 /** Brand 緑の薄色 (選択中背景 / Comparison 表背景)。 */
 export const BRAND_GREEN_BG = '#F1F8F2';
 
-/** ヒートマップ配色 (ColorBrewer Greens 4-class、color-blind safe、F-04)。 */
+// =========================================================================
+// Accent (樹皮 / 秋葉)
+// =========================================================================
+
+/** 樹皮色 (タグ・区切り)。 */
+export const ACCENT_BARK = '#5A4637';
+/** 秋葉色 (Pro バッジのみ、design_system.md §2-1)。 */
+export const ACCENT_GOLD = '#C69E48';
+
+// =========================================================================
+// Status
+// =========================================================================
+
+/** 危険 (削除確認モーダル等)。 */
+export const DANGER = '#8B2E2E';
+/** 成功 (保存完了 toast 等)。 */
+export const SUCCESS = '#3E5C39';
+
+// =========================================================================
+// Border
+// =========================================================================
+
+/** 標準ボーダー (淡、design_system.md §2-1 整合)。 */
+export const BORDER_DEFAULT = '#D9D1BF';
+/** 強調ボーダー。 */
+export const BORDER_STRONG = '#8A8274';
+
+// =========================================================================
+// Heatmap (F-04、ColorBrewer Greens 4-class、color-blind safe)
+// =========================================================================
+
+/** ヒートマップ配色 (Brand 変更後も色相維持)。 */
 export const HEATMAP_COLORS = {
   L0: '#F5F8F5',
   L1: '#BAE4B3',
@@ -30,17 +82,12 @@ export const HEATMAP_COLORS = {
   L3: '#238B45',
 } as const;
 
-/** 標準ボーダー色 (#E0E0E0、淡灰色、light 用)。 */
-export const BORDER_DEFAULT = '#E0E0E0';
+// =========================================================================
+// Misc
+// =========================================================================
 
-/** Disabled 状態の背景 (#9E9E9E、AdMob banner / disabled CTA)。 */
+/** Disabled 状態の背景 (AdMob banner / disabled CTA)。 */
 export const DISABLED_BG = '#9E9E9E';
 
-/** Pro バッジ用テキスト色 (#FFFFFF on BRAND_GREEN)。 */
+/** Brand 上のテキスト色 (Pro バッジ等)。 */
 export const ON_BRAND = '#FFFFFF';
-
-/** 本文標準色 (#1A1A1A、AAA 16:1 vs #FFFFFF)。 */
-export const TEXT_DEFAULT = '#1A1A1A';
-
-/** 補助テキスト色 (#666、AA 5.74:1 vs #FFFFFF、AdBanner ラベル等)。 */
-export const TEXT_MUTED = '#666666';
