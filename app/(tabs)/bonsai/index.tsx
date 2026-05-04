@@ -1,10 +1,18 @@
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { FlatList, Pressable, StyleSheet } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import {
+  BG_PRIMARY,
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  ON_BRAND,
+  TEXT_SECONDARY,
+} from '@/src/core/theme/colors';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 
 import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/bonsaiRepository';
@@ -14,6 +22,10 @@ import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/
  * - アクティブな盆栽を updated_at 降順で表示
  * - タップ → 詳細画面
  * - 「+」ボタン → 新規登録画面
+ *
+ * Claude Design `home-screens.jsx` BonsaiCard 整合 (ADR-0019 §149-159 部分採用):
+ *   盆栽名 NotoSerifJP_500Medium 22pt + 樹種 NotoSansJP 13pt + style mono 11pt。
+ *   写真サムネイルは別 PR で追加 (cover_photo_id 連携必要)。
  */
 export default function BonsaiListScreen() {
   const { t, lang } = useTranslation();
@@ -79,11 +91,15 @@ export default function BonsaiListScreen() {
             style={styles.card}
             onPress={() => router.push(`/(tabs)/bonsai/${item.id}` as Href)}
           >
-            <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
+            <ThemedText style={styles.cardName}>{item.name}</ThemedText>
             {item.species && (
               <ThemedText style={styles.cardSubtitle}>{item.species.commonName}</ThemedText>
             )}
-            {item.style && <ThemedText style={styles.cardMeta}>{item.style}</ThemedText>}
+            {item.style && (
+              <View style={styles.cardMetaRow}>
+                <ThemedText style={styles.cardMeta}>{item.style}</ThemedText>
+              </View>
+            )}
           </Pressable>
         )}
       />
@@ -106,26 +122,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 16,
+    backgroundColor: BG_PRIMARY,
   },
-  listContainer: { flex: 1 },
+  listContainer: { flex: 1, backgroundColor: BG_PRIMARY },
   listContent: { padding: 16, gap: 12 },
   emptyDesc: { textAlign: 'center', opacity: 0.7, marginBottom: 16 },
   cta: {
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#2E7D32',
+    backgroundColor: BRAND_GREEN,
   },
-  ctaText: { color: '#fff', fontSize: 17, fontWeight: '500' },
+  ctaText: { color: ON_BRAND, fontSize: 17, fontWeight: '500' },
+  // Claude Design `BonsaiCard` 整合: NotoSerifJP 22/28、border 16
   card: {
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
     gap: 4,
   },
-  cardSubtitle: { opacity: 0.8 },
-  cardMeta: { fontSize: 12, opacity: 0.6 },
+  cardName: {
+    fontFamily: 'NotoSerifJP_500Medium',
+    fontSize: 22,
+    lineHeight: 28,
+    letterSpacing: 0.4,
+  },
+  cardSubtitle: { fontSize: 13, lineHeight: 20, color: TEXT_SECONDARY },
+  cardMetaRow: { marginTop: 2 },
+  cardMeta: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    letterSpacing: 0.7,
+    opacity: 0.7,
+  },
+  // FAB: 直径 56 円形 (radius 28 = 56/2、pill 9999 ではない)
   fab: {
     position: 'absolute',
     right: 24,
@@ -133,7 +165,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#2E7D32',
+    backgroundColor: BRAND_GREEN,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
@@ -142,5 +174,5 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
   },
-  fabText: { color: '#fff', fontSize: 28, lineHeight: 32 },
+  fabText: { color: ON_BRAND, fontSize: 28, lineHeight: 32 },
 });
