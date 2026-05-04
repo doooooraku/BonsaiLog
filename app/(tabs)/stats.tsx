@@ -1,18 +1,19 @@
 /**
- * Stats タブ (F-04 Phase G-2、Issue #29 / ADR-0013 §S26)。
+ * Stats タブ (F-04 Phase G〜H、Issue #29 / ADR-0013 §S26)。
  *
  * - デフォルト = 全盆栽集約モード (K2 達成率)
- * - フィルター UI (BonsaiFilterSheet で個別切替) は Phase H で追加
- * - 凡例下サマリー (記録日数 / 件数) は Phase G-3 で追加
+ * - BonsaiFilterSheet で個別盆栽選択 → K1 (回数) モード切替
+ * - 凡例下サマリー (記録日数 / 件数)
  *
  * データ取得:
  * - 全盆栽 (active のみ): bonsaiRepository.getAllActiveBonsai()
  * - 全 watering events (status='logged'): eventRepository.getAllActiveWateringEventsLogged()
+ * - selectedBonsaiId が非 null の時は events を bonsaiId フィルタして個別モード
  *
  * useFocusEffect で画面 focus 時にリロード。
  */
 import { useFocusEffect } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -22,13 +23,18 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
 import { getAllActiveWateringEventsLogged } from '@/src/db/eventRepository';
 import type { Bonsai, Event } from '@/src/db/schema';
+import { BonsaiFilterSheet } from '@/src/features/watering/BonsaiFilterSheet';
 import { WateringHeatmap } from '@/src/features/watering/WateringHeatmap';
 import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { useRecentBonsaiStore } from '@/src/stores/recentBonsaiStore';
 
 export default function StatsScreen() {
   const { t } = useTranslation();
   const [bonsai, setBonsai] = useState<Bonsai[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
+  // Phase H-3: 個別/集約モード切替 state
+  const [selectedBonsaiId, setSelectedBonsaiId] = useState<string | null>(null);
+  const recentIds = useRecentBonsaiStore((s) => s.recentIds);
 
   const reload = useCallback(async () => {
     const [bs, evs] = await Promise.all([getAllActiveBonsai(), getAllActiveWateringEventsLogged()]);
@@ -45,20 +51,31 @@ export default function StatsScreen() {
   const tzOffsetMin = getTzOffsetMin();
   const todayLocalKey = toLocalDateKey(nowUtc() as string, tzOffsetMin);
 
+  // 個別モード時は対象盆栽の events のみ。集約モード時は全 events。
+  const displayEvents = useMemo(() => {
+    if (selectedBonsaiId == null) return events;
+    return events.filter((e) => e.bonsaiId === selectedBonsaiId);
+  }, [events, selectedBonsaiId]);
+
+  const heatmapMode = selectedBonsaiId == null ? 'aggregate' : 'individual';
+
   return (
     <ThemedView style={styles.container} testID="e2e_stats_screen">
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title" style={styles.title}>
           {t('statsTabTitle')}
         </ThemedText>
-        <ThemedText style={styles.header} testID="e2e_stats_all_bonsai_label">
-          {t('statsHeaderAllBonsai').replace('{count}', String(bonsai.length))}
-        </ThemedText>
+        <BonsaiFilterSheet
+          bonsai={bonsai}
+          recentIds={recentIds}
+          selectedId={selectedBonsaiId}
+          onSelect={setSelectedBonsaiId}
+        />
         <WateringHeatmap
-          events={events}
+          events={displayEvents}
           todayLocalKey={todayLocalKey}
           tzOffsetMin={tzOffsetMin}
-          mode="aggregate"
+          mode={heatmapMode}
           totalBonsaiCount={bonsai.length}
           showSummary
           testID="e2e_stats_watering_heatmap"
@@ -72,5 +89,4 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 16, gap: 12 },
   title: { marginBottom: 4 },
-  header: { fontSize: 14, opacity: 0.8, marginBottom: 8 },
 });
