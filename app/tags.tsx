@@ -28,7 +28,7 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { getDb } from '@/src/db/db';
-import { createOrFindTag, type TagRecord } from '@/src/db/tagRepository';
+import { createOrFindTag, renameTag, type TagRecord } from '@/src/db/tagRepository';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 
 /** Issue #31 AC4-2: タグ名 32 文字制限 (TL1)。 */
@@ -39,6 +39,8 @@ export default function TagsManagerScreen() {
   const [tags, setTags] = React.useState<TagRecord[]>([]);
   const [input, setInput] = React.useState('');
   const [busy, setBusy] = React.useState(false);
+  // Issue #31 AC3 Y9: rename UI 編集モード (null = 新規追加、TagRecord = rename 対象)
+  const [editingTag, setEditingTag] = React.useState<TagRecord | null>(null);
 
   const reload = React.useCallback(async () => {
     const db = await getDb();
@@ -59,7 +61,21 @@ export default function TagsManagerScreen() {
     if (trimmed.length === 0 || busy) return;
     setBusy(true);
     try {
-      await createOrFindTag(trimmed);
+      // Issue #31 AC3 Y9: 編集モード時は rename、それ以外は新規 createOrFindTag
+      if (editingTag) {
+        const result = await renameTag(editingTag.id, trimmed);
+        if (result === 'duplicate') {
+          Alert.alert(t('error'), t('tagsRenameDuplicateBody'));
+          return;
+        }
+        if (result === 'empty') {
+          Alert.alert(t('error'), t('tagsAddFailedBody'));
+          return;
+        }
+        setEditingTag(null);
+      } else {
+        await createOrFindTag(trimmed);
+      }
       setInput('');
       await reload();
     } catch {
@@ -67,6 +83,29 @@ export default function TagsManagerScreen() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const handleRowPress = (tag: TagRecord) => {
+    Alert.alert(tag.name, undefined, [
+      {
+        text: t('tagsRenameAction'),
+        onPress: () => {
+          setEditingTag(tag);
+          setInput(tag.name);
+        },
+      },
+      {
+        text: t('delete'),
+        style: 'destructive',
+        onPress: () => handleDelete(tag),
+      },
+      { text: t('cancel'), style: 'cancel' },
+    ]);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTag(null);
+    setInput('');
   };
 
   const handleDelete = (tag: TagRecord) => {
@@ -114,15 +153,27 @@ export default function TagsManagerScreen() {
           />
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('tagsAddAction')}
+            accessibilityLabel={editingTag ? t('tagsRenameAction') : t('tagsAddAction')}
             testID="e2e_tags_add"
             style={[styles.addBtn, (busy || input.trim().length === 0) && styles.addBtnDisabled]}
             onPress={handleAdd}
             disabled={busy || input.trim().length === 0}
           >
-            <ThemedText style={styles.addBtnText}>{t('tagsAddAction')}</ThemedText>
+            <ThemedText style={styles.addBtnText}>
+              {editingTag ? t('tagsRenameAction') : t('tagsAddAction')}
+            </ThemedText>
           </Pressable>
         </View>
+        {editingTag && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('cancel')}
+            testID="e2e_tags_rename_cancel"
+            onPress={handleCancelEdit}
+          >
+            <ThemedText style={styles.cancelEditText}>{t('cancel')}</ThemedText>
+          </Pressable>
+        )}
 
         {tags.length === 0 && <ThemedText style={styles.empty}>{t('tagsEmpty')}</ThemedText>}
 
@@ -133,6 +184,7 @@ export default function TagsManagerScreen() {
             accessibilityLabel={tg.name}
             testID={`e2e_tags_row_${tg.id}`}
             style={styles.row}
+            onPress={() => handleRowPress(tg)}
             onLongPress={() => handleDelete(tg)}
           >
             <ThemedText type="defaultSemiBold">{tg.name}</ThemedText>
@@ -189,4 +241,10 @@ const styles = StyleSheet.create({
     backgroundColor: BG_SURFACE,
   },
   rowDate: { fontSize: 12, color: TEXT_SECONDARY },
+  cancelEditText: {
+    color: TEXT_SECONDARY,
+    fontSize: 13,
+    paddingVertical: 8,
+    textAlign: 'center',
+  },
 });
