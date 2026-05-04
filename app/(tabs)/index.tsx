@@ -20,7 +20,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { PotIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { ACCENT_GOLD, BG_PRIMARY, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { ACCENT_GOLD, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
 import { AdBanner } from '@/src/features/ads/AdBanner';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
@@ -30,6 +31,7 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const isPro = useProStore((s) => s.isPro);
+  const c = useColors();
   const [bonsaiCount, setBonsaiCount] = useState<number | null>(null);
 
   // ADR-0019 Decision §3: 盆栽 1 本以上時は起動時に盆栽タブへ自動遷移、
@@ -54,7 +56,10 @@ export default function HomeScreen() {
   );
 
   return (
-    <ThemedView style={styles.container} testID="e2e_home_screen">
+    <ThemedView
+      style={[styles.container, { backgroundColor: c.background }]}
+      testID="e2e_home_screen"
+    >
       <OutdoorToggleButton style={styles.outdoorPosition} testIdSuffix="home_outdoor_toggle" />
 
       {isPro && (
@@ -70,17 +75,23 @@ export default function HomeScreen() {
       <View style={styles.content}>
         {bonsaiCount === 0 && (
           <View style={styles.empty} testID="e2e_home_empty_state">
-            <PotIcon size={200} />
-            <ThemedText style={styles.emptyTitle}>{t('homeEmptyTitle')}</ThemedText>
-            <ThemedText style={styles.emptyBody}>{t('homeEmptyBody')}</ThemedText>
+            <PotIcon size={200} color={c.tint} />
+            <ThemedText style={[styles.emptyTitle, { color: c.text }]}>
+              {t('homeEmptyTitle')}
+            </ThemedText>
+            <ThemedText style={[styles.emptyBody, { color: c.textSecondary }]}>
+              {t('homeEmptyBody')}
+            </ThemedText>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('homeEmptyCta')}
-              style={styles.emptyCta}
+              style={[styles.emptyCta, { backgroundColor: c.tint }]}
               onPress={() => router.push('/(tabs)/bonsai/new' as Href)}
               testID="e2e_home_empty_cta"
             >
-              <ThemedText style={styles.emptyCtaText}>+ {t('homeEmptyCta')}</ThemedText>
+              <ThemedText style={[styles.emptyCtaText, { color: c.background }]}>
+                + {t('homeEmptyCta')}
+              </ThemedText>
             </Pressable>
           </View>
         )}
@@ -92,7 +103,8 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG_PRIMARY },
+  // backgroundColor は useColors の c.background で動的指定 (light/dark 両対応)
+  container: { flex: 1 },
   content: {
     flex: 1,
     padding: 24,
@@ -117,6 +129,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.8,
   },
+  // backgroundColor は useColors の c.tint で動的指定
   emptyCta: {
     marginTop: 16,
     paddingVertical: 16,
@@ -124,12 +137,10 @@ const styles = StyleSheet.create({
     minHeight: 56,
     minWidth: 240,
     borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyCtaText: {
-    color: BG_PRIMARY,
     fontSize: 17,
     fontWeight: '500',
     letterSpacing: 0.5,
