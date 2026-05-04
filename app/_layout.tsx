@@ -6,8 +6,12 @@
 // 過去 lesson: docs/reference/tasks/lessons/runtime.md に記録。
 import 'react-native-get-random-values';
 
+import { Inter_400Regular, useFonts as useInterFonts } from '@expo-google-fonts/inter';
+import { NotoSansJP_400Regular, NotoSansJP_600SemiBold } from '@expo-google-fonts/noto-sans-jp';
+import { NotoSerifJP_500Medium } from '@expo-google-fonts/noto-serif-jp';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter, useSegments, type Href } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -22,11 +26,32 @@ import { useOnboardingStore } from '@/src/stores/onboardingStore';
 import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
+// design_system.md §3-1 のフォントを Splash 中にロードして FOUT を防ぐ。
+SplashScreen.preventAutoHideAsync().catch(() => {
+  /* 既に hide 済 / 二重呼び出しは無視 */
+});
+
 export const unstable_settings = {
   anchor: '(tabs)',
 };
 
 export default function RootLayout() {
+  // design_system.md §3-1 のフォントを @expo-google-fonts でロード。
+  // 全フォントが ready になるまで Splash を維持し、ready 後に hide。
+  const [fontsLoaded] = useInterFonts({
+    Inter_400Regular,
+    NotoSansJP_400Regular,
+    NotoSansJP_600SemiBold,
+    NotoSerifJP_500Medium,
+  });
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync().catch(() => {
+        /* 既に hide 済は無視 */
+      });
+    }
+  }, [fontsLoaded]);
+
   // F-15 Phase E (Issue #32, ADR-0015): resolveEffectiveScheme 純関数で
   // themeMode + systemScheme + outdoorMode から実効スキームを決定。
   // インライン式 (PR #66 / #80) を純関数に置換し、ロジックを単一の真実点に集約。
@@ -80,6 +105,11 @@ export default function RootLayout() {
     if (inOnboarding) return;
     router.replace('/onboarding/welcome' as Href);
   }, [onboardingCompleted, onboardingDismissed, segments, router]);
+
+  // フォント未ロード時は何もレンダリングしない (Splash が見える)。
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     // F-04 Phase E (Issue #29): @gorhom/bottom-sheet に必要な GestureHandlerRootView を root に配置

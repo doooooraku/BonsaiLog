@@ -11,6 +11,15 @@ importers:
 
   .:
     dependencies:
+      '@expo-google-fonts/inter':
+        specifier: ^0.4.2
+        version: 0.4.2
+      '@expo-google-fonts/noto-sans-jp':
+        specifier: ^0.4.3
+        version: 0.4.3
+      '@expo-google-fonts/noto-serif-jp':
+        specifier: ^0.4.3
+        version: 0.4.3
       '@expo/vector-icons':
         specifier: ^15.1.1
         version: 15.1.1(expo-font@55.0.6)(react-native@0.83.4(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.5))(react@19.2.5)
@@ -117,7 +126,7 @@ importers:
         specifier: ^55.0.18
         version: 55.0.18(expo@55.0.17)(react-native@0.83.4(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.5))(react@19.2.5)
       expo-splash-screen:
-        specifier: ~55.0.13
+        specifier: ~55.0.19
         version: 55.0.19(expo@55.0.17)(typescript@5.9.3)
       expo-sqlite:
         specifier: ^55.0.11
@@ -1300,8 +1309,17 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@expo-google-fonts/inter@0.4.2':
+    resolution: {integrity: sha512-syfiImMaDmq7cFi0of+waE2M4uSCyd16zgyWxdPOY7fN2VBmSLKEzkfbZgeOjJq61kSqPBNNtXjggiQiSD6gMQ==}
+
   '@expo-google-fonts/material-symbols@0.4.33':
     resolution: {integrity: sha512-GQFy5tx7LBiRJttLYhz+KPmoVCQSVXiJPXVgMt/d8BWYbnJmw0nFixZtOaZQJE9F/L6vni3totwPNmbrdMi3ow==}
+
+  '@expo-google-fonts/noto-sans-jp@0.4.3':
+    resolution: {integrity: sha512-Fl+Z6vtD24HFAYsvzB0S9Nery1ly16B9PesdY0wBd+wEHAvkNglnkTUspU0HqGOubkmoa8zusJrKv6vDx1o70A==}
+
+  '@expo-google-fonts/noto-serif-jp@0.4.3':
+    resolution: {integrity: sha512-IxEWO9BPugsyuOf57Bx1qkR4J8EnGnF0ZPBBOPyFa1qJyfW8Dcuwn5OIGa9om+PhFO1/E1dQjZCygqaY6uAubg==}
 
   '@expo/cli@55.0.26':
     resolution: {integrity: sha512-Ud9gpeGMF5RIL42LXvCw3k3mWK8rf/P2wu+Yrzz9Do1kcFKZeT9Vy2D/xukjdr/Xw+ELba87ThOot17GsPiWjw==}
@@ -7779,7 +7797,13 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
+  '@expo-google-fonts/inter@0.4.2': {}
+
   '@expo-google-fonts/material-symbols@0.4.33': {}
+
+  '@expo-google-fonts/noto-sans-jp@0.4.3': {}
+
+  '@expo-google-fonts/noto-serif-jp@0.4.3': {}
 
   '@expo/cli@55.0.26(@expo/dom-webview@55.0.5)(@expo/metro-runtime@55.0.10)(expo-constants@55.0.15)(expo-font@55.0.6)(expo-router@55.0.13)(expo@55.0.17)(react-dom@19.2.0(react@19.2.5))(react-native@0.83.4(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.5))(react@19.2.5)(typescript@5.9.3)':
     dependencies:
