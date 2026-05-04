@@ -30,10 +30,10 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { searchBonsaiByName } from '@/src/db/bonsaiRepository';
-import { searchEvents } from '@/src/db/eventRepository';
+import { searchEventsWithSnippet, type EventWithSnippet } from '@/src/db/eventRepository';
 import { searchSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
-import type { Bonsai, Event } from '@/src/db/schema';
+import type { Bonsai } from '@/src/db/schema';
 import { useSearchHistoryStore } from '@/src/features/search/searchHistoryStore';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 
@@ -43,7 +43,7 @@ export default function SearchScreen() {
   const [query, setQuery] = useState('');
   const [bonsaiResults, setBonsaiResults] = useState<Bonsai[]>([]);
   const [speciesResults, setSpeciesResults] = useState<SpeciesWithName[]>([]);
-  const [eventResults, setEventResults] = useState<Event[]>([]);
+  const [eventResults, setEventResults] = useState<EventWithSnippet[]>([]);
   const [searched, setSearched] = useState(false);
   const [busy, setBusy] = useState(false);
   // F-09 Phase B (Issue #31, ADR-0008 改訂): 最近 3 タグ候補チップ
@@ -89,11 +89,11 @@ export default function SearchScreen() {
     }
     setBusy(true);
     try {
-      // Issue #31 AC2: 3 段組み (盆栽 + 樹種 + イベント) を並列検索
+      // Issue #31 AC2: 3 段組み (盆栽 + 樹種 + イベント) を並列検索 + snippet
       const [bonsai, species, events] = await Promise.all([
         searchBonsaiByName(trimmed, 50),
         searchSpecies(trimmed, lang),
-        searchEvents(trimmed),
+        searchEventsWithSnippet(trimmed),
       ]);
       setBonsaiResults(bonsai);
       setSpeciesResults(species.slice(0, 50));
@@ -249,22 +249,26 @@ export default function SearchScreen() {
               {eventResults.length}
               {')'}
             </ThemedText>
-            {eventResults.map((e) => (
-              <Pressable
-                key={e.id}
-                accessibilityRole="button"
-                accessibilityLabel={e.note ?? e.type}
-                style={styles.entry}
-                onPress={() => router.push(`/bonsai/${e.bonsaiId}` as Href)}
-              >
-                <ThemedText type="defaultSemiBold">{e.type}</ThemedText>
-                {e.note != null && e.note.length > 0 && (
-                  <ThemedText style={styles.entryDesc} numberOfLines={2}>
-                    {e.note}
-                  </ThemedText>
-                )}
-              </Pressable>
-            ))}
+            {eventResults.map((e) => {
+              // AC2: snippet があれば優先表示 (note のマッチ箇所前後抜粋)、なければ note を fallback
+              const desc = e.snippet ?? e.note;
+              return (
+                <Pressable
+                  key={e.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={e.note ?? e.type}
+                  style={styles.entry}
+                  onPress={() => router.push(`/bonsai/${e.bonsaiId}` as Href)}
+                >
+                  <ThemedText type="defaultSemiBold">{e.type}</ThemedText>
+                  {desc != null && desc.length > 0 && (
+                    <ThemedText style={styles.entryDesc} numberOfLines={2}>
+                      {desc}
+                    </ThemedText>
+                  )}
+                </Pressable>
+              );
+            })}
           </View>
         )}
       </ScrollView>

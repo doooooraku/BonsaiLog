@@ -401,3 +401,43 @@ export async function searchEvents(query: string, bonsaiId?: string): Promise<Ev
     idList,
   );
 }
+
+/** {@link searchEventsWithSnippet} の戻り値: Event + マッチ箇所の前後抜粋 (snippet)。 */
+export type EventWithSnippet = Event & { snippet: string | null };
+
+/**
+ * Issue #31 AC2: FTS5 `snippet()` でマッチ箇所の前後 8 トークンを抜粋して返す。
+ *
+ * - delimiter は `«` `»` (HTML タグでなく React Native で安全に表示可能)
+ * - column 0 = note 列のみ snippet 対象
+ * - events 本体取得後、event_id でマッチさせて snippet を merge
+ */
+export async function searchEventsWithSnippet(
+  query: string,
+  bonsaiId?: string,
+): Promise<EventWithSnippet[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  const db = await getDb();
+  const rows = bonsaiId
+    ? await db.getAllAsync<{ event_id: string; snippet: string }>(
+        "SELECT event_id, snippet(events_fts, 0, '«', '»', '...', 8) AS snippet FROM events_fts WHERE events_fts MATCH ? AND bonsai_id = ?;",
+        [trimmed, bonsaiId],
+      )
+    : await db.getAllAsync<{ event_id: string; snippet: string }>(
+        "SELECT event_id, snippet(events_fts, 0, '«', '»', '...', 8) AS snippet FROM events_fts WHERE events_fts MATCH ?;",
+        [trimmed],
+      );
+
+  if (rows.length === 0) return [];
+
+  const snippetMap = new Map(rows.map((r) => [r.event_id, r.snippet]));
+  const idList = rows.map((r) => r.event_id);
+  const placeholders = idList.map(() => '?').join(',');
+  const events = await db.getAllAsync<Event>(
+    `SELECT * FROM events WHERE id IN (${placeholders}) AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;`,
+    idList,
+  );
+  return events.map((ev) => ({ ...ev, snippet: snippetMap.get(ev.id) ?? null }));
+}
