@@ -349,6 +349,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- F-07 装着期間アプリ内表示 (Phase B、Issue #24、ADR-0014) ---
   wiringDurationWithinWeeks: '装着期間: {weeks} 週',
   wiringDurationOverdueLabel: '装着期間: {weeks} 週 (経過済)',
+  wiringDurationCompletedLabel: '装着期間: {weeks} 週 (完了)',
 
   // --- F-LEGAL-001 広告のプライバシー (Phase A、Issue #37、ADR-0017) ---
   settingsAdPrivacySection: '広告のプライバシー',

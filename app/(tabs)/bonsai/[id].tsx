@@ -43,6 +43,7 @@ import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
 import { LastWateredText } from '@/src/features/watering/LastWateredText';
 import { WateringHeatmap } from '@/src/features/watering/WateringHeatmap';
 import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { WiringPeriodDisplay } from '@/src/features/wiring/WiringPeriodDisplay';
 import {
   classifyWiringDuration,
   getDaysSinceWired,
@@ -342,9 +343,15 @@ export default function BonsaiDetailScreen() {
           )}
 
           {events.slice(0, 50).map((ev) => {
-            // F-07 Phase B (Issue #24, ADR-0014): wiring の場合のみ「装着期間 X 週 (経過済)」をアプリ内表示。
+            // F-07 Phase B (Issue #24, ADR-0014 §48-49): wiring の場合のみ
+            // 「装着期間: X 週 (経過済 / あと N 週 / 完了)」をアプリ内表示。
             // 通知は ADR-0014 で削除済 (鬱陶しいフィードバックを受けて事実表示に変更)。
-            let wiringDurationLabel: string | null = null;
+            // 完了状態 (AC10-1 「完了」): この wiring event 以後の同盆栽 unwiring event 有無で判定。
+            let wiringDuration: {
+              weeks: number;
+              kind: 'within' | 'overdue';
+              isUnwired: boolean;
+            } | null = null;
             // F-07 Phase C (Issue #24): payload_json の scheduled_unwire_at が設定済の場合に
             // 「外す予定: YYYY-MM-DD」を表示。F-02 status='planned' 統合は Phase D。
             let scheduledUnwireLabel: string | null = null;
@@ -352,9 +359,13 @@ export default function BonsaiDetailScreen() {
               const days = getDaysSinceWired(ev, new Date(nowUtc() as string));
               const weeks = getWeeksSinceWired(days);
               const kind = classifyWiringDuration(days);
-              const key =
-                kind === 'overdue' ? 'wiringDurationOverdueLabel' : 'wiringDurationWithinWeeks';
-              wiringDurationLabel = t(key).replace('{weeks}', String(weeks));
+              const isUnwired = events.some(
+                (other) =>
+                  other.type === 'unwiring' &&
+                  other.status === 'logged' &&
+                  other.occurredAtUtc >= ev.occurredAtUtc,
+              );
+              wiringDuration = { weeks, kind, isUnwired };
               const scheduled = getScheduledUnwireAt(ev);
               if (scheduled) {
                 scheduledUnwireLabel = t('wiringScheduledUnwireSet').replace(
@@ -382,10 +393,14 @@ export default function BonsaiDetailScreen() {
                     {formatDate(ev.occurredAtUtc, lang)}
                   </ThemedText>
                 </View>
-                {wiringDurationLabel && (
-                  <ThemedText style={styles.eventRowNote} testID={`e2e_wiring_duration_${ev.id}`}>
-                    {wiringDurationLabel}
-                  </ThemedText>
+                {wiringDuration && (
+                  <WiringPeriodDisplay
+                    weeks={wiringDuration.weeks}
+                    kind={wiringDuration.kind}
+                    isUnwired={wiringDuration.isUnwired}
+                    style={styles.eventRowNote}
+                    testID={`e2e_wiring_duration_${ev.id}`}
+                  />
                 )}
                 {scheduledUnwireLabel && (
                   <ThemedText style={styles.eventRowNote} testID={`e2e_wiring_scheduled_${ev.id}`}>

@@ -347,6 +347,7 @@ const baseEn = {
   // --- F-07 Wiring duration in-app display (Phase B, Issue #24, ADR-0014) ---
   wiringDurationWithinWeeks: 'Wire on for {weeks} weeks',
   wiringDurationOverdueLabel: 'Wire on for {weeks} weeks (overdue)',
+  wiringDurationCompletedLabel: 'Wiring period: {weeks} weeks (completed)',
 
   // --- F-LEGAL-001 Ad privacy (Phase A: Settings entry only, Issue #37, ADR-0017) ---
   settingsAdPrivacySection: 'Ad privacy',
