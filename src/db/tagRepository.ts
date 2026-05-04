@@ -63,6 +63,35 @@ export async function createOrFindTag(rawName: string): Promise<TagRecord> {
   return { id, name: trimmedName, nameNormalized: normalized, createdAt };
 }
 
+/** {@link renameTag} の戻り値: 'duplicate' は同 normalized 名が別 ID で存在を意味する。 */
+export type RenameTagResult = 'ok' | 'empty' | 'duplicate';
+
+/**
+ * Issue #31 AC3 Y9: タグの rename。
+ *
+ * - normalize 後の name が既存タグ (別 ID) と衝突 → 'duplicate' を返す
+ * - normalize 結果が空文字 → 'empty'
+ * - 衝突なし → UPDATE tags SET name, name_normalized → 'ok'
+ */
+export async function renameTag(tagId: string, newRawName: string): Promise<RenameTagResult> {
+  const normalized = normalizeTagName(newRawName);
+  if (normalized.length === 0) return 'empty';
+
+  const db = await getDb();
+  const existing = await db.getFirstAsync<{ id: string }>(
+    'SELECT id FROM tags WHERE name_normalized = ? AND id != ?',
+    [normalized, tagId],
+  );
+  if (existing) return 'duplicate';
+
+  await db.runAsync('UPDATE tags SET name = ?, name_normalized = ? WHERE id = ?', [
+    newRawName.trim(),
+    normalized,
+    tagId,
+  ]);
+  return 'ok';
+}
+
 /**
  * event に tag を関連付ける (event_tags M:N、PRIMARY KEY 衝突は INSERT OR IGNORE で無音)。
  */
