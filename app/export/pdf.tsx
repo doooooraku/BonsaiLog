@@ -31,6 +31,13 @@ import {
   generateAndShareBonsaiPdf,
   readPhotoAsBase64,
 } from '@/src/features/export/pdfExport';
+import {
+  BG_PRIMARY,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  DISABLED_BG,
+  ON_BRAND,
+} from '@/src/core/theme/colors';
 import { isStorageSufficient } from '@/src/features/export/pdfReliability';
 import { useGoToPaywall } from '@/src/features/pro/useGoToPaywall';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
@@ -142,7 +149,7 @@ export default function ExportPdfScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: BG_PRIMARY },
   scroll: { padding: 16, gap: 12 },
   title: { marginBottom: 8 },
   desc: { fontSize: 13, opacity: 0.7, marginBottom: 12, lineHeight: 18 },
@@ -154,15 +161,19 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: BORDER_DEFAULT,
   },
   rowMain: { flex: 1 },
   action: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#2E7D32',
+    minHeight: 48,
+    minWidth: 64,
+    borderRadius: 12,
+    backgroundColor: BRAND_GREEN,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  actionBusy: { backgroundColor: '#9E9E9E' },
-  actionText: { color: '#FFFFFF', fontWeight: '600' },
+  actionBusy: { backgroundColor: DISABLED_BG },
+  actionText: { color: ON_BRAND, fontWeight: '600' },
 });
