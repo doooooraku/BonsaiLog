@@ -4,6 +4,18 @@
 
 ---
 
+### `expo prebuild` 後に AdMob `Invalid application ID` で起動クラッシュ
+
+- **何が起きたか**: `pnpm verify` 緑 + Gradle BUILD SUCCESSFUL + `adb install` Success にも関わらず、実機でアプリ起動直後に「BonsaiLog が停止しました」のシステムダイアログ。`adb logcat` では `java.lang.IllegalStateException: Invalid application ID` が出ており、`com.google.android.gms.ads.MobileAdsInitProvider` (ContentProvider) が AndroidManifest.xml の APPLICATION_ID を読みに行って空文字列を弾き、JS 層 (React Native) の起動より前にネイティブ層でクラッシュ。
+- **根本原因**: 過去セッションで生成された `android/app/src/main/AndroidManifest.xml` に `<meta-data ... APPLICATION_ID" android:value=""/>` (空文字) が残存。当時の `app.config.ts` の `optional()` が `??` を使い `.env` の空値で test ID にフォールバックしていなかった (旧 lesson admob-optional-crash で `||` に修正済) が、`android/` ディレクトリは `--clean` 再生成されていなかったため、コード修正が AndroidManifest に反映されていなかった。
+- **ルール**:
+  1. AdMob 関連の env / app.config.ts を変更したら **必ず `npx expo prebuild --platform <p> --clean`** で再生成する。Gradle ビルドのみでは AndroidManifest は更新されない。
+  2. `scripts/prebuild-env-check.mjs` に AndroidManifest の APPLICATION_ID 妥当性検査を入れる (空 / プレースホルダーなら exit 1、本セッションで実装)。
+  3. ネイティブ層クラッシュは `adb logcat -d | grep AndroidRuntime` で原因切り分け。Metro ログ / `pnpm verify` には現れない。
+  4. 「コード修正済 = 再発しない」と過信しない。生成物 (`android/`, `ios/`) が古いまま残るシナリオを想定する (CLAUDE.md §9 注意ではなく構造で防ぐ、prebuild check で構造的に検知)。
+
+---
+
 ### `@shopify/react-native-skia` ビルドで `Could not find libskia.a`
 
 - **何が起きたか**: ローカル Gradle ビルド (`pnpm build:android:apk:local` / `./gradlew assembleDebug`) が `:shopify_react-native-skia:configureCMakeDebug[arm64-v8a] FAILED` で停止、CMake が `node_modules/@shopify/react-native-skia/libs/android/arm64-v8a` に `libskia.a` を見つけられないと報告。
