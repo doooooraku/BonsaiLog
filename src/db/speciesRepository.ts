@@ -70,8 +70,10 @@ export async function getAllSpecies(locale: string): Promise<SpeciesWithName[]> 
   }
 
   // locale 通称優先で再ソート (シニア向け、native 名でアイウエオ順)
+  // resolveCommonName が指定 locale の翻訳を見つけられない場合 commonName が undefined になり得る
+  // → 空文字フォールバックで TypeError: Cannot read property 'localeCompare' of undefined を防ぐ
   return results.sort((a, b) =>
-    a.commonName.localeCompare(b.commonName, locale === 'ja' ? 'ja' : locale),
+    (a.commonName ?? '').localeCompare(b.commonName ?? '', locale === 'ja' ? 'ja' : locale),
   );
 }
 
