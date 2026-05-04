@@ -127,6 +127,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   plugins = ensurePlugin(plugins, 'expo-secure-store');
   plugins = ensurePlugin(plugins, 'expo-sqlite');
   plugins = ensurePlugin(plugins, 'expo-web-browser');
+  // PR #186 で追加した Splash 制御プラグイン (Phase APK rebuild B-1d)
+  plugins = ensurePlugin(plugins, 'expo-splash-screen');
 
   plugins = ensurePlugin(plugins, 'expo-image-picker', {
     cameraPermission: 'BonsaiLog uses your camera to take photos of your bonsai.',
