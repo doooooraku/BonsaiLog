@@ -31,16 +31,18 @@ import {
 } from '@/src/core/theme/colors';
 import { searchBonsaiByName } from '@/src/db/bonsaiRepository';
 import { searchEvents } from '@/src/db/eventRepository';
+import { searchSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
 import type { Bonsai, Event } from '@/src/db/schema';
 import { useSearchHistoryStore } from '@/src/features/search/searchHistoryStore';
 import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 
 export default function SearchScreen() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [bonsaiResults, setBonsaiResults] = useState<Bonsai[]>([]);
+  const [speciesResults, setSpeciesResults] = useState<SpeciesWithName[]>([]);
   const [eventResults, setEventResults] = useState<Event[]>([]);
   const [searched, setSearched] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -63,6 +65,7 @@ export default function SearchScreen() {
     const trimmed = query.trim();
     if (!trimmed) {
       setBonsaiResults([]);
+      setSpeciesResults([]);
       setEventResults([]);
       setSearched(false);
       return;
@@ -79,17 +82,21 @@ export default function SearchScreen() {
     const trimmed = raw.trim();
     if (!trimmed) {
       setBonsaiResults([]);
+      setSpeciesResults([]);
       setEventResults([]);
       setSearched(false);
       return;
     }
     setBusy(true);
     try {
-      const [bonsai, events] = await Promise.all([
+      // Issue #31 AC2: 3 段組み (盆栽 + 樹種 + イベント) を並列検索
+      const [bonsai, species, events] = await Promise.all([
         searchBonsaiByName(trimmed, 50),
+        searchSpecies(trimmed, lang),
         searchEvents(trimmed),
       ]);
       setBonsaiResults(bonsai);
+      setSpeciesResults(species.slice(0, 50));
       setEventResults(events.slice(0, 50));
       setSearched(true);
       // F-09 Phase G (Issue #31, ADR-0008 改訂): 検索履歴に追加
@@ -187,9 +194,12 @@ export default function SearchScreen() {
           </View>
         )}
 
-        {searched && bonsaiResults.length === 0 && eventResults.length === 0 && (
-          <ThemedText style={styles.empty}>{t('searchEmpty')}</ThemedText>
-        )}
+        {searched &&
+          bonsaiResults.length === 0 &&
+          speciesResults.length === 0 &&
+          eventResults.length === 0 && (
+            <ThemedText style={styles.empty}>{t('searchEmpty')}</ThemedText>
+          )}
 
         {bonsaiResults.length > 0 && (
           <View style={styles.section} testID="e2e_search_bonsai_section">
@@ -209,6 +219,24 @@ export default function SearchScreen() {
               >
                 <ThemedText type="defaultSemiBold">{b.name}</ThemedText>
               </Pressable>
+            ))}
+          </View>
+        )}
+
+        {/* Issue #31 AC2: 樹種セクション (3 段組みの 2 番目) */}
+        {speciesResults.length > 0 && (
+          <View style={styles.section} testID="e2e_search_species_section">
+            <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+              {t('searchSpeciesSection')}
+              {' ('}
+              {speciesResults.length}
+              {')'}
+            </ThemedText>
+            {speciesResults.map((s) => (
+              <View key={s.id} style={styles.entry}>
+                <ThemedText type="defaultSemiBold">{s.commonName}</ThemedText>
+                <ThemedText style={styles.speciesScientific}>{s.scientificName}</ThemedText>
+              </View>
             ))}
           </View>
         )}
@@ -296,6 +324,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   entryDesc: { fontSize: 13, color: TEXT_SECONDARY, lineHeight: 18 },
+  speciesScientific: { fontSize: 13, color: TEXT_SECONDARY, fontStyle: 'italic' },
   tagsRow: { gap: 8 },
   recentTagsLabel: { fontSize: 12, color: TEXT_SECONDARY },
   historyHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
