@@ -20,7 +20,6 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
-  BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
@@ -29,6 +28,7 @@ import {
   ON_BRAND,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { searchBonsaiByName } from '@/src/db/bonsaiRepository';
 import {
   searchEventsByTags,
@@ -43,6 +43,7 @@ import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 
 export default function SearchScreen() {
   const { t, lang } = useTranslation();
+  const c = useColors();
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [bonsaiResults, setBonsaiResults] = useState<Bonsai[]>([]);
@@ -139,7 +140,10 @@ export default function SearchScreen() {
   };
 
   return (
-    <ThemedView style={styles.container} testID="e2e_search_screen">
+    <ThemedView
+      style={[styles.container, { backgroundColor: c.background }]}
+      testID="e2e_search_screen"
+    >
       <OutdoorToggleButton testIdSuffix="search_outdoor_toggle" />
       <View style={styles.searchBox}>
         <TextInput
@@ -325,7 +329,8 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG_PRIMARY },
+  // backgroundColor は useColors の c.background で動的指定
+  container: { flex: 1 },
   searchBox: {
     flexDirection: 'row',
     gap: 8,
