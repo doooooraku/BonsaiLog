@@ -6,6 +6,7 @@ import { Alert, FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { EventIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
@@ -371,9 +372,12 @@ export default function BonsaiDetailScreen() {
                 onLongPress={() => confirmDeleteEvent(ev)}
               >
                 <View style={styles.eventRowMain}>
-                  <ThemedText type="defaultSemiBold">
-                    {t(`eventType_${ev.type}` as TranslationKey)}
-                  </ThemedText>
+                  <View style={styles.eventRowLabelRow}>
+                    <EventIcon type={ev.type as EventType} size={16} />
+                    <ThemedText type="defaultSemiBold">
+                      {t(`eventType_${ev.type}` as TranslationKey)}
+                    </ThemedText>
+                  </View>
                   <ThemedText style={styles.eventRowDate}>
                     {formatDate(ev.occurredAtUtc, lang)}
                   </ThemedText>
@@ -586,7 +590,8 @@ const styles = StyleSheet.create({
     borderBottomColor: BORDER_DEFAULT,
     gap: 4,
   },
-  eventRowMain: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  eventRowMain: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  eventRowLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   eventRowDate: { fontSize: 12, opacity: 0.6 },
   eventRowNote: { fontSize: 13, opacity: 0.8 },
 });

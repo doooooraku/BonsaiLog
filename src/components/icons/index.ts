@@ -5,3 +5,11 @@
  * 各アイコンは `react-native-svg` ベース、default color は `BRAND_GREEN`。
  */
 export { PotIcon } from './PotIcon';
+export {
+  DropletIcon,
+  EventIcon,
+  FertilizerIcon,
+  PotIconSmall,
+  ScissorsIcon,
+  WireIcon,
+} from './EventIcons';
