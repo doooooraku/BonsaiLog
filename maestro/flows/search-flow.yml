@@ -1,0 +1,51 @@
+# maestro/flows/search-flow.yml
+# F-09 検索・タグ (Issue #31、ADR-0008 改訂版)
+# 検索画面 → 3 段組み (盆栽 + 樹種 + イベント) 動作確認 (実機検証フロー雛形)。
+#
+# 注: 実機データ依存のためアサーションは optional。実機検証 (PoC) で
+#     実データ条件下のアサーションを次セッションで拡張予定。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'F-09 - search 3-section flow'
+tags:
+  - f-09
+
+steps:
+  - launchApp:
+      label: 'アプリ起動'
+  - tapOn:
+      text: '設定'
+      label: '設定タブ or ヘッダーから設定画面へ遷移'
+      optional: true
+  - tapOn:
+      id: 'e2e_open_search'
+      label: 'Settings → 検索画面に遷移'
+      optional: true
+  - assertVisible:
+      id: 'e2e_search_screen'
+      label: '検索画面が表示されることを確認 (testID)'
+      optional: true
+  - tapOn:
+      id: 'e2e_search_input'
+      label: '検索バーをタップ (フォーカス)'
+      optional: true
+  - inputText:
+      '黒'
+      # AC2: 3 段組み (盆栽 + 樹種 + イベント) で結果が出ることを確認
+  - assertVisible:
+      id: 'e2e_search_input'
+      label: '入力後も検索バーが表示されている (debounce 300ms 後の自動検索)'
+      optional: true
+  # 各セクションが 0 件時は非表示 (SE1 維持)、データ条件依存のため optional
+  - assertVisible:
+      id: 'e2e_search_bonsai_section'
+      label: '盆栽セクションが表示される (該当データある場合)'
+      optional: true
+  - assertVisible:
+      id: 'e2e_search_species_section'
+      label: '樹種セクションが表示される (該当データある場合)'
+      optional: true
+  - assertVisible:
+      id: 'e2e_search_event_section'
+      label: 'イベントセクションが表示される (該当データある場合)'
+      optional: true
