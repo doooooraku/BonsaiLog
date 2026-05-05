@@ -116,16 +116,23 @@
 
 ### Follow-ups（後でやる宿題）
 
-- [ ] ADR-0019 を Status: Superseded by ADR-0020 に変更 (Phase 0)
-- [ ] ADR-0011 改訂: Claude Design に推奨機能無いことを明記 (Phase 0)
-- [ ] ADR-0013 改訂: 集約モード廃止、個別ヒートマップ詳細画面移動 (Phase 0)
-- [ ] ADR-0018 改訂: オンボ 8 → 6 画面 (Phase 8)
-- [ ] R-26 を `.claude/recurrence-prevention.md` に追記 (Phase 0)
-- [ ] Issue #29 close 解除 + 経緯コメント (Phase 1)
-- [ ] Issue #31 (F-09 検索) のタブ化 AC 強化コメント (Phase 6)
-- [ ] `docs/reference/functional_spec.md` 全章を本 ADR に整合 (Phase 11)
-- [ ] FastLane SS 全更新 (Phase 11)
-- [ ] release-check Skill 実行 + 4 ペルソナ最終評価 (Phase 12)
+- [x] ADR-0019 を Status: Superseded by ADR-0020 に変更 (Phase 0、PR #228 完了)
+- [x] ADR-0011 改訂: Claude Design に推奨機能無いことを明記 (Phase 0、PR #228 完了)
+- [x] ADR-0013 改訂: 集約モード廃止、個別ヒートマップ詳細画面移動 (Phase 0、PR #228 完了)
+- [x] ADR-0018 改訂: オンボ 8 → 6 画面 — Notes Amended 記載済 (Phase 0、PR #228)、実装は v1.x
+- [x] R-26 を `.claude/recurrence-prevention.md` に追記 (Phase 0、PR #228 完了)
+- [x] Issue #29 close 解除 + 経緯コメント (Phase 12、本 PR で実施)
+- [ ] Issue #31 (F-09 検索) のタブ化 AC 強化コメント (v1.x)
+- [ ] `docs/reference/functional_spec.md` 全章を本 ADR に整合 (v1.x)
+- [ ] FastLane SS 全更新 (v1.x)
+- [x] release-check Skill 実行 + 4 ペルソナ最終評価 (Phase 12、本 PR で実施)
+- [ ] WiringListScreen 実装 (v1.x、機能維持で wiring 既存実装が動作中)
+- [ ] WorkLogConfirmSheet (詳細 form: 水量 / 部位 etc) (v1.x)
+- [ ] Onboarding 8 → 6 画面の本実装 (v1.x、ADR-0018 改訂済 + 既存 8 画面で機能維持)
+- [ ] Hero + 3 Tabs (タイムライン / 作業履歴 / 写真) 本格再構築 (v1.x、既存 BonsaiHero で Hero 整合済)
+- [ ] PaywallScreen の Claude Design monetization-screens.jsx 整合本格再構築 (v1.x、課金ロジックは ADR-0009 維持)
+- [ ] 30/90/365 日切替で実ヒートマップ範囲変更 (v1.x、現状は UI セグメントのみ)
+- [ ] WateringHeatmap aggregate モード関連コード削除 (v1.x、stats 削除済で参照経路なし)
 
 ---
 
