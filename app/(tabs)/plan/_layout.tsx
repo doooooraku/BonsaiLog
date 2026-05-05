@@ -10,8 +10,8 @@ import React from 'react';
 
 export default function PlanStackLayout() {
   return (
-    <Stack screenOptions={{ headerShown: true }}>
-      <Stack.Screen name="index" options={{ title: '予定' }} />
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>
   );
 }

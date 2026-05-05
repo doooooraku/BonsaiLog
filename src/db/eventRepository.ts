@@ -147,6 +147,20 @@ export async function getAllActiveWateringEventsLogged(): Promise<Event[]> {
 }
 
 /**
+ * ADR-0020 Phase 5: 予定タブ Calendar 用、全盆栽の planned + logged events を取得。
+ *
+ * - bonsaiId フィルタなし (全盆栽)
+ * - status IN ('planned', 'logged') (cancelled / deleted は除外)
+ * - occurred_at_utc 昇順 (古い → 新しい、Calendar の dot 配置に都合が良い)
+ */
+export async function getAllActivePlannedAndLoggedEvents(): Promise<Event[]> {
+  const db = await getDb();
+  return db.getAllAsync<Event>(
+    "SELECT * FROM events WHERE status IN ('planned', 'logged') AND deleted_at IS NULL ORDER BY occurred_at_utc ASC;",
+  );
+}
+
+/**
  * ゴミ箱 (deleted_at NOT NULL) を deleted_at 降順で取得。
  */
 export async function getTrashedEvents(bonsaiId?: string): Promise<Event[]> {

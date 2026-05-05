@@ -347,6 +347,23 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- ADR-0020 Phase 4: 作業記録 BottomSheet ---
   workPickerTitle: '作業を記録',
 
+  // --- ADR-0020 Phase 5: 予定タブ カレンダー ---
+  planMonthYearSuffix: '年',
+  planMonthSuffix: '月',
+  planPrevMonth: '前の月',
+  planNextMonth: '次の月',
+  dowSun: '日',
+  dowMon: '月',
+  dowTue: '火',
+  dowWed: '水',
+  dowThu: '木',
+  dowFri: '金',
+  dowSat: '土',
+  planSelectedListTodayLabel: '今日 · {count}件',
+  planSelectedListLabel: '{date} · {count}件',
+  planSelectedEmpty: '予定はありません。',
+  planEventPlanned: '予定',
+
   // --- ADR-0020 Phase 3: 盆栽詳細 水やり履歴画面 (SS 222921 整合) ---
   wateringHistoryLinkTitle: '水やり履歴を見る',
   wateringRange30: '30日',
