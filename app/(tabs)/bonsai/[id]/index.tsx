@@ -68,6 +68,9 @@ export default function BonsaiDetailScreen() {
   const [photoGroups, setPhotoGroups] = useState<{ year: number; photos: PhotoRead[] }[]>([]);
   const [photoCount, setPhotoCount] = useState(0);
   const [events, setEvents] = useState<Event[]>([]);
+  // ADR-0020 v1.x-2: Hero + 3 Tabs (Claude Design `detail-screens.jsx DetailTabs` 整合)
+  const [activeTab, setActiveTab] = useState<'timeline' | 'history' | 'photos'>('timeline');
+
   // ADR-0020 Phase 4: 作業記録 BottomSheet (Claude Design WorkPickerSheet 整合)
   const workPickerRef = React.useRef<BottomSheet>(null);
   const handleWorkPickerSelect = React.useCallback(
@@ -262,191 +265,237 @@ export default function BonsaiDetailScreen() {
         speciesScientificName={item.species?.scientificName ?? null}
         styleLabel={item.style ? t(`bonsaiStyle_${item.style}` as TranslationKey) : null}
       />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* F-04 + ADR-0020 Phase 3: 「最後の水やりから X 日」+ 水やり履歴画面への導線。
-            ヒートマップ本体は `[id]/watering.tsx` に分離 (SS 222921 整合)。 */}
-        <View style={styles.section}>
-          <ThemedText type="subtitle">{t('wateringSectionTitle')}</ThemedText>
-          <LastWateredText daysSinceLast={daysSinceLastWatering} />
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('wateringHistoryLinkTitle')}
-            style={styles.wateringHistoryLink}
-            onPress={() => router.push(`/(tabs)/bonsai/${item.id}/watering` as Href)}
-            testID="e2e_open_watering_history"
-          >
-            <ThemedText style={styles.wateringHistoryLinkText}>
-              {t('wateringHistoryLinkTitle')}
-            </ThemedText>
-            <ThemedText style={styles.wateringHistoryLinkArrow}>{'›'}</ThemedText>
-          </Pressable>
-        </View>
 
-        {/* 樹種 / 樹形 は BonsaiHero に表示済 (PR #196) のため重複削除。
-            取得日のみ Hero に含まれないので維持。 */}
-        {item.acquiredAt && (
+      {/* ADR-0020 v1.x-2: DetailTabs (Claude Design detail-screens.jsx 整合) */}
+      <View style={styles.detailTabs}>
+        {(['timeline', 'history', 'photos'] as const).map((tab) => {
+          const on = activeTab === tab;
+          const labelKey =
+            tab === 'timeline'
+              ? 'detailTabTimeline'
+              : tab === 'history'
+                ? 'detailTabHistory'
+                : 'detailTabPhotos';
+          return (
+            <Pressable
+              key={tab}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: on }}
+              accessibilityLabel={t(labelKey)}
+              style={[styles.detailTab, on && styles.detailTabOn]}
+              onPress={() => setActiveTab(tab)}
+              testID={`e2e_detail_tab_${tab}`}
+            >
+              <ThemedText
+                style={[
+                  styles.detailTabText,
+                  on ? styles.detailTabTextOn : { color: c.textSecondary },
+                ]}
+              >
+                {t(labelKey)}
+              </ThemedText>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* タイムライン Tab: 水やり概要 + 取得日 + 更新日 + アーカイブ */}
+        {activeTab === 'timeline' && (
+          <>
+            <View style={styles.section}>
+              <ThemedText type="subtitle">{t('wateringSectionTitle')}</ThemedText>
+              <LastWateredText daysSinceLast={daysSinceLastWatering} />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('wateringHistoryLinkTitle')}
+                style={styles.wateringHistoryLink}
+                onPress={() => router.push(`/(tabs)/bonsai/${item.id}/watering` as Href)}
+                testID="e2e_open_watering_history"
+              >
+                <ThemedText style={styles.wateringHistoryLinkText}>
+                  {t('wateringHistoryLinkTitle')}
+                </ThemedText>
+                <ThemedText style={styles.wateringHistoryLinkArrow}>{'›'}</ThemedText>
+              </Pressable>
+            </View>
+
+            {item.acquiredAt && (
+              <View style={styles.section}>
+                <ThemedText type="subtitle">{t('bonsaiFieldAcquiredAt')}</ThemedText>
+                <ThemedText>{formatDate(item.acquiredAt, lang)}</ThemedText>
+              </View>
+            )}
+          </>
+        )}
+
+        {/* 写真 Tab: 写真追加 + 年次タイムライン */}
+        {activeTab === 'photos' && (
           <View style={styles.section}>
-            <ThemedText type="subtitle">{t('bonsaiFieldAcquiredAt')}</ThemedText>
-            <ThemedText>{formatDate(item.acquiredAt, lang)}</ThemedText>
+            <ThemedText type="subtitle">
+              {t('bonsaiFieldPhotos')}
+              {remainingFreeSlots !== null && ` (${photoCount} / ${FREE_PHOTO_LIMIT_PER_BONSAI})`}
+            </ThemedText>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('photoAddCta')}
+              style={styles.photoAddBtn}
+              onPress={showAddPhotoMenu}
+            >
+              <ThemedText style={styles.photoAddText}>+ {t('photoAddCta')}</ThemedText>
+            </Pressable>
+
+            {photoGroups.length === 0 && (
+              <ThemedText style={styles.emptyPhotos}>{t('photoEmpty')}</ThemedText>
+            )}
+
+            {photoGroups.map((group) => (
+              <View key={group.year} style={styles.yearBlock}>
+                <ThemedText type="defaultSemiBold" style={styles.yearLabel}>
+                  {group.year}
+                </ThemedText>
+                <FlatList
+                  data={group.photos}
+                  horizontal
+                  keyExtractor={(p) => p.id}
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.photoRow}
+                  renderItem={({ item: photo }) => (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={photo.caption ?? `photo-${photo.id}`}
+                      onPress={() => showPhotoActions(photo)}
+                    >
+                      <Image
+                        source={{ uri: photo.absoluteUri }}
+                        style={[styles.photoThumb, photo.isCover === 1 && styles.photoCover]}
+                        contentFit="cover"
+                      />
+                    </Pressable>
+                  )}
+                />
+              </View>
+            ))}
           </View>
         )}
 
-        <View style={styles.section}>
-          <ThemedText type="subtitle">
-            {t('bonsaiFieldPhotos')}
-            {remainingFreeSlots !== null && ` (${photoCount} / ${FREE_PHOTO_LIMIT_PER_BONSAI})`}
-          </ThemedText>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('photoAddCta')}
-            style={styles.photoAddBtn}
-            onPress={showAddPhotoMenu}
-          >
-            <ThemedText style={styles.photoAddText}>+ {t('photoAddCta')}</ThemedText>
-          </Pressable>
+        {/* 作業履歴 Tab: 作業記録 CTA + events 一覧 */}
+        {activeTab === 'history' && (
+          <View style={styles.section}>
+            <ThemedText type="subtitle">{t('eventsTitle')}</ThemedText>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('eventLogCta')}
+              style={styles.eventAddBtn}
+              onPress={() => showEventTypePicker()}
+            >
+              <ThemedText style={styles.eventAddText}>+ {t('eventLogCta')}</ThemedText>
+            </Pressable>
 
-          {photoGroups.length === 0 && (
-            <ThemedText style={styles.emptyPhotos}>{t('photoEmpty')}</ThemedText>
-          )}
+            {events.length === 0 && (
+              <ThemedText style={styles.emptyPhotos}>{t('eventEmpty')}</ThemedText>
+            )}
 
-          {photoGroups.map((group) => (
-            <View key={group.year} style={styles.yearBlock}>
-              <ThemedText type="defaultSemiBold" style={styles.yearLabel}>
-                {group.year}
-              </ThemedText>
-              <FlatList
-                data={group.photos}
-                horizontal
-                keyExtractor={(p) => p.id}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.photoRow}
-                renderItem={({ item: photo }) => (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={photo.caption ?? `photo-${photo.id}`}
-                    onPress={() => showPhotoActions(photo)}
-                  >
-                    <Image
-                      source={{ uri: photo.absoluteUri }}
-                      style={[styles.photoThumb, photo.isCover === 1 && styles.photoCover]}
-                      contentFit="cover"
-                    />
-                  </Pressable>
-                )}
-              />
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.section}>
-          <ThemedText type="subtitle">{t('eventsTitle')}</ThemedText>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('eventLogCta')}
-            style={styles.eventAddBtn}
-            onPress={() => showEventTypePicker()}
-          >
-            <ThemedText style={styles.eventAddText}>+ {t('eventLogCta')}</ThemedText>
-          </Pressable>
-
-          {events.length === 0 && (
-            <ThemedText style={styles.emptyPhotos}>{t('eventEmpty')}</ThemedText>
-          )}
-
-          {events.slice(0, 50).map((ev) => {
-            // F-07 Phase B (Issue #24, ADR-0014 §48-49): wiring の場合のみ
-            // 「装着期間: X 週 (経過済 / あと N 週 / 完了)」をアプリ内表示。
-            // 通知は ADR-0014 で削除済 (鬱陶しいフィードバックを受けて事実表示に変更)。
-            // 完了状態 (AC10-1 「完了」): この wiring event 以後の同盆栽 unwiring event 有無で判定。
-            let wiringDuration: {
-              weeks: number;
-              kind: 'within' | 'overdue';
-              isUnwired: boolean;
-            } | null = null;
-            // F-07 Phase C (Issue #24): payload_json の scheduled_unwire_at が設定済の場合に
-            // 「外す予定: YYYY-MM-DD」を表示。F-02 status='planned' 統合は Phase D。
-            let scheduledUnwireLabel: string | null = null;
-            if (ev.type === 'wiring' && ev.status === 'logged') {
-              const days = getDaysSinceWired(ev, new Date(nowUtc() as string));
-              const weeks = getWeeksSinceWired(days);
-              const kind = classifyWiringDuration(days);
-              const isUnwired = events.some(
-                (other) =>
-                  other.type === 'unwiring' &&
-                  other.status === 'logged' &&
-                  other.occurredAtUtc >= ev.occurredAtUtc,
-              );
-              wiringDuration = { weeks, kind, isUnwired };
-              const scheduled = getScheduledUnwireAt(ev);
-              if (scheduled) {
-                scheduledUnwireLabel = t('wiringScheduledUnwireSet').replace(
-                  '{date}',
-                  scheduled.slice(0, 10),
+            {events.slice(0, 50).map((ev) => {
+              // F-07 Phase B (Issue #24, ADR-0014 §48-49): wiring の場合のみ
+              // 「装着期間: X 週 (経過済 / あと N 週 / 完了)」をアプリ内表示。
+              // 通知は ADR-0014 で削除済 (鬱陶しいフィードバックを受けて事実表示に変更)。
+              // 完了状態 (AC10-1 「完了」): この wiring event 以後の同盆栽 unwiring event 有無で判定。
+              let wiringDuration: {
+                weeks: number;
+                kind: 'within' | 'overdue';
+                isUnwired: boolean;
+              } | null = null;
+              // F-07 Phase C (Issue #24): payload_json の scheduled_unwire_at が設定済の場合に
+              // 「外す予定: YYYY-MM-DD」を表示。F-02 status='planned' 統合は Phase D。
+              let scheduledUnwireLabel: string | null = null;
+              if (ev.type === 'wiring' && ev.status === 'logged') {
+                const days = getDaysSinceWired(ev, new Date(nowUtc() as string));
+                const weeks = getWeeksSinceWired(days);
+                const kind = classifyWiringDuration(days);
+                const isUnwired = events.some(
+                  (other) =>
+                    other.type === 'unwiring' &&
+                    other.status === 'logged' &&
+                    other.occurredAtUtc >= ev.occurredAtUtc,
                 );
+                wiringDuration = { weeks, kind, isUnwired };
+                const scheduled = getScheduledUnwireAt(ev);
+                if (scheduled) {
+                  scheduledUnwireLabel = t('wiringScheduledUnwireSet').replace(
+                    '{date}',
+                    scheduled.slice(0, 10),
+                  );
+                }
               }
-            }
-            return (
-              <Pressable
-                key={ev.id}
-                style={styles.eventRow}
-                accessibilityRole="button"
-                accessibilityLabel={t(`eventType_${ev.type}` as TranslationKey)}
-                onLongPress={() => confirmDeleteEvent(ev)}
-              >
-                {/* Claude Design `detail-screens.jsx` HistoryTab 整合: icon 40×40 box + content */}
-                <View style={styles.eventIconBox}>
-                  <EventIcon type={ev.type as EventType} size={20} />
-                </View>
-                <View style={styles.eventContent}>
-                  <View style={styles.eventRowMain}>
-                    <ThemedText style={styles.eventLabel}>
-                      {t(`eventType_${ev.type}` as TranslationKey)}
-                    </ThemedText>
-                    <ThemedText style={styles.eventRowDate}>
-                      {formatDate(ev.occurredAtUtc, lang)}
-                    </ThemedText>
+              return (
+                <Pressable
+                  key={ev.id}
+                  style={styles.eventRow}
+                  accessibilityRole="button"
+                  accessibilityLabel={t(`eventType_${ev.type}` as TranslationKey)}
+                  onLongPress={() => confirmDeleteEvent(ev)}
+                >
+                  {/* Claude Design `detail-screens.jsx` HistoryTab 整合: icon 40×40 box + content */}
+                  <View style={styles.eventIconBox}>
+                    <EventIcon type={ev.type as EventType} size={20} />
                   </View>
-                  {wiringDuration && (
-                    <WiringPeriodDisplay
-                      weeks={wiringDuration.weeks}
-                      kind={wiringDuration.kind}
-                      isUnwired={wiringDuration.isUnwired}
-                      style={styles.eventRowNote}
-                      testID={`e2e_wiring_duration_${ev.id}`}
-                    />
-                  )}
-                  {scheduledUnwireLabel && (
-                    <ThemedText
-                      style={styles.eventRowNote}
-                      testID={`e2e_wiring_scheduled_${ev.id}`}
-                    >
-                      {scheduledUnwireLabel}
-                    </ThemedText>
-                  )}
-                  {ev.note && (
-                    <ThemedText style={styles.eventRowNote} numberOfLines={2}>
-                      {ev.note}
-                    </ThemedText>
-                  )}
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
+                  <View style={styles.eventContent}>
+                    <View style={styles.eventRowMain}>
+                      <ThemedText style={styles.eventLabel}>
+                        {t(`eventType_${ev.type}` as TranslationKey)}
+                      </ThemedText>
+                      <ThemedText style={styles.eventRowDate}>
+                        {formatDate(ev.occurredAtUtc, lang)}
+                      </ThemedText>
+                    </View>
+                    {wiringDuration && (
+                      <WiringPeriodDisplay
+                        weeks={wiringDuration.weeks}
+                        kind={wiringDuration.kind}
+                        isUnwired={wiringDuration.isUnwired}
+                        style={styles.eventRowNote}
+                        testID={`e2e_wiring_duration_${ev.id}`}
+                      />
+                    )}
+                    {scheduledUnwireLabel && (
+                      <ThemedText
+                        style={styles.eventRowNote}
+                        testID={`e2e_wiring_scheduled_${ev.id}`}
+                      >
+                        {scheduledUnwireLabel}
+                      </ThemedText>
+                    )}
+                    {ev.note && (
+                      <ThemedText style={styles.eventRowNote} numberOfLines={2}>
+                        {ev.note}
+                      </ThemedText>
+                    )}
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
 
-        <View style={styles.section}>
-          <ThemedText type="subtitle">{t('bonsaiFieldUpdatedAt')}</ThemedText>
-          <ThemedText>{formatDate(item.updatedAt, lang)}</ThemedText>
-        </View>
+        {/* タイムライン Tab 末尾に updatedAt + Archive */}
+        {activeTab === 'timeline' && (
+          <>
+            <View style={styles.section}>
+              <ThemedText type="subtitle">{t('bonsaiFieldUpdatedAt')}</ThemedText>
+              <ThemedText>{formatDate(item.updatedAt, lang)}</ThemedText>
+            </View>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('bonsaiArchive')}
-          style={styles.archiveBtn}
-          onPress={handleArchive}
-        >
-          <ThemedText style={styles.archiveText}>{t('bonsaiArchive')}</ThemedText>
-        </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('bonsaiArchive')}
+              style={styles.archiveBtn}
+              onPress={handleArchive}
+            >
+              <ThemedText style={styles.archiveText}>{t('bonsaiArchive')}</ThemedText>
+            </Pressable>
+          </>
+        )}
       </ScrollView>
 
       {/* ADR-0020 Phase 4: 作業記録 BottomSheet (Claude Design WorkPickerSheet 整合) */}
@@ -588,6 +637,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   archiveText: { color: DANGER, fontSize: 15, fontWeight: '500' },
+  // ADR-0020 v1.x-2: DetailTabs (Claude Design detail-screens.jsx)
+  detailTabs: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER_DEFAULT,
+  },
+  detailTab: {
+    flex: 1,
+    minHeight: 48,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  detailTabOn: { borderBottomColor: BRAND_GREEN },
+  detailTabText: { fontSize: 14, fontWeight: '400' },
+  detailTabTextOn: { color: BRAND_GREEN, fontWeight: '500' },
   // ADR-0020 Phase 3: 「水やり履歴」リンク (詳細画面 → watering 画面遷移)
   wateringHistoryLink: {
     flexDirection: 'row',
