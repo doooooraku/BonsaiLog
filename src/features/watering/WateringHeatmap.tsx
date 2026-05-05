@@ -35,18 +35,24 @@ import {
 } from '@/src/features/watering/wateringHeatmap';
 import type { Event } from '@/src/db/schema';
 
-const HEATMAP_DAYS = 84; // 7 × 12
-
 const LEVEL_COLORS: Record<WateringHeatmapLevel, string> = HEATMAP_COLORS;
+
+/** ADR-0020 v1.x-6: 30 / 90 / 365 日範囲の列数 (7 行固定、列は週単位)。 */
+const RANGE_COLUMNS: Record<30 | 90 | 365, number> = {
+  30: 5, // 5 週 × 7 = 35 マス (30 日に近い)
+  90: 13, // 13 週 × 7 = 91 マス (90 日に近い、SS 222921 の標準)
+  365: 53, // 53 週 × 7 = 371 マス (365 日に近い、年次表示)
+};
 
 type Props = {
   events: readonly Event[];
   todayLocalKey: string;
   tzOffsetMin: number;
+  /** ADR-0020 v1.x-6: 表示範囲 (30/90/365 日)。default 90 (SS 222921 標準)。 */
+  windowDays?: 30 | 90 | 365;
   /**
    * Phase G-3: 凡例下サマリー (記録日数 / 件数) 表示。デフォルト false (呼出側オプトイン)。
-   * - true 時: 直近 12 週 (84 日) の `recordedDays / 84 (Y%)` と `totalEvents` を表示
-   * - ADR-0013 §27-28、v1.0 は 12 週固定 (Notes に v1.x 課題明記)
+   * windowDays に応じて期間が変わる。
    */
   showSummary?: boolean;
   testID?: string;
@@ -56,6 +62,7 @@ export function WateringHeatmap({
   events,
   todayLocalKey,
   tzOffsetMin,
+  windowDays = 90,
   showSummary = false,
   testID,
 }: Props) {
@@ -71,17 +78,21 @@ export function WateringHeatmap({
     setSelected(null);
   }, []);
 
-  // 12 週 × 7 日 (右下 = 今日)。dateKeys は新しい順なので reverse して古い → 新しいに並べる。
+  const cellSize = windowDays === 365 ? 6 : windowDays === 30 ? 22 : 14;
+  const cellGap = windowDays === 365 ? 1 : windowDays === 30 ? 4 : 3;
+  const numCols = RANGE_COLUMNS[windowDays];
+  const totalCells = numCols * 7;
+
+  // numCols 週 × 7 日 (右下 = 今日)。dateKeys は新しい順なので reverse して古い → 新しいに並べる。
   const dateKeys = React.useMemo(
-    () => buildHeatmapDateKeys(todayLocalKey, HEATMAP_DAYS).reverse(),
-    [todayLocalKey],
+    () => buildHeatmapDateKeys(todayLocalKey, totalCells).reverse(),
+    [todayLocalKey, totalCells],
   );
   const counts = React.useMemo(
     () => getDailyWateringCounts(events, tzOffsetMin),
     [events, tzOffsetMin],
   );
 
-  // 7 行 (曜日) × 12 列 (週) のグリッドに配置 (col-major)。
   type CellInfo = {
     level: WateringHeatmapLevel;
     dateKey: string;
@@ -89,7 +100,7 @@ export function WateringHeatmap({
   };
   const cols: CellInfo[][] = React.useMemo(() => {
     const result: CellInfo[][] = [];
-    for (let c = 0; c < 12; c++) {
+    for (let c = 0; c < numCols; c++) {
       const col: CellInfo[] = [];
       for (let r = 0; r < 7; r++) {
         const idx = c * 7 + r;
@@ -100,18 +111,18 @@ export function WateringHeatmap({
       result.push(col);
     }
     return result;
-  }, [dateKeys, counts]);
+  }, [dateKeys, counts, numCols]);
 
   const summary = React.useMemo(
     () =>
-      showSummary ? buildHeatmapSummary(events, tzOffsetMin, HEATMAP_DAYS, todayLocalKey) : null,
-    [showSummary, events, tzOffsetMin, todayLocalKey],
+      showSummary ? buildHeatmapSummary(events, tzOffsetMin, totalCells, todayLocalKey) : null,
+    [showSummary, events, tzOffsetMin, totalCells, todayLocalKey],
   );
   const summaryPercent =
-    summary != null ? Math.round((summary.recordedDays / HEATMAP_DAYS) * 100) : 0;
+    summary != null ? Math.round((summary.recordedDays / totalCells) * 100) : 0;
 
-  const canvasWidth = 12 * CELL_SIZE + 11 * CELL_GAP;
-  const canvasHeight = 7 * CELL_SIZE + 6 * CELL_GAP;
+  const canvasWidth = numCols * cellSize + (numCols - 1) * cellGap;
+  const canvasHeight = 7 * cellSize + 6 * cellGap;
 
   return (
     <View style={styles.container} testID={testID ?? 'e2e_watering_heatmap'}>
@@ -124,18 +135,18 @@ export function WateringHeatmap({
             col.map((cell, ri) => (
               <Rect
                 key={`${ci}-${ri}`}
-                x={ci * (CELL_SIZE + CELL_GAP)}
-                y={ri * (CELL_SIZE + CELL_GAP)}
-                width={CELL_SIZE}
-                height={CELL_SIZE}
+                x={ci * (cellSize + cellGap)}
+                y={ri * (cellSize + cellGap)}
+                width={cellSize}
+                height={cellSize}
                 color={LEVEL_COLORS[cell.level]}
               />
             )),
           )}
         </Canvas>
-        <View style={styles.grid}>
+        <View style={[styles.grid, { gap: cellGap }]}>
           {cols.map((col, ci) => (
-            <View key={ci} style={styles.col}>
+            <View key={ci} style={{ gap: cellGap }}>
               {col.map((cell, ri) => (
                 <Pressable
                   key={ri}
@@ -143,7 +154,7 @@ export function WateringHeatmap({
                   accessibilityLabel={t('wateringHeatmapDetailTitle')
                     .replace('{date}', cell.dateKey)
                     .replace('{count}', String(cell.count))}
-                  style={styles.cellHitbox}
+                  style={{ width: cellSize, height: cellSize }}
                   testID={`e2e_heatmap_cell_${ci}_${ri}`}
                   onPress={() => handleCellPress(cell.dateKey, cell.count)}
                   hitSlop={4}
@@ -168,7 +179,7 @@ export function WateringHeatmap({
             <ThemedText style={styles.summaryLine}>
               {t('wateringHeatmapSummaryRecordedDays')
                 .replace('{days}', String(summary.recordedDays))
-                .replace('{total}', String(HEATMAP_DAYS))
+                .replace('{total}', String(totalCells))
                 .replace('{percent}', String(summaryPercent))}
             </ThemedText>
             <ThemedText style={styles.summaryLine}>
@@ -214,16 +225,10 @@ function LegendItem({ color, label }: { color: string; label: string }) {
   );
 }
 
-const CELL_SIZE = 14;
-const CELL_GAP = 3;
-
 const styles = StyleSheet.create({
   container: { paddingVertical: 8, paddingHorizontal: 16, gap: 12 },
   gridWrap: { position: 'relative' },
-  grid: { flexDirection: 'row', gap: CELL_GAP },
-  col: { gap: CELL_GAP },
-  cell: { width: CELL_SIZE, height: CELL_SIZE, borderRadius: 2 },
-  cellHitbox: { width: CELL_SIZE, height: CELL_SIZE },
+  grid: { flexDirection: 'row' },
   legend: { gap: 6 },
   legendLabel: { fontSize: 12, opacity: 0.7 },
   legendRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },

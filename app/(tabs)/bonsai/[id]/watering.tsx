@@ -136,6 +136,7 @@ export default function BonsaiWateringScreen() {
             events={events}
             todayLocalKey={todayLocalKey}
             tzOffsetMin={tzOffsetMin}
+            windowDays={windowDays}
             testID="e2e_bonsai_watering_heatmap"
           />
         </View>
