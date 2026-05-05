@@ -49,7 +49,6 @@ import {
 } from '@/src/features/wiring/wiringDuration';
 import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
 import { useProStore } from '@/src/stores/proStore';
-import { useRecentBonsaiStore } from '@/src/stores/recentBonsaiStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
 /**
@@ -113,14 +112,10 @@ export default function BonsaiDetailScreen() {
     }
   }, [id, lang]);
 
-  // F-04 Phase H-1 (Issue #29 ADR-0013 §AC6-3): 「最近見た 3 本」用に focus 時 ID 記録
-  const pushRecent = useRecentBonsaiStore((s) => s.pushRecent);
-
   useFocusEffect(
     useCallback(() => {
       void reload();
-      if (id) pushRecent(id);
-    }, [reload, id, pushRecent]),
+    }, [reload]),
   );
 
   const handleArchive = useCallback(() => {

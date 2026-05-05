@@ -1,11 +1,13 @@
 /**
  * F-04 Phase F ヒートマップ (Issue #29 / ADR-0013)。
  *
+ * ADR-0020 Phase v1.x-7: 集約モード (aggregate) 廃止により個別モード (individual) 専用に簡素化。
+ *   stats タブ削除 (Phase 1) + watering.tsx に統合 (Phase 3-A) で aggregate 参照経路はすでに無し。
+ *
  * - **Skia ベース描画** (Phase F、PR #166 で追加した @shopify/react-native-skia)。
  *   View per-cell からの移行で、84 セル描画コストを GPU に移譲。
  * - 過去 12 週 (84 日) を 7 行 × 12 列で表示 (GitHub 風、新しい列 = 右端)。
  * - 配色は ColorBrewer Greens 4-class (color-blind safe)。
- * - 数字併記なし (Skia 上に追加するのは Phase G 以降で評価)。
  * - 凡例 K1: 「水やり回数: □ 0 ■ 1 ■ 2 ■ 3+」(個別盆栽用)。
  * - constraints §5-2 禁止語 (推奨 / べき / reminder / tracker / alert) を含めない。
  *
@@ -27,8 +29,6 @@ import { HEATMAP_COLORS } from '@/src/core/theme/colors';
 import {
   buildHeatmapDateKeys,
   buildHeatmapSummary,
-  getAggregateLevel,
-  getDailyAggregateRatio,
   getDailyWateringCounts,
   getHeatmapLevel,
   type WateringHeatmapLevel,
@@ -39,21 +39,10 @@ const HEATMAP_DAYS = 84; // 7 × 12
 
 const LEVEL_COLORS: Record<WateringHeatmapLevel, string> = HEATMAP_COLORS;
 
-/**
- * Phase G-2: 集約モード対応 (Issue #29 ADR-0013 §K2)。
- *
- * - mode='individual' (default): 単一盆栽の回数集計 → K1 凡例 (□ 0 ■ 1 ■ 2 ■ 3+)
- * - mode='aggregate': 全盆栽の達成率 % → K2 凡例 (□ 0% ■ 1-33% ■ 34-66% ■ 67-100%)
- *   集約モードでは totalBonsaiCount が必須。
- */
-export type WateringHeatmapMode = 'individual' | 'aggregate';
-
 type Props = {
   events: readonly Event[];
   todayLocalKey: string;
   tzOffsetMin: number;
-  mode?: WateringHeatmapMode;
-  totalBonsaiCount?: number;
   /**
    * Phase G-3: 凡例下サマリー (記録日数 / 件数) 表示。デフォルト false (呼出側オプトイン)。
    * - true 時: 直近 12 週 (84 日) の `recordedDays / 84 (Y%)` と `totalEvents` を表示
@@ -67,13 +56,10 @@ export function WateringHeatmap({
   events,
   todayLocalKey,
   tzOffsetMin,
-  mode = 'individual',
-  totalBonsaiCount = 0,
   showSummary = false,
   testID,
 }: Props) {
   const { t } = useTranslation();
-  // F-04 Phase E (Issue #29): セルタップで BottomSheet で詳細 (日付 + 水やり回数) を表示
   const sheetRef = React.useRef<BottomSheet>(null);
   const [selected, setSelected] = React.useState<{ dateKey: string; count: number } | null>(null);
   const snapPoints = React.useMemo(() => ['25%'], []);
@@ -94,21 +80,12 @@ export function WateringHeatmap({
     () => getDailyWateringCounts(events, tzOffsetMin),
     [events, tzOffsetMin],
   );
-  // Phase G-2: 集約モード時は K2 達成率 (%) を計算。individual 時は使われない。
-  const aggregateRatios = React.useMemo(
-    () =>
-      mode === 'aggregate' ? getDailyAggregateRatio(events, totalBonsaiCount, tzOffsetMin) : null,
-    [mode, events, totalBonsaiCount, tzOffsetMin],
-  );
 
   // 7 行 (曜日) × 12 列 (週) のグリッドに配置 (col-major)。
-  // セル詳細 (count + dateKey) も同時に保持して BottomSheet で参照。
-  // Phase G-2: 集約モードは ratio (%) を保持、個別モードは count (回数) を保持。
   type CellInfo = {
     level: WateringHeatmapLevel;
     dateKey: string;
     count: number;
-    ratio?: number; // 集約モードのみ
   };
   const cols: CellInfo[][] = React.useMemo(() => {
     const result: CellInfo[][] = [];
@@ -118,20 +95,13 @@ export function WateringHeatmap({
         const idx = c * 7 + r;
         const key = dateKeys[idx] ?? '';
         const cnt = counts.get(key) ?? 0;
-        if (mode === 'aggregate' && aggregateRatios != null) {
-          const ratio = aggregateRatios.get(key) ?? 0;
-          col.push({ level: getAggregateLevel(ratio), dateKey: key, count: cnt, ratio });
-        } else {
-          col.push({ level: getHeatmapLevel(cnt), dateKey: key, count: cnt });
-        }
+        col.push({ level: getHeatmapLevel(cnt), dateKey: key, count: cnt });
       }
       result.push(col);
     }
     return result;
-  }, [dateKeys, counts, mode, aggregateRatios]);
+  }, [dateKeys, counts]);
 
-  // Phase G-3: 凡例下サマリー (12 週 = 84 日固定、ADR-0013 §27-28)。
-  // 集約モードでも個別モードでも同じ純関数 buildHeatmapSummary を使用。
   const summary = React.useMemo(
     () =>
       showSummary ? buildHeatmapSummary(events, tzOffsetMin, HEATMAP_DAYS, todayLocalKey) : null,
@@ -140,14 +110,12 @@ export function WateringHeatmap({
   const summaryPercent =
     summary != null ? Math.round((summary.recordedDays / HEATMAP_DAYS) * 100) : 0;
 
-  // F-04 Phase F: Canvas 全体サイズ。グリッドは 12 列 × 7 行 で計算。
   const canvasWidth = 12 * CELL_SIZE + 11 * CELL_GAP;
   const canvasHeight = 7 * CELL_SIZE + 6 * CELL_GAP;
 
   return (
     <View style={styles.container} testID={testID ?? 'e2e_watering_heatmap'}>
       <View style={[styles.gridWrap, { width: canvasWidth, height: canvasHeight }]}>
-        {/* 背面: Skia Canvas で 84 セル一括描画 (GPU 描画、tap は通過) */}
         <Canvas
           style={[StyleSheet.absoluteFill, { width: canvasWidth, height: canvasHeight }]}
           testID="e2e_heatmap_skia_canvas"
@@ -165,7 +133,6 @@ export function WateringHeatmap({
             )),
           )}
         </Canvas>
-        {/* 前面: Pressable グリッド (透明、tap + a11y) */}
         <View style={styles.grid}>
           {cols.map((col, ci) => (
             <View key={ci} style={styles.col}>
@@ -187,40 +154,15 @@ export function WateringHeatmap({
         </View>
       </View>
 
-      {/* Phase G-2: 凡例ラベル切替 (K1 個別 / K2 集約)、ADR-0013 §K5 */}
+      {/* 凡例 (個別モード K1: 0 / 1 / 2 / 3+ 回) */}
       <View style={styles.legend}>
-        <ThemedText style={styles.legendLabel}>
-          {mode === 'aggregate'
-            ? t('wateringHeatmapLegendLabelAggregate')
-            : t('wateringHeatmapLegendLabel')}
-        </ThemedText>
+        <ThemedText style={styles.legendLabel}>{t('wateringHeatmapLegendLabel')}</ThemedText>
         <View style={styles.legendRow}>
-          <LegendItem
-            color={LEVEL_COLORS.L0}
-            label={
-              mode === 'aggregate' ? t('wateringHeatmapLegendAgg0') : t('wateringHeatmapLegend0')
-            }
-          />
-          <LegendItem
-            color={LEVEL_COLORS.L1}
-            label={
-              mode === 'aggregate' ? t('wateringHeatmapLegendAgg1') : t('wateringHeatmapLegend1')
-            }
-          />
-          <LegendItem
-            color={LEVEL_COLORS.L2}
-            label={
-              mode === 'aggregate' ? t('wateringHeatmapLegendAgg2') : t('wateringHeatmapLegend2')
-            }
-          />
-          <LegendItem
-            color={LEVEL_COLORS.L3}
-            label={
-              mode === 'aggregate' ? t('wateringHeatmapLegendAgg3') : t('wateringHeatmapLegend3')
-            }
-          />
+          <LegendItem color={LEVEL_COLORS.L0} label={t('wateringHeatmapLegend0')} />
+          <LegendItem color={LEVEL_COLORS.L1} label={t('wateringHeatmapLegend1')} />
+          <LegendItem color={LEVEL_COLORS.L2} label={t('wateringHeatmapLegend2')} />
+          <LegendItem color={LEVEL_COLORS.L3} label={t('wateringHeatmapLegend3')} />
         </View>
-        {/* Phase G-3 (AC7): 凡例下サマリー、ADR-0013 §27-28、v1.0 は 12 週固定 */}
         {summary != null && (
           <View style={styles.summary} testID="e2e_heatmap_summary">
             <ThemedText style={styles.summaryLine}>
@@ -239,7 +181,6 @@ export function WateringHeatmap({
         )}
       </View>
 
-      {/* F-04 Phase E (Issue #29): セル詳細 BottomSheet (タップで開閉) */}
       <BottomSheet
         ref={sheetRef}
         index={-1}
@@ -282,7 +223,6 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', gap: CELL_GAP },
   col: { gap: CELL_GAP },
   cell: { width: CELL_SIZE, height: CELL_SIZE, borderRadius: 2 },
-  // F-04 Phase F: Skia Canvas 上の透明 hitbox。背景は Skia 側、サイズだけ確保。
   cellHitbox: { width: CELL_SIZE, height: CELL_SIZE },
   legend: { gap: 6 },
   legendLabel: { fontSize: 12, opacity: 0.7 },
@@ -290,7 +230,6 @@ const styles = StyleSheet.create({
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   legendSwatch: { width: 12, height: 12, borderRadius: 2 },
   legendItemText: { fontSize: 12 },
-  // Phase G-3: サマリー行 (記録日数 / 件数)
   summary: { marginTop: 4, gap: 2 },
   summaryLine: { fontSize: 12, opacity: 0.85 },
   sheetContent: { padding: 16, gap: 8 },
