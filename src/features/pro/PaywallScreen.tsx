@@ -16,7 +16,7 @@
  */
 import React from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -165,7 +165,11 @@ export default function PaywallScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('close')}
-            onPress={() => router.back()}
+            onPress={() => {
+              // fix/247: history が空 (deep link / 直接起動) でも安全に閉じる
+              if (router.canGoBack()) router.back();
+              else router.replace('/(tabs)/bonsai' as Href);
+            }}
             testID="e2e_paywall_close"
             hitSlop={8}
           >
