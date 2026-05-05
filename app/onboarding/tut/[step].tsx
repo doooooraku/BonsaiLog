@@ -62,7 +62,7 @@ export default function OnboardingTutScreen() {
     if (next === null || !isTutorialStep(next)) {
       // 残りなし → 完了 → ホームへ
       setCompleted(true);
-      router.replace('/' as Href);
+      router.replace('/(tabs)/bonsai' as Href);
       return;
     }
     router.replace(`/onboarding/tut/${next}` as Href);
@@ -93,7 +93,7 @@ export default function OnboardingTutScreen() {
       markDismissed(tutMeta.step as OnboardingStep);
     }
     setCompleted(true);
-    router.replace('/' as Href);
+    router.replace('/(tabs)/bonsai' as Href);
   };
 
   const isStep5 = meta.step === 'tut5';
