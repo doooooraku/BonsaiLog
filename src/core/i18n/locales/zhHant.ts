@@ -463,5 +463,17 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   planSelectedListLabel: '{date} · {count} task(s)',
   planSelectedEmpty: 'No tasks recorded.',
   planEventPlanned: 'Planned',
+  // --- ADR-0020 v1.x-5: Paywall Claude Design (English fallback) ---
+  paywallHeroEyebrow: 'Unlock',
+  paywallHeroTitle: 'One pot, a lifetime.',
+  paywallHeroBody: 'Pro unlocks the full power of your bonsai records.',
+  paywallFeatureColLabel: 'Feature',
+  paywallFeatureBonsaiCount: 'Bonsai count',
+  paywallFeaturePhotos: 'Photos per bonsai',
+  paywallFeatureCsv: 'CSV export',
+  paywallFeaturePdf: 'PDF export',
+  paywallFeatureNoAds: 'Ads',
+  paywallFeatureNoAdsFreeValue: 'Shown',
+  paywallFeatureNoAdsProValue: 'None',
 };
 export default zhHant;

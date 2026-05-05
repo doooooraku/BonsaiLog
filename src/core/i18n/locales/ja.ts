@@ -347,6 +347,19 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- ADR-0020 Phase 4: 作業記録 BottomSheet ---
   workPickerTitle: '作業を記録',
 
+  // --- ADR-0020 v1.x-5: Paywall Claude Design (Hero + FeatureRow テーブル) ---
+  paywallHeroEyebrow: 'Unlock',
+  paywallHeroTitle: '鉢1本ずつ、一生分。',
+  paywallHeroBody: 'Pro で、記録の可能性を解き放つ。',
+  paywallFeatureColLabel: '機能',
+  paywallFeatureBonsaiCount: '樹木登録数',
+  paywallFeaturePhotos: '1本あたりの写真',
+  paywallFeatureCsv: 'CSV エクスポート',
+  paywallFeaturePdf: 'PDF エクスポート',
+  paywallFeatureNoAds: '広告表示',
+  paywallFeatureNoAdsFreeValue: 'あり',
+  paywallFeatureNoAdsProValue: 'なし',
+
   // --- ADR-0020 Phase 5: 予定タブ カレンダー ---
   planMonthYearSuffix: '年',
   planMonthSuffix: '月',
