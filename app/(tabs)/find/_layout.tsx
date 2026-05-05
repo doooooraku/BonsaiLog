@@ -10,8 +10,8 @@ import React from 'react';
 
 export default function FindStackLayout() {
   return (
-    <Stack screenOptions={{ headerShown: true }}>
-      <Stack.Screen name="index" options={{ title: '探す' }} />
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>
   );
 }
