@@ -25,11 +25,15 @@ import {
   ACCENT_BARK,
   ACCENT_GOLD,
   BG_PRIMARY,
+  BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
   BRAND_GREEN_BG,
   DISABLED_BG,
   ON_BRAND,
+  TEXT_MUTED,
+  TEXT_PRIMARY,
+  TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { shouldHideSubscriptions } from '@/src/features/pro/championMode';
 import {
@@ -165,9 +169,16 @@ export default function PaywallScreen() {
             testID="e2e_paywall_close"
             hitSlop={8}
           >
-            <ThemedText style={styles.closeText}>{'<'}</ThemedText>
+            <ThemedText style={styles.closeText}>{'×'}</ThemedText>
           </Pressable>
-          <ThemedText type="title">{t('proTitle')}</ThemedText>
+          <ThemedText style={styles.headerTitle}>{t('proTitle')}</ThemedText>
+        </View>
+
+        {/* ADR-0020 v1.x-5: Claude Design Hero (NotoSerifJP 32pt、letterSpacing 0.5) */}
+        <View style={styles.hero}>
+          <ThemedText style={styles.heroEyebrow}>{t('paywallHeroEyebrow')}</ThemedText>
+          <ThemedText style={styles.heroTitle}>{t('paywallHeroTitle')}</ThemedText>
+          <ThemedText style={styles.heroBody}>{t('paywallHeroBody')}</ThemedText>
         </View>
 
         {planType === 'lifetime' ? (
@@ -188,15 +199,22 @@ export default function PaywallScreen() {
           </View>
         )}
 
-        {/* F-13 Phase 1c (Issue #20, ADR-0009): Pro 機能比較表 (CTA 前に配置) */}
-        <View style={styles.comparison} testID="e2e_paywall_comparison">
-          <ThemedText type="defaultSemiBold" style={styles.comparisonTitle}>
-            {t('proComparisonTitle')}
-          </ThemedText>
-          <ComparisonRow label={t('proComparisonPhotos')} />
-          <ComparisonRow label={t('proComparisonCsv')} />
-          <ComparisonRow label={t('proComparisonPdf')} />
-          <ComparisonRow label={t('proComparisonNoAds')} />
+        {/* ADR-0020 v1.x-5: Claude Design FeatureRow 比較表 (Free / Pro 3 列、機能 / FREE / PRO) */}
+        <View style={styles.featureTable} testID="e2e_paywall_comparison">
+          <View style={styles.featureHeader}>
+            <ThemedText style={styles.featureHeaderLabel}>{t('paywallFeatureColLabel')}</ThemedText>
+            <ThemedText style={styles.featureHeaderFree}>FREE</ThemedText>
+            <ThemedText style={styles.featureHeaderPro}>PRO</ThemedText>
+          </View>
+          <FeatureRow label={t('paywallFeatureBonsaiCount')} free="∞" pro="∞" />
+          <FeatureRow label={t('paywallFeaturePhotos')} free="3" pro="∞" highlight />
+          <FeatureRow label={t('paywallFeatureCsv')} free="—" pro="◎" />
+          <FeatureRow label={t('paywallFeaturePdf')} free="—" pro="◎" />
+          <FeatureRow
+            label={t('paywallFeatureNoAds')}
+            free={t('paywallFeatureNoAdsFreeValue')}
+            pro={t('paywallFeatureNoAdsProValue')}
+          />
         </View>
 
         {!hideSubscriptions && (
@@ -268,11 +286,24 @@ type PlanCardProps = {
   onPress: () => void;
 };
 
-function ComparisonRow({ label }: { label: string }) {
+function FeatureRow({
+  label,
+  free,
+  pro,
+  highlight = false,
+}: {
+  label: string;
+  free: string;
+  pro: string;
+  highlight?: boolean;
+}) {
   return (
-    <View style={styles.comparisonRow}>
-      <ThemedText style={styles.comparisonCheck}>✓</ThemedText>
-      <ThemedText style={styles.comparisonLabel}>{label}</ThemedText>
+    <View style={styles.featureRow}>
+      <ThemedText style={[styles.featureLabel, highlight && styles.featureLabelHighlight]}>
+        {label}
+      </ThemedText>
+      <ThemedText style={styles.featureFree}>{free}</ThemedText>
+      <ThemedText style={styles.featurePro}>{pro}</ThemedText>
     </View>
   );
 }
@@ -305,8 +336,89 @@ function PlanCard({ testID, title, badge, price, cta, busy, disabled, onPress }:
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG_PRIMARY },
   scroll: { padding: 16, gap: 16 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  closeText: { fontSize: 22, paddingHorizontal: 8 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: 4 },
+  closeText: { fontSize: 28, paddingHorizontal: 8, color: TEXT_PRIMARY },
+  headerTitle: {
+    fontFamily: 'NotoSerifJP_500Medium',
+    fontSize: 20,
+    color: TEXT_PRIMARY,
+    letterSpacing: 0.4,
+  },
+  // ADR-0020 v1.x-5: Hero (Claude Design monetization-screens.jsx 整合、NotoSerifJP 32pt)
+  hero: { paddingTop: 12, paddingHorizontal: 8, paddingBottom: 8, gap: 8 },
+  heroEyebrow: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: TEXT_MUTED,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+  },
+  heroTitle: {
+    fontFamily: 'NotoSerifJP_500Medium',
+    fontSize: 32,
+    lineHeight: 42,
+    color: TEXT_PRIMARY,
+    letterSpacing: 0.5,
+  },
+  heroBody: { fontSize: 15, lineHeight: 24, color: TEXT_SECONDARY },
+  // FeatureRow テーブル (Free / Pro 比較)
+  featureTable: {
+    backgroundColor: BG_SURFACE,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+  },
+  featureHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER_DEFAULT,
+  },
+  featureHeaderLabel: {
+    flex: 1,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    color: TEXT_MUTED,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  featureHeaderFree: {
+    width: 64,
+    textAlign: 'center',
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    color: TEXT_MUTED,
+    letterSpacing: 1.2,
+  },
+  featureHeaderPro: {
+    width: 64,
+    textAlign: 'center',
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    color: BRAND_GREEN,
+    letterSpacing: 1.2,
+    fontWeight: '500',
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER_DEFAULT,
+  },
+  featureLabel: { flex: 1, fontSize: 14, color: TEXT_PRIMARY },
+  featureLabelHighlight: { fontWeight: '500' },
+  featureFree: { width: 64, textAlign: 'center', fontSize: 13, color: TEXT_MUTED },
+  featurePro: {
+    width: 64,
+    textAlign: 'center',
+    fontSize: 13,
+    color: BRAND_GREEN,
+    fontWeight: '500',
+  },
   statusBox: {
     padding: 16,
     borderRadius: 12,
@@ -328,18 +440,6 @@ const styles = StyleSheet.create({
   championBannerTextWrap: { flex: 1, gap: 4 },
   championBannerTitle: { fontSize: 16, color: ACCENT_BARK },
   championBannerDesc: { fontSize: 13, color: ACCENT_BARK, lineHeight: 18 },
-  comparison: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BRAND_GREEN_BG,
-    gap: 8,
-  },
-  comparisonTitle: { fontSize: 14, marginBottom: 4 },
-  comparisonRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  comparisonCheck: { color: BRAND_GREEN, fontSize: 16, fontWeight: '700' },
-  comparisonLabel: { flex: 1, fontSize: 14, lineHeight: 20 },
   card: {
     padding: 16,
     borderRadius: 12,

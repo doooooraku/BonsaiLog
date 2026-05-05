@@ -345,6 +345,19 @@ const baseEn = {
   // --- ADR-0020 Phase 4: work picker bottom sheet ---
   workPickerTitle: 'Log a task',
 
+  // --- ADR-0020 v1.x-5: Paywall Claude Design (Hero + FeatureRow table) ---
+  paywallHeroEyebrow: 'Unlock',
+  paywallHeroTitle: 'One pot, a lifetime.',
+  paywallHeroBody: 'Pro unlocks the full power of your bonsai records.',
+  paywallFeatureColLabel: 'Feature',
+  paywallFeatureBonsaiCount: 'Bonsai count',
+  paywallFeaturePhotos: 'Photos per bonsai',
+  paywallFeatureCsv: 'CSV export',
+  paywallFeaturePdf: 'PDF export',
+  paywallFeatureNoAds: 'Ads',
+  paywallFeatureNoAdsFreeValue: 'Shown',
+  paywallFeatureNoAdsProValue: 'None',
+
   // --- ADR-0020 Phase 5: plan tab calendar ---
   planMonthYearSuffix: '',
   planMonthSuffix: '',
