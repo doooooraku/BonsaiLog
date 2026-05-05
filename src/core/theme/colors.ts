@@ -26,8 +26,8 @@ export const BG_SURFACE = '#FFFFFF';
 export const TEXT_PRIMARY = '#1A1A1A';
 /** 補助テキスト (AA 7.7:1 vs BG_SURFACE)。 */
 export const TEXT_SECONDARY = '#5A5248';
-/** 3 次テキスト (AA 4.6:1 vs BG_SURFACE)。 */
-export const TEXT_MUTED = '#8A8274';
+/** 3 次テキスト (ADR-0020 Phase 10 で AA 4.5:1 適合に補正、#8A8274 → #767066)。 */
+export const TEXT_MUTED = '#767066';
 
 /** 旧名 alias (TEXT_PRIMARY と同値、AdBanner 等で利用)。 */
 export const TEXT_DEFAULT = TEXT_PRIMARY;

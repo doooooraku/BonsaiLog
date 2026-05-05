@@ -39,7 +39,7 @@ const PAIRS = [
   { theme: 'light', label: 'TEXT_PRIMARY × BG_PRIMARY', fg: '#1A1A1A', bg: '#F7F3E8' },
   { theme: 'light', label: 'TEXT_SECONDARY × BG_SURFACE', fg: '#5A5248', bg: '#FFFFFF' },
   { theme: 'light', label: 'TEXT_SECONDARY × BG_PRIMARY', fg: '#5A5248', bg: '#F7F3E8' },
-  { theme: 'light', label: 'TEXT_MUTED × BG_SURFACE', fg: '#8A8274', bg: '#FFFFFF' },
+  { theme: 'light', label: 'TEXT_MUTED × BG_SURFACE', fg: '#767066', bg: '#FFFFFF' },
   { theme: 'light', label: 'BRAND_GREEN × BG_PRIMARY', fg: '#1F3A2E', bg: '#F7F3E8' },
   { theme: 'light', label: 'ON_BRAND × BRAND_GREEN', fg: '#FFFFFF', bg: '#1F3A2E' },
   { theme: 'light', label: 'DANGER × BG_PRIMARY', fg: '#8B2E2E', bg: '#F7F3E8' },
