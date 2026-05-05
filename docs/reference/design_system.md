@@ -16,21 +16,21 @@
 
 ### 2-1. ライトモード（デフォルト）
 
-| Token              | HEX       | 用途                          |
-| ------------------ | --------- | ----------------------------- |
-| `--bg-primary`     | `#F7F3E8` | 背景（washi 和紙色）          |
-| `--bg-surface`     | `#FFFFFF` | カード背景                    |
-| `--text-primary`   | `#1A1A1A` | 本文（sumi 墨色）             |
-| `--text-secondary` | `#5A5248` | 補助テキスト                  |
-| `--text-muted`     | `#8A8274` | 3次テキスト                   |
-| `--primary`        | `#1F3A2E` | プライマリ（深緑 fukamidori） |
-| `--primary-hover`  | `#2A4C3D` | 押下時                        |
-| `--accent-bark`    | `#5A4637` | 樹皮色（タグ・区切り）        |
-| `--accent-gold`    | `#C69E48` | 秋葉色（Pro バッジのみ）      |
-| `--danger`         | `#8B2E2E` | 危険                          |
-| `--success`        | `#3E5C39` | 成功                          |
-| `--border`         | `#D9D1BF` | 境界線                        |
-| `--border-strong`  | `#8A8274` | 強調境界線                    |
+| Token              | HEX       | 用途                                                               |
+| ------------------ | --------- | ------------------------------------------------------------------ |
+| `--bg-primary`     | `#F7F3E8` | 背景（washi 和紙色）                                               |
+| `--bg-surface`     | `#FFFFFF` | カード背景                                                         |
+| `--text-primary`   | `#1A1A1A` | 本文（sumi 墨色）                                                  |
+| `--text-secondary` | `#5A5248` | 補助テキスト                                                       |
+| `--text-muted`     | `#767066` | 3次テキスト (ADR-0020 Phase 10 で AA 4.5:1 適合に補正、旧 #8A8274) |
+| `--primary`        | `#1F3A2E` | プライマリ（深緑 fukamidori）                                      |
+| `--primary-hover`  | `#2A4C3D` | 押下時                                                             |
+| `--accent-bark`    | `#5A4637` | 樹皮色（タグ・区切り）                                             |
+| `--accent-gold`    | `#C69E48` | 秋葉色（Pro バッジのみ）                                           |
+| `--danger`         | `#8B2E2E` | 危険                                                               |
+| `--success`        | `#3E5C39` | 成功                                                               |
+| `--border`         | `#D9D1BF` | 境界線                                                             |
+| `--border-strong`  | `#8A8274` | 強調境界線                                                         |
 
 ### 2-2. ダークモード（OLED焼き付き配慮）
 
