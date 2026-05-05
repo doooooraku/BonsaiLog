@@ -35,9 +35,11 @@ import {
   softDeleteEvent,
 } from '@/src/db/eventRepository';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
-import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
+import { type Event, type EventType } from '@/src/db/schema';
+import { WorkPickerSheet } from '@/src/features/event/WorkPickerSheet';
 import { LastWateredText } from '@/src/features/watering/LastWateredText';
 import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import type BottomSheet from '@gorhom/bottom-sheet';
 import { WiringPeriodDisplay } from '@/src/features/wiring/WiringPeriodDisplay';
 import {
   classifyWiringDuration,
@@ -67,6 +69,16 @@ export default function BonsaiDetailScreen() {
   const [photoGroups, setPhotoGroups] = useState<{ year: number; photos: PhotoRead[] }[]>([]);
   const [photoCount, setPhotoCount] = useState(0);
   const [events, setEvents] = useState<Event[]>([]);
+  // ADR-0020 Phase 4: 作業記録 BottomSheet (Claude Design WorkPickerSheet 整合)
+  const workPickerRef = React.useRef<BottomSheet>(null);
+  const handleWorkPickerSelect = React.useCallback(
+    (type: EventType) => {
+      workPickerRef.current?.close();
+      void logEvent(type);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [item],
+  );
 
   // F-04 Phase A: 「最後の水やりから X 日」(ADR-0013、純関数の説明は wateringHeatmap.ts)
   const daysSinceLastWatering = React.useMemo(() => {
@@ -441,23 +453,29 @@ export default function BonsaiDetailScreen() {
           <ThemedText style={styles.archiveText}>{t('bonsaiArchive')}</ThemedText>
         </Pressable>
       </ScrollView>
+
+      {/* ADR-0020 Phase 4: 作業記録 BottomSheet (Claude Design WorkPickerSheet 整合) */}
+      <WorkPickerSheet
+        ref={workPickerRef}
+        index={-1}
+        bonsaiName={item.name}
+        isPine={
+          // 樹種から松類か判定 (commonName に「松」/ "Pine" / "Pinus")。簡易判定、Phase 12 で species.category に格納検討。
+          (item.species?.commonName ?? '').toLowerCase().includes('pine') ||
+          (item.species?.scientificName ?? '').toLowerCase().includes('pinus') ||
+          (item.species?.commonName ?? '').includes('松')
+        }
+        onSelect={handleWorkPickerSelect}
+        onClose={() => {
+          /* close 時に追加処理が必要なら ここで */
+        }}
+      />
     </ThemedView>
   );
 
   function showEventTypePicker() {
     if (!item) return;
-    Alert.alert(
-      t('eventLogCta'),
-      t('eventTypePickerDesc'),
-      [
-        ...EVENT_TYPES.map((type) => ({
-          text: t(`eventType_${type}` as TranslationKey),
-          onPress: () => void logEvent(type),
-        })),
-        { text: t('cancel'), style: 'cancel' as const },
-      ],
-      { cancelable: true },
-    );
+    workPickerRef.current?.snapToIndex(0);
   }
 
   /**

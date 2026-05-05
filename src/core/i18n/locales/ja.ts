@@ -344,6 +344,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   elapsedMonths: '{months}ヶ月',
   elapsedYears: '{years}年',
 
+  // --- ADR-0020 Phase 4: 作業記録 BottomSheet ---
+  workPickerTitle: '作業を記録',
+
   // --- ADR-0020 Phase 3: 盆栽詳細 水やり履歴画面 (SS 222921 整合) ---
   wateringHistoryLinkTitle: '水やり履歴を見る',
   wateringRange30: '30日',
