@@ -1,9 +1,16 @@
 # ADR-0019: Home 画面の役割定義 + Claude Design 部分採用方針
 
-- Status: Accepted
+- Status: Superseded by [ADR-0020](./ADR-0020-claude-design-full-adoption.md) (2026-05-05)
 - Date: 2026-05-04
 - Deciders: @doooooraku
 - Related: Issue #29 (本セッション実機検証で発覚) / `docs/reference/design_system.md` / `docs/adr/ADR-0011-remove-recommendations-keep-record-only.md` / `docs/adr/ADR-0018-onboarding-flow-integration.md` / `docs/adr/ADR-0015-f15-theme-system.md`
+
+> **2026-05-05 追記 (Superseded)**: 本 ADR は ADR-0020「Claude Design 全面採用」で上書き。
+> 部分採用 (Decision §2「Claude Design の部分採用」、Notes §149-159 採用判定表) の方針は撤回し、
+> 4 タブ構成 + オンボ 6 画面 + 全画面 Wireframe 整合に変更。
+> 部分採用判断時に「ブランド統一感 (R-26)」軸が独立軸として無く、ユーザー期待の「全体の見栄え一貫性」を捕捉できなかったことが根本原因。
+> ADR-0020 で 5 軸評価 (4 ペルソナ + ブランド統一感) を実施、全項目 ○ 以上、✕ ゼロ。
+> 詳細経緯は ADR-0020 Context / Alternatives Option B 参照。
 
 ---
 

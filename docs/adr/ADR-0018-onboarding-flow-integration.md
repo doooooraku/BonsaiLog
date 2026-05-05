@@ -3,15 +3,22 @@
 
 # ADR-0018: オンボーディング統合フロー (システム 3 画面 + 機能チュート 5 ステップ = 8 画面、各画面スキップ可、再閲覧 Step 1-5)
 
-- Status: Accepted
+- Status: Amended by [ADR-0020](./ADR-0020-claude-design-full-adoption.md) (2026-05-05、8 画面 → 6 画面に削減)
 - Date: 2026-05-02
 - Deciders: @doooooraku
 - Related:
   - 上書き対象: なし (新規 ADR、既存 ADR-0011/0014 は Notes 追記のみで Decision 維持)
-  - 連動: ADR-0011 (記録のみ哲学 + 機能チュート 5 ステップ既定) / ADR-0014 (Step 5 通知設定 + Step 5-B 水やり時刻設定) / ADR-0013 (F-04 Step 4 ヒートマップサンプル) / ADR-0015 (TT2 light 固定 + A1 200ms アニメ) / ADR-0017 (ATT/UMP オンボ非統合)
+  - 連動: ADR-0011 (記録のみ哲学 + 機能チュート 5 ステップ既定) / ADR-0014 (Step 5 通知設定 + Step 5-B 水やり時刻設定) / ADR-0013 (F-04 Step 4 ヒートマップサンプル) / ADR-0015 (TT2 light 固定 + A1 200ms アニメ) / ADR-0017 (ATT/UMP オンボ非統合) / ADR-0020 (Claude Design 全面採用、本 ADR 改訂元)
   - Design 参考 (下書き、ADR が正): `/mnt/c/Users/doooo/Downloads/BonsaiLog_template-handoff/bonsailog-template/project/screens.jsx` (Splash/Welcome/言語/通知 4 画面採用、ATT/UMP 独自前置き画面は不採用)
   - Issue: #26 (オンボーディング、既存) を本 ADR で改訂
   - 影響先 Issue: #29 (F-04) / #30 (F-16) / #14 (F-01) / #15 (F-08) / #17 (F-02) — Step 1-4 サンプルデータ表示の参考
+
+> **2026-05-05 追記 (ADR-0020 連動、Amended)**:
+> ADR-0020 で Claude Design 全面採用に伴い、本 ADR は以下の点で改訂:
+> 1. **オンボ 8 画面 → 6 画面に削減** — Claude Design `screens.jsx` 整合 (Splash + Welcome + LanguagePicker + Notification + 機能 2)
+> 2. **機能チュート 5 ステップ → 2 ステップに圧縮** — 重要 2 機能 (盆栽追加 + 作業記録) のみ、詳細チュートは GuideModalScreen (新規盆栽 30 日ガイド) に分離
+> 3. **既存ユーザー migration**: `onboarding_v` キーで既存 v=1 完了ユーザーは再オンボなし
+> 削減画面の経緯と詳細は ADR-0020 Decision §10 + Phase 8 計画参照。
 
 ---
 
