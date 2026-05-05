@@ -8,8 +8,8 @@ import React from 'react';
 
 export default function SettingsStackLayout() {
   return (
-    <Stack screenOptions={{ headerShown: true }}>
-      <Stack.Screen name="index" options={{ title: '設定' }} />
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>
   );
 }
