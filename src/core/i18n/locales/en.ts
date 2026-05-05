@@ -374,6 +374,17 @@ const baseEn = {
   planSelectedListLabel: '{date} · {count} task(s)',
   planSelectedEmpty: 'No tasks recorded.',
   planEventPlanned: 'Planned',
+  planWiringListLink: 'Wiring list',
+
+  // --- ADR-0020 v1.x-4: WiringListScreen ---
+  wiringTabAll: 'All',
+  wiringTabActive: 'Active',
+  wiringTabSoon: 'Within a week',
+  wiringListEmpty: 'No active wiring records.',
+  wiringRowWeeks: '{weeks} week(s)',
+  wiringOverdueBadge: 'Check',
+  wiringUnwireInDays: 'Unwire in {days} day(s)',
+  wiringUnwireOverdue: 'Unwire {days} day(s) overdue',
 
   // --- ADR-0020 Phase 3: bonsai detail watering history (SS 222921) ---
   wateringHistoryLinkTitle: 'View watering history',

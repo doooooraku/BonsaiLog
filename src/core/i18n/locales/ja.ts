@@ -376,6 +376,17 @@ const ja: Partial<Record<TranslationKey, string>> = {
   planSelectedListLabel: '{date} · {count}件',
   planSelectedEmpty: '予定はありません。',
   planEventPlanned: '予定',
+  planWiringListLink: '針金がけ一覧',
+
+  // --- ADR-0020 v1.x-4: WiringListScreen ---
+  wiringTabAll: 'すべて',
+  wiringTabActive: '未外し',
+  wiringTabSoon: '1週間以内',
+  wiringListEmpty: '装着中の針金記録はありません。',
+  wiringRowWeeks: '{weeks}週経過',
+  wiringOverdueBadge: '要確認',
+  wiringUnwireInDays: '外し予定まで{days}日',
+  wiringUnwireOverdue: '外し時期を{days}日超過',
 
   // --- ADR-0020 Phase 3: 盆栽詳細 水やり履歴画面 (SS 222921 整合) ---
   wateringHistoryLinkTitle: '水やり履歴を見る',
