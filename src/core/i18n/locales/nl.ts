@@ -453,5 +453,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   wateringSummaryDoubleDays: 'Twice-a-day',
   wateringDisclaimerNoJudgement: 'This is a record display. We do not judge watering.',
   wateringDisclaimerHeatmapMeaning: 'Shading shows record count (light: 0, mid: 1, dark: 2+).',
+  // --- ADR-0020 Phase 4: work picker bottom sheet (English fallback) ---
+  workPickerTitle: 'Log a task',
 };
 export default nl;

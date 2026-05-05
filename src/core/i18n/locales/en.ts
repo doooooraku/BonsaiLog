@@ -342,6 +342,9 @@ const baseEn = {
   elapsedMonths: '{months}mo',
   elapsedYears: '{years}y',
 
+  // --- ADR-0020 Phase 4: work picker bottom sheet ---
+  workPickerTitle: 'Log a task',
+
   // --- ADR-0020 Phase 3: bonsai detail watering history (SS 222921) ---
   wateringHistoryLinkTitle: 'View watering history',
   wateringRange30: '30 days',
