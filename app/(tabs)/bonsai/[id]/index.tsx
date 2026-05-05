@@ -36,6 +36,7 @@ import {
 } from '@/src/db/eventRepository';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { type Event, type EventType } from '@/src/db/schema';
+import { WorkLogConfirmSheet, type WorkLogPayload } from '@/src/features/event/WorkLogConfirmSheet';
 import { WorkPickerSheet } from '@/src/features/event/WorkPickerSheet';
 import { LastWateredText } from '@/src/features/watering/LastWateredText';
 import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
@@ -73,10 +74,28 @@ export default function BonsaiDetailScreen() {
 
   // ADR-0020 Phase 4: 作業記録 BottomSheet (Claude Design WorkPickerSheet 整合)
   const workPickerRef = React.useRef<BottomSheet>(null);
+  // ADR-0020 v1.x-3: 作業記録 詳細 form BottomSheet (Claude Design WorkLogConfirmSheet 整合)
+  const workConfirmRef = React.useRef<BottomSheet>(null);
+  const [pendingWorkType, setPendingWorkType] = useState<EventType | null>(null);
+  const FORM_TYPES: readonly EventType[] = ['watering', 'pruning', 'wiring'];
   const handleWorkPickerSelect = React.useCallback(
     (type: EventType) => {
       workPickerRef.current?.close();
-      void logEvent(type);
+      // 詳細 form 対応 type は WorkLogConfirmSheet に進む、それ以外は即時記録
+      if (FORM_TYPES.includes(type)) {
+        setPendingWorkType(type);
+        setTimeout(() => workConfirmRef.current?.snapToIndex(0), 50);
+      } else {
+        void logEvent(type);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [item],
+  );
+  const handleWorkLogSubmit = React.useCallback(
+    (payload: WorkLogPayload) => {
+      workConfirmRef.current?.close();
+      void persistEventWithPayload(payload);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [item],
@@ -514,8 +533,35 @@ export default function BonsaiDetailScreen() {
           /* close 時に追加処理が必要なら ここで */
         }}
       />
+
+      {/* ADR-0020 v1.x-3: 作業記録 詳細 form BottomSheet (water / pruning / wiring) */}
+      <WorkLogConfirmSheet
+        ref={workConfirmRef}
+        index={-1}
+        bonsaiName={item.name}
+        selectedType={pendingWorkType}
+        onSubmit={handleWorkLogSubmit}
+        onClose={() => setPendingWorkType(null)}
+      />
     </ThemedView>
   );
+
+  /** v1.x-3: 詳細 form から payload + note を受け取り createEvent で保存。 */
+  async function persistEventWithPayload(payload: WorkLogPayload) {
+    if (!item) return;
+    try {
+      await createEvent({
+        bonsaiId: item.id,
+        type: payload.type,
+        status: 'logged',
+        note: payload.note.length > 0 ? payload.note : undefined,
+        payload: payload.payload,
+      });
+      await reload();
+    } catch (err) {
+      Alert.alert(t('error'), String(err));
+    }
+  }
 
   function showEventTypePicker() {
     if (!item) return;
