@@ -447,5 +447,21 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   wateringDisclaimerHeatmapMeaning: 'Shading shows record count (light: 0, mid: 1, dark: 2+).',
   // --- ADR-0020 Phase 4: work picker bottom sheet (English fallback) ---
   workPickerTitle: 'Log a task',
+  // --- ADR-0020 Phase 5: plan tab calendar (English fallback) ---
+  planMonthYearSuffix: '',
+  planMonthSuffix: '',
+  planPrevMonth: 'Previous month',
+  planNextMonth: 'Next month',
+  dowSun: 'Sun',
+  dowMon: 'Mon',
+  dowTue: 'Tue',
+  dowWed: 'Wed',
+  dowThu: 'Thu',
+  dowFri: 'Fri',
+  dowSat: 'Sat',
+  planSelectedListTodayLabel: 'Today · {count} task(s)',
+  planSelectedListLabel: '{date} · {count} task(s)',
+  planSelectedEmpty: 'No tasks recorded.',
+  planEventPlanned: 'Planned',
 };
 export default zhHans;

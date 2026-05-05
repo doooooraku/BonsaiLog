@@ -345,6 +345,23 @@ const baseEn = {
   // --- ADR-0020 Phase 4: work picker bottom sheet ---
   workPickerTitle: 'Log a task',
 
+  // --- ADR-0020 Phase 5: plan tab calendar ---
+  planMonthYearSuffix: '',
+  planMonthSuffix: '',
+  planPrevMonth: 'Previous month',
+  planNextMonth: 'Next month',
+  dowSun: 'Sun',
+  dowMon: 'Mon',
+  dowTue: 'Tue',
+  dowWed: 'Wed',
+  dowThu: 'Thu',
+  dowFri: 'Fri',
+  dowSat: 'Sat',
+  planSelectedListTodayLabel: 'Today · {count} task(s)',
+  planSelectedListLabel: '{date} · {count} task(s)',
+  planSelectedEmpty: 'No tasks recorded.',
+  planEventPlanned: 'Planned',
+
   // --- ADR-0020 Phase 3: bonsai detail watering history (SS 222921) ---
   wateringHistoryLinkTitle: 'View watering history',
   wateringRange30: '30 days',
