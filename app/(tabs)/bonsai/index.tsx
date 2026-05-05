@@ -26,6 +26,7 @@ import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/
 import { getActiveEventsByBonsai } from '@/src/db/eventRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
+import { AdBanner } from '@/src/features/ads/AdBanner';
 import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCard';
 import { HomeFilterTabs, type FilterChip } from '@/src/features/bonsai/HomeFilterTabs';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
@@ -225,6 +226,8 @@ export default function BonsaiHomeScreen() {
       >
         <PlusIcon size={28} color={ON_BRAND} />
       </Pressable>
+      {/* ADR-0020 Phase 9: AdBanner を盆栽タブ最下部に配置 (ADR-0010「ホーム下部のみ」、Repolog 同等構成) */}
+      <AdBanner />
     </ThemedView>
   );
 }
