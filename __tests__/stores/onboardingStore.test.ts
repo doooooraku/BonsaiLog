@@ -42,10 +42,10 @@ describe('useOnboardingStore', () => {
 
   test('markDismissed で各 Step を dismissed に追加', () => {
     useOnboardingStore.getState().markDismissed('tut1');
-    useOnboardingStore.getState().markDismissed('tut3');
+    useOnboardingStore.getState().markDismissed('tut5');
     const s = useOnboardingStore.getState();
     expect(s.dismissed.tut1).toBe(true);
-    expect(s.dismissed.tut3).toBe(true);
+    expect(s.dismissed.tut5).toBe(true);
     expect(s.dismissed.tut2).toBeUndefined();
   });
 
@@ -54,12 +54,12 @@ describe('useOnboardingStore', () => {
     store.markDismissed('welcome');
     store.markDismissed('language');
     store.markDismissed('tut1');
-    store.markDismissed('tut3');
+    store.markDismissed('tut2');
     store.resetTutorial();
     const after = useOnboardingStore.getState();
     expect(after.dismissed.welcome).toBe(true);
     expect(after.dismissed.language).toBe(true);
     expect(after.dismissed.tut1).toBeUndefined();
-    expect(after.dismissed.tut3).toBeUndefined();
+    expect(after.dismissed.tut2).toBeUndefined();
   });
 });
