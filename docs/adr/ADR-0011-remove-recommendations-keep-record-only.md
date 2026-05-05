@@ -3,20 +3,25 @@
 
 # ADR-0011: F-03 / F-06 削除 + 推奨機能撤廃 — 「記録のみ」哲学の貫徹
 
-- Status: Accepted
+- Status: Accepted (2026-05-05 ADR-0020 連動確認、Decision 維持)
 - Date: 2026-04-29
 - Deciders: @doooooraku
 - Related:
   - 削除対象: `functional_spec.md` §10 (F-03)、§11 (F-06)
   - 改修: F-07 針金がけ記録（ユーザー指定通知）、F-05 リマインダー（気遣い型ポップアップ）
   - 新規: オンボーディング 4 ステップチュートリアル
-  - 連動: ADR-0009（F-13 Pro メリット見直し、「樹種別タイミング計算 Pro 限定」削除）
+  - 連動: ADR-0009（F-13 Pro メリット見直し、「樹種別タイミング計算 Pro 限定」削除）/ ADR-0020 (Claude Design 全面採用、本 ADR の哲学整合確認済)
   - 戦略書: `product_strategy.md` ポジショニング更新、痛み 11 個のうち 🩹1 / 🩹4 削除、🩹3 縮小、🩹6 改良
   - 制約: `constraints.md` §1-4 AI 非搭載原則 / §5-2 禁止語との整合
   - Issue:
     - [#24](https://github.com/doooooraku/BonsaiLog/issues/24) F-07 改良 (ユーザー指定外し日時通知 + 装着期間経過事実通知)
     - [#25](https://github.com/doooooraku/BonsaiLog/issues/25) F-05 「気遣い型」予定確認ポップアップ
     - [#26](https://github.com/doooooraku/BonsaiLog/issues/26) オンボーディング 4 ステップチュートリアル
+
+> **2026-05-05 追記 (ADR-0020 連動)**: Claude Design 全面採用 (ADR-0020) に伴い、
+> `home-screens.jsx` / `detail-screens.jsx` / `care-screens.jsx` 等を全 Read で確認した結果、
+> Claude Design 内に推奨機能 (「○○しましょう」「水やり不足です」等の命令文 / 診断) は **存在しない**。
+> 本 ADR の Decision (記録のみ哲学) は維持、ADR-0020 と整合。
 
 ---
 

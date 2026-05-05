@@ -3,15 +3,23 @@
 
 # ADR-0013: F-04 水やり履歴の可視化（ヒートマップ単独構成 + Apple Health 風 BottomSheet）
 
-- Status: Accepted
+- Status: Amended by [ADR-0020](./ADR-0020-claude-design-full-adoption.md) (2026-05-05、集約モード K2 達成率 廃止 + 個別ヒートマップを盆栽詳細画面に移動)
 - Date: 2026-04-30
 - Deciders: @doooooraku
 - Related:
   - 上書き対象: `functional_spec.md` §9（F-04 詳細仕様）— 棒グラフ → ヒートマップ単独に全面再設計
   - 上書き対象: `basic_spec.md` §F-04 — 同上
-  - 連動: ADR-0008（F-02 events STI + Drizzle + ULID + status）/ ADR-0009（F-13 Pro メリット）/ ADR-0010（F-14 広告）/ ADR-0011（記録のみ哲学）
+  - 連動: ADR-0008（F-02 events STI + Drizzle + ULID + status）/ ADR-0009（F-13 Pro メリット）/ ADR-0010（F-14 広告）/ ADR-0011（記録のみ哲学）/ ADR-0020 (Claude Design 全面採用、F-04 改訂元)
   - 影響先: ADR-0011 オンボーディング Step 4 — ヒートマップ凡例説明を統合
-  - Issue: #<TBD>
+  - Issue: #29 (本 ADR-0020 で close 解除、集約モード廃止)
+
+> **2026-05-05 追記 (ADR-0020 連動、Amended)**:
+> ADR-0020 で Claude Design 全面採用に伴い、本 ADR は以下の点で改訂:
+> 1. **集約モード K2 達成率 (全盆栽の水やり率 %) 廃止** — Claude Design に該当機能なし、個別盆栽詳細のヒートマップに統合
+> 2. **統計タブ (`app/(tabs)/stats.tsx`) 削除** — 4 タブ構成 (盆栽 / 予定 / 探す / 設定) に統計タブなし
+> 3. **個別ヒートマップを盆栽詳細画面に移動** — `app/(tabs)/bonsai/[id]/watering.tsx` (`care-screens-v2.jsx HeatmapScreen` 整合、SS 222921)、30/90/365 日切替 + 連続記録 + 過去90日 + 2回の日 サマリー
+> 4. **`BonsaiFilterSheet` 削除** — 集約モード廃止に伴い不要
+> Issue #29 は ADR-0020 で close 解除、過去 PR #172/173/176 (集約モード実装) は事実上 revert。詳細経緯は ADR-0020 Notes 参照。
 
 ---
 
