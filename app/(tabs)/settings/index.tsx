@@ -25,7 +25,7 @@ import { ACCENT_GOLD, BORDER_DEFAULT, BRAND_GREEN, ON_BRAND } from '@/src/core/t
 import { useColors } from '@/src/core/theme/useColors';
 import { formatDateToHhmm, parseHhmmToDate } from '@/src/features/notification/notificationTime';
 import { requestNotificationPermission } from '@/src/features/notification/scheduler';
-import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
+import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { showAdPrivacyOptionsForm } from '@/src/services/adService';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
 import { useProStore } from '@/src/stores/proStore';
@@ -134,13 +134,9 @@ export default function SettingsScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_settings_screen"
     >
-      {/* F-15 Phase H (Issue #32, ADR-0015 AC4 OA1): 全画面ヘッダー右上の屋外モードトグル */}
-      <OutdoorToggleButton testIdSuffix="settings_outdoor_toggle" />
+      {/* ADR-0020 Phase 7: SearchHeader (タイトル「設定」+ 検索 + 屋外モードトグル統合) */}
+      <SearchHeader title={t('tabSettings')} testIdSuffix="settings" />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <ThemedText type="title" style={styles.title}>
-          {t('settingsTitle')}
-        </ThemedText>
-
         {/* --- F-15 Phase A テーマ (Issue #32、ADR-0015) --- */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
@@ -367,7 +363,7 @@ export default function SettingsScreen() {
             accessibilityLabel={t('searchAction')}
             testID="e2e_open_search"
             style={styles.entry}
-            onPress={() => router.push('/search' as Href)}
+            onPress={() => router.push('/(tabs)/find' as Href)}
           >
             <ThemedText type="defaultSemiBold">{t('searchAction')}</ThemedText>
             <ThemedText style={styles.entryDesc}>{t('searchDesc')}</ThemedText>
