@@ -1,4 +1,4 @@
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import React, { useCallback, useState } from 'react';
@@ -37,7 +37,6 @@ import {
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
 import { LastWateredText } from '@/src/features/watering/LastWateredText';
-import { WateringHeatmap } from '@/src/features/watering/WateringHeatmap';
 import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 import { WiringPeriodDisplay } from '@/src/features/wiring/WiringPeriodDisplay';
 import {
@@ -257,16 +256,23 @@ export default function BonsaiDetailScreen() {
         styleLabel={item.style ? t(`bonsaiStyle_${item.style}` as TranslationKey) : null}
       />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* F-04 Phase A/B: 「最後の水やりから X 日」+ 過去 12 週ヒートマップ (ADR-0013) */}
+        {/* F-04 + ADR-0020 Phase 3: 「最後の水やりから X 日」+ 水やり履歴画面への導線。
+            ヒートマップ本体は `[id]/watering.tsx` に分離 (SS 222921 整合)。 */}
         <View style={styles.section}>
           <ThemedText type="subtitle">{t('wateringSectionTitle')}</ThemedText>
           <LastWateredText daysSinceLast={daysSinceLastWatering} />
-          <WateringHeatmap
-            events={events}
-            todayLocalKey={toLocalDateKey(nowUtc() as string, getTzOffsetMin())}
-            tzOffsetMin={getTzOffsetMin()}
-            showSummary
-          />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('wateringHistoryLinkTitle')}
+            style={styles.wateringHistoryLink}
+            onPress={() => router.push(`/(tabs)/bonsai/${item.id}/watering` as Href)}
+            testID="e2e_open_watering_history"
+          >
+            <ThemedText style={styles.wateringHistoryLinkText}>
+              {t('wateringHistoryLinkTitle')}
+            </ThemedText>
+            <ThemedText style={styles.wateringHistoryLinkArrow}>{'›'}</ThemedText>
+          </Pressable>
         </View>
 
         {/* 樹種 / 樹形 は BonsaiHero に表示済 (PR #196) のため重複削除。
@@ -569,6 +575,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   archiveText: { color: DANGER, fontSize: 15, fontWeight: '500' },
+  // ADR-0020 Phase 3: 「水やり履歴」リンク (詳細画面 → watering 画面遷移)
+  wateringHistoryLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    borderRadius: 12,
+    minHeight: 48,
+  },
+  wateringHistoryLinkText: { fontSize: 15, fontWeight: '500', color: BRAND_GREEN },
+  wateringHistoryLinkArrow: { fontSize: 20, color: TEXT_SECONDARY },
   photoAddBtn: {
     paddingVertical: 12,
     borderRadius: 12,

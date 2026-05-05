@@ -17,7 +17,8 @@ export default function BonsaiStackLayout() {
         name="new"
         options={{ title: '新規登録', presentation: 'modal', headerShown: true }}
       />
-      <Stack.Screen name="[id]" options={{ title: '盆栽の詳細', headerShown: true }} />
+      <Stack.Screen name="[id]/index" options={{ title: '盆栽の詳細', headerShown: true }} />
+      <Stack.Screen name="[id]/watering" options={{ title: '水やり履歴', headerShown: true }} />
     </Stack>
   );
 }
