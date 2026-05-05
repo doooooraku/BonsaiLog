@@ -345,6 +345,32 @@ const baseEn = {
   // --- ADR-0020 Phase 4: work picker bottom sheet ---
   workPickerTitle: 'Log a task',
 
+  // --- ADR-0020 v1.x-3: work log confirm sheet (detailed form for water/prune/wire) ---
+  workLogTitle: 'Log {type}',
+  workLogNote: 'Note',
+  workLogNotePlaceholder: 'Free note (e.g. morning, plenty)',
+  workLogOptional: 'Optional',
+  workLogSaveCta: 'Save',
+  workLogWaterAmount: 'Amount',
+  workLogWaterAmount_normal: 'Normal',
+  workLogWaterAmount_plenty: 'Plenty',
+  workLogWaterAmount_light: 'Light',
+  workLogPruneParts: 'Pruned parts',
+  workLogPrunePart_eda: 'Branch',
+  workLogPrunePart_ha: 'Leaf',
+  workLogPrunePart_shinme: 'New shoot',
+  workLogPrunePart_ne: 'Root',
+  workLogPruneAmount: 'Amount cut',
+  workLogPruneAmount_few: 'A little',
+  workLogPruneAmount_some: 'Some',
+  workLogPruneAmount_lot: 'A lot',
+  workLogWireGauge: 'Gauge',
+  workLogWireParts: 'Parts',
+  workLogWirePart_miki: 'Trunk',
+  workLogWirePart_eda: 'Branch',
+  workLogWireDuration: 'Target duration',
+  workLogWireDurationHint: 'Used for unwire notification timing',
+
   // --- ADR-0020 v1.x-5: Paywall Claude Design (Hero + FeatureRow table) ---
   paywallHeroEyebrow: 'Unlock',
   paywallHeroTitle: 'One pot, a lifetime.',

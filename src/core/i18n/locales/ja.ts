@@ -347,6 +347,32 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- ADR-0020 Phase 4: 作業記録 BottomSheet ---
   workPickerTitle: '作業を記録',
 
+  // --- ADR-0020 v1.x-3: 作業記録 詳細 form (水やり / 剪定 / 針金がけ) ---
+  workLogTitle: '{type}を記録',
+  workLogNote: 'メモ',
+  workLogNotePlaceholder: '自由メモ (例: 朝8時、たっぷり)',
+  workLogOptional: '任意',
+  workLogSaveCta: '記録する',
+  workLogWaterAmount: '水量',
+  workLogWaterAmount_normal: 'いつも通り',
+  workLogWaterAmount_plenty: 'たっぷり',
+  workLogWaterAmount_light: '軽く',
+  workLogPruneParts: '剪定部位',
+  workLogPrunePart_eda: '枝',
+  workLogPrunePart_ha: '葉',
+  workLogPrunePart_shinme: '新芽',
+  workLogPrunePart_ne: '根',
+  workLogPruneAmount: '切り取った量',
+  workLogPruneAmount_few: '少し',
+  workLogPruneAmount_some: 'まあまあ',
+  workLogPruneAmount_lot: '多め',
+  workLogWireGauge: '番手',
+  workLogWireParts: '巻く部位',
+  workLogWirePart_miki: '幹',
+  workLogWirePart_eda: '枝',
+  workLogWireDuration: '目安期間',
+  workLogWireDurationHint: '外し時期の通知に使用',
+
   // --- ADR-0020 v1.x-5: Paywall Claude Design (Hero + FeatureRow テーブル) ---
   paywallHeroEyebrow: 'Unlock',
   paywallHeroTitle: '鉢1本ずつ、一生分。',
