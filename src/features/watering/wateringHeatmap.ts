@@ -332,3 +332,78 @@ export function getEventsForDay(
   matched.sort((a, b) => (a.occurredAtUtc < b.occurredAtUtc ? -1 : 1));
   return matched;
 }
+
+/**
+ * ADR-0020 Phase 3: SS 222921 整合の水やり履歴サマリー (個別盆栽)。
+ *
+ * 戻り値:
+ * - currentStreakDays: 「連続記録」(直近 N 日連続で水やり記録がある日数、今日が水やり済の場合のみカウント)
+ * - daysWithMultipleRecords: 「2回の日」(window 内で 1 日に 2 回以上水やり記録がある日数)
+ * - recordedDays / totalEvents: window 内の記録日数と総回数
+ *
+ * @param events 個別盆栽の events 配列 (bonsaiId フィルタ済を想定)
+ * @param tzOffsetMin ユーザーローカルの UTC オフセット (分単位)
+ * @param windowDays 集計期間 (例: 30 / 90 / 365)
+ * @param todayLocalKey 今日のローカル日付キー (YYYY-MM-DD)
+ */
+export type IndividualHeatmapSummary = {
+  currentStreakDays: number;
+  daysWithMultipleRecords: number;
+  recordedDays: number;
+  totalEvents: number;
+};
+
+export function buildIndividualSummary(
+  events: readonly Event[],
+  tzOffsetMin: number,
+  windowDays: number,
+  todayLocalKey: string,
+): IndividualHeatmapSummary {
+  const counts = new Map<string, number>();
+  let total = 0;
+  const startMs =
+    Date.UTC(
+      Number(todayLocalKey.slice(0, 4)),
+      Number(todayLocalKey.slice(5, 7)) - 1,
+      Number(todayLocalKey.slice(8, 10)),
+    ) -
+    (windowDays - 1) * 86_400_000;
+  const windowStartKey = new Date(startMs).toISOString().slice(0, 10);
+
+  for (const event of events) {
+    if (event.type !== 'watering') continue;
+    if (event.status !== 'logged') continue;
+    if (event.deletedAt != null) continue;
+    const key = toLocalDateKey(event.occurredAtUtc, tzOffsetMin);
+    if (key < windowStartKey || key > todayLocalKey) continue;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+    total += 1;
+  }
+
+  const recordedDays = counts.size;
+  let daysWithMultipleRecords = 0;
+  for (const c of counts.values()) {
+    if (c >= 2) daysWithMultipleRecords += 1;
+  }
+
+  // currentStreakDays: 今日から遡って連続で記録がある日数
+  let streak = 0;
+  let cursorKey = todayLocalKey;
+  while (counts.has(cursorKey)) {
+    streak += 1;
+    const cursorMs =
+      Date.UTC(
+        Number(cursorKey.slice(0, 4)),
+        Number(cursorKey.slice(5, 7)) - 1,
+        Number(cursorKey.slice(8, 10)),
+      ) - 86_400_000;
+    cursorKey = new Date(cursorMs).toISOString().slice(0, 10);
+  }
+
+  return {
+    currentStreakDays: streak,
+    daysWithMultipleRecords,
+    recordedDays,
+    totalEvents: total,
+  };
+}

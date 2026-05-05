@@ -439,5 +439,19 @@ const ko: Partial<Record<TranslationKey, string>> = {
   elapsedWeeks: '{weeks}w',
   elapsedMonths: '{months}mo',
   elapsedYears: '{years}y',
+  // --- ADR-0020 Phase 3: bonsai detail watering history (English fallback, SS 222921) ---
+  wateringHistoryLinkTitle: 'View watering history',
+  wateringRange30: '30 days',
+  wateringRange90: '90 days',
+  wateringRange365: '365 days',
+  wateringLastFromLabel: 'Time since last watering',
+  wateringSummaryStreak: 'Current streak',
+  wateringSummaryRecorded30: 'Last 30 days',
+  wateringSummaryRecorded90: 'Last 90 days',
+  wateringSummaryRecorded365: 'Last 365 days',
+  wateringSummaryRecordedValue: '{days}d / {events} times',
+  wateringSummaryDoubleDays: 'Twice-a-day',
+  wateringDisclaimerNoJudgement: 'This is a record display. We do not judge watering.',
+  wateringDisclaimerHeatmapMeaning: 'Shading shows record count (light: 0, mid: 1, dark: 2+).',
 };
 export default ko;

@@ -344,6 +344,21 @@ const ja: Partial<Record<TranslationKey, string>> = {
   elapsedMonths: '{months}ヶ月',
   elapsedYears: '{years}年',
 
+  // --- ADR-0020 Phase 3: 盆栽詳細 水やり履歴画面 (SS 222921 整合) ---
+  wateringHistoryLinkTitle: '水やり履歴を見る',
+  wateringRange30: '30日',
+  wateringRange90: '90日',
+  wateringRange365: '365日',
+  wateringLastFromLabel: '最後の水やりから',
+  wateringSummaryStreak: '連続記録',
+  wateringSummaryRecorded30: '過去30日',
+  wateringSummaryRecorded90: '過去90日',
+  wateringSummaryRecorded365: '過去365日',
+  wateringSummaryRecordedValue: '{days}日 / {events}回',
+  wateringSummaryDoubleDays: '2回の日',
+  wateringDisclaimerNoJudgement: '※ これは記録の表示です。水やりの判定はしません。',
+  wateringDisclaimerHeatmapMeaning: '濃淡は記録回数 (薄: 0回 / 中: 1回 / 濃: 2回)。',
+
   // --- F-04 stats tab + aggregate K2 legend (Phase G-2, Issue #29, ADR-0013) ---
   statsTabTitle: '統計',
   statsHeaderAllBonsai: 'すべての盆栽 ({count}本)',
