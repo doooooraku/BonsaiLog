@@ -386,6 +386,11 @@ const baseEn = {
   wiringUnwireInDays: 'Unwire in {days} day(s)',
   wiringUnwireOverdue: 'Unwire {days} day(s) overdue',
 
+  // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs ---
+  detailTabTimeline: 'Timeline',
+  detailTabHistory: 'History',
+  detailTabPhotos: 'Photos',
+
   // --- ADR-0020 Phase 3: bonsai detail watering history (SS 222921) ---
   wateringHistoryLinkTitle: 'View watering history',
   wateringRange30: '30 days',

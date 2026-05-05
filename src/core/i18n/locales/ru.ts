@@ -493,5 +493,9 @@ const ru: Partial<Record<TranslationKey, string>> = {
   wiringOverdueBadge: 'Check',
   wiringUnwireInDays: 'Unwire in {days} day(s)',
   wiringUnwireOverdue: 'Unwire {days} day(s) overdue',
+  // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs (English fallback) ---
+  detailTabTimeline: 'Timeline',
+  detailTabHistory: 'History',
+  detailTabPhotos: 'Photos',
 };
 export default ru;

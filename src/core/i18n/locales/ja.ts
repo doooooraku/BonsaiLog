@@ -388,6 +388,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wiringUnwireInDays: '外し予定まで{days}日',
   wiringUnwireOverdue: '外し時期を{days}日超過',
 
+  // --- ADR-0020 v1.x-2: 盆栽詳細 Hero + 3 Tabs ---
+  detailTabTimeline: 'タイムライン',
+  detailTabHistory: '作業履歴',
+  detailTabPhotos: '写真',
+
   // --- ADR-0020 Phase 3: 盆栽詳細 水やり履歴画面 (SS 222921 整合) ---
   wateringHistoryLinkTitle: '水やり履歴を見る',
   wateringRange30: '30日',
