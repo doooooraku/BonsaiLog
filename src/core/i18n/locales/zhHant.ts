@@ -421,5 +421,15 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   tabFind: 'Find',
   tabSettings: 'Settings',
   tabPlanComingSoon: 'Coming soon',
+  // --- ADR-0020 Phase 2: bonsai tab Claude Design HomeScreen (English fallback) ---
+  bonsaiBookTitle: 'BonsaiLog',
+  homeFilterAll: 'All',
+  homeCardLastWatering: 'Watered {elapsed} ago',
+  homeCardLastPruning: 'Pruned {elapsed} ago',
+  elapsedToday: 'today',
+  elapsedDays: '{days}d',
+  elapsedWeeks: '{weeks}w',
+  elapsedMonths: '{months}mo',
+  elapsedYears: '{years}y',
 };
 export default zhHant;

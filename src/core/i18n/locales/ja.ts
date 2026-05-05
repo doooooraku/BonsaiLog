@@ -333,6 +333,17 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tabSettings: '設定',
   tabPlanComingSoon: '準備中',
 
+  // --- ADR-0020 Phase 2: 盆栽タブ Claude Design HomeScreen 整合 ---
+  bonsaiBookTitle: '盆栽手帳',
+  homeFilterAll: 'すべて',
+  homeCardLastWatering: '最後の水やりから{elapsed}',
+  homeCardLastPruning: '最後の剪定から{elapsed}',
+  elapsedToday: '今日',
+  elapsedDays: '{days}日',
+  elapsedWeeks: '{weeks}週間',
+  elapsedMonths: '{months}ヶ月',
+  elapsedYears: '{years}年',
+
   // --- F-04 stats tab + aggregate K2 legend (Phase G-2, Issue #29, ADR-0013) ---
   statsTabTitle: '統計',
   statsHeaderAllBonsai: 'すべての盆栽 ({count}本)',
