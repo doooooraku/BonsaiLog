@@ -423,5 +423,11 @@ const pt: Partial<Record<TranslationKey, string>> = {
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
   outdoorModeToggleA11y: 'Toggle outdoor mode',
+  // --- ADR-0020 Phase 1: 4-tab labels (English fallback for i18n.test.ts) ---
+  tabBonsai: 'Bonsai',
+  tabPlan: 'Plan',
+  tabFind: 'Find',
+  tabSettings: 'Settings',
+  tabPlanComingSoon: 'Coming soon',
 };
 export default pt;

@@ -324,7 +324,15 @@ const baseEn = {
   wateringHeatmapDetailTitle: '{date}',
   wateringHeatmapDetailCount: 'Watered {count} time(s)',
 
+  // --- ADR-0020 Phase 1: 4-tab labels (盆栽 / 予定 / 探す / 設定) ---
+  tabBonsai: 'Bonsai',
+  tabPlan: 'Plan',
+  tabFind: 'Find',
+  tabSettings: 'Settings',
+  tabPlanComingSoon: 'Coming soon',
+
   // --- F-04 stats tab + aggregate K2 legend (Phase G-2, Issue #29, ADR-0013) ---
+  // Note: statsTabTitle / aggregate keys retained for back-compat during Phase 3 migration.
   statsTabTitle: 'Stats',
   statsHeaderAllBonsai: 'All bonsai ({count})',
   wateringHeatmapLegendLabelAggregate: 'Bonsai watered (last 12 weeks)',
