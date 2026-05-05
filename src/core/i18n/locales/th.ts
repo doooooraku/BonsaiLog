@@ -482,5 +482,15 @@ const th: Partial<Record<TranslationKey, string>> = {
   paywallFeatureNoAds: 'Ads',
   paywallFeatureNoAdsFreeValue: 'Shown',
   paywallFeatureNoAdsProValue: 'None',
+  // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
+  planWiringListLink: 'Wiring list',
+  wiringTabAll: 'All',
+  wiringTabActive: 'Active',
+  wiringTabSoon: 'Within a week',
+  wiringListEmpty: 'No active wiring records.',
+  wiringRowWeeks: '{weeks} week(s)',
+  wiringOverdueBadge: 'Check',
+  wiringUnwireInDays: 'Unwire in {days} day(s)',
+  wiringUnwireOverdue: 'Unwire {days} day(s) overdue',
 };
 export default th;
