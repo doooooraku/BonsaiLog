@@ -14,19 +14,17 @@
 import type { OnboardingStep } from '@/src/stores/onboardingStore';
 
 /**
- * オンボステップの順序定義 (ADR-0018 §画面構成 8 画面 = Splash + Welcome + Language + Step 1-5)。
+ * オンボステップの順序定義 (ADR-0020 v1.x-1 改訂、6 画面 = Splash + Welcome + Language + tut5 + tut1 + tut2)。
  *
- * Splash は Expo SplashScreen 連携で本フロー外。
- * 配列 index 順に進む。
+ * Splash は Expo SplashScreen 連携で本フロー外 (= 1 画面分相当、画面数カウントに含む)。
+ * 配列 index 順に進む。tut3 / tut4 は ADR-0020 で廃止。
  */
 export const ONBOARDING_STEP_ORDER: readonly OnboardingStep[] = [
   'welcome',
   'language',
-  'tut1',
-  'tut2',
-  'tut3',
-  'tut4',
-  'tut5',
+  'tut5', // Notification (Claude Design Notification 画面)
+  'tut1', // 機能 1: 盆栽追加
+  'tut2', // 機能 2: 作業記録
 ] as const;
 
 /**
@@ -104,7 +102,7 @@ export function getOnboardingProgress(
  * - 全 tut1-5 完了で 1
  */
 export function getTutorialProgress(dismissed: Partial<Record<OnboardingStep, boolean>>): number {
-  const tut: OnboardingStep[] = ['tut1', 'tut2', 'tut3', 'tut4', 'tut5'];
+  const tut: OnboardingStep[] = ['tut1', 'tut2', 'tut5'];
   const done = tut.filter((s) => dismissed[s] === true).length;
   return done / tut.length;
 }
