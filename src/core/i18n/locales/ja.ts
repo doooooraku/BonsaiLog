@@ -326,6 +326,13 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringHeatmapDetailTitle: '{date}',
   wateringHeatmapDetailCount: '水やり {count} 回',
 
+  // --- ADR-0020 Phase 1: 4-tab labels (盆栽 / 予定 / 探す / 設定) ---
+  tabBonsai: '盆栽',
+  tabPlan: '予定',
+  tabFind: '探す',
+  tabSettings: '設定',
+  tabPlanComingSoon: '準備中',
+
   // --- F-04 stats tab + aggregate K2 legend (Phase G-2, Issue #29, ADR-0013) ---
   statsTabTitle: '統計',
   statsHeaderAllBonsai: 'すべての盆栽 ({count}本)',
