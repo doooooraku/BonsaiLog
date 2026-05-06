@@ -2,27 +2,30 @@
  * 共通 Header (Claude Design `home-screens.jsx HomeHeader` 整合)。
  *
  * - 左: タイトル「盆栽手帳」(NotoSerifJP 22pt、または任意のタイトル)
- * - 右: 検索ボタン (44×44) + 屋外モードトグル (44×44) + 任意で追加ボタン
+ * - 右: 検索ボタン (44×44) + 設定タブ遷移ボタン (Cog 44×44)
  * - 高さ 56、border-bottom 1px
  * - 各タブのヘッダーで利用 (盆栽 / 予定 / 探す / 設定)
+ *
+ * Issue #255 (ADR-0021 PoC follow-up): Header 右上を Claude Design 整合の
+ * Cog (設定タブ遷移) に置換。屋外モード切替は設定タブの Switch UI に集約 (移設済)。
+ * OutdoorToggleButton (src/features/theme/) は他画面 (tags / export 系) で引き続き使用。
  */
 import { useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { SearchIcon } from '@/src/components/icons';
+import { CogIcon, SearchIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { ACCENT_GOLD, BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
+import { BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
-import { useSettingsStore } from '@/src/stores/settingsStore';
 
 type Props = {
   title: string;
   /** 検索ボタンを表示するか (default true、検索タブ自身では false 推奨) */
   showSearch?: boolean;
-  /** 屋外モードトグルを表示するか (default true) */
-  showOutdoor?: boolean;
+  /** 設定タブ遷移ボタン (Cog) を表示するか (default true、設定タブ自身では false) */
+  showSettings?: boolean;
   /** 検索ボタン押下時の遷移先 (default '/search') */
   searchHref?: Href;
   style?: ViewStyle;
@@ -32,7 +35,7 @@ type Props = {
 export function SearchHeader({
   title,
   showSearch = true,
-  showOutdoor = true,
+  showSettings = true,
   searchHref = '/search' as Href,
   style,
   testIdSuffix = 'header',
@@ -40,8 +43,6 @@ export function SearchHeader({
   const { t } = useTranslation();
   const router = useRouter();
   const c = useColors();
-  const outdoorMode = useSettingsStore((s) => s.outdoorMode);
-  const setOutdoorMode = useSettingsStore((s) => s.setOutdoorMode);
 
   return (
     <View
@@ -71,17 +72,16 @@ export function SearchHeader({
             <SearchIcon size={24} color={c.text} />
           </Pressable>
         )}
-        {showOutdoor && (
+        {showSettings && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('outdoorModeToggleA11y')}
-            accessibilityState={{ selected: outdoorMode }}
-            testID={`e2e_${testIdSuffix}_outdoor_toggle`}
-            style={[styles.iconBtn, outdoorMode && styles.iconBtnActive]}
+            accessibilityLabel={t('tabSettings')}
+            testID={`e2e_${testIdSuffix}_settings`}
+            style={styles.iconBtn}
             hitSlop={8}
-            onPress={() => setOutdoorMode(!outdoorMode)}
+            onPress={() => router.push('/(tabs)/settings' as Href)}
           >
-            <ThemedText style={styles.outdoorIcon}>{outdoorMode ? '🌞' : '☀️'}</ThemedText>
+            <CogIcon size={24} color={c.text} />
           </Pressable>
         )}
       </View>
@@ -114,6 +114,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 22,
   },
-  iconBtnActive: { backgroundColor: ACCENT_GOLD },
-  outdoorIcon: { fontSize: 20, lineHeight: 24 },
 });
