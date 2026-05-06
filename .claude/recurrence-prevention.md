@@ -168,6 +168,12 @@
 - **根拠**: 2026-05-03 セッションで `events_fts` の `tokenize="trigram"` (実コード) と ADR-0008 §4.3.4 の `tokenize='trigram remove_diacritics 1' detail=column` (仕様) の乖離を発見。F-09 検索 Phase H まで進んでいたが drift は気付かれず、構造的検出機構が無かった。
 - **自動化候補**: ADR の Decision セクションから「具体的な hex / SQL / バージョン文字列」を抽出して、対応するコード/設定ファイルに対して grep する CI スクリプト (将来検討、現状は人間レビューで対応)。
 
+### R-27. Issue 起票前に既存実装を Explore で確認
+
+- **ルール**: 機能 Issue (`gh issue create`) を起票する**前**に、当該機能名で Explore agent または `grep` で既存実装の有無を確認し、結果を Issue 本文の「既存実装の確認」セクションに必ず貼る。「コンポーネント / DAO / store / hook の有無」「TODO コメントの有無」「Issue スコープ (新規 / 拡張 / バグ修正 / データ問題)」を 4 区分で記載。
+- **根拠**: 2026-05-06 セッションで Issue #253 #254 を起票した際、`HomeFilterTabs` (フィルタロジックの TODO のみ) と `BonsaiCard` (実装済み) を見落とし、後で Explore して「実は実装済み」と判明 → #254 close、#253 のスコープを「新規 UI 追加」から「フィルタロジック実装」に修正する手戻りが発生した。同様の事例が 2 回 (#253 / #254 で同時に発生)。
+- **自動化**: `.github/ISSUE_TEMPLATE/feature_request.yml` の `existing_implementation_check` セクションを `required: true` で構造的強制。さらに `report.ts` (UI diff レポート) のテンプレに「データ問題 vs 実装問題の判別フロー」を組み込み (ADR-0021 §Acceptance、本セッション PR で実装)。
+
 ### R-26. 外部 Design 部分採用判定時のブランド統一感評価 + 画面マップ必須化
 
 - **ルール**: Claude Design / Figma / Wireframe 等の外部 Design を **部分採用 / 全面採用** 判定する議論で、`/discuss` Skill に **「ブランド統一感」軸** を 4 ペルソナと同列の独立評価軸として必須化。さらに ADR Notes に **「Design 画面 → 実装画面 マップ表」** を必ず記載 (採用しない画面も「不採用」と明記)。

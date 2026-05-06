@@ -37,6 +37,16 @@ fi
 
 mkdir -p "$OUT_DIR/app"
 
+# 0.5 アプリ状態リセット (本セッション学び A12)
+#    再 PoC 時に SQLite native call と RN navigator 初期化が race して
+#    "Uncaught Error: Call to function..." + Empty 状態に落ちることがあるため、
+#    Maestro flow 起動前に必ず force-stop してクリーンな起動を保証する。
+#    詳細: docs/reference/tasks/lessons/wsl2-mobile.md §6
+APP_PACKAGE="${APP_PACKAGE:-com.doooooraku.bonsailog}"
+echo "[capture-app] adb shell am force-stop $APP_PACKAGE"
+"$ADB" shell am force-stop "$APP_PACKAGE" 2>/dev/null || true
+sleep 1
+
 # 1. Maestro flow で画面遷移 (このあと画面はそのまま残る)
 echo "[capture-app] running maestro flow: $FLOW"
 "$MAESTRO" test "$FLOW"

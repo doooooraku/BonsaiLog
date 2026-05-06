@@ -102,9 +102,40 @@ body:
       label: 'スコープ（やる範囲 / REQUIRED）'
       placeholder: |
         やること：
-        - 
+        -
         やらないこと：
         -
+    validations:
+      required: true
+
+  - type: textarea
+    id: existing_implementation_check
+    attributes:
+      label: '既存実装の確認（Existing Implementation Check / REQUIRED, R-27）'
+      description: |
+        機能を起票する前に、既存実装の有無を必ず確認してください (R-27)。
+        過去事例: 2026-05-06 セッションで #253 (HomeFilterTabs)、#254 (BonsaiCard) が「実は実装済み」と起票後に判明 → スコープ修正 / クローズの手戻りが発生。
+      placeholder: |
+        ## Explore 確認結果
+
+        ### 1. 機能名でファイル検索
+        ```bash
+        grep -rn "<キーワード>" src/ app/
+        find src/ -iname "*<keyword>*"
+        ```
+        結果: (例: src/features/foo/FooComponent.tsx あり / なし)
+
+        ### 2. 既存コンポーネント / DAO / store の有無
+        - コンポーネント: <あり/なし、ファイルパス:行>
+        - DAO / Repository: <あり/なし、ファイルパス:行>
+        - store / hook: <あり/なし、ファイルパス:行>
+        - TODO / FIXME コメント: <あり/なし、内容>
+
+        ### 3. 本 Issue のスコープ (1 つだけチェック)
+        - [ ] 新規実装 (既存ゼロから)
+        - [ ] 既存拡張 (UI は実装済み、ロジック等の追加実装)
+        - [ ] バグ修正 (既存実装の不具合)
+        - [ ] データ問題 (実装は OK、データ補強のみ → Issue 起票せず別途対応推奨)
     validations:
       required: true
 
