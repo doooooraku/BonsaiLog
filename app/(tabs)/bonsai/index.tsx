@@ -113,8 +113,11 @@ export default function BonsaiHomeScreen() {
     try {
       const tzOffsetMin = getTzOffsetMin();
       const todayLocalKey = toLocalDateKey(nowUtc() as string, tzOffsetMin);
+      // Issue #253: selectedFilter が tag id のとき、bonsaiRepository の M:N フィルタに渡す。
+      // ALL_FILTER_ID のときは全件取得 (options 未指定)。
+      const tagIds = selectedFilter === ALL_FILTER_ID ? undefined : [selectedFilter];
       const [bonsai, recentTags] = await Promise.all([
-        getAllActiveBonsaiWithSpecies(lang),
+        getAllActiveBonsaiWithSpecies(lang, tagIds ? { tagIds } : undefined),
         getRecentTags(8),
       ]);
       setTags(recentTags);
@@ -125,7 +128,7 @@ export default function BonsaiHomeScreen() {
     } finally {
       setLoading(false);
     }
-  }, [lang, t]);
+  }, [lang, t, selectedFilter]);
 
   useFocusEffect(
     useCallback(() => {
@@ -141,8 +144,8 @@ export default function BonsaiHomeScreen() {
     [tags, t],
   );
 
-  // 簡易: 「すべて」以外の chip は v1.x で events_tags の bonsaiId 集合フィルタを実装予定。
-  // Phase 2 では UI のみ提供し、選択は表示のみ。
+  // Issue #253: フィルタは bonsaiRepository.getAllActiveBonsaiWithSpecies(lang, { tagIds })
+  // で SQL 側に委譲済 (M:N JOIN + AND セマンティクス)。クライアント側の追加フィルタは不要。
   const visibleItems = items;
 
   if (loading) {

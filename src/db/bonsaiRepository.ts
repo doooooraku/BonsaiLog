@@ -108,11 +108,37 @@ export async function getBonsaiWithSpecies(
 
 /**
  * 全盆栽 (アクティブのみ) を取得、updated_at 降順。
+ *
+ * Issue #253 (ADR-0021 PoC follow-up): tagIds オプションで M:N フィルタを実現。
+ * - tagIds 未指定 / 空配列 → 既存通り全 active 盆栽
+ * - tagIds 指定あり → bonsai → events → event_tags JOIN で「全 tagIds を持つ events を持つ bonsai」
+ *   を AND セマンティクスで返す (eventRepository.searchEventsByTags と同パターン)
  */
-export async function getAllActiveBonsai(): Promise<Bonsai[]> {
+export async function getAllActiveBonsai(options?: {
+  tagIds?: readonly string[];
+}): Promise<Bonsai[]> {
   const db = await getDb();
+  const tagIds = options?.tagIds;
+
+  if (!tagIds || tagIds.length === 0) {
+    return db.getAllAsync<Bonsai>(
+      'SELECT * FROM bonsai WHERE archived_at IS NULL ORDER BY updated_at DESC;',
+    );
+  }
+
+  // M:N filter: 全 tagIds を持つ events を持つ bonsai のみ
+  const placeholders = tagIds.map(() => '?').join(',');
   return db.getAllAsync<Bonsai>(
-    'SELECT * FROM bonsai WHERE archived_at IS NULL ORDER BY updated_at DESC;',
+    `SELECT b.* FROM bonsai b
+     INNER JOIN events e ON e.bonsai_id = b.id
+     INNER JOIN event_tags et ON et.event_id = e.id
+     WHERE b.archived_at IS NULL
+           AND e.deleted_at IS NULL
+           AND et.tag_id IN (${placeholders})
+     GROUP BY b.id
+     HAVING COUNT(DISTINCT et.tag_id) = ?
+     ORDER BY b.updated_at DESC;`,
+    [...tagIds, tagIds.length],
   );
 }
 
@@ -128,9 +154,14 @@ export async function getAllArchivedBonsai(): Promise<Bonsai[]> {
 
 /**
  * 全盆栽を樹種付きで取得 (一覧画面用、アクティブのみ)。
+ *
+ * Issue #253: getAllActiveBonsai() の tagIds オプションをそのまま委譲して M:N フィルタ可能。
  */
-export async function getAllActiveBonsaiWithSpecies(locale: string): Promise<BonsaiWithSpecies[]> {
-  const bonsai = await getAllActiveBonsai();
+export async function getAllActiveBonsaiWithSpecies(
+  locale: string,
+  options?: { tagIds?: readonly string[] },
+): Promise<BonsaiWithSpecies[]> {
+  const bonsai = await getAllActiveBonsai(options);
   const results: BonsaiWithSpecies[] = [];
   for (const b of bonsai) {
     const species = b.speciesId ? await getSpeciesById(b.speciesId, locale) : null;
