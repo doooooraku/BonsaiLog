@@ -11,6 +11,7 @@
  *
  * Phase 9 で AdBanner を本ファイル末尾に配置予定 (本 PR では未配置)。
  */
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
@@ -33,6 +34,11 @@ import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 
 const ALL_FILTER_ID = 'ALL';
+
+// Issue #256: AdBanner の概算高さ (INLINE_ADAPTIVE_BANNER + maxHeight=90、Repolog 同等)。
+// Free user 表示時の FAB / FlatList paddingBottom 計算に使用。Pro user 時は AdBanner 非表示
+// で実態より少し大きい値だが、画面下部の余白として許容。
+const AD_BANNER_HEIGHT_APPROX = 60;
 
 /**
  * 経過日数を「3日」「2週間」「5ヶ月」など短い文字列にフォーマット。
@@ -103,6 +109,9 @@ export default function BonsaiHomeScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
   const c = useColors();
+  // Issue #256: TabBar 高さ (safe-area inset.bottom 込み) を取得して FAB / FlatList の
+  // bottom 計算に使用。これがないと FAB が TabBar / AdBanner の下に隠れる。
+  const tabBarHeight = useBottomTabBarHeight();
   const [items, setItems] = useState<BonsaiCardData[]>([]);
   const [tags, setTags] = useState<TagRecord[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<string>(ALL_FILTER_ID);
@@ -211,7 +220,11 @@ export default function BonsaiHomeScreen() {
       <FlatList
         data={visibleItems}
         keyExtractor={(it) => it.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          // Issue #256: TabBar + AdBanner 分の bottom padding を確保
+          { paddingBottom: tabBarHeight + AD_BANNER_HEIGHT_APPROX + 32 },
+        ]}
         renderItem={({ item }) => (
           <BonsaiCard
             data={item}
@@ -223,7 +236,14 @@ export default function BonsaiHomeScreen() {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('bonsaiCreateNew')}
-        style={[styles.fab, { backgroundColor: c.tint }]}
+        style={[
+          styles.fab,
+          {
+            backgroundColor: c.tint,
+            // Issue #256: TabBar + AdBanner の上に FAB を配置 (元は bottom:24 で隠れていた)
+            bottom: tabBarHeight + AD_BANNER_HEIGHT_APPROX + 16,
+          },
+        ]}
         onPress={() => router.push('/(tabs)/bonsai/new' as Href)}
         testID="e2e_home_fab_create"
       >
@@ -264,11 +284,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptyCtaText: { fontSize: 17, fontWeight: '500', letterSpacing: 0.5 },
-  listContent: { paddingTop: 12, paddingBottom: 96 },
+  // Issue #256: paddingBottom は実行時に tabBarHeight + AdBanner 分加算 (inline style)
+  listContent: { paddingTop: 12 },
   fab: {
     position: 'absolute',
     right: 16,
-    bottom: 24,
+    // Issue #256: bottom は実行時に tabBarHeight + AdBanner 分加算 (inline style)
     width: 56,
     height: 56,
     borderRadius: 28,
