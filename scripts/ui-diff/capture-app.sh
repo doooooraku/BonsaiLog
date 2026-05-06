@@ -12,6 +12,18 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 FLOW="$ROOT/maestro/flows/ui-diff/${SCREEN_ID}.yml"
 MAESTRO="${MAESTRO_BIN:-/home/doooo/.maestro/bin/maestro}"
 ADB="${ADB_BIN:-/usr/local/bin/adb}"
+PREFLIGHT="$ROOT/scripts/ui-diff/preflight.mjs"
+
+# 0. 環境チェック (preflight)
+#    Node v22 / adb authorized / Expo Go 衝突 / Metro reachable / Playwright + chromium /
+#    ImageMagick / ClaudeDesign 正本 の 7 項目を一括検証する。
+#    詳細は scripts/ui-diff/preflight.mjs と docs/reference/tasks/lessons/wsl2-mobile.md を参照。
+if [ -f "$PREFLIGHT" ]; then
+  if ! node "$PREFLIGHT"; then
+    echo "[capture-app] preflight failed — 上の hint に従って対処してから再実行" >&2
+    exit 1
+  fi
+fi
 
 if [ ! -f "$FLOW" ]; then
   echo "[capture-app] ERROR: maestro flow not found: $FLOW" >&2
@@ -23,19 +35,7 @@ if [ ! -x "$MAESTRO" ]; then
   exit 1
 fi
 
-if [ ! -x "$ADB" ]; then
-  echo "[capture-app] ERROR: adb not found: $ADB" >&2
-  exit 1
-fi
-
 mkdir -p "$OUT_DIR/app"
-
-# 接続確認 (authorized device が 1 台以上)
-# WSL2 の adb ラッパーは Windows 改行 (CR/LF) を返すため、tr -d '\r' で CR を削ってから awk に渡す。
-if ! "$ADB" devices | tr -d '\r' | awk 'NR>1 && $2=="device" {found=1} END {exit !found}'; then
-  echo "[capture-app] ERROR: no authorized adb device. run '$ADB devices' to confirm." >&2
-  exit 1
-fi
 
 # 1. Maestro flow で画面遷移 (このあと画面はそのまま残る)
 echo "[capture-app] running maestro flow: $FLOW"
