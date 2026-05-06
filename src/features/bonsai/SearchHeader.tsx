@@ -13,6 +13,7 @@
 import { useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { CogIcon, SearchIcon } from '@/src/components/icons';
@@ -43,12 +44,20 @@ export function SearchHeader({
   const { t } = useTranslation();
   const router = useRouter();
   const c = useColors();
+  // Issue #259: status bar / notch と被らないよう safe-area top inset を吸収
+  // (app/_layout.tsx で headerShown:false のため、各タブのコンテンツ側で吸収する必要あり)
+  const insets = useSafeAreaInsets();
 
   return (
     <View
       style={[
         styles.container,
-        { backgroundColor: c.background, borderBottomColor: c.border },
+        {
+          backgroundColor: c.background,
+          borderBottomColor: c.border,
+          paddingTop: insets.top,
+          height: HEADER_BASE_HEIGHT + insets.top,
+        },
         style,
       ]}
     >
@@ -89,9 +98,11 @@ export function SearchHeader({
   );
 }
 
+// Issue #259: 基本高さ 56 + safe-area top inset を実行時に加算 (component 内 inline)
+const HEADER_BASE_HEIGHT = 56;
+
 const styles = StyleSheet.create({
   container: {
-    height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
