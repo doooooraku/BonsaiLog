@@ -57,3 +57,6 @@ app-example
 
 # Store screenshots output
 screenshots/
+
+# UI diff output (ADR-0021)
+scripts/ui-diff/out/

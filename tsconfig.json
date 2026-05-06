@@ -7,5 +7,5 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
-  "exclude": ["scripts/store-screenshots/**"]
+  "exclude": ["scripts/store-screenshots/**", "scripts/ui-diff/**"]
 }
