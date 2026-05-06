@@ -7,14 +7,15 @@
 
 ## 領域別ファイル
 
-| ファイル                                     | 内容                                            | 想定読者                 |
-| -------------------------------------------- | ----------------------------------------------- | ------------------------ |
-| [`lessons/docs.md`](./lessons/docs.md)       | ドキュメント管理 / 棚卸 / 索引更新 / 参照整合性 | docs 編集時              |
-| [`lessons/db.md`](./lessons/db.md)           | SQLite マイグレ / Drizzle / バックアップ / i18n | DB / i18n 実装時         |
-| [`lessons/build.md`](./lessons/build.md)     | EAS local build / 環境変数 / 画像相対パス / CI  | ビルド・CI 作業時        |
-| [`lessons/runtime.md`](./lessons/runtime.md) | デバッグ / Android / 開発環境 PATH              | デバッグ・Android 実装時 |
-| [`lessons/store.md`](./lessons/store.md)     | ストア申請 / メタデータ / UX 文言               | リリース作業時           |
-| [`lessons/billing.md`](./lessons/billing.md) | RevenueCat / Champion 方式 / ペルソナ再評価     | 課金実装時               |
+| ファイル                                             | 内容                                                                                                  | 想定読者                     |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------- |
+| [`lessons/docs.md`](./lessons/docs.md)               | ドキュメント管理 / 棚卸 / 索引更新 / 参照整合性                                                       | docs 編集時                  |
+| [`lessons/db.md`](./lessons/db.md)                   | SQLite マイグレ / Drizzle / バックアップ / i18n                                                       | DB / i18n 実装時             |
+| [`lessons/build.md`](./lessons/build.md)             | EAS local build / 環境変数 / 画像相対パス / CI                                                        | ビルド・CI 作業時            |
+| [`lessons/runtime.md`](./lessons/runtime.md)         | デバッグ / Android / 開発環境 PATH                                                                    | デバッグ・Android 実装時     |
+| [`lessons/store.md`](./lessons/store.md)             | ストア申請 / メタデータ / UX 文言                                                                     | リリース作業時               |
+| [`lessons/billing.md`](./lessons/billing.md)         | RevenueCat / Champion 方式 / ペルソナ再評価                                                           | 課金実装時                   |
+| [`lessons/wsl2-mobile.md`](./lessons/wsl2-mobile.md) | WSL2 + adb / Maestro 2.0 / Expo Go 衝突 / pgrep -f 自分マッチ → preflight.mjs で構造的検出 (ADR-0021) | UI 差分検出 / Maestro 実装時 |
 
 ## 運用ルール
 
