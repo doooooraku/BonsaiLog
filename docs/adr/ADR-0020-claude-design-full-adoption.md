@@ -255,3 +255,13 @@
 | 12    | release-check + verify + 4 ペルソナ最終評価                           | 1     |
 
 合計 19〜22 PR、約 8〜10 セッション (連続稼働モード)。
+
+### Notes Amended (2026-05-08)
+
+#### UI 表現は OpenDesign / 本 ADR は v1.0 整合点
+
+- 2026-05-07 議論 (R-16 改訂 / R-28 新設) により、本 ADR は **v1.0 リリース時点の UI 整合点として保全**、以後の UI 進化は **OpenDesign (`~/04_app-factory/open-design`) 出力が最新 SoT**
+- 画面マッピング表 (本 ADR §Notes §画面マップ) は OpenDesign 出力を反映して継続更新 (軽量 PR で運用、R-17 4 段階は適用しない)
+- ビジネス仕様 (RevenueCat 課金 / AdMob / Privacy / 記録のみ哲学) は本 ADR / ADR-0009 / ADR-0010 / ADR-0011 / ADR-0017 が **絶対上位**、OpenDesign 出力が矛盾しても採用しない (R-28 判定フロー)
+- OpenDesign 出力の採用版は `docs/mockups/v1.0/<screen>/index.html` にコピー保管 (BonsaiLog 完結性、git 管理)
+- 関連: R-16 改訂 / R-28 新設 (PR #266) / ADR-0021 Notes Amended (PR 3 で実施)
