@@ -227,3 +227,17 @@ cat scripts/ui-diff/out/<timestamp>/report.md
 - **これは初期版**。ADR-0020 が「Claude Design 全面採用」の意思決定だったのに対し、本 ADR-0021 は「その採用が正しく実装できているかをセルフチェックする仕組み」の意思決定。
 - 内容は実装が進むに従って変える。固定化しない。
 - 大きな方針変更が起きたら ADR-0021 を Status: Superseded by ADR-XXXX に変更し、別 ADR を起票する (ADR-0019 → 0020 と同じ作法)。
+
+### Notes Amended (2026-05-08)
+
+#### OpenDesign 出力を視覚比較入力に切替可能化
+
+- 2026-05-07 議論 (R-16 改訂 / R-28 新設 / ADR-0020 Notes Amended) により、視覚比較パイプラインの入力 (デザイン側) を以下から選択可能とする:
+  - **(a) ClaudeDesign 正本** (`C:\Users\doooo\Downloads\BonsaiLog_template\` = 既存) — v1.0 整合点の保全
+  - **(b) OpenDesign 採用版** (`docs/mockups/v1.0/<screen>/index.html` = 新規) — UI 進化追従
+- `scripts/ui-diff/config.ts` の `DESIGN_ROOT` を環境変数 `BONSAI_DESIGN_SOURCE=claudedesign|opendesign` で切替可能化 (将来実装、本 ADR 範囲外)
+- `docs/mockups/v1.0/` 運用:
+  - OpenDesign で生成した HTML を採用判定後にコピー保管 (`~/04_app-factory/open-design/.od/artifacts/<ts>/index.html` → `docs/mockups/v1.0/<screen>/index.html`)
+  - README で「v1.0 採用版の凍結保管」「以後の差分は git log で追跡」を明記
+  - 画面ごとに 1 ディレクトリ (`bonsai-detail/` / `paywall/` 等)
+- 関連: R-16 改訂 / R-28 新設 (PR #266) / ADR-0020 Notes Amended (PR #267) / `docs/mockups/v1.0/README.md` (本 PR で新規)
