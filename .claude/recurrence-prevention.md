@@ -104,11 +104,14 @@
 - **根拠**: F-15 議論完了後に `mem_save` が 13 分 49 秒スタック、「権限拒否」と誤認した事例あり。
 - **自動化**: `ScheduleWakeup` で 30 秒後に状態確認、または `Bash run_in_background` で別タイムアウト監視（実装は応答時判断）。
 
-### R-16. Design / モックアップ参照時は ADR 優先を冒頭明示
+### R-16. Design / モックアップ参照時は領域別 Source of Truth を冒頭明示
 
-- **ルール**: Design / モックアップ / Wireframe / 外部資料を参照開始する**最初の応答**で「**Design は下書き、ビジネス仕様は議論済 ADR (`docs/adr/`) が正**。Design と ADR が矛盾したら ADR を採用」を明示する。
-- **根拠**: F-10 議論で Claude Design「全機能 Free」記述を見て「PR1: 全機能 Free」を**強く推薦してしまい**、ユーザー指摘「ADR-0009/0011 既存維持 (Pro 限定)」で撤回した事例。
-- **自動化**: `.claude/hooks/session-start-design-reminder.mjs` で SessionStart に常時注入。
+- **ルール**: Design / モックアップ / Wireframe / 外部資料を参照開始する**最初の応答**で領域別 SoT を明示する:
+  - **UI 表現** (見た目 / レイアウト / コピー / コンポーネント形状): **OpenDesign 出力 (最新版) が正**、ADR Notes は追従更新
+  - **ビジネス仕様** (機能有無 / Pro 限定 / 課金 / プライバシー / データ送信 / 法令): **議論済 ADR (`docs/adr/`) が絶対上位**、Design / OpenDesign が矛盾しても ADR を採用
+  - **境界判定**: R-28 (境界判定フロー) を参照
+- **根拠**: F-10 議論で Claude Design「全機能 Free」記述を信じて「PR1: 全機能 Free」を**強く推薦してしまい**、ADR-0009/0011 (Pro 限定) で撤回した事例 = ビジネス仕様の誤判定。一方 2026-05-07 議論で「OpenDesign で 9 割 UI 採用」方針確定 → ビジネス仕様と UI 表現で SoT を分離する必要性が顕在化。
+- **自動化**: `.claude/hooks/session-start-design-reminder.mjs` で SessionStart に常時注入 (領域別 SoT を含む)。
 
 ### R-17. 「全部推薦で OK」即時実行禁止（4 段階強制）
 
@@ -179,6 +182,22 @@
 - **ルール**: Claude Design / Figma / Wireframe 等の外部 Design を **部分採用 / 全面採用** 判定する議論で、`/discuss` Skill に **「ブランド統一感」軸** を 4 ペルソナと同列の独立評価軸として必須化。さらに ADR Notes に **「Design 画面 → 実装画面 マップ表」** を必ず記載 (採用しない画面も「不採用」と明記)。
 - **根拠**: 2026-05-04 ADR-0019「Claude Design 部分採用」を 35 PR で実装後、2026-05-05 実機検証で user 期待 (100% 採用) と乖離が発覚。原因は (1) 4 ペルソナ評価のみで「アプリ全体のデザイン統一感」を捕捉できなかった、(2) Claude Design の `home-screens.jsx HomeScreen` が実装の「盆栽タブ」に対応するという画面マッピングが ADR Notes に無かった、の 2 点。ADR-0020 で全面採用に切替時に 5 軸評価 + 画面マップ表を実施し全項目 ○ 以上を確認。
 - **自動化**: `/discuss` Skill チェックリストに「外部 Design 取込時の 5 軸評価 (4 ペルソナ + ブランド統一感)」「画面マップ表 ADR Notes 必須記載」を追加。`scripts/design-mapping-check.mjs` (将来) で ADR 内マップと Design ファイル名の突合検査。
+
+### R-28. UI 表現 vs ビジネス仕様 の境界判定フロー
+
+- **ルール**: Design / OpenDesign 出力を採用する際、以下のフローで「UI 表現」「ビジネス仕様」のどちらに該当するか判定し、適切な SoT (R-16) に従う:
+  1. **法令 / プライバシー / 利用規約 / ストア審査関連?** (ATT / UMP / IAP / GDPR 等) → **ビジネス仕様 → ADR 絶対上位**
+  2. **機能の有無 / Free vs Pro 区分 / 課金プラン?** → **ビジネス仕様 → ADR**
+  3. **データ送信 / DB 構造 / API 連携?** → **ビジネス仕様 → ADR**
+  4. **A11y / WCAG / コントラスト / タップ領域?** → **ADR + design_system.md** (verify:a11y で自動検証)
+  5. **モーション / 触覚 / 効果音 / 通知音?** → **ADR + design_system.md** (OpenDesign 範囲外)
+  6. **タイポグラフィ詳細 (フォント / サイズ / 行間)?** → **ADR + design_system.md**
+  7. **上記いずれにも該当しない** (見た目 / レイアウト / コピー / コンポーネント形状)? → **UI 表現 → OpenDesign が正、ADR Notes 画面マップは追従更新**
+- **更新フロー**:
+  - **UI 表現変更**: 軽量プロセス (1 PR で ADR Notes 画面マップ + 実装変更、R-17 4 段階は適用しない)
+  - **ビジネス仕様変更**: R-17 4 段階厳守 + 新 ADR 起票
+- **根拠**: 2026-05-07 議論で「PaywallScreen CTA 文言」「Empty state コピー」等 UI / ビジネス境界が曖昧な領域が判明。判定フロー明文化で「OpenDesign 9 割 UI 採用」方針と「F-10 撤回リスク」を両立。
+- **自動化**: `.claude/hooks/session-start-design-reminder.mjs` で R-28 判定フローを併せて注入。`/discuss` Skill チェックリストに R-28 を追加。
 
 ---
 
