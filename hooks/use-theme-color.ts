@@ -7,8 +7,9 @@
  * ThemedText の色は system の dark を見て `Colors.dark.text` = '#E8E4D6' (淡 washi)
  * という不整合が発生していた (実機スクショ 15237/15238 の text 同色化問題)。
  *
- * 本版は `resolveEffectiveScheme(themeMode, systemScheme, outdoorMode)` を経由し、
+ * 本版は `resolveEffectiveScheme(themeMode, systemScheme)` を経由し、
  * ThemeProvider と完全一致した scheme で Colors を解決する。
+ * (ADR-0015 Notes Amended 2026-05-10、outdoor mode 削除済)
  */
 
 import { Colors } from '@/constants/theme';
@@ -22,9 +23,8 @@ export function useThemeColor(
 ) {
   const systemScheme = useColorScheme();
   const themeMode = useSettingsStore((s) => s.themeMode);
-  const outdoorMode = useSettingsStore((s) => s.outdoorMode);
   const normalized = systemScheme === 'light' || systemScheme === 'dark' ? systemScheme : null;
-  const theme = resolveEffectiveScheme(themeMode, normalized, outdoorMode);
+  const theme = resolveEffectiveScheme(themeMode, normalized);
 
   const colorFromProps = props[theme];
   if (colorFromProps) return colorFromProps;

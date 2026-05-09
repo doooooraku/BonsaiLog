@@ -6,7 +6,7 @@
  * 削除済 (PR Phase B-1a、design_system.md と乖離していた drift を解消)。
  *
  * 同期方針:
- * - light / dark / outdoor の 3 themes
+ * - light / dark の 2 themes (ADR-0015 Notes Amended 2026-05-10、outdoor 削除済)
  * - `src/core/theme/colors.ts` (16 トークン) と整合する形で `background` / `text` /
  *   `tint` / `icon` / `tabIconDefault` / `tabIconSelected` を再マッピング
  * - 値変更時は `pnpm theme:sot` (Source of Truth integrity check) が緑であること
@@ -40,23 +40,6 @@ export const DARK_TOKENS = {
   success: '#7DAE7A',
   border: '#2A2F3E',
   borderStrong: '#4A5060',
-} as const;
-
-/** outdoor theme トークン (design_system.md §2-3 WCAG AAA 7:1 準拠)。 */
-export const OUTDOOR_TOKENS = {
-  bgPrimary: '#FFFFFF',
-  bgSurface: '#FFFFFF',
-  textPrimary: '#000000',
-  textSecondary: '#000000',
-  textMuted: '#000000',
-  brandGreen: '#000080',
-  brandGreenHover: '#000080',
-  accentBark: '#000000',
-  accentGold: '#000000',
-  danger: '#8B0000',
-  success: '#004000',
-  border: '#000000',
-  borderStrong: '#000000',
 } as const;
 
 /**

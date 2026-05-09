@@ -1,12 +1,12 @@
 /**
- * F-15 テーマ解決 — 純関数 (Phase D、Issue #32 / ADR-0015)。
+ * F-15 テーマ解決 — 純関数 (Phase D、Issue #32 / ADR-0015 Notes Amended 2026-05-10)。
  *
- * AC2 (4 mode 切替) + AC5 (Settings UI、屋外 ON 時セグメント disabled) のロジック純関数化。
+ * AC2 (3 mode 切替: Auto / Light / Dark) のロジック純関数化。
+ * 屋外モード (outdoor) は ADR-0015 Notes Amended (2026-05-10、PR #312) で v1.0 不採用、E4 PR で削除済。
  *
  * 設計方針:
  * - app/_layout.tsx 内のインライン式 (themeMode === 'system' ? systemScheme : themeMode) を
  *   テスト可能な純関数に切り出し
- * - outdoor mode が最優先 (常に light fallback)
  * - system mode 時は OS scheme を尊重、null/undefined は light フォールバック
  */
 
@@ -17,25 +17,21 @@ export type ThemeMode = 'system' | 'light' | 'dark';
 export type EffectiveScheme = 'light' | 'dark';
 
 /**
- * テーマモード + OS scheme + 屋外モードから実効テーマを解決する純関数。
+ * テーマモード + OS scheme から実効テーマを解決する純関数。
  *
  * 優先順位:
- * 1. outdoorMode=true → 常に 'light' (ADR-0015 屋外モードは純白背景固定)
- * 2. themeMode='system' → systemScheme を採用 (null/undefined は 'light' フォールバック)
- * 3. themeMode='light' / 'dark' → そのまま返却
+ * 1. themeMode='system' → systemScheme を採用 (null/undefined は 'light' フォールバック)
+ * 2. themeMode='light' / 'dark' → そのまま返却
  *
  * @example
- *   resolveEffectiveScheme('system', 'dark', false) === 'dark'
- *   resolveEffectiveScheme('system', null, false) === 'light' (フォールバック)
- *   resolveEffectiveScheme('dark', 'light', true) === 'light' (outdoor 優先)
- *   resolveEffectiveScheme('light', 'dark', false) === 'light' (ユーザー選択)
+ *   resolveEffectiveScheme('system', 'dark') === 'dark'
+ *   resolveEffectiveScheme('system', null) === 'light' (フォールバック)
+ *   resolveEffectiveScheme('light', 'dark') === 'light' (ユーザー選択)
  */
 export function resolveEffectiveScheme(
   themeMode: ThemeMode,
   systemScheme: EffectiveScheme | null | undefined,
-  outdoorMode: boolean,
 ): EffectiveScheme {
-  if (outdoorMode) return 'light';
   if (themeMode === 'system') {
     return systemScheme === 'dark' ? 'dark' : 'light';
   }
@@ -43,19 +39,17 @@ export function resolveEffectiveScheme(
 }
 
 /**
- * Settings の「テーマ」セグメントが disabled 状態か判定する純関数 (AC5)。
- *
- * 屋外モード ON 時は light 固定のため、セグメントは操作不能。
+ * outdoor mode 削除に伴い、Settings の「テーマ」セグメントが disabled になるケースは無い。
+ * 後方互換のため stub として残置 (常に false 返却)、v1.x で完全削除予定。
  */
-export function isThemeSelectionDisabled(outdoorMode: boolean): boolean {
-  return outdoorMode === true;
+export function isThemeSelectionDisabled(): boolean {
+  return false;
 }
 
 /**
- * outdoor → light fallback の理由を表す型 (AC5 UI で「屋外モード中は light 固定」表示用)。
+ * テーマ選択理由を表す型 (UI 表示・診断ログ用)。
  */
 export type ThemeResolutionReason =
-  | 'outdoor_override' // 屋外モード優先で light 強制
   | 'user_explicit' // themeMode='light' or 'dark' を明示選択
   | 'system_dark' // system → OS dark
   | 'system_light' // system → OS light
@@ -69,9 +63,7 @@ export type ThemeResolutionReason =
 export function resolveThemeWithReason(
   themeMode: ThemeMode,
   systemScheme: EffectiveScheme | null | undefined,
-  outdoorMode: boolean,
 ): { scheme: EffectiveScheme; reason: ThemeResolutionReason } {
-  if (outdoorMode) return { scheme: 'light', reason: 'outdoor_override' };
   if (themeMode === 'system') {
     if (systemScheme === 'dark') return { scheme: 'dark', reason: 'system_dark' };
     if (systemScheme === 'light') return { scheme: 'light', reason: 'system_light' };

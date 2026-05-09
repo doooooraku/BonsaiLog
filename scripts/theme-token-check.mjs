@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 /**
- * theme:tokens - F-15 11 トークン × 3 themes 構造検証 (Issue #32 / ADR-0015)
+ * theme:tokens - F-15 11 トークン × 2 themes 構造検証 (Issue #32 / ADR-0015 Notes Amended 2026-05-10)
  *
  * Issue #32 AC「全 themes で 11 トークン (background / surface / surface2 / color /
  * muted / borderColor / accent / bonsai_heatmap_l0..l3 / bonsai_today_border) 保持」
  * を構造的に保証する。
  *
- * tamagui.config.ts の `themes:` ブロック内、light / dark / outdoor 各 theme で
- * 11 トークン全ての行 (`<tokenName>: tokens.color.<value>,`) 存在を確認する。
+ * tamagui.config.ts の `themes:` ブロック内、light / dark 各 theme で 11 トークン
+ * 全ての行 (`<tokenName>: tokens.color.<value>,`) 存在を確認する。
+ *
+ * outdoor theme は ADR-0015 Notes Amended (2026-05-10、PR #312) で v1.0 不採用、削除済。
  *
  * 終了コード: 0 = OK, 1 = 不足検出
  */
@@ -16,7 +18,7 @@ import { join } from 'node:path';
 
 const ROOT = process.cwd();
 const CONFIG_PATH = join(ROOT, 'tamagui.config.ts');
-const REQUIRED_THEMES = ['light', 'dark', 'outdoor'];
+const REQUIRED_THEMES = ['light', 'dark'];
 const REQUIRED_TOKENS = [
   'background',
   'surface',

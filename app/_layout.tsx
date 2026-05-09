@@ -54,18 +54,17 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
-  // F-15 Phase E (Issue #32, ADR-0015): resolveEffectiveScheme 純関数で
-  // themeMode + systemScheme + outdoorMode から実効スキームを決定。
-  // インライン式 (PR #66 / #80) を純関数に置換し、ロジックを単一の真実点に集約。
+  // F-15 Phase E (Issue #32, ADR-0015 + Notes Amended 2026-05-10): resolveEffectiveScheme
+  // 純関数で themeMode + systemScheme から実効スキームを決定 (3 mode: system/light/dark)。
+  // outdoor mode は ADR-0015 Notes Amended で v1.0 不採用 (PR #312、E4 PR で削除済)。
   const systemScheme = useColorScheme();
   const themeMode = useSettingsStore((s) => s.themeMode);
-  const outdoorMode = useSettingsStore((s) => s.outdoorMode);
   // useColorScheme は 'light' | 'dark' | null | 'unspecified' を返す。
   // resolveEffectiveScheme は 'light' | 'dark' | null/undefined のみ受理するため、
   // 'unspecified' は null に正規化 → light フォールバックさせる。
   const normalizedSystemScheme =
     systemScheme === 'light' || systemScheme === 'dark' ? systemScheme : null;
-  const effectiveScheme = resolveEffectiveScheme(themeMode, normalizedSystemScheme, outdoorMode);
+  const effectiveScheme = resolveEffectiveScheme(themeMode, normalizedSystemScheme);
   // Phase B-1b: 旧 DarkTheme/DefaultTheme を捨て、design_system.md §2 整合の
   // buildNavigationTheme で background/text/primary/card/border を再構築。
   const navigationTheme = buildNavigationTheme(effectiveScheme);
