@@ -283,15 +283,16 @@ const styles = StyleSheet.create({
   },
   emptyBody: { fontSize: 16, lineHeight: 26, textAlign: 'center', maxWidth: 300 },
   emptyCtaWrap: { paddingHorizontal: 16, paddingBottom: 24 },
+  // mockup v1.0 home-screens.jsx HomeEmptyScreen 整合 (B4 PR、Empty 専用の強調 CTA、72dp / radius 14 / fontSize 20)
   emptyCta: {
-    height: 56,
-    borderRadius: 12,
+    height: 72,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 10,
   },
-  emptyCtaText: { fontSize: 17, fontWeight: '500', letterSpacing: 0.5 },
+  emptyCtaText: { fontSize: 20, fontWeight: '500', letterSpacing: 0.8 },
   // Issue #256: paddingBottom は実行時に tabBarHeight + AdBanner 分加算 (inline style)
   listContent: { paddingTop: 12 },
   fab: {

@@ -458,7 +458,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- Home empty state (Phase 1b, Issue #29, ADR-0019) ---
   homeEmptyTitle: '最初の盆栽を追加しよう',
   homeEmptyBody: 'あなたの一生分の記録が、ここから始まります。',
-  homeEmptyCta: '盆栽を登録',
+  homeEmptyCta: '盆栽を追加',
 
   // --- F-07 装着期間アプリ内表示 (Phase B、Issue #24、ADR-0014) ---
   wiringDurationWithinWeeks: '装着期間: {weeks} 週',

@@ -457,7 +457,7 @@ const baseEn = {
   // --- Home empty state (Phase 1b, Issue #29, ADR-0019) ---
   homeEmptyTitle: 'Add your first bonsai',
   homeEmptyBody: 'Your lifelong record begins here.',
-  homeEmptyCta: 'Register a bonsai',
+  homeEmptyCta: 'Add a bonsai',
 
   // --- F-07 Wiring duration in-app display (Phase B, Issue #24, ADR-0014) ---
   wiringDurationWithinWeeks: 'Wire on for {weeks} weeks',
