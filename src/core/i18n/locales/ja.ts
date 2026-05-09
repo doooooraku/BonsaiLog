@@ -334,6 +334,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tabFind: '探す',
   tabSettings: '設定',
   tabPlanComingSoon: '準備中',
+  planScreenTitle: '作業予定',
 
   // --- ADR-0020 Phase 2: 盆栽タブ Claude Design HomeScreen 整合 ---
   bonsaiBookTitle: '盆栽手帳',
