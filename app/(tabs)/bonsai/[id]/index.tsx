@@ -343,27 +343,31 @@ export default function BonsaiDetailScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* basic Tab 第 1 部分: 水やり概要 + 取得日 (旧 timeline タブから移動、A5 で
-            CreateBonsaiScreen embed に正式化予定) */}
+        {/* basic Tab 第 1 部分: 基本情報 read-only 表示 (A5 PR、BonsaiBasicForm 抽出 +
+            CreateBonsaiScreen embed 化は別 Issue で v1.x 実装予定) */}
         {activeTab === 'basic' && (
           <>
             <View style={styles.section}>
-              <ThemedText type="subtitle">{t('wateringSectionTitle')}</ThemedText>
-              <LastWateredText daysSinceLast={daysSinceLastWatering} />
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('wateringHistoryLinkTitle')}
-                style={styles.wateringHistoryLink}
-                onPress={() => router.push(`/(tabs)/bonsai/${item.id}/watering` as Href)}
-                testID="e2e_open_watering_history"
-              >
-                <ThemedText style={styles.wateringHistoryLinkText}>
-                  {t('wateringHistoryLinkTitle')}
-                </ThemedText>
-                <ThemedText style={styles.wateringHistoryLinkArrow}>{'›'}</ThemedText>
-              </Pressable>
+              <ThemedText type="subtitle">{t('bonsaiFieldName')}</ThemedText>
+              <ThemedText>{item.name}</ThemedText>
             </View>
-
+            {item.species && (
+              <View style={styles.section}>
+                <ThemedText type="subtitle">{t('bonsaiFieldSpecies')}</ThemedText>
+                <ThemedText>{item.species.commonName}</ThemedText>
+                {item.species.scientificName ? (
+                  <ThemedText style={styles.basicScientific}>
+                    {item.species.scientificName}
+                  </ThemedText>
+                ) : null}
+              </View>
+            )}
+            {item.style && (
+              <View style={styles.section}>
+                <ThemedText type="subtitle">{t('bonsaiFieldStyle')}</ThemedText>
+                <ThemedText>{t(`bonsaiStyle_${item.style}` as TranslationKey)}</ThemedText>
+              </View>
+            )}
             {item.acquiredAt && (
               <View style={styles.section}>
                 <ThemedText type="subtitle">{t('bonsaiFieldAcquiredAt')}</ThemedText>
@@ -371,6 +375,26 @@ export default function BonsaiDetailScreen() {
               </View>
             )}
           </>
+        )}
+
+        {/* history Tab 第 0 部分: 水やり概要 (旧 timeline から history 最上部に移動、A5 PR) */}
+        {activeTab === 'history' && (
+          <View style={styles.section}>
+            <ThemedText type="subtitle">{t('wateringSectionTitle')}</ThemedText>
+            <LastWateredText daysSinceLast={daysSinceLastWatering} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('wateringHistoryLinkTitle')}
+              style={styles.wateringHistoryLink}
+              onPress={() => router.push(`/(tabs)/bonsai/${item.id}/watering` as Href)}
+              testID="e2e_open_watering_history"
+            >
+              <ThemedText style={styles.wateringHistoryLinkText}>
+                {t('wateringHistoryLinkTitle')}
+              </ThemedText>
+              <ThemedText style={styles.wateringHistoryLinkArrow}>{'›'}</ThemedText>
+            </Pressable>
+          </View>
         )}
 
         {/* history Tab 第 1 部分: 写真追加 + 年次タイムライン (旧 photos タブから移動、A6 で
@@ -523,13 +547,26 @@ export default function BonsaiDetailScreen() {
           </View>
         )}
 
-        {/* basic Tab 第 2 部分: 更新日 + アーカイブ (旧 timeline 末尾から移動) */}
+        {/* basic Tab 第 2 部分: 更新日 + 編集ボタン (placeholder、別 Issue で
+            BonsaiBasicForm 抽出 + embed 化予定) + アーカイブ */}
         {activeTab === 'basic' && (
           <>
             <View style={styles.section}>
               <ThemedText type="subtitle">{t('bonsaiFieldUpdatedAt')}</ThemedText>
               <ThemedText>{formatDate(item.updatedAt, lang)}</ThemedText>
             </View>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('detailBasicEdit')}
+              style={styles.basicEditButton}
+              onPress={() => {
+                // 別 Issue で BonsaiBasicForm 抽出 + embed 化、本 PR は placeholder noop
+              }}
+              testID="e2e_detail_basic_edit_button"
+            >
+              <ThemedText style={styles.basicEditButtonText}>{t('detailBasicEdit')}</ThemedText>
+            </Pressable>
 
             <Pressable
               accessibilityRole="button"
@@ -836,5 +873,27 @@ const styles = StyleSheet.create({
     color: TEXT_SECONDARY,
     textAlign: 'center',
     paddingVertical: 24,
+  },
+  basicScientific: {
+    fontSize: 13,
+    color: TEXT_SECONDARY,
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
+  basicEditButton: {
+    marginHorizontal: 16,
+    marginTop: 4,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  basicEditButtonText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: BRAND_GREEN,
   },
 });

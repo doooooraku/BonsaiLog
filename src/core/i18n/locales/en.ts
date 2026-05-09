@@ -540,6 +540,7 @@ const baseEn = {
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
   detailPlanTimelinePlaceholder: 'Schedule features will be available in a future update.',
+  detailBasicEdit: 'Edit',
 };
 
 export type TranslationKey = keyof typeof baseEn;

@@ -532,5 +532,6 @@ const pt: Partial<Record<TranslationKey, string>> = {
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
   detailPlanTimelinePlaceholder: 'Schedule features will be available in a future update.',
+  detailBasicEdit: 'Edit',
 };
 export default pt;
