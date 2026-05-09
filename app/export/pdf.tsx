@@ -40,7 +40,6 @@ import {
 } from '@/src/core/theme/colors';
 import { isStorageSufficient } from '@/src/features/export/pdfReliability';
 import { useGoToPaywall } from '@/src/features/pro/useGoToPaywall';
-import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 import { useProStore } from '@/src/stores/proStore';
 
 export default function ExportPdfScreen() {
@@ -111,7 +110,6 @@ export default function ExportPdfScreen() {
 
   return (
     <ThemedView style={styles.container} testID="e2e_export_pdf_screen">
-      <OutdoorToggleButton testIdSuffix="export_pdf_outdoor_toggle" />
       <ScrollView contentContainerStyle={styles.scroll}>
         <ThemedText type="title" style={styles.title}>
           {t('exportPdfTitle')}

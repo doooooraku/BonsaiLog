@@ -29,7 +29,6 @@ import {
 import { useColors } from '@/src/core/theme/useColors';
 import { getDb } from '@/src/db/db';
 import { createOrFindTag, renameTag, type TagRecord } from '@/src/db/tagRepository';
-import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 
 /** Issue #31 AC4-2: タグ名 32 文字制限 (TL1)。 */
 const TAG_NAME_MAX_LENGTH = 32;
@@ -134,7 +133,6 @@ export default function TagsManagerScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_tags_manager"
     >
-      <OutdoorToggleButton testIdSuffix="tags_outdoor_toggle" />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <ThemedText type="title" style={styles.title}>
           {t('tagsManagerTitle')}
