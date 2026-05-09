@@ -220,6 +220,8 @@ const vi: Partial<Record<TranslationKey, string>> = {
   // --- F-09 Search (Phase A、English fallback) ---
   settingsSearchSection: 'Search',
   searchAction: 'Search',
+  selectModeAction: 'Select multiple',
+  selectModeCancel: 'Cancel',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Search...',
   searchEmpty: 'No results found.',

@@ -116,6 +116,9 @@ export default function BonsaiHomeScreen() {
   const [tags, setTags] = useState<TagRecord[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<string>(ALL_FILTER_ID);
   const [loading, setLoading] = useState(true);
+  // mockups v1.0 02-Home.html `initialSelectMode` 整合: 複数選択モードのトグル。
+  // 本 PR では state のみ、BonsaiCard チェックボックス・一括タグ付与・一括作業 UI は別 Issue。
+  const [selectMode, setSelectMode] = useState(false);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -210,7 +213,12 @@ export default function BonsaiHomeScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_bonsai_home_list"
     >
-      <SearchHeader title={t('bonsaiBookTitle')} testIdSuffix="bonsai_home" />
+      <SearchHeader
+        title={t('bonsaiBookTitle')}
+        testIdSuffix="bonsai_home"
+        selectMode={selectMode}
+        onSelectPress={() => setSelectMode((v) => !v)}
+      />
       <HomeFilterTabs
         chips={filterChips}
         selectedId={selectedFilter}
