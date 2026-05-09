@@ -539,6 +539,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailTabPlanTimeline: '予定',
   detailPlanTimelinePlaceholder: '予定機能は v1.x で実装予定です。',
   detailBasicEdit: '編集',
+  detailMenuExportPdf: 'PDFで書き出し',
+  detailExportProTitle: 'Pro 限定機能',
+  detailExportProDesc: 'PDF 書き出しは Pro プランの機能です。',
 };
 
 export default ja;

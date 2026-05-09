@@ -533,5 +533,8 @@ const sv: Partial<Record<TranslationKey, string>> = {
   detailTabPlanTimeline: 'Schedule',
   detailPlanTimelinePlaceholder: 'Schedule features will be available in a future update.',
   detailBasicEdit: 'Edit',
+  detailMenuExportPdf: 'Export to PDF',
+  detailExportProTitle: 'Pro feature',
+  detailExportProDesc: 'PDF export is a Pro plan feature.',
 };
 export default sv;
