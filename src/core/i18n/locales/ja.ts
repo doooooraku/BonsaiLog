@@ -538,6 +538,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailTabBasic: '基本情報',
   detailTabPlanTimeline: '予定',
   detailPlanTimelinePlaceholder: '予定機能は v1.x で実装予定です。',
+  detailBasicEdit: '編集',
 };
 
 export default ja;
