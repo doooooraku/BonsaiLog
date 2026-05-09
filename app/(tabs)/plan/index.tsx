@@ -136,7 +136,7 @@ export default function PlanScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_plan_screen"
     >
-      <SearchHeader title={t('tabPlan')} testIdSuffix="plan" />
+      <SearchHeader title={t('planScreenTitle')} showSearch={false} testIdSuffix="plan" />
 
       {/* ADR-0020 v1.x-4: 針金がけ一覧へのリンク */}
       <Pressable
@@ -181,38 +181,42 @@ export default function PlanScreen() {
       </View>
 
       <View style={styles.grid}>
-        {cells.map((d, i) => {
-          if (d == null) return <View key={i} style={styles.cell} />;
-          const dateKey = `${year}-${pad(month + 1)}-${pad(d)}`;
-          const dots = dotsByDay.get(dateKey) ?? 0;
-          const isSel = dateKey === selectedDateKey;
-          const isToday = dateKey === todayLocalKey;
-          return (
-            <Pressable
-              key={i}
-              accessibilityRole="button"
-              accessibilityLabel={`${d}`}
-              style={[styles.cell, isSel && styles.cellSel]}
-              onPress={() => setSelectedDateKey(dateKey)}
-              testID={`e2e_plan_cell_${dateKey}`}
-            >
-              <ThemedText
-                style={[
-                  styles.cellText,
-                  { color: isToday ? BRAND_GREEN : c.text },
-                  isToday && styles.cellTextToday,
-                ]}
-              >
-                {d}
-              </ThemedText>
-              <View style={styles.dotRow}>
-                {Array.from({ length: Math.min(dots, 3) }).map((_, k) => (
-                  <View key={k} style={styles.dot} />
-                ))}
-              </View>
-            </Pressable>
-          );
-        })}
+        {Array.from({ length: Math.ceil(cells.length / 7) }).map((_, w) => (
+          <View key={w} style={styles.weekRow}>
+            {cells.slice(w * 7, w * 7 + 7).map((d, i) => {
+              if (d == null) return <View key={i} style={styles.cell} />;
+              const dateKey = `${year}-${pad(month + 1)}-${pad(d)}`;
+              const dots = dotsByDay.get(dateKey) ?? 0;
+              const isSel = dateKey === selectedDateKey;
+              const isToday = dateKey === todayLocalKey;
+              return (
+                <Pressable
+                  key={i}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${d}`}
+                  style={[styles.cell, isSel && styles.cellSel]}
+                  onPress={() => setSelectedDateKey(dateKey)}
+                  testID={`e2e_plan_cell_${dateKey}`}
+                >
+                  <ThemedText
+                    style={[
+                      styles.cellText,
+                      { color: isToday ? BRAND_GREEN : c.text },
+                      isToday && styles.cellTextToday,
+                    ]}
+                  >
+                    {d}
+                  </ThemedText>
+                  <View style={styles.dotRow}>
+                    {Array.from({ length: Math.min(dots, 3) }).map((_, k) => (
+                      <View key={k} style={styles.dot} />
+                    ))}
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        ))}
       </View>
 
       <ScrollView contentContainerStyle={styles.listContent}>
@@ -307,13 +311,15 @@ const styles = StyleSheet.create({
     color: TEXT_MUTED,
   },
   grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     paddingHorizontal: 16,
     gap: 2,
   },
+  weekRow: {
+    flexDirection: 'row',
+    gap: 2,
+  },
   cell: {
-    width: '14%',
+    flex: 1,
     aspectRatio: 1,
     borderRadius: 8,
     alignItems: 'center',

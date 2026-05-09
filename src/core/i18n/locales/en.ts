@@ -332,6 +332,7 @@ const baseEn = {
   tabFind: 'Find',
   tabSettings: 'Settings',
   tabPlanComingSoon: 'Coming soon',
+  planScreenTitle: 'Care Schedule',
 
   // --- ADR-0020 Phase 2: bonsai tab = Claude Design HomeScreen ---
   bonsaiBookTitle: 'BonsaiLog',

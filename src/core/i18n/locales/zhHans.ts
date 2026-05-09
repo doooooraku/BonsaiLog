@@ -423,6 +423,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   tabFind: 'Find',
   tabSettings: 'Settings',
   tabPlanComingSoon: 'Coming soon',
+  planScreenTitle: 'Care Schedule',
   // --- ADR-0020 Phase 2: bonsai tab Claude Design HomeScreen (English fallback) ---
   bonsaiBookTitle: 'BonsaiLog',
   homeFilterAll: 'All',
