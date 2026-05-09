@@ -93,15 +93,24 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
   paywall: {
     id: 'paywall',
     description:
-      'Paywall モーダル (Pro メリット 11 件比較表 + 月額/年額/Lifetime 3 プラン + 「ご購入履歴を復元」ボタン)',
+      'Paywall モーダル (Header「BonsaiLog Pro」中央 + 比較表 + プラン CTA、PR #332-#334 で部分整合済、比較表 8 行 + プラン CTA は Issue #335)',
     appFlow: 'maestro/flows/ui-diff/paywall.yml',
     designHtml: '05-Monetization.html',
     designSelector: '[data-screen-label="01 Paywall Modal"]',
     notes:
-      'ADR-0020 §Notes §画面マップ row 17 / monetization-screens.jsx PaywallScreen / src/features/pro/PaywallScreen.tsx + app/pro.tsx (薄ラッパー) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「設定」→「Proにアップグレード」をタップして遷移、testID e2e_paywall_screen で可視待ち。R-28 ADR-0009 課金ロジック (RevenueCat 月額/年額/Lifetime) 維持厳守、本 ui-diff は UI 整合のみ。',
+      'ADR-0020 §Notes §画面マップ row 17 / monetization-screens.jsx PaywallScreen / src/features/pro/PaywallScreen.tsx + app/pro.tsx (薄ラッパー) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「設定」→「Proにアップグレード」(testID e2e_open_paywall) をタップして遷移、testID e2e_paywall_screen で可視待ち。R-28 ADR-0009 課金ロジック (RevenueCat 月額/年額/Lifetime) 維持厳守。',
+  },
+  'find-tab': {
+    id: 'find-tab',
+    description:
+      '探すタブ (TabBar「探す」遷移先、検索 input + 検索履歴 chip + 全盆栽から検索結果ハイライト)',
+    appFlow: 'maestro/flows/ui-diff/find-tab.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="12 ケア 検索"]',
+    notes:
+      'ADR-0020 §Notes §画面マップ row 16 / care-screens.jsx SearchScreen / app/(tabs)/find/index.tsx (Phase 6 大改修目標、385 行) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「探す」をタップして遷移、testID e2e_find_screen で可視待ち。データ依存は検索結果のみ (Empty state は表示可能)。',
   },
   // PoC 安定後にユーザーと相談して順次追加 (ADR-0020 §Decision §3-§10):
-  // 'find-tab':           care-screens.jsx SearchScreen
   // 'work-log-confirm':   care-screens.jsx WorkLogConfirmSheet
 };
 
