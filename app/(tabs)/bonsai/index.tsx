@@ -2,14 +2,22 @@
  * 盆栽タブ index (ADR-0020 Phase 2、Claude Design `home-screens.jsx HomeScreen` 整合)。
  *
  * 構造:
- * - SearchHeader (タイトル「盆栽手帳」+ 検索 + 屋外モードトグル)
+ * - SearchHeader (タイトル「盆栽手帳」+ 検索 + 屋外モードトグル + 複数選択トグル)
  * - HomeFilterTabs (すべて + 既存タグ chip、横スクロール)
  * - FlatList<BonsaiCard> (写真サムネ + 名前 + 樹種 + 樹形 + 最後の水やり / 剪定からの日数)
- * - FAB (+) (盆栽新規登録、右下、bottom 96px = TabBar 高さ + 余白)
+ * - selectMode true 時: 下部 SelectionToolbar (一括記録 / 予定追加)、FAB 非表示
+ * - selectMode false 時: FAB (+) (盆栽新規登録、右下、bottom 96px = TabBar 高さ + 余白)
  *
  * Empty State: HomeEmptyScreen 整合 (PotIcon + タイトル + 説明 + 「+ 盆栽を登録」フル幅 CTA)
  *
- * Phase 9 で AdBanner を本ファイル末尾に配置予定 (本 PR では未配置)。
+ * Phase 9 で AdBanner を本ファイル末尾に配置済 (ADR-0010「ホーム下部のみ」、Repolog 同等構成)。
+ *
+ * mockup v1.0 02-Home.html 整合 (一括予定追加フロー、PR 1 UI 基盤):
+ * - 長押しで selectMode 入り (Pressable.onLongPress、500ms default)
+ * - SearchHeader「複数選択 / キャンセル」テキストボタンでも selectMode トグル
+ * - selectMode 中の BonsaiCard 短押し → toggle、長押し → no-op (既に selectMode 中)
+ * - SelectionToolbar 「予定追加」ボタンは PR 2 で BulkWorkPickerSheet を呼び出し配線予定
+ * - SelectionToolbar 「一括記録」ボタンは disabled (Issue で BulkLogConfirmSheet 実装後に enable)
  */
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
@@ -31,6 +39,7 @@ import { AdBanner } from '@/src/features/ads/AdBanner';
 import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCard';
 import { HomeFilterTabs, type FilterChip } from '@/src/features/bonsai/HomeFilterTabs';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
+import { SelectionToolbar } from '@/src/features/bonsai/SelectionToolbar';
 import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 
 const ALL_FILTER_ID = 'ALL';
@@ -39,6 +48,9 @@ const ALL_FILTER_ID = 'ALL';
 // Free user 表示時の FAB / FlatList paddingBottom 計算に使用。Pro user 時は AdBanner 非表示
 // で実態より少し大きい値だが、画面下部の余白として許容。
 const AD_BANNER_HEIGHT_APPROX = 60;
+
+// SelectionToolbar 高さ (本コンポーネントの minHeight 56 と一致)
+const SELECTION_TOOLBAR_HEIGHT = 56;
 
 /**
  * 経過日数を「3日」「2週間」「5ヶ月」など短い文字列にフォーマット。
@@ -116,9 +128,11 @@ export default function BonsaiHomeScreen() {
   const [tags, setTags] = useState<TagRecord[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<string>(ALL_FILTER_ID);
   const [loading, setLoading] = useState(true);
-  // mockups v1.0 02-Home.html `initialSelectMode` 整合: 複数選択モードのトグル。
-  // 本 PR では state のみ、BonsaiCard チェックボックス・一括タグ付与・一括作業 UI は別 Issue。
+  // mockups v1.0 02-Home.html `initialSelectMode` 整合: 複数選択モード state。
   const [selectMode, setSelectMode] = useState(false);
+  // mockups v1.0 02-Home.html `selected` Set<id> 整合: 選択中の盆栽 ID 集合。
+  // selectMode false 時は常に空 (toggle で同期)、selectMode true 時のみ追加・削除可能。
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -159,6 +173,46 @@ export default function BonsaiHomeScreen() {
   // Issue #253: フィルタは bonsaiRepository.getAllActiveBonsaiWithSpecies(lang, { tagIds })
   // で SQL 側に委譲済 (M:N JOIN + AND セマンティクス)。クライアント側の追加フィルタは不要。
   const visibleItems = items;
+
+  // selectMode の入り / 終わりは selectedIds をリセット (mockup `cancelSelect` / `enterSelect` 整合)。
+  const toggleSelectMode = useCallback(() => {
+    setSelectMode((prev) => !prev);
+    setSelectedIds(new Set());
+  }, []);
+
+  // BonsaiCard 短押し: selectMode 時 toggle、通常時 router.push (mockup `onCardClick` 整合)。
+  const handleCardPress = useCallback(
+    (id: string) => {
+      if (selectMode) {
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
+          return next;
+        });
+      } else {
+        router.push(`/(tabs)/bonsai/${id}` as Href);
+      }
+    },
+    [selectMode, router],
+  );
+
+  // BonsaiCard 長押し: selectMode 入り + 当該カードを選択 (mockup `onCardLongPress` 整合)。
+  // selectMode 中の長押しは no-op (既に選択モード)。
+  const handleCardLongPress = useCallback(
+    (id: string) => {
+      if (selectMode) return;
+      setSelectMode(true);
+      setSelectedIds(new Set([id]));
+    },
+    [selectMode],
+  );
+
+  // SelectionToolbar 「予定追加」: PR 2 で BulkWorkPickerSheet を呼び出し配線予定。
+  // PR 1 では state のみ (実機タップ時にトーストや BottomSheet 表示は未配線)。
+  const handleBulkSchedule = useCallback(() => {
+    // PR 2 で BulkWorkPickerSheet を表示する step state に遷移する配線を追加予定。
+  }, []);
 
   if (loading) {
     return (
@@ -208,6 +262,13 @@ export default function BonsaiHomeScreen() {
     );
   }
 
+  // selectMode 中は SelectionToolbar 分の paddingBottom を加算 (FAB は隠れる)。
+  // selectMode 中の SelectionToolbar の bottom は tabBarHeight + AdBanner で
+  // TabBar / AdBanner の上に配置 (mockup home-screens.jsx の `bottom: 56 + 34` 整合)。
+  const listPaddingBottom =
+    tabBarHeight + AD_BANNER_HEIGHT_APPROX + 32 + (selectMode ? SELECTION_TOOLBAR_HEIGHT : 0);
+  const toolbarBottom = tabBarHeight + AD_BANNER_HEIGHT_APPROX;
+
   return (
     <ThemedView
       style={[styles.container, { backgroundColor: c.background }]}
@@ -217,7 +278,7 @@ export default function BonsaiHomeScreen() {
         title={t('bonsaiBookTitle')}
         testIdSuffix="bonsai_home"
         selectMode={selectMode}
-        onSelectPress={() => setSelectMode((v) => !v)}
+        onSelectPress={toggleSelectMode}
       />
       <HomeFilterTabs
         chips={filterChips}
@@ -228,35 +289,45 @@ export default function BonsaiHomeScreen() {
       <FlatList
         data={visibleItems}
         keyExtractor={(it) => it.id}
-        contentContainerStyle={[
-          styles.listContent,
-          // Issue #256: TabBar + AdBanner 分の bottom padding を確保
-          { paddingBottom: tabBarHeight + AD_BANNER_HEIGHT_APPROX + 32 },
-        ]}
+        contentContainerStyle={[styles.listContent, { paddingBottom: listPaddingBottom }]}
         renderItem={({ item }) => (
           <BonsaiCard
             data={item}
-            onPress={(id) => router.push(`/(tabs)/bonsai/${id}` as Href)}
+            onPress={handleCardPress}
+            onLongPress={handleCardLongPress}
+            selecting={selectMode}
+            selected={selectedIds.has(item.id)}
             testID={`e2e_bonsai_card_${item.id}`}
           />
         )}
       />
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('bonsaiCreateNew')}
-        style={[
-          styles.fab,
-          {
-            backgroundColor: c.tint,
-            // Issue #256: TabBar + AdBanner の上に FAB を配置 (元は bottom:24 で隠れていた)
-            bottom: tabBarHeight + AD_BANNER_HEIGHT_APPROX + 16,
-          },
-        ]}
-        onPress={() => router.push('/(tabs)/bonsai/new' as Href)}
-        testID="e2e_home_fab_create"
-      >
-        <PlusIcon size={28} color={ON_BRAND} />
-      </Pressable>
+      {!selectMode && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('bonsaiCreateNew')}
+          style={[
+            styles.fab,
+            {
+              backgroundColor: c.tint,
+              // Issue #256: TabBar + AdBanner の上に FAB を配置 (元は bottom:24 で隠れていた)
+              bottom: tabBarHeight + AD_BANNER_HEIGHT_APPROX + 16,
+            },
+          ]}
+          onPress={() => router.push('/(tabs)/bonsai/new' as Href)}
+          testID="e2e_home_fab_create"
+        >
+          <PlusIcon size={28} color={ON_BRAND} />
+        </Pressable>
+      )}
+      {selectMode && (
+        <View style={[styles.toolbarWrap, { bottom: toolbarBottom }]}>
+          <SelectionToolbar
+            count={selectedIds.size}
+            onBulkSchedule={handleBulkSchedule}
+            testID="e2e_home_selection_toolbar"
+          />
+        </View>
+      )}
       {/* ADR-0020 Phase 9: AdBanner を盆栽タブ最下部に配置 (ADR-0010「ホーム下部のみ」、Repolog 同等構成) */}
       <AdBanner />
     </ThemedView>
@@ -309,5 +380,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.22,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
+  },
+  // SelectionToolbar 配置: 絶対配置、TabBar + AdBanner の上、左右いっぱい (mockup `position:'absolute'`, `bottom: 56+34` 整合)
+  toolbarWrap: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
   },
 });

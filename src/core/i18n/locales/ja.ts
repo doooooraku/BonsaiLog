@@ -231,6 +231,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   searchAction: '検索する',
   selectModeAction: '複数選択',
   selectModeCancel: 'キャンセル',
+  bulkLog: '一括記録',
+  bulkSchedule: '予定追加',
   searchDesc: '盆栽の名前と作業ログのメモを検索します。',
   searchPlaceholder: '検索...',
   searchEmpty: '見つかりませんでした。',

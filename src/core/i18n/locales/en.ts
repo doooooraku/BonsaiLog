@@ -226,6 +226,8 @@ const baseEn = {
   searchAction: 'Search',
   selectModeAction: 'Select multiple',
   selectModeCancel: 'Cancel',
+  bulkLog: 'Log all',
+  bulkSchedule: 'Schedule all',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Search...',
   searchEmpty: 'No results found.',

@@ -7,19 +7,28 @@
  * - 樹形 mono 11pt (任意)
  * - 区切り線 + 最後の水やり / 剪定からの日数 (任意)
  * - radius 16、border 1、padding 16、minHeight 152
+ *
+ * 複数選択モード対応 (mockups v1.0 home-screens.jsx BonsaiCard 整合):
+ * - selecting=true 時、写真左上に 24×24 円形チェックマーク overlay (Apple Photos 同型)
+ *   - selected=true: BRAND_GREEN 背景 + CheckIcon (washi 色)
+ *   - selected=false: BG_SURFACE 背景 + BORDER_STRONG 枠
+ * - onLongPress 設定時、長押しで親に通知 (selectMode 入りトリガ用、500ms default)
  */
 import { Image } from 'expo-image';
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { DropletIcon, ScissorsIcon } from '@/src/components/icons';
+import { CheckIcon, DropletIcon, ScissorsIcon } from '@/src/components/icons';
 import {
+  ACCENT_BARK,
   BG_SURFACE,
   BORDER_DEFAULT,
+  BORDER_STRONG,
+  BRAND_GREEN,
+  ON_BRAND,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
-  ACCENT_BARK,
 } from '@/src/core/theme/colors';
 
 import { BonsaiPlaceholder, hashSeed } from './BonsaiPlaceholder';
@@ -40,25 +49,57 @@ export type BonsaiCardData = {
 type Props = {
   data: BonsaiCardData;
   onPress: (id: string) => void;
+  /** 複数選択モード中か (default false)。true 時、写真左上にチェックマーク overlay を表示。 */
+  selecting?: boolean;
+  /** selecting=true 時、この盆栽が選択中か (default false)。 */
+  selected?: boolean;
+  /** 長押し callback (selectMode 入りトリガ用、500ms default、optional)。 */
+  onLongPress?: (id: string) => void;
   testID?: string;
 };
 
-export function BonsaiCard({ data, onPress, testID }: Props) {
+export function BonsaiCard({
+  data,
+  onPress,
+  selecting = false,
+  selected = false,
+  onLongPress,
+  testID,
+}: Props) {
   const seed = hashSeed(data.id);
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={data.name}
+      accessibilityState={selecting ? { selected } : undefined}
       style={styles.card}
       onPress={() => onPress(data.id)}
+      onLongPress={onLongPress != null ? () => onLongPress(data.id) : undefined}
       testID={testID}
     >
-      {data.coverUri != null && data.coverUri.length > 0 ? (
-        <Image source={{ uri: data.coverUri }} style={styles.thumb} contentFit="cover" />
-      ) : (
-        <BonsaiPlaceholder size={120} seed={seed} radius={12} style={styles.thumb} />
-      )}
+      <View style={styles.thumbWrap}>
+        {data.coverUri != null && data.coverUri.length > 0 ? (
+          <Image source={{ uri: data.coverUri }} style={styles.thumb} contentFit="cover" />
+        ) : (
+          <BonsaiPlaceholder size={120} seed={seed} radius={12} style={styles.thumb} />
+        )}
+        {selecting && (
+          <View
+            style={[
+              styles.checkbox,
+              selected ? styles.checkboxSelected : styles.checkboxUnselected,
+            ]}
+            testID={
+              selected
+                ? `${testID ?? 'e2e_bonsai_card'}_checked`
+                : `${testID ?? 'e2e_bonsai_card'}_unchecked`
+            }
+          >
+            {selected && <CheckIcon size={14} color={ON_BRAND} />}
+          </View>
+        )}
+      </View>
 
       <View style={styles.body}>
         <ThemedText style={styles.name} numberOfLines={1}>
@@ -120,7 +161,21 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     minHeight: 152,
   },
+  thumbWrap: { position: 'relative', width: 120, height: 120 },
   thumb: { width: 120, height: 120, borderRadius: 12 },
+  checkbox: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+  },
+  checkboxSelected: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
+  checkboxUnselected: { backgroundColor: BG_SURFACE, borderColor: BORDER_STRONG },
   body: { flex: 1, minWidth: 0 },
   name: {
     fontFamily: 'NotoSerifJP_500Medium',
