@@ -518,9 +518,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   onboardingTut4Title: '水やりヒートマップの見方',
   onboardingTut4Body:
     '色が濃いほどその日の水やり回数が多いです。セルをタップで詳細表示。「最後の水やり」は経過日数を示します。',
-  onboardingTut5Title: '通知を有効にしましょう',
+  onboardingTut5Title: 'あなたが決めた予定だけお知らせ',
   onboardingTut5Body:
-    '当日まとめ通知と水やり通知でうっかり忘れを防ぎます。あとから設定で変更可能です。',
+    'あなたが決めた予定をお知らせします。通知はオフにもできます。いつでも設定から変更可能です。',
   onboardingTut5Cta: '通知を有効にする',
   onboardingTutNext: '次へ',
   skipForLater: 'あとで',
