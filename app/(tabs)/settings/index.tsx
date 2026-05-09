@@ -135,7 +135,12 @@ export default function SettingsScreen() {
       {/* ADR-0020 Phase 7 / Issue #255: SearchHeader (タイトル「設定」+ 検索)。
           設定タブ自身では Cog 遷移ボタンは不要のため showSettings={false}。
           屋外モードは下の独立トグル (toggleRow) に集約。 */}
-      <SearchHeader title={t('tabSettings')} testIdSuffix="settings" showSettings={false} />
+      <SearchHeader
+        title={t('tabSettings')}
+        testIdSuffix="settings"
+        showSearch={false}
+        showSettings={false}
+      />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* --- F-15 Phase A テーマ (Issue #32、ADR-0015) --- */}
         <View style={styles.section}>
