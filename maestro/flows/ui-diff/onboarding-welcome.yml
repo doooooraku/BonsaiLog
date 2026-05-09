@@ -1,0 +1,39 @@
+---
+# UI diff: オンボーディング Welcome 画面のスクリーンショット取得用
+# ADR-0021 / ADR-0020 §Notes §画面マップ / ADR-0018 (オンボ統合フロー)
+# 対象実装: app/onboarding/welcome.tsx (testID e2e_onboarding_welcome)
+# 対象モックアップ: docs/mockups/v1.0/wireframes/01-Onboarding.html [data-screen-label="02 Welcome"]
+#
+# 前提:
+#   - 別途 Metro bundler (pnpm dev) を起動済み、`adb reverse tcp:8081 tcp:8081` で
+#     実機から WSL ポートに到達可能。
+#   - アプリの onboarding.completed = false 状態 (新規インストール直後、
+#     または 設定 → ヘルプ → 「チュートリアルを再表示」で reset 済)。
+#   - 既にオンボ完了済の場合、起動直後 Home に redirect されるため Welcome 取得不可。
+#     その場合は extendedWaitUntil が timeout し、preflight 側 hint に従う。
+#
+# bonsai-tab.yml と同一の Metro deep link 方式で起動 (Expo Go との衝突回避のため
+# Dev Launcher 専用 scheme を使う)。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: onboarding-welcome'
+tags:
+  - ui-diff
+---
+# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
+#    NOTE: 'exp://' は実機にインストール済の Expo Go (古いバージョン) が拾ってしまうため、
+#          BonsaiLog 専用の 'bonsailog://expo-development-client/?url=...' で
+#          Dev Launcher を直接呼ぶ (Expo SDK 50+ の deep link ハンドリング)。
+- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+
+# 2. Welcome 画面の Title 「鉢 1 本ずつ、一生分。」 が表示されるまで待つ
+#    Metro 初回バンドルが 30-60 秒かかるため timeout を 60000ms に拡張。
+#    オンボ完了済の場合はここで timeout するため preflight 側 hint で reset 誘導。
+- extendedWaitUntil:
+    visible:
+      text: '鉢 1 本ずつ、一生分。'
+    timeout: 60000
+    label: 'Metro バンドル + Welcome 表示完了 (初回 60s 許容)'
+
+# 3. 価値訴求 3 件のアニメ / レイアウト確定を待つ
+- waitForAnimationToEnd

@@ -30,13 +30,22 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §Decision §3 / home-screens.jsx HomeScreen / 4 タブ構成の起動時 redirect 先 (#249) / mockups v1.0 (PR #269、ADR-0021 Notes Amended で OpenDesign 出力を比較対象として参照)',
   },
+  'onboarding-welcome': {
+    id: 'onboarding-welcome',
+    description:
+      'オンボーディング Welcome 画面 (タイトル「鉢 1 本ずつ、一生分。」+ 3 価値訴求 + 「はじめる」CTA + アカウント不要補助)',
+    appFlow: 'maestro/flows/ui-diff/onboarding-welcome.yml',
+    designHtml: '01-Onboarding.html',
+    designSelector: '[data-screen-label="02 Welcome"]',
+    notes:
+      'ADR-0020 §Notes §画面マップ / ADR-0018 (オンボ統合フロー、Welcome 文言採用) / screens.jsx WelcomeScreen / app/onboarding/welcome.tsx / mockups v1.0 (PR #269、ADR-0021 Notes Amended で OpenDesign 出力を比較対象として参照)。前提: アプリ onboarding.completed=false 状態 (新規インストール / 「チュートリアルを再表示」reset 済)。',
+  },
   // PoC 安定後にユーザーと相談して順次追加 (ADR-0020 §Decision §3-§10):
   // 'bonsai-detail':      detail-screens.jsx Detail* (Hero 280h + 3 Tabs)
   // 'plan-tab':           care-screens.jsx CalendarScreen + WiringListScreen
   // 'find-tab':           care-screens.jsx SearchScreen
   // 'settings-tab':       monetization-screens.jsx Settings*
   // 'paywall':            monetization-screens.jsx PaywallScreen
-  // 'onboarding-welcome': screens.jsx Welcome
   // 'watering-heatmap':   care-screens-v2.jsx HeatmapScreen
   // 'work-log-confirm':   care-screens.jsx WorkLogConfirmSheet
 };
