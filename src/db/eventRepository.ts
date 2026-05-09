@@ -489,3 +489,60 @@ export async function searchEventsWithSnippet(
       return a.occurredAtUtc < b.occurredAtUtc ? 1 : -1;
     });
 }
+
+// ---------------------------------------------------------------------------
+// 一括予定追加 (ADR-0020 §画面マップ row 5、mockup v1.0 02-Home.html bulkSchedWork + bulkSchedDate)
+// ---------------------------------------------------------------------------
+
+export type BulkScheduleInput = {
+  /** 対象盆栽 ID 配列 (重複なし、selectMode で選択された)。 */
+  bonsaiIds: readonly string[];
+  /** 全盆栽に共通の作業種別。 */
+  type: EventType;
+  /** 全盆栽に共通の予定日時 (UTC ISO 8601)。 */
+  occurredAtUtc: string;
+};
+
+export type BulkScheduleResult = {
+  /** 作成成功した event 配列。 */
+  created: Event[];
+  /** 作成失敗した bonsaiId 配列 (個別エラーで他は continue)。 */
+  failed: string[];
+};
+
+/**
+ * 一括予定追加: 複数の盆栽に同じ EventType / 日付の planned event を作成。
+ *
+ * - Promise.allSettled で各 bonsai に createEvent を並列呼び出し (個別 transaction)
+ * - 1 件失敗しても他は continue (failed 配列に bonsaiId を返す)
+ * - payload は空 `{}` (Valibot 全 EventType で optional のみのため通る、payloadValidator.ts 参照)
+ * - status='planned' で scheduled event として作成
+ *
+ * 注: 通知 (notify=true 時の scheduled notification) は本 helper のスコープ外。
+ *     親 (HomeScreen) で notify state を保持し、別途 notification scheduler で実装予定 (Issue)。
+ *
+ * Related:
+ * - ADR-0020 §Notes §画面マップ row 5 (HomeScreen 一括予定追加)
+ * - mockup v1.0 02-Home.html `01c 一括予定・作業選択` / `01d 一括予定・日付`
+ * - ADR-0011 (記録のみ哲学整合、通知デフォルト OFF)
+ */
+export async function bulkScheduleEvents(input: BulkScheduleInput): Promise<BulkScheduleResult> {
+  const results = await Promise.allSettled(
+    input.bonsaiIds.map((bonsaiId) =>
+      createEvent({
+        bonsaiId,
+        type: input.type,
+        status: 'planned',
+        occurredAtUtc: input.occurredAtUtc,
+        payload: {},
+      }),
+    ),
+  );
+  const created: Event[] = [];
+  const failed: string[] = [];
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') created.push(r.value);
+    else failed.push(input.bonsaiIds[i] as string);
+  });
+  return { created, failed };
+}

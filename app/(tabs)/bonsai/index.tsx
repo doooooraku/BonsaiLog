@@ -7,16 +7,18 @@
  * - FlatList<BonsaiCard> (写真サムネ + 名前 + 樹種 + 樹形 + 最後の水やり / 剪定からの日数)
  * - selectMode true 時: 下部 SelectionToolbar (一括記録 / 予定追加)、FAB 非表示
  * - selectMode false 時: FAB (+) (盆栽新規登録、右下、bottom 96px = TabBar 高さ + 余白)
+ * - selectMode + 「予定追加」タップ時: BulkWorkPickerSheet → BulkScheduleDateSheet → bulkScheduleEvents
  *
  * Empty State: HomeEmptyScreen 整合 (PotIcon + タイトル + 説明 + 「+ 盆栽を登録」フル幅 CTA)
  *
  * Phase 9 で AdBanner を本ファイル末尾に配置済 (ADR-0010「ホーム下部のみ」、Repolog 同等構成)。
  *
- * mockup v1.0 02-Home.html 整合 (一括予定追加フロー、PR 1 UI 基盤):
+ * mockup v1.0 02-Home.html 整合 (一括予定追加フロー):
  * - 長押しで selectMode 入り (Pressable.onLongPress、500ms default)
  * - SearchHeader「複数選択 / キャンセル」テキストボタンでも selectMode トグル
  * - selectMode 中の BonsaiCard 短押し → toggle、長押し → no-op (既に selectMode 中)
- * - SelectionToolbar 「予定追加」ボタンは PR 2 で BulkWorkPickerSheet を呼び出し配線予定
+ * - SelectionToolbar 「予定追加」ボタン → BulkWorkPickerSheet → BulkScheduleDateSheet
+ *   → bulkScheduleEvents (Promise.allSettled で各 bonsai に planned event 作成)
  * - SelectionToolbar 「一括記録」ボタンは disabled (Issue で BulkLogConfirmSheet 実装後に enable)
  */
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
@@ -32,14 +34,17 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 import { ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/bonsaiRepository';
-import { getActiveEventsByBonsai } from '@/src/db/eventRepository';
+import { bulkScheduleEvents, getActiveEventsByBonsai } from '@/src/db/eventRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
+import type { EventType } from '@/src/db/schema';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
 import { AdBanner } from '@/src/features/ads/AdBanner';
 import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCard';
 import { HomeFilterTabs, type FilterChip } from '@/src/features/bonsai/HomeFilterTabs';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { SelectionToolbar } from '@/src/features/bonsai/SelectionToolbar';
+import { BulkScheduleDateSheet } from '@/src/features/event/BulkScheduleDateSheet';
+import { BulkWorkPickerSheet } from '@/src/features/event/BulkWorkPickerSheet';
 import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 
 const ALL_FILTER_ID = 'ALL';
@@ -51,6 +56,8 @@ const AD_BANNER_HEIGHT_APPROX = 60;
 
 // SelectionToolbar 高さ (本コンポーネントの minHeight 56 と一致)
 const SELECTION_TOOLBAR_HEIGHT = 56;
+
+type BulkSchedStep = 'pickWork' | 'pickDate' | null;
 
 /**
  * 経過日数を「3日」「2週間」「5ヶ月」など短い文字列にフォーマット。
@@ -133,6 +140,10 @@ export default function BonsaiHomeScreen() {
   // mockups v1.0 02-Home.html `selected` Set<id> 整合: 選択中の盆栽 ID 集合。
   // selectMode false 時は常に空 (toggle で同期)、selectMode true 時のみ追加・削除可能。
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // mockups v1.0 02-Home.html `bulkSchedStep` / `bulkSchedType` 整合:
+  // 一括予定追加フローの 2 step state (pickWork → pickDate → null=完了/閉じる)。
+  const [bulkSchedStep, setBulkSchedStep] = useState<BulkSchedStep>(null);
+  const [bulkSchedType, setBulkSchedType] = useState<EventType>('fertilizing');
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -178,6 +189,7 @@ export default function BonsaiHomeScreen() {
   const toggleSelectMode = useCallback(() => {
     setSelectMode((prev) => !prev);
     setSelectedIds(new Set());
+    setBulkSchedStep(null);
   }, []);
 
   // BonsaiCard 短押し: selectMode 時 toggle、通常時 router.push (mockup `onCardClick` 整合)。
@@ -208,11 +220,45 @@ export default function BonsaiHomeScreen() {
     [selectMode],
   );
 
-  // SelectionToolbar 「予定追加」: PR 2 で BulkWorkPickerSheet を呼び出し配線予定。
-  // PR 1 では state のみ (実機タップ時にトーストや BottomSheet 表示は未配線)。
+  // SelectionToolbar 「予定追加」: BulkWorkPickerSheet を開く (bulkSchedStep='pickWork')。
   const handleBulkSchedule = useCallback(() => {
-    // PR 2 で BulkWorkPickerSheet を表示する step state に遷移する配線を追加予定。
+    setBulkSchedStep('pickWork');
   }, []);
+
+  // BulkWorkPickerSheet で作業選択 → BulkScheduleDateSheet へ遷移。
+  const handlePickWorkSelect = useCallback((type: EventType) => {
+    setBulkSchedType(type);
+    setBulkSchedStep('pickDate');
+  }, []);
+
+  // Bulk Sheets の閉じる (drag down or onClose) → step null。
+  // mockup `onDismiss` の動作整合 (selectMode は維持)。
+  const handleBulkSheetsClose = useCallback(() => {
+    setBulkSchedStep(null);
+  }, []);
+
+  // BulkScheduleDateSheet で保存 → bulkScheduleEvents で各 bonsai に planned event 作成 → reload。
+  // R-28: notify=true 時の notification scheduling は Issue (本 PR スコープ外、別 Phase)。
+  const handleBulkSchedSave = useCallback(
+    async (input: { occurredAtUtc: string; notify: boolean }) => {
+      await bulkScheduleEvents({
+        bonsaiIds: Array.from(selectedIds),
+        type: bulkSchedType,
+        occurredAtUtc: input.occurredAtUtc,
+      });
+      // 完了 → selectMode 解除 + step リセット + 再 load
+      setSelectMode(false);
+      setSelectedIds(new Set());
+      setBulkSchedStep(null);
+      await reload();
+    },
+    [selectedIds, bulkSchedType, reload],
+  );
+
+  const selectedBonsais = useMemo(
+    () => items.filter((it) => selectedIds.has(it.id)).map((it) => ({ id: it.id, name: it.name })),
+    [items, selectedIds],
+  );
 
   if (loading) {
     return (
@@ -330,6 +376,20 @@ export default function BonsaiHomeScreen() {
       )}
       {/* ADR-0020 Phase 9: AdBanner を盆栽タブ最下部に配置 (ADR-0010「ホーム下部のみ」、Repolog 同等構成) */}
       <AdBanner />
+      {/* 一括予定追加 BottomSheets (mockup v1.0 home-screens.jsx HomeScreen `bulkSchedStep` 整合) */}
+      <BulkWorkPickerSheet
+        visible={bulkSchedStep === 'pickWork'}
+        selectedBonsais={selectedBonsais}
+        onSelect={handlePickWorkSelect}
+        onClose={handleBulkSheetsClose}
+      />
+      <BulkScheduleDateSheet
+        visible={bulkSchedStep === 'pickDate'}
+        type={bulkSchedType}
+        selectedBonsais={selectedBonsais}
+        onClose={handleBulkSheetsClose}
+        onSave={handleBulkSchedSave}
+      />
     </ThemedView>
   );
 }
