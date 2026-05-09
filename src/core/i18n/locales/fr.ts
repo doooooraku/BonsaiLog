@@ -524,5 +524,9 @@ const fr: Partial<Record<TranslationKey, string>> = {
   workLogWirePart_eda: 'Branch',
   workLogWireDuration: 'Target duration',
   workLogWireDurationHint: 'Used for unwire notification timing',
+  onboardingWelcomeValue1: '19 languages, fully offline',
+  onboardingWelcomeValue2: 'No personal data collected',
+  onboardingWelcomeValue3: 'A logbook for the next generation',
+  onboardingWelcomeNote: 'No account required',
 };
 export default fr;

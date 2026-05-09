@@ -532,6 +532,10 @@ const baseEn = {
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
   outdoorModeToggleA11y: 'Toggle outdoor mode',
+  onboardingWelcomeValue1: '19 languages, fully offline',
+  onboardingWelcomeValue2: 'No personal data collected',
+  onboardingWelcomeValue3: 'A logbook for the next generation',
+  onboardingWelcomeNote: 'No account required',
 };
 
 export type TranslationKey = keyof typeof baseEn;
