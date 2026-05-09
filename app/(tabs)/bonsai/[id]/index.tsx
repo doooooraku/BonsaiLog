@@ -377,6 +377,11 @@ export default function BonsaiDetailScreen() {
           </>
         )}
 
+        {/*
+         * A6 (Detail mockup 完全整合 全 10 PR の 6/10) — _buildChipsFor 14 作業 + _HistoryChip /
+         * _ChipRow / _HistoryPhotos の本格実装は Issue #296 で track 化 (推定 4 サブ PR)。
+         * 本 PR は Issue 起票 + コメント反映のみで A6 placeholder。
+         */}
         {/* history Tab 第 0 部分: 水やり概要 (旧 timeline から history 最上部に移動、A5 PR) */}
         {activeTab === 'history' && (
           <View style={styles.section}>
