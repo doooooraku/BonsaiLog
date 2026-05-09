@@ -521,5 +521,8 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue3: 'A logbook for the next generation',
   onboardingWelcomeNote: 'No account required',
   detailMoreMenu: 'More menu',
+  detailTabBasic: 'Basic info',
+  detailTabPlanTimeline: 'Schedule',
+  detailPlanTimelinePlaceholder: 'Schedule features will be available in a future update.',
 };
 export default zhHant;
