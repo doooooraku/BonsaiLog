@@ -2,14 +2,16 @@
 // scripts/ui-diff/preflight.mjs
 // run.ts / capture-app.sh の実行前に環境を一括チェックして fail-fast。
 // PoC で踏んだ罠 (Node / adb CRLF / Expo Go / Metro / Playwright / ImageMagick /
-// ClaudeDesign 正本) を構造的に検出する。
+// mockups v1.0 正本) を構造的に検出する。
 //
-// ADR-0021 §Initial・変更前提 + R-19「気をつけますではなく仕組みで」の実装。
+// ADR-0021 §Initial・変更前提 + ADR-0021 Notes Amended (OpenDesign 出力 = mockups v1.0
+// を Source of Reference として参照) + R-19「気をつけますではなく仕組みで」の実装。
 
 import { execSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as net from 'node:net';
 import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // --- ANSI colors ---
 const C = {
@@ -24,8 +26,12 @@ const ICON = { ok: '✓', warn: '⚠', err: '✗' };
 
 // --- env / paths ---
 const ADB = process.env.ADB_BIN || '/usr/local/bin/adb';
+// DESIGN_ROOT は config.ts と同じ値を計算する (将来は config から import すべき、現状は重複)。
+const here = fileURLToPath(import.meta.url);
+const hereDir = path.dirname(here);
+const REPO_ROOT = path.resolve(hereDir, '../..');
 const DESIGN_ROOT =
-  process.env.UI_DIFF_DESIGN_ROOT || '/mnt/c/Users/doooo/Downloads/BonsaiLog_template';
+  process.env.UI_DIFF_DESIGN_ROOT || path.join(REPO_ROOT, 'docs/mockups/v1.0/wireframes');
 const METRO_HOST = 'localhost';
 const METRO_PORT = 8081;
 
@@ -245,30 +251,30 @@ function checkImageMagick() {
   }
 }
 
-// --- 7. ClaudeDesign root ---
+// --- 7. mockups v1.0 root ---
 function checkDesignRoot() {
   if (!fs.existsSync(DESIGN_ROOT)) {
     record({
       id: 'design-root',
-      name: 'ClaudeDesign root',
+      name: 'mockups v1.0 root',
       status: 'err',
       message: `${DESIGN_ROOT} not found`,
-      hint: 'Windows 側 C:\\Users\\doooo\\Downloads\\BonsaiLog_template\\ にエクスポート',
+      hint: 'docs/mockups/v1.0/wireframes/ が存在することを確認 (PR #269 で取り込み済み、git checkout で復元可)',
     });
     return;
   }
-  const required = ['Home and Management Wireframes.html', 'tokens.css'];
+  const required = ['02-Home.html', 'tokens.css'];
   const missing = required.filter((f) => !fs.existsSync(path.join(DESIGN_ROOT, f)));
   if (missing.length > 0) {
     record({
       id: 'design-root',
-      name: 'ClaudeDesign files',
+      name: 'mockups v1.0 files',
       status: 'err',
       message: `missing: ${missing.join(', ')}`,
-      hint: 'ClaudeDesign 再エクスポートが必要',
+      hint: 'mockups v1.0 が壊れている可能性、git status で確認 + git checkout docs/mockups/v1.0/',
     });
   } else {
-    record({ id: 'design-root', name: 'ClaudeDesign root', status: 'ok', message: DESIGN_ROOT });
+    record({ id: 'design-root', name: 'mockups v1.0 root', status: 'ok', message: DESIGN_ROOT });
   }
 }
 
