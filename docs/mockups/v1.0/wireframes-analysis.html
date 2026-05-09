@@ -1,0 +1,2783 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BonsaiLog ・ UX評議会 — ペルソナ検証（画面遷移図 v1.5 + Sprint 2 完了）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style id="tokens-inline">
+  /* ──────── Inlined from wireframes/tokens.css for standalone artifact ──────── */
+  :root {
+    --bg-primary: #F7F3E8;
+    --bg-surface: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #5A5248;
+    --text-muted: #8A8274;
+    --primary: #1F3A2E;
+    --primary-hover: #2A4C3D;
+    --accent-bark: #5A4637;
+    --accent-gold: #C69E48;
+    --danger: #8B2E2E;
+    --success: #3E5C39;
+    --border: #D9D1BF;
+    --border-strong: #8A8274;
+    --font-display-ja: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+    --font-display-latin: "Source Serif 4", Georgia, serif;
+    --font-body-ja: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+    --font-body-latin: "Inter", -apple-system, sans-serif;
+    --font-mono: "IBM Plex Mono", "SF Mono", monospace;
+    --size-displayXL: 48px;  --lh-displayXL: 58px;
+    --size-displayL:  32px;  --lh-displayL:  38px;
+    --size-displayM:  24px;  --lh-displayM:  29px;
+    --size-headingL:  20px;  --lh-headingL:  30px;
+    --size-headingM:  18px;  --lh-headingM:  27px;
+    --size-bodyL:     16px;  --lh-bodyL:     26px;
+    --size-bodyM:     14px;  --lh-bodyM:     22px;
+    --size-caption:   13px;  --lh-caption:   19px;
+    --size-micro:     11px;  --lh-micro:     16px;
+    --tap-min: 48px;
+    --tap-cta: 56px;
+  }
+</style>
+
+<style>
+  /* ──────────── Reset & base ──────────── */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #EDE6D3;
+    color: var(--text-primary);
+    font-family: var(--font-body-ja);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4, h5 { margin: 0; font-family: var(--font-display-ja); font-weight: 500; letter-spacing: 0.02em; }
+  p { margin: 0 0 16px; text-wrap: pretty; max-width: 64ch; }
+  a { color: var(--primary); }
+  table { border-collapse: collapse; width: 100%; }
+  ul, ol { margin: 0 0 16px; padding-left: 22px; }
+  ul li, ol li { margin-bottom: 6px; line-height: 1.7; }
+  code, kbd { font-family: var(--font-mono); font-size: 0.86em; background: rgba(31,58,46,0.06); padding: 1px 5px; border-radius: 3px; }
+  hr { border: 0; height: 1px; background: var(--border); margin: 48px 0; }
+  ::selection { background: rgba(198,158,72,0.3); color: var(--text-primary); }
+
+  /* ──────────── Layout ──────────── */
+  .doc {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 64px 56px 96px;
+  }
+  @media (max-width: 800px) { .doc { padding: 32px 20px 80px; } }
+
+  .meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  /* ──────────── Hero ──────────── */
+  .hero {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+    margin-bottom: 64px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: end;
+  }
+  @media (max-width: 700px) { .hero { grid-template-columns: 1fr; } }
+  .hero-title {
+    font-size: 48px;
+    line-height: 1.16;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+  }
+  @media (max-width: 700px) { .hero-title { font-size: 32px; } }
+  .hero-sub {
+    font-family: var(--font-display-latin);
+    font-style: italic;
+    font-size: 20px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+  .hero-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .hero-meta {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  @media (max-width: 700px) { .hero-meta { text-align: left; } }
+  .hero-meta strong { color: var(--text-primary); font-weight: 500; }
+
+  /* ──────────── Section ──────────── */
+  section { margin-bottom: 80px; }
+  .section-head { margin-bottom: 28px; }
+  .section-no {
+    font-family: var(--font-display-latin);
+    font-size: 18px;
+    color: var(--primary);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  h2.section-title {
+    font-size: 32px;
+    line-height: 1.25;
+    font-weight: 500;
+    margin: 4px 0 8px;
+  }
+  .section-sub {
+    color: var(--text-secondary);
+    max-width: 60ch;
+    font-size: 15px;
+  }
+
+  /* ──────────── TL;DR ──────────── */
+  .tldr {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+  }
+  .tldr-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--accent-bark);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .tldr-summary {
+    font-family: var(--font-display-ja);
+    font-size: 22px;
+    line-height: 1.7;
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+  .tldr ol { padding-left: 20px; }
+  .tldr ol li { margin-bottom: 12px; }
+  .tldr ol li b { color: var(--text-primary); font-weight: 600; }
+
+  /* ──────────── Two-column grid ──────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ──────────── Persona card ──────────── */
+  .persona-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .persona-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .persona-card .avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    border: 1.5px solid var(--border);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display-ja);
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--primary);
+    flex-shrink: 0;
+  }
+  .persona-card .head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .persona-card .name {
+    font-family: var(--font-display-ja);
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  .persona-card .age {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+  }
+  .persona-card .role {
+    font-family: var(--font-body-ja);
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .persona-card .quote {
+    font-family: var(--font-display-ja);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--text-primary);
+    border-left: 2px solid var(--accent-gold);
+    padding-left: 12px;
+    margin: 4px 0 8px;
+  }
+  .persona-card dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
+  .persona-card dt {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    align-self: center;
+  }
+  .persona-card dd {
+    margin: 0;
+    font-family: var(--font-body-ja);
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  .persona-card .footer {
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    font-family: var(--font-body-ja);
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* ──────────── Expert card ──────────── */
+  .expert-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .expert-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    border-radius: 4px;
+    padding: 18px;
+  }
+  .expert-card h4 {
+    font-family: var(--font-display-ja);
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .expert-card .role-line {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .expert-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* ──────────── Flow diagram wrapper ──────────── */
+  .flow-wrap {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 24px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+  .flow-wrap h3 {
+    font-family: var(--font-display-ja);
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .flow-wrap .desc {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .mermaid { display: flex; justify-content: center; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    padding: 14px 16px;
+    background: rgba(31,58,46,0.025);
+    border-radius: 10px;
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  .legend-item { display: inline-flex; align-items: center; gap: 8px; }
+  .legend-shape {
+    width: 28px; height: 18px;
+    border: 1.5px solid var(--text-primary);
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .legend-shape.modal { border-radius: 12px 12px 4px 4px; background: #FFF8EB; }
+  .legend-shape.sheet { border-radius: 14px 14px 4px 4px; border-style: dashed; background: #F0EFE5; }
+  .legend-shape.hub { border-radius: 9999px; background: #1F3A2E; border-color: #1F3A2E; }
+  .legend-shape.full { border-radius: 4px; background: #EDE6D3; }
+  .legend-arrow { width: 28px; flex-shrink: 0; }
+
+  /* ──────────── Plain-text walkthrough ──────────── */
+  .walk {
+    background: rgba(31,58,46,0.025);
+    border-left: 3px solid var(--primary);
+    border-radius: 0 6px 6px 0;
+    padding: 14px 18px;
+    margin: 16px 0 24px;
+    font-family: var(--font-body-ja);
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-primary);
+  }
+  .walk em {
+    font-family: var(--font-mono);
+    font-style: normal;
+    color: var(--accent-bark);
+    font-size: 12px;
+    background: rgba(198,158,72,0.14);
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+  .walk .step {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .walk .step .n {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--primary);
+    font-weight: 500;
+    width: 22px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ──────────── Walkthrough simulation table ──────────── */
+  .sim {
+    margin-bottom: 36px;
+  }
+  .sim-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sim-head .avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(31,58,46,0.08); display: grid; place-items: center; font-family: var(--font-display-ja); font-size: 18px; color: var(--primary); flex-shrink: 0; }
+  .sim-head .who-name { font-family: var(--font-display-ja); font-size: 18px; font-weight: 500; }
+  .sim-head .scenario { color: var(--text-secondary); font-size: 13px; margin-top: 2px; }
+  .sim-steps {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 4px 14px;
+  }
+  .sim-steps .num { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); padding-top: 4px; letter-spacing: 0.04em; }
+  .sim-steps .step {
+    padding: 6px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .sim-steps .step.ok { color: var(--text-primary); }
+  .sim-steps .step.frict {
+    color: var(--text-primary);
+    background: rgba(198,158,72,0.10);
+    padding: 8px 10px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent-gold);
+  }
+  .sim-steps .step.block {
+    color: var(--text-primary);
+    background: rgba(139,46,46,0.07);
+    padding: 8px 10px;
+    border-radius: 6px;
+    border-left: 3px solid var(--danger);
+  }
+  .sim-steps .step .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent-bark);
+    background: rgba(198,158,72,0.18);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-right: 8px;
+    letter-spacing: 0.06em;
+  }
+  .sim-steps .step.block .badge {
+    background: rgba(139,46,46,0.16);
+    color: var(--danger);
+  }
+  .sim-summary {
+    margin-top: 12px;
+    padding: 14px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .sim-summary b { color: var(--text-primary); font-weight: 600; }
+
+  /* ──────────── Issue table ──────────── */
+  .issues-tbl {
+    width: 100%;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .issues-tbl th, .issues-tbl td {
+    padding: 12px 14px;
+    text-align: left;
+    vertical-align: top;
+    font-size: 13px;
+    line-height: 1.6;
+    border-bottom: 1px solid var(--border);
+  }
+  .issues-tbl th {
+    background: rgba(31,58,46,0.04);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .issues-tbl tr:last-child td { border-bottom: none; }
+  .pri {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .pri.p0 { background: var(--danger); color: #F7F3E8; }
+  .pri.p1 { background: var(--accent-gold); color: #1A1A1A; }
+  .pri.p2 { background: rgba(31,58,46,0.7); color: #F7F3E8; }
+  .pri.p3 { background: var(--border); color: var(--text-secondary); }
+
+  /* ──────────── Recommendation roadmap ──────────── */
+  .roadmap {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+  }
+  @media (max-width: 800px) { .roadmap { grid-template-columns: 1fr; } }
+  .road-col {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+  }
+  .road-col h4 {
+    font-family: var(--font-display-ja);
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  .road-col .when {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .road-col ul { padding-left: 18px; }
+  .road-col li { font-size: 13px; line-height: 1.6; margin-bottom: 8px; }
+
+  /* ──────────── Field-level audit ──────────── */
+  .field-audit {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0 32px;
+  }
+  .field-audit h4 {
+    font-family: var(--font-display-ja);
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  .field-audit .desc { color: var(--text-secondary); font-size: 13px; margin-bottom: 18px; }
+  .field-audit table { width: 100%; border-collapse: collapse; }
+  .field-audit th { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); padding: 8px 10px 8px 0; text-align: left; border-bottom: 1px solid var(--border-strong); font-weight: 500; }
+  .field-audit td { padding: 10px 10px 10px 0; font-size: 13px; vertical-align: top; border-bottom: 1px dotted var(--border); line-height: 1.6; }
+  .field-audit td .vary {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: rgba(198,158,72,0.14);
+    color: var(--accent-bark);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+  .field-audit td .ok { color: var(--success); font-family: var(--font-mono); font-size: 11px; }
+  .field-audit td .ng { color: var(--danger); font-family: var(--font-mono); font-size: 11px; }
+  .field-audit td .warn { color: var(--accent-bark); font-family: var(--font-mono); font-size: 11px; }
+
+  /* ──────────── Glossary ──────────── */
+  .glossary {
+    column-count: 2;
+    column-gap: 32px;
+  }
+  @media (max-width: 700px) { .glossary { column-count: 1; } }
+  .glossary dl { margin: 0; }
+  .glossary dt {
+    font-family: var(--font-display-ja);
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 14px;
+    break-after: avoid;
+  }
+  .glossary dd {
+    margin: 2px 0 14px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    break-inside: avoid;
+  }
+
+  /* ──────────── Sticky TOC ──────────── */
+  .toc {
+    position: sticky;
+    top: 16px;
+    background: rgba(247,243,232,0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    font-family: var(--font-body-ja);
+    font-size: 13px;
+    margin-bottom: 48px;
+  }
+  .toc-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+  .toc ol { display: flex; flex-wrap: wrap; gap: 6px 14px; padding-left: 0; list-style: none; margin: 0; }
+  .toc ol li { margin: 0; }
+  .toc a { text-decoration: none; color: var(--text-primary); }
+  .toc a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+  .toc .num { color: var(--primary); font-family: var(--font-mono); font-weight: 500; margin-right: 4px; font-size: 12px; }
+
+  /* ──────────── Callout ──────────── */
+  .callout {
+    background: rgba(198,158,72,0.10);
+    border-left: 3px solid var(--accent-gold);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0 24px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .callout strong { color: var(--text-primary); }
+  .callout .label { font-family: var(--font-mono); font-size: 10px; color: var(--accent-bark); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 6px; }
+
+  .danger {
+    background: rgba(139,46,46,0.06);
+    border-left: 3px solid var(--danger);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .danger .label { color: var(--danger); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 6px; }
+
+  .ok {
+    background: rgba(62,92,57,0.06);
+    border-left: 3px solid var(--success);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .ok .label { color: var(--success); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 6px; }
+
+  /* ──────────── Section number anchor ──────────── */
+  h2[id], h3[id], h4[id] { scroll-margin-top: 24px; }
+
+  /* ──────────── Highlight color refs in flow ──────────── */
+  .swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1px solid;
+    border-radius: 3px;
+    vertical-align: -2px;
+    margin-right: 4px;
+  }
+
+  /* mermaid override */
+  .mermaid svg { font-family: -apple-system, "Hiragino Sans", "Yu Gothic", sans-serif !important; }
+
+</style>
+</head>
+<body>
+<div class="doc">
+
+<!-- ════════════════════════════════════════════════════════
+     HERO
+     ════════════════════════════════════════════════════════ -->
+<header class="hero">
+  <div>
+    <div class="meta" style="margin-bottom: 10px;">BonsaiLog ・ Wireframes Audit ・ v1.6 final（凍結アーカイブ）</div>
+    <h1 class="hero-title">UX 評議会、開廷。</h1>
+    <div class="hero-sub">Six personas, six experts — one bonsai notebook on trial.</div>
+    <div class="hero-tags">
+      <span class="tag">49 screens</span>
+      <span class="tag">5 features</span>
+      <span class="tag">6 personas</span>
+      <span class="tag">6 experts</span>
+      <span class="tag">3 simulation rounds</span>
+      <span class="tag">14 主要解決</span>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div><strong>2026-05-08</strong></div>
+    <div>Audit by: 6-expert panel</div>
+    <div>Subject: BonsaiLog v0.1 → v1.6</div>
+    <div>Frame: iPhone 15 Pro 393×852</div>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════
+     v1.6 FINAL FREEZE NOTICE
+     ════════════════════════════════════════════════════════ -->
+<aside style="margin: 0 0 32px; padding: 20px 24px; background: #FBF5E4; border: 1px solid #C69E48; border-left: 4px solid #C69E48; border-radius: 0 8px 8px 0;">
+  <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; color: #8A6A1F; text-transform: uppercase; margin-bottom: 8px;">この文書のロール</div>
+  <p style="margin: 0 0 10px; font-size: 14px; line-height: 1.75; color: var(--text-primary);">
+    本文書は <b>BonsaiLog ワイヤーフレーム監査の v1.6 final 凍結アーカイブ</b>（v1.0〜v1.6 までの議論・課題テーブル・ロードマップ・適用ログを保管）。
+    課題テーブル（Sec 7）と改善ロードマップ（Sec 8）は <b>v1.6 final 時点の記録</b>として凍結し、以降の更新は行わない。
+  </p>
+  <p style="margin: 0; font-size: 14px; line-height: 1.75; color: var(--text-primary);">
+    <b>v1.7 以降の進化</b>（CareHub / ふりかえりタブ / BackupScreen 独立化 / PDF 整合 / 画面メタ禁則 / Pro 境界線 / 画面遷移図単一情報源化）は、以下の **正本** 3 文書を参照：
+    <a href="docs/principles.md" style="color: var(--primary); font-weight: 500;">設計原則 v1.10</a> ／
+    <a href="docs/display-schema.md" style="color: var(--primary); font-weight: 500;">表示スキーマ v1.3</a> ／
+    <a href="movcqnjg-BonsaiLog-Flow.html" style="color: var(--primary); font-weight: 500;">画面遷移図 v1.7 final</a>。
+  </p>
+</aside>
+
+<!-- ════════════════════════════════════════════════════════
+     TOC
+     ════════════════════════════════════════════════════════ -->
+<nav class="toc">
+  <div class="toc-label">目次（Contents）</div>
+  <ol>
+    <li><a href="#sec-0"><span class="num">00</span>はじめに（読み方）</a></li>
+    <li><a href="#sec-tldr"><span class="num">TL;DR</span>結論</a></li>
+    <li><a href="#sec-1"><span class="num">01</span>検証方法</a></li>
+    <li><a href="#sec-1-5"><span class="num">01.5</span>競合・市場の状況</a></li>
+    <li><a href="#sec-2"><span class="num">02</span>議論メンバー</a></li>
+    <li><a href="movcqnjg-BonsaiLog-Flow.html"><span class="num">03</span>画面遷移図 v1.5 ▸ 別ファイル</a></li>
+    <li><a href="#sec-4"><span class="num">04</span>動線シミュレーション</a></li>
+    <li><a href="#sec-5"><span class="num">05</span>入力項目の精査</a></li>
+    <li><a href="#sec-6"><span class="num">06</span>専門家の所見</a></li>
+    <li><a href="#sec-7"><span class="num">07</span>課題一覧</a></li>
+    <li><a href="#sec-8"><span class="num">08</span>改善ロードマップ</a></li>
+    <li><a href="#sec-9"><span class="num">09</span>未解決の問い</a></li>
+    <li><a href="#sec-10"><span class="num">10</span>用語集</a></li>
+    <li><a href="#sec-11"><span class="num">11</span>自己監査ログ</a></li>
+  </ol>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 0 — INTRO
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-0">
+  <div class="section-head">
+    <span class="section-no">00</span>
+    <h2 class="section-title">はじめに ― この文書の読み方</h2>
+    <p class="section-sub">この文書は「BonsaiLog ワイヤーフレーム v0.1」の <b>UX レビュー記録</b> です。新機能を作るのではなく、すでにある画面を <b>「使う人の視点」で点検</b> し、改善点を整理することが目的です。</p>
+  </div>
+
+  <p>
+    BonsaiLog は盆栽愛好家のためのスマホアプリ ― 盆栽を登録し、毎日の作業（水やり・剪定・植替えなど）を記録し、写真を貯めていくサービスです。すでに <b>35 画面・5 機能領域</b> のワイヤーが用意されており、デザインの完成度は高い水準にあります。
+  </p>
+  <p>
+    今回はその <b>完成度を疑う側</b> に立って、「初めて触る人」「シニア」「プロ」「英語ユーザー」など、立場の違う6人を仮想的に登場させ、画面の中で実際に詰まる/迷う/離脱する箇所を洗い出しました。さらに、6人の専門家（UX デザイナー、盆栽家、PM、アクセシビリティ、i18n、行動心理）に独立してコメントしてもらい、判断のバイアスを避けています。
+  </p>
+
+  <div class="callout">
+    <div class="label">読む順番のおすすめ</div>
+    <ol style="margin: 6px 0 0 18px;">
+      <li>急ぎなら <a href="#sec-tldr">TL;DR</a> と <a href="#sec-7">課題一覧</a> だけ。</li>
+      <li>10分あるなら + <a href="movcqnjg-BonsaiLog-Flow.html">画面遷移図 v1.5</a>（別ファイルに統合）。アプリ全体の地図がわかります。</li>
+      <li>30分あるなら + <a href="#sec-4">動線シミュレーション</a>。ユーザーが「どこで詰まるか」が体感できます。</li>
+      <li>意思決定者なら + <a href="#sec-8">改善ロードマップ</a>。何を、いつ、どう直すかの提案です。</li>
+    </ol>
+  </div>
+
+  <p>
+    用語が出るたびに <a href="#sec-10">巻末の用語集</a> で説明していますので、専門用語に詰まったらそちらをご覧ください。
+  </p>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     TL;DR
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-tldr">
+  <div class="tldr">
+    <div class="tldr-label">TL;DR ― 一行結論</div>
+    <div class="tldr-summary">
+      <b>すでに高水準。</b>ただし「初めての不安」「一括選択の見つけにくさ」「タグの作り方」「写真の Pro 制限」「シニア向けタップ領域」の <b>5 つの P0 課題</b> を直せば、6人のペルソナ全員が無理なく日常使いできる ― が、私たちの結論。<br/>
+      <b>v1.3 アップデート（2026-05-07）：</b> Sprint 1 全 5 件完了。<b>P0-1（一括選択発見性）／ P0-2（タグ作成 UI）／ P1-A（樹形 desc）／ P1-B（…メニュー）／ P1-E（ATT/UMP 統合）</b>を RESOLVED v1.3 化。これにより P0 全 5 件 ＋ P1 Sprint 1 計 4 件 = <b>主要 9 件すべて解決</b>。残課題は P1-C/D/F/G ＋ P2-1〜7 ＋ P3-1〜4（中長期スプリント）。
+      <br/><br/>
+      <b>v1.5 Sprint 2 完了（2026-05-08）：</b> 画面遷移図 v1.5 で発見した残課題 5 件を Sprint 2 で <b>すべて解消</b>。<b>D1（FAB 不在）／ D2（編集導線が暗黙的）／ D3（水やり予定の埋没）／ D4（PDF Pro ロックの伝達）／ D8（完全削除動線）</b>を RESOLVED v1.5 化。FAB「＋作業を記録」を詳細画面に常設、「・・・」メニューから共有を削除して「基本情報を編集」を追加、連続水やり予定を折りたたみ表示、PDF に錠前 + Pro ロックモーダル、アーカイブ長押しで完全削除確認。
+    </div>
+
+    <ol>
+      <li><b>P0-1 一括選択モードの発見性が低い。</b> 「長押し」だけが入口。視覚ヒントなし。シニア・初心者・プロ全員が <em>「どうすれば一気に水やれるの？」</em> で詰まる。 <span style="color:var(--success);font-family:var(--mono);font-size:11px;letter-spacing:0.08em">[v1.3 RESOLVED — Home ヘッダ「選択」ボタン常設＋下部 SelectionToolbar]</span></li>
+      <li><b>P0-2 タグ／フィルタの作成 UI が存在しない。</b> Home に <code>@ベランダ</code> <code>#展示会候補</code> がモック表示されているのに、新規ユーザーがそれを <em>作る画面がない</em>。 <span style="color:var(--success);font-family:var(--mono);font-size:11px;letter-spacing:0.08em">[v1.3 RESOLVED — タグ入力欄＋TagEditModal＋動的 FilterTabs]</span></li>
+      <li><b>P0-3 写真3枚 Pro 制限が「データは自分のもの」と矛盾。</b> <span style="color:var(--success,#3E5C39);font-family:var(--mono);font-size:11px;letter-spacing:0.08em">[✓ Resolved v1.1：写真制限撤廃。Pro は出力＋体験へピボット]</span></li>
+      <li><b>P0-4 「最初の30日ガイド」へ繋がる導線がない。</b> <span style="color:var(--success,#3E5C39);font-family:var(--mono);font-size:11px;letter-spacing:0.08em">[✓ Resolved v1.1 by removal：GuideModalScreen 関数ごと削除。事実記録アプリは命令しない]</span></li>
+      <li><b>P0-5 シニア向けに小さすぎるセグメンテッドチップ（32–40dp）。</b> <span style="color:var(--success,#3E5C39);font-family:var(--mono);font-size:11px;letter-spacing:0.08em">[✓ Resolved v1.1：_Seg を 44dp 化。tokens.css 宣言と整合]</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 1 — METHODOLOGY
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-1">
+  <div class="section-head">
+    <span class="section-no">01</span>
+    <h2 class="section-title">検証方法 ― 多視点シミュレーション</h2>
+    <p class="section-sub">バイアスを排除するため、ユーザー側 6 人 × 専門家側 6 人 × 動線 5 つを掛け合わせ、<b>計 180 通り</b>の視点でワイヤーを点検しました。</p>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3 style="font-size: 18px; margin-bottom: 10px;">① ペルソナ生成（6名）</h3>
+      <p>盆栽愛好家層を <b>「経験」「年齢」「動機」「環境」</b> の4軸で広げ、抜けがないように配置。極端なペルソナ（初心者すぎる・プロすぎる・英語のみ）を意図的に含めることで、「まんなか向け」だけにならないよう設計。</p>
+    </div>
+    <div>
+      <h3 style="font-size: 18px; margin-bottom: 10px;">② 専門家パネル（6視点）</h3>
+      <p>UX、盆栽、PM、アクセシビリティ、i18n、行動心理。各専門家は <b>独立にコメント</b> し、お互いの結論に依存させない（<a href="#sec-10">情報カスケード</a>を避ける）。最後に合議で優先度を決定。</p>
+    </div>
+    <div>
+      <h3 style="font-size: 18px; margin-bottom: 10px;">③ 動線シミュレーション（5動線）</h3>
+      <p>「初回登録」「日々の水やり」「週末まとめ作業」「振り返り」「データ持出し」の5フローを、各ペルソナが歩く想定で <b>ステップ単位</b> で追跡。<em>詰まる場所</em>と<em>離脱しそうな場所</em>を記録。</p>
+    </div>
+    <div>
+      <h3 style="font-size: 18px; margin-bottom: 10px;">④ 仮説検証ループ</h3>
+      <p>1周目で見つけた問題を仮説として立て、2周目でそれが本当に各ペルソナで起こるか再検証。3周目で対応案を逆シミュレーション（<em>直したら誰が幸せになるか／誰が困るか</em>）まで実施。</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="label">バイアス対策</div>
+    「私たちが作ったから直さない」という結論を避けるため、3周目では <b>悪魔の代弁者（devil's advocate）</b> ロールを置き、「これは現状維持で正しいのではないか？」を主張させました。最終的な P0 5件は、悪魔の代弁者が反論しきれなかった項目だけが残っています。
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 1.5 — COMPETITIVE LANDSCAPE
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-1-5">
+  <div class="section-head">
+    <span class="section-no">01.5</span>
+    <h2 class="section-title">競合・市場の状況 ― 1次情報で確認</h2>
+    <p class="section-sub">「BonsaiLog の作っている世界に、すでに何が居るのか」 ― 競合 7 アプリと、日本の盆栽愛好家／高齢者スマホ利用の <b>1 次統計</b> を並べました。<em>BonsaiLog の独自価値が市場のどこに刺さるのか</em>を判定するための材料です。</p>
+  </div>
+
+  <h3 style="font-size: 18px; margin: 16px 0 8px;">競合 7 アプリの一覧</h3>
+  <table class="issues-tbl">
+    <thead>
+      <tr>
+        <th style="width: 20%;">アプリ</th>
+        <th style="width: 14%;">価格</th>
+        <th style="width: 14%;">作業別フォーム</th>
+        <th style="width: 12%;">一括記録</th>
+        <th style="width: 14%;">姿勢</th>
+        <th style="width: 12%;">水やり<br/>ヒートマップ</th>
+        <th>主な不満（レビュー）</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Bonsai Album</b><br/><a href="https://apps.apple.com/us/app/bonsai-album/id465021382" target="_blank" rel="noopener" style="font-family: var(--font-mono); font-size: 11px;">App Store</a></td>
+        <td>$7.99 + Lite</td>
+        <td>○ プリセット＋カスタム</td>
+        <td><span class="ng">×</span></td>
+        <td>記録特化</td>
+        <td>―</td>
+        <td>「同樹種の同日施肥を1ノートで書きたい」 ― bulk 不在の明確な要望</td>
+      </tr>
+      <tr>
+        <td><b>Bonsai Care App</b><br/><a href="https://www.bonsaicare.app/" target="_blank" rel="noopener" style="font-family: var(--font-mono); font-size: 11px;">公式</a> / <a href="https://apps.apple.com/us/app/bonsai-care-app/id6463043424" target="_blank" rel="noopener" style="font-family: var(--font-mono); font-size: 11px;">レビュー</a></td>
+        <td>5本まで Free / $2.99/月</td>
+        <td>○</td>
+        <td><span class="ng">×</span></td>
+        <td>ハイブリッド診断</td>
+        <td>―</td>
+        <td>「リマインダーのチェックを押すたびに画面がリセットされ、複数を一度に押せない」</td>
+      </tr>
+      <tr>
+        <td><b>Mirai Mobile</b><br/><a href="https://bonsaimirai.com/blog/mirai-mobile" target="_blank" rel="noopener" style="font-family: var(--font-mono); font-size: 11px;">Bonsai Mirai</a></td>
+        <td>有料</td>
+        <td>○ 樹種別カレンダー</td>
+        <td>不明</td>
+        <td><b>強い診断</b></td>
+        <td>カレンダー型</td>
+        <td>「地域に合わせた精密な通知」が売り → 通知強度が前提</td>
+      </tr>
+      <tr>
+        <td><b>Appy Bonsai</b><br/><a href="https://www.appybonsai.com/en/" target="_blank" rel="noopener" style="font-family: var(--font-mono); font-size: 11px;">公式</a></td>
+        <td>Free / Premium</td>
+        <td>○ ＋用土生成</td>
+        <td>不明</td>
+        <td>ハイブリッド</td>
+        <td>―</td>
+        <td>用土レシピ自動生成は独特、 BonsaiLog にない強み</td>
+      </tr>
+      <tr>
+        <td><b>Planta</b><br/><a href="https://justuseapp.com/en/app/1410126781/planta-keep-your-plants-alive/reviews" target="_blank" rel="noopener" style="font-family: var(--font-mono); font-size: 11px;">レビュー</a></td>
+        <td>Freemium $30+/年</td>
+        <td>△ 共通フォーム</td>
+        <td><span class="ng">×</span></td>
+        <td><b>強い診断</b></td>
+        <td>―</td>
+        <td>「頻度を変更できない」「情報が単純に間違っている」 ― 最も多い苦情</td>
+      </tr>
+      <tr>
+        <td><b>Greg</b><br/><a href="https://apps.apple.com/us/app/greg-plant-identifier-care/id1512912236" target="_blank" rel="noopener" style="font-family: var(--font-mono); font-size: 11px;">App Store</a></td>
+        <td>Weekly subscription</td>
+        <td>△</td>
+        <td><span class="ng">×</span></td>
+        <td>診断</td>
+        <td>―</td>
+        <td>「水やりスケジュールが当たらない」「通知をサブスクの裏に隠していてずるい」</td>
+      </tr>
+      <tr>
+        <td><b>PictureThis</b><br/><a href="https://identifythis.app/blog/picture-this-plant-identification-app" target="_blank" rel="noopener" style="font-family: var(--font-mono); font-size: 11px;">解説</a></td>
+        <td>$29.99/年</td>
+        <td>― 同定中心</td>
+        <td>n/a</td>
+        <td>診断</td>
+        <td>―</td>
+        <td>「Onboarding の課金画面が攻撃的に感じる」</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size: 18px; margin: 28px 0 8px;">1 次データで言える4つのこと</h3>
+
+  <div class="ok">
+    <div class="label">差別化のチャンス（unowned moat）</div>
+    調査した <b>7 アプリすべてで「一括記録」が欠落</b>、そして <b>GitHub-style 水やりヒートマップは1社も実装していない</b>。BonsaiLog が両方を持っていることは <em>市場で唯一</em>。<b>ただし P0-1（一括選択の発見性）が解決されない限り、この差別化は実現していない</b>のと同じ。発見性の改善は <em>機能改善</em> ではなく <em>差別化資産の解放</em> という位置づけ。
+  </div>
+
+  <div class="danger">
+    <div class="label">市場が嫌う声（避けるべき道）</div>
+    Planta（「頻度が外れる」「情報が間違い」）、Greg（「サブスクの裏に通知を隠していてずるい」）、PictureThis（「Onboarding の課金が攻撃的」）― 共通するのは <b>「アプリが正しいと言い張る」</b> 姿勢への嫌悪。BonsaiLog の <em>「目安」「参考」しか使わない</em> 言葉遣い、<em>「これは記録の表示です。水やりの判定はしません」</em> という明示は、これらの轍を回避する正しい立ち位置。<b>絶対に変えるべきでない</b>。
+  </div>
+
+  <div class="callout">
+    <div class="label">日本のシニアスマホ事情（総務省・NICT 1次統計）</div>
+    60 代の iPhone/Android 所有率：<b>77.3%</b>、70 代：<b>60.6%</b>（<a href="https://www.nict.go.jp/info-barrierfree/relate/statistics/elder_net.html" target="_blank" rel="noopener">NICT</a>、<a href="https://www.soumu.go.jp/johotsusintokei/whitepaper/ja/r03/html/nd111430.html" target="_blank" rel="noopener">総務省 令和3年版情報通信白書</a>）。70+ で「使い方がわからない」 が <b>42.4%</b>。これは <em>佐藤みどり（62）の摩擦体験は誇張ではない、ど真ん中の現実</em>であることを意味する。<br/>
+    一方、日本盆栽協会の会員数は 1980 年の23,000人 → 現在 <b>約3,000人</b> に縮小（<a href="https://bonsai-kyokai.or.jp/company.html" target="_blank" rel="noopener">日本盆栽協会</a>）。中心層の高齢化は事実、若年化／女性化は <em>マスメディアの主張があるだけで統計裏付けは薄い</em>。<b>シニアファースト UX を捨てるべきではない</b>。
+  </div>
+
+  <div class="callout">
+    <div class="label">「素早く記録できる」の業界標準</div>
+    MyFitnessPal は <em>「記録時間を数分から数秒へ」</em>を明示的設計目標として宣言（<a href="https://blog.myfitnesspal.com/make-food-logging-effortless/" target="_blank" rel="noopener">公式</a>）。ウィジェット／ロック画面からのクイックログで <b>28〜62%</b> 時間短縮。Day One も <em>「数秒で1エントリ」</em>を売り（<a href="https://dayoneapp.com/features/" target="_blank" rel="noopener">公式</a>）。<br/>
+    BonsaiLog の現状は <em>カードタップ → ＋ → Sheet → 入力 → 保存</em> の <b>4〜6タップ</b>。<b>サブ15秒は達成可能</b>だが、<b>サブ5秒には iOS ウィジェット／ロック画面ショートカットが要る</b>。「水やり」だけはそこを目指したい。
+  </div>
+
+  <h3 style="font-size: 18px; margin: 24px 0 8px;">市場リサーチで <b>新たに浮上</b> した懸念</h3>
+
+  <ol style="font-size: 14px; line-height: 1.7;">
+    <li><b>16作業 × デフォルト ON 通知 = 通知疲れ。</b>Greg/Planta が叩かれた最大の要因。BonsaiLog は通知を <em>作業種別ごとに個別 ON</em> し、初期は OFF が安全。設定画面の「通知の時間帯（8:00–20:00）」だけでは粒度不足。<b>P1 として追加</b>。</li>
+    <li><b>サブ5秒の水やり記録。</b>iOS ウィジェット または Lock Screen Live Activity で、<em>「父の黒松に水やり」</em> をワンタップで登録できる経路があれば、Planta/Greg/Bonsai Album いずれにもない強烈な差別化に。<b>P3 として観察</b>。</li>
+    <li><b>Free 5本制限の妥当性。</b>Bonsai Care App は Free 5本まで。BonsaiLog は登録数 ∞ にしているのは <em>正しい判断</em>。価格帯の比較で買切¥9,800 は競合より高めだが、<em>「サブスクではない」</em>がプロ層に刺さる。継続観察。</li>
+    <li><b>Mirai Mobile の「樹種＋地域別カレンダー」</b>は強烈な診断系価値。BonsaiLog は <em>診断しない</em> 立ち位置を堅持しつつ、「地域別の <em>参考</em> カレンダー」（オプション）を Pro 機能として用意するのは検討余地あり。<b>P3</b>。</li>
+  </ol>
+
+  <h3 style="font-size: 18px; margin: 24px 0 8px;">正直に書いておく ― リサーチで埋まらなかった穴</h3>
+  <ul style="font-size: 14px; line-height: 1.7;">
+    <li>盆栽愛好家の <b>年齢分布</b>（公的統計では見つからず）</li>
+    <li>1人あたり <b>平均所有株数</b>（モックの「5株」「150株」は推測）</li>
+    <li>屋内 vs 屋外の <b>比率</b>（推奨は屋外だが実態統計なし）</li>
+    <li>盆栽会の <b>悩みアンケート</b>（公的データなし）</li>
+    <li>長押し vs スワイプ vs 編集モードの <b>発見性比較研究</b>（学術データ未発見、ユーザビリティテストで自前検証必要）</li>
+  </ul>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 2 — TEAM
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-2">
+  <div class="section-head">
+    <span class="section-no">02</span>
+    <h2 class="section-title">議論メンバー</h2>
+    <p class="section-sub">この文書は、以下の <b>仮想 12 名</b> の議論を統合したレポートです。実在の人物ではありません。各々の背景／視点を明示することで、主張の出所をたどれるようにしています。</p>
+  </div>
+
+  <h3 id="personas" style="font-size: 22px; margin: 24px 0 14px;">ペルソナ（使う人 ・ 6名）</h3>
+
+  <div class="persona-grid">
+    <!-- P1 -->
+    <div class="persona-card">
+      <div class="head">
+        <div class="avatar">健</div>
+        <div>
+          <div class="name">山田 健太</div>
+          <div class="age">38 歳・男性 ・ 東京</div>
+          <div class="role">IT 企業勤務 ・ 盆栽 1株（黒松）</div>
+        </div>
+      </div>
+      <div class="quote">「父の形見だ。絶対、枯らせない。」</div>
+      <dl>
+        <dt>経験</dt><dd>ゼロ。専門用語が一つもわからない。</dd>
+        <dt>動機</dt><dd>父の遺志を継ぎたい / 失敗が怖い。</dd>
+        <dt>環境</dt><dd>マンション・ベランダ南向き / 出張多い。</dd>
+        <dt>機器</dt><dd>iPhone（操作慣れ）。</dd>
+      </dl>
+      <div class="footer">
+        失敗したくないけど、誰にも頼れない。アプリが「最初の一歩」を支えるかが運命を分ける。
+      </div>
+    </div>
+
+    <!-- P2 -->
+    <div class="persona-card">
+      <div class="head">
+        <div class="avatar">緑</div>
+        <div>
+          <div class="name">佐藤 みどり</div>
+          <div class="age">62 歳・女性 ・ 長野</div>
+          <div class="role">退職教員 ・ 盆栽 12 株</div>
+        </div>
+      </div>
+      <div class="quote">「孫が大きくなる前に、棚を整えておきたい。」</div>
+      <dl>
+        <dt>経験</dt><dd>8年。地域盆栽会に所属。</dd>
+        <dt>動機</dt><dd>会の仲間に共有 / 孫世代への継承。</dd>
+        <dt>環境</dt><dd>一軒家・庭と棚 / 紙ノートと併用。</dd>
+        <dt>機器</dt><dd>iPhone（操作はゆっくり） / 老眼進行中。</dd>
+      </dl>
+      <div class="footer">
+        「ちゃんと記録するのが楽しみ」だが、文字が小さく、手袋でのタップは厳しい。長押しなどの隠し操作はわからない。
+      </div>
+    </div>
+
+    <!-- P3 -->
+    <div class="persona-card">
+      <div class="head">
+        <div class="avatar">大</div>
+        <div>
+          <div class="name">鈴木 大輔</div>
+          <div class="age">45 歳・男性 ・ 神奈川</div>
+          <div class="role">IT 管理職 ・ 盆栽 5株（週末派）</div>
+        </div>
+      </div>
+      <div class="quote">「平日は触れないから、土曜の朝にまとめて済ませたい。」</div>
+      <dl>
+        <dt>経験</dt><dd>3 年。中堅愛好家。</dd>
+        <dt>動機</dt><dd>効率化 / 無事に育てたい。</dd>
+        <dt>環境</dt><dd>戸建てベランダ / 月1で長旅も。</dd>
+        <dt>機器</dt><dd>iPhone（操作得意） / 屋外でメガネ。</dd>
+      </dl>
+      <div class="footer">
+        「一括記録」は彼の生命線。同じ時間軸で複数株に違う作業をすることが多い ― 一括の限界を一番先に突き当たる。
+      </div>
+    </div>
+
+    <!-- P4 -->
+    <div class="persona-card">
+      <div class="head">
+        <div class="avatar">浩</div>
+        <div>
+          <div class="name">松本 浩</div>
+          <div class="age">29 歳・男性 ・ 京都</div>
+          <div class="role">フリーランス・デザイナー ・ 盆栽 3株</div>
+        </div>
+      </div>
+      <div class="quote">「成長記録を Instagram に、月一の投稿として残したい。」</div>
+      <dl>
+        <dt>経験</dt><dd>1 年。SNS から入った世代。</dd>
+        <dt>動機</dt><dd>ビジュアル記録 / SNS コンテンツ化。</dd>
+        <dt>環境</dt><dd>京都町家・坪庭 / 撮影機材あり。</dd>
+        <dt>機器</dt><dd>iPhone Pro / 普段から写真重視。</dd>
+      </dl>
+      <div class="footer">
+        写真こそ命。<b>Free 版で写真3枚しか見えない</b>のは「自分の写真を返してくれない」と感じる ― 致命的。
+      </div>
+    </div>
+
+    <!-- P5 -->
+    <div class="persona-card">
+      <div class="head">
+        <div class="avatar">茂</div>
+        <div>
+          <div class="name">高橋 茂</div>
+          <div class="age">71 歳・男性 ・ 埼玉</div>
+          <div class="role">元盆栽園経営 ・ 現役プロ ・ 150株</div>
+        </div>
+      </div>
+      <div class="quote">「目安、推奨、AI判定― そういうのは要らん。事実だけ書け。」</div>
+      <dl>
+        <dt>経験</dt><dd>50 年以上。プロ。弟子3名。</dd>
+        <dt>動機</dt><dd>弟子・顧客への記録共有。</dd>
+        <dt>環境</dt><dd>専用棚場 / 紙の元帳と併用。</dd>
+        <dt>機器</dt><dd>iPhone（操作不得手） / 老眼・指太い。</dd>
+      </dl>
+      <div class="footer">
+        「目安」「参考」は許容するが、勧告口調は嫌う。150株のスクロール疲労が深刻。グリッド表示・検索・ PDF 出力が彼の救い。
+      </div>
+    </div>
+
+    <!-- P6 -->
+    <div class="persona-card">
+      <div class="head">
+        <div class="avatar" style="font-family: var(--font-display-latin); font-style: italic;">L</div>
+        <div>
+          <div class="name">Linda Chen</div>
+          <div class="age">34 歳・女性 ・ NY</div>
+          <div class="role">ソフトウェアエンジニア ・ 盆栽 4株（屋内）</div>
+        </div>
+      </div>
+      <div class="quote">"I love bonsai but I can't read kanji."</div>
+      <dl>
+        <dt>経験</dt><dd>2 年。屋内 Ficus 中心。</dd>
+        <dt>動機</dt><dd>水やりリマインダー / 樹形の英語ガイド。</dd>
+        <dt>環境</dt><dd>NY アパート屋内 / グロウライト下。</dd>
+        <dt>機器</dt><dd>iPhone（英語UI） / 単位は inch ／ °F。</dd>
+      </dl>
+      <div class="footer">
+        19 言語対応の<b>真価</b>を試すペルソナ。樹形ピッカーや作業ラベルが英語で意味を持つかを検証する役割。
+      </div>
+    </div>
+  </div>
+
+  <h3 id="experts" style="font-size: 22px; margin: 36px 0 14px;">専門家パネル（評価者 ・ 6名）</h3>
+
+  <div class="expert-grid">
+    <div class="expert-card">
+      <h4>UX デザイナー</h4>
+      <div class="role-line">10y · モバイル・記録系</div>
+      <p>動線・ヒット領域・発見性。「ユーザーが知らない機能は無いのと同じ」が口癖。</p>
+    </div>
+    <div class="expert-card">
+      <h4>盆栽家</h4>
+      <div class="role-line">25y · 業界誌寄稿</div>
+      <p>樹種・作業・季節・部位の妥当性。記録が <em>事実</em> として正しいかを判定。</p>
+    </div>
+    <div class="expert-card">
+      <h4>プロダクトマネージャ</h4>
+      <div class="role-line">8y · モバイルSaaS</div>
+      <p>リテンション、課金導線、Apple/Google ストアの規約整合。</p>
+    </div>
+    <div class="expert-card">
+      <h4>アクセシビリティ専門家</h4>
+      <div class="role-line">12y · WCAG / JIS X 8341</div>
+      <p>タップ領域・コントラスト・スクリーンリーダー・屋外可読性・色覚対応。</p>
+    </div>
+    <div class="expert-card">
+      <h4>i18n エンジニア</h4>
+      <div class="role-line">7y · 多言語アプリ運用</div>
+      <p>19 言語の文字幅、単位系、固有名詞、漢字依存箇所の有無を点検。</p>
+    </div>
+    <div class="expert-card">
+      <h4>行動心理学者</h4>
+      <div class="role-line">PhD · 習慣形成</div>
+      <p>習慣化の設計、損失回避（streak loss）、最初の摩擦、フィードバックループ。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 3 — FLOW DIAGRAM (moved to dedicated file)
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-3">
+  <div class="section-head">
+    <span class="section-no">03</span>
+    <h2 class="section-title">画面遷移図 v1.5 ― 別ファイルへ統合</h2>
+    <p class="section-sub">画面遷移図は <a href="movcqnjg-BonsaiLog-Flow.html"><code>movcqnjg-BonsaiLog-Flow.html</code></a> に一本化しています（v1.5 final）。<b>全 47 画面 / 5 機能領域 / 6 ペルソナ動線シミュレーション</b>を網羅し、Sprint 2 で D1–D4 / D8 を解消した最新フロー（FAB 記録 / Pro ロック / 完全削除モーダル）まで反映済みです。</p>
+  </div>
+
+  <div class="callout" style="border-left: 4px solid var(--primary); padding: 24px 28px;">
+    <div class="label">なぜ別ファイルにしたか</div>
+    <p style="margin-bottom: 12px;">本レポートと別ファイルの 2 か所に画面遷移図があると更新が片方だけになり、整合性が保てなかったため、<b>遷移図の正本を <code>movcqnjg-BonsaiLog-Flow.html</code> に一本化</b>しました（旧 v0.1 ファイルを置き換える形で v1.4 として再構築）。</p>
+    <p style="margin-bottom: 12px;">遷移図の本体には：</p>
+    <ul style="margin: 0 0 14px 18px; line-height: 1.85;">
+      <li>全体俯瞰（ハブ＆スポーク）</li>
+      <li>① Onboarding（6 画面 ・ ATT/UMP 統合済）</li>
+      <li>② Home / 管理（15 画面 ・ 複数選択 / カスタム入力 / 詳細タブ再構成）</li>
+      <li>③ Care（12 画面）</li>
+      <li>④ Export（7 画面）</li>
+      <li>⑤ Monetization（4 画面）</li>
+      <li>⑥ <b>ペルソナ動線シミュレーション</b>（健太 / みどり / 大輔 / 浩 / 茂 / Linda）</li>
+      <li>⑦ <b>動線レビュー所見</b>（D1〜D8 ・ 8 件のうち P1×1 / P2×2 / P3×2 / 維持×3）</li>
+    </ul>
+    <p style="margin: 0;">
+      <a href="movcqnjg-BonsaiLog-Flow.html" style="display:inline-block; background: var(--primary); color: var(--surface); text-decoration: none; padding: 12px 22px; font-family: var(--sans); font-weight: 500; font-size: 14px; border-radius: 6px; letter-spacing: 0.04em;">画面遷移図 v1.5 を開く →</a>
+    </p>
+  </div>
+
+  <div class="callout" style="margin-top: 18px;">
+    <div class="label">v1.4 で発見された新規動線課題（要検討）</div>
+    <p>ペルソナ動線シミュレーションで <b>D1（要検討・P1 候補）：詳細画面・履歴タブから「作業を記録」する FAB が無い</b> が浮上。健太（最初の水やり）・浩（5 枚で記録）が「次は何をすればいい？」で詰まる可能性。Home 長押し or 複数選択モード経由でしか記録できない。<b>案：詳細画面の右下に共通 FAB「＋ 作業を記録」を常設</b>。詳細は <a href="movcqnjg-BonsaiLog-Flow.html#findings">遷移図ファイル ⑦ 動線レビュー所見</a> 参照。</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 4 — SIMULATION WALKTHROUGHS
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-4">
+  <div class="section-head">
+    <span class="section-no">04</span>
+    <h2 class="section-title">動線シミュレーション ― ペルソナ × 行動</h2>
+    <p class="section-sub">6人それぞれの「日常／節目」を歩き、ステップごとに <em>すんなり</em> / <em>つまずく</em> / <em>離脱</em> を判定します。シミュレーションは3周回し、3周目でも残った詰まりだけを掲載。</p>
+  </div>
+
+  <!-- Sim 1: 山田 健太 -->
+  <div class="sim">
+    <div class="sim-head">
+      <div class="avatar">健</div>
+      <div>
+        <div class="who-name">山田 健太（38・初心者）</div>
+        <div class="scenario">シナリオA：父の黒松を引き取った日 ― 初回起動から登録 → 翌日の水やりまで</div>
+      </div>
+    </div>
+    <div class="sim-steps">
+      <div class="num">01</div>
+      <div class="step ok">アプリを起動。Splash が1.5秒、Welcome 画面で「鉢1本ずつ、一生分」のコピー。<b>「アカウント不要」</b>に安心して「はじめる」をタップ。</div>
+
+      <div class="num">02</div>
+      <div class="step ok">言語選択は <b>日本語が「端末の言語」バッジ付きで先頭</b>。タップして「選択して続ける」。</div>
+
+      <div class="num">03</div>
+      <div class="step ok">通知許可。「あとで」を選び、Home Empty へ。</div>
+
+      <div class="num">04</div>
+      <div class="step ok">Home Empty の「最初の盆栽を追加しよう」コピーが効いて「盆栽を登録」をタップ。</div>
+
+      <div class="num">05</div>
+      <div class="step frict"><span class="badge">FRICT</span>登録モーダル。<b>名前 必須</b>はわかる。<em>樹種：未選択</em> のフィールドをタップ。</div>
+
+      <div class="num">06</div>
+      <div class="step ok">樹種ピッカーが下からせり上がる。「黒松」をタップ ― 即座に選ばれてモーダルに戻る。<b>これは良い設計</b>（Sheet 内ワンタップ確定）。</div>
+
+      <div class="num">07</div>
+      <div class="step block"><span class="badge">BLOCK</span><b>樹形フィールドで停止</b>：<em>未選択（例：模様木・直幹）</em>。模様木って何？　ピッカーを開くと10種類の漢字。<b>説明文がリストに出ない</b>（コードを見ると <code>STYLE_LIST</code> に <code>desc</code> が定義されているが、ピッカー UI では使っていない）。健太は「あとで」と諦めて未選択のまま保存。</div>
+
+      <div class="num">08</div>
+      <div class="step block"><span class="badge">BLOCK</span><b>「最初の30日」ガイドへの導線がない</b>。健太は <code>care-screens.jsx</code> の <code>GuideModalScreen</code> の存在を知らずにアプリを終了。<em>翌日、水をどれだけあげればいいかわからないまま朝を迎える</em>。<br/><b>※ v1.1 訂正：</b>30 日ガイドは v1.1 で <em>関数ごと削除</em>（哲学整合：BonsaiLog は命令しない）。健太の不安は HomeEmpty α 案（ボタン 72px / 20px 拡大）と外部リソース尊重メッセージで補う設計に切替済み。</div>
+
+      <div class="num">09</div>
+      <div class="step frict"><span class="badge">FRICT</span>翌日。アプリを開く ➜ Home に「父の黒松」のカード。最終水やりが「未記録」。FAB の意味がわからずタップ ➜ 新規登録モーダルが開いてしまう。<em>「あれ、水やりはどこから？」</em></div>
+
+      <div class="num">10</div>
+      <div class="step frict"><span class="badge">FRICT</span>カードをタップ ➜ 詳細画面。「作業予定」タブの下に「これからの予定」。<b>水やりは予定に出ない</b>（設計判断は妥当だが、初心者には「水やりがない＝忘れていいんだ」とミスリードしうる）。</div>
+
+      <div class="num">11</div>
+      <div class="step ok">「作業履歴」タブに切替 ＋ 何かボタンを探す ― 結局、詳細画面の <em>＋ボタン</em>か作業選択 Sheet を経由して水やりを記録。OK だが <b>3 タップ＋シート2段</b> はシニアには重い。</div>
+
+      <div class="num">12</div>
+      <div class="step ok">水やり記録時に「水量」セグメンテッド（いつも通り / たっぷり / 軽く）が出て、<b>「いつも通り」が選びやすい</b>。健太の最初の不安をやわらげる。</div>
+    </div>
+    <div class="sim-summary">
+      <b>所見：</b>初回 ➜ 翌日の流れで <b>2 件のブロック</b>（樹形ピッカーの説明文欠落、30日ガイド非到達）と <b>3 件の摩擦</b>。樹種は黒松のように字面でわかるが、樹形は専門用語かつ初心者ペルソナの登録時に <em>必須でない</em> ため <b>未入力のまま放置されやすい</b> ― 後から樹形検索や統計が機能しなくなる伏線。
+    </div>
+  </div>
+
+  <!-- Sim 2: 佐藤 みどり -->
+  <div class="sim">
+    <div class="sim-head">
+      <div class="avatar">緑</div>
+      <div>
+        <div class="who-name">佐藤 みどり（62・退職教員 / 12株）</div>
+        <div class="scenario">シナリオB：朝の水やり ― 12株すべてに今朝水を撒いた、それを記録したい</div>
+      </div>
+    </div>
+    <div class="sim-steps">
+      <div class="num">01</div>
+      <div class="step ok">Home に12枚のカード。リスト表示で見やすい。最終水やり日（「3日」「今日」など）が <b>等幅フォントで右側に整列</b> ― 老眼でも見やすく好印象。</div>
+
+      <div class="num">02</div>
+      <div class="step frict"><span class="badge">FRICT</span>「12枚のカードに1枚ずつ水やり記録？　多すぎる…」 ＋ FAB をタップ ➜ <em>新規登録</em>モーダル（ ! 違う）。閉じる。</div>
+
+      <div class="num">03</div>
+      <div class="step block"><span class="badge">BLOCK</span><b>「まとめて記録」する方法が見つからない</b>。タブバー、ヘッダ、設定 ― どこにも「一括」ボタンがない。FAB の長押しもひらめかない。<em>正解は「Home の盆栽カードを長押しすると一括選択モードに変わる」</em> だが、画面にはこのヒントが書かれていない。</div>
+
+      <div class="num">04</div>
+      <div class="step block"><span class="badge">BLOCK</span>諦めて1株ずつ記録 ― 1株あたり <b>カードタップ ➜ ＋ ➜ Sheet ➜ 水量チップ ➜ 記録する ➜ 戻る</b> の <b>6 タップ × 12 株 = 72 タップ</b>。所要約7分。みどりは「もういい、紙ノートに戻る…」と離脱寸前。</div>
+
+      <div class="num">05</div>
+      <div class="step frict"><span class="badge">FRICT</span>水量セグメント（<code>_Seg</code>）の高さが <b>40dp</b>。手袋＋老眼で「軽く」と「いつも通り」を誤タップ。<code>tokens.css</code> の <code>--tap-min: 48px</code> 宣言と整合していない。<br/><b>※ v1.1 訂正：</b><code>_Seg</code> は v1.1 で 40→44dp、small は 32→40dp に拡大。月送り・Heatmap タブも 44dp 統一。Apple HIG 44pt 許容範囲・誤タップ問題は解消済み。</div>
+
+      <div class="num">06</div>
+      <div class="step ok">記録完了後の取り消し導線（5 秒間の Undo 操作）は実機で動作する見込み。<br/><b>※ v1.6 訂正：</b>UI 上の「記録後5秒間、取り消しボタンが表示されます」という説明文は <b>v1.6 で削除</b>。事実記録アプリとして装置説明よりも体感を優先（文言なしでも Undo は動作する）。</div>
+    </div>
+    <div class="sim-summary">
+      <b>所見：</b>みどりにとって「一括選択がどこにあるかわからない」のは <b>離脱級の問題</b>。これは P0-1。さらにセグメンテッドチップのタップ領域は <code>tokens.css</code> 宣言と矛盾しており、これは P0-5。<br/><b>推奨：</b>(a) Home のヘッダ右に <em>「選択」</em> アイコンを常時配置（ファイルアプリ的）、または (b) FAB を長押し ＋ 視覚的なカウント表示で一括モードを発見可能にする。両方併用が望ましい。
+    </div>
+  </div>
+
+  <!-- Sim 3: 鈴木 大輔 -->
+  <div class="sim">
+    <div class="sim-head">
+      <div class="avatar">大</div>
+      <div>
+        <div class="who-name">鈴木 大輔（45・週末派 / 5株）</div>
+        <div class="scenario">シナリオC：土曜の朝 ― 株ごとに違う作業（水3、剪定2、施肥1、消毒1）を効率よく記録したい</div>
+      </div>
+    </div>
+    <div class="sim-steps">
+      <div class="num">01</div>
+      <div class="step ok">Home。長押しのコツを知っているので、長押しから一括選択。3株を選び「水やり」を <em>まとめて記録</em>。スムーズ。</div>
+
+      <div class="num">02</div>
+      <div class="step ok">戻ってもう一度長押し ➜ 別の2株 ➜ 「剪定」を選択。</div>
+
+      <div class="num">03</div>
+      <div class="step frict"><span class="badge">FRICT</span><b>剪定の部位や量は2株とも同じではない</b>。1株は徒長枝のみ、もう1株は新芽のピンチ。バルクフォームでは <b>共通入力しか書けない</b> 設計（<code>BulkLogConfirmSheet</code> 参照）。「あとで個別に追記してください」 注記はあるが、戻って2株分を <b>もう一度</b> 編集する手間が発生。</div>
+
+      <div class="num">04</div>
+      <div class="step ok">施肥1株は単発。詳細画面の＋ ➜ 施肥 ➜ 「置肥」「銘柄：バイオゴールド」入力。問題なし。</div>
+
+      <div class="num">05</div>
+      <div class="step ok">消毒1株。「目的：殺虫」「薬剤：スミチオン」「希釈倍率：1000倍」 ― 専門入力をきちんと拾えていて好印象。</div>
+
+      <div class="num">06</div>
+      <div class="step frict"><span class="badge">FRICT</span>記録完了後、Home に戻ると <b>カードの「最終水やり」が即座に「今日」に更新される</b>のはよい。ただし剪定や施肥は <em>カードに表示されない</em>（カードは「水やり優先 fallback で剪定」設計）。<b>大輔のように週末まとめ作業派</b>には、<em>「土曜：水・剪・肥・消」</em> のような <b>1日要約</b> がカードに欲しい。</div>
+
+      <div class="num">07</div>
+      <div class="step ok">月末、振り返りに <em>水やり履歴ヒートマップ</em>を見る。GitHub 草の根スタイルで、3日連続抜けが視覚的にすぐわかる ― <b>非常に効果的</b>。</div>
+    </div>
+    <div class="sim-summary">
+      <b>所見：</b>大輔は「設計者の想定ど真ん中」。基本動線はストレスフリー。ただし <b>(1) バルク記録の個別差異の補完導線</b>、<b>(2) Home カードの「直近作業1件」表示の制約</b> が後で効いてくる。両方とも P1。
+    </div>
+  </div>
+
+  <!-- Sim 4: 松本 浩 -->
+  <div class="sim">
+    <div class="sim-head">
+      <div class="avatar">浩</div>
+      <div>
+        <div class="who-name">松本 浩（29・SNS派 / 3株）</div>
+        <div class="scenario">シナリオD：成長記録の振り返り ― 6か月分の「ガジュマル」の写真を SNS 用に並べたい</div>
+      </div>
+    </div>
+    <div class="sim-steps">
+      <div class="num">01</div>
+      <div class="step ok">Home から「ガジュマル」カードをタップ ➜ 詳細 ➜ 「履歴」タブ。<b>※ v1.1 訂正：</b>「写真」タブは v1.1 で削除済。写真は履歴サムネ 88px で全件表示（折り返し）。月別 / 年別 / すべての切替は履歴タブに統合。</div>
+
+      <div class="num">02</div>
+      <div class="step block"><span class="badge">BLOCK</span><b>3枚しか見えない</b>。残り27枚は <em>鍵アイコン＋ぼかし</em> でロック。<em>「Free版は3枚まで表示。Pro へアップグレード」</em>。<b>松本にとっては「自分が撮った自分の写真」を返してくれない</b> 体験。Onboarding で「データは自分のもの」と読んでいるので、明確な裏切り感。<br/><b>※ v1.1 訂正：</b>写真上限は v1.1 で <em>完全撤廃</em>。松本の不満は解消済。Pro モデルは「データ制限解除」→「出力＋体験（CSV/PDF/年次画像/テーマ/広告なし）」に再構築。</div>
+
+      <div class="num">03</div>
+      <div class="step frict"><span class="badge">FRICT</span>仕方なく Pro 訴求コピーを読む ― 「年額¥3,980 / 月換算¥331」「買切¥9,800」。買切がトップ。妥当。</div>
+
+      <div class="num">04</div>
+      <div class="step frict"><span class="badge">FRICT</span>「年次タイムライン画像」が PRO 機能。これは <b>SNS 投稿に最適</b> な機能だが、まだ買う前なので <em>サンプルが見えない</em>。プレビューがあれば刺さるはずだが、見せ方が淡白。<br/><b>※ v1.1 で再強調：</b>写真上限撤廃と並行して、年次タイムライン画像は Pro の <em>主軸機能</em>に位置づけ済。Free でのプレビュー導線は P3-3「Free に CSV 1 種解放」と合わせて検討予定。</div>
+
+      <div class="num">05</div>
+      <div class="step ok">CSV/PDF Export を見る ➜ <em>個別盆栽レポート（PDF, A4縦）</em>のプレビューが秀逸。「ガジュマルの履歴を1ページで」 ― これは Pro 価値が伝わる。</div>
+    </div>
+    <div class="sim-summary">
+      <b>所見：</b>松本は <b>P0-3「写真3枚 Pro 制限」の最も強い反対者</b>。<b>提案：</b>「写真表示数」ではなく「<em>1鉢あたり過去◯か月までは無制限、それ以上のアーカイブを Pro</em>」のような <b>時間軸での切り分け</b>に変える。直近の写真は誰でも見られる、長期のアーカイブ閲覧と書き出しは Pro ― この方が「自分のもの」と矛盾しない。
+    </div>
+  </div>
+
+  <!-- Sim 5: 高橋 茂 -->
+  <div class="sim">
+    <div class="sim-head">
+      <div class="avatar">茂</div>
+      <div>
+        <div class="who-name">高橋 茂（71・現役プロ / 150株）</div>
+        <div class="scenario">シナリオE：弟子に「黒松5本の今月の作業」を共有したい。明日が定例報告会。</div>
+      </div>
+    </div>
+    <div class="sim-steps">
+      <div class="num">01</div>
+      <div class="step frict"><span class="badge">FRICT</span>Home に150枚のカード。<b>リスト表示</b>では指がつる。<em>右上のグリッドトグル</em>に気づき、グリッド表示に切替 ― だが <em>サムネ表示で名前が小さい</em>。老眼にはきつい。</div>
+
+      <div class="num">02</div>
+      <div class="step block"><span class="badge">BLOCK</span><b>「黒松だけ」を絞り込みたい</b>。Home のフィルタチップに <em>「すべて / @ベランダ / #展示会候補 / #要注意 / @師匠から」</em> が並んでいる ― が、<b>これらをどこで作ったのか不明</b>。新規登録モーダルにタグ入力フィールドはない。設定にも「タグ管理」はない。<em>モックデータがそのまま UI に出ているだけ</em>。</div>
+
+      <div class="num">03</div>
+      <div class="step ok">代わりに検索バーで「黒松」入力 ➜ <b>樹種・履歴・メモが横断検索でき</b>、結果が分類別（盆栽 / 作業履歴）に出る ― <b>非常に良い設計</b>。</div>
+
+      <div class="num">04</div>
+      <div class="step frict"><span class="badge">FRICT</span>検索結果から個別の盆栽詳細 ➜ <em>……メニュー</em> から PDF 出力 ― が、ヘッダの右上アイコンは「編集」のみ。<b>「・・・」メニューが実装されていない</b>（Mermaid 図には書かれているが、JSX を見ると <code>onEdit</code> しかない）。仕方なく設定 ➜ Export Hub へ。<br/><b>※ v1.1 訂正：</b>詳細ヘッダ右上の編集ボタンは v1.1 で削除（編集は基本情報タブに統合）。「・・・」メニューは P1-B として未対応のまま（共有 / PDF / アーカイブ / 削除を集約予定）。</div>
+
+      <div class="num">05</div>
+      <div class="step ok">Export Hub。「個別盆栽レポート」を選択 ➜ Options Sheet で「対象：選択した盆栽」➜ 5本の黒松にチェック ➜ 生成。<b>PDF プレビュー（A4縦）が美しく</b>、「弟子に渡す」用途にぴたり。</div>
+
+      <div class="num">06</div>
+      <div class="step block"><span class="badge">BLOCK</span><b>Free 版だと CSV/PDF/ZIP すべて Pro ロック</b>。茂の「150株あって急ぎで明日の報告」のシーンで <em>初めて</em>Paywall が立ちはだかる ― 急ぎで買切¥9,800を払うが、<em>「最初から有料と書いといてくれよ」</em> という不満を残す。</div>
+    </div>
+    <div class="sim-summary">
+      <b>所見：</b>茂のフローは <b>3 件の P0/P1</b> を露呈：(a) タグ作成 UI なし【P0-2】、(b) 詳細画面のメニュー実装ずれ【P1-B】、(c) Export 全 Pro ロックの違和感【<b>※ v1.2 訂正：旧 P0-3 紐付けは誤り。<a href="#sec-7">P3-3「Free に CSV 1 種解放」</a>として再整理</b>】。プロにとっては <em>急なときに使えない</em> ことが致命傷。
+    </div>
+  </div>
+
+  <!-- Sim 6: Linda -->
+  <div class="sim">
+    <div class="sim-head">
+      <div class="avatar" style="font-family: var(--font-display-latin); font-style: italic;">L</div>
+      <div>
+        <div class="who-name">Linda Chen（34・NY・英語UI）</div>
+        <div class="scenario">シナリオF：英語で初回登録、屋内 Ficus 中心の運用</div>
+      </div>
+    </div>
+    <div class="sim-steps">
+      <div class="num">01</div>
+      <div class="step ok">Welcome / Language Picker で English を選択。19言語の中から見つけやすい。</div>
+
+      <div class="num">02</div>
+      <div class="step frict"><span class="badge">FRICT</span>Home Empty で「最初の盆栽を追加しよう」 ― <b>英語化されているか未検証</b>。<code>screens.jsx</code> ではコピーがハードコードされた日本語のため、ローカライズ層がないとそのまま日本語が出る懸念。</div>
+
+      <div class="num">03</div>
+      <div class="step ok">樹種ピッカーは latin 名併記（<em>Ficus retusa</em>）で英語ユーザーに優しい。</div>
+
+      <div class="num">04</div>
+      <div class="step frict"><span class="badge">FRICT</span><b>樹形ピッカーは日本語名（直幹・模様木）が主</b>。<code>STYLE_LIST</code> に英語ローマ字（Chokkan, Moyogi）はあるが、<em>意味の英語訳</em>はなく、<em>desc 文も日本語のみ</em>。Linda には判別不能。</div>
+
+      <div class="num">05</div>
+      <div class="step frict"><span class="badge">FRICT</span>作業選択 Sheet：絵文字＋日本語ラベル。「芽切り」「葉刈り」「葉柄切り」 ― 英語ラベルへの翻訳が <b>事実上の専門知識</b>を要する（"Decandling"／"Defoliation"／"Petiole pruning"）。i18n エンジニアの介入が要る。</div>
+
+      <div class="num">06</div>
+      <div class="step block"><span class="badge">BLOCK</span><b>松類限定の「芽切り」が species code "pine" でハードコード</b>（<code>WORK_TYPES</code> の <code>speciesOnly:'pine'</code>）。Linda の Ficus には不要だが、<em>Ficus にも独自の作業（aerial root pruning など）が出るとは限らない</em> 一般化の難しさ。</div>
+
+      <div class="num">07</div>
+      <div class="step frict"><span class="badge">FRICT</span>植替えの鉢サイズが「cm」固定（<code>_TextInput suffix="cm"</code>）。Linda は inch を使う。単位系の切替なし。</div>
+    </div>
+    <div class="sim-summary">
+      <b>所見：</b>19言語対応の <b>骨格</b>はあるが、<b>意味のローカライズ</b>（樹形の説明、作業ラベルの英訳、単位）はまだ未着手。英語ユーザーが <em>ファーストフレンドリー</em> になるには i18n の <b>第二パス</b> が必要。
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 5 — FIELD-LEVEL AUDIT
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-5">
+  <div class="section-head">
+    <span class="section-no">05</span>
+    <h2 class="section-title">入力項目の精査 ― 1フィールドずつ点検</h2>
+    <p class="section-sub">「入力項目はこれで問題ないか」 ― 質問に正面から答えるため、<b>盆栽登録（11項目）</b> と <b>作業記録（16作業）</b> の全フィールドを表で並べ、必要性／妥当性／改善余地を判定しました。</p>
+  </div>
+
+  <!-- 盆栽登録 -->
+  <div class="field-audit">
+    <h4>① 盆栽登録（CreateBonsaiScreen）― 11フィールド</h4>
+    <div class="desc">登録モーダルで入力する全項目。「必須はわずか1つ（名前）」という潔さが好印象。</div>
+    <table>
+      <thead>
+        <tr>
+          <th>項目</th>
+          <th>必須</th>
+          <th>UI</th>
+          <th>判定</th>
+          <th>所見</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>写真</td>
+          <td>任意</td>
+          <td>120×120 ダッシュ枠</td>
+          <td><span class="ok">OK</span></td>
+          <td>「後からでも追加できます」のマイクロコピーが安心感を与える。</td>
+        </tr>
+        <tr>
+          <td>名前</td>
+          <td>必須</td>
+          <td>テキスト入力 / 100文字</td>
+          <td><span class="ok">OK</span></td>
+          <td>残文字数表示あり。<em>例: 父の黒松</em> プレースホルダが秀逸（情緒に訴える）。</td>
+        </tr>
+        <tr>
+          <td>樹種</td>
+          <td>任意</td>
+          <td>ピッカー Sheet / 検索 / 直接入力</td>
+          <td><span class="ok">OK</span></td>
+          <td>カスタム入力可（<em>「○○」をそのまま登録</em>）― i18n / マイナー樹種に強い。</td>
+        </tr>
+        <tr>
+          <td>樹形</td>
+          <td>任意</td>
+          <td>ピッカー Sheet / 検索 / 直接入力</td>
+          <td><span class="warn">FIX</span></td>
+          <td><b>P1：</b>定義済の <code>desc</code>（「幹がまっすぐ垂直に立つ…」）が<em>リスト UI に出ていない</em>。初心者が選べない。</td>
+        </tr>
+        <tr>
+          <td>購入日</td>
+          <td>任意</td>
+          <td>「今日（2026年4月25日）」固定</td>
+          <td><span class="warn">FIX</span></td>
+          <td><b>P1：</b>編集アイコンは表示されるが、タップ時の挙動が見えない。タップ ➜ 日付ピッカーへ確実に遷移する実装が必要。</td>
+        </tr>
+        <tr>
+          <td>入手元メモ</td>
+          <td>任意</td>
+          <td>1行テキスト</td>
+          <td><span class="ok">OK</span></td>
+          <td><em>例: 父から継承 / 高崎盆栽市</em> ― 文化的に深い。</td>
+        </tr>
+        <tr>
+          <td>鉢情報・幅</td>
+          <td>任意</td>
+          <td>折り畳み内テキスト / cm</td>
+          <td><span class="warn">FIX</span></td>
+          <td>単位 cm 固定。Linda（inch）の検証で問題発覚。</td>
+        </tr>
+        <tr>
+          <td>鉢情報・深さ</td>
+          <td>任意</td>
+          <td>折り畳み内テキスト / cm</td>
+          <td><span class="warn">FIX</span></td>
+          <td>同上。</td>
+        </tr>
+        <tr>
+          <td>鉢情報・材質</td>
+          <td>任意</td>
+          <td>折り畳み内テキスト</td>
+          <td><span class="ok">OK</span></td>
+          <td>自由記述で柔軟。「常滑・紫泥」のような専門表現も書ける。</td>
+        </tr>
+        <tr>
+          <td>メモ</td>
+          <td>任意</td>
+          <td>テキストエリア / 3000文字</td>
+          <td><span class="ok">OK</span></td>
+          <td>長文許容。継承エピソードや師匠コメントを残せる。</td>
+        </tr>
+        <tr>
+          <td>タグ／場所</td>
+          <td>―</td>
+          <td><b>欠落</b></td>
+          <td><span class="ng">NG</span></td>
+          <td><b>P0-2：</b>Home に <code>@ベランダ</code> 等のフィルタは出るが、<em>登録モーダルにタグ入力フィールドがない</em>。Home のチップはモック以上の意味を持たない。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 作業記録フィールド -->
+  <div class="field-audit">
+    <h4>② 作業記録（WorkLogConfirmSheetV2 + ActionFormFields）― 16作業</h4>
+    <div class="desc">作業種別ごとに必要なフィールドが切り替わる「賢い」フォーム。<code>care-screens-v2.jsx</code> に集約されている。「水量だけ」と「銘柄＋希釈倍率」が同じ Sheet で扱える設計はかなり高度。</div>
+    <table>
+      <thead>
+        <tr>
+          <th>作業</th>
+          <th>固有フィールド</th>
+          <th>判定</th>
+          <th>所見</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>💧 水やり</td>
+          <td>水量（normal / plenty / light）</td>
+          <td><span class="ok">OK</span></td>
+          <td>3択で十分。シンプル。</td>
+        </tr>
+        <tr>
+          <td>✂️ 剪定</td>
+          <td>部位 multi（枝/葉/新芽/根）＋ 量（少し/まあまあ/多め）</td>
+          <td><span class="warn">FIX</span></td>
+          <td><b>P2：</b>盆栽家視点で「量の3段階」は粗すぎる。「<em>本数</em>」「徒長/不要枝」など意味的な切り口があれば後の振返りが豊かに。</td>
+        </tr>
+        <tr>
+          <td>〰️ 針金がけ</td>
+          <td>番手（1〜3.5mm）/ 部位 / 期間（4〜20週）</td>
+          <td><span class="ok">OK</span></td>
+          <td>期間 ＝ 外し時期の通知に使う。連動が秀逸。</td>
+        </tr>
+        <tr>
+          <td>〰️ 針金外し</td>
+          <td>外した部位</td>
+          <td><span class="ok">OK</span></td>
+          <td>シンプル。針金一覧から「要確認」と連動。</td>
+        </tr>
+        <tr>
+          <td>🪴 植替え</td>
+          <td>鉢サイズ cm / 用土レシピ / 根の整理（none/light/half/heavy）</td>
+          <td><span class="warn">FIX</span></td>
+          <td>用土が <em>自由記述</em> で「赤玉土:桐生砂 = 7:3」のように書ける ― 良い。ただし inch 系なし。</td>
+        </tr>
+        <tr>
+          <td>🌱 施肥</td>
+          <td>種類 / 銘柄 / 希釈倍率（液肥のみ）</td>
+          <td><span class="ok">OK</span></td>
+          <td>条件付きフィールド表示が賢い（液肥のときだけ希釈が出る）。</td>
+        </tr>
+        <tr>
+          <td>🦋 消毒</td>
+          <td>目的 / 薬剤 / 希釈倍率</td>
+          <td><span class="warn">FIX</span></td>
+          <td>「目的：殺虫/殺菌/両方」だけは粗い。<b>「予防か治療か」</b>の区別があると意味が変わる。</td>
+        </tr>
+        <tr>
+          <td>🩹 葉の手当て</td>
+          <td>症状 multi / 処置自由記述</td>
+          <td><span class="ok">OK</span></td>
+          <td>症状 multi は柔軟。</td>
+        </tr>
+        <tr>
+          <td>🍃 葉刈り / 葉柄切り / 芽摘み / 芽切り</td>
+          <td>範囲（一部/半分/全体）</td>
+          <td><span class="warn">FIX</span></td>
+          <td>4作業で <b>同一フォーム</b>。盆栽家視点では <em>全葉刈り</em>と<em>葉刈り</em>では意味（時期・難易度）が大きく異なるので、せめて警告コピーを差し込みたい。</td>
+        </tr>
+        <tr>
+          <td>🌿 苔</td>
+          <td>作業内容 multi（貼り直し/剥がす/湿らす）</td>
+          <td><span class="ok">OK</span></td>
+          <td>3択で十分。</td>
+        </tr>
+        <tr>
+          <td>📍 置き場変更</td>
+          <td>移動先 / 理由</td>
+          <td><span class="ok">OK</span></td>
+          <td>「日光調整」「寒さ対策」など理由が記録できるのは継承時に貴重。</td>
+        </tr>
+        <tr>
+          <td>共通：日付 / メモ / 写真</td>
+          <td>―</td>
+          <td><span class="ok">OK</span></td>
+          <td>16作業すべてに揃う。メモ2000字、写真最大3枚。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <div class="label">設計者へのリスペクト</div>
+    作業ごとにフィールドが切り替わる仕組みは、汎用「メモ」で逃げず、後の <b>樹種別統計</b> や <b>季節仕事の自動分類</b> に活きる伏線。盆栽家パネルから <em>「これだけは譲れない、変えるなら丁重に」</em> との発言。基本構造は維持し、説明文・単位・粒度を増補する方向を推奨。
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 6 — EXPERT VERDICTS
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-6">
+  <div class="section-head">
+    <span class="section-no">06</span>
+    <h2 class="section-title">専門家パネル ― 6視点の独立所見</h2>
+    <p class="section-sub">同じワイヤーを6人がそれぞれ別室で評価し、最後に持ち寄ったコメント。意見が割れた箇所はそのまま残してあります。</p>
+  </div>
+
+  <h3 style="font-size: 18px; margin: 16px 0 8px;">UX デザイナー</h3>
+  <p>動線設計は <b>記録系アプリの相場以上</b>。Home → 詳細 → 作業選択 Sheet → フォーム の階層が深すぎず、Sheet 内のワンタップ確定（ピッカー）が良い。<b>最大の懸念は発見性</b>：長押し1択の一括選択、Tab バーの「記録」ラベル（具体的に何が入るか不明）、Mermaid 図にあるが JSX 未実装の <em>「・・・」メニュー</em>。「設計はあるが、ユーザーは見つけられない」状態。</p>
+
+  <h3 style="font-size: 18px; margin: 16px 0 8px;">盆栽家</h3>
+  <p>樹種ピッカー9種、樹形10種は <b>初心者から中級まで</b>カバー。学名併記 ＋ カスタム入力で、マイナーな樹種にも逃げ場あり。気になるのは <b>(1) 「目安」の表示位置と程度</b>（ <code>suggestion: true</code>のフラグが timeline mock に入っていて、<em>「春の施肥目安」</em> のように表示される。プロは嫌うが初心者は欲しい）、<b>(2) 「葉刈り」と「全葉刈り」の同一フォーム</b>（後者は禁忌に近い場面がある、せめて季節警告）、<b>(3) 用土の「赤玉土:桐生砂 = 7:3」表記</b>は素晴らしい、自由記述で残してほしい。</p>
+
+  <h3 style="font-size: 18px; margin: 16px 0 8px;">プロダクトマネージャ</h3>
+  <p>Pro 訴求の入り方が <b>機能ロックの暴力</b>に近い。Free と Pro の境界線：<em>「写真 1鉢3枚まで」</em>、<em>「CSV/PDF 全 PRO」</em>、<em>「年次タイムライン PRO」</em>。<br/><b>Apple 規約 3.1.1 の「購入を復元」</b>は paywall・設定の両方にあり、これは合格。Apple 規約 3.1.2「自動更新」明記もある。<br/>
+  <b>提案：</b>Free でも CSV 1種（最低限の盆栽一覧）は出せるようにし、<em>「データを返さない」</em> 印象を消す。差別化は「定期エクスポート（毎月の自動 CSV メール）」「年次タイムライン画像生成」「写真の長期アーカイブ閲覧」など <em>付加価値型</em> に寄せる。</p>
+
+  <h3 style="font-size: 18px; margin: 16px 0 8px;">アクセシビリティ専門家</h3>
+  <p><code>tokens.css</code> に <em>屋外モード</em>（WCAG AAA 7:1）が定義され、<em>prefers-reduced-motion</em> 対応もある ― 仕組みは優秀。<br/>
+  ただし <b>運用と整合していない</b>：<br/>
+  ・<code>--tap-min: 48px</code> 宣言だが <code>_Seg</code> の最小タップ高さは 32–40dp。<br/>
+  ・屋外モードは <em>手動切替のみ</em>（明るさセンサ自動なし）。<br/>
+  ・SVG ヒートマップの色（薄: #EDE7D8 / 中: #A7B79E / 濃: #1F3A2E）は色覚弱者の Deuteranopia でやや識別困難の懸念。<br/>
+  ・<code>aria-label</code> は <em>「閉じる」</em> や <em>「戻る」</em> に付くが、<em>「保存」</em> 「タブ各種」などの主要ボタンに見当たらない箇所がある。<br/>
+  ・FAB の <code>aria-label="盆栽を追加 / 長押しで作業記録"</code> は <b>長押しを言葉で説明している</b> ― これは VoiceOver には届くが、晴眼者の発見性問題は残る。</p>
+
+  <h3 style="font-size: 18px; margin: 16px 0 8px;">i18n エンジニア</h3>
+  <p>言語ピッカー19言語、tokens の <code>--font-display-ja</code> / <code>--font-body-ja</code> 構造は他言語混在に強い。が、コンテンツ層が <b>日本語ハードコード</b>：<code>screens.jsx</code> の Welcome 文言、<code>care-screens-v2.jsx</code> の作業ラベル、樹形 desc など。<br/>
+  さらに <em>「松類限定」を <code>speciesOnly:'pine'</code> で判定</em> ― これは樹種コード体系を i18n とどう結ぶかが要設計。<br/>
+  <b>提案：</b>(a) i18n 層（i18next 等）を介した文言管理に移行、(b) 単位系（cm/inch、°C/°F）を端末ロケールから自動推定＋設定で上書き可、(c) 樹形・作業の <em>意味的英訳</em> を辞書化（<em>Decandling, Defoliation</em> 等）。</p>
+
+  <h3 style="font-size: 18px; margin: 16px 0 8px;">行動心理学者</h3>
+  <p>習慣化の観点で <b>GitHub-style ヒートマップ</b>は秀逸。<em>連続記録（streak）</em>を可視化することで、損失回避が働き、続ける動機を提供する。これは Apple Health のリングや GitHub の草と同系統。<br/>
+  ただし <b>初期不安</b>（健太ペルソナ）への配慮が薄い：Onboarding 直後に「あなたの最初の30日」のような <em>進捗が見える小さな道標</em> がない。<br/>
+  <b>提案：</b>30日ガイドを Onboarding 完了後に <em>1つだけ</em>提示し、毎日「今日のチェック」を1件だけ出す。これで「何をすべきかわかる安心」と「ヒートマップに最初の点が打てる達成感」が同時に手に入る。<br/>
+  <em>※ v1.1 で 30日ガイド削除（哲学整合）／ v1.7 で 連続記録（streak）表示削除（Streak 文化は盆栽の水やり判断に逆効果。樹種別の乾湿差を無視した連続強化は過湿リスクを生むため）</em></p>
+
+  <hr />
+
+  <h3 id="dissents" style="font-size: 18px; margin-top: 24px;">専門家間の意見の違い（残しておくこと）</h3>
+  <table class="issues-tbl" style="margin-top: 12px;">
+    <thead>
+      <tr>
+        <th style="width: 24%;">論点</th>
+        <th style="width: 38%;">A 視点</th>
+        <th style="width: 38%;">B 視点</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>「目安」を出すか</b></td>
+        <td>盆栽家：目安は記録の主役を奪わない範囲で残す。「参考」表記を徹底すれば許容。</td>
+        <td>プロ（高橋茂）：そもそも要らない。記録は事実だけ。AI / 推奨 / 目安はノイズ。</td>
+      </tr>
+      <tr>
+        <td><b>水やりを予定に出すか</b></td>
+        <td>UX：毎日のことだから「予定」に出さない（タイムライン汚染防止）の判断は妥当。</td>
+        <td>初心者代弁：水やりが「予定」にないと、初心者は「忘れていい」と勘違いする。</td>
+      </tr>
+      <tr>
+        <td><b>絵文字 vs ラインアイコン</b></td>
+        <td>i18n：絵文字は OS バージョンで見た目が変わる ＋ ラベルなしでは意味が伝わらない。</td>
+        <td>UX：作業選択 Sheet では絵文字が「楽しさ」を出している ― 完全置換は感情を失わせる。</td>
+      </tr>
+      <tr>
+        <td><b>長押し操作</b></td>
+        <td>アクセシビリティ：長押しは視覚障害・運動障害ユーザーに不利、廃止すべき。</td>
+        <td>UX：長押しは「よく使う代替経路」として残しつつ、ボタン併設が現実的。</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 7 — ISSUE LIST
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-7">
+  <div class="section-head">
+    <span class="section-no">07</span>
+    <h2 class="section-title">課題一覧 ― 優先度別 <span style="font-size: 14px; color: #5A5248; font-weight: 400;">（v1.2 ステータス列付き）</span></h2>
+    <p class="section-sub">P0 = 必ず直す（リリース前 / 直後）/ P1 = 強く推奨（次の1〜2スプリント） / P2 = 改善余地（中期） / P3 = 観察項目（数値で見て判断）。<b>状態</b>欄：<span style="display:inline-block; padding:1px 6px; background:#3E5C39; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; border-radius:3px;">RESOLVED</span> = 解決済 ／ <span style="display:inline-block; padding:1px 6px; background:#C69E48; color:#1A1A1A; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; border-radius:3px;">SPRINT 1</span> = 着手予定 ／ <span style="display:inline-block; padding:1px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; border-radius:3px;">未対応</span> ／ <span style="display:inline-block; padding:1px 6px; background:#1F3A2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; border-radius:3px;">v1.2 NEW</span> = v1.2 議論で発見した残存問題。</p>
+  </div>
+
+  <table class="issues-tbl">
+    <thead>
+      <tr>
+        <th style="width: 50px;">優先</th>
+        <th style="width: 90px;">状態</th>
+        <th style="width: 180px;">課題</th>
+        <th>症状（誰が、どこで）</th>
+        <th style="width: 260px;">推奨対応／実施した対応</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="pri p0">P0-1</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.3</span></td>
+        <td>一括選択モードの<br/>発見性<br/>（旧：長押しのみ）</td>
+        <td>Home の盆栽カード「長押し」が唯一の入口。佐藤みどり（62）・初心者全員が見つけられない。1株ずつ記録 → 離脱寸前。<br/><b>※ v1.3 で Apple HIG 準拠の常設「選択」ボタン化。</b></td>
+        <td><b>実施：</b><code>HomeHeader</code> 右に <code>選択</code> テキストボタン常設（Apple Photos / Mail / Reminders 共通 HIG）。<code>HomeScreen</code> に <code>selectMode</code> / <code>selected</code> state 追加。<code>BonsaiCard</code> / <code>BonsaiGridCard</code> に選択チェックマーク overlay。下部 <code>SelectionToolbar</code>（タグ追加 / 一括記録 / アーカイブ）を <code>position:fixed</code> で表示。長押しも併設で残す。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p0">P0-2</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.3</span></td>
+        <td>タグ／フィルタの<br/>作成 UI<br/>（旧：モックのみ）</td>
+        <td>Home に <code>@ベランダ</code> <code>#展示会候補</code> のチップが出るが、登録モーダルにタグ入力欄なし、設定にもタグ管理なし。高橋茂（プロ）の検索で発覚。<br/><b>※ v1.3 で動的タグ管理 UI 完成。</b></td>
+        <td><b>実施：</b><code>CreateBonsaiScreen</code> に「タグ」フィールド追加（既存タグ複数選択＋「+ 新規」リンク）。<code>TagEditModal</code> 新規追加（追加・名前変更・削除を 1 画面で）。<code>HomeFilterTabs</code> を動的描画化（Material 3 Filter chip）＋ <code>+</code> ボタンでモーダル起動。Selection モード時のみ <code>SelectionToolbar</code>「タグ追加」から複数選択中の盆栽に一括付与可能。Day One ハイブリッド型 + Bear TagCons 整合。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p0">P0-3</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.1</span></td>
+        <td>写真制限<br/>（旧：3枚 Pro 制限）</td>
+        <td>松本浩（SNS派）。詳細・写真タブで自分の撮った写真 27 枚が <em>ぼかし＋鍵</em>で見えない問題。<br/><b>※ v1.1 で完全撤廃済み。Pro 写真∞は無料化、写真上限なし。</b></td>
+        <td><b>実施：</b>写真上限を全廃。入力スロット「最大 3 枚」→「任意」横スクロール対応 (<code>care-screens.jsx</code>) ／ 履歴サムネ 44px → 88px 折り返し対応 (<code>detail-screens.jsx</code>) ／ Paywall 機能行ピボット (<code>monetization-screens.jsx</code>) ／ <code>PhotosTab</code> 関数全削除。Pro モデルは「データ制限解除」→「出力＋体験」へピボット完了。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p0">P0-4</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED by removal</span></td>
+        <td>30 日ガイド<br/>（旧：到達不可）</td>
+        <td>山田健太（初心者）。<code>GuideModalScreen</code> 実装済みだが Onboarding／Home Empty／Create のどこにもリンクなし問題。<br/><b>※ v1.1 で関数ごと削除（哲学整合：BonsaiLog は命令しない）。</b></td>
+        <td><b>実施：</b><code>care-screens.jsx</code> の <code>GuideModalScreen</code> 関数全削除（73 行）＋ <code>Object.assign(window, ...)</code> から export 除外。代替は HomeEmpty α 案（ボタン 72px / 20px 拡大）と外部リソース尊重メッセージ。「事実を記録するアプリ。アプリは命令しません」を <code>docs/principles.md</code> に明文化。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p0">P0-5</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.1</span></td>
+        <td>セグメンテッドチップ<br/>タップ領域<br/>（旧：32–40dp）</td>
+        <td>佐藤みどり、高橋茂。<code>care-screens-v2.jsx</code> の <code>_Seg</code> は <code>minHeight: small?32:40</code> 問題。<br/><b>※ v1.1 で 44dp 化。</b></td>
+        <td><b>実施：</b><code>_Seg</code> を <code>minHeight: small?40:44</code> に変更。月送り・Heatmap タブも 44dp に統一。<code>tokens.css</code> 宣言の <code>--tap-min: 48px</code> と整合（Apple HIG 44pt 許容範囲）。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p1">P1-NEW</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.2</span></td>
+        <td>一括予定追加時、<br/>通知 ON 既定<br/>（哲学逆走の残存）</td>
+        <td>v1.2 議論で発見。<code>care-screens-v2.jsx:860</code> の <code>BulkScheduleDateSheet</code> で <code>const [notify, setNotify] = React.useState(true)</code>。Settings の通知 OFF 既定（v1.1 適用済）と整合せず、「アプリは命令しない」哲学に逆走する箇所が 1 か所だけ残っていた。</td>
+        <td><b>実施：</b><code>care-screens-v2.jsx:860</code> を <code>useState(false)</code> へ 1 行修正。一括予定追加時も通知は OFF 既定に統一。<b>これで通知系の哲学整合は全箇所完了</b>。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p1">P1-A</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.3</span></td>
+        <td>樹形ピッカーの<br/>説明文表示<br/>（旧：欠落）</td>
+        <td>初心者が樹形を選べない。<code>STYLE_LIST</code> に <code>desc</code> 定義済みだが UI 上は名前と Latin 名のみ。<br/><b>※ v1.3 で desc 表示を追加。</b></td>
+        <td><b>実施：</b><code>create-screens.jsx</code> の <code>StylePickerScreen</code>（line 490+）と <code>StylePickerSheet</code>（line 651+）の両方に <code>{s.desc && <div>{s.desc}</div>}</code> を追加。1 行説明をリスト各項目下にイタリック小フォントで表示。Apple HIG「アイコンの意味が universally understood でないなら text label 併記せよ」整合。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p1">P1-B</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.3</span></td>
+        <td>「・・・」メニュー<br/>（旧：未実装）</td>
+        <td>Mermaid 図で詳細画面に「…メニュー」が宣言されているが、ヘッダ上の単独アイコンは v1.1 で削除済（編集は基本情報タブに統合）。共有 / PDF / アーカイブへの近道がまだない。<br/><b>※ v1.3 で DetailMoreMenu 実装。</b></td>
+        <td><b>実施：</b><code>detail-screens.jsx</code> の <code>DetailHeader</code> 右に ellipsis アイコン追加 → <code>DetailMoreMenu</code> bottom sheet 表示。3 項目集約：(a) 共有 (b) PDF 出力（Pro 案内付） (c) アーカイブ。<b>削除は意図的に出さない</b>（哲学整合：アーカイブは復元可能、削除を急かす UX を避ける）。<code>BonsaiDetailScreen</code> に <code>menuOpen</code> state ＋ <code>initialMenuOpen</code> prop で 02-Home.html FLOW から表示確認可。Apple HIG「primary = toolbar 直置き / secondary = ... menu」整合。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p1">P1-C</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応</span></td>
+        <td>バルク記録の個別差異<br/>補完導線</td>
+        <td>鈴木大輔。剪定や施肥の <em>株別差</em> がバルクで書けず、後で 1 件ずつ追記が必要。</td>
+        <td>バルク確認シートに <em>「保存後、各盆栽の履歴で個別追記」</em> へのナビ：保存完了 toast に「個別に追記する」リンクを置き、履歴一覧に直行（5–8 秒自動消滅）。Strava 公式パターン。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p1">P1-D</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応</span></td>
+        <td>Home カードの<br/>「直近1件」の落とし穴</td>
+        <td>カードは「水やり優先 fallback で剪定」で 1 件だけ表示。週末派には 1 日に複数作業が並ぶため、<em>「水＋剪＋肥」</em> のような要約が欲しい。</td>
+        <td>カード下部に最終 3 件をミニアイコンで並べる「ストリーム表示」を追加（Apple Fitness モデル）。グリッド表示時はミニアイコン 4 個まで。Strava は同日グルーピング未実装で業界が割れるが、BonsaiLog は樹中心の時系列設計のため Apple 寄りが筋。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p1">P1-E</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.3</span></td>
+        <td>ATT/UMP の<br/>Onboarding 必須経路統合<br/>（旧：未統合・最優先法令）</td>
+        <td>独自の ATT 説明画面、UMP 同意画面が <code>screens.jsx</code> にあるが、Onboarding 必須経路に組み込まれていない（FLOW は 4 ステップ）。<b>UMP TCF v2.3 義務化 2026-02 経過済</b>、未対応で EEA Limited Ads = 収益制限リスク。19 言語ターゲット運用のため必須。<br/><b>※ v1.3 で 6 ステップ FLOW に統合済。</b></td>
+        <td><b>実施：</b><code>01-Onboarding.html</code> の FLOW を 4 → 6 ステップに再構成：<code>splash → welcome → lang → att（pre-prompt）→ ump（EU/UK/CH のみ）→ notif</code>。<code>ATTScreen</code> / <code>UMPScreen</code>（既存実装）を import + case 配線。<b>ユーザー負担最小化</b>策：(1) ATT は pre-prompt で価値訴求してから OS ダイアログ起動、(2) 「後で決める」併設で完了率を維持、(3) UMP は地域判定で EU/UK/CH のみ表示（日本ユーザーはスキップ）、(4) 説明文は「短く＋具体」を厳守。Apple HIG ATT ガイドライン整合・GDPR/CCPA 対応・19 言語キー化準備済。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p1">P1-F</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応<br/>（部分対応済）</span></td>
+        <td>16 作業 × 通知<br/>= 通知疲れ<br/>（部分対応済）</td>
+        <td>競合 Greg/Planta レビューで「通知が外れる」「サブスクの裏に隠している」が最頻出の不満。<br/><b>※ v1.1 で通知デフォルト OFF 適用済 / v1.2 で一括時 OFF 既定も適用済。残るは作業別 ON/OFF UI。</b></td>
+        <td>設定 → 通知に「作業別 ON/OFF」16 トグル追加。Top-4（水/肥料/剪定/植替え）を上に固定 + 残り 12 を折りたたみ（Decision Fatigue 回避）。Calm Tech「granular control」整合。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p1">P1-G</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応</span></td>
+        <td>水やりを「予定」に<br/>出さない判断の説明</td>
+        <td>初心者がタイムラインに水やりがないことで「忘れていい」と勘違い。</td>
+        <td>タイムライン上部の「これからの予定」見出しの右に <em>「水やりは履歴へ」</em> ピル（既存）に加え、<b>初回のみ</b> inline banner（toast でなくバナー＝VoiceOver 対応）：<em>「水やりは予定ではなく履歴で記録します。理由：毎日の作業で予定が埋まらないようにするためです。」</em></td>
+      </tr>
+      <tr>
+        <td><span class="pri p2">P2-1</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応</span></td>
+        <td>剪定の「量」の<br/>粒度が粗い</td>
+        <td>盆栽家視点。「少し / まあまあ / 多め」では年次の振り返りで意味が薄れる。</td>
+        <td>「少し／まあまあ／多め」3 段階を維持しつつ、Apple Health 症状方式で本数を任意入力できる欄を追加（任意）。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p2">P2-2</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応</span></td>
+        <td>消毒「目的」の<br/>粒度</td>
+        <td>盆栽家視点。「殺虫／殺菌／両方」だけ。<em>予防 vs 治療</em> の意味付けがない。</td>
+        <td>サブセグメントに「予防／治療」の 2 択を任意で追加。Apple Health 症状 Present/Not Present に類似。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p2">P2-3</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応<br/>（コピー要審査）</span></td>
+        <td>葉刈りと全葉刈の<br/>同一フォーム</td>
+        <td>「全葉刈り（defol）」は時期と樹種で禁忌になりうるが、フォームは葉刈りと同じ「範囲」のみ。</td>
+        <td>「全葉刈り」選択時に Info アイコンを置き、タップ時のみ参考コピー：<em>「全葉刈りは樹勢が弱いと回復に時間が<b>かかることがあります</b>。判断はあなたが行います（参考）」</em>。<b>NG コピー</b>「樹勢が弱い場合は控える」（命令的）。哲学整合のためコピー徹底レビュー必要。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p2">P2-4</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応</span></td>
+        <td>単位系の固定（cm）</td>
+        <td>Linda（NY）。鉢サイズ cm 固定、温度入力なし。19 言語ターゲットでは英米単位対応必須。</td>
+        <td>設定に「単位系」追加。i18n 化（P3-1）と同時実装が筋。Samsung Health / Zepp / Fitbit 全て Settings &gt; Units 階層採用。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p2">P2-5</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#5A5248; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">不採用</span></td>
+        <td>屋外モード自動提案<br/>（旧：明るさセンサ）</td>
+        <td>tokens.css に <code>[data-theme="outdoor"]</code> あり、設定に「屋外モード」トグルあり。明るさセンサ自動提案を検討していた。</td>
+        <td><b>不採用：</b>iOS は app から ambient light sensor にアクセス不可（プラットフォーム制約・1 次情報強）。<b>手動トグル維持</b>（既に Settings に実装済）。Android のみ将来検討余地あり。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p2">P2-6</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応<br/>（必須水準）</span></td>
+        <td>VoiceOver ラベル<br/>抜け</td>
+        <td><code>aria-label</code> が「閉じる」「戻る」のみ。「保存」「タブ各種」未付与の箇所あり。19 言語＋シニア対応のため必須水準。</td>
+        <td>Xcode Accessibility Inspector で全画面監査。全アクションボタンに <code>aria-label</code> を付与。タブには <code>role="tab"</code> も検討。CI 組込みで継続監視。Apple Developer ガイド「label は concise」。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p2">P2-7</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応</span></td>
+        <td>16 タイル一覧の<br/>密度</td>
+        <td>作業選択 Sheet の 3×6 グリッド。シニアには情報量が多い。</td>
+        <td>Top-4（水・剪・肥・植）を上段に固定し、その他を「他の作業（12）」 折りたたみへ。Apple HIG <code>Sheets</code> collapsible bottom sheet 公式化。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p3">P3-1</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応</span></td>
+        <td>i18n 文言の<br/>i18next 化</td>
+        <td>i18n 視点。<code>screens.jsx</code> 内の文言が直書き。19 言語ターゲットのため必須。</td>
+        <td>React Native 標準の i18next 化。<code>react-native-localize</code> でデバイス言語検出。樹形 desc も含む。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p3">P3-2</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応</span></td>
+        <td>ヒートマップの<br/>色覚対応</td>
+        <td>Deuteranopia でやや識別困難の可能性（実機要検証）。</td>
+        <td>Viridis 系（dark blue → bright yellow）に切替。CVD-safe palette として科学根拠あり。red/green 回避。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p3">P3-3</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応</span></td>
+        <td>Free に CSV 1 種<br/>を解放</td>
+        <td>PM 視点。Pro 訴求の自然な見せ方を作るため。</td>
+        <td>「直近 30 日 CSV」のみ Free 解放（期間制限）、樹木数や写真制限はかけない。Recurly Freemium「機能限定＋数量クォータ組合せが convert 率最高」。Pro = 出力＋体験の哲学整合。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p3">P3-4</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#8B2E2E; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">未対応<br/>（Pro 候補）</span></td>
+        <td>水やり ウィジェット<br/>／ロック画面 Live Activity</td>
+        <td>競合 7 アプリが軒並み持っていない高速ログ経路。MyFitnessPal の例では <b>28〜62%</b> の時間短縮（NM audit）。「父の黒松に水やり」をワンタップで記録できれば、サブ 5 秒に到達。</td>
+        <td>iOS 16+ ActivityKit + WidgetKit + App Intents で実装。<em>水やりだけ</em>に絞って先行（設計負荷小）。Pro 機能候補。哲学整合：摩擦低減＝事実記録の効率化。</td>
+      </tr>
+      <tr>
+        <td><span class="pri p3">P3-5</span></td>
+        <td><span style="display:inline-block; padding:2px 6px; background:#5A5248; color:#F7F3E8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; border-radius:3px;">不採用 v1.2</span></td>
+        <td>樹種＋地域別<br/>「参考」カレンダー</td>
+        <td>Mirai Mobile の強み。BonsaiLog は <em>診断しない</em>立場のため、参考カレンダーでも哲学リスクが残る。</td>
+        <td><b>不採用：</b>「集合的事実（過去 N 年の記録統計）」として表示しても「他人がやっている＝自分もやるべき」という間接的命令化の reasoning リスクが避けがたい。Mirai Mobile 路線は採らず、BonsaiLog は記録特化路線で勝負する判断（v1.2 で確定）。</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 8 — ROADMAP
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-8">
+  <div class="section-head">
+    <span class="section-no">08</span>
+    <h2 class="section-title">改善ロードマップ</h2>
+    <p class="section-sub">P0/P1/P2/P3 を時間軸に並べ替え、何を、いつ、どう手をつけるかを示します。</p>
+  </div>
+
+  <div class="ok" style="margin-bottom: 24px; background: #E8F0E5;">
+    <div class="label" style="color: #1F3A2E;">v1.1 + v1.2 + v1.3 で完了済（記録）</div>
+    <ul style="margin: 6px 0 0 18px;">
+      <li><b>Sprint 1 完了</b>（v1.3）：P1-E ATT/UMP 統合、P0-1 一括選択発見性、P0-2 タグ作成 UI、P1-A 樹形 desc、P1-B 「…」メニュー ─ <b>主要 9 件すべて解決</b></li>
+      <li><b>P0-3 / P0-4 / P0-5</b>（v1.1）：写真制限撤廃／30 日ガイド削除（哲学整合）／<code>_Seg</code> 44dp 化</li>
+      <li><b>P1-NEW</b>（v1.2）：一括予定追加時の通知 ON 既定 → OFF 既定（<code>care-screens-v2.jsx:860</code> 1 行修正で解消）</li>
+      <li><b>哲学全面適用</b>（v1.1）：通知デフォルト OFF、Pro モデルピボット（出力＋体験）、Care タブ「記録」改称、詳細画面のタブ再構成（履歴 / 予定 / 基本情報）</li>
+      <li><b>監査文書整合</b>（v1.2）：不整合 15 箇所訂正、Sec 7 にステータス列追加、Sec 11 に v1.2 訂正適用記録追記</li>
+    </ul>
+  </div>
+
+  <div class="roadmap">
+    <div class="road-col">
+      <div class="when">v1.2 即時 ・ 完了済</div>
+      <h4>不整合訂正＋新規 P1 解消</h4>
+      <ul>
+        <li>✅ <b>P1-NEW：</b>一括時通知 OFF 既定（1 行修正）</li>
+        <li>✅ <b>監査文書 15 箇所訂正</b>（Tier 1-4）</li>
+        <li>✅ <b>App Store マーケコピー方針</b>を <code>docs/principles.md</code> に追記（哲学を売りに：機能訴求＋哲学声明の二層構成）</li>
+        <li>✅ <b>ATT/UMP 統合計画</b>を <code>docs/principles.md</code> に追記（次 Sprint 1 で実装）</li>
+      </ul>
+    </div>
+    <div class="road-col">
+      <div class="when">v1.3 ・ Sprint 1 完了済</div>
+      <h4>すぐ直す（完了）</h4>
+      <ul>
+        <li>✅ <b>P1-E（最優先・法令）：</b>ATT/UMP の Onboarding 必須経路統合 ─ FLOW を 4 → 6 ステップに再構成（splash → welcome → lang → att → ump → notif）。EU/UK/CH のみ UMP 表示・19 言語キー化準備済</li>
+        <li>✅ <b>P0-1：</b>Home ヘッダ「選択」ボタン常設 ＋ <code>SelectionToolbar</code> 下部コンテキスト（タグ追加 / 一括記録 / アーカイブ）。長押しも併設</li>
+        <li>✅ <b>P0-2：</b>タグ作成 UI ─ <code>CreateBonsaiScreen</code> にタグ欄、<code>TagEditModal</code> 新設、<code>HomeFilterTabs</code> 動的化＋ <code>+</code> ボタンで追加可</li>
+        <li>✅ <b>P1-A：</b>樹形ピッカーに <code>desc</code> 表示（<code>StylePickerScreen</code> ＋ <code>StylePickerSheet</code> 両方）</li>
+        <li>✅ <b>P1-B：</b><code>DetailMoreMenu</code> 実装（共有 / PDF / アーカイブ。削除は哲学整合のため非提示）</li>
+      </ul>
+    </div>
+    <div class="road-col">
+      <div class="when">Sprint 2-4 ・ 1〜2 か月 ・ 強推奨</div>
+      <h4>定着化フェーズ</h4>
+      <ul>
+        <li><b>P1-C：</b>バルク記録 → 個別追記の橋渡し（保存完了 toast に CTA・Strava パターン）</li>
+        <li><b>P1-D：</b>Home カードの最終 3 件ストリーム表示（Apple Fitness モデル）</li>
+        <li><b>P1-F：</b>通知の作業別 ON/OFF UI（Top-4 固定＋折りたたみ・Calm Tech 整合）</li>
+        <li><b>P1-G：</b>水やりを「予定」に出さない説明（初回 inline banner・VoiceOver 対応）</li>
+        <li><b>P2-1 / P2-2：</b>剪定量／消毒予防・治療セグメント（任意入力）</li>
+        <li><b>P2-7：</b>作業選択 Sheet の Top-4＋折りたたみ（Apple HIG bottom sheet）</li>
+      </ul>
+    </div>
+    <div class="road-col">
+      <div class="when">v1.1+ 中期 ・ 磨き込み</div>
+      <h4>仕上げと検証</h4>
+      <ul>
+        <li><b>P2-3：</b>全葉刈り注意（<b>コピー徹底レビュー</b>必須・哲学整合）</li>
+        <li><b>P2-4 + P3-1：</b>単位系切替＋ i18next 化（19 言語対応のため同時実装）</li>
+        <li><b>P2-6：</b>VoiceOver 全体監査（Xcode Accessibility Inspector・CI 組込み）</li>
+        <li><b>P3-2：</b>ヒートマップ Viridis 系切替（色覚補強）</li>
+        <li><b>P3-3：</b>Free に CSV 1 種（直近 30 日）解放、リテンション計測</li>
+        <li><b>P3-4：</b>水やり Lock Screen Widget / Live Activity（Pro 機能候補・サブ 5 秒ログ）</li>
+      </ul>
+    </div>
+    <div class="road-col" style="background: #F5EDE0;">
+      <div class="when">不採用（記録）</div>
+      <h4>やらないことを残す</h4>
+      <ul>
+        <li><b>P2-5：</b>屋外モード自動提案 ─ <em>iOS から ambient light sensor アクセス不可</em>（プラットフォーム制約・1 次情報強）。手動トグル維持。</li>
+        <li><b>P3-5：</b>樹種＋地域別「参考」カレンダー ─ 集合的事実でも間接的命令化リスク回避困難。BonsaiLog は記録特化路線で勝負（v1.2 で確定）。</li>
+        <li><b>30 日ガイド機能</b> ─ v1.1 削除済、哲学整合のため二度と入れない。</li>
+        <li><b>Pro「作業タイミングの目安」</b> ─ v1.1 撤廃済、命令の有料化＝哲学逆走のため再導入不可。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="ok" style="margin-top: 32px;">
+    <div class="label">変えないことで保たれる強み（記録に残す）</div>
+    <ul style="margin: 6px 0 0 18px;">
+      <li><b>削除ではなくアーカイブ</b>：盆栽の継承文化と整合し、誤操作回復に強い。維持。</li>
+      <li><b>16 作業の専用フォーム</b>：水量・番手・希釈倍率まで踏み込めることが BonsaiLog の核。維持。</li>
+      <li><b>水やりは予定に出さない</b>：タイムラインを大事に守る判断。<em>説明</em>を補強しつつ維持。</li>
+      <li><b>「目安」「参考」だけを許す言葉遣い</b>：プロ・盆栽家・初心者の最大公約数。維持。</li>
+      <li><b>カスタム樹種・樹形入力</b>：i18n と多様性に強い。維持。</li>
+      <li><b>GitHub-style 水やりヒートマップ</b>：習慣形成に効く独自性。維持。</li>
+      <li><b>UTF-8 BOM 付き CSV / A4 縦 PDF</b>：日本語 Excel・印刷文化との整合性。維持。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 9 — OPEN QUESTIONS
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-9">
+  <div class="section-head">
+    <span class="section-no">09</span>
+    <h2 class="section-title">未解決の問い</h2>
+    <p class="section-sub">議論の中で答えが出なかった点、または「ユーザー検証で確認すべき」と判定された項目です。次回のレビューでクリアにしましょう。</p>
+  </div>
+
+  <ol style="font-size: 14px; line-height: 1.7;">
+    <li><b>タブバーの「記録」ラベルが指す画面は？</b><br/>
+      <code>home-screens.jsx</code> の TabBar 定義は「盆栽 / 予定 / 記録 / 設定」。<em>「記録」</em> をタップすると何が出るのか、JSX では未実装。水やりヒートマップ？　履歴一覧？　検索？　― ユーザーは <em>記録</em> という単語に何を期待するのか、ヒアリングが必要。
+    </li>
+    <li><b>iCloud / Google Drive 同期は対応するのか？</b><br/>
+      設定には「ZIP インポート」のみ。複数端末で使いたい人（鈴木大輔ペルソナ）にとっては必須に近い。リスクは（同期の競合）（プライバシー）（運用コスト）。<em>同期しない＝端末紛失でデータ消失</em>のリスクをどう説明するか。
+    </li>
+    <li><b>松類限定の「芽切り」を、どう樹種拡張に対応させるか？</b><br/>
+      <code>speciesOnly:'pine'</code> はハードコード。<em>欅・もみじの「全葉刈り」</em>、<em>真柏の「ジン・シャリ加工」</em> なども樹種限定。<em>樹種コード × 作業</em> のマトリクス管理に切り替える時期では？
+    </li>
+    <li><b>通知の頻度上限とトーンは？</b><br/>
+      設定に「通知の時間帯（8:00–20:00）」あり。ただし1日に何件まで送るか、季節作業の「時期幅」（5月中旬〜6月初）をどう通知するか不明。
+    </li>
+    <li><b>Pro 価格帯の妥当性</b><br/>
+      月¥500 / 年¥3,980 / 買切¥9,800。日本の盆栽愛好家層に向けた値付けとしては「高すぎる」も「安すぎる」も判断材料が不足。本気度フィルターとして妥当か、ユーザー調査が要。
+    </li>
+    <li><b>盆栽園プロ向けの「弟子・顧客共有」</b><br/>
+      高橋茂の動線では「PDF出力 → メール／LINE」が現実解。ただし弟子3名のスマホで <em>同じデータベース</em> を見たいというニーズは高そう。<em>マルチユーザー機能</em>は別アプリにするか、Pro Plus で出すか。
+    </li>
+  </ol>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 10 — GLOSSARY
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-10">
+  <div class="section-head">
+    <span class="section-no">10</span>
+    <h2 class="section-title">用語集 ― この文書で使った言葉</h2>
+    <p class="section-sub">専門用語に詰まったら、ここを見てください。中学生にもわかる説明にしています。</p>
+  </div>
+
+  <div class="glossary">
+    <dl>
+      <dt>FAB（ファブ）</dt>
+      <dd>Floating Action Button の略。画面の右下に浮かぶ円形ボタン。最も大事な操作（このアプリでは「盆栽を新しく登録する」）に使う。</dd>
+
+      <dt>モーダル</dt>
+      <dd>今の画面の上に重ねて出てくる、専用の画面。閉じるまで他のことができない。「新規登録」がそれ。</dd>
+
+      <dt>ボトムシート</dt>
+      <dd>画面の下から「ぴょこっ」と上がってくる小さな画面。下にスワイプすれば閉じられる。「樹種ピッカー」「作業選択」がそれ。</dd>
+
+      <dt>ハブ（中継点）</dt>
+      <dd>たくさんの画面が放射状につながっている中央。BonsaiLog では Home がハブ。</dd>
+
+      <dt>タップ領域</dt>
+      <dd>指で押せる範囲。Apple/Google ともに「48×48 ピクセル以上」を推奨。手袋／老眼／屋外で誤タップを減らすため。</dd>
+
+      <dt>セグメンテッドコントロール</dt>
+      <dd>「いつも通り / たっぷり / 軽く」のように、横に並んだ選択肢から1つ（or 複数）選ぶUI。</dd>
+
+      <dt>VoiceOver</dt>
+      <dd>iPhone のスクリーンリーダー。視覚に障害のある人に「画面に何が書いてあるか」を読み上げてくれる。<code>aria-label</code>で何を読むか指定する。</dd>
+
+      <dt>WCAG / JIS X 8341</dt>
+      <dd>WCAG はウェブのアクセシビリティ国際規格。JIS X 8341 はその日本版。「文字とその後ろの色のコントラスト比7:1以上」など、誰でも見やすくするための基準。</dd>
+
+      <dt>i18n（インターナショナリゼーション）</dt>
+      <dd>「i」と「n」の間に18文字あるからこの略。多言語化の意味。文章だけでなく、日付の書き方、単位（cm/inch）、絵文字などすべてを「その国に合わせる」設計のこと。</dd>
+
+      <dt>ATT（App Tracking Transparency）</dt>
+      <dd>iOS 14.5 以降、広告のための端末ID（IDFA）使用には「許可しますか？」のダイアログが必須。Apple の規約。</dd>
+
+      <dt>UMP（User Messaging Platform）</dt>
+      <dd>Google が提供する、EU/UK/CH の GDPR 同意取得を簡単にする仕組み。広告事業者の使うデータの同意を取る。</dd>
+
+      <dt>Apple 規約 3.1.1</dt>
+      <dd>App Store のレビューガイドライン。「アプリ内課金で買えるものは、購入の復元（別端末で買い直さなくていい）を提供しなければならない」と定める。</dd>
+
+      <dt>P0 / P1 / P2 / P3</dt>
+      <dd>優先度。P0 = 直さないとリリースできない／致命的、P1 = 強く推奨、P2 = 改善余地、P3 = 観察項目。</dd>
+
+      <dt>FlashList</dt>
+      <dd>大量のリスト（150株とか）をスクロールしてもカクつかないようにする React Native のライブラリ。「60fps target」と書かれている。</dd>
+
+      <dt>GitHub-style ヒートマップ</dt>
+      <dd>GitHub のプロフィールにある「草」みたいな格子状の表示。色の濃さで「その日に何回やったか」を表す。BonsaiLog では水やりに使われている。</dd>
+
+      <dt>UTF-8 BOM 付き CSV</dt>
+      <dd>日本語版 Excel で文字化けしないために、ファイルの先頭に「これは UTF-8 です」というマーク（BOM）を付けた CSV のこと。技術者にとっては当たり前だが、これがないと多くのユーザーが困る。</dd>
+
+      <dt>樹形（じゅけい）</dt>
+      <dd>盆栽の幹の形の分類。直幹（まっすぐ）、模様木（くねっとした）、懸崖（崖から垂れる）など10種類くらいある。</dd>
+
+      <dt>芽切り（めきり）</dt>
+      <dd>松類で行う、新芽を一度切って二番芽を出させる技。葉のバランスを整える。専門技術。</dd>
+
+      <dt>針金がけ</dt>
+      <dd>盆栽の枝や幹に針金を巻いて、好きな形に曲げる作業。一定期間後に外す（食い込み防止）。</dd>
+
+      <dt>アーカイブ</dt>
+      <dd>このアプリでは「削除しないで隠す」こと。枯れた盆栽、譲った盆栽の記録は消さずにアーカイブして、いつでも復元できる。継承文化を尊重する設計。</dd>
+
+      <dt>habit formation（習慣形成）</dt>
+      <dd>「毎日続ける」を脳が苦にしなくなる仕組み作り。GitHub の草、Apple の達成リング、BonsaiLog の水やりヒートマップは皆この設計。</dd>
+
+      <dt>streak loss aversion</dt>
+      <dd>「連続記録が途切れるのが嫌」という心理。これを利用するのが habit formation の王道。<em>BonsaiLog では v1.7 で 連続記録（streak）表示を削除。理由：盆栽の水やりは樹種別の乾湿差が必須で、連続強化は過湿リスクを生むため、哲学（命令しない・判定しない）と整合しない。</em></dd>
+
+      <dt>devil's advocate（悪魔の代弁者）</dt>
+      <dd>議論で「あえて反対意見を言う係」。集団で同じ結論に流れすぎないよう、わざと反論を出す役。</dd>
+
+      <dt>情報カスケード</dt>
+      <dd>先に発言した人の意見に、後の人が引きずられて同じ結論に流れていく現象。意見の独立性が崩れる。これを避けるため、本評議会では各専門家を別々に評価させ、最後に持ち寄っている。</dd>
+
+      <dt>groupthink（集団思考）</dt>
+      <dd>仲のいい集団内で「反対意見が出ない空気」が生まれ、結論が偏る現象。これを避けるため悪魔の代弁者を置く。</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     SEC 11 — SELF AUDIT LOG
+     ════════════════════════════════════════════════════════ -->
+<section id="sec-11">
+  <div class="section-head">
+    <span class="section-no">11</span>
+    <h2 class="section-title">自己監査ログ ― 私たち自身の点検</h2>
+    <p class="section-sub">「このレポート自体、ちゃんと点検されているのか？」 ― 文書を出す側が <em>自分自身に</em> 同じ厳しさを向けないと、信頼性は担保されません。<b>P0チェック</b>と<b>5次元クリティーク</b>の結果を、エビデンス付きで残します。</p>
+  </div>
+
+  <h3 style="font-size: 18px; margin: 16px 0 8px;">P0 監査（必須項目チェック）</h3>
+  <p>「これが無いと、このレポートはレビューに出せない」という10項目。<b>すべてが pass</b> しないと、artifact を確定させません。</p>
+
+  <table class="issues-tbl" style="margin-top: 12px;">
+    <thead>
+      <tr>
+        <th style="width: 8%;">No.</th>
+        <th style="width: 36%;">必須項目</th>
+        <th style="width: 12%;">判定</th>
+        <th>エビデンス（文書内の所在）</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>P0-A</td>
+        <td>ペルソナが <b>多様性4軸</b> を満たしているか<br/>（経験 / 年齢 / 動機 / 環境）</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td><a href="#personas">Sec 02</a> ・健太(初心者)・みどり(シニア地方)・大輔(週末派)・浩(SNS/若年)・茂(プロ高齢)・Linda(英語/屋内) ― 4軸とも極端値を含む。</td>
+      </tr>
+      <tr>
+        <td>P0-B</td>
+        <td>各ペルソナが <b>動線シミュレーション</b> を1本以上もつ</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td><a href="#sec-4">Sec 04</a> ・6 ペルソナ × 6 シナリオ。各シミュレーションに <em>OK / FRICT / BLOCK</em> をステップ単位で付与。</td>
+      </tr>
+      <tr>
+        <td>P0-C</td>
+        <td>画面遷移図が <b>全領域</b>（5機能 + 全体）を網羅し、形と矢印の凡例がある</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td><a href="movcqnjg-BonsaiLog-Flow.html">画面遷移図 v1.5</a>（別ファイル）・全体俯瞰 + Onboarding/Home/Care/Export/Monetization の Mermaid 6 図 + プレーン日本語版 + 凡例（4形 × 2 矢印）。v1.4 で <a href="movcqnjg-BonsaiLog-Flow.html#findings">⑦ 動線レビュー所見</a>（D1〜D8）を追加。</td>
+      </tr>
+      <tr>
+        <td>P0-D</td>
+        <td>入力項目が <b>1フィールドずつ</b> 妥当性判定されている</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td><a href="#sec-5">Sec 05</a> ・盆栽登録 11 項目 + 作業記録 16 作業の表で OK/FIX/NG 判定。</td>
+      </tr>
+      <tr>
+        <td>P0-E</td>
+        <td>専門家パネルが <b>独立した</b> コメントを残している（合議のバイアス対策）</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td><a href="#sec-6">Sec 06</a> ・6 専門家がそれぞれ別段落、最後に <a href="#dissents">意見の相違</a> 表で割れた論点を残置。</td>
+      </tr>
+      <tr>
+        <td>P0-F</td>
+        <td>競合・市場の <b>1次情報</b>（URL付）で BonsaiLog の独自性が言語化されている</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td><a href="#sec-1-5">Sec 01.5</a> ・競合 7 アプリ表 + NICT/総務省/盆栽協会 の URL付 1次統計 + Day One/MyFitnessPal 公式参照。</td>
+      </tr>
+      <tr>
+        <td>P0-G</td>
+        <td>課題が <b>優先度付き</b> で並び、原因と対応が一行で読める</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td><a href="#sec-7">Sec 07</a> ・P0×5 / P1×7 / P2×7 / P3×5 = 24 件、誰が・どこで・どう直すかを各行で。</td>
+      </tr>
+      <tr>
+        <td>P0-H</td>
+        <td>改善ロードマップが <b>時間軸</b> で並ぶ（即対応 / 短期 / 中期）</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td><a href="#sec-8">Sec 08</a> ・Sprint 1 / Sprint 2-4 / v1.1+ の 3 列 + 「変えないことで保たれる強み」の固定リスト。</td>
+      </tr>
+      <tr>
+        <td>P0-I</td>
+        <td><b>用語集</b> がある（中学生にもわかる説明）</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td><a href="#sec-10">Sec 10</a> ・25 語の専門用語を平易語で。</td>
+      </tr>
+      <tr>
+        <td>P0-J</td>
+        <td><b>未解決の問い</b> が明示されている（リサーチで埋まらなかった穴を隠さない）</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td><a href="#sec-9">Sec 09</a> + <a href="#sec-1-5">Sec 01.5 末尾</a> ・タブ「記録」の意味、同期方針、樹種×作業マトリクス、通知頻度上限、価格妥当性、マルチユーザー、計6問 ＋ 統計の穴5項目を正直記述。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="ok" style="margin-top: 16px;">
+    <div class="label">P0 監査結果：10/10 PASS</div>
+    本文書は <b>レビューに出せる状態</b> と判定。レビュアーから戻ってきた修正があれば、当節に <em>再点検ログ</em> として追記してください。
+  </div>
+
+  <h3 style="font-size: 18px; margin: 32px 0 8px;">5次元クリティーク（自己採点 ／ 1〜5）</h3>
+  <p>「文書として、デザイン基準値を満たしているか」を5観点で採点します。<b>3点未満が出たら作り直す</b>運用です。今回は5観点で <b>平均 4.2/5</b>、最低でも 4/5 ― 全クリア。</p>
+
+  <table class="issues-tbl" style="margin-top: 12px;">
+    <thead>
+      <tr>
+        <th style="width: 18%;">次元</th>
+        <th style="width: 9%;">採点</th>
+        <th style="width: 36%;">エビデンス（プラス）</th>
+        <th>残課題（マイナス）</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>① 哲学</b><br/><em style="color: var(--text-muted); font-size: 11px;">編集系 Editorial-Monocle が成立しているか</em></td>
+        <td><b>4 / 5</b></td>
+        <td>セリフ表題（Noto Serif JP）＋サンス本文（Noto Sans JP）。和紙色 <code>#F7F3E8</code> 背景、影なし、罫線とホワイトスペースで階層構築。アクセントは秋葉色 <code>--accent-gold</code> ＋朱（danger）の <em>2色のみ</em>。</td>
+        <td>セクション番号を Source Serif 4 italic（Latin）にしているが、Noto Serif JP との混在が一部の見出し（章番号と日本語見出し）で <em>わずかな違和感</em>。完全 1 family にすると -0.5。</td>
+      </tr>
+      <tr>
+        <td><b>② 階層</b><br/><em style="color: var(--text-muted); font-size: 11px;">目線が一点に着地するか</em></td>
+        <td><b>4 / 5</b></td>
+        <td>Hero（48px serif）→ TL;DR カード（22px display）→ 各 Sec 番号(Latin) ＋ 32px display 表題 → 13–15px 本文。優先度ピル（P0/P1/P2/P3）は色で即読める。Sticky TOC で全体地図を常時可視。</td>
+        <td>Mermaid 図はワイドな箱が多く、横スクロールが発生する画面幅がある（&lt;800px）。タブレットでは目線が左右に振れる。レスポンシブ flow-wrap は対応済みだが完全ではない。</td>
+      </tr>
+      <tr>
+        <td><b>③ 実行</b><br/><em style="color: var(--text-muted); font-size: 11px;">タイポ・余白・整列の精度</em></td>
+        <td><b>4 / 5</b></td>
+        <td>等幅メタ（IBM Plex Mono、letter-spacing 0.12em）が日付・カテゴリ・優先度・残文字数で一貫。表は罫線（hairline 1px）のみ、ストライプなし。<code>tokens.css</code> の 8px ベースライン＋限定スペーシングを尊重。</td>
+        <td>表セル内のテキスト幅制御が一部の長文（症状欄）で読みづらい。<code>td .ok / .ng / .warn</code> の小サイズ等幅マークが視覚的にもう少し主張してもいい。-0.5。</td>
+      </tr>
+      <tr>
+        <td><b>④ 具体性</b><br/><em style="color: var(--text-muted); font-size: 11px;">主張に出典・固有名詞があるか</em></td>
+        <td><b>5 / 5</b></td>
+        <td>すべての P0/P1 課題に <em>(誰)・(画面)・(JSXファイル名)・(変数名)</em> を明記。例：<code>care-screens-v2.jsx</code> の <code>_Seg</code>、<code>STYLE_LIST</code> の <code>desc</code>、<code>WORK_TYPES</code> の <code>speciesOnly:'pine'</code>。競合は URL 付き、統計は NICT・総務省・盆栽協会の公式リンク。</td>
+        <td>無し（5/5）。</td>
+      </tr>
+      <tr>
+        <td><b>⑤ 抑制</b><br/><em style="color: var(--text-muted); font-size: 11px;">装飾は必要最小か</em></td>
+        <td><b>4 / 5</b></td>
+        <td>グラデ・絵文字フィーチャーアイコン・左罫アクセントカード・SVG 人物・Inter/Roboto 表題 ―<b>すべて 0 件</b>（自動スキャンで確認）。装飾は (a) 引用枠の左罫、(b) ⚠️ マーク、(c) 16作業表の絵文字（実際の UI 反映）の3種に限定。</td>
+        <td>カラーピル P0/P1/P2/P3 の4色は必要最小だが、TL;DR 枠と専門家カードでアクセントゴールド利用が <em>近接</em>しており、視野内で2回現れる。1 ヶ所減らすと 5/5。-0.5。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="ok" style="margin-top: 16px;">
+    <div class="label">5次元採点：平均 4.2 / 5（最低値 4 / 5）</div>
+    最低値が 3/5 を下回らないため、リグレッションなし。<b>本文書を確定版として確定</b>します。次回更新時は (① 哲学 ・ 章番号フォント統一)、(② 階層 ・ タブレット幅の Mermaid)、(③ 実行 ・ 表セル幅)、(⑤ 抑制 ・ TL;DR と専門家カードの色被り) の4点を磨き上げ候補とします。
+  </div>
+
+  <h3 style="font-size: 18px; margin: 32px 0 8px;">機械的健全性チェック（HTML / リンク / Mermaid）</h3>
+  <table class="issues-tbl" style="margin-top: 12px;">
+    <thead>
+      <tr>
+        <th style="width: 36%;">チェック項目</th>
+        <th style="width: 14%;">結果</th>
+        <th>備考</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>HTML タグの開閉整合</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">OK</span></td>
+        <td>未閉鎖タグ 0 件。<code>&lt;br/&gt;</code> 等 void 要素は仕様通り。</td>
+      </tr>
+      <tr>
+        <td>内部アンカー（<code>href="#..."</code> ↔ <code>id="..."</code>）</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">OK</span></td>
+        <td>22 ID / 13 アンカー参照、リンク切れ 0 件。</td>
+      </tr>
+      <tr>
+        <td>Mermaid ブロック数</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">OK</span></td>
+        <td>6 ブロック（全体俯瞰 + 5 領域）。<code>flowchart TD/LR</code> 構文、<code>classDef</code> 適用済。</td>
+      </tr>
+      <tr>
+        <td>外部 CSS / フォント / Mermaid CDN</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">OK</span></td>
+        <td><code>wireframes/tokens.css</code>（相対）、Google Fonts（Noto/Source Serif 4/Inter/IBM Plex Mono）、<code>cdn.jsdelivr.net/npm/mermaid@10.9.1</code>。すべて公開・正規 URL。</td>
+      </tr>
+      <tr>
+        <td>AI-slop パターン検出</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">CLEAN</span></td>
+        <td>gradient（紫/青グラデ）・10×/99.9% などの捏造数値・lorem ipsum・"Feature One" プレースホルダ ― 全て 0 件。</td>
+      </tr>
+      <tr>
+        <td>P0/P1/P2/P3 ピル数（TL;DR 主張との整合）</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">OK</span></td>
+        <td>P0×5（TL;DR と一致）、P1×7、P2×7、P3×5。Hero タグの「5 P0 issues」と整合。</td>
+      </tr>
+      <tr>
+        <td>用語集の語彙 ↔ 本文使用の整合</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">OK</span></td>
+        <td>監査初回で <em>「カラフラージュ効果」</em>（標準語ではない）を Sec 02 で発見 ― この監査で <em>「情報カスケード」</em> に置換し、<a href="#sec-10">用語集</a> に「情報カスケード」「groupthink」を追加（25 語）。本文 ↔ 用語集の整合 100%。</td>
+      </tr>
+      <tr>
+        <td>JSX ハードコード参照（<code>STYLE_LIST</code>, <code>WORK_TYPES</code> 等）</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">OK</span></td>
+        <td>引用したコード識別子は <code>wireframes/*.jsx</code> に存在することを Read で確認済（前段リサーチ参照）。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size: 18px; margin: 32px 0 8px;">悪魔の代弁者・最終ラウンド <span style="font-size: 12px; color: #5A5248; font-weight: 400;">（v1.0 監査時点の記録）</span></h3>
+  <p>P0 5 件に対して「現状維持で正しいのではないか？」を主張させ、反論しきれた場合のみ P0 として残しました。各反論と <em>反論への再反論</em> を記録します。<b>※ v1.2 訂正注記：</b>下表は v1.0 監査時点（2026-05-07 朝）の記録です。v1.1 適用後の実装現状（P0-3 / P0-4 / P0-5 は Resolved、P0-1 / P0-2 は Sprint 1 着手予定）は本セクション後段の <b>v1.1 適用ログ</b> および <a href="#sec-7">Sec 7 課題テーブル</a>を参照してください。</p>
+
+  <table class="issues-tbl">
+    <thead>
+      <tr>
+        <th style="width: 14%;">課題</th>
+        <th style="width: 38%;">悪魔の代弁者の主張</th>
+        <th>再反論（だから P0 を維持）</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>P0-1</b><br/>一括選択発見性</td>
+        <td>「ベテランは長押しを知っている。初心者は1株ずつでも問題ない。発見性は次のスプリントで足せばいい。」</td>
+        <td>競合 7 アプリすべてで bulk が無いことが <em>BonsaiLog の最大差別化</em>。発見されない bulk は <b>無いのと同じ</b>で、差別化が消える。シニア（佐藤みどり）の離脱がここで起きる。</td>
+      </tr>
+      <tr>
+        <td><b>P0-2</b><br/>タグ作成 UI 欠</td>
+        <td>「Home の `@ベランダ` 等のチップは v1.1 で実装すれば足りる。表示は仮で、ユーザーは作り方を直感で察する。」</td>
+        <td>プロ（高橋茂）が <em>急いで黒松を絞り込みたい</em> シーンで詰まる。仮チップを出して動かないのは <b>嘘の UI</b>。空にするか、作る UI を入れるかの2択。</td>
+      </tr>
+      <tr>
+        <td><b>P0-3</b><br/>写真3枚 Pro</td>
+        <td>「Free 制限を緩めると Pro 訴求が弱まる。3枚は競合 Bonsai Album（Lite 5本）より厳しいが、写真は積分課金理由になる。」</td>
+        <td>Onboarding で<b>「データは自分のもの」</b>と明示している以上、<em>自分で撮った写真</em>を見せないのは矛盾。これは Pro 訴求ではなく <b>裏切り</b>。Pro は時間軸（過去アーカイブ）か機能（年次画像生成）に振り直すべき。</td>
+      </tr>
+      <tr>
+        <td><b>P0-4</b><br/>30日ガイド到達不可</td>
+        <td>「ガイドは Pro 向け足し場として温存。初心者は離脱しても、本気の人だけ残ればいい。」</td>
+        <td>初心者（健太）の <em>「父の形見、絶対枯らせない」</em> モチベは習慣形成の最強の燃料。ここで離脱すると <b>retention の主資源を毀損</b>する。Pro 訴求の文脈ではなく core retention の話。</td>
+      </tr>
+      <tr>
+        <td><b>P0-5</b><br/>セグメンテッドチップ 32–40dp</td>
+        <td>「タップ領域はパディング込みで 44dp 相当。視覚的サイズだけ大きくする必要はない。」</td>
+        <td><code>tokens.css</code> 自身が <code>--tap-min: 48px</code> と <em>宣言</em>しているのに <code>_Seg</code> が違反する。これは<b>自己整合性</b>の問題で、設計言語の信頼性が落ちる。「宣言と実装が違う」は最も矯正が困難な負債。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="margin-top: 24px;">
+    <div class="label">監査者・連名</div>
+    Audit Lead: 仮想 UX 評議会（6 ペルソナ ＋ 6 専門家 ＋ 1 悪魔の代弁者） ・ Date: 2026-05-07 ・ Subject: BonsaiLog v0.1 wireframes（35 画面） ・ Critique pass: 3 周（仮説 → 検証 → 逆シミュレーション） ・ Document version: v1.0 final.
+  </div>
+
+  <h3 style="font-size: 18px; margin: 40px 0 8px;">v1.1 適用ログ ― 哲学全面適用 (2026-05-07)</h3>
+  <p>ユーザー指示「<b>事実を記録するアプリ。命令しない</b>」を P0 全件の判断軸に据え直し、3 件を <em>resolved</em>、1 件を <em>resolved by removal</em>、1 件を Sprint 1 着手予定として整理しました。同時に <b>Pro 機能のピボット</b>（データ制限解除 → 出力＋体験）と <b>用語ガバナンス</b>（<a href="docs/principles.md"><code>docs/principles.md</code></a> 新規作成）を導入。</p>
+
+  <table class="issues-tbl" style="margin-top: 12px;">
+    <thead>
+      <tr>
+        <th style="width: 14%;">課題</th>
+        <th style="width: 14%;">v1.0 ステータス</th>
+        <th style="width: 16%;">v1.1 ステータス</th>
+        <th>v1.1 で適用した変更</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>P0-1</b> 一括選択発見性</td>
+        <td><span class="pri pri-p0">P0</span></td>
+        <td><span class="pri pri-p0">P0</span> Sprint 1 着手予定</td>
+        <td>未着手（次のスプリントで Home ヘッダ右に「選択」ボタン常設）。</td>
+      </tr>
+      <tr>
+        <td><b>P0-2</b> タグ作成 UI 欠</td>
+        <td><span class="pri pri-p0">P0</span></td>
+        <td><span class="pri pri-p0">P0</span> Sprint 1 着手予定</td>
+        <td>未着手（次のスプリントでタグ作成シートを追加）。</td>
+      </tr>
+      <tr>
+        <td><b>P0-3</b> 写真 3 枚 Pro 制限</td>
+        <td><span class="pri pri-p0">P0</span></td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">RESOLVED</span></td>
+        <td>写真上限を全廃。<code>care-screens.jsx:208</code> 入力スロット 4 枚＋追加ボタン化、<code>detail-screens.jsx:922-928</code> 履歴サムネ 88×88px に拡大して全件表示、<code>monetization-screens.jsx:90-94</code> Paywall「1 本あたりの写真」行を削除。Pro 機能は「写真 ∞」「履歴 ∞」「CSV/PDF」「年次タイムライン画像」「テーマ」「広告なし」の 6 項目に再構成。</td>
+      </tr>
+      <tr>
+        <td><b>P0-4</b> 30 日ガイド到達不可</td>
+        <td><span class="pri pri-p0">P0</span></td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">RESOLVED BY REMOVAL</span></td>
+        <td><code>care-screens.jsx:257-330</code> の <code>GuideModalScreen</code> 関数を全削除、<code>:737</code> の export からも除外。「事実を記録するアプリ」という哲学に整合。Pro 機能「作業タイミングの目安」も同時撤廃（命令の有料化を回避）。<code>screens.jsx:527, 536</code> Onboarding 通知文言を「<em>あなたが決めた予定をお知らせします</em>」に書換。<code>monetization-screens.jsx:183</code> 通知デフォルト OFF 化。</td>
+      </tr>
+      <tr>
+        <td><b>P0-5</b> _Seg 32–40dp</td>
+        <td><span class="pri pri-p0">P0</span></td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">RESOLVED</span></td>
+        <td><code>care-screens-v2.jsx</code> 内の <code>_Seg</code> を 40→44dp、small は 32→40dp に拡大。月送りボタン（<code>:912-922</code>）も 36→44dp、Heatmap レンジタブ（<code>:725</code>）も 36→44dp。<code>tokens.css</code> の <code>--tap-min: 48px</code> 宣言と整合（基準を満たすため 44dp は WCAG 最小値ベース）。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size: 18px; margin: 32px 0 8px;">v1.1 連鎖変更 ― 哲学整合のための波及</h3>
+  <ul style="padding-left: 18px; line-height: 1.8;">
+    <li><b>詳細画面のタブ再構成</b>：<code>detail-screens.jsx:74-101</code> の <code>DetailTabs</code> を <em>[作業履歴][作業予定][写真]</em> から <em>[作業履歴][作業予定][基本情報]</em> に変更。<code>PhotosTab</code> 関数（<code>:1041-1153</code>）を全削除、<code>BasicInfoTab</code> を新規追加して <code>CreateBonsaiScreen</code> を <em>embedded</em> モードで埋め込み。<code>DetailHeader</code> の編集ボタン（<code>:64-69</code>）も削除し、編集動線を「基本情報」タブに集約。<b>初期タブは「作業履歴」</b>（日常使い 4 ペルソナの第一視点）。</li>
+    <li><b>Empty State 改善</b>：<code>home-screens.jsx:482-491</code> の登録ボタンを 56→72dp、フォントを 17→20px に拡大（α 案・記録ハードル最小化）。</li>
+    <li><b>HTML 連動更新</b>：<code>02-Home.html</code> FLOW を「07 詳細 写真」→「07 詳細 基本情報（編集兼用）」に置換、初期タブを <code>history</code> に変更（<code>:81-92, :138</code>）。<code>03-Care.html</code> タイトルを「Care」→「記録」に変更（<code>:6</code>）。</li>
+    <li><b>用語ガバナンス確立</b>：<code>docs/principles.md</code> を新規作成。3 行宣言（事実だけ記録／命令しない／目安と参考だけ）＋ 用語禁則表（NG: 〜してください・推奨・自動診断・判定 / OK: あなたが決めた・記録・参考・目安）＋ PR チェックリスト（事実 vs 命令の判別、禁止語スキャン、命令的約束の禁止、Pro 機能としての命令売買の禁止、通知デフォルト OFF 確認）。</li>
+  </ul>
+
+  <h3 style="font-size: 18px; margin: 32px 0 8px;">v1.1 機械的検証</h3>
+  <table class="issues-tbl" style="margin-top: 12px;">
+    <thead>
+      <tr>
+        <th style="width: 36%;">検証項目</th>
+        <th style="width: 14%;">結果</th>
+        <th>備考</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>禁止語スキャン: <code>GuideModalScreen</code></td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">0 件</span></td>
+        <td><code>wireframes/</code> 配下に残存参照なし。export からも除外済。</td>
+      </tr>
+      <tr>
+        <td>禁止語スキャン: <code>PhotosTab</code></td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">0 件</span></td>
+        <td>関数定義・参照ともに削除済。</td>
+      </tr>
+      <tr>
+        <td>禁止語スキャン: 「<code>最大3枚</code>」「<code>3枚まで</code>」「<code>残り.*枚を見るには</code>」「<code>1本あたりの写真</code>」「<code>作業タイミングの目安</code>」</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">0 件</span></td>
+        <td><code>wireframes/</code> 配下にすべて残存なし（旧監査文書の参照箇所のみが本ドキュメント内に履歴として存在）。</td>
+      </tr>
+      <tr>
+        <td>変更ファイル数</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">9</span></td>
+        <td><code>docs/principles.md</code>（新規）、<code>care-screens.jsx</code>、<code>care-screens-v2.jsx</code>、<code>create-screens.jsx</code>、<code>detail-screens.jsx</code>、<code>home-screens.jsx</code>、<code>monetization-screens.jsx</code>、<code>screens.jsx</code>、<code>02-Home.html</code>、<code>03-Care.html</code>、<code>wireframes-analysis.html</code>。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="ok" style="margin-top: 16px;">
+    <div class="label">v1.1 完了判定：適用 3 / 5（Resolved 3 件 ＋ Sprint 1 着手予定 2 件）</div>
+    P0-3 / P0-4 / P0-5 を resolved 化、P0-1 / P0-2 を Sprint 1 着手予定として整理。哲学の宿る場所が <em>コードのコメント</em> から <em>明文化された設計原則</em> に格上げされた。 Document version at this stage: <b>v1.1 final</b>（v1.2 訂正適用ログは下段参照）.
+  </div>
+
+  <h3 style="font-size: 18px; margin: 40px 0 8px;">v1.2 訂正適用ログ ― 不整合 15 箇所訂正と新規 P1 解消 (2026-05-07)</h3>
+  <p>ユーザー指示「<b>v1.1 適用後の現状と監査文書の不整合を洗い出して訂正、未対応課題の必要性も検討</b>」を受けて議論モードを実行。15 箇所の不整合を訂正し、議論で発見した <b>新規 P1（一括予定追加時の通知 ON 既定 ＝ 哲学逆走の残存）</b>を 1 行修正で解消。さらに <b>App Store マーケコピー方針</b>と <b>ATT/UMP 統合計画</b>を <a href="docs/principles.md"><code>docs/principles.md</code></a> に追記。</p>
+
+  <table class="issues-tbl" style="margin-top: 12px;">
+    <thead>
+      <tr>
+        <th style="width: 16%;">訂正カテゴリ</th>
+        <th style="width: 12%;">件数</th>
+        <th>内容</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Tier 1</b><br/>直接矛盾</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">9 件 訂正</span></td>
+        <td><code>bonsai-audit-summary.html:164</code>「4 件 Resolved」誤記 → 「3 件 Resolved＋2 件 Sprint 1 着手予定」訂正。<code>wireframes-analysis.html</code> Sec 7 P0-3/P0-4/P0-5 行を v1.1 適用済の実差分に書換、ステータス列追加（4 種類のスタンプ：RESOLVED/SPRINT 1/未対応/v1.2 NEW）。Sec 8 ロードマップから Resolved 項目削除し、未対応のみで再配列。</td>
+      </tr>
+      <tr>
+        <td><b>Tier 2</b><br/>文中ローカライゼーション</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">3 件 訂正</span></td>
+        <td>line 1374 Export Pro ロックの紐付けを <em>P0-3</em>（写真制限）から <em>P3-3「Free に CSV 1 種解放」</em>に再整理。line 1593 茂シミュレーション所見の P0-3 言及を P3-3 に修正。line 2521 悪魔の代弁者ラウンドの冒頭に「v1.0 監査時点の記録」注記を追加し、v1.1 適用後の現状は本セクション後段の v1.1 適用ログを参照する旨を明示。</td>
+      </tr>
+      <tr>
+        <td><b>Tier 3</b><br/>シミュレーション歴史記録</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">4 件 注記</span></td>
+        <td>履歴を残しつつ、各該当ステップに小さな注記を追加：(a) 健太 step 08 30 日ガイド削除注記、(b) みどり step 05 _Seg 44dp 化注記、(c) 松本 step 01-04 写真タブ削除＋写真制限撤廃注記、(d) 茂 step 04 編集ボタン削除＋P1-B 未対応注記。</td>
+      </tr>
+      <tr>
+        <td><b>Tier 4</b><br/>新規発見：哲学逆走の残存</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">1 件 解消</span></td>
+        <td><code>care-screens-v2.jsx:860</code> の <code>BulkScheduleDateSheet</code> で <code>const [notify, setNotify] = React.useState(true)</code> ＝ 一括予定追加時の通知 ON 既定が残存。Settings の通知 OFF 既定（v1.1 適用済）と整合せず、「アプリは命令しない」哲学に逆走する箇所が 1 か所だけ残っていた。<b>useState(false) へ 1 行修正</b>で解消。これで通知系の哲学整合は全箇所完了。</td>
+      </tr>
+      <tr>
+        <td><b>Q1-Q4 判断</b><br/>方向確定</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">4 件 確定</span></td>
+        <td><b>Q1=a</b>（Tier 1-4 全訂正＋新規 P1 追加）、<b>Q2=a</b>（ATT/UMP 統合 v1.2 先行着手・19 言語ターゲット運用）、<b>Q3=a 折衷</b>（哲学を売りに：機能訴求＋哲学声明の二層構成）、<b>Q4=不採用</b>（樹種参考カレンダー P3-5 ＝ 集合的事実でも間接的命令化リスク回避困難）。</td>
+      </tr>
+      <tr>
+        <td><b>不採用記録</b><br/>やらないことを残す</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">3 件 確定</span></td>
+        <td>P2-5 屋外モード自動提案（iOS は app から ambient light sensor アクセス不可・1 次情報強）、30 日ガイド再導入（v1.1 削除済・哲学逆走）、Pro「作業タイミング目安」再導入（v1.1 撤廃済・哲学逆走）。<b>記録として残し、将来の同方向の提案に備える</b>。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size: 18px; margin: 32px 0 8px;">v1.2 機械的検証</h3>
+  <table class="issues-tbl" style="margin-top: 12px;">
+    <thead>
+      <tr>
+        <th style="width: 36%;">検証項目</th>
+        <th style="width: 14%;">結果</th>
+        <th>備考</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>新規 P1 解消の検証: <code>care-screens-v2.jsx:860</code> 一括時通知 OFF 既定</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td><code>useState(false)</code> へ 1 行修正完了。Babel パスで構文 OK。</td>
+      </tr>
+      <tr>
+        <td>変更ファイル数（v1.1 + v1.2 累計）</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">12 ファイル</span></td>
+        <td>v1.1: 11 ファイル ＋ v1.2: <code>care-screens-v2.jsx</code> + <code>bonsai-audit-summary.html</code> + <code>wireframes-analysis.html</code> + <code>docs/principles.md</code>（追記）。実体ファイル数は維持、追記・修正のみで物理新規ゼロ。</td>
+      </tr>
+      <tr>
+        <td>サマリー本書の整合: <code>bonsai-audit-summary.html:164</code></td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td>「4 件 Resolved」→「3 件 Resolved＋2 件 Sprint 1 着手予定」訂正完了。stamp / footer / hero の version 表記も v1.2 に同期更新。</td>
+      </tr>
+      <tr>
+        <td>Sec 7 ステータス列追加</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td>4 種類のスタンプ（RESOLVED/SPRINT 1/未対応/不採用/v1.2 NEW）を全 22 行に付与。新規 P1-NEW 行を P0-5 と P1-A の間に挿入。</td>
+      </tr>
+      <tr>
+        <td>Sec 8 ロードマップ再配列</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td>v1.1+v1.2 完了済を冒頭サマリで明示。Sprint 1 から Resolved 項目を全削除し、ATT/UMP（最優先・法令）を先頭に。「不採用（記録）」カラムを新設し、やらないことを 4 件明記。</td>
+      </tr>
+      <tr>
+        <td>哲学整合（命令的語彙の総合スキャン）</td>
+        <td><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span></td>
+        <td><code>wireframes/</code> 配下「最大 3 枚」「3 枚まで」「残り.*枚を見るには」「1 本あたりの写真」「作業タイミングの目安」「GuideModalScreen」「PhotosTab」<b>0 件</b>。一括時通知 ON 既定の最後の残存も解消。哲学整合は全箇所完了。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="ok" style="margin-top: 16px;">
+    <div class="label">v1.2 完了判定：不整合訂正 15 / 15 完了 ＋ 新規 P1 解消 1 / 1 完了</div>
+    監査文書 ↔ 実装の整合が回復。<em>「アプリは命令しない」</em>哲学の最後の残存（一括時通知 ON 既定）も 1 行修正で解消し、通知系の哲学整合は全箇所完了。<a href="docs/principles.md"><code>docs/principles.md</code></a> に App Store マーケコピー方針と ATT/UMP 統合計画を追記し、次 Sprint 1 で実装着手予定。Document version: <b>v1.2 final</b>.
+  </div>
+
+  <!-- ─────────── v1.3 適用ログ（Sprint 1 完了） ─────────── -->
+  <h3 style="margin-top: 40px; margin-bottom: 12px; font-family: var(--font-display); font-size: 22px;">11.4 v1.3 適用ログ（Sprint 1 完了 ・ 2026-05-07）</h3>
+  <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+    Sprint 1 全 5 件（P1-E ATT/UMP 統合・P0-1 一括選択発見性・P0-2 タグ作成 UI・P1-A 樹形 desc・P1-B 「…」メニュー）を実装完了。これで <b>P0 全 5 件 ＋ P1 Sprint 1 計 4 件 = 主要 9 件すべて解決</b>。
+  </p>
+
+  <table style="width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px;">
+    <thead>
+      <tr style="background: var(--bg-alt);">
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted); text-transform: uppercase;">課題</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted); text-transform: uppercase;">変更ファイル / 主な追加要素</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted); text-transform: uppercase;">哲学整合チェック</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>P1-E</b><br/>ATT/UMP 統合<br/>（最優先・法令）</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>01-Onboarding.html</code> FLOW を 4 → 6 ステップに再構成（splash → welcome → lang → att → ump → notif）。<code>screens.jsx</code> から <code>ATTScreen</code> / <code>UMPScreen</code> import + case 配線。</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;">◎ ATT pre-prompt で価値訴求してから OS ダイアログ起動（ユーザー負担最小）。「後で決める」併設で完了率維持。UMP は EU/UK/CH のみ表示で日本ユーザーは負担ゼロ。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>P0-1</b><br/>一括選択発見性</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>HomeHeader</code> 右に <code>選択</code> ボタン常設。<code>HomeScreen</code> に <code>selectMode</code> / <code>selected</code> state、<code>BonsaiCard</code> / <code>BonsaiGridCard</code> にチェックマーク overlay、下部 <code>SelectionToolbar</code>（タグ追加 / 一括記録 / アーカイブ）を <code>position:fixed</code>。</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;">◎ 削除メニューは哲学整合のため非提示（アーカイブ復元可能）。長押しも併設でパワーユーザーに配慮。Apple Photos / Mail / Reminders 共通 HIG パターン。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>P0-2</b><br/>タグ作成 UI</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>CreateBonsaiScreen</code> にタグ欄追加（既存タグ複数選択＋「+ 新規」）。<code>TagEditModal</code> 新設（追加・名前変更・削除を 1 画面に集約）。<code>HomeFilterTabs</code> を動的描画化＋ <code>+</code> ボタン。SelectionToolbar「タグ追加」から複数選択中の盆栽に一括付与。</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;">◎ ユーザーが分類を <em>自分で決める</em> ＝ 哲学整合（「判断はあなたが」）。Day One ハイブリッド型 + Bear TagCons + Material 3 Filter chip 整合。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>P1-A</b><br/>樹形 desc 表示</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>create-screens.jsx</code> の <code>StylePickerScreen</code>（line 490+）と <code>StylePickerSheet</code>（line 651+）の両方に <code>{s.desc &amp;&amp; &lt;div&gt;{s.desc}&lt;/div&gt;}</code> を追加。1 行説明をリスト各項目下にイタリック小フォントで表示。</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;">◎ 説明は事実描写のみ（命令しない）。Apple HIG「アイコンの意味が universally understood でないなら text label 併記せよ」整合。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>P1-B</b><br/>「…」メニュー</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>detail-screens.jsx</code> の <code>DetailHeader</code> 右に ellipsis アイコン → <code>DetailMoreMenu</code> bottom sheet。3 項目集約：(a) 共有 (b) PDF 出力（Pro 案内付） (c) アーカイブ。<code>BonsaiDetailScreen</code> に <code>menuOpen</code> state ＋ <code>initialMenuOpen</code> prop で 02-Home.html FLOW から表示確認可能。</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;">◎ <b>削除を意図的に出さない</b> ＝ 哲学整合（アーカイブが復元可能、削除を急かす UX を避ける）。Apple HIG「primary = toolbar 直置き / secondary = ... menu」整合。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin-top: 32px; margin-bottom: 12px; font-family: var(--font-display); font-size: 18px;">機械的検証（v1.3）</h3>
+  <table style="width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px;">
+    <thead>
+      <tr style="background: var(--bg-alt);">
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted); text-transform: uppercase;">確認項目</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--text-muted); text-transform: uppercase;">結果</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;">JSX Babel パース 9 / 9 ファイル</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span> care-screens-v2 / care-screens / create-screens / detail-screens / export-screens / home-screens / ios-frame / monetization-screens / screens すべて構文 OK</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;">HTML 整合性 7 / 7 ファイル</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span> 01-Onboarding / 02-Home / 03-Care / 04-Export / 05-Monetization / 監査本文 / サマリー本書 すべて <code>&lt;/html&gt;</code> 閉鎖</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;">禁止語 grep 0 件</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span> <code>wireframes/</code> 配下「最大 3 枚」「作業タイミングの目安」「GuideModalScreen」「PhotosTab」<b>0 件</b></td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;">02-Home.html FLOW に新画面追加</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span> <code>select</code>（選択モード）／<code>tagAdd</code>（タグ追加モーダル）／<code>menu</code>（…メニュー） 計 3 画面追加・renderScreen 配線済</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;">01-Onboarding.html FLOW に新画面追加</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top;"><span class="pri" style="background: var(--success); color: #F7F3E8;">PASS</span> <code>att</code>（ATT 説明）／<code>ump</code>（UMP 同意・EU/UK/CH のみ）計 2 画面追加・全 6 ステップに統合</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="ok" style="margin-top: 16px;">
+    <div class="label">v1.3 完了判定：Sprint 1 5 / 5 完了 ＋ 主要 9 件すべて解決</div>
+    P0 全 5 件 ＋ P1 Sprint 1 計 4 件（P1-E + P1-A + P1-B + P1-NEW）= <b>主要 9 件すべて解決</b>。残課題は P1-C（バルク → 個別追記）／P1-D（カード最終 3 件ストリーム）／P1-F（作業別通知 ON/OFF）／P1-G（水やり初回 banner）＋ P2-1〜7 ＋ P3-1〜4。Sprint 2-4 は中長期スプリントとして計画済。Document version: <b>v1.3 final</b>.
+  </div>
+
+  <!-- ─────────── v1.4 / v1.5 適用ログ（Sprint 2 完了 ・ 動線レビュー所見の解消） ─────────── -->
+  <h3 style="margin-top: 40px; margin-bottom: 12px; font-family: var(--font-display); font-size: 22px;">11.5 v1.4 / v1.5 適用ログ（動線レビュー解消 ・ 2026-05-08）</h3>
+  <p style="margin: 0 0 20px; font-family: var(--font-body); color: var(--text-secondary);">
+    画面遷移図 v1.4 の <a href="movcqnjg-BonsaiLog-Flow.html#findings"><b>⑦ 動線レビュー所見</b></a> で発見された残留課題 5 件（D1〜D4 / D8）を <b>Sprint 2 で全件解消</b>。あわせて v1.4 で実施した既決判断（ピッカーの即確定・カスタム入力常設・水やり予定許可・グリッド削除など）も時系列で記録する。
+  </p>
+
+  <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px;">
+    <thead>
+      <tr>
+        <th style="text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--text-muted); text-transform: uppercase; font-weight: 500;">変更</th>
+        <th style="text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--text-muted); text-transform: uppercase; font-weight: 500;">バージョン</th>
+        <th style="text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--text-muted); text-transform: uppercase; font-weight: 500;">内容</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>ピッカー即確定</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">v1.4</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">樹種・樹形ピッカーの「決定」ボタンを廃止し、項目タップで即確定（Apple HIG「Lists Choices」標準）。<code>SpeciesPickerScreen</code> / <code>StylePickerScreen</code> 両方で <code>useState(sel)</code> 削除。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>カスタム入力 + 重複確認</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">v1.4</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">樹種・樹形ピッカー画面下に sticky の「＋ カスタム入力」を常設、<code>CustomInputModal</code> を新設して同名検出時に「既存を選ぶ／新しく作成」を分岐。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>TagEditModal シンプル化</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">v1.4</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>#</code> / <code>@</code> / なし切替・プレビューを削除し、入力欄のみに集約。一括追加用に <code>bulkCount</code> prop を追加。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>SelectionToolbar 入替</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">v1.4</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">「アーカイブ」を「予定追加」に差し替え。一括予定 2 画面（<code>BulkWorkPickerSheet</code> / <code>BulkScheduleDateSheet</code>）を呼ぶ配線。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>水やり予定 解放</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">v1.4</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>_SCHED_ACTIONS</code> に <code>water</code> を追加し、TimelineTab / 一括予定追加から水やりも予定登録可能に。「水やりは予定として登録できません」のインフォメーション削除。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>グリッド削除（リスト一本化）</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">v1.4</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">Home の表示モード切替（グリッド/リスト）を撤去。<code>ViewToggle</code> / <code>BonsaiGridCard</code> 関数全削除。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>ヘッダ「複数選択」表記</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">v1.4</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">Home ヘッダの「選択」ボタンを「複数選択」に変更（aria-label「複数の盆栽を選択する」追加）。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>一括時 通知 ON 既定</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">v1.4</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>care-screens-v2.jsx:860</code> の <code>BulkScheduleDateSheet</code> 通知トグル既定値を <code>useState(true)</code> に再修正。「予定を立てた＝通知の意思表示」と整理し、Settings メイン Switch（OFF）と役割分担。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>画面遷移図 統合 v1.4</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">v1.4</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>movcqnjg-BonsaiLog-Flow.html</code> に画面遷移図を一本化（旧 2 か所統合）。Mermaid 6 図 + 6 ペルソナ動線シミュレーション + 動線レビュー所見 D1〜D8 を新規追加。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>D1 解決：FAB 常設</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.5</span></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>BonsaiDetailScreen</code> 右下に 56dp 円形 FAB「＋作業を記録」を常設。タップで <code>WorkPickerSheet</code> → <code>WorkLogConfirmSheet</code> を呼び出す既存資産再利用。<code>initialRecordStep</code> / <code>initialRecordType</code> プロパティを FLOW から指定可。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>D2 解決：基本情報を編集 ショートカット</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.5</span></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>DetailMoreMenu</code> から「共有」を削除し「基本情報を編集」を新設。<code>onEditBasic</code> ハンドラで <code>tab='basic'</code> に切替。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>D3 解決：水やり予定 折りたたみ</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.5</span></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>TimelineTab</code> で連続する <code>type === 'water'</code> をグループ化して 1 行に集約（「N月D日 〜 N月D日 ・ N日連続 ▸」）。<code>expandedWaterId</code> state でタップ展開。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>D4 解決：PDF Pro ロックモーダル</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.5</span></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>DetailMoreMenu</code> の PDF 項目に錠前 SVG ＋ PRO バッジを併記。タップで <code>ProLockModal</code> がせり上がり、「PDFで書き出しは Pro 機能です」を明示。「Pro を見る / 閉じる」の 2 択。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>D8 解決：完全削除 確認モーダル</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><span style="display:inline-block; padding:2px 6px; background:#3E5C39; color:#F7F3E8; font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; border-radius:3px;">RESOLVED v1.5</span></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>ArchiveListScreen</code> の各項目に <code>ArchiveCard</code>（長押し 550ms / 右クリック対応）。発火で <code>DeleteConfirmModal</code> 表示、赤い「完全削除」と「キャンセル」で 2 段階ガード。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>FLOW 拡張</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">v1.5</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><code>02-Home.html</code> FLOW に <code>recPick</code> / <code>recConf</code> / <code>pdfLock</code> の 3 画面を追加（15 → 18 画面）。<code>05-Monetization.html</code> FLOW に <code>archDel</code> 1 画面を追加（4 → 5 画面）。</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><b>画面遷移図 v1.5</b></td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;">v1.5</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top;"><a href="movcqnjg-BonsaiLog-Flow.html"><code>movcqnjg-BonsaiLog-Flow.html</code></a> を v1.5 final に更新。全 47 画面・Mermaid 6 図・ペルソナ 6 名動線シミュレーション・所見テーブルすべてで D1〜D4 / D8 を RESOLVED v1.5 化。Care セクションの ⚠️ ボックスは ✓ 緑バッジに置換。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4 style="margin-top: 24px; margin-bottom: 8px; font-family: var(--font-display); font-size: 16px;">機械的検証（v1.5）</h4>
+  <ul style="margin: 0 0 16px 18px; font-family: var(--font-body); font-size: 13px; line-height: 1.8;">
+    <li>Babel パース：<code>wireframes/*.jsx</code> 9 / 9 ファイル PASS</li>
+    <li>HTML 整合性：<code>wireframes/*.html</code> + ルート HTML 11 / 11 ファイル PASS</li>
+    <li>02-Home FLOW 配線：<code>recPick</code> / <code>recConf</code> / <code>pdfLock</code> の 3 画面が <code>renderScreen</code> に存在</li>
+    <li>05-Monetization FLOW 配線：<code>archDel</code> が <code>ArchiveListScreen</code> に <code>initialDeleteFor=0</code> で接続</li>
+    <li>禁止語 grep：「最大 3 枚 / 作業タイミングの目安 / GuideModalScreen / PhotosTab」<code>wireframes/</code> 配下 0 件</li>
+    <li>D1-D4 / D8 の動線レビュー所見：5 / 5 すべて RESOLVED v1.5 タグ付与済</li>
+  </ul>
+
+  <div class="ok" style="margin-top: 16px;">
+    <div class="label">v1.5 完了判定：Sprint 2 動線レビュー解消 5 / 5 ＋ 主要解決累計 14 件</div>
+    P0 全 5 件 ＋ P1 Sprint 1 計 4 件 ＋ <b>Sprint 2 動線レビュー 5 件</b>（D1 / D2 / D3 / D4 / D8）= <b>主要解決累計 14 件</b>。残課題は P1-C / D / F / G ＋ P2-1〜7 ＋ P3-1〜4。FLOW は全 47 画面に拡張、画面遷移図と監査文書は <code>movcqnjg-BonsaiLog-Flow.html</code>（v1.5 final）に正本化。Document version: <b>v1.5 final</b>.
+  </div>
+
+  <h3 style="margin-top: 40px; margin-bottom: 12px; font-family: var(--font-display); font-size: 20px;">11.6 v1.6 適用ログ ― 整理 ＋ フォーム改善</h3>
+  <p style="margin-top: 12px; line-height: 1.7;">
+    Sprint 2 完了直後の整理スプリント。<b>03-Care.html を物理削除し、Care 専用 4 画面と作業別フォーム比較ギャラリーを 02-Home.html に完全統合</b>。
+    あわせて <b>14 種フォームのうち 6 種を改善</b>し、表記の食い違い「16 種」→「14 種」も全文書で訂正。物理 HTML ファイル数は 11 → 10、画面数は 47 → 49。
+  </p>
+  <ul style="margin-top: 8px; line-height: 1.85;">
+    <li><b>整理（重複削除）</b>：<code>03-Care.html</code> 物理削除。Care 専用 4 画面（<code>careHeat</code>／<code>careCal</code>／<code>careWiring</code>／<code>careSearch</code>）を <code>02-Home.html</code> の FLOW に追加、<code>renderScreen</code> 配線。重複していた 6 画面（picker / confirm / bulkSel / bulkPick / bulkConf / sch*）は実機動線である 02-Home 側に集約済。</li>
+    <li><b>作業別フォーム 14 種ギャラリー統合</b>：<code>02-Home.html</code> 末尾に <b>Section 03</b> として、14 タイプ全フォームを横並び比較するギャラリーを追加。「16 種」表記も「14 種」に訂正済（旧 03-Care.html 内のみ存在、削除で消滅）。</li>
+    <li><b>WORK_FORM_OPTIONS の集約</b>：旧 03-Care.html 内ローカル定義だった配列を <code>care-screens.jsx</code> の <code>Object.assign(window, …)</code> に集約・export。02-Home.html はこれを <code>window</code> 経由で参照。</li>
+    <li><b>02-Home タイトル更新</b>：<code>&lt;title&gt;</code>「Home & Management」→「<b>Home & Care Wireframes</b>」、masthead「ホーム・盆栽管理 18画面」→「<b>ホーム・記録 22画面</b>」、kicker に v1.6 を併記。</li>
+    <li><b>フォーム改善 6 種</b>（<code>care-screens-v2.jsx</code> <code>ActionFormFields</code>）：
+      <ol style="margin: 6px 0 0 0; padding-left: 18px;">
+        <li><b>剪定（prune）</b>の量「少し / まあまあ / 多め」→「<b>枝先のみ / そこそこ / 思い切り</b>」（健太・みどり・Linda の意味理解を改善）</li>
+        <li><b>消毒（spray）</b>の目的「殺虫 / 殺菌 / 両方」→「<b>予防 / 治療 / 両方</b>」（プロ記録項目との整合）</li>
+        <li><b>葉刈り（leaf）／葉柄切り（defol）／芽摘み（bud）</b>の範囲「一部 / 半分 / 全体」→「<b>枝先のみ / そこそこ / 思い切り</b>」（剪定と統一）</li>
+        <li><b>芽切り（mekiri）</b>に <b>本数フィールド（任意）</b>を追加。プロは「枝 N 本」記録が標準のため</li>
+      </ol>
+    </li>
+    <li><b>死コード削除</b>：<code>care-screens-v2.jsx</code> の <code>BulkPickScreen</code>（参照ゼロ）は事前に既に削除済（v1.5 段階で）。確認のみ。</li>
+  </ul>
+
+  <p style="margin-top: 14px; line-height: 1.7;"><b>関連 4 文書 v1.6 final 化</b>：本文書 ／ <code>movcqnjg-BonsaiLog-Flow.html</code>（Care 図キャプション「02-Home.html 内に統合（v1.6〜）」）／ <code>bonsai-audit-summary.html</code>（v1.6 final 再構築）／ <code>docs/principles.md</code>（必要に応じて Care タブ位置付け補記）。</p>
+
+  <div class="ok" style="margin-top: 16px;">
+    <div class="label">v1.6 完了判定：整理 ＋ フォーム改善 6 件 ＋ 03-Care.html 統合</div>
+    Sprint 2 完了状態（主要解決累計 14 件）はそのまま、整理スプリント v1.6 で <b>HTML 物理ファイル 11 → 10</b>、<b>画面数 47 → 49</b>（Care 専用 4 画面追加 - 重複削除 - 死コードクリーンアップ）。フォーム改善 6 件は健太・みどり・Linda の理解を底上げ。次は Sprint 3-4（P1-C / D / F / G ＋ P2-1〜7）。Document version: <b>v1.6 final</b>.
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     FOOTER
+     ════════════════════════════════════════════════════════ -->
+<footer style="margin-top: 96px; padding-top: 24px; border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em; line-height: 1.8;">
+  BonsaiLog UX 評議会 · 2026-05-08 · <b>v1.6 final</b> ·
+  審議対象: <code>wireframes/01-Onboarding.html</code> + <code>02-Home.html</code> + <code>04-Export.html</code> + <code>05-Monetization.html</code> 全 49 画面（v1.6 で +2：Care 専用 4 画面統合 - 重複 7 ／ 03-Care.html は v1.6 で 02-Home.html に統合・物理削除）·
+  設計原則: <a href="docs/principles.md" style="color: var(--primary);">docs/principles.md</a> ·
+  画面遷移図: <a href="movcqnjg-BonsaiLog-Flow.html" style="color: var(--primary);">movcqnjg-BonsaiLog-Flow.html</a>（v1.6 final） ·
+  <a href="wireframes/02-Home.html" style="color: var(--primary);">02-Home.html（Home & Care 統合）</a> ·
+  表示スキーマ: <a href="docs/display-schema.md" style="color: var(--primary);">docs/display-schema.md</a><br/>
+  P1 片手·手袋 / P2 記録 / P3 永く変わらない / P4 余白の美 / P5 屋外で読める ― この5原則は守られている。v1.1 で <em>事実だけ記録、命令しない</em> を哲学として明文化、v1.3 で Sprint 1 主要 9 件すべて解決、v1.4 で動線シミュレーション 6 ペルソナ完了、v1.5 で動線レビュー所見 D1–D4 / D8 をすべて解消、<b>v1.6 で 03-Care.html を 02-Home.html に統合 ＋ フォーム改善 6 件</b>。<b>v1.7 以降の進化は <a href="docs/principles.md" style="color: var(--primary);">principles.md</a> 履歴を参照。</b>
+</footer>
+
+</div><!-- .doc -->
+
+<!-- ════════════════════════════════════════════════════════
+     MERMAID INIT
+     ════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      fontFamily: '-apple-system, "Hiragino Sans", "Yu Gothic", sans-serif',
+      fontSize: '14px',
+      primaryColor: '#FFFFFF',
+      primaryTextColor: '#1F1B16',
+      primaryBorderColor: '#1F1B16',
+      lineColor: '#5A5248',
+      mainBkg: '#FFFFFF',
+      edgeLabelBackground: '#F7F3E8',
+    },
+    flowchart: {
+      curve: 'basis',
+      padding: 18,
+      nodeSpacing: 40,
+      rankSpacing: 56,
+      useMaxWidth: true,
+    },
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BonsaiLog — Home & Care Wireframes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #EDE6D3;
+    color: var(--text-primary);
+    font-family: var(--font-body-ja);
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; }
+  button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  input, textarea { font: inherit; }
+  input::placeholder, textarea::placeholder { color: var(--text-muted); }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="home-screens.jsx"></script>
+<script type="text/babel" src="create-screens.jsx"></script>
+<script type="text/babel" src="detail-screens.jsx"></script>
+<script type="text/babel" src="care-screens.jsx"></script>
+<script type="text/babel" src="care-screens-v2.jsx"></script>
+<script type="text/babel">
+const {
+  HomeScreen, HomeEmptyScreen, MOCK_BONSAI,
+  CreateBonsaiScreen, SpeciesPickerScreen,
+  BonsaiDetailScreen,
+  WateringHeatmapScreen, CalendarScreen, WiringListScreen, SearchScreen, CareHubScreen,
+  WORK_FORM_OPTIONS, WorkLogConfirmSheetV2,
+} = window;
+
+const DW = 393, DH = 852;
+
+function PhoneShell({ label, children, active }) {
+  return (
+    <div data-screen-label={label} style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      gap: 16, flexShrink: 0,
+    }}>
+      <div style={{
+        fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)',
+        letterSpacing: '0.12em', textTransform: 'uppercase',
+      }}>{label}</div>
+      <div style={{
+        width: DW + 20, height: DH + 20,
+        borderRadius: 56, padding: 10, background: '#111',
+        boxShadow: active
+          ? '0 30px 60px rgba(0,0,0,0.22), 0 0 0 2px rgba(31,58,46,0.4)'
+          : '0 20px 40px rgba(0,0,0,0.12)',
+      }}>
+        <div style={{
+          position: 'relative', width: DW, height: DH,
+          borderRadius: 46, overflow: 'hidden', background: 'var(--bg-primary)',
+        }}>
+          <div style={{
+            position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)',
+            width: 120, height: 35, borderRadius: 22, background: '#000', zIndex: 60,
+          }} />
+          <div style={{
+            position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
+            width: 134, height: 5, borderRadius: 100,
+            background: 'rgba(0,0,0,0.25)', zIndex: 60, pointerEvents: 'none',
+          }} />
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// accessPath: 実機UIでこの画面に到達する経路。新画面/復活画面は必須記入（principles.md PR チェックリスト）。
+const FLOW = [
+  { key: 'home',          label: '01 Home',                       accessPath: 'TabBar > 盆栽' },
+  { key: 'select',        label: '01a Home 選択モード',           accessPath: 'Home > 複数選択' },
+  { key: 'tagAdd',        label: '01b タグ追加モーダル',          accessPath: 'Home > タグ + 追加' },
+  { key: 'bulkSchedWork', label: '01c 一括予定・作業選択',        accessPath: 'Home > 選択 > 予定' },
+  { key: 'bulkSchedDate', label: '01d 一括予定・日付',            accessPath: 'Home > 選択 > 予定 > 作業' },
+  { key: 'empty',         label: '02 Home Empty',                 accessPath: '初回起動 (盆栽 0 件)' },
+  { key: 'create',        label: '03 新規登録 / 編集',            accessPath: 'Home > FAB' },
+  { key: 'species',       label: '04 樹種ピッカー',               accessPath: '03 > 樹種' },
+  { key: 'style',         label: '04b 樹形ピッカー',              accessPath: '03 > 樹形' },
+  { key: 'history',       label: '05 詳細 作業履歴（初期タブ）',  accessPath: 'Home > カードタップ' },
+  { key: 'recPick',       label: '05a 作業記録・種別選択（FAB）', accessPath: '05 > FAB' },
+  { key: 'recConf',       label: '05b 作業記録・入力',            accessPath: '05a > 作業選択' },
+  { key: 'timeline',      label: '06 詳細 作業予定（水やり折りたたみ）', accessPath: '詳細 > 作業予定タブ' },
+  { key: 'addAct',        label: '06a 予定追加・作業選択',        accessPath: '06 > FAB' },
+  { key: 'addDt',         label: '06b 予定追加・日付',            accessPath: '06a > 作業選択' },
+  { key: 'menu',          label: '06c 詳細 ・・・メニュー',       accessPath: '詳細 > ヘッダー ︙' },
+  { key: 'pdfLock',       label: '06d PDF Pro ロック',            accessPath: '06c > PDF出力' },
+  { key: 'basic',         label: '07 詳細 基本情報（編集兼用）',  accessPath: '詳細 > 基本情報タブ' },
+  { key: 'careHub',       label: '08 ふりかえり Hub',             accessPath: 'TabBar > ふりかえり' },
+  { key: 'careHeat',      label: '09 ケア 水やり履歴ヒートマップ', accessPath: '08 > 水やり履歴' },
+  { key: 'careCal',       label: '10 ケア 作業予定カレンダー',    accessPath: 'TabBar > 予定' },
+  { key: 'careWiring',    label: '11 ケア 針金がけ一覧',          accessPath: '08 > 針金がけ一覧' },
+  { key: 'careSearch',    label: '12 ケア 検索',                  accessPath: '08 > 盆栽を検索' },
+];
+// 設定画面は 05-Monetization.html の SettingsScreen を参照（v1.11 でスタブ削除）。
+
+const BONSAI_WITH_IDX = { ...MOCK_BONSAI[0], idx: 0 };
+
+function renderScreen(key, handlers = {}, state = {}) {
+  const noop = () => {};
+  const h = { ...handlers };
+  const prefill = state.prefill || null;
+  switch (key) {
+    case 'home':     return <HomeScreen onOpenBonsai={h.openDetail || noop} onOpenCreate={h.openCreate || noop} onTabChange={h.tabChange || noop} onOpenSearch={h.openSearch || noop} onOpenSettings={h.openSettings || noop} />;
+    case 'select':   return <HomeScreen key="select" onOpenBonsai={h.openDetail || noop} onOpenCreate={h.openCreate || noop} onTabChange={h.tabChange || noop} onOpenSearch={h.openSearch || noop} onOpenSettings={h.openSettings || noop} initialSelectMode />;
+    case 'tagAdd':   return <HomeScreen key="tagAdd" onOpenBonsai={h.openDetail || noop} onOpenCreate={h.openCreate || noop} onTabChange={h.tabChange || noop} onOpenSearch={h.openSearch || noop} onOpenSettings={h.openSettings || noop} initialTagModal />;
+    case 'bulkSchedWork': return <HomeScreen key="bulkSchedWork" onOpenBonsai={h.openDetail || noop} onOpenCreate={h.openCreate || noop} onTabChange={h.tabChange || noop} onOpenSearch={h.openSearch || noop} onOpenSettings={h.openSettings || noop} initialBulkSchedStep="pickWork" />;
+    case 'bulkSchedDate': return <HomeScreen key="bulkSchedDate" onOpenBonsai={h.openDetail || noop} onOpenCreate={h.openCreate || noop} onTabChange={h.tabChange || noop} onOpenSearch={h.openSearch || noop} onOpenSettings={h.openSettings || noop} initialBulkSchedStep="pickDate" initialBulkSchedType="fert" />;
+    case 'empty':    return <HomeEmptyScreen onOpenCreate={h.openCreate || noop} onTabChange={h.tabChange || noop} />;
+    case 'create':   return (
+      <React.Fragment>
+        <HomeScreen onOpenBonsai={noop} onOpenCreate={noop} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(26,26,26,0.35)', zIndex: 70 }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 71 }}>
+          <CreateBonsaiScreen
+            prefill={prefill}
+            title={state.editMode ? '樹を編集' : '新しい盆栽を登録'}
+            showArchive={!!state.editMode}
+            onClose={h.close || noop}
+            onSave={h.save || noop}
+            onPickSpecies={h.pickSpecies || noop}
+            onPickStyle={h.pickStyle || noop}
+          />
+        </div>
+      </React.Fragment>
+    );
+    case 'species':  return <SpeciesPickerScreen onBack={h.back || noop} onSelect={h.selectSpecies || noop} />;
+    case 'style':    return <StylePickerScreen onBack={h.back || noop} onSelect={h.selectStyle || noop} current={prefill?.style || null} />;
+    case 'history':  return <BonsaiDetailScreen key="history"  bonsai={BONSAI_WITH_IDX} onBack={h.back || noop} initialTab="history" />;
+    case 'recPick':  return <BonsaiDetailScreen key="recPick"  bonsai={BONSAI_WITH_IDX} onBack={h.back || noop} initialTab="history" initialRecordStep="pickWork" />;
+    case 'recConf':  return <BonsaiDetailScreen key="recConf"  bonsai={BONSAI_WITH_IDX} onBack={h.back || noop} initialTab="history" initialRecordStep="confirm" initialRecordType={{ k: 'water', label: '水やり' }} />;
+    case 'timeline': return <BonsaiDetailScreen key="timeline" bonsai={BONSAI_WITH_IDX} onBack={h.back || noop} initialTab="timeline" />;
+    case 'addAct':   return <BonsaiDetailScreen key="addAct"   bonsai={BONSAI_WITH_IDX} onBack={h.back || noop} initialTab="timeline" initialAddStep="pickAction" />;
+    case 'addDt':    return <BonsaiDetailScreen key="addDt"    bonsai={BONSAI_WITH_IDX} onBack={h.back || noop} initialTab="timeline" initialAddStep="pickDateTime" />;
+    case 'menu':     return <BonsaiDetailScreen key="menu"     bonsai={BONSAI_WITH_IDX} onBack={h.back || noop} initialTab="history" initialMenuOpen />;
+    case 'pdfLock':  return <BonsaiDetailScreen key="pdfLock"  bonsai={BONSAI_WITH_IDX} onBack={h.back || noop} initialTab="history" initialProLock />;
+    case 'basic':    return <BonsaiDetailScreen key="basic"    bonsai={BONSAI_WITH_IDX} onBack={h.back || noop} initialTab="basic" />;
+    case 'careHub':    return <CareHubScreen onNavigateHeat={h.goCareHeat || noop} onNavigateWiring={h.goCareWiring || noop} onNavigateSearch={h.goCareSearch || noop} onTabChange={h.tabChange || noop} />;
+    case 'careHeat':   return <WateringHeatmapScreen onBack={h.backToCareHub || noop} />;
+    case 'careCal':    return <CalendarScreen onTabChange={h.tabChange || noop} />;
+    case 'careWiring': return <WiringListScreen onBack={h.backToCareHub || noop} />;
+    case 'careSearch': return <SearchScreen onBack={h.backToCareHub || noop} />;
+    default: return null;
+  }
+}
+
+function App() {
+  const [step, setStep] = React.useState('home');
+  const [draft, setDraft] = React.useState({ name: '', species: null, style: null, memo: '' });
+  const [editMode, setEditMode] = React.useState(false);
+
+  const handlers = {
+    openCreate:    () => { setEditMode(false); setDraft({ name: '', species: null, style: null, memo: '' }); setStep('create'); },
+    openDetail:    () => setStep('history'),
+    close:         () => setStep('home'),
+    save:          () => setStep('home'),
+    pickSpecies:   () => setStep('species'),
+    pickStyle:     () => setStep('style'),
+    selectSpecies: (name) => { setDraft(d => ({ ...d, species: name })); setStep('create'); },
+    selectStyle:   (name) => { setDraft(d => ({ ...d, style: name })); setStep('create'); },
+    back:          () => setStep(step === 'species' || step === 'style' ? 'create' : 'home'),
+    tabChange:     (tab) => {
+      if (tab === 'bonsai') setStep('home');
+      else if (tab === 'plan') setStep('careCal');
+      else if (tab === 'log')  setStep('careHub');
+      // 'set' は 05-Monetization.html の SettingsScreen に集約（v1.11）。02-Home.html では no-op。
+    },
+    goCareHeat:    () => setStep('careHeat'),
+    goCareWiring:  () => setStep('careWiring'),
+    goCareSearch:  () => setStep('careSearch'),
+    backToCareHub: () => setStep('careHub'),
+    openSearch:    () => setStep('careSearch'),
+    openSettings:  () => {}, // 設定画面は 05-Monetization.html を参照（v1.11）。
+  };
+
+  const flowLabel = FLOW.find(f => f.key === step)?.label || '';
+  const renderState = { prefill: (step === 'create' && (draft.species || draft.style || editMode)) ? draft : null, editMode };
+
+  return (
+    <div style={{ padding: '48px 32px 64px' }}>
+      {/* Masthead */}
+      <div style={{
+        maxWidth: 1400, margin: '0 auto 48px',
+        display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'end',
+        paddingBottom: 24, borderBottom: '1px solid var(--border)',
+      }}>
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)',
+            letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 8,
+          }}>BonsaiLog / Home & Care / v0.1 (v1.7)</div>
+          <h1 style={{
+            margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500,
+            fontSize: 40, lineHeight: '52px', color: 'var(--text-primary)',
+            letterSpacing: '0.02em',
+          }}>ホーム・ふりかえり 23画面</h1>
+          <div style={{
+            marginTop: 6, fontFamily: 'var(--font-display-latin)', fontStyle: 'italic',
+            fontSize: 18, color: 'var(--text-secondary)', letterSpacing: '0.02em',
+          }}>Home & Care — Wireframes</div>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)',
+          lineHeight: '20px', textAlign: 'right',
+        }}>
+          <div><strong style={{ color: 'var(--text-primary)', fontWeight: 500 }}>iPhone 15 Pro</strong> · 393×852 pt</div>
+          <div>FlashList · 60fps target</div>
+          <div>Archive-first · No deletion</div>
+        </div>
+      </div>
+
+      {/* Section 01: Interactive prototype */}
+      <div style={{ maxWidth: 1400, margin: '0 auto 80px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 8 }}>
+          <span style={{ fontFamily: 'var(--font-display-latin)', fontSize: 20, color: 'var(--primary)', fontWeight: 500 }}>01</span>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500, fontSize: 24, color: 'var(--text-primary)', letterSpacing: '0.02em' }}>インタラクティブプロトタイプ</h2>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-body-ja)', fontSize: 14, color: 'var(--text-secondary)',
+          marginBottom: 32, maxWidth: 720, lineHeight: '22px',
+        }}>
+          カードタップ→詳細（初期タブ＝作業履歴） / 詳細画面右下 FAB→作業を記録 /
+          ・・・メニュー→基本情報を編集 ／ PDFは Pro ロックで案内 ／ 連続水やり予定は折りたたみ表示。
+        </div>
+
+        <div style={{
+          display: 'grid', gridTemplateColumns: `${DW + 40}px 1fr`,
+          gap: 48, alignItems: 'start',
+        }}>
+          <PhoneShell label={flowLabel} active>{renderScreen(step, handlers, renderState)}</PhoneShell>
+
+          <div style={{ paddingTop: 32 }}>
+            <div style={{
+              fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)',
+              letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 20,
+            }}>Flow map</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {FLOW.map((f, i) => {
+                const active = f.key === step;
+                return (
+                  <React.Fragment key={f.key}>
+                    <button onClick={() => setStep(f.key)} style={{
+                      display: 'flex', alignItems: 'center', gap: 16,
+                      padding: '14px 16px', minHeight: 48,
+                      background: active ? 'var(--bg-surface)' : 'transparent',
+                      border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
+                      borderRadius: 12, cursor: 'pointer',
+                      textAlign: 'left', width: '100%',
+                    }}>
+                      <div style={{
+                        width: 28, height: 28, borderRadius: 8,
+                        display: 'grid', placeItems: 'center',
+                        background: active ? 'var(--primary)' : 'transparent',
+                        border: `1px solid ${active ? 'var(--primary)' : 'var(--border-strong)'}`,
+                        fontFamily: 'var(--font-display-latin)', fontSize: 13, fontWeight: 500,
+                        color: active ? '#F7F3E8' : 'var(--text-secondary)',
+                        flexShrink: 0,
+                      }}>{String(i + 1).padStart(2, '0')}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                          fontFamily: 'var(--font-body-ja)', fontSize: 15,
+                          color: 'var(--text-primary)', fontWeight: active ? 500 : 400,
+                        }}>{f.label.replace(/^\d+\s/, '')}</div>
+                        {f.accessPath && (
+                          <div style={{
+                            fontFamily: 'var(--font-mono)', fontSize: 10,
+                            color: 'var(--text-muted)', letterSpacing: '0.04em',
+                            marginTop: 3,
+                          }}>{f.accessPath}</div>
+                        )}
+                      </div>
+                      {active && (
+                        <div style={{
+                          fontFamily: 'var(--font-mono)', fontSize: 10,
+                          color: 'var(--primary)', letterSpacing: '0.12em',
+                          textTransform: 'uppercase', flexShrink: 0,
+                        }}>current</div>
+                      )}
+                    </button>
+                    {i < FLOW.length - 1 && (
+                      <div style={{ width: 1, height: 10, marginLeft: 31, background: 'var(--border)' }} />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            <div style={{
+              marginTop: 32, padding: 20, borderRadius: 12,
+              border: '1px solid var(--border)', background: 'var(--bg-surface)',
+            }}>
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: 11,
+                color: 'var(--text-muted)', letterSpacing: '0.12em',
+                textTransform: 'uppercase', marginBottom: 12,
+              }}>Design notes</div>
+              <ul style={{
+                margin: 0, paddingLeft: 18,
+                fontFamily: 'var(--font-body-ja)', fontSize: 13, lineHeight: '22px',
+                color: 'var(--text-secondary)',
+              }}>
+                <li>FAB 56dp / 右16pt / タブバー上24pt で親指リーチ</li>
+                <li>禁止語なし：「目安」「参考」のみ使用</li>
+                <li>削除ではなく「アーカイブ」（設定→アーカイブ→長押しで完全削除）</li>
+                <li>連続水やり予定は折りたたみ表示（タップで日別展開）</li>
+                <li>Pro 機能はメニュー上に錠前＋PRO バッジを併記、タップで案内モーダル</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 02: Static gallery */}
+      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 8 }}>
+          <span style={{ fontFamily: 'var(--font-display-latin)', fontSize: 20, color: 'var(--primary)', fontWeight: 500 }}>02</span>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500, fontSize: 24, color: 'var(--text-primary)', letterSpacing: '0.02em' }}>全画面一覧</h2>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-body-ja)', fontSize: 14, color: 'var(--text-secondary)',
+          marginBottom: 40, maxWidth: 640, lineHeight: '22px',
+        }}>23画面を横並びで比較（静的プレビュー）。「ふりかえり」タブの Care Hub（08）を v1.7 で追加。設定画面は 05-Monetization.html の SettingsScreen を参照（v1.11 で準備中スタブを削除）。</div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(4, ${DW + 40}px)`,
+          gap: '64px 40px',
+          justifyContent: 'start',
+          overflowX: 'auto',
+          paddingBottom: 16,
+        }}>
+          {FLOW.map(f => (
+            <PhoneShell key={f.key} label={f.label}>
+              {renderScreen(f.key)}
+            </PhoneShell>
+          ))}
+        </div>
+      </div>
+
+      {/* Section 03: Per-action form gallery (v1.6 で 03-Care.html から統合) */}
+      <div style={{ maxWidth: 1400, margin: '80px auto 0' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 8 }}>
+          <span style={{ fontFamily: 'var(--font-display-latin)', fontSize: 20, color: 'var(--primary)', fontWeight: 500 }}>03</span>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500, fontSize: 24, color: 'var(--text-primary)', letterSpacing: '0.02em' }}>作業別フォーム 14種比較</h2>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-body-ja)', fontSize: 14, color: 'var(--text-secondary)',
+          marginBottom: 40, maxWidth: 720, lineHeight: '22px',
+        }}>
+          作業ごとに入力項目が異なります。例：「針金がけ」は番手・部位・期間／「植替え」は鉢サイズ・用土・根の整理／
+          「施肥」は肥料の種類と銘柄・希釈倍率／「芽切り」は範囲＋本数（任意）。
+          量は「枝先のみ／そこそこ／思い切り」、消毒の目的は「予防／治療／両方」。
+          どの作業も二階層以内で完了するよう、タップ中心の入力設計。日時・メモ・写真は全作業共通。
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(4, ${DW + 40}px)`,
+          gap: '64px 40px',
+          justifyContent: 'start',
+          overflowX: 'auto',
+          paddingBottom: 16,
+        }}>
+          {(WORK_FORM_OPTIONS || []).map(o => (
+            <PhoneShell key={o.v} label={`${o.l} · ${o.desc}`}>
+              <BonsaiDetailScreen bonsai={BONSAI_WITH_IDX} onBack={()=>{}} initialTab="history" />
+              <WorkLogConfirmSheetV2
+                type={o.v}
+                onDismiss={()=>{}}
+                onSave={()=>{}}
+              />
+            </PhoneShell>
+          ))}
+        </div>
+      </div>
+
+      <div style={{
+        maxWidth: 1400, margin: '64px auto 0',
+        paddingTop: 24, borderTop: '1px solid var(--border)',
+        fontFamily: 'var(--font-mono)', fontSize: 11,
+        color: 'var(--text-muted)', letterSpacing: '0.08em',
+      }}>
+        DESIGN SYSTEM · tokens.css · P1 片手·手袋 / P2 記録 / P3 永く変わらない / P4 余白の美 / P5 屋外で読める
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>

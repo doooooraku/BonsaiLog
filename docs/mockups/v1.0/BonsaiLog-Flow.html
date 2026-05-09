@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<title>BonsaiLog ・ 画面遷移図 v1.7</title>
+<meta name="viewport" content="width=1400"/>
+<style>
+  :root{
+    --bg:#FAF7F2; --ink:#1F1B16; --muted:#6B6258; --sub:#8C8275;
+    --line:#E5DDD2; --card:#FFFFFF; --primary:#1F3A2E;
+    --on:#FFEFD9;   --on-edge:#E8B670;   /* Onboarding (warm sand) */
+    --hm:#E6F0E5;   --hm-edge:#7AA37A;   /* Home / Mgmt   (sage)   */
+    --cr:#E0EBF3;   --cr-edge:#6E94B5;   /* ふりかえり/Care (slate) */
+    --ex:#EFE7DA;   --ex-edge:#A5916A;   /* Export        (kraft)  */
+    --mn:#EEDFE0;   --mn-edge:#B57A7E;   /* Monetization  (clay)   */
+    --warn:#8B2E2E; --okc:#3E5C39;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;}
+  body{padding:48px 56px 96px;}
+  h1{font-size:34px;font-weight:600;letter-spacing:.04em;margin:0 0 6px;}
+  .sub{font-family:-apple-system,"Hiragino Sans",sans-serif;color:var(--muted);font-size:13px;letter-spacing:.06em;}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:18px;margin-bottom:18px;}
+  .badge-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .badge{display:inline-block;font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:5px 10px;border-radius:3px;background:var(--okc);color:#FAF7F2;}
+  .badge.alt{background:var(--primary);}
+  .badge.warn{background:var(--warn);}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:12px 0 36px;font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:12px;}
+  .legend .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);}
+  .legend .sw{width:14px;height:14px;border-radius:4px;border:1px solid;}
+  .legend .sw.round{border-radius:999px;}
+  .legend .sw.dashed{border-style:dashed;border-width:1.5px;}
+  .legend .arrow{display:inline-flex;align-items:center;}
+
+  .nav{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 36px;font-family:-apple-system,"Hiragino Sans",sans-serif;}
+  .nav a{font-size:12px;padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;text-decoration:none;color:var(--ink);}
+  .nav a:hover{border-color:#bbb;}
+  .nav a.primary{background:var(--primary);color:#FAF7F2;border-color:var(--primary);}
+
+  .mermaid-wrap{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:32px 28px;margin-bottom:32px;
+    box-shadow:0 1px 2px rgba(20,12,4,.04);}
+  .mermaid-wrap h2{font-family:"Hiragino Mincho ProN",serif;font-weight:500;font-size:20px;margin:0 0 4px;}
+  .mermaid-wrap .meta{font-family:-apple-system,"Hiragino Sans",sans-serif;color:var(--muted);font-size:12.5px;margin-bottom:20px;line-height:1.6;}
+  .mermaid{display:flex;justify-content:center;}
+  .mermaid svg{font-family:-apple-system,"Hiragino Sans","Yu Gothic",sans-serif!important;}
+  .footnote{font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:11px;color:var(--muted);margin-top:12px;line-height:1.7;}
+
+  .walk{margin-top:18px;font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:13px;line-height:1.85;color:var(--ink);background:#FBF7EE;border:1px solid var(--line);border-radius:8px;padding:18px 22px;}
+  .walk strong{font-family:"Hiragino Mincho ProN",serif;font-weight:600;font-size:14px;color:var(--primary);}
+  .walk .step{display:flex;gap:10px;align-items:flex-start;margin-top:8px;}
+  .walk .step .n{font-family:"Hiragino Mincho ProN",serif;font-weight:600;color:var(--primary);min-width:24px;font-size:14px;flex-shrink:0;}
+  .walk .step em{font-style:normal;color:var(--primary);font-weight:500;}
+
+  .danger{margin-top:14px;font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:12.5px;line-height:1.7;color:var(--ink);background:#FBEFEB;border:1px solid #E8C5BC;border-radius:8px;padding:14px 18px;}
+  .danger .label{font-family:"Hiragino Mincho ProN",serif;font-weight:600;color:var(--warn);font-size:13px;display:block;margin-bottom:4px;}
+
+  /* persona simulation */
+  .sim-wrap{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:32px 28px;margin-bottom:24px;box-shadow:0 1px 2px rgba(20,12,4,.04);}
+  .sim-wrap h2{font-family:"Hiragino Mincho ProN",serif;font-weight:500;font-size:20px;margin:0 0 4px;}
+  .sim-wrap .meta{font-family:-apple-system,"Hiragino Sans",sans-serif;color:var(--muted);font-size:12.5px;margin-bottom:24px;line-height:1.6;}
+  .sim{margin-bottom:28px;padding-bottom:24px;border-bottom:1px dashed var(--line);}
+  .sim:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  .sim-head{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+  .avatar{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#FAF7F2;display:grid;place-items:center;font-family:"Hiragino Mincho ProN",serif;font-weight:600;font-size:15px;}
+  .who-name{font-family:"Hiragino Mincho ProN",serif;font-weight:600;font-size:16px;color:var(--ink);}
+  .scenario{font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:12px;color:var(--muted);}
+  .sim-steps{font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:13px;line-height:1.85;}
+  .sim-steps .row{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:flex-start;margin-bottom:6px;}
+  .sim-steps .num{font-family:"Hiragino Mincho ProN",serif;font-weight:500;color:var(--muted);font-size:11px;letter-spacing:.06em;padding-top:3px;}
+  .sim-steps .step{padding:6px 12px;border-radius:6px;background:#F4F0E6;border-left:3px solid var(--okc);}
+  .sim-steps .step.warn{background:#FBEFEB;border-left-color:var(--warn);}
+  .sim-steps .step.note{background:#EBF1F7;border-left-color:#6E94B5;}
+  .sim-steps .step.ok{background:#EBF3EB;border-left-color:var(--okc);}
+  .sim-steps .step b{color:var(--primary);}
+
+  /* findings table */
+  .findings-wrap{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:32px 28px;margin-bottom:32px;box-shadow:0 1px 2px rgba(20,12,4,.04);}
+  .findings-wrap h2{font-family:"Hiragino Mincho ProN",serif;font-weight:500;font-size:20px;margin:0 0 4px;}
+  .findings-wrap .meta{font-family:-apple-system,"Hiragino Sans",sans-serif;color:var(--muted);font-size:12.5px;margin-bottom:24px;line-height:1.6;}
+  table.findings{width:100%;border-collapse:collapse;font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:12.5px;}
+  table.findings th, table.findings td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.7;}
+  table.findings th{font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;font-weight:500;}
+  table.findings td.k{font-family:"Hiragino Mincho ProN",serif;font-weight:600;color:var(--primary);white-space:nowrap;}
+  table.findings td code{font-family:"IBM Plex Mono","SF Mono",monospace;font-size:11px;background:rgba(31,58,46,.06);padding:1px 6px;border-radius:3px;}
+  .pill{display:inline-block;padding:2px 8px;border-radius:4px;font-family:"IBM Plex Mono","SF Mono",monospace;font-size:10px;letter-spacing:.06em;font-weight:500;}
+  .pill.p1{background:var(--warn);color:#FAF7F2;}
+  .pill.p2{background:var(--ex-edge);color:#FAF7F2;}
+  .pill.p3{background:var(--sub);color:#FAF7F2;}
+  .pill.ok{background:var(--okc);color:#FAF7F2;}
+
+  footer{margin-top:48px;padding-top:24px;border-top:1px solid var(--line);font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:11px;color:var(--muted);letter-spacing:.06em;line-height:1.8;}
+  footer a{color:var(--primary);text-decoration:underline;text-underline-offset:3px;}
+
+  /* matrix */
+  .matrix{display:grid;grid-template-columns:repeat(5, 1fr);gap:14px;font-family:-apple-system,"Hiragino Sans",sans-serif;}
+  @media (max-width:900px){.matrix{grid-template-columns:repeat(2,1fr);}}
+  .mcard{background:#FBF7EE;border:1px solid var(--line);border-radius:8px;padding:14px 16px;}
+  .mcard .lab{font-family:"Hiragino Mincho ProN",serif;font-weight:600;font-size:13px;color:var(--primary);margin-bottom:6px;}
+  .mcard .ct{font-family:"Hiragino Mincho ProN",serif;font-weight:500;font-size:24px;color:var(--ink);}
+  .mcard .ct small{font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:12px;color:var(--muted);font-weight:400;margin-left:4px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>BonsaiLog ・ 画面遷移図</h1>
+    <div class="sub">Screen Flow Diagram v1.7 — <b>BonsaiLog 画面遷移の単一情報源（正本）</b> / 全 42 画面（実ユニーク） / 4 物理 HTML / 6 ペルソナ動線シミュレーション付</div>
+  </div>
+  <div class="badge-row">
+    <span class="badge">v1.7 final</span>
+    <span class="badge alt">42 screens</span>
+    <span class="badge alt">D1–D10 resolved</span>
+    <span class="badge alt">6 personas</span>
+  </div>
+</div>
+
+<div class="legend">
+  <span class="chip"><span class="sw" style="background:var(--on);border-color:var(--on-edge);"></span>① Onboarding（6）</span>
+  <span class="chip"><span class="sw" style="background:var(--hm);border-color:var(--hm-edge);"></span>② Home / 管理（18）</span>
+  <span class="chip"><span class="sw" style="background:var(--cr);border-color:var(--cr-edge);"></span>③ ふりかえり / Care 横断（6）</span>
+  <span class="chip"><span class="sw" style="background:var(--ex);border-color:var(--ex-edge);"></span>④ Export（6）</span>
+  <span class="chip"><span class="sw" style="background:var(--mn);border-color:var(--mn-edge);"></span>⑤ Monetization（6）</span>
+  <span class="chip"><span class="sw round dashed" style="border-color:#1F1B16;"></span>ボトムシート（下から上がる）</span>
+  <span class="chip"><span class="sw" style="background:#FFF8EB;border-color:#A5916A;"></span>モーダル（重ねて出る）</span>
+  <span class="chip"><span class="sw round" style="background:#1F1B16;border-color:#1F1B16;"></span>ハブ（中継点）</span>
+  <span class="chip" style="background:transparent;border-style:dashed;">━━ 矢印＝遷移 ／ 点線＝タブ・代替動線</span>
+</div>
+
+<div class="nav">
+  <a href="#overview" class="primary">全体俯瞰</a>
+  <a href="#onboarding">① Onboarding</a>
+  <a href="#home">② Home / 管理</a>
+  <a href="#care">③ ふりかえり / Care 横断</a>
+  <a href="#export">④ Export</a>
+  <a href="#monetization">⑤ Monetization</a>
+  <a href="#personas">⑥ ペルソナ動線</a>
+  <a href="#findings">⑦ 動線レビュー所見</a>
+  <a href="wireframes-analysis.html">▸ レポート全文へ戻る</a>
+</div>
+
+<!-- ════════════════ サマリ ════════════════ -->
+<div class="matrix" style="margin-bottom:36px;">
+  <div class="mcard"><div class="lab">記録 動線</div><div class="ct">FAB <small>v1.5 で詳細画面に常設</small></div></div>
+  <div class="mcard"><div class="lab">複数選択 経路</div><div class="ct">2系統<small>常設ボタン+長押し</small></div></div>
+  <div class="mcard"><div class="lab">作業フォーム</div><div class="ct">14<small>種（v1.6 確定）</small></div></div>
+  <div class="mcard"><div class="lab">バックアップ</div><div class="ct">独立画面<small>v1.9 Free 提供</small></div></div>
+  <div class="mcard"><div class="lab">完全削除</div><div class="ct">2段階<small>長押し → 確認</small></div></div>
+</div>
+
+<!-- ════════════════ 全体俯瞰 ════════════════ -->
+<section class="mermaid-wrap" id="overview">
+  <h2>全体俯瞰 ― ハブ &amp; スポーク（v1.7 改訂）</h2>
+  <div class="meta">起動から各機能領域へ。<b>Home が中央のハブ</b>として動作する。詳細画面の初期タブは「作業履歴」（v1.1）。<b>v1.5 で詳細画面に「＋作業を記録」FAB を常設</b>し、履歴を見ながらその場で記録できる動線を解放。「・・・」メニューは <b>基本情報を編集 / PDFで書き出し（Pro ロック） / アーカイブ</b> の 3 項目（v1.5）。完全削除は <b>設定 ➜ アーカイブ ➜ 長押し</b> の 2 段階（v1.5）。<br/><b>v1.7 改訂</b>：TabBar 4 タブを「盆栽 / 予定 / <b>ふりかえり</b> / 設定」に変更（v1.7 で「記録」→「ふりかえり」）。Care 系横断ビュー（水やり履歴・針金がけ一覧・盆栽検索）を <b>CareHub</b> 経由に再構成。<b>v1.9</b> で BackupScreen を独立化（Free 提供・GDPR Art.20 整合）。<b>v1.10</b> で Home ヘッダ <b>検索 → CareSearch ／ 設定 → Settings</b> を直接配線（D9/D10 解消）。</div>
+  <pre class="mermaid">
+flowchart TD
+  splash["01 Splash"]:::on
+  welcome["02 Welcome"]:::on
+  lang["03 言語"]:::on
+  att["04 ATT"]:::on
+  ump["05 UMP（EU/UK/CH）"]:::on
+  notif["06 通知"]:::on
+
+  home(["Home（ハブ）"]):::hub
+
+  empty["Home Empty"]:::hm
+  selectMode["複数選択モード"]:::hm
+  create("新規登録 / 編集"):::modalcss
+  detail["盆栽 詳細<br/>（初期＝履歴）"]:::hm
+
+  carePicker(["作業種別 Sheet"]):::sheetcss
+  proLock("PDF Pro ロック<br/>モーダル v1.5"):::modalcss
+
+  careHub(["ふりかえり Hub<br/>v1.7"]):::cr
+  heatmap["水やり履歴<br/>ヒートマップ"]:::cr
+  calendar["作業予定<br/>カレンダー"]:::cr
+  wiring["針金がけ一覧"]:::cr
+  search["盆栽検索"]:::cr
+
+  exportHub["Export Hub"]:::ex
+  settings["設定"]:::mn
+  backup["BackupScreen<br/>v1.9 Free"]:::mn
+  paywall("Paywall"):::modalcss
+  archive["アーカイブ一覧"]:::mn
+  archDel("完全削除 確認<br/>モーダル v1.5"):::modalcss
+
+  splash --> welcome --> lang --> att --> ump --> notif --> home
+
+  home -->|＋FAB| create --> detail
+  home -->|盆栽カード| detail
+  home -->|空状態| empty -->|＋| create
+  home -->|複数選択ボタン または 長押し| selectMode
+  home -->|ヘッダ 検索 v1.10| search
+  home -->|ヘッダ 設定 v1.10| settings
+  home -.->|タブ「予定」| calendar
+  home -.->|タブ「ふりかえり」v1.7| careHub
+  home -.->|タブ「設定」| settings
+
+  selectMode -->|タグ追加 / 一括記録 / 予定追加| carePicker
+
+  detail -->|＋FAB v1.5| carePicker
+  detail -->|履歴 → 予定 タブ| calendar
+  detail -->|・・・メニュー → PDF| proLock
+  detail -->|＋作業予定| calendar
+  proLock -->|Pro を見る| paywall
+
+  careHub -->|水やり履歴| heatmap
+  careHub -->|針金がけ一覧| wiring
+  careHub -->|盆栽検索| search
+
+  settings --> exportHub
+  settings -->|プラン| paywall
+  settings --> backup
+  settings --> archive
+  archive -->|長押し v1.5| archDel
+  exportHub -.->|PRO限定機能| paywall
+
+  classDef on fill:#FFEFD9,stroke:#E8B670,color:#1F1B16;
+  classDef hm fill:#E6F0E5,stroke:#7AA37A,color:#1F1B16;
+  classDef cr fill:#E0EBF3,stroke:#6E94B5,color:#1F1B16;
+  classDef ex fill:#EFE7DA,stroke:#A5916A,color:#1F1B16;
+  classDef mn fill:#EEDFE0,stroke:#B57A7E,color:#1F1B16;
+  classDef hub fill:#1F1B16,stroke:#1F1B16,color:#FAF7F2,font-weight:bold;
+  classDef modalcss fill:#FFF8EB,stroke:#A5916A,color:#1F1B16;
+  classDef sheetcss fill:#F0EFE5,stroke:#6E94B5,color:#1F1B16,stroke-dasharray: 5 5;
+  </pre>
+  <div class="walk">
+    <strong>プレーン日本語版（小中学生にも読める）</strong>
+    <div class="step"><span class="n">①</span>アプリを開くと <em>Splash</em> ➜ <em>Welcome</em>。「はじめる」を押すと <em>言語</em> ➜ <em>ATT</em>（広告追跡について）➜ <em>UMP</em>（EU/UK/CH のみ）➜ <em>通知許可</em> へ。スキップで最短 0 タップで Home。</div>
+    <div class="step"><span class="n">②</span>初めての人は <em>Home Empty</em>（空っぽ画面）に着地。<b>大きな「盆栽を登録」ボタン</b>で <em>新規登録モーダル</em>。</div>
+    <div class="step"><span class="n">③</span>すでに盆栽がある人は <em>Home リスト</em>。盆栽カードをタップすると <em>盆栽詳細</em>（初期は <b>履歴タブ</b>）へ移動。</div>
+    <div class="step"><span class="n">④</span>下のタブバーは <b>「盆栽 / 予定 / ふりかえり / 設定」</b> の 4 本（v1.7 で「記録」→「ふりかえり」）。<em>予定</em> はカレンダー、<em>ふりかえり</em> は <b>CareHub</b>（水やり履歴・針金がけ一覧・盆栽検索 の 3 カード）、<em>設定</em> はアカウント・出力・課金・バックアップ。</div>
+    <div class="step"><span class="n">⑤</span>Home ヘッダの <em>「複数選択」</em> ボタンで <b>複数選択モード</b>（<em>カード長押し</em> でも可）。下部のツールバーから <em>タグ追加 / 一括記録 / 予定追加</em>。<b>v1.10</b> で同じヘッダの <em>検索アイコン</em> ➜ <b>盆栽検索画面に直接ジャンプ</b>、<em>設定アイコン</em> ➜ <b>設定画面に直接ジャンプ</b>（D9/D10 解消、装飾だけのナビ UI を撲滅）。</div>
+    <div class="step"><span class="n">⑥</span>盆栽詳細では <b>履歴 / 予定 / 基本情報</b> の 3 タブ。<em>編集</em> は基本情報タブで完結（v1.1）、または <em>「・・・」➜ 基本情報を編集</em> ショートカット（v1.5）。<em>「・・・」メニュー</em> は <b>基本情報を編集 / PDF / アーカイブ</b> の 3 項目（共有は v1.5 で削除）。</div>
+    <div class="step"><span class="n">⑦</span><b>記録の入口（v1.5）</b>：詳細画面 右下 <em>「＋作業を記録」FAB</em> を常設。タップ ➜ <em>作業種別 Sheet</em>（14 作業）➜ 作業別フォーム。履歴を見ながらその場で記録できる。</div>
+    <div class="step"><span class="n">⑧</span>出力（Export）は <em>設定 ➜ Export Hub</em>。CSV 3 種・PDF 2 種から選び、生成 ➜ iOS 共有シート。<b>PDF/CSV は Pro 機能</b>。「・・・」➜ PDF タップ時は <em>Pro ロックモーダル</em>（v1.5）。<b>v1.8 で Hub のキッカー（社内 PRD ID） / カード下の行数・サイズ / Share Sheet のサイズ / PDF プレビューの A4 表記 / フッターのバージョン番号 / Progress サブテキスト の 8 箇所の技術メタを一括除去</b>。</div>
+    <div class="step"><span class="n">⑨</span>課金は <em>設定 ➜ プラン</em>、または PRO 限定機能タップ時に <em>Paywall</em>。Pro 主軸は <b>外部活用（CSV/PDF/年次画像）＋ 体験（広告なし・テーマ）</b>。<b>v1.9 で「全データバックアップ Free/◎」を比較表に追加</b>（GDPR Art.20 整合）。</div>
+    <div class="step"><span class="n">⑩</span><b>BackupScreen（v1.9 独立画面）</b>：設定 ➜ <em>バックアップ</em> ➜ ZIP 書き出し / ZIP 取り込み（両方 Free・データ所有権の保証）。アンインストール前の保全・端末移行・他 OS への移行に使う。</div>
+    <div class="step"><span class="n">⑪</span><b>完全削除（v1.5）</b>：設定 ➜ アーカイブ一覧 ➜ 項目を <em>長押し</em> ➜ 確認モーダル「履歴も写真もすべて失われ、復元できません」➜ 完全削除。アーカイブだけでは消さない 2 段階ガード。</div>
+  </div>
+</section>
+
+<!-- ════════════════ ① Onboarding ════════════════ -->
+<section class="mermaid-wrap" id="onboarding">
+  <h2>① Onboarding（6 画面）</h2>
+  <div class="meta">v1.3 で <b>ATT/UMP を必須経路に統合</b>。19 言語ターゲット運用。各ステップに「あとで決める」「許可しない」「スキップ」を持ち、強制感ゼロ。UMP は <b>EU/UK/CH のみ</b>表示（非該当地域はスキップ）。物理 HTML：<code>wireframes/01-Onboarding.html</code>。</div>
+  <pre class="mermaid">
+flowchart LR
+  s["01 Splash<br/>1.5s 自動"]:::on
+  w["02 Welcome"]:::on
+  l["03 Language Picker<br/>19 言語"]:::on
+  a["04 ATT 説明<br/>（pre-prompt）"]:::on
+  u["05 UMP 同意<br/>（EU/UK/CH のみ）"]:::on
+  n["06 Notification"]:::on
+  h(["Home（②へ）"]):::hub
+
+  s -->|2.0s| w
+  w -->|はじめる| l
+  w -.->|スキップ| h
+  l -->|選択 → 続ける| a
+  l -.->|スキップ| h
+  a -->|許可する / 許可しない| u
+  a -.->|あとで決める| n
+  u -->|地域非該当はスキップ| n
+  u -->|同意 / カスタマイズ| n
+  n -->|許可 / あとで| h
+
+  classDef on fill:#FFEFD9,stroke:#E8B670,color:#1F1B16;
+  classDef hub fill:#1F1B16,stroke:#1F1B16,color:#FAF7F2,font-weight:bold;
+  </pre>
+  <div class="walk">
+    <strong>プレーン日本語版</strong>
+    <div class="step"><span class="n">①</span><em>Splash</em>：黒地にロゴが 1.5 秒。すぐ <em>Welcome</em> へ。</div>
+    <div class="step"><span class="n">②</span><em>Welcome</em>：「鉢 1 本ずつ、一生分」のコピー。「アカウント不要」が安心材料。「はじめる」または「スキップ」。</div>
+    <div class="step"><span class="n">③</span><em>言語</em>：19 言語、端末言語に「端末の言語」バッジ。タップ → 「選択して続ける」。</div>
+    <div class="step"><span class="n">④</span><em>ATT</em>（pre-prompt）：「広告に関する追跡について教えてください」 → 「許可する」「許可しない」「あとで決める」の 3 択。許可しないでも全機能使える。</div>
+    <div class="step"><span class="n">⑤</span><em>UMP</em>：EU/UK/CH 居住者のみ Google UMP の同意 UI。<b>日本ユーザーは画面ごとスキップ</b>（負担ゼロ）。</div>
+    <div class="step"><span class="n">⑥</span><em>通知</em>：「あなたが決めた予定をお知らせします」。デフォルト OFF。「許可」または「あとで」。</div>
+  </div>
+</section>
+
+<!-- ════════════════ ② Home / 管理 ════════════════ -->
+<section class="mermaid-wrap" id="home">
+  <h2>② Home / 盆栽管理（18 画面・うち full 8 / modal 2 / sheet 8）</h2>
+  <div class="meta">Home（リスト一本化、v1.4）から、新規登録 ➜ <b>樹種・樹形ピッカー（即確定 + ＋カスタム入力 + 重複確認）</b> ➜ 詳細（履歴 / 予定 / 基本情報）。<b>複数選択モード</b> はヘッダ「複数選択」ボタン or 長押し。<br/><b>v1.5 で +3 画面</b>：詳細画面の <b>FAB「＋作業を記録」</b>（履歴を見ながら記録）／ <b>連続水やり予定の折りたたみ</b>（タップで日別展開）／ <b>PDF Pro ロックモーダル</b>。<b>「・・・」メニュー</b> は <b>共有を削除し「基本情報を編集」を追加</b>。<br/><b>v1.10 改訂</b>：Home ヘッダの <b>検索アイコン → 盆栽検索画面（careSearch）</b>、<b>設定アイコン → 設定画面（settings）</b> を直接配線（D9/D10 解消）。</div>
+  <pre class="mermaid">
+flowchart TD
+  home["01 Home<br/>（リスト一本）"]:::hm
+  selectMode["01a 複数選択モード"]:::hm
+  tagMod("01b タグ追加モーダル"):::modalcss
+  bSchW(["01c 一括予定・作業選択"]):::sheetcss
+  bSchD(["01d 一括予定・日付"]):::sheetcss
+  empty["02 Home Empty"]:::hm
+  create("03 新規登録 / 編集"):::modalcss
+  spP(["04 樹種ピッカー<br/>（検索＋カスタム入力）"]):::sheetcss
+  stP(["04b 樹形ピッカー<br/>（desc表示＋カスタム入力）"]):::sheetcss
+  history["05 詳細・作業履歴<br/>（初期タブ）"]:::hm
+  recPick(["05a 作業記録・<br/>種別選択 v1.5"]):::sheetcss
+  recConf(["05b 作業記録・<br/>入力 v1.5"]):::sheetcss
+  timeline["06 詳細・作業予定<br/>（連続水やり折畳 v1.5）"]:::hm
+  addAct(["06a 予定追加・作業選択"]):::sheetcss
+  addDt(["06b 予定追加・日付"]):::sheetcss
+  menu(["06c ・・・メニュー"]):::sheetcss
+  pdfLock("06d PDF Pro ロック<br/>モーダル v1.5"):::modalcss
+  basic["07 詳細・基本情報<br/>（編集兼用）"]:::hm
+  careSearch["12 盆栽検索<br/>（v1.10 Home 直結）"]:::cr
+  settings["設定<br/>（05-Monetization.html）"]:::mn
+
+  home -->|＋FAB| create
+  home -->|盆栽カード| history
+  home -->|複数選択ボタン または 長押し| selectMode
+  home -->|ヘッダ 検索 v1.10| careSearch
+  home -->|ヘッダ 設定 v1.10| settings
+  empty -->|＋ボタン| create
+
+  selectMode -->|キャンセル| home
+  selectMode -->|タグ追加| tagMod
+  selectMode -->|一括記録| bSchW
+  selectMode -->|予定追加| bSchW
+  bSchW --> bSchD --> home
+  tagMod --> selectMode
+
+  create -->|樹種フィールド| spP
+  spP -->|タップで即確定| create
+  spP -->|＋カスタム入力| spP
+  create -->|樹形フィールド| stP
+  stP -->|タップで即確定| create
+  stP -->|＋カスタム入力| stP
+  create -->|タグ欄| tagMod
+  create -->|保存| history
+
+  history <-.->|タブ切替| timeline
+  history <-.->|タブ切替| basic
+  history -->|＋作業記録 FAB v1.5| recPick
+  timeline -->|＋作業記録 FAB v1.5| recPick
+  recPick -->|作業選択| recConf
+  recConf -->|保存| history
+  timeline -->|＋予定を追加| addAct
+  addAct -->|作業選択 水やりも追加可| addDt
+  addDt -->|保存| timeline
+  timeline -.->|連続水やり タップで展開| timeline
+
+  history -->|ヘッダ ・・・| menu
+  menu -->|基本情報を編集 v1.5| basic
+  menu -->|PDF v1.5| pdfLock
+  menu -->|アーカイブ| home
+  pdfLock -.->|Pro を見る| menu
+
+  classDef hm fill:#E6F0E5,stroke:#7AA37A,color:#1F1B16;
+  classDef cr fill:#E0EBF3,stroke:#6E94B5,color:#1F1B16;
+  classDef mn fill:#EEDFE0,stroke:#B57A7E,color:#1F1B16;
+  classDef modalcss fill:#FFF8EB,stroke:#A5916A,color:#1F1B16;
+  classDef sheetcss fill:#F0EFE5,stroke:#6E94B5,color:#1F1B16,stroke-dasharray: 5 5;
+  </pre>
+  <div class="walk">
+    <strong>プレーン日本語版</strong>
+    <div class="step"><span class="n">①</span>Home でカードを <em>タップ</em> ➜ 詳細画面（履歴タブ）。</div>
+    <div class="step"><span class="n">②</span>右下 <em>＋ FAB</em> ➜ 「新規登録」モーダルが下から上がる。</div>
+    <div class="step"><span class="n">③</span>登録モーダルの <em>樹種・樹形フィールド</em> をタップで <b>ピッカー Sheet</b>。<b>項目タップで即確定</b>（v1.4）。<em>画面下の「＋カスタム入力」</em> から自由入力 → 同名があれば <b>重複確認モーダル</b>。</div>
+    <div class="step"><span class="n">④</span>登録モーダルの <em>タグ欄</em> も <em>タグ追加モーダル</em> から作成・選択。</div>
+    <div class="step"><span class="n">⑤</span>詳細では 上に <b>履歴 / 予定 / 基本情報</b> の 3 タブ。<em>編集は基本情報タブで完結</em>（v1.1）、または <em>「・・・」➜ 基本情報を編集</em> でジャンプ（v1.5）。</div>
+    <div class="step"><span class="n">⑥</span><b>記録の入口（v1.5）</b>：詳細画面の <em>右下 FAB「＋作業を記録」</em>（56dp、影付き）➜ <em>作業種別 Sheet</em>（14 作業）➜ 作業別フォーム ➜ 保存。<b>履歴タブから 1 タップで記録できる</b>。</div>
+    <div class="step"><span class="n">⑦</span>「予定」タブの <em>＋予定を追加</em> ➜ 作業選択（<b>水やりも追加可</b> v1.4）➜ 日付選択。<b>連続水やり予定は折りたたみ表示（v1.5）</b>。</div>
+    <div class="step"><span class="n">⑧</span>ヘッダ右の <em>「・・・」</em> ➜ <em>基本情報を編集 / PDFで書き出し / アーカイブ</em>（共有は v1.5 で削除）。<b>PDF タップで Pro ロックモーダル</b>。<b>削除は出さない</b>（完全削除は 設定➜アーカイブ➜長押し）。</div>
+    <div class="step"><span class="n">⑨</span>Home ヘッダ <em>「複数選択」</em> または <em>カード長押し</em> ➜ 選択モード。下部ツールバーから <em>タグ追加 / 一括記録 / 予定追加</em>。</div>
+    <div class="step"><span class="n">⑩</span><b>v1.10 解消（D9/D10）</b>：Home ヘッダ右側の <em>検索アイコン → 盆栽検索画面</em>、<em>設定アイコン → 設定画面</em> を直接配線。茂（150 株運用）の検索動線が <b>1 タップ</b>に短縮（旧：Home → ふりかえり → CareHub → 検索 の 3 タップ）。</div>
+  </div>
+</section>
+
+<!-- ════════════════ ③ ふりかえり / Care 横断（v1.7 構成） ════════════════ -->
+<section class="mermaid-wrap" id="care">
+  <h2>③ ふりかえり / Care 横断（6 画面・v1.7 構成）</h2>
+  <div class="meta">v1.7 で TabBar 4 タブ目を <b>「記録」→「ふりかえり」</b> に変更（誤読リスク回避：「記録」は「作業を記録するボタン」と誤読される懸念があった）。Care 系横断ビュー（水やり履歴・針金がけ一覧・盆栽検索）は <b>CareHub（08）</b> の 3 カードから到達する構成。<b>カレンダー（10）</b>は別タブ（TabBar 「予定」）から直接到達。<br/>v1.6 で 03-Care.html を物理削除し、Care 専用画面と 14 種フォーム比較ギャラリーを <code>02-Home.html</code> に統合（物理 HTML 11 → 4 → 4 で確定）。</div>
+  <pre class="mermaid">
+flowchart TD
+  homeC(["Home（ハブ）"]):::hub
+  tabPlan(["タブ「予定」"]):::sheetcss
+  tabReflect(["タブ「ふりかえり」<br/>v1.7"]):::sheetcss
+  tabSet(["タブ「設定」"]):::sheetcss
+
+  careHub["08 ふりかえり Hub<br/>（3カード）"]:::cr
+  careCal["10 作業予定<br/>カレンダー"]:::cr
+  careHeat["09 水やり履歴<br/>ヒートマップ"]:::cr
+  careWiring["11 針金がけ一覧"]:::cr
+  careSearch["12 盆栽検索"]:::cr
+  settings["設定<br/>（05-Monetization.html）"]:::mn
+
+  homeC -.->|タブ「予定」| tabPlan --> careCal
+  homeC -.->|タブ「ふりかえり」v1.7| tabReflect --> careHub
+  homeC -.->|タブ「設定」| tabSet --> settings
+  homeC -->|ヘッダ 検索 v1.10| careSearch
+  homeC -->|ヘッダ 設定 v1.10| settings
+
+  careHub -->|水やり履歴| careHeat
+  careHub -->|針金がけ一覧| careWiring
+  careHub -->|盆栽を検索| careSearch
+
+  careHeat -->|戻る| careHub
+  careWiring -->|戻る| careHub
+  careSearch -->|戻る| careHub
+
+  classDef cr fill:#E0EBF3,stroke:#6E94B5,color:#1F1B16;
+  classDef mn fill:#EEDFE0,stroke:#B57A7E,color:#1F1B16;
+  classDef sheetcss fill:#F0EFE5,stroke:#6E94B5,color:#1F1B16,stroke-dasharray: 5 5;
+  classDef hub fill:#1F1B16,stroke:#1F1B16,color:#FAF7F2,font-weight:bold;
+  </pre>
+  <div class="walk">
+    <strong>プレーン日本語版</strong>
+    <div class="step"><span class="n">①</span><em>ふりかえり Hub（08）</em>：TabBar の「ふりかえり」タップで開く。3 カードが並ぶ：<b>水やり履歴 / 針金がけ一覧 / 盆栽を検索</b>。「ふりかえりたい時に開く Hub」。</div>
+    <div class="step"><span class="n">②</span><em>水やり履歴ヒートマップ（09）</em>：直近の水やり頻度を緑の濃淡で可視化。<b>競合 7 アプリで唯一の機能</b>。</div>
+    <div class="step"><span class="n">③</span><em>作業予定カレンダー（10）</em>：月単位で予定を一覧。<b>TabBar の「予定」から直接到達</b>（CareHub を経由しない）。</div>
+    <div class="step"><span class="n">④</span><em>針金がけ一覧（11）</em>：「現在針金がけ中」の株を一覧。外し時期の目安と一緒に。</div>
+    <div class="step"><span class="n">⑤</span><em>盆栽検索（12）</em>：株名・樹種・タグで横断検索。<b>v1.10 で Home ヘッダ検索アイコンから直接到達</b>（茂シナリオの 3 タップ → 1 タップ）。CareHub からの動線も維持。</div>
+    <div class="step"><span class="n">⑥</span><em>設定（05-Monetization.html）</em>：<b>v1.11 で 02-Home.html の「準備中」スタブを削除</b>。設定画面は 05-Monetization.html の SettingsScreen が単一情報源。TabBar→設定 のタップは 02-Home.html プロトでは no-op（実機では 05-Monetization.html の画面に遷移）。</div>
+  </div>
+  <div class="walk" style="background:#EBF3EB;border-color:#B6D5B6;">
+    <strong style="color:var(--okc);">✓ 「ふりかえり」命名の根拠（v1.7）</strong>
+    <div class="step"><span class="n" style="color:var(--okc);">●</span>v1.7 議論で <b>「記録」というラベルは「作業を記録するボタン」と誤読される懸念</b>を発見。Care 系横断ビュー（過去の水やり頻度・現在の針金状態・株の検索）は <em>過去〜現在を見返す</em> 行為であり、<b>「ふりかえり」が意味的に正確</b>。CareHub の 3 カード構成と整合する命名。</div>
+  </div>
+</section>
+
+<!-- ════════════════ ④ Export ════════════════ -->
+<section class="mermaid-wrap" id="export">
+  <h2>④ Export（6 画面・v1.8 で CSV Preview 削除）</h2>
+  <div class="meta">Hub から CSV / PDF を分岐。生成 ➜ iOS 共有シート、または各形式のプレビュー。<b>v1.1 で Pro モデルピボット</b>：写真制限解除（無料）、CSV/PDF/年次画像/テーマが Pro 主軸。<br/><b>v1.8 改訂</b>：CSV プレビュー画面を削除（CSV は Excel/Numbers で開く前提・プレビュー UI は技術メタ志向で哲学逆走）。Hub のキッカー <code>F-10 · DATA PORTABILITY</code>（社内 PRD ID）／カード下の <code>47行 · ~12 KB</code>／Share Sheet のサイズ／PDF プレビューの <code>· A4</code>／フッター <code>v1.0.0</code>／Progress サブテキスト の <b>8 箇所の技術メタを一括除去</b>。<br/><b>v1.10〜v1.11</b>：PDF 個別レポートに <b>銘（任意）</b> 追加・ID/タグ/置き場所削除。PDF 一覧レポートは <b>動的相対時刻禁止</b>、樹齢/樹高を採用、個別 PDF と整合。</div>
+  <pre class="mermaid">
+flowchart TD
+  hub["01 Export Hub"]:::ex
+  opt(["02 Options Sheet<br/>（期間 4択 + カスタム）"]):::sheetcss
+  prog("03 Generating<br/>（不確定スピナー）"):::modalcss
+  share(["04 Share Sheet（iOS）"]):::sheetcss
+  pdf1["05 PDF · Single<br/>（銘・基本情報・履歴サマリ）"]:::ex
+  pdfL["06 PDF · List<br/>（保有資産一覧 + 統計）"]:::ex
+  pay("Paywall（PRO）"):::mn
+
+  hub -->|CSV / PDF を選択| opt
+  opt -->|書出開始| prog
+  prog -->|完了| share
+  share -.->|プレビュー| pdf1
+  share -.->|プレビュー| pdfL
+  hub -.->|PRO 限定機能タップ| pay
+
+  classDef ex fill:#EFE7DA,stroke:#A5916A,color:#1F1B16;
+  classDef mn fill:#EEDFE0,stroke:#B57A7E,color:#1F1B16;
+  classDef sheetcss fill:#F0EFE5,stroke:#6E94B5,color:#1F1B16,stroke-dasharray: 5 5;
+  classDef modalcss fill:#FFF8EB,stroke:#A5916A,color:#1F1B16;
+  </pre>
+  <div class="walk">
+    <strong>プレーン日本語版</strong>
+    <div class="step"><span class="n">①</span><em>Export Hub</em>：CSV 3 種（記録 / 樹一覧 / フル）+ PDF 2 種（個別レポート / 一覧）。タップで <em>Options Sheet</em>（v1.4 で「期間 4 択 + カスタム日付レンジ」を採用）。</div>
+    <div class="step"><span class="n">②</span><em>書出開始</em> ➜ <em>Generating モーダル</em>（不確定スピナー、サブテキストなし）➜ 完了で <em>iOS 共有シート</em> がせり上がる。</div>
+    <div class="step"><span class="n">③</span>PDF 個別レポート（v1.10）：<b>銘（任意）/ 入手日 / 入手元 / 樹齢推定 / 樹高 / 鉢サイズ</b> の 6 行。展示会出品票・譲渡時継承書類の用途。ID・タグ・置き場所はプライバシー・内部 UI ラベルとして不掲載。</div>
+    <div class="step"><span class="n">④</span>PDF 一覧レポート（v1.11）：3 ページ構成（表紙 + 一覧 + 統計）。一覧の 4 列は <b>入手 / 飼育 / 樹齢 / 樹高</b>（個別 PDF と整合）。<b>動的相対時刻（「今日」「2 日前」）禁止</b>・運用情報（最終水やり・記録総数）禁止。</div>
+    <div class="step"><span class="n">⑤</span>Free 版から PRO 限定をタップ ➜ <em>Paywall</em>。CSV/PDF/年次画像が Pro 主軸。<b>全データバックアップ（ZIP）は v1.9 で Free 化</b>（GDPR Art.20 整合）。</div>
+  </div>
+</section>
+
+<!-- ════════════════ ⑤ Monetization ════════════════ -->
+<section class="mermaid-wrap" id="monetization">
+  <h2>⑤ Monetization / Settings（6 画面・v1.9 で BackupScreen 独立化）</h2>
+  <div class="meta">Paywall は機能ロック時に <b>モーダルでせり上がる</b>。設定からアーカイブ管理、広告バナー付き Home（Free）へ分岐。<b>通知デフォルトは OFF</b>（v1.1 哲学整合）。<b>「作業タイミングの目安」Pro 機能は v1.1 で撤去</b>。<br/><b>v1.5</b>：完全削除確認モーダル。アーカイブ一覧で項目を <em>長押し（550ms）</em> で発火。「履歴も写真もすべて失われ、復元できません」と明示し、赤い「完全削除」ボタンで二重ガード。<br/><b>v1.9 で BackupScreen 独立化</b>（ZIP 書き出し / 取り込み・両方 Free）。設定画面を「アーカイブ／書き出し／バックアップ」3 セクション分離。Paywall 比較表に「<b>全データバックアップ Free/◎</b>」行を追加（GDPR Art.20 整合）。<b>v1.10</b> で Home ヘッダ設定アイコン → SettingsScreen を直接配線。</div>
+  <pre class="mermaid">
+flowchart LR
+  pay("01 Paywall Modal"):::modalcss
+  set["02 設定<br/>（v1.9 8 セクション再構成）"]:::mn
+  backup["03 BackupScreen<br/>（v1.9 ZIP 書き出し/取り込み Free）"]:::mn
+  arch["04 アーカイブ一覧"]:::mn
+  archDel("04a 完全削除 確認<br/>モーダル v1.5"):::modalcss
+  adhome["05 Home + 広告バナー（Free）"]:::mn
+  home3(["Home"]):::hub
+
+  home3 -.->|タブ「設定」| set
+  home3 -->|ヘッダ 設定 v1.10| set
+  set -->|アーカイブ済み盆栽| arch
+  set -->|バックアップ v1.9| backup
+  set -->|プラン → Upgrade| pay
+  set -->|CSV/PDF/年次画像（Pro）| pay
+  arch -->|長押し v1.5| archDel
+  archDel -->|キャンセル| arch
+  archDel -->|完全削除| arch
+  backup -->|戻る| set
+  pay -->|購入 / あとで| home3
+  home3 -.->|Free プラン| adhome
+
+  classDef mn fill:#EEDFE0,stroke:#B57A7E,color:#1F1B16;
+  classDef hub fill:#1F1B16,stroke:#1F1B16,color:#FAF7F2,font-weight:bold;
+  classDef modalcss fill:#FFF8EB,stroke:#A5916A,color:#1F1B16;
+  </pre>
+  <div class="walk">
+    <strong>プレーン日本語版</strong>
+    <div class="step"><span class="n">①</span>設定 ➜ <em>アーカイブ済み盆栽</em> ➜ アーカイブ一覧。各項目に「復元」ボタン。</div>
+    <div class="step"><span class="n">②</span>項目を <em>長押し（約 0.5 秒）</em> ➜ <b>完全削除 確認モーダル</b>がせり上がる。「『枯死した真柏』を完全削除します」 + 「履歴も写真もすべて失われ、復元できません」 ➜ 赤い <em>「完全削除」</em> と「キャンセル」。</div>
+    <div class="step"><span class="n">③</span><b>BackupScreen（v1.9 独立）</b>：設定 ➜ <em>バックアップ</em> ➜ ZIP 書き出し / ZIP 取り込み の 2 カード（両方 Free）。<b>「自分のデータを取り戻す権利」を Pro 化しない</b>原則を体現。</div>
+    <div class="step"><span class="n">④</span>哲学整合：<b>誤操作防止のため 2 段階ガード</b>（アーカイブで隠す → 長押し → 確認）。日常 UI からは「削除」が見えない。</div>
+    <div class="step"><span class="n">⑤</span><b>v1.10 解消（D10）</b>：Home ヘッダ右側の <em>設定アイコン → 設定画面に直接ジャンプ</em>（TabBar の「設定」と同じ着地）。150 株運用の茂シナリオで「設定への高速到達」が可能に。</div>
+  </div>
+</section>
+
+<!-- ════════════════ ⑥ ペルソナ動線シミュレーション ════════════════ -->
+<section class="sim-wrap" id="personas">
+  <h2>⑥ ペルソナ動線シミュレーション（v1.7 動線で再走）</h2>
+  <div class="meta">v1.10 の最新動線を 6 ペルソナで歩かせ、「すんなり」 / 「つまずく」 / 「離脱」 を判定。<b>v1.5 で D1/D2/D3/D4/D8、v1.10 で D9/D10 を解消</b>。緑カードは v1.10 で改善されたステップ。</div>
+
+  <!-- Sim 1: 山田 健太 -->
+  <div class="sim">
+    <div class="sim-head">
+      <div class="avatar">健</div>
+      <div>
+        <div class="who-name">山田 健太（38・初心者）</div>
+        <div class="scenario">シナリオ：父の黒松を引き取った日 ― 初回起動から登録 → 翌日の水やりまで</div>
+      </div>
+    </div>
+    <div class="sim-steps">
+      <div class="row"><div class="num">01</div><div class="step ok">アプリを起動。<em>Splash</em> 1.5秒。<em>Welcome</em> で「鉢1本ずつ、一生分」「アカウント不要」を見て安心。「はじめる」をタップ。</div></div>
+      <div class="row"><div class="num">02</div><div class="step ok"><em>言語</em> ➜ 日本語が「端末の言語」バッジ付きで先頭。タップして「選択して続ける」。</div></div>
+      <div class="row"><div class="num">03</div><div class="step ok"><em>ATT</em>「広告に関する追跡について…」 ➜ 「<b>許可しない</b>」を選んでも全機能使えると分かり安心。</div></div>
+      <div class="row"><div class="num">04</div><div class="step ok"><em>UMP</em>：日本居住なのでスキップ表示なし。直接 <em>通知</em>へ。</div></div>
+      <div class="row"><div class="num">05</div><div class="step ok"><em>通知</em>：「あなたが決めた予定をお知らせします」➜「あとで」。Home Empty へ。</div></div>
+      <div class="row"><div class="num">06</div><div class="step ok"><em>Home Empty</em>「最初の盆栽を追加しよう」のコピー＋大きな登録ボタン。タップ。</div></div>
+      <div class="row"><div class="num">07</div><div class="step ok"><em>新規登録モーダル</em>：名前「父の黒松」入力。樹種フィールドタップ。</div></div>
+      <div class="row"><div class="num">08</div><div class="step ok"><em>樹種ピッカー</em>：「松」を検索 ➜ 「黒松」タップで <b>即確定</b>。登録モーダルに戻る。</div></div>
+      <div class="row"><div class="num">09</div><div class="step ok"><em>樹形ピッカー</em>：「直幹」をタップ。<b>desc 表示</b>「真っ直ぐ立つ伝統樹形」が読めて即確定。</div></div>
+      <div class="row"><div class="num">10</div><div class="step ok">タグ欄から <em>タグ追加モーダル</em> ➜「@テラス」入力 ➜ 作成。写真は省略。「保存」。</div></div>
+      <div class="row"><div class="num">11</div><div class="step ok"><b>v1.5 改善</b>：<em>詳細画面</em>（履歴タブ＝初期）に着地。履歴は空だが、<em>右下の「＋作業を記録」FAB</em>（56dp、影付き）が即座に目に入る。タップ ➜ <em>作業種別 Sheet</em> ➜ 「水やり」➜ 確認 ➜ 保存。<b>1 タップで記録の入口に到達</b>。</div></div>
+      <div class="row"><div class="num">12</div><div class="step ok">記録完了 ➜ 履歴タブにエントリ追加。次の日も同じ FAB から記録継続。<b>D1 は v1.5 で完全解消</b>。</div></div>
+    </div>
+  </div>
+
+  <!-- Sim 2: 佐藤 みどり -->
+  <div class="sim">
+    <div class="sim-head">
+      <div class="avatar">み</div>
+      <div>
+        <div class="who-name">佐藤 みどり（62・退職女性）</div>
+        <div class="scenario">シナリオ：3 株を朝の水やりでまとめて記録 → ZIP バックアップ作成</div>
+      </div>
+    </div>
+    <div class="sim-steps">
+      <div class="row"><div class="num">01</div><div class="step ok">アプリ起動 ➜ Home リスト（v1.4 でグリッド削除、リスト一本）。</div></div>
+      <div class="row"><div class="num">02</div><div class="step ok">ヘッダ右の <em>「複数選択」</em> ボタンをタップ。<b>明示的に発見できる</b>。</div></div>
+      <div class="row"><div class="num">03</div><div class="step ok">3 株を順次タップ ➜ ✓ チェックマーク。ヘッダに「3 件選択中」。</div></div>
+      <div class="row"><div class="num">04</div><div class="step ok">下部ツールバー <em>「一括記録」</em> をタップ ➜ 作業ピッカー Sheet ➜ 「水やり」。</div></div>
+      <div class="row"><div class="num">05</div><div class="step ok">確認 Sheet ➜「3 件にまとめて記録」➜ 履歴に 3 件追加、選択モード解除。</div></div>
+      <div class="row"><div class="num">06</div><div class="step ok"><b>v1.10 改善</b>：合計 5 タップで完了後、<em>Home ヘッダの設定アイコン</em>（v1.10 配線）をタップ ➜ <em>設定</em> 直接到達。「バックアップ」セクション ➜ <em>BackupScreen</em>（v1.9）➜ <b>ZIP 書き出し</b>を Free で実行。「家族 iPad と機種変更時のデータ移行も自分でできる」と納得。</div></div>
+    </div>
+  </div>
+
+  <!-- Sim 3: 中村 大輔 -->
+  <div class="sim">
+    <div class="sim-head">
+      <div class="avatar">大</div>
+      <div>
+        <div class="who-name">中村 大輔（48・本気の素人）</div>
+        <div class="scenario">シナリオ：来週、3 株まとめて植替え予定を立てる → 作業履歴をふりかえる</div>
+      </div>
+    </div>
+    <div class="sim-steps">
+      <div class="row"><div class="num">01</div><div class="step ok">Home ➜ <em>「複数選択」</em> ➜ 3 株選択。</div></div>
+      <div class="row"><div class="num">02</div><div class="step ok">下部ツールバーの <em>「予定追加」</em> をタップ。</div></div>
+      <div class="row"><div class="num">03</div><div class="step ok">作業ピッカー Sheet ➜ 「植替え」。</div></div>
+      <div class="row"><div class="num">04</div><div class="step ok">日付シート ➜ 来週の日付を選び、通知 ON ➜ 「3 件にまとめて予定追加」。</div></div>
+      <div class="row"><div class="num">05</div><div class="step ok">予定が追加され、選択モード解除。<b>合計 5 タップで完了</b>。</div></div>
+      <div class="row"><div class="num">06</div><div class="step ok"><b>v1.7 確認</b>：TabBar の <em>「ふりかえり」</em>（v1.7 で「記録」→改名）をタップ ➜ <b>CareHub</b>。3 カードから <em>水やり履歴ヒートマップ</em> を選び、過去 90 日の水やり頻度を確認。<b>「ふりかえる」という意図が画面ラベルと一致</b>。</div></div>
+      <div class="row"><div class="num">07</div><div class="step ok">CareHub に戻り <em>針金がけ一覧</em> を確認 ➜ 外し時期が近い 2 株を発見。詳細画面へジャンプして個別記録。</div></div>
+    </div>
+  </div>
+
+  <!-- Sim 4: 松本 浩 -->
+  <div class="sim">
+    <div class="sim-head">
+      <div class="avatar">浩</div>
+      <div>
+        <div class="who-name">松本 浩（35・SNS派）</div>
+        <div class="scenario">シナリオ：黒松の鉢替えを 5 枚の写真で記録 → PDF 個別レポートを作成</div>
+      </div>
+    </div>
+    <div class="sim-steps">
+      <div class="row"><div class="num">01</div><div class="step ok">Home から黒松カードをタップ ➜ 詳細画面（履歴タブ）。</div></div>
+      <div class="row"><div class="num">02</div><div class="step ok"><b>v1.5 改善</b>：右下の <em>「＋作業を記録」FAB</em> をタップ ➜ <em>作業種別 Sheet</em> ➜ 「植替え」を選択。<b>履歴を見ながら 1 タップで記録開始</b>。</div></div>
+      <div class="row"><div class="num">03</div><div class="step ok">確認 Sheet で写真 5 枚追加（v1.1 で 3 枚制限撤廃、横スクロール対応）。日付・量・メモ「2026 春」を入れて保存。</div></div>
+      <div class="row"><div class="num">04</div><div class="step ok">履歴に追加され、サムネ 88px で全 5 枚見える。</div></div>
+      <div class="row"><div class="num">05</div><div class="step ok"><b>v1.10〜v1.11 確認</b>：「・・・」➜ <em>PDFで書き出し</em> ➜ Pro ロックモーダル ➜ Pro 加入後、<em>PDF 個別レポート</em> 生成。<b>銘（任意）・入手日・入手元・樹齢推定・樹高・鉢サイズ</b> の 6 行（ID・タグ・置き場所は不掲載）。SNS 投稿用の素材として使える。</div></div>
+    </div>
+  </div>
+
+  <!-- Sim 5: 高橋 茂 -->
+  <div class="sim">
+    <div class="sim-head">
+      <div class="avatar">茂</div>
+      <div>
+        <div class="who-name">高橋 茂（71・盆栽園主）</div>
+        <div class="scenario">シナリオ：150 株から特定の樹を検索 ➜ 編集 ➜ 保有資産一覧 PDF 出力</div>
+      </div>
+    </div>
+    <div class="sim-steps">
+      <div class="row"><div class="num">01</div><div class="step ok"><b>v1.10 改善（D9 解消）</b>：Home ヘッダの <em>検索アイコン</em> をタップ ➜ <b>盆栽検索画面に直接ジャンプ</b>（旧：Home → ふりかえり → CareHub → 検索 の 3 タップが <b>1 タップ</b>に短縮）。</div></div>
+      <div class="row"><div class="num">02</div><div class="step ok">「五葉松 No.42」を入力 ➜ 結果から該当の株を選び、詳細画面へ。</div></div>
+      <div class="row"><div class="num">03</div><div class="step ok"><b>v1.5 改善</b>：基本情報の編集。<em>「・・・」メニュー ➜ 基本情報を編集</em> のショートカット ➜ <em>基本情報タブ</em>へ直接ジャンプ。<b>D2 解消</b>。</div></div>
+      <div class="row"><div class="num">04</div><div class="step ok">基本情報タブで樹高・鉢サイズを修正 ➜ 保存。タップ領域は 44dp 化済み。150 株運用でも誤タップなし。</div></div>
+      <div class="row"><div class="num">05</div><div class="step ok"><b>v1.10 改善（D10 解消）</b>：詳細から戻り、Home ヘッダの <em>設定アイコン</em> をタップ ➜ <b>設定画面に直接ジャンプ</b>。「書き出し」セクション ➜ Export Hub ➜ <em>PDF 一覧レポート</em>（v1.11 構成：表紙 + 一覧 + 統計、4 列グリッドは入手 / 飼育 / 樹齢 / 樹高）を Pro で生成。<b>「150 株の保有資産台帳」として年次棚卸しに使える</b>。</div></div>
+      <div class="row"><div class="num">06</div><div class="step ok"><b>v1.5 確認</b>：「・・・」メニュー上の <em>「PDFで書き出し」</em> に <b>錠前アイコン + PRO バッジ</b> が併記されており、Free 利用と気付ける。タップで <em>Pro ロックモーダル</em>。<b>D4 解消</b>。</div></div>
+    </div>
+  </div>
+
+  <!-- Sim 6: Linda -->
+  <div class="sim">
+    <div class="sim-head">
+      <div class="avatar">L</div>
+      <div>
+        <div class="who-name">Linda（48・米国 NY）</div>
+        <div class="scenario">シナリオ：英語で操作、リストにない樹種 "Maple" を新規追加 → 友人譲渡用 PDF</div>
+      </div>
+    </div>
+    <div class="sim-steps">
+      <div class="row"><div class="num">01</div><div class="step ok">Onboarding ➜ English 選択 ➜ ATT「Don't Allow」➜ UMP は米国非該当でスキップ ➜ Notif「Later」➜ Home Empty。</div></div>
+      <div class="row"><div class="num">02</div><div class="step ok">"Add your first bonsai" ➜ 新規登録 ➜ 樹種ピッカーを開く。</div></div>
+      <div class="row"><div class="num">03</div><div class="step ok">リストに「Maple」が無い ➜ <b>画面下に sticky の「＋ Custom Input」</b>（v1.4 で常設）➜ "Maple" 入力。</div></div>
+      <div class="row"><div class="num">04</div><div class="step ok">同名なし（リスト未収載）➜ 即追加。重複時は <b>「Already exists. Create anyway?」モーダル</b> で「Use existing / Create new」を選択。</div></div>
+      <div class="row"><div class="num">05</div><div class="step ok"><b>v1.10〜v1.11 確認</b>：友人譲渡時、<em>「・・・」➜ PDFで書き出し</em>（Pro）で <em>個別レポート</em>。「銘（任意）」を空欄で省略しても、入手日・樹齢・樹高で <b>譲渡書類として成立</b>。Linda が GDPR 整合の <em>BackupScreen</em>（ZIP・Free）で全データ書き出しもできる安心感。</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ ⑦ 動線レビュー所見 ════════════════ -->
+<section class="findings-wrap" id="findings">
+  <h2>⑦ 動線レビュー所見 ― v1.10 までに解決した課題</h2>
+  <div class="meta">v1.4 で発見した残留課題 5 件 + 維持判断 3 件を v1.5 で解消。<b>v1.10 で発見した動線課題 2 件（D9/D10）も同 PR で解消</b>。記録経路（FAB）・編集経路（メニューショートカット）・水やり予定の埋没（折りたたみ）・Pro ロックの伝達（錠前 + モーダル）・完全削除（長押し + 確認）の 5 課題に加え、<b>Home ヘッダ装飾アイコンの配線（検索／設定）</b>も解消。</div>
+  <table class="findings">
+    <thead>
+      <tr>
+        <th style="width:90px;">ID</th>
+        <th style="width:120px;">優先</th>
+        <th style="width:230px;">課題</th>
+        <th>影響ペルソナ ・ 提案</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="k">D1</td>
+        <td><span class="pill ok">RESOLVED v1.5</span></td>
+        <td><b>詳細画面に「＋作業を記録」FAB を常設</b><br/>履歴タブが空でも、その場で記録を開始できる。</td>
+        <td>解決：詳細画面の右下に <b>56dp 円形 FAB</b>（primary 背景・影付き）を常設。<code>BonsaiDetailScreen</code> から既存 <code>WorkPickerSheet</code> + <code>WorkLogConfirmSheet</code> を呼び出す配線。健太（最初の記録）・松本（単発記録）の詰まりを完全解消。</td>
+      </tr>
+      <tr>
+        <td class="k">D2</td>
+        <td><span class="pill ok">RESOLVED v1.5</span></td>
+        <td><b>「・・・」メニューに「基本情報を編集」ショートカット追加</b><br/>「共有」を削除して空けた枠に編集ジャンプを配置。</td>
+        <td>解決：<code>DetailMoreMenu</code> の項目を <b>基本情報を編集 / PDFで書き出し / アーカイブ</b> に再構成。タップで <code>tab='basic'</code> に切替。茂（150 株運用）の編集動線が明示化。</td>
+      </tr>
+      <tr>
+        <td class="k">D3</td>
+        <td><span class="pill ok">RESOLVED v1.5</span></td>
+        <td><b>連続水やり予定の折りたたみ表示</b><br/>毎日の水やり予定が剪定・植替えなどの単発予定を埋もれさせない。</td>
+        <td>解決：<code>TimelineTab</code> の <code>sortedItems</code> から連続する <code>type === 'water'</code> をグループ化し、<b>「4月26日 〜 5月5日 ・ 5日連続 ▸」</b> の 1 行に集約。タップで日別エントリに展開。</td>
+      </tr>
+      <tr>
+        <td class="k">D4</td>
+        <td><span class="pill ok">RESOLVED v1.5</span></td>
+        <td><b>PDF 項目に錠前アイコン + Pro ロックモーダル</b><br/>Free から Pro へのジャンプを「騙された感」なしで案内。</td>
+        <td>解決：<code>DetailMoreMenu</code> の PDF 項目に <b>錠前 SVG + PRO バッジ</b> を併記（Day One 流）。タップで <code>ProLockModal</code> をせり上がらせ、「PDFで書き出しは Pro 機能です」と明示。</td>
+      </tr>
+      <tr>
+        <td class="k">D5</td>
+        <td><span class="pill ok">維持</span></td>
+        <td>「複数選択」常設ボタン + 長押しの二系統<br/>iOS 標準パターン（Apple Photos / Mail / Reminders）と整合。</td>
+        <td>結論：<b>このまま維持</b>。発見性は v1.3 で十分担保済。</td>
+      </tr>
+      <tr>
+        <td class="k">D6</td>
+        <td><span class="pill ok">維持</span></td>
+        <td>「決定」ボタン廃止（v1.4） + 即確定<br/>樹種・樹形ピッカーで Apple HIG「Lists Choices」標準パターン採用。</td>
+        <td>結論：<b>このまま維持</b>。1 ステップ削減、誤操作なし。</td>
+      </tr>
+      <tr>
+        <td class="k">D7</td>
+        <td><span class="pill ok">維持</span></td>
+        <td>「＋ カスタム入力」常設ボタン + 重複確認モーダル（v1.4）<br/>樹種・樹形ピッカーの画面下 sticky に配置。</td>
+        <td>結論：<b>このまま維持</b>。Linda（海外）が迷わず使える。重複時の確認も「既存を選ぶ / 新しく作成」で誤作成を抑止。</td>
+      </tr>
+      <tr>
+        <td class="k">D8</td>
+        <td><span class="pill ok">RESOLVED v1.5</span></td>
+        <td><b>アーカイブ一覧で長押し → 完全削除 確認モーダル</b><br/>哲学整合（日常 UI に削除を出さない）を保ちつつ、最終手段としての完全削除動線を提供。</td>
+        <td>解決：<code>ArchiveListScreen</code> の各項目に <b>長押し（550ms）</b> イベントを追加。発火で <code>DeleteConfirmModal</code> がせり上がる。「履歴も写真もすべて失われ、復元できません」と明示し、赤い <b>「完全削除」</b> ボタンで <b>2 段階ガード</b>。</td>
+      </tr>
+      <tr>
+        <td class="k">D9</td>
+        <td><span class="pill ok">RESOLVED v1.10</span></td>
+        <td><b>Home ヘッダ「検索」アイコンの onClick 配線</b><br/>装飾だけのナビ UI を撲滅。150 株運用ペルソナの動線短縮。</td>
+        <td>解決：<code>home-screens.jsx:298</code> の <code>HomeHeader</code> に <code>onOpenSearch</code> props を追加し、<code>HomeScreen</code> 経由で <code>02-Home.html</code> の <code>handlers.openSearch</code> から <code>setStep('careSearch')</code> に配線。茂シナリオ：<b>Home → ふりかえり → CareHub → 検索</b>（3 タップ）が <b>Home → 検索</b>（1 タップ）に短縮。CareHub からの動線も維持して二重配線。</td>
+      </tr>
+      <tr>
+        <td class="k">D10</td>
+        <td><span class="pill ok">RESOLVED v1.10</span></td>
+        <td><b>Home ヘッダ「設定」アイコンの onClick 配線</b><br/>TabBar 設定との重複ナビを「機能」に変える。</td>
+        <td>解決：<code>home-screens.jsx:301</code> の <code>HomeHeader</code> に <code>onOpenSettings</code> props を追加し、<code>HomeScreen</code> 経由で <code>02-Home.html</code> の <code>handlers.openSettings</code> から <code>setStep('settings')</code> に配線。みどり・茂のように設定画面に頻繁にアクセスするペルソナで動線が高速化。<b>装飾だけのアイコンを並べる</b>哲学逆走パターンを撲滅。</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<footer>
+  Last updated: 2026-05-09 ・ Version: <b>v1.7 final</b> ・ 全 42 画面（実ユニーク）/ 6 ペルソナ動線検証済 ・ 物理 HTML 4 ファイル（v1.6 で 03-Care.html を 02-Home.html に統合・物理削除）・ 旧 v0.1（35 画面）から累計 +7 画面（v1.3 ATT/UMP/選択/タグ/メニュー、v1.4 一括予定 2、v1.5 FAB 記録/Pro ロック/完全削除 3、v1.6 Care 専用 4 統合、v1.7 ふりかえり Hub 統合、v1.8 CSV Preview 削除、v1.9 BackupScreen 独立化、v1.10 Home ヘッダ検索/設定配線）
+  <br/>
+  関連：<a href="docs/principles.md">設計原則 v1.10</a> ・ <a href="docs/display-schema.md">表示スキーマ v1.3</a> ・ <a href="wireframes-analysis.html">v1.6 監査アーカイブ</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      fontFamily: '-apple-system, "Hiragino Sans", "Yu Gothic", sans-serif',
+      fontSize: '14px',
+      primaryColor: '#FFFFFF',
+      primaryTextColor: '#1F1B16',
+      primaryBorderColor: '#1F1B16',
+      lineColor: '#6B6258',
+      mainBkg: '#FFFFFF',
+      edgeLabelBackground: '#FAF7F2',
+    },
+    flowchart: { curve: 'basis', padding: 18, nodeSpacing: 40, rankSpacing: 56 },
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BonsaiLog — Onboarding Wireframes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #EDE6D3;
+    color: var(--text-primary);
+    font-family: var(--font-body-ja);
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; }
+  button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="screens.jsx"></script>
+<script type="text/babel">
+const {
+  IOSStatusBar,
+  SplashScreen, WelcomeScreen, LanguagePickerScreen,
+  ATTScreen, UMPScreen,
+  NotificationScreen, HomeStubScreen,
+} = window;
+
+// iPhone 15 Pro: 393 × 852 pt inner. We use 393 wide device with matching proportions.
+const DEVICE_W = 393;
+const DEVICE_H = 852;
+
+// v1.3：ATT / UMP を必須経路に統合（19 言語ターゲット運用 / EEA Limited Ads 回避）
+// ユーザー負担最小化のため、各画面の最下部に「あとで決める」を併設。
+// UMP は地域判定で EU/UK/CH のみ表示される画面（実機ではスキップ可、ワイヤーでは可視化）。
+const FLOW = [
+  { key: 'splash',  label: '01 Splash' },
+  { key: 'welcome', label: '02 Welcome' },
+  { key: 'lang',    label: '03 Language Picker' },
+  { key: 'att',     label: '04 ATT 説明（追跡について）' },
+  { key: 'ump',     label: '05 UMP 同意（EU/UK/CH のみ）' },
+  { key: 'notif',   label: '06 Notification' },
+];
+
+function PhoneShell({ label, children, active }) {
+  return (
+    <div data-screen-label={label} style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      gap: 16, flexShrink: 0,
+    }}>
+      <div style={{
+        fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)',
+        letterSpacing: '0.12em', textTransform: 'uppercase',
+      }}>{label}</div>
+      <div style={{
+        width: DEVICE_W + 20, height: DEVICE_H + 20,
+        borderRadius: 56, padding: 10,
+        background: '#111',
+        boxShadow: active
+          ? '0 30px 60px rgba(0,0,0,0.22), 0 0 0 2px rgba(31,58,46,0.4)'
+          : '0 20px 40px rgba(0,0,0,0.12)',
+      }}>
+        <div style={{
+          position: 'relative',
+          width: DEVICE_W, height: DEVICE_H,
+          borderRadius: 46, overflow: 'hidden',
+          background: 'var(--bg-primary)',
+        }}>
+          {/* status bar (absolute, top 59 safe area) */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 50 }}>
+            <IOSStatusBar dark={false} />
+          </div>
+          {/* dynamic island */}
+          <div style={{
+            position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)',
+            width: 120, height: 35, borderRadius: 22, background: '#000', zIndex: 60,
+          }} />
+          {/* home indicator */}
+          <div style={{
+            position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
+            width: 134, height: 5, borderRadius: 100,
+            background: 'rgba(0,0,0,0.25)', zIndex: 60, pointerEvents: 'none',
+          }} />
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Overview() {
+  const [step, setStep] = React.useState('splash');
+
+  // Splash auto-advance for the interactive prototype
+  React.useEffect(() => {
+    if (step === 'splash') {
+      const t = setTimeout(() => setStep('welcome'), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [step]);
+
+  // Prototype flow phone
+  const proto = (() => {
+    switch (step) {
+      case 'splash':  return <SplashScreen />;
+      case 'welcome': return <WelcomeScreen onStart={() => setStep('lang')} />;
+      case 'lang':    return <LanguagePickerScreen onBack={() => setStep('welcome')} onNext={() => setStep('att')} />;
+      case 'att':     return <ATTScreen onBack={() => setStep('lang')} onNext={() => setStep('ump')} onLater={() => setStep('ump')} />;
+      case 'ump':     return <UMPScreen onBack={() => setStep('att')} onAgree={() => setStep('notif')} onNonPersonalized={() => setStep('notif')} onManage={() => setStep('notif')} />;
+      case 'notif':   return <NotificationScreen onBack={() => setStep('ump')} onEnable={() => setStep('home')} onLater={() => setStep('home')} />;
+      case 'home':    return <HomeStubScreen onRestart={() => setStep('splash')} />;
+      default:        return null;
+    }
+  })();
+
+  // Static previews of each screen (no interactions propagate)
+  const staticScreen = (key) => {
+    const noop = () => {};
+    switch (key) {
+      case 'splash':  return <SplashScreen />;
+      case 'welcome': return <WelcomeScreen onStart={noop} />;
+      case 'lang':    return <LanguagePickerScreen onBack={noop} onNext={noop} />;
+      case 'att':     return <ATTScreen onBack={noop} onNext={noop} onLater={noop} />;
+      case 'ump':     return <UMPScreen onBack={noop} onAgree={noop} onNonPersonalized={noop} onManage={noop} />;
+      case 'notif':   return <NotificationScreen onBack={noop} onEnable={noop} onLater={noop} />;
+    }
+  };
+
+  return (
+    <div style={{ padding: '48px 32px 64px' }}>
+      {/* Masthead */}
+      <div style={{
+        maxWidth: 1400, margin: '0 auto 48px',
+        display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'end',
+        paddingBottom: 24, borderBottom: '1px solid var(--border)',
+      }}>
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: 11,
+            color: 'var(--text-muted)', letterSpacing: '0.14em',
+            textTransform: 'uppercase', marginBottom: 8,
+          }}>BonsaiLog / Onboarding / v0.1</div>
+          <h1 style={{
+            margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500,
+            fontSize: 40, lineHeight: '52px', color: 'var(--text-primary)',
+            letterSpacing: '0.02em',
+          }}>オンボーディング 6画面</h1>
+          <div style={{
+            marginTop: 6,
+            fontFamily: 'var(--font-display-latin)', fontStyle: 'italic',
+            fontSize: 18, color: 'var(--text-secondary)',
+            letterSpacing: '0.02em',
+          }}>Onboarding Flow — Wireframes</div>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)',
+          lineHeight: '20px', textAlign: 'right',
+        }}>
+          <div><strong style={{ color: 'var(--text-primary)', fontWeight: 500 }}>iPhone 15 Pro</strong> · 393×852 pt</div>
+          <div>SA top 59 / bottom 34</div>
+          <div>Noto Serif JP + Noto Sans JP</div>
+        </div>
+      </div>
+
+      {/* Section 1: Interactive prototype */}
+      <div style={{ maxWidth: 1400, margin: '0 auto 64px' }}>
+        <div style={{
+          display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 8,
+        }}>
+          <span style={{
+            fontFamily: 'var(--font-display-latin)', fontSize: 20,
+            color: 'var(--primary)', fontWeight: 500,
+          }}>01</span>
+          <h2 style={{
+            margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500,
+            fontSize: 24, color: 'var(--text-primary)', letterSpacing: '0.02em',
+          }}>インタラクティブプロトタイプ</h2>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-body-ja)', fontSize: 14, color: 'var(--text-secondary)',
+          marginBottom: 32, maxWidth: 640, lineHeight: '22px',
+        }}>
+          左の端末上でタップして画面遷移を確認できます。Splashは自動で1.5秒後にWelcomeへ遷移。
+          右のステップマップ上の画面名をタップしても直接ジャンプできます。
+        </div>
+
+        <div style={{
+          display: 'grid', gridTemplateColumns: `${DEVICE_W + 40}px 1fr`,
+          gap: 48, alignItems: 'start',
+        }}>
+          <PhoneShell label={FLOW.find(f => f.key === step)?.label || '05 Home (stub)'} active>
+            {proto}
+          </PhoneShell>
+
+          <div style={{
+            paddingTop: 32,
+          }}>
+            <div style={{
+              fontFamily: 'var(--font-mono)', fontSize: 11,
+              color: 'var(--text-muted)', letterSpacing: '0.12em',
+              textTransform: 'uppercase', marginBottom: 20,
+            }}>Flow map</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[...FLOW, { key: 'home', label: '05 Home (stub)' }].map((f, i, arr) => {
+                const active = f.key === step;
+                return (
+                  <React.Fragment key={f.key}>
+                    <button
+                      onClick={() => setStep(f.key)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 16,
+                        padding: '14px 16px', minHeight: 48,
+                        background: active ? 'var(--bg-surface)' : 'transparent',
+                        border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
+                        borderRadius: 12, cursor: 'pointer',
+                        textAlign: 'left', width: '100%',
+                        transition: 'background 100ms ease-out',
+                      }}
+                    >
+                      <div style={{
+                        width: 28, height: 28, borderRadius: 8,
+                        display: 'grid', placeItems: 'center',
+                        background: active ? 'var(--primary)' : 'transparent',
+                        border: `1px solid ${active ? 'var(--primary)' : 'var(--border-strong)'}`,
+                        fontFamily: 'var(--font-display-latin)', fontSize: 13, fontWeight: 500,
+                        color: active ? '#F7F3E8' : 'var(--text-secondary)',
+                      }}>{String(i + 1).padStart(2, '0')}</div>
+                      <div style={{
+                        fontFamily: 'var(--font-body-ja)', fontSize: 15,
+                        color: 'var(--text-primary)', fontWeight: active ? 500 : 400,
+                      }}>{f.label.replace(/^\d+\s/, '')}</div>
+                      {active && (
+                        <div style={{
+                          marginLeft: 'auto',
+                          fontFamily: 'var(--font-mono)', fontSize: 10,
+                          color: 'var(--primary)', letterSpacing: '0.12em',
+                          textTransform: 'uppercase',
+                        }}>current</div>
+                      )}
+                    </button>
+                    {i < arr.length - 1 && (
+                      <div style={{
+                        width: 1, height: 12, marginLeft: 31,
+                        background: 'var(--border)',
+                      }} />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            <div style={{
+              marginTop: 32,
+              padding: 20, borderRadius: 12,
+              border: '1px solid var(--border)',
+              background: 'var(--bg-surface)',
+            }}>
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: 11,
+                color: 'var(--text-muted)', letterSpacing: '0.12em',
+                textTransform: 'uppercase', marginBottom: 12,
+              }}>Notes</div>
+              <ul style={{
+                margin: 0, paddingLeft: 18,
+                fontFamily: 'var(--font-body-ja)', fontSize: 13, lineHeight: '22px',
+                color: 'var(--text-secondary)',
+              }}>
+                <li>片手親指で届く下1/3にCTAを固定配置</li>
+                <li>全CTA高さ 56dp、タップ領域最小 48dp</li>
+                <li>ATT 説明 → システムダイアログの順で 19 言語ターゲット運用</li>
+                <li>UMP は EU/UK/CH のみ表示（地域判定で自動スキップ）</li>
+                <li>各画面に「あとで決める」を併設 ＝ ユーザー負担最小化</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 2: Static 6-up */}
+      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+        <div style={{
+          display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 8,
+        }}>
+          <span style={{
+            fontFamily: 'var(--font-display-latin)', fontSize: 20,
+            color: 'var(--primary)', fontWeight: 500,
+          }}>02</span>
+          <h2 style={{
+            margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500,
+            fontSize: 24, color: 'var(--text-primary)', letterSpacing: '0.02em',
+          }}>全画面一覧</h2>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-body-ja)', fontSize: 14, color: 'var(--text-secondary)',
+          marginBottom: 40, maxWidth: 640, lineHeight: '22px',
+        }}>
+          6画面を横並びで比較。それぞれは静的プレビュー（タップ無効）。
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(3, ${DEVICE_W + 40}px)`,
+          gap: '64px 40px',
+          justifyContent: 'start',
+          overflowX: 'auto',
+          paddingBottom: 16,
+        }}>
+          {FLOW.map(f => (
+            <PhoneShell key={f.key} label={f.label}>
+              {staticScreen(f.key)}
+            </PhoneShell>
+          ))}
+        </div>
+      </div>
+
+      <div style={{
+        maxWidth: 1400, margin: '64px auto 0',
+        paddingTop: 24, borderTop: '1px solid var(--border)',
+        fontFamily: 'var(--font-mono)', fontSize: 11,
+        color: 'var(--text-muted)', letterSpacing: '0.08em',
+      }}>
+        DESIGN SYSTEM · tokens.css · P1 片手·手袋 / P2 記録 / P3 永く変わらない / P4 余白の美 / P5 屋外で読める
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Overview />);
+</script>
+</body>
+</html>
