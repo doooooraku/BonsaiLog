@@ -542,6 +542,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'PDFで書き出し',
   detailExportProTitle: 'Pro 限定機能',
   detailExportProDesc: 'PDF 書き出しは Pro プランの機能です。',
+  onboardingLanguageContinue: '選択して続ける',
 };
 
 export default ja;

@@ -544,6 +544,7 @@ const baseEn = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
+  onboardingLanguageContinue: 'Continue with this language',
 };
 
 export type TranslationKey = keyof typeof baseEn;

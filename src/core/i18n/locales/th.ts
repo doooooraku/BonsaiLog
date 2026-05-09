@@ -535,5 +535,6 @@ const th: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
+  onboardingLanguageContinue: 'Continue with this language',
 };
 export default th;
