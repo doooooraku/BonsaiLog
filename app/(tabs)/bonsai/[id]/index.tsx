@@ -69,8 +69,13 @@ export default function BonsaiDetailScreen() {
   const [photoGroups, setPhotoGroups] = useState<{ year: number; photos: PhotoRead[] }[]>([]);
   const [photoCount, setPhotoCount] = useState(0);
   const [events, setEvents] = useState<Event[]>([]);
-  // ADR-0020 v1.x-2: Hero + 3 Tabs (Claude Design `detail-screens.jsx DetailTabs` 整合)
-  const [activeTab, setActiveTab] = useState<'timeline' | 'history' | 'photos'>('timeline');
+  // ADR-0020 §Notes Amended (2026-05-09): Hero + 3 Tabs (作業履歴 / 予定タイムライン / 基本情報)
+  // mockup v1.0 detail-screens.jsx BonsaiDetailScreen の initialTab='history' 整合
+  // 旧 photos タブは廃止、写真機能は history タブに統合 (A6 で _HistoryPhotos 正式化予定)
+  // 旧 timeline タブは廃止、予定機能は新 timeline タブで A7 で実装予定 (本 PR は placeholder)
+  // 旧 timeline タブの「水やり概要 / 取得日 / 更新日 / アーカイブ」は basic タブに移動 (A5 で
+  // CreateBonsaiScreen embed に正式化予定)
+  const [activeTab, setActiveTab] = useState<'history' | 'timeline' | 'basic'>('history');
 
   // ADR-0020 Phase 4: 作業記録 BottomSheet (Claude Design WorkPickerSheet 整合)
   const workPickerRef = React.useRef<BottomSheet>(null);
@@ -304,16 +309,16 @@ export default function BonsaiDetailScreen() {
         styleLabel={item.style ? t(`bonsaiStyle_${item.style}` as TranslationKey) : null}
       />
 
-      {/* ADR-0020 v1.x-2: DetailTabs (Claude Design detail-screens.jsx 整合) */}
+      {/* ADR-0020 §Notes Amended (2026-05-09): DetailTabs 順序 = 作業履歴 / 予定 / 基本情報 (mockup v1.0 整合) */}
       <View style={styles.detailTabs}>
-        {(['timeline', 'history', 'photos'] as const).map((tab) => {
+        {(['history', 'timeline', 'basic'] as const).map((tab) => {
           const on = activeTab === tab;
           const labelKey =
-            tab === 'timeline'
-              ? 'detailTabTimeline'
-              : tab === 'history'
-                ? 'detailTabHistory'
-                : 'detailTabPhotos';
+            tab === 'history'
+              ? 'detailTabHistory'
+              : tab === 'timeline'
+                ? 'detailTabPlanTimeline'
+                : 'detailTabBasic';
           return (
             <Pressable
               key={tab}
@@ -338,8 +343,9 @@ export default function BonsaiDetailScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* タイムライン Tab: 水やり概要 + 取得日 + 更新日 + アーカイブ */}
-        {activeTab === 'timeline' && (
+        {/* basic Tab 第 1 部分: 水やり概要 + 取得日 (旧 timeline タブから移動、A5 で
+            CreateBonsaiScreen embed に正式化予定) */}
+        {activeTab === 'basic' && (
           <>
             <View style={styles.section}>
               <ThemedText type="subtitle">{t('wateringSectionTitle')}</ThemedText>
@@ -367,8 +373,9 @@ export default function BonsaiDetailScreen() {
           </>
         )}
 
-        {/* 写真 Tab: 写真追加 + 年次タイムライン */}
-        {activeTab === 'photos' && (
+        {/* history Tab 第 1 部分: 写真追加 + 年次タイムライン (旧 photos タブから移動、A6 で
+            _HistoryPhotos 形式に正式化予定) */}
+        {activeTab === 'history' && (
           <View style={styles.section}>
             <ThemedText type="subtitle">
               {t('bonsaiFieldPhotos')}
@@ -516,8 +523,8 @@ export default function BonsaiDetailScreen() {
           </View>
         )}
 
-        {/* タイムライン Tab 末尾に updatedAt + Archive */}
-        {activeTab === 'timeline' && (
+        {/* basic Tab 第 2 部分: 更新日 + アーカイブ (旧 timeline 末尾から移動) */}
+        {activeTab === 'basic' && (
           <>
             <View style={styles.section}>
               <ThemedText type="subtitle">{t('bonsaiFieldUpdatedAt')}</ThemedText>
@@ -533,6 +540,15 @@ export default function BonsaiDetailScreen() {
               <ThemedText style={styles.archiveText}>{t('bonsaiArchive')}</ThemedText>
             </Pressable>
           </>
+        )}
+
+        {/* timeline (予定) Tab placeholder (A7 で AddScheduleFlow 実装予定、mockup v1.0 整合) */}
+        {activeTab === 'timeline' && (
+          <View style={styles.section}>
+            <ThemedText style={styles.placeholderText}>
+              {t('detailPlanTimelinePlaceholder')}
+            </ThemedText>
+          </View>
         )}
       </ScrollView>
 
@@ -813,5 +829,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  placeholderText: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: TEXT_SECONDARY,
+    textAlign: 'center',
+    paddingVertical: 24,
   },
 });
