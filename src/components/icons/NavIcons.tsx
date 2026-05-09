@@ -142,6 +142,22 @@ export function CameraIcon({ size = 32, color = TEXT_PRIMARY }: IconProps) {
   );
 }
 
+/**
+ * 縦 3 dots (More メニュー)。Header メニューボタン 22px。
+ *
+ * mockup v1.0 detail-screens.jsx DetailHeader の onOpenMenu ボタン整合
+ * (盆栽詳細 ⋮ メニュー、Heroicons / Lucide MoreVertical 風)。
+ */
+export function MoreVerticalIcon({ size = 22, color = TEXT_PRIMARY }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={12} cy={5} r={1.5} fill={color} />
+      <Circle cx={12} cy={12} r={1.5} fill={color} />
+      <Circle cx={12} cy={19} r={1.5} fill={color} />
+    </Svg>
+  );
+}
+
 /** チェック (確定 / 完了)。FAB / Toast 18px、default color は washi。 */
 export function CheckIcon({ size = 18, color = BG_PRIMARY }: IconProps) {
   return (

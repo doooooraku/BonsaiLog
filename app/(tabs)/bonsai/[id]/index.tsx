@@ -1,4 +1,4 @@
-import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import React, { useCallback, useState } from 'react';
@@ -6,7 +6,7 @@ import { Alert, FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { EventIcon } from '@/src/components/icons';
+import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
@@ -277,6 +277,25 @@ export default function BonsaiDetailScreen() {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: c.background }]}>
+      {/* mockup v1.0 detail-screens.jsx DetailHeader 整合: Header 右に ⋮ メニューボタン (A8 で DetailMoreMenu 実装、本 PR は placeholder) */}
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('detailMoreMenu')}
+              testID="e2e_detail_more_menu_button"
+              onPress={() => {
+                // A8 で DetailMoreMenu (PDF / Archive メニュー) を開く配線、本 PR は noop placeholder
+              }}
+              style={styles.headerMenuButton}
+              hitSlop={8}
+            >
+              <MoreVerticalIcon size={22} color={c.text} />
+            </Pressable>
+          ),
+        }}
+      />
       <BonsaiHero
         coverUri={coverUri}
         bonsaiName={item.name}
@@ -789,4 +808,10 @@ const styles = StyleSheet.create({
     color: TEXT_SECONDARY,
   },
   eventRowNote: { fontSize: 13, lineHeight: 20, color: TEXT_SECONDARY, marginTop: 4 },
+  headerMenuButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
