@@ -5,7 +5,13 @@ const expoConfig = require('eslint-config-expo/flat');
 module.exports = defineConfig([
   expoConfig,
   {
-    ignores: ['dist/*', 'scripts/store-screenshots/**', 'scripts/debug/**', 'scripts/ui-diff/**'],
+    ignores: [
+      'dist/*',
+      'scripts/store-screenshots/**',
+      'scripts/debug/**',
+      'scripts/ui-diff/**',
+      'docs/mockups/**', // OpenDesign 生成物 (凍結保管、BonsaiLog 規則の対象外)
+    ],
   },
   // app.config.ts uses dynamic env var access by design (required/optional helpers)
   {
