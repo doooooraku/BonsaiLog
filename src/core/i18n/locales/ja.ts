@@ -228,6 +228,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- F-09 検索 (Phase A、ADR-0008 改訂) ---
   settingsSearchSection: '検索',
   searchAction: '検索する',
+  selectModeAction: '複数選択',
+  selectModeCancel: 'キャンセル',
   searchDesc: '盆栽の名前と作業ログのメモを検索します。',
   searchPlaceholder: '検索...',
   searchEmpty: '見つかりませんでした。',

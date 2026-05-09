@@ -223,6 +223,8 @@ const baseEn = {
   // --- F-09 Search (Phase A: bonsai name LIKE + events FTS5, ADR-0008 改訂) ---
   settingsSearchSection: 'Search',
   searchAction: 'Search',
+  selectModeAction: 'Select multiple',
+  selectModeCancel: 'Cancel',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Search...',
   searchEmpty: 'No results found.',

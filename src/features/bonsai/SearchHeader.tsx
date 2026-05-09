@@ -2,6 +2,7 @@
  * 共通 Header (Claude Design `home-screens.jsx HomeHeader` 整合)。
  *
  * - 左: タイトル「盆栽手帳」(NotoSerifJP 22pt、または任意のタイトル)
+ * - 中: 「複数選択 / キャンセル」テキストボタン (onSelectPress 指定時のみ、mockup v1.0 02-Home.html 整合)
  * - 右: 検索ボタン (44×44) + 設定タブ遷移ボタン (Cog 44×44)
  * - 高さ 56、border-bottom 1px
  * - 各タブのヘッダーで利用 (盆栽 / 予定 / 探す / 設定)
@@ -9,6 +10,10 @@
  * Issue #255 (ADR-0021 PoC follow-up): Header 右上を Claude Design 整合の
  * Cog (設定タブ遷移) に置換。屋外モード切替は設定タブの Switch UI に集約 (移設済)。
  * OutdoorToggleButton (src/features/theme/) は他画面 (tags / export 系) で引き続き使用。
+ *
+ * 複数選択モード追加 (mockups v1.0 02-Home.html 整合): 盆栽タブで複数選択モードに
+ * 入るためのトグル。onPress callback で state 管理は呼び出し側 (bonsai/index.tsx)。
+ * 本 PR では state トグルのみ、BonsaiCard チェックボックス・一括タグ付与・一括作業 UI は別 Issue。
  */
 import { useRouter, type Href } from 'expo-router';
 import React from 'react';
@@ -29,6 +34,13 @@ type Props = {
   showSettings?: boolean;
   /** 検索ボタン押下時の遷移先 (default '/search') */
   searchHref?: Href;
+  /** 複数選択モードの状態 (default false、selectMode 表示色と aria-state 用) */
+  selectMode?: boolean;
+  /**
+   * 複数選択モードトグル callback (undefined ならボタン非表示)。
+   * mockups v1.0 02-Home.html の HomeHeader 「複数選択」テキストボタン整合。
+   */
+  onSelectPress?: () => void;
   style?: ViewStyle;
   testIdSuffix?: string;
 };
@@ -38,6 +50,8 @@ export function SearchHeader({
   showSearch = true,
   showSettings = true,
   searchHref = '/search' as Href,
+  selectMode = false,
+  onSelectPress,
   style,
   testIdSuffix = 'header',
 }: Props) {
@@ -69,6 +83,21 @@ export function SearchHeader({
         {title}
       </ThemedText>
       <View style={styles.actions}>
+        {onSelectPress && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ selected: selectMode }}
+            accessibilityLabel={selectMode ? t('selectModeCancel') : t('selectModeAction')}
+            testID={`e2e_${testIdSuffix}_select_toggle`}
+            style={styles.selectBtn}
+            hitSlop={8}
+            onPress={onSelectPress}
+          >
+            <ThemedText style={[styles.selectText, { color: c.text }]} numberOfLines={1}>
+              {selectMode ? t('selectModeCancel') : t('selectModeAction')}
+            </ThemedText>
+          </Pressable>
+        )}
         {showSearch && (
           <Pressable
             accessibilityRole="button"
@@ -125,4 +154,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 22,
   },
+  selectBtn: {
+    paddingHorizontal: 12,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectText: { fontSize: 14, letterSpacing: 0.3 },
 });
