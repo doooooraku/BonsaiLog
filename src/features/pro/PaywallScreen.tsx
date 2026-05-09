@@ -172,10 +172,12 @@ export default function PaywallScreen() {
             }}
             testID="e2e_paywall_close"
             hitSlop={8}
+            style={styles.headerSide}
           >
             <ThemedText style={styles.closeText}>{'×'}</ThemedText>
           </Pressable>
-          <ThemedText style={styles.headerTitle}>{t('proTitle')}</ThemedText>
+          <ThemedText style={styles.headerTitle}>{t('paywallModalHeaderTitle')}</ThemedText>
+          <View style={styles.headerSide} />
         </View>
 
         {/* ADR-0020 v1.x-5: Claude Design Hero (NotoSerifJP 32pt、letterSpacing 0.5) */}
@@ -340,9 +342,12 @@ function PlanCard({ testID, title, badge, price, cta, busy, disabled, onPress }:
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG_PRIMARY },
   scroll: { padding: 16, gap: 16 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: 4 },
+  header: { flexDirection: 'row', alignItems: 'center', paddingTop: 4 },
+  headerSide: { width: 48, alignItems: 'flex-start', justifyContent: 'center' },
   closeText: { fontSize: 28, paddingHorizontal: 8, color: TEXT_PRIMARY },
   headerTitle: {
+    flex: 1,
+    textAlign: 'center',
     fontFamily: 'NotoSerifJP_500Medium',
     fontSize: 20,
     color: TEXT_PRIMARY,

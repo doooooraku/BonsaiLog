@@ -55,6 +55,7 @@ const id: Partial<Record<TranslationKey, string>> = {
 
   // --- Pro / Paywall ---
   proTitle: 'Upgrade ke Pro',
+  paywallModalHeaderTitle: 'BonsaiLog Pro',
   proPlanFreeTitle: 'Gratis',
   proPlanMonthlyTitle: 'Bulanan',
   proPlanYearlyTitle: 'Tahunan',

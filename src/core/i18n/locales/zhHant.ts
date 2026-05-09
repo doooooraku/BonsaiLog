@@ -55,6 +55,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
 
   // --- Pro / Paywall ---
   proTitle: '升級至 Pro',
+  paywallModalHeaderTitle: 'BonsaiLog Pro',
   proPlanFreeTitle: '免費',
   proPlanMonthlyTitle: '月付',
   proPlanYearlyTitle: '年付',

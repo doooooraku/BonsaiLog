@@ -55,6 +55,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
 
   // --- Pro / Paywall ---
   proTitle: 'Перейти на Pro',
+  paywallModalHeaderTitle: 'BonsaiLog Pro',
   proPlanFreeTitle: 'Бесплатно',
   proPlanMonthlyTitle: 'Ежемесячно',
   proPlanYearlyTitle: 'Ежегодно',
