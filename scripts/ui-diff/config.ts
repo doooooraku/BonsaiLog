@@ -60,6 +60,16 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §Notes §画面マップ row 14 / care-screens.jsx CalendarScreen / app/(tabs)/plan/index.tsx (Phase 5 整合実装済) / mockups v1.0 (PR #269、ADR-0021 Notes Amended で OpenDesign 出力を比較対象として参照)。前提: 盆栽タブ起動完了後 TabBar「予定」をタップして遷移、testID e2e_plan_screen で可視待ち。',
   },
+  'wiring-list': {
+    id: 'wiring-list',
+    description:
+      '針金がけ一覧 (装着中の wiring event 一覧 + 装着期間 + scheduled unwire 日数 + filter tab 3 件 (すべて / 未外し / 1 週間以内))',
+    appFlow: 'maestro/flows/ui-diff/wiring-list.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="11 ケア 針金がけ一覧"]',
+    notes:
+      'ADR-0020 §Notes §画面マップ row 15 / care-screens.jsx WiringListScreen / app/(tabs)/plan/wiring.tsx (Phase 5 v1.x 実装済) / mockups v1.0 (PR #269、ADR-0021 Notes Amended で OpenDesign 出力を比較対象として参照)。前提: 盆栽タブ → 予定タブ → 針金がけ一覧リンクで遷移、testID e2e_wiring_list_screen で可視待ち。',
+  },
   // PoC 安定後にユーザーと相談して順次追加 (ADR-0020 §Decision §3-§10):
   // 'find-tab':           care-screens.jsx SearchScreen
   // 'settings-tab':       monetization-screens.jsx Settings*

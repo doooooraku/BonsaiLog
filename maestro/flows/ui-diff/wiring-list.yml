@@ -1,0 +1,51 @@
+# UI diff: 針金がけ一覧画面のスクリーンショット取得用
+# ADR-0021 / ADR-0020 §Notes §画面マップ row 15 (針金がけ一覧 ⟷ care-screens.jsx WiringListScreen)
+# 対象実装: app/(tabs)/plan/wiring.tsx (testID e2e_wiring_list_screen)
+# 対象モックアップ: docs/mockups/v1.0/wireframes/02-Home.html [data-screen-label="11 ケア 針金がけ一覧"]
+#
+# 前提:
+#   - 別途 Metro bundler (pnpm dev) を WSL2 内で起動済み、`adb reverse tcp:8081 tcp:8081` で
+#     実機から WSL ポートに到達可能。
+#   - オンボ完了済 (起動直後に盆栽タブが表示される状態)。
+#   - 予定タブ内の「針金がけ一覧」リンク (testID e2e_plan_open_wiring) をタップして遷移。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: wiring-list'
+tags:
+  - ui-diff
+---
+# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
+- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+
+# 2. 起動完了 (盆栽タブの「盆栽手帳」ヘッダー) を待つ
+#    Metro 初回バンドルが 30-60 秒かかるため timeout を 60000ms に拡張。
+- extendedWaitUntil:
+    visible:
+      text: '盆栽手帳'
+    timeout: 60000
+    label: 'Metro バンドル + 起動完了 (盆栽タブ表示)'
+
+# 3. TabBar の「予定」タブをタップ
+- tapOn:
+    text: '予定'
+
+# 4. 予定タブの ThemedView (testID e2e_plan_screen) が表示されるまで待つ
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_plan_screen'
+    timeout: 30000
+    label: '予定タブ表示完了 (e2e_plan_screen 可視)'
+
+# 5. 「針金がけ一覧 ›」リンク (testID e2e_plan_open_wiring) をタップ
+- tapOn:
+    id: 'e2e_plan_open_wiring'
+
+# 6. 針金がけ一覧の ThemedView (testID e2e_wiring_list_screen) が表示されるまで待つ
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_wiring_list_screen'
+    timeout: 30000
+    label: '針金がけ一覧表示完了 (e2e_wiring_list_screen 可視)'
+
+# 7. リスト描画完了 (FlatList / ScrollView アニメーション終了) を待つ
+- waitForAnimationToEnd
