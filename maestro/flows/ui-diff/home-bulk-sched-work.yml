@@ -1,0 +1,41 @@
+# UI diff: 一括予定追加・作業選択 BottomSheet のスクリーンショット取得用
+# ADR-0020 §Notes §画面マップ row 5 (HomeScreen)、mockup v1.0 02-Home.html `01c 一括予定・作業選択`
+# 本 flow は scripts/ui-diff/capture-app.sh から呼ばれる。
+# 前提: テスト盆栽 1 件以上登録済 (盆栽カードがないと長押しできない)。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: home-bulk-sched-work'
+tags:
+  - ui-diff
+---
+# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
+- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+
+# 2. ヘッダー「盆栽手帳」が表示されるまで待つ (Metro 初回バンドル 60s 許容)
+- extendedWaitUntil:
+    visible:
+      text: '盆栽手帳'
+    timeout: 60000
+
+# 3. リスト / フィルタ描画完了を待つ
+- waitForAnimationToEnd
+
+# 4. 1 件目盆栽カードを長押し → selectMode 入り + 当該カード選択
+#    BonsaiCard.tsx の Pressable.onLongPress (500ms default) → HomeScreen の handleCardLongPress
+#    selectedIds = new Set([id])、selectMode = true
+- longPressOn:
+    id: 'e2e_bonsai_card_.*'
+
+- waitForAnimationToEnd
+
+# 5. SelectionToolbar の「予定追加」ボタンをタップ → bulkSchedStep='pickWork'
+- tapOn:
+    id: 'e2e_home_selection_toolbar_schedule'
+
+# 6. BulkWorkPickerSheet が表示されるまで待つ (snap '78%')
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_work_picker_sheet'
+    timeout: 5000
+
+- waitForAnimationToEnd
