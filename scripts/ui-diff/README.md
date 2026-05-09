@@ -1,7 +1,9 @@
 # scripts/ui-diff/ — UI 差分検出パイプライン
 
-実機 (Android) のアプリ画面と ClaudeDesign のお手本 HTML を並べて比較し、
+実機 (Android) のアプリ画面と mockups v1.0 (OpenDesign) のお手本 HTML を並べて比較し、
 Claude Code が差分を文章化できるようにする。
+ADR-0021 Notes Amended (PR #267) で OpenDesign 出力 = `docs/mockups/v1.0/wireframes/` を
+Source of Reference として参照する形に切替済。
 
 ADR: [ADR-0021](../../docs/adr/ADR-0021-ui-diff-pipeline.md)
 
@@ -13,7 +15,7 @@ ADR: [ADR-0021](../../docs/adr/ADR-0021-ui-diff-pipeline.md)
 - ADB: `/usr/local/bin/adb` (Windows ADB ラッパー)
 - Android 実機 USB 接続 + 認証済 (`adb devices` で `device` 表示)
 - ImageMagick `compare` (`/usr/bin/compare`)
-- ClaudeDesign 正本: `C:\Users\doooo\Downloads\BonsaiLog_template\` (WSL から `/mnt/c/...`)
+- mockups v1.0 (OpenDesign) 正本: `docs/mockups/v1.0/wireframes/` (PR #269 取り込み、凍結保管)
 
 ## 使い方
 
@@ -36,7 +38,7 @@ scripts/ui-diff/out/YYYYMMDD-HHMM/
     <screen>.png             # 実機スクショ (raw)
     <screen>-resized.png     # デザインサイズに合わせたもの
   design/
-    <screen>.png             # ClaudeDesign HTML を Playwright でレンダリング
+    <screen>.png             # mockups v1.0 (OpenDesign) HTML を Playwright でレンダリング
   diff/
     <screen>.png                  # ImageMagick compare の差分画像
     <screen>-side-by-side.png     # 設計 | 実機 | 差分 を並べた合成画像

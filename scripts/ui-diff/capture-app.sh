@@ -16,7 +16,7 @@ PREFLIGHT="$ROOT/scripts/ui-diff/preflight.mjs"
 
 # 0. 環境チェック (preflight)
 #    Node v22 / adb authorized / Expo Go 衝突 / Metro reachable / Playwright + chromium /
-#    ImageMagick / ClaudeDesign 正本 の 7 項目を一括検証する。
+#    ImageMagick / mockups v1.0 (OpenDesign) 正本 の 7 項目を一括検証する。
 #    詳細は scripts/ui-diff/preflight.mjs と docs/reference/tasks/lessons/wsl2-mobile.md を参照。
 if [ -f "$PREFLIGHT" ]; then
   if ! node "$PREFLIGHT"; then
