@@ -460,7 +460,8 @@ const styles = StyleSheet.create({
   scroll: { padding: 16, gap: 16 },
   title: { marginBottom: 8 },
   section: { gap: 12 },
-  sectionTitle: { fontSize: 14, opacity: 0.7, textTransform: 'uppercase' },
+  // mockup v1.0 monetization-screens.jsx SettingsScreen SectionHeader 整合 (C1 PR、mono 風 small caps)
+  sectionTitle: { fontSize: 11, opacity: 0.7, textTransform: 'uppercase', letterSpacing: 1.5 },
   entry: {
     padding: 16,
     borderRadius: 12,
