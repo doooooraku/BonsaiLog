@@ -40,8 +40,17 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §Notes §画面マップ / ADR-0018 (オンボ統合フロー、Welcome 文言採用) / screens.jsx WelcomeScreen / app/onboarding/welcome.tsx / mockups v1.0 (PR #269、ADR-0021 Notes Amended で OpenDesign 出力を比較対象として参照)。前提: アプリ onboarding.completed=false 状態 (新規インストール / 「チュートリアルを再表示」reset 済)。',
   },
+  'bonsai-detail': {
+    id: 'bonsai-detail',
+    description:
+      '盆栽詳細 (Hero 280h photo + gradient + name overlay + DetailHeader + 3 Tabs: 作業履歴 / 予定タイムライン / 基本情報)',
+    appFlow: 'maestro/flows/ui-diff/bonsai-detail.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="05 詳細 作業履歴（初期タブ）"]',
+    notes:
+      'ADR-0020 §Notes Amended (2026-05-09、写真タブ廃止 + basic タブ追加) / detail-screens.jsx BonsaiDetailScreen / app/(tabs)/bonsai/[id]/index.tsx / mockups v1.0 (PR #269)。前提: テスト盆栽 1 件以上登録済 (新規インストールでは盆栽カード無し → flow timeout)。Detail Tabs 名は A4 リファクタ完了後 (作業履歴 / 予定タイムライン / 基本情報) を可視待ちアンカーに使用。',
+  },
   // PoC 安定後にユーザーと相談して順次追加 (ADR-0020 §Decision §3-§10):
-  // 'bonsai-detail':      detail-screens.jsx Detail* (Hero 280h + 3 Tabs)
   // 'plan-tab':           care-screens.jsx CalendarScreen + WiringListScreen
   // 'find-tab':           care-screens.jsx SearchScreen
   // 'settings-tab':       monetization-screens.jsx Settings*

@@ -1,0 +1,45 @@
+---
+# UI diff: 盆栽詳細画面のスクリーンショット取得用
+# ADR-0021 / ADR-0020 §Notes Amended (2026-05-09、写真タブ廃止 + basic タブ追加) /
+# detail-screens.jsx BonsaiDetailScreen / app/(tabs)/bonsai/[id]/index.tsx
+#
+# 前提:
+#   - 別途 Metro bundler (pnpm dev) を起動済み、`adb reverse tcp:8081 tcp:8081`
+#   - テスト盆栽 1 件以上登録済 (新規インストール状態では盆栽カード無し → 最初の card tap が timeout)
+#   - A4 リファクタ完了後の Detail Tabs 名「作業履歴 / 予定タイムライン / 基本情報」を可視待ちアンカーに使用
+#
+# bonsai-tab.yml と同形式 (deep link → Welcome の代わりに「盆栽手帳」)
+# その後最初の盆栽カードを tap して Detail 画面に遷移。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: bonsai-detail'
+tags:
+  - ui-diff
+---
+# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
+- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+
+# 2. 盆栽タブの「盆栽手帳」ヘッダーが表示されるまで待つ
+- extendedWaitUntil:
+    visible:
+      text: '盆栽手帳'
+    timeout: 60000
+    label: 'Metro バンドル + 盆栽タブ表示完了 (初回 60s 許容)'
+
+- waitForAnimationToEnd
+
+# 3. 最初の盆栽カードを tap (テスト盆栽 1 件以上前提)
+#    BonsaiCard 領域の中央付近を座標で tap (testID 整備は v1.x、本 PoC は座標 tap)
+#    画面 50% x 30% 付近 = フィルタタブ直下の最初のカード位置
+- tapOn:
+    point: 50%,30%
+
+# 4. Detail 画面の Tabs (基本情報 / 作業履歴 / 予定タイムライン) のいずれかが表示されるまで待つ
+#    A4 リファクタ完了後の最終形タブ名「基本情報」を可視待ちアンカーに使用
+- extendedWaitUntil:
+    visible:
+      text: '基本情報'
+    timeout: 30000
+    label: 'Detail 画面遷移完了 (Tabs 表示)'
+
+- waitForAnimationToEnd
