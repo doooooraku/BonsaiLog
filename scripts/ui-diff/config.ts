@@ -83,16 +83,25 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
   'settings-tab': {
     id: 'settings-tab',
     description:
-      '設定タブ (TabBar「設定」遷移先、テーマ / Pro / 通知 / バックアップ / アーカイブ / 削除 / 法令 / バージョン の 8 セクション、PR #308 で部分整合済 → 完全整合に向けた基盤)',
+      '設定タブ (TabBar「設定」遷移先、テーマ / Pro / 通知 / バックアップ / アーカイブ / 削除 / 法令 / バージョン の 8 セクション、PR #308/#329 で部分整合済、本格 8 セクションは Issue #330)',
     appFlow: 'maestro/flows/ui-diff/settings-tab.yml',
     designHtml: '05-Monetization.html',
     designSelector: '[data-screen-label="02 設定"]',
     notes:
-      'ADR-0020 §Notes §画面マップ row 18 / monetization-screens.jsx SettingsScreen / app/(tabs)/settings/index.tsx (Phase 7 部分整合済 PR #308、本格 8 セクション分離は本 G5 で完遂目標) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「設定」をタップして遷移、testID e2e_settings_screen で可視待ち。データ依存なし。',
+      'ADR-0020 §Notes §画面マップ row 18 / monetization-screens.jsx SettingsScreen / app/(tabs)/settings/index.tsx (Phase 7 部分整合済 PR #308/#329、本格 8 セクション分離は Issue #330) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「設定」をタップして遷移、testID e2e_settings_screen で可視待ち。データ依存なし。',
+  },
+  paywall: {
+    id: 'paywall',
+    description:
+      'Paywall モーダル (Pro メリット 11 件比較表 + 月額/年額/Lifetime 3 プラン + 「ご購入履歴を復元」ボタン)',
+    appFlow: 'maestro/flows/ui-diff/paywall.yml',
+    designHtml: '05-Monetization.html',
+    designSelector: '[data-screen-label="01 Paywall Modal"]',
+    notes:
+      'ADR-0020 §Notes §画面マップ row 17 / monetization-screens.jsx PaywallScreen / src/features/pro/PaywallScreen.tsx + app/pro.tsx (薄ラッパー) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「設定」→「Proにアップグレード」をタップして遷移、testID e2e_paywall_screen で可視待ち。R-28 ADR-0009 課金ロジック (RevenueCat 月額/年額/Lifetime) 維持厳守、本 ui-diff は UI 整合のみ。',
   },
   // PoC 安定後にユーザーと相談して順次追加 (ADR-0020 §Decision §3-§10):
   // 'find-tab':           care-screens.jsx SearchScreen
-  // 'paywall':            monetization-screens.jsx PaywallScreen
   // 'work-log-confirm':   care-screens.jsx WorkLogConfirmSheet
 };
 
