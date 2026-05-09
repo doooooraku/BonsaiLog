@@ -530,6 +530,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   searchRecentTitle: '最近の検索',
   searchHistoryClear: '履歴を削除',
   outdoorModeToggleA11y: '屋外モードを切り替える',
+  onboardingWelcomeValue1: '19 言語、完全オフライン',
+  onboardingWelcomeValue2: '個人情報は取得しません',
+  onboardingWelcomeValue3: '次世代へ引き継げる台帳',
+  onboardingWelcomeNote: 'アカウント登録は不要です',
 };
 
 export default ja;
