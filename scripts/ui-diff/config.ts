@@ -80,9 +80,18 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §Notes §画面マップ row 13 / care-screens-v2.jsx HeatmapScreen / app/(tabs)/bonsai/[id]/watering.tsx (Phase 3 SS 222921 整合実装済) / mockups v1.0 (PR #269)。前提: 盆栽タブ → 盆栽カードタップ → 詳細画面 → 水やり履歴リンク (testID e2e_open_watering_history) で遷移、testID e2e_bonsai_watering_screen で可視待ち。テスト盆栽 1 件以上必要。',
   },
+  'settings-tab': {
+    id: 'settings-tab',
+    description:
+      '設定タブ (TabBar「設定」遷移先、テーマ / Pro / 通知 / バックアップ / アーカイブ / 削除 / 法令 / バージョン の 8 セクション、PR #308 で部分整合済 → 完全整合に向けた基盤)',
+    appFlow: 'maestro/flows/ui-diff/settings-tab.yml',
+    designHtml: '05-Monetization.html',
+    designSelector: '[data-screen-label="02 設定"]',
+    notes:
+      'ADR-0020 §Notes §画面マップ row 18 / monetization-screens.jsx SettingsScreen / app/(tabs)/settings/index.tsx (Phase 7 部分整合済 PR #308、本格 8 セクション分離は本 G5 で完遂目標) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「設定」をタップして遷移、testID e2e_settings_screen で可視待ち。データ依存なし。',
+  },
   // PoC 安定後にユーザーと相談して順次追加 (ADR-0020 §Decision §3-§10):
   // 'find-tab':           care-screens.jsx SearchScreen
-  // 'settings-tab':       monetization-screens.jsx Settings*
   // 'paywall':            monetization-screens.jsx PaywallScreen
   // 'work-log-confirm':   care-screens.jsx WorkLogConfirmSheet
 };

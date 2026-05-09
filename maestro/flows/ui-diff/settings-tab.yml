@@ -1,0 +1,39 @@
+# UI diff: 設定タブ画面のスクリーンショット取得用
+# ADR-0021 / ADR-0020 §Notes §画面マップ row 18 (設定タブ ⟷ monetization-screens.jsx SettingsScreen)
+# 対象実装: app/(tabs)/settings/index.tsx (testID e2e_settings_screen)
+# 対象モックアップ: docs/mockups/v1.0/wireframes/05-Monetization.html [data-screen-label="02 設定"]
+#
+# 前提:
+#   - 別途 Metro bundler (pnpm dev) を WSL2 内で起動済み、`adb reverse tcp:8081 tcp:8081` で
+#     実機から WSL ポートに到達可能。
+#   - オンボ完了済 (起動直後に盆栽タブが表示される状態)。
+#   - データ依存なし (Empty state でも settings tab は表示可能)。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: settings-tab'
+tags:
+  - ui-diff
+---
+# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
+- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+
+# 2. 起動完了 (盆栽タブの「盆栽手帳」ヘッダー) を待つ
+- extendedWaitUntil:
+    visible:
+      text: '盆栽手帳'
+    timeout: 60000
+    label: 'Metro バンドル + 起動完了 (盆栽タブ表示)'
+
+# 3. TabBar の「設定」タブをタップ
+- tapOn:
+    text: '設定'
+
+# 4. 設定タブの ThemedView (testID e2e_settings_screen) が表示されるまで待つ
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_settings_screen'
+    timeout: 30000
+    label: '設定タブ表示完了 (e2e_settings_screen 可視)'
+
+# 5. 全セクション描画完了を待つ
+- waitForAnimationToEnd
