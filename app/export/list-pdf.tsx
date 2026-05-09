@@ -25,7 +25,6 @@ import { BG_PRIMARY, BRAND_GREEN, DISABLED_BG, ON_BRAND } from '@/src/core/theme
 import { generateAndShareListPdf } from '@/src/features/export/pdfExport';
 import { isStorageSufficient } from '@/src/features/export/pdfReliability';
 import { useGoToPaywall } from '@/src/features/pro/useGoToPaywall';
-import { OutdoorToggleButton } from '@/src/features/theme/OutdoorToggleButton';
 import { useProStore } from '@/src/stores/proStore';
 
 export default function ExportListPdfScreen() {
@@ -118,7 +117,6 @@ export default function ExportListPdfScreen() {
 
   return (
     <ThemedView style={styles.container} testID="e2e_export_list_pdf_screen">
-      <OutdoorToggleButton testIdSuffix="export_list_pdf_outdoor_toggle" />
       <ScrollView contentContainerStyle={styles.scroll}>
         <ThemedText type="title" style={styles.title}>
           {t('exportListPdfTitle')}

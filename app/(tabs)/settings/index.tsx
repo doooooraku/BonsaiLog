@@ -39,8 +39,6 @@ export default function SettingsScreen() {
   const setEventOverloadEnabled = useSettingsStore((s) => s.setEventOverloadEnabled);
   const themeMode = useSettingsStore((s) => s.themeMode);
   const setThemeMode = useSettingsStore((s) => s.setThemeMode);
-  const outdoorMode = useSettingsStore((s) => s.outdoorMode);
-  const setOutdoorMode = useSettingsStore((s) => s.setOutdoorMode);
   // F-16 Phase B (Issue #30, ADR-0014): 通知設定 ON/OFF + 時刻表示
   const notifSummaryEnabled = useSettingsStore((s) => s.notificationDailySummaryEnabled);
   const setNotifSummaryEnabled = useSettingsStore((s) => s.setNotificationDailySummaryEnabled);
@@ -167,20 +165,7 @@ export default function SettingsScreen() {
               );
             })}
           </View>
-          {/* F-15 Phase B (Issue #32, ADR-0015): 屋外モード独立トグル (Phase C で本実装) */}
-          <View style={styles.toggleRow} testID="e2e_outdoor_mode_row">
-            <View style={styles.toggleLabelBox}>
-              <ThemedText type="defaultSemiBold">{t('settingsOutdoorMode')}</ThemedText>
-              <ThemedText style={styles.entryDesc}>{t('settingsOutdoorModeDesc')}</ThemedText>
-            </View>
-            <Switch
-              accessibilityRole="switch"
-              accessibilityLabel={t('settingsOutdoorMode')}
-              testID="e2e_outdoor_mode_toggle"
-              value={outdoorMode}
-              onValueChange={setOutdoorMode}
-            />
-          </View>
+          {/* ADR-0015 Notes Amended (2026-05-10、PR #312): 屋外モード削除、4 mode → 3 mode (Auto/Light/Dark) */}
         </View>
 
         {/* --- F-13 Phase 1b Pro / Paywall 導線 (Issue #20、ADR-0009) --- */}
