@@ -41,7 +41,7 @@ tags:
 
 # 5. 「Proにアップグレード」または「Pro にアップグレード」ボタンをタップ
 - tapOn:
-    text: 'アップグレード'
+    id: 'e2e_open_paywall'
 
 # 6. Paywall ScrollView (testID e2e_paywall_screen) が表示されるまで待つ
 - extendedWaitUntil:
