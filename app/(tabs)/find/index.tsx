@@ -135,7 +135,12 @@ export default function FindScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_find_screen"
     >
-      <SearchHeader title={t('tabFind')} testIdSuffix="find" showSearch={false} />
+      <SearchHeader
+        title={t('tabFind')}
+        testIdSuffix="find"
+        showSearch={false}
+        showSettings={false}
+      />
 
       <View style={styles.searchBox}>
         <TextInput
