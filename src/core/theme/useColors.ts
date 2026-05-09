@@ -8,7 +8,7 @@
  * - useThemeColor (1 トークン取得) と異なり、scheme 全体を一括で取得 (画面で
  *   複数色を使う場合に便利)
  * - resolveEffectiveScheme + useSettingsStore + useColorScheme を統合
- * - light / dark / outdoor (将来) すべての theme で動作
+ * - light / dark の 2 theme で動作 (ADR-0015 Notes Amended 2026-05-10、outdoor 削除済)
  */
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -32,8 +32,7 @@ export type ColorScheme = { [K in keyof typeof Colors.light]: string };
 export function useColors(): ColorScheme {
   const systemScheme = useColorScheme();
   const themeMode = useSettingsStore((s) => s.themeMode);
-  const outdoorMode = useSettingsStore((s) => s.outdoorMode);
   const normalized = systemScheme === 'light' || systemScheme === 'dark' ? systemScheme : null;
-  const scheme = resolveEffectiveScheme(themeMode, normalized, outdoorMode);
+  const scheme = resolveEffectiveScheme(themeMode, normalized);
   return Colors[scheme] as ColorScheme;
 }

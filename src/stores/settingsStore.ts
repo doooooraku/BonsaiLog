@@ -19,14 +19,7 @@ export type NotificationTimeString = string;
 type SettingsState = {
   themeMode: ThemeMode;
   setThemeMode: (mode: ThemeMode) => void;
-  /**
-   * F-15 Phase B (Issue #32, ADR-0015): outdoor mode 独立トグル。
-   * - true: 屋外モード ON (純白+純黒+緑単色、Phase C で本実装、本 PR は Light fallback)
-   * - false: themeMode を尊重 (system/light/dark)
-   * - デフォルト false
-   */
-  outdoorMode: boolean;
-  setOutdoorMode: (enabled: boolean) => void;
+  // ADR-0015 Notes Amended (2026-05-10、PR #312): outdoor mode 削除済 (E4 PR、本セッション)
   /**
    * F-05 気遣い型ポップアップを表示するかどうか (ADR-0011、Issue #25)。
    * - デフォルト ON
@@ -64,8 +57,6 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       themeMode: 'system',
       setThemeMode: (mode) => set({ themeMode: mode }),
-      outdoorMode: false,
-      setOutdoorMode: (enabled) => set({ outdoorMode: enabled }),
       eventOverloadEnabled: true,
       setEventOverloadEnabled: (enabled) => set({ eventOverloadEnabled: enabled }),
       notificationDailySummaryEnabled: false,

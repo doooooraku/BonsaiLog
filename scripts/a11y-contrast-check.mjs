@@ -48,9 +48,7 @@ const PAIRS = [
   { theme: 'dark', label: 'TEXT_PRIMARY × BG_SURFACE', fg: '#E8E4D6', bg: '#131826' },
   { theme: 'dark', label: 'TEXT_SECONDARY × BG_PRIMARY', fg: '#B0A897', bg: '#0A0E1A' },
   { theme: 'dark', label: 'BRAND_GREEN × BG_PRIMARY', fg: '#6B9B7F', bg: '#0A0E1A' },
-  // outdoor theme (WCAG AAA 7:1 目標)
-  { theme: 'outdoor', label: 'TEXT × BG (AAA)', fg: '#000000', bg: '#FFFFFF', aaa: true },
-  { theme: 'outdoor', label: 'PRIMARY × BG (AAA)', fg: '#000080', bg: '#FFFFFF', aaa: true },
+  // outdoor theme: ADR-0015 Notes Amended (2026-05-10、PR #312) で v1.0 不採用、削除済
 ];
 
 const AA = 4.5;
