@@ -205,27 +205,27 @@
 
 ### 画面マップ (Claude Design → 実装) — R-26 で必須化
 
-| #   | Claude Design ファイル                            | スクリーン                | 実装側ルート                                                   | 種別                       |
-| --- | ------------------------------------------------- | ------------------------- | -------------------------------------------------------------- | -------------------------- |
-| 1   | `screens.jsx SplashScreen`                        | 01 Splash                 | `app/_layout.tsx` 起動                                         | 改修                       |
-| 2   | `screens.jsx WelcomeScreen` (mockup v1.0)         | 02 Welcome                | `app/onboarding/welcome.tsx`                                   | 整合済 (PR #278 / PR #279) |
-| 3   | `screens.jsx LanguagePickerScreen`                | 03 Language               | `app/onboarding/language.tsx`                                  | 改修                       |
-| 4   | `screens.jsx NotificationScreen`                  | 04 Notification           | `app/onboarding/notification.tsx`                              | 改修                       |
-| 5   | `home-screens.jsx HomeScreen` (mockup v1.0)       | 01 HOME (盆栽一覧)        | `app/(tabs)/bonsai/index.tsx` (タブ名「盆栽」)                 | 整合済 (PR #271 / PR #272) |
-| 6   | `home-screens.jsx HomeEmptyScreen`                | 01 HOME EMPTY             | 同上 Empty 分岐                                                | 改修                       |
-| 7   | `detail-screens.jsx Detail*`                      | 02 DETAIL (Hero + 3 Tabs) | `app/(tabs)/bonsai/[id].tsx`                                   | 大改修                     |
-| 8   | `create-screens.jsx Create*`                      | 03 CREATE                 | `app/(tabs)/bonsai/new.tsx`                                    | 大改修                     |
-| 9   | `care-screens.jsx WorkPickerSheet`                | 04 WORK PICKER            | 新規 BottomSheet                                               | 新規                       |
-| 10  | `care-screens.jsx WorkLogConfirmSheet`            | 05 WORK LOG               | 新規 BottomSheet                                               | 新規                       |
-| 11  | `care-screens.jsx GuideModalScreen`               | 06 GUIDE 30日             | `app/onboarding/guide-30days.tsx`                              | 新規                       |
-| 12  | `care-screens.jsx WateringGraphScreen` (棒グラフ) | 07 WATERING (旧)          | **不採用** (ヒートマップ採用)                                  | ─                          |
-| 13  | `care-screens-v2.jsx HeatmapScreen` (SS 222921)   | 07 水やり履歴 HEATMAP     | `app/(tabs)/bonsai/[id]/watering.tsx`                          | 新規                       |
-| 14  | `care-screens.jsx CalendarScreen`                 | 08 CALENDAR (予定タブ)    | `app/(tabs)/plan/index.tsx`                                    | 新規                       |
-| 15  | `care-screens.jsx WiringListScreen`               | 09 針金がけ一覧           | `app/(tabs)/plan/wiring.tsx`                                   | 新規                       |
-| 16  | `care-screens.jsx SearchScreen`                   | 10 SEARCH (探すタブ)      | `app/(tabs)/find/index.tsx` (既存 `app/search.tsx` 廃止統合)   | 大改修                     |
-| 17  | `monetization-screens.jsx PaywallScreen`          | 11 PAYWALL                | `src/features/pro/PaywallScreen.tsx`                           | 大改修                     |
-| 18  | `monetization-screens.jsx Settings*`              | 12 SETTINGS (設定タブ)    | `app/(tabs)/settings/index.tsx` (既存 `app/settings.tsx` 移動) | 改修                       |
-| 19  | `export-screens.jsx Export*`                      | 13 EXPORT                 | `app/(tabs)/settings/export.tsx`                               | 改修                       |
+| #   | Claude Design ファイル                            | スクリーン                | 実装側ルート                                                   | 種別                                                    |
+| --- | ------------------------------------------------- | ------------------------- | -------------------------------------------------------------- | ------------------------------------------------------- |
+| 1   | `screens.jsx SplashScreen`                        | 01 Splash                 | `app/_layout.tsx` 起動                                         | 改修                                                    |
+| 2   | `screens.jsx WelcomeScreen` (mockup v1.0)         | 02 Welcome                | `app/onboarding/welcome.tsx`                                   | 整合済 (PR #278 / PR #279)                              |
+| 3   | `screens.jsx LanguagePickerScreen`                | 03 Language               | `app/onboarding/language.tsx`                                  | 改修                                                    |
+| 4   | `screens.jsx NotificationScreen`                  | 04 Notification           | `app/onboarding/notification.tsx`                              | 改修                                                    |
+| 5   | `home-screens.jsx HomeScreen` (mockup v1.0)       | 01 HOME (盆栽一覧)        | `app/(tabs)/bonsai/index.tsx` (タブ名「盆栽」)                 | 整合済 (PR #271 / PR #272)                              |
+| 6   | `home-screens.jsx HomeEmptyScreen`                | 01 HOME EMPTY             | 同上 Empty 分岐                                                | 改修                                                    |
+| 7   | `detail-screens.jsx Detail*` (mockup v1.0)        | 02 DETAIL (Hero + 3 Tabs) | `app/(tabs)/bonsai/[id]/index.tsx`                             | 整合済 (PR #290〜#301、本格実装は Issue #295/#296/#298) |
+| 8   | `create-screens.jsx Create*`                      | 03 CREATE                 | `app/(tabs)/bonsai/new.tsx`                                    | 大改修                                                  |
+| 9   | `care-screens.jsx WorkPickerSheet`                | 04 WORK PICKER            | 新規 BottomSheet                                               | 新規                                                    |
+| 10  | `care-screens.jsx WorkLogConfirmSheet`            | 05 WORK LOG               | 新規 BottomSheet                                               | 新規                                                    |
+| 11  | `care-screens.jsx GuideModalScreen`               | 06 GUIDE 30日             | `app/onboarding/guide-30days.tsx`                              | 新規                                                    |
+| 12  | `care-screens.jsx WateringGraphScreen` (棒グラフ) | 07 WATERING (旧)          | **不採用** (ヒートマップ採用)                                  | ─                                                       |
+| 13  | `care-screens-v2.jsx HeatmapScreen` (SS 222921)   | 07 水やり履歴 HEATMAP     | `app/(tabs)/bonsai/[id]/watering.tsx`                          | 新規                                                    |
+| 14  | `care-screens.jsx CalendarScreen`                 | 08 CALENDAR (予定タブ)    | `app/(tabs)/plan/index.tsx`                                    | 新規                                                    |
+| 15  | `care-screens.jsx WiringListScreen`               | 09 針金がけ一覧           | `app/(tabs)/plan/wiring.tsx`                                   | 新規                                                    |
+| 16  | `care-screens.jsx SearchScreen`                   | 10 SEARCH (探すタブ)      | `app/(tabs)/find/index.tsx` (既存 `app/search.tsx` 廃止統合)   | 大改修                                                  |
+| 17  | `monetization-screens.jsx PaywallScreen`          | 11 PAYWALL                | `src/features/pro/PaywallScreen.tsx`                           | 大改修                                                  |
+| 18  | `monetization-screens.jsx Settings*`              | 12 SETTINGS (設定タブ)    | `app/(tabs)/settings/index.tsx` (既存 `app/settings.tsx` 移動) | 改修                                                    |
+| 19  | `export-screens.jsx Export*`                      | 13 EXPORT                 | `app/(tabs)/settings/export.tsx`                               | 改修                                                    |
 
 ### 削除する機能 (Issue #29 close 解除)
 
