@@ -18,6 +18,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { BackupError, exportBackup } from '@/src/features/backup/backupService';
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
 
 export default function BackupExportScreen() {
   const { t } = useTranslation();
@@ -77,7 +78,7 @@ export default function BackupExportScreen() {
           disabled={exporting}
         >
           {exporting ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={ON_BRAND} />
           ) : (
             <ThemedText style={styles.primaryButtonText}>{t('backupExportAction')}</ThemedText>
           )}
@@ -100,13 +101,14 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 193, 7, 0.4)',
   },
   warningText: { fontSize: 13, lineHeight: 18 },
+  // mockup v1.0 整合 (C2 PR、R-25 drift 解消): hardcode #2E7D32 / #fff を tokens 経由に切替
   primaryButton: {
     marginTop: 8,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#2E7D32',
+    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
   },
-  primaryButtonText: { color: '#fff', fontSize: 17, fontWeight: '600' },
+  primaryButtonText: { color: ON_BRAND, fontSize: 17, fontWeight: '600' },
   disabledButton: { opacity: 0.6 },
 });
