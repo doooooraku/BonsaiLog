@@ -1,0 +1,53 @@
+# UI diff: 個別盆栽の水やり履歴ヒートマップ画面のスクリーンショット取得用
+# ADR-0021 / ADR-0020 §Notes §画面マップ row 13 (個別盆栽水やり ⟷ care-screens-v2.jsx HeatmapScreen)
+# 対象実装: app/(tabs)/bonsai/[id]/watering.tsx (testID e2e_bonsai_watering_screen)
+# 対象モックアップ: docs/mockups/v1.0/wireframes/02-Home.html [data-screen-label="09 ケア 水やり履歴ヒートマップ"]
+#
+# 前提:
+#   - 別途 Metro bundler (pnpm dev) を WSL2 内で起動済み、`adb reverse tcp:8081 tcp:8081` で
+#     実機から WSL ポートに到達可能。
+#   - オンボ完了済 + テスト盆栽 1 件以上登録済 (盆栽カードタップが必要)。
+#   - 盆栽詳細画面の「水やり履歴」リンク (testID e2e_open_watering_history) をタップして遷移。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: watering-heatmap'
+tags:
+  - ui-diff
+---
+# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
+- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+
+# 2. 起動完了 (盆栽タブの「盆栽手帳」ヘッダー) を待つ
+- extendedWaitUntil:
+    visible:
+      text: '盆栽手帳'
+    timeout: 60000
+    label: 'Metro バンドル + 起動完了 (盆栽タブ表示)'
+
+- waitForAnimationToEnd
+
+# 3. 最初の盆栽カードを tap (bonsai-detail.yml 同形式、座標 tap で安定化)
+#    画面 50% x 30% 付近 = フィルタタブ直下の最初のカード位置
+- tapOn:
+    point: 50%,30%
+
+# 4. 盆栽詳細画面の「水やり履歴」リンク (testID e2e_open_watering_history) が表示されるまで待つ
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_open_watering_history'
+    timeout: 30000
+    label: '盆栽詳細表示完了 (水やり履歴リンク可視)'
+
+# 5. 「水やり履歴」リンクをタップ
+- tapOn:
+    id: 'e2e_open_watering_history'
+
+# 6. 水やり履歴画面の ThemedView (testID e2e_bonsai_watering_screen) が表示されるまで待つ
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_watering_screen'
+    timeout: 30000
+    label: '水やり履歴ヒートマップ表示完了 (e2e_bonsai_watering_screen 可視)'
+
+# 7. ヒートマップ描画完了 (Skia / Animated 終了) を待つ
+- waitForAnimationToEnd

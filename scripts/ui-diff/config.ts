@@ -63,18 +63,27 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
   'wiring-list': {
     id: 'wiring-list',
     description:
-      '針金がけ一覧 (装着中の wiring event 一覧 + 装着期間 + scheduled unwire 日数 + filter tab 3 件 (すべて / 未外し / 1 週間以内))',
+      '針金がけ一覧 (装着中の wiring event 一覧 + 装着期間 + scheduled unwire 週数、PR #322-#324 で mockup v1.0 整合済)',
     appFlow: 'maestro/flows/ui-diff/wiring-list.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="11 ケア 針金がけ一覧"]',
     notes:
-      'ADR-0020 §Notes §画面マップ row 15 / care-screens.jsx WiringListScreen / app/(tabs)/plan/wiring.tsx (Phase 5 v1.x 実装済) / mockups v1.0 (PR #269、ADR-0021 Notes Amended で OpenDesign 出力を比較対象として参照)。前提: 盆栽タブ → 予定タブ → 針金がけ一覧リンクで遷移、testID e2e_wiring_list_screen で可視待ち。',
+      'ADR-0020 §Notes §画面マップ row 15 (整合済) / care-screens.jsx WiringListScreen / app/(tabs)/plan/wiring.tsx / mockups v1.0 (PR #269)。前提: 盆栽タブ → 予定タブ → 針金がけ一覧リンクで遷移、testID e2e_wiring_list_screen で可視待ち。',
+  },
+  'watering-heatmap': {
+    id: 'watering-heatmap',
+    description:
+      '個別盆栽の水やり履歴ヒートマップ (30/90/365 切替セグメント + ヒートマップ 4 段階濃淡 + 4 サマリー: 連続記録 / 過去 N 日記録日数 / 過去 N 日記録回数 / 2 回の日)',
+    appFlow: 'maestro/flows/ui-diff/watering-heatmap.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="09 ケア 水やり履歴ヒートマップ"]',
+    notes:
+      'ADR-0020 §Notes §画面マップ row 13 / care-screens-v2.jsx HeatmapScreen / app/(tabs)/bonsai/[id]/watering.tsx (Phase 3 SS 222921 整合実装済) / mockups v1.0 (PR #269)。前提: 盆栽タブ → 盆栽カードタップ → 詳細画面 → 水やり履歴リンク (testID e2e_open_watering_history) で遷移、testID e2e_bonsai_watering_screen で可視待ち。テスト盆栽 1 件以上必要。',
   },
   // PoC 安定後にユーザーと相談して順次追加 (ADR-0020 §Decision §3-§10):
   // 'find-tab':           care-screens.jsx SearchScreen
   // 'settings-tab':       monetization-screens.jsx Settings*
   // 'paywall':            monetization-screens.jsx PaywallScreen
-  // 'watering-heatmap':   care-screens-v2.jsx HeatmapScreen
   // 'work-log-confirm':   care-screens.jsx WorkLogConfirmSheet
 };
 
