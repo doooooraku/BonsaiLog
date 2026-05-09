@@ -6,6 +6,10 @@
  *   - paddingVertical 8 (旧 16dp 過剰余白を解消)
  *   - 「広告」ラベル削除 (Repolog 同等、AdMob 標準の "Test Ad" / 配信元バッジに任せる)
  *
+ * Issue #22 AC4-3 (F1 PR、本セッション 2026-05-10):
+ *   - 起動後 3 秒以上経過後に表示 (誤タップ防止 + Day1 Pro 誘導機会維持の両立、
+ *     functional_spec §19、シニアペルソナの初見びっくり減少)
+ *
  * - Pro 時は完全非表示 (useProStore.isPro で分岐、ADR-0010)
  * - Free + canRequestAds=true のときのみ表示
  * - initializeAds() は app/_layout.tsx で起動 hook 済 (PR #72)
@@ -24,6 +28,9 @@ import {
 } from '@/src/services/adService';
 import { useProStore } from '@/src/stores/proStore';
 
+/** Issue #22 AC4-3: 起動後 3 秒以上経過後に AdBanner を表示 (誤タップ防止)。 */
+const STARTUP_DELAY_MS = 3000;
+
 export function AdBanner() {
   const isWeb = Platform.OS === 'web';
   const isPro = useProStore((s) => s.isPro);
@@ -31,6 +38,15 @@ export function AdBanner() {
   const unitId = getBannerUnitId();
   const [ready, setReady] = React.useState(false);
   const [attAuthorized, setAttAuthorized] = React.useState<boolean | null>(null);
+  // Issue #22 AC4-3: 起動後 3 秒経過チェック (mount 時に setTimeout、delay 後に true)
+  const [delayElapsed, setDelayElapsed] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isWeb) return;
+    if (isPro) return;
+    const timer = setTimeout(() => setDelayElapsed(true), STARTUP_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [isWeb, isPro]);
 
   React.useEffect(() => {
     if (isWeb) return;
@@ -65,6 +81,8 @@ export function AdBanner() {
   if (isWeb) return null;
   if (!proInitialized) return null;
   if (!unitId) return null;
+  // Issue #22 AC4-3: 起動後 3 秒経過まで非表示 (誤タップ防止、シニア UX 向上)
+  if (!delayElapsed) return null;
 
   const mode = resolveAdServingMode({
     isPro,
