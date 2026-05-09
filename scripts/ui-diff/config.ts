@@ -50,8 +50,17 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §Notes Amended (2026-05-09、写真タブ廃止 + basic タブ追加) / detail-screens.jsx BonsaiDetailScreen / app/(tabs)/bonsai/[id]/index.tsx / mockups v1.0 (PR #269)。前提: テスト盆栽 1 件以上登録済 (新規インストールでは盆栽カード無し → flow timeout)。Detail Tabs 名は A4 リファクタ完了後 (作業履歴 / 予定タイムライン / 基本情報) を可視待ちアンカーに使用。',
   },
+  'plan-tab': {
+    id: 'plan-tab',
+    description:
+      '予定タブ (TabBar「予定」遷移先、SearchHeader + 月選択 + DOW header + 5〜6 週カレンダーグリッド + 当日/選択日リスト + 針金がけ一覧リンク)',
+    appFlow: 'maestro/flows/ui-diff/plan-tab.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="10 ケア 作業予定カレンダー"]',
+    notes:
+      'ADR-0020 §Notes §画面マップ row 14 / care-screens.jsx CalendarScreen / app/(tabs)/plan/index.tsx (Phase 5 整合実装済) / mockups v1.0 (PR #269、ADR-0021 Notes Amended で OpenDesign 出力を比較対象として参照)。前提: 盆栽タブ起動完了後 TabBar「予定」をタップして遷移、testID e2e_plan_screen で可視待ち。',
+  },
   // PoC 安定後にユーザーと相談して順次追加 (ADR-0020 §Decision §3-§10):
-  // 'plan-tab':           care-screens.jsx CalendarScreen + WiringListScreen
   // 'find-tab':           care-screens.jsx SearchScreen
   // 'settings-tab':       monetization-screens.jsx Settings*
   // 'paywall':            monetization-screens.jsx PaywallScreen
