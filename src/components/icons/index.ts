@@ -29,6 +29,7 @@ export {
   CompassNavIcon,
   EditIcon,
   LeafIcon,
+  MoreVerticalIcon,
   PlusIcon,
   SearchIcon,
 } from './NavIcons';

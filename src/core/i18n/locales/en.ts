@@ -536,6 +536,7 @@ const baseEn = {
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
   onboardingWelcomeNote: 'No account required',
+  detailMoreMenu: 'More menu',
 };
 
 export type TranslationKey = keyof typeof baseEn;

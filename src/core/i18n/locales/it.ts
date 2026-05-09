@@ -528,5 +528,6 @@ const it: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
   onboardingWelcomeNote: 'No account required',
+  detailMoreMenu: 'More menu',
 };
 export default it;

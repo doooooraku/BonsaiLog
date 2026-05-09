@@ -534,6 +534,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue2: '個人情報は取得しません',
   onboardingWelcomeValue3: '次世代へ引き継げる台帳',
   onboardingWelcomeNote: 'アカウント登録は不要です',
+  detailMoreMenu: 'メニュー',
 };
 
 export default ja;
