@@ -567,3 +567,43 @@ F-15 を以下の構成で実装する。
   - PR #138 Phase J: Search/Tags/Export 画面に OutdoorToggleButton 配置
   - PR #145 Phase K: 旧 theme トークン残存 CI チェック (`scripts/theme-legacy-check.mjs`、`pnpm verify:theme`)
 - **残作業**: ESLint plugin `eslint-plugin-bonsai/no-direct-hex-in-jsx` 自作、tamagui.config の 11 トークン構造的検証スクリプト等は v1.x で評価
+
+---
+
+## Notes Amended (2026-05-10): 屋外モード削除 (4 mode → 3 mode)
+
+### 改訂内容
+
+- ユーザー判断 (2026-05-10) により **屋外モード (outdoor) を v1.0 で不採用**、本 ADR の 4 mode 構成を 3 mode (Auto / Light / Dark) に縮小
+- 理由: 屋外モードのユースケース実証が不十分 + UI 実装コスト (全画面ヘッダー太陽アイコン + Settings トグル + token 整合 + Skia 再描画) が利益を上回る判断
+- §Decision §55-72 の「モード構成（4 状態）」「Tamagui themes 設計」「配色」を 3 mode に縮小、outdoor 関連の token / 切替動作 / 物理アクセス (太陽アイコン) を削除
+- §192-201 「連動機能の屋外モード追従」(F-04 / F-08 / F-13 等) は不要、各機能は Light/Dark のみ追従
+
+### 削除対象 (実装側)
+
+- `src/core/theme/colors.ts` `OUTDOOR_TOKENS` 定義 (E3 PR で削除予定)
+- `constants/theme.ts` `OUTDOOR_TOKENS` import + `Colors.outdoor` (E3 PR)
+- `src/core/theme/themeResolver.ts` の outdoor 分岐 (E3 PR)
+- `scripts/a11y-contrast-check.mjs` の outdoor pair (E3 PR)
+- `useSettingsStore` の `outdoorMode` state + `setOutdoorMode` action (E4 PR)
+- `OutdoorToggle` / `OutdoorToggleButton` コンポーネント全削除 (E4 PR)
+- 全画面ヘッダーの SunIcon (太陽アイコン) 削除 (E4 PR)
+- `Settings` 画面の Outdoor toggle row 削除 (E4 PR)
+- i18n key 削除: `settingsOutdoorMode` / `settingsOutdoorModeDesc` 等 (E4 PR、19 言語一括)
+
+### F-15 v1.0 仕様 (改訂後)
+
+| トークン   | light                                | dark (M3)        |
+| ---------- | ------------------------------------ | ---------------- |
+| background | #FFFFFF (washi #F7F3E8 = BG_PRIMARY) | #121212          |
+| color      | #1A1A1A (16:1)                       | #E1E1E1 (14.5:1) |
+| accent     | BRAND_GREEN #1F3A2E (11:1)           | #6B9B7F (6.07:1) |
+| heatmap L3 | #238B45                              | #7BC97D          |
+
+3 mode (Auto / Light / Dark) のみ、Settings UI はセグメンテッドコントロール「[システム] [ライト] [ダーク]」のみ (Outdoor toggle 削除)。
+
+### 関連 (本 Amended)
+
+- ユーザー判断: 2026-05-10 セッション (Tier 3 Issue #32 着手時に方針変更)
+- 実装フェーズ: E1 (本 PR、ADR Amended) → E2 (Issue #32 改訂) → E3 (theme tokens / a11y) → E4 (UI / i18n)
+- 影響: F-04 (ヒートマップ) / F-13 (Paywall) / F-16 (通知) は Light/Dark のみ対応、本 Amended で簡素化
