@@ -584,7 +584,11 @@ export default function BonsaiDetailScreen() {
           </>
         )}
 
-        {/* timeline (予定) Tab placeholder (A7 で AddScheduleFlow 実装予定、mockup v1.0 整合) */}
+        {/*
+         * A7 (Detail mockup 完全整合 全 10 PR の 7/10) — TimelineTab + AddScheduleFlow +
+         * _PickDateTimeSheet + _DateTimePicker の本格実装は Issue #298 で track 化
+         * (推定 4 サブ PR)。本 PR は placeholder text の文言維持のみ。
+         */}
         {activeTab === 'timeline' && (
           <View style={styles.section}>
             <ThemedText style={styles.placeholderText}>
