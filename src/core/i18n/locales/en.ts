@@ -520,9 +520,9 @@ const baseEn = {
   onboardingTut4Title: 'Read the watering heatmap',
   onboardingTut4Body:
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
-  onboardingTut5Title: 'Enable notifications',
+  onboardingTut5Title: 'Notifications for plans you have set',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
+    'You will only receive notifications for the plans you set yourself. You can turn them off anytime; everything is configurable in Settings.',
   onboardingTut5Cta: 'Enable notifications',
   onboardingTutNext: 'Next',
   skipForLater: 'Skip for later',
