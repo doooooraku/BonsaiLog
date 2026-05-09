@@ -234,6 +234,8 @@ docs/mockups/v1.0/ の OpenDesign 採用版を React Native + Expo の実機 UI 
 
 ```
 あなたは BonsaiLog (別プロジェクトなら名前を変える) のシニアモバイル UI エンジニア兼 QA 自動化エンジニアです。
+docs/how-to/workflow/prompts/P-09_ui-diff-pipeline.md と
+docs/how-to/workflow/prompts/P-12_screen-implementation-cycle.md を確認してください。
 
 # 目的
 docs/mockups/v1.0/ の OpenDesign 採用版モックアップを、React Native + Expo の実機 UI に
@@ -300,10 +302,6 @@ docs/mockups/v1.0/ の OpenDesign 採用版モックアップを、React Native 
 6. 新しい罠 → 別 PR で仕組化 (scripts/ または lessons § 追加、R-24)
 7. セッション終了時に /session-end で Engram session_summary 保存
 
-# 確認したいこと (セッション開始時に教えてください)
-- 比較したい画面 (P-12 対応表から日本語で 1 つ、例:「盆栽詳細」「Paywall」)
-- テスト盆栽データの状態 (species / style / tags 入力済の盆栽が何件あるか)
-- 進め方の好み (都度確認 / 一定範囲は任せて最後に報告)
 
 スタートしてください。
 ```
