@@ -60,3 +60,8 @@ screenshots/
 
 # UI diff output (ADR-0021)
 scripts/ui-diff/out/
+
+# OpenDesign チャット履歴 DB (ローカル参照のみ、ユーザープロンプト履歴を含む 4MB+ binary)
+docs/mockups/v1.0/app.sqlite
+docs/mockups/v1.0/app.sqlite-shm
+docs/mockups/v1.0/app.sqlite-wal

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BonsaiLog — Export Wireframes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #EDE6D3;
+    color: var(--text-primary);
+    font-family: var(--font-body-ja);
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; }
+  button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 4px; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="home-screens.jsx"></script>
+<script type="text/babel" src="export-screens.jsx"></script>
+<script type="text/babel">
+const {
+  EXPORT_TYPES,
+  ExportHubScreen, ExportOptionsSheet, ExportProgressOverlay, ShareSheetScreen,
+  PDFBonsaiReportScreen, PDFListReportScreen,
+} = window;
+
+const DEVICE_W = 393;
+const DEVICE_H = 852;
+
+const FLOW = [
+  { key: 'hub',       label: '01 Export Hub' },
+  { key: 'options',   label: '02 Options Sheet' },
+  { key: 'progress',  label: '03 Generating' },
+  { key: 'share',     label: '04 Share Sheet' },
+  { key: 'pdf-one',   label: '05 PDF · Single' },
+  { key: 'pdf-list',  label: '06 PDF · List' },
+];
+
+function PhoneShell({ label, children, active }) {
+  return (
+    <div data-screen-label={label} style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      gap: 16, flexShrink: 0,
+    }}>
+      <div style={{
+        fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)',
+        letterSpacing: '0.12em', textTransform: 'uppercase',
+      }}>{label}</div>
+      <div style={{
+        width: DEVICE_W + 20, height: DEVICE_H + 20,
+        borderRadius: 56, padding: 10,
+        background: '#111',
+        boxShadow: active
+          ? '0 30px 60px rgba(0,0,0,0.22), 0 0 0 2px rgba(31,58,46,0.4)'
+          : '0 20px 40px rgba(0,0,0,0.12)',
+      }}>
+        <div style={{
+          position: 'relative',
+          width: DEVICE_W, height: DEVICE_H,
+          borderRadius: 46, overflow: 'hidden',
+          background: 'var(--bg-primary)',
+        }}>
+          <div style={{
+            position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)',
+            width: 120, height: 35, borderRadius: 22, background: '#000', zIndex: 60,
+          }} />
+          <div style={{
+            position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
+            width: 134, height: 5, borderRadius: 100,
+            background: 'rgba(0,0,0,0.25)', zIndex: 60, pointerEvents: 'none',
+          }} />
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Render the right screen for a given step.
+// "options/progress/share" overlay on top of the hub for context.
+function renderStep(step, setStep) {
+  const noop = () => {};
+  // pick a default export type for sheets/previews
+  const csvType = EXPORT_TYPES.find(t => t.k === 'events_csv');
+  const pdfBonsai = EXPORT_TYPES.find(t => t.k === 'bonsai_pdf');
+  const pdfList = EXPORT_TYPES.find(t => t.k === 'list_pdf');
+
+  switch (step) {
+    case 'hub':
+      return <ExportHubScreen onBack={noop} onPick={(t) => {
+        if (t.fmt === 'CSV') setStep('options');
+        else if (t.k === 'bonsai_pdf') setStep('options');
+        else setStep('options');
+      }} />;
+    case 'options':
+      return (
+        <React.Fragment>
+          <ExportHubScreen onBack={noop} onPick={noop} />
+          <ExportOptionsSheet
+            type={csvType}
+            onDismiss={() => setStep('hub')}
+            onGenerate={() => setStep('progress')}
+          />
+        </React.Fragment>
+      );
+    case 'progress':
+      return (
+        <React.Fragment>
+          <ExportHubScreen onBack={noop} onPick={noop} />
+          <ExportProgressOverlay
+            type={csvType}
+            onCancel={() => setStep('hub')}
+          />
+        </React.Fragment>
+      );
+    case 'share':
+      return (
+        <React.Fragment>
+          <ExportHubScreen onBack={noop} onPick={noop} />
+          <ShareSheetScreen
+            type={csvType}
+            onDismiss={() => setStep('hub')}
+            onPreview={noop}
+          />
+        </React.Fragment>
+      );
+    case 'pdf-one':
+      return <PDFBonsaiReportScreen onBack={() => setStep('hub')} onShare={() => setStep('share')} />;
+    case 'pdf-list':
+      return <PDFListReportScreen onBack={() => setStep('hub')} onShare={() => setStep('share')} />;
+    default:
+      return null;
+  }
+}
+
+// Static preview (no overlays except for clarity)
+function staticStep(key) {
+  const noop = () => {};
+  const csvType = EXPORT_TYPES.find(t => t.k === 'events_csv');
+  const pdfBonsai = EXPORT_TYPES.find(t => t.k === 'bonsai_pdf');
+  const pdfList = EXPORT_TYPES.find(t => t.k === 'list_pdf');
+  switch (key) {
+    case 'hub':
+      return <ExportHubScreen onBack={noop} onPick={noop} />;
+    case 'options':
+      return (
+        <React.Fragment>
+          <ExportHubScreen onBack={noop} onPick={noop} />
+          <ExportOptionsSheet type={csvType} onDismiss={noop} onGenerate={noop} />
+        </React.Fragment>
+      );
+    case 'progress':
+      return (
+        <React.Fragment>
+          <ExportHubScreen onBack={noop} onPick={noop} />
+          <ExportProgressOverlay type={csvType} onCancel={noop} />
+        </React.Fragment>
+      );
+    case 'share':
+      return (
+        <React.Fragment>
+          <ExportHubScreen onBack={noop} onPick={noop} />
+          <ShareSheetScreen type={csvType} onDismiss={noop} onPreview={noop} />
+        </React.Fragment>
+      );
+    case 'pdf-one':
+      return <PDFBonsaiReportScreen onBack={noop} onShare={noop} />;
+    case 'pdf-list':
+      return <PDFListReportScreen onBack={noop} onShare={noop} />;
+  }
+}
+
+function Overview() {
+  const [step, setStep] = React.useState('hub');
+
+  return (
+    <div style={{ padding: '48px 32px 64px' }}>
+      {/* Masthead */}
+      <div style={{
+        maxWidth: 1400, margin: '0 auto 48px',
+        display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'end',
+        paddingBottom: 24, borderBottom: '1px solid var(--border)',
+      }}>
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: 11,
+            color: 'var(--text-muted)', letterSpacing: '0.14em',
+            textTransform: 'uppercase', marginBottom: 8,
+          }}>BonsaiLog / F-10 Export / v0.1</div>
+          <h1 style={{
+            margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500,
+            fontSize: 40, lineHeight: '52px', color: 'var(--text-primary)',
+            letterSpacing: '0.02em',
+          }}>エクスポート 6画面</h1>
+          <div style={{
+            marginTop: 6,
+            fontFamily: 'var(--font-display-latin)', fontStyle: 'italic',
+            fontSize: 18, color: 'var(--text-secondary)',
+            letterSpacing: '0.02em',
+          }}>Data Portability — CSV &amp; PDF</div>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)',
+          lineHeight: '20px', textAlign: 'right',
+        }}>
+          <div><strong style={{ color: 'var(--text-primary)', fontWeight: 500 }}>iPhone 15 Pro</strong> · 393×852 pt</div>
+          <div>CSV (UTF-8 BOM) / PDF (A4縦)</div>
+          <div>Settings → エクスポート</div>
+        </div>
+      </div>
+
+      {/* Section 1: Interactive prototype */}
+      <div style={{ maxWidth: 1400, margin: '0 auto 64px' }}>
+        <div style={{
+          display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 8,
+        }}>
+          <span style={{
+            fontFamily: 'var(--font-display-latin)', fontSize: 20,
+            color: 'var(--primary)', fontWeight: 500,
+          }}>01</span>
+          <h2 style={{
+            margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500,
+            fontSize: 24, color: 'var(--text-primary)', letterSpacing: '0.02em',
+          }}>インタラクティブプロトタイプ</h2>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-body-ja)', fontSize: 14, color: 'var(--text-secondary)',
+          marginBottom: 32, maxWidth: 720, lineHeight: '22px',
+        }}>
+          ハブで形式を選び、オプションシート → 生成中 → iOS共有シート → プレビュー、と進みます。
+          右のステップマップから直接ジャンプも可能です。PDFプレビューは実寸A4比（縮小表示）でレポート構成を確認できます。
+        </div>
+
+        <div style={{
+          display: 'grid', gridTemplateColumns: `${DEVICE_W + 40}px 1fr`,
+          gap: 48, alignItems: 'start',
+        }}>
+          <PhoneShell label={FLOW.find(f => f.key === step)?.label || '01 Export Hub'} active>
+            {renderStep(step, setStep)}
+          </PhoneShell>
+
+          <div style={{ paddingTop: 32 }}>
+            <div style={{
+              fontFamily: 'var(--font-mono)', fontSize: 11,
+              color: 'var(--text-muted)', letterSpacing: '0.12em',
+              textTransform: 'uppercase', marginBottom: 20,
+            }}>Flow map</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {FLOW.map((f, i, arr) => {
+                const active = f.key === step;
+                return (
+                  <React.Fragment key={f.key}>
+                    <button
+                      onClick={() => setStep(f.key)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 16,
+                        padding: '14px 16px', minHeight: 48,
+                        background: active ? 'var(--bg-surface)' : 'transparent',
+                        border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
+                        borderRadius: 12, cursor: 'pointer',
+                        textAlign: 'left', width: '100%',
+                        transition: 'background 100ms ease-out',
+                      }}
+                    >
+                      <div style={{
+                        width: 28, height: 28, borderRadius: 8,
+                        display: 'grid', placeItems: 'center',
+                        background: active ? 'var(--primary)' : 'transparent',
+                        border: `1px solid ${active ? 'var(--primary)' : 'var(--border-strong)'}`,
+                        fontFamily: 'var(--font-display-latin)', fontSize: 13, fontWeight: 500,
+                        color: active ? '#F7F3E8' : 'var(--text-secondary)',
+                      }}>{String(i + 1).padStart(2, '0')}</div>
+                      <div style={{
+                        fontFamily: 'var(--font-body-ja)', fontSize: 15,
+                        color: 'var(--text-primary)', fontWeight: active ? 500 : 400,
+                      }}>{f.label.replace(/^\d+\s/, '')}</div>
+                      {active && (
+                        <div style={{
+                          marginLeft: 'auto',
+                          fontFamily: 'var(--font-mono)', fontSize: 10,
+                          color: 'var(--primary)', letterSpacing: '0.12em',
+                          textTransform: 'uppercase',
+                        }}>current</div>
+                      )}
+                    </button>
+                    {i < arr.length - 1 && (
+                      <div style={{
+                        width: 1, height: 12, marginLeft: 31,
+                        background: 'var(--border)',
+                      }} />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            <div style={{
+              marginTop: 32,
+              padding: 20, borderRadius: 12,
+              border: '1px solid var(--border)',
+              background: 'var(--bg-surface)',
+            }}>
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: 11,
+                color: 'var(--text-muted)', letterSpacing: '0.12em',
+                textTransform: 'uppercase', marginBottom: 12,
+              }}>Notes</div>
+              <ul style={{
+                margin: 0, paddingLeft: 18,
+                fontFamily: 'var(--font-body-ja)', fontSize: 13, lineHeight: '22px',
+                color: 'var(--text-secondary)',
+              }}>
+                <li>5種類のエクスポート（CSV×3 / PDF×2）</li>
+                <li>CSVはUTF-8 BOM付き · Excel日本語版で文字化けなし</li>
+                <li>PDFはA4縦 · expo-print + react-native-html-to-pdf を想定</li>
+                <li>共有はiOS UIActivityViewController（Share Sheet）に委譲</li>
+                <li>「データは自分のもの」 — 月額契約者でなくても全件出力可</li>
+              </ul>
+            </div>
+
+            {/* Format legend */}
+            <div style={{
+              marginTop: 16, padding: 20, borderRadius: 12,
+              border: '1px solid var(--border)',
+              background: 'var(--bg-surface)',
+            }}>
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: 11,
+                color: 'var(--text-muted)', letterSpacing: '0.12em',
+                textTransform: 'uppercase', marginBottom: 12,
+              }}>Export catalog</div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, fontFamily: 'var(--font-body-ja)' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    <th style={{ textAlign: 'left', padding: '6px 8px 6px 0', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 400 }}>Fmt</th>
+                    <th style={{ textAlign: 'left', padding: '6px 8px', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 400 }}>Title</th>
+                    <th style={{ textAlign: 'left', padding: '6px 0 6px 8px', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 400 }}>Use</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {EXPORT_TYPES.map((t, i) => (
+                    <tr key={t.k} style={{ borderBottom: i < EXPORT_TYPES.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                      <td style={{ padding: '8px 8px 8px 0', verticalAlign: 'top' }}>
+                        <span style={{
+                          display: 'inline-block', padding: '2px 6px', borderRadius: 4,
+                          background: t.fmt === 'CSV' ? 'rgba(31,58,46,0.08)' : 'rgba(198,158,72,0.14)',
+                          color: t.fmt === 'CSV' ? 'var(--primary)' : '#8c6b25',
+                          fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600, letterSpacing: '0.06em',
+                        }}>{t.fmt}</span>
+                      </td>
+                      <td style={{ padding: '8px', verticalAlign: 'top', color: 'var(--text-primary)', fontWeight: 500 }}>{t.title}</td>
+                      <td style={{ padding: '8px 0 8px 8px', verticalAlign: 'top', color: 'var(--text-secondary)', lineHeight: '18px' }}>{t.use}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 2: Static all-screens */}
+      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+        <div style={{
+          display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 8,
+        }}>
+          <span style={{
+            fontFamily: 'var(--font-display-latin)', fontSize: 20,
+            color: 'var(--primary)', fontWeight: 500,
+          }}>02</span>
+          <h2 style={{
+            margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500,
+            fontSize: 24, color: 'var(--text-primary)', letterSpacing: '0.02em',
+          }}>全画面一覧</h2>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-body-ja)', fontSize: 14, color: 'var(--text-secondary)',
+          marginBottom: 40, maxWidth: 640, lineHeight: '22px',
+        }}>
+          6画面を横並びで比較。それぞれは静的プレビュー（タップ無効）。
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(3, ${DEVICE_W + 40}px)`,
+          gap: '64px 40px',
+          justifyContent: 'start',
+          overflowX: 'auto',
+          paddingBottom: 16,
+        }}>
+          {FLOW.map(f => (
+            <PhoneShell key={f.key} label={f.label}>
+              {staticStep(f.key)}
+            </PhoneShell>
+          ))}
+        </div>
+      </div>
+
+      <div style={{
+        maxWidth: 1400, margin: '64px auto 0',
+        paddingTop: 24, borderTop: '1px solid var(--border)',
+        fontFamily: 'var(--font-mono)', fontSize: 11,
+        color: 'var(--text-muted)', letterSpacing: '0.08em',
+      }}>
+        DESIGN SYSTEM · tokens.css · P1 片手·手袋 / P2 記録 / P3 永く変わらない / P4 余白の美 / P5 屋外で読める
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Overview />);
+</script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+/* BonsaiLog Design Tokens
+ * Source of truth: DESIGN.md
+ * Do not invent values outside this file.
+ */
+
+:root {
+  /* ========= Color — Light (default) ========= */
+  --bg-primary: #F7F3E8;          /* washi 和紙 */
+  --bg-surface: #FFFFFF;
+  --text-primary: #1A1A1A;        /* sumi 墨 */
+  --text-secondary: #5A5248;
+  --text-muted: #8A8274;
+  --primary: #1F3A2E;             /* fukamidori 深緑 */
+  --primary-hover: #2A4C3D;
+  --accent-bark: #5A4637;         /* 樹皮 */
+  --accent-gold: #C69E48;         /* 秋葉 — Pro バッジのみ */
+  --danger: #8B2E2E;
+  --success: #3E5C39;
+  --border: #D9D1BF;
+  --border-strong: #8A8274;
+
+  /* ========= Typography ========= */
+  --font-display-ja: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+  --font-display-latin: "Source Serif 4", Georgia, serif;
+  --font-body-ja: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-body-latin: "Inter", -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", monospace;
+
+  /* Size scale (pt ≒ px at 1x) */
+  --size-displayXL: 48px;  --lh-displayXL: 58px;
+  --size-displayL:  32px;  --lh-displayL:  38px;
+  --size-displayM:  24px;  --lh-displayM:  29px;
+  --size-headingL:  20px;  --lh-headingL:  30px;
+  --size-headingM:  18px;  --lh-headingM:  27px;
+  --size-bodyL:     16px;  --lh-bodyL:     26px;   /* 本文最小 */
+  --size-bodyM:     14px;  --lh-bodyM:     22px;
+  --size-caption:   13px;  --lh-caption:   19px;
+  --size-micro:     11px;  --lh-micro:     16px;   /* これ以下禁止 */
+
+  /* ========= Spacing (8px baseline; only these values) ========= */
+  --s-4: 4px;
+  --s-8: 8px;
+  --s-12: 12px;
+  --s-16: 16px;
+  --s-24: 24px;
+  --s-32: 32px;
+  --s-48: 48px;
+
+  /* ========= Radius (no pill 9999) ========= */
+  --r-0: 0;
+  --r-8: 8px;
+  --r-12: 12px;
+  --r-16: 16px;
+
+  /* ========= Tap targets ========= */
+  --tap-min: 48px;     /* minimum */
+  --tap-cta: 56px;     /* primary CTA */
+
+  /* ========= Motion ========= */
+  --motion-push: 250ms;
+  --motion-modal: 200ms;
+  --motion-snackbar: 300ms;
+  --motion-tap: 100ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ========= Dark mode (OLED-safe, not pure black) ========= */
+[data-theme="dark"] {
+  --bg-primary: #0A0E1A;
+  --bg-surface: #131826;
+  --text-primary: #E8E4D6;        /* 淡washi */
+  --text-secondary: #B0A897;
+  --text-muted: #7A7265;
+  --primary: #6B9B7F;             /* 夜目の緑 */
+  --primary-hover: #7FB095;
+  --accent-bark: #8C7561;
+  --accent-gold: #D4B062;
+  --danger: #C9575D;
+  --success: #7DAE7A;
+  --border: #2A2F3E;
+  --border-strong: #4A5060;
+}
+
+/* ========= Outdoor mode (direct sunlight, WCAG AAA 7:1) ========= */
+[data-theme="outdoor"] {
+  --bg-primary: #FFFFFF;
+  --bg-surface: #FFFFFF;
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --text-muted: #000000;
+  --primary: #000080;
+  --primary-hover: #000080;
+  --accent-bark: #000000;
+  --accent-gold: #000000;
+  --danger: #8B0000;
+  --success: #004000;
+  --border: #000000;
+  --border-strong: #000000;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-push: 0ms;
+    --motion-modal: 0ms;
+    --motion-snackbar: 0ms;
+    --motion-tap: 0ms;
+  }
+}

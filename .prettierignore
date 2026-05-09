@@ -9,3 +9,6 @@ pnpm-lock.yaml
 
 # Agent tool source skills may include upstream bundled assets with their own formatting.
 agent-tools/skills/
+
+# OpenDesign 生成物 (凍結保管、BonsaiLog 規則の対象外)
+docs/mockups/

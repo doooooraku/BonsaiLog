@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BonsaiLog — Paywall / Settings / Ads Wireframes</title>
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: var(--bg-primary); color: var(--text-primary); }
+  body { font-family: var(--font-body-ja); }
+  * { box-sizing: border-box; }
+  button { font: inherit; color: inherit; }
+  button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  input, textarea { font: inherit; color: inherit; }
+  input::placeholder, textarea::placeholder { color: var(--text-muted); }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="home-screens.jsx"></script>
+<script type="text/babel" src="monetization-screens.jsx"></script>
+<script type="text/babel">
+const {
+  PaywallScreen, SettingsScreen, BackupScreen, ArchiveListScreen,
+  HomeWithAdScreen,
+} = window;
+
+const DW = 393, DH = 852;
+
+function PhoneShell({ label, children, active }) {
+  return (
+    <div data-screen-label={label} style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      gap: 16, flexShrink: 0,
+    }}>
+      <div style={{
+        fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)',
+        letterSpacing: '0.12em', textTransform: 'uppercase',
+      }}>{label}</div>
+      <div style={{
+        width: DW + 20, height: DH + 20,
+        borderRadius: 56, padding: 10, background: '#111',
+        boxShadow: active
+          ? '0 30px 60px rgba(0,0,0,0.22), 0 0 0 2px rgba(31,58,46,0.4)'
+          : '0 20px 40px rgba(0,0,0,0.12)',
+      }}>
+        <div style={{
+          position: 'relative', width: DW, height: DH,
+          borderRadius: 46, overflow: 'hidden', background: 'var(--bg-primary)',
+        }}>
+          <div style={{
+            position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)',
+            width: 120, height: 35, borderRadius: 22, background: '#000', zIndex: 60,
+          }} />
+          <div style={{
+            position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
+            width: 134, height: 5, borderRadius: 100,
+            background: 'rgba(0,0,0,0.25)', zIndex: 60, pointerEvents: 'none',
+          }} />
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const FLOW = [
+  { key: 'paywall',   label: '01 Paywall Modal' },
+  { key: 'settings',  label: '02 設定' },
+  { key: 'backup',    label: '03 バックアップ' },
+  { key: 'archive',   label: '04 アーカイブ一覧' },
+  { key: 'archDel',   label: '04a 完全削除 確認モーダル' },
+  { key: 'adhome',    label: '05 Home + 広告バナー' },
+];
+
+function renderScreen(key, handlers = {}) {
+  const noop = () => {};
+  const h = { ...handlers };
+  switch (key) {
+    case 'paywall':  return <PaywallScreen onClose={h.close||noop} onPurchase={h.purchase||noop} onRestore={noop} />;
+    case 'settings': return <SettingsScreen onOpenPaywall={h.paywall||noop} onOpenArchive={h.archive||noop} onOpenBackup={h.backup||noop} />;
+    case 'backup':   return <BackupScreen onBack={h.back||noop} />;
+    case 'archive':  return <ArchiveListScreen key="arch" onBack={h.back||noop} />;
+    case 'archDel':  return <ArchiveListScreen key="archDel" onBack={h.back||noop} initialDeleteFor={0} />;
+    case 'adhome':   return <HomeWithAdScreen onDismissAd={noop} />;
+    default: return null;
+  }
+}
+
+function App() {
+  const [step, setStep] = React.useState('paywall');
+
+  const handlers = {
+    close:     () => setStep('settings'),
+    purchase:  () => setStep('settings'),
+    paywall:   () => setStep('paywall'),
+    archive:   () => setStep('archive'),
+    backup:    () => setStep('backup'),
+    back:      () => setStep('settings'),
+  };
+
+  const flowLabel = FLOW.find(f => f.key === step)?.label || '';
+
+  return (
+    <div style={{ padding: '48px 32px 64px' }}>
+      {/* Masthead */}
+      <div style={{
+        maxWidth: 1400, margin: '0 auto 48px',
+        display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'end',
+        paddingBottom: 24, borderBottom: '1px solid var(--border)',
+      }}>
+        <div>
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)',
+            letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 8,
+          }}>BonsaiLog / Paywall · Settings · Ads / v0.2</div>
+          <h1 style={{
+            margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500,
+            fontSize: 40, lineHeight: '52px', color: 'var(--text-primary)',
+            letterSpacing: '0.02em',
+          }}>課金・設定・広告 6画面</h1>
+          <div style={{
+            marginTop: 6, fontFamily: 'var(--font-display-latin)', fontStyle: 'italic',
+            fontSize: 18, color: 'var(--text-secondary)', letterSpacing: '0.02em',
+          }}>Monetization, Settings & Ads — Wireframes</div>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)',
+          lineHeight: '20px', textAlign: 'right',
+        }}>
+          <div><strong style={{ color: 'var(--text-primary)', fontWeight: 500 }}>iPhone 15 Pro</strong> · 393×852 pt</div>
+          <div>Apple 3.1.1 · Restore required</div>
+          <div>F-14 Ads · 48dp close · 16pt gap</div>
+        </div>
+      </div>
+
+      {/* Section 01: Interactive prototype */}
+      <div style={{ maxWidth: 1400, margin: '0 auto 80px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 8 }}>
+          <span style={{ fontFamily: 'var(--font-display-latin)', fontSize: 20, color: 'var(--primary)', fontWeight: 500 }}>01</span>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500, fontSize: 24, color: 'var(--text-primary)', letterSpacing: '0.02em' }}>インタラクティブプロトタイプ</h2>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-body-ja)', fontSize: 14, color: 'var(--text-secondary)',
+          marginBottom: 32, maxWidth: 720, lineHeight: '22px',
+        }}>
+          Paywall close → 設定 / 設定「プラン」→ Paywall / 「バックアップ」→ BackupScreen（ZIP 書き出し / 取り込み・両方 Free） / 「アーカイブ」→ アーカイブ一覧 / 項目を長押し → 完全削除 確認モーダル（v1.5 D8）。
+        </div>
+
+        <div style={{
+          display: 'grid', gridTemplateColumns: `${DW + 40}px 1fr`,
+          gap: 48, alignItems: 'start',
+        }}>
+          <PhoneShell label={flowLabel} active>{renderScreen(step, handlers)}</PhoneShell>
+
+          <div style={{ paddingTop: 32 }}>
+            <div style={{
+              fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)',
+              letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 20,
+            }}>Flow map</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {FLOW.map((f, i) => {
+                const active = f.key === step;
+                return (
+                  <React.Fragment key={f.key}>
+                    <button onClick={() => setStep(f.key)} style={{
+                      display: 'flex', alignItems: 'center', gap: 16,
+                      padding: '14px 16px', minHeight: 48,
+                      background: active ? 'var(--bg-surface)' : 'transparent',
+                      border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
+                      borderRadius: 12, cursor: 'pointer',
+                      textAlign: 'left', width: '100%',
+                    }}>
+                      <div style={{
+                        width: 28, height: 28, borderRadius: 8,
+                        display: 'grid', placeItems: 'center',
+                        background: active ? 'var(--primary)' : 'transparent',
+                        border: `1px solid ${active ? 'var(--primary)' : 'var(--border-strong)'}`,
+                        fontFamily: 'var(--font-display-latin)', fontSize: 13, fontWeight: 500,
+                        color: active ? '#F7F3E8' : 'var(--text-secondary)',
+                      }}>{String(i + 1).padStart(2, '0')}</div>
+                      <div style={{
+                        fontFamily: 'var(--font-body-ja)', fontSize: 15,
+                        color: 'var(--text-primary)', fontWeight: active ? 500 : 400,
+                      }}>{f.label.replace(/^\d+\s/, '')}</div>
+                      {active && (
+                        <div style={{
+                          marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 10,
+                          color: 'var(--primary)', letterSpacing: '0.12em',
+                          textTransform: 'uppercase',
+                        }}>current</div>
+                      )}
+                    </button>
+                    {i < FLOW.length - 1 && (
+                      <div style={{ width: 1, height: 10, marginLeft: 31, background: 'var(--border)' }} />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            <div style={{
+              marginTop: 32, padding: 20, borderRadius: 12,
+              border: '1px solid var(--border)', background: 'var(--bg-surface)',
+            }}>
+              <div style={{
+                fontFamily: 'var(--font-mono)', fontSize: 11,
+                color: 'var(--text-muted)', letterSpacing: '0.12em',
+                textTransform: 'uppercase', marginBottom: 12,
+              }}>Compliance notes</div>
+              <ul style={{
+                margin: 0, paddingLeft: 18,
+                fontFamily: 'var(--font-body-ja)', fontSize: 13, lineHeight: '22px',
+                color: 'var(--text-secondary)',
+              }}>
+                <li>Apple 規約 3.1.1：「購入を復元」は Paywall と 設定 両方に配置</li>
+                <li>CTA 表記は「購読する」で統一（「登録」不使用）</li>
+                <li>買切は <code style={{ fontFamily: 'var(--font-mono)' }}>Non-Consumable</code>・「永続」（「永久」回避）</li>
+                <li>広告✕ は 48×48dp タップ領域、アイコンは 16pt</li>
+                <li>広告枠の上下に 16pt のセーフエリアを確保し、誤タップを防止</li>
+                <li>Pro 購入時は広告枠ごと DOM から除去</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 02: Static gallery */}
+      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 8 }}>
+          <span style={{ fontFamily: 'var(--font-display-latin)', fontSize: 20, color: 'var(--primary)', fontWeight: 500 }}>02</span>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-display-ja)', fontWeight: 500, fontSize: 24, color: 'var(--text-primary)', letterSpacing: '0.02em' }}>全画面一覧</h2>
+        </div>
+        <div style={{
+          fontFamily: 'var(--font-body-ja)', fontSize: 14, color: 'var(--text-secondary)',
+          marginBottom: 40, maxWidth: 640, lineHeight: '22px',
+        }}>6画面を横並びで比較（静的プレビュー）。</div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(3, ${DW + 40}px)`,
+          gap: '64px 40px',
+          justifyContent: 'start',
+          overflowX: 'auto',
+          paddingBottom: 16,
+        }}>
+          {FLOW.map(f => (
+            <PhoneShell key={f.key} label={f.label}>
+              {renderScreen(f.key)}
+            </PhoneShell>
+          ))}
+        </div>
+      </div>
+
+      <div style={{
+        maxWidth: 1400, margin: '64px auto 0',
+        paddingTop: 24, borderTop: '1px solid var(--border)',
+        fontFamily: 'var(--font-mono)', fontSize: 11,
+        color: 'var(--text-muted)', letterSpacing: '0.08em',
+      }}>
+        DESIGN SYSTEM · tokens.css · P1 片手·手袋 / P2 記録 / P3 永く変わらない / P4 余白の美 / P5 屋外で読める
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
