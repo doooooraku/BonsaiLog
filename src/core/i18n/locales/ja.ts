@@ -416,6 +416,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wiringOverdueBadge: '要確認',
   wiringUnwireInDays: '外し予定まで{days}日',
   wiringUnwireOverdue: '外し時期を{days}日超過',
+  wiringRowGaugePart: '{gauge} · {part}',
+  wiringUnwireInWeeks: '外し予定まで{weeks}週',
+  wiringUnwireOverdueWeeks: '外し時期を{weeks}週超過',
 
   // --- ADR-0020 v1.x-2: 盆栽詳細 Hero + 3 Tabs ---
   detailTabTimeline: 'タイムライン',
