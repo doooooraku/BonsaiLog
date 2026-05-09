@@ -55,6 +55,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
 
   // --- Pro / Paywall ---
   proTitle: 'Nâng cấp lên Pro',
+  paywallModalHeaderTitle: 'BonsaiLog Pro',
   proPlanFreeTitle: 'Miễn phí',
   proPlanMonthlyTitle: 'Hàng tháng',
   proPlanYearlyTitle: 'Hàng năm',
