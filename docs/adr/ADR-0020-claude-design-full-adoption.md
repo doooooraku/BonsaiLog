@@ -208,7 +208,7 @@
 | #   | Claude Design ファイル                            | スクリーン                | 実装側ルート                                                   | 種別                       |
 | --- | ------------------------------------------------- | ------------------------- | -------------------------------------------------------------- | -------------------------- |
 | 1   | `screens.jsx SplashScreen`                        | 01 Splash                 | `app/_layout.tsx` 起動                                         | 改修                       |
-| 2   | `screens.jsx WelcomeScreen`                       | 02 Welcome                | `app/onboarding/welcome.tsx`                                   | 改修                       |
+| 2   | `screens.jsx WelcomeScreen` (mockup v1.0)         | 02 Welcome                | `app/onboarding/welcome.tsx`                                   | 整合済 (PR #278 / PR #279) |
 | 3   | `screens.jsx LanguagePickerScreen`                | 03 Language               | `app/onboarding/language.tsx`                                  | 改修                       |
 | 4   | `screens.jsx NotificationScreen`                  | 04 Notification           | `app/onboarding/notification.tsx`                              | 改修                       |
 | 5   | `home-screens.jsx HomeScreen` (mockup v1.0)       | 01 HOME (盆栽一覧)        | `app/(tabs)/bonsai/index.tsx` (タブ名「盆栽」)                 | 整合済 (PR #271 / PR #272) |
