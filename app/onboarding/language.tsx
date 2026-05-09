@@ -145,12 +145,13 @@ export default function OnboardingLanguageScreen() {
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t('next')}
+          accessibilityLabel={t('onboardingLanguageContinue')}
           testID="e2e_onboarding_lang_next"
           style={styles.cta}
           onPress={handleNext}
         >
-          <ThemedText style={styles.ctaText}>{t('next')}</ThemedText>
+          {/* mockup v1.0 screens.jsx LanguagePickerScreen 整合 (B2 PR、「選択して続ける」) */}
+          <ThemedText style={styles.ctaText}>{t('onboardingLanguageContinue')}</ThemedText>
         </Pressable>
       </View>
     </SafeAreaView>
