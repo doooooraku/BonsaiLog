@@ -1,6 +1,7 @@
 // scripts/ui-diff/capture-design.ts
-// ClaudeDesign の HTML を chromium-headless でレンダリングし、
-// 該当画面ノードのみスクショ取得する。
+// mockups v1.0 (OpenDesign、docs/mockups/v1.0/wireframes/、PR #269 取り込み) の HTML を
+// chromium-headless でレンダリングし、該当画面ノードのみスクショ取得する。
+// ADR-0021 Notes Amended (PR #267) で OpenDesign 出力を比較対象として参照に切替済。
 // Babel standalone が file:// 経由で JSX を fetch するため、
 // --allow-file-access-from-files フラグが必要。
 

@@ -25,7 +25,7 @@ async function writeReport(screenId: string, outDir: string, metric: string): Pr
 
 ## Images
 
-### お手本 (Design / ClaudeDesign)
+### お手本 (Design / mockups v1.0 OpenDesign)
 ![design](./design/${screenId}.png)
 
 ### 実機 (App / Android device, raw)
@@ -82,8 +82,8 @@ async function writeReport(screenId: string, outDir: string, metric: string): Pr
 ## Reference
 
 - ADR-0021 §Decision §6-§7 (本パイプラインの比較ペア定義)
-- ADR-0020 §Decision §3-§10 (Claude Design 全面採用 / 画面マッピング表)
-- ClaudeDesign 正本: \`C:\\Users\\doooo\\Downloads\\BonsaiLog_template\\\`
+- ADR-0020 §Notes §画面マップ + ADR-0021 Notes Amended (mockups v1.0 OpenDesign を比較対象として参照、PR #267)
+- mockups v1.0 (OpenDesign) 正本: \`docs/mockups/v1.0/wireframes/\` (PR #269 取り込み、凍結保管)
 - 本セッション lessons: \`docs/reference/tasks/lessons/wsl2-mobile.md\` §5-§6
 - R-27 (Issue 起票前 Explore 必須): \`.claude/recurrence-prevention.md\`
 `;
