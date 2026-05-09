@@ -46,6 +46,30 @@ export function getScheduledUnwireAt(wiringEvent: Event): string | null {
   }
 }
 
+/** payload_json から `wire_size_mm` を「Nmm」形式で取り出す純関数 (parse 失敗 / 未指定は null)。 */
+export function getWireSize(wiringEvent: Event): string | null {
+  if (wiringEvent.payloadJson == null) return null;
+  try {
+    const payload = JSON.parse(wiringEvent.payloadJson) as Record<string, unknown>;
+    const value = payload.wire_size_mm;
+    return typeof value === 'number' ? `${value}mm` : null;
+  } catch {
+    return null;
+  }
+}
+
+/** payload_json から `body_part` を取り出す純関数 (parse 失敗 / 未指定は null)。 */
+export function getBodyPart(wiringEvent: Event): string | null {
+  if (wiringEvent.payloadJson == null) return null;
+  try {
+    const payload = JSON.parse(wiringEvent.payloadJson) as Record<string, unknown>;
+    const value = payload.body_part;
+    return typeof value === 'string' && value.length > 0 ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * 装着期間 vs しきい値の状態種別。UI / 通知側でこの種別を見て i18n キーを選ぶ。
  *
