@@ -207,12 +207,12 @@
 
 | #   | Claude Design ファイル                            | スクリーン                | 実装側ルート                                                   | 種別                                                    |
 | --- | ------------------------------------------------- | ------------------------- | -------------------------------------------------------------- | ------------------------------------------------------- |
-| 1   | `screens.jsx SplashScreen`                        | 01 Splash                 | `app/_layout.tsx` 起動                                         | 改修                                                    |
+| 1   | `screens.jsx SplashScreen` (mockup v1.0)          | 01 Splash                 | `app/_layout.tsx` + `app.config.ts` (Expo SplashScreen)        | 整合済 (PR #303、washi backgroundColor)                 |
 | 2   | `screens.jsx WelcomeScreen` (mockup v1.0)         | 02 Welcome                | `app/onboarding/welcome.tsx`                                   | 整合済 (PR #278 / PR #279)                              |
-| 3   | `screens.jsx LanguagePickerScreen`                | 03 Language               | `app/onboarding/language.tsx`                                  | 改修                                                    |
-| 4   | `screens.jsx NotificationScreen`                  | 04 Notification           | `app/onboarding/notification.tsx`                              | 改修                                                    |
+| 3   | `screens.jsx LanguagePickerScreen` (mockup v1.0)  | 03 Language               | `app/onboarding/language.tsx`                                  | 整合済 (PR #304、CTA 文言「選択して続ける」)            |
+| 4   | `screens.jsx NotificationScreen` (mockup v1.0)    | 04 Notification           | `app/onboarding/tut/[step].tsx` (tut5、Bell + 文言整合)        | 整合済 (PR #305、ADR-0011 整合性向上)                   |
 | 5   | `home-screens.jsx HomeScreen` (mockup v1.0)       | 01 HOME (盆栽一覧)        | `app/(tabs)/bonsai/index.tsx` (タブ名「盆栽」)                 | 整合済 (PR #271 / PR #272)                              |
-| 6   | `home-screens.jsx HomeEmptyScreen`                | 01 HOME EMPTY             | 同上 Empty 分岐                                                | 改修                                                    |
+| 6   | `home-screens.jsx HomeEmptyScreen` (mockup v1.0)  | 01 HOME EMPTY             | `app/(tabs)/bonsai/index.tsx` Empty 分岐                       | 整合済 (PR #306、72dp CTA + 「盆栽を追加」)             |
 | 7   | `detail-screens.jsx Detail*` (mockup v1.0)        | 02 DETAIL (Hero + 3 Tabs) | `app/(tabs)/bonsai/[id]/index.tsx`                             | 整合済 (PR #290〜#301、本格実装は Issue #295/#296/#298) |
 | 8   | `create-screens.jsx Create*`                      | 03 CREATE                 | `app/(tabs)/bonsai/new.tsx`                                    | 大改修                                                  |
 | 9   | `care-screens.jsx WorkPickerSheet`                | 04 WORK PICKER            | 新規 BottomSheet                                               | 新規                                                    |
