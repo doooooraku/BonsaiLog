@@ -49,6 +49,7 @@ import {
   getWeeksSinceWired,
 } from '@/src/features/wiring/wiringDuration';
 import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
+import { useGoToPaywall } from '@/src/features/pro/useGoToPaywall';
 import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
@@ -161,6 +162,8 @@ export default function BonsaiDetailScreen() {
   }, [item, router, t]);
 
   const isPro = useProStore((s) => s.isPro);
+  // A9 PR: ProLockModal 整合 (Free ユーザーが PDF 等の Pro 限定機能をタップした際の Paywall 遷移)
+  const goToPaywall = useGoToPaywall();
 
   const pickAndSavePhoto = useCallback(
     async (source: 'camera' | 'library') => {
@@ -299,13 +302,11 @@ export default function BonsaiDetailScreen() {
                   {
                     text: t('detailMenuExportPdf'),
                     onPress: () => {
-                      // A9 で ProLockModal で本格訴求、本 PR は Pro なら直接 export、Free なら Alert で誘導
+                      // A9 PR: ProLockModal 整合 = Free なら useGoToPaywall で Paywall 画面に遷移、Pro は PDF 出力 (実装は Issue 起票予定)
                       if (isPro) {
                         Alert.alert(t('detailMenuExportPdf'), undefined, [{ text: t('ok') }]);
                       } else {
-                        Alert.alert(t('detailExportProTitle'), t('detailExportProDesc'), [
-                          { text: t('ok') },
-                        ]);
+                        goToPaywall(t('detailExportProTitle'), t('detailExportProDesc'));
                       }
                     },
                   },
