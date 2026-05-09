@@ -127,6 +127,7 @@ function checkRuleDocsLineLimit() {
     { path: 'docs/reference/tasks/lessons/billing.md', max: 200 },
     { path: 'docs/reference/tasks/lessons/build.md', max: 200 },
     { path: 'docs/reference/tasks/lessons/db.md', max: 200 },
+    { path: 'docs/reference/tasks/lessons/design.md', max: 200 },
     { path: 'docs/reference/tasks/lessons/docs.md', max: 200 },
     { path: 'docs/reference/tasks/lessons/runtime.md', max: 200 },
     { path: 'docs/reference/tasks/lessons/store.md', max: 200 },
