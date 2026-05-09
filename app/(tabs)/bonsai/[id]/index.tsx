@@ -282,7 +282,7 @@ export default function BonsaiDetailScreen() {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: c.background }]}>
-      {/* mockup v1.0 detail-screens.jsx DetailHeader 整合: Header 右に ⋮ メニューボタン (A8 で DetailMoreMenu 実装、本 PR は placeholder) */}
+      {/* mockup v1.0 detail-screens.jsx DetailHeader 整合: Header 右 ⋮ メニュー (A8 で簡易 Alert ベース実装、A9 で ProLockModal、本格 overlay panel は別 Issue 予定) */}
       <Stack.Screen
         options={{
           headerRight: () => (
@@ -291,7 +291,31 @@ export default function BonsaiDetailScreen() {
               accessibilityLabel={t('detailMoreMenu')}
               testID="e2e_detail_more_menu_button"
               onPress={() => {
-                // A8 で DetailMoreMenu (PDF / Archive メニュー) を開く配線、本 PR は noop placeholder
+                Alert.alert(t('detailMoreMenu'), undefined, [
+                  {
+                    text: t('detailBasicEdit'),
+                    onPress: () => setActiveTab('basic'),
+                  },
+                  {
+                    text: t('detailMenuExportPdf'),
+                    onPress: () => {
+                      // A9 で ProLockModal で本格訴求、本 PR は Pro なら直接 export、Free なら Alert で誘導
+                      if (isPro) {
+                        Alert.alert(t('detailMenuExportPdf'), undefined, [{ text: t('ok') }]);
+                      } else {
+                        Alert.alert(t('detailExportProTitle'), t('detailExportProDesc'), [
+                          { text: t('ok') },
+                        ]);
+                      }
+                    },
+                  },
+                  {
+                    text: t('bonsaiArchive'),
+                    onPress: handleArchive,
+                    style: 'destructive',
+                  },
+                  { text: t('cancel'), style: 'cancel' },
+                ]);
               }}
               style={styles.headerMenuButton}
               hitSlop={8}
