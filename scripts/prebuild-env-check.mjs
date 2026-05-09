@@ -18,6 +18,7 @@
  *   node scripts/prebuild-env-check.mjs ios       # check iOS keys only
  */
 import { config } from 'dotenv';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
@@ -72,6 +73,42 @@ if (missing.length > 0) {
 }
 
 console.log('\x1b[32m✓ Pre-build env check passed (local .env)\x1b[0m');
+
+// ---------------------------------------------------------------------------
+// Layer 1.5: Existing AndroidManifest.xml AdMob APPLICATION_ID validation
+// ---------------------------------------------------------------------------
+// 過去の prebuild で空文字列 / プレースホルダーが埋め込まれた AndroidManifest.xml が
+// android/ に残存している場合、Gradle ビルドはそのまま走り、起動時に AdMob
+// MobileAdsInitProvider が IllegalStateException で即死する (ネイティブ層クラッシュ、
+// JS ログには現れない)。
+// 過去 lesson: docs/reference/tasks/lessons/build.md "AdMob Invalid application ID"
+//
+// 検査対象は Android のみ (iOS は Info.plist で同種の問題が起きるが本検査外)。
+if (platform === 'all' || platform === 'android') {
+  const manifestPath = resolve(__dirname, '..', 'android/app/src/main/AndroidManifest.xml');
+  if (existsSync(manifestPath)) {
+    const manifest = readFileSync(manifestPath, 'utf8');
+    const match = manifest.match(
+      /com\.google\.android\.gms\.ads\.APPLICATION_ID"\s+android:value="([^"]*)"/,
+    );
+    const ADMOB_APP_ID_PATTERN = /^ca-app-pub-\d{16}~\d{10}$/;
+    if (match && !ADMOB_APP_ID_PATTERN.test(match[1])) {
+      console.error('\n\x1b[31m✗ AndroidManifest.xml の AdMob APPLICATION_ID が無効です:\x1b[0m');
+      console.error(`   現在値: "${match[1]}"`);
+      console.error('   期待: ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX 形式');
+      console.error(
+        '\n   原因: 古い prebuild 産物が残存している可能性があります (lessons/build.md 参照)',
+      );
+      console.error(
+        '   対処: npx expo prebuild --platform android --clean で android/ を再生成してください\n',
+      );
+      process.exit(1);
+    }
+    if (match) {
+      console.log('\x1b[32m✓ AndroidManifest.xml AdMob APPLICATION_ID is valid\x1b[0m');
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Layer 2: EAS server-side env:list check
