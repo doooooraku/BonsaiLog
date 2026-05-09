@@ -265,3 +265,40 @@
 - ビジネス仕様 (RevenueCat 課金 / AdMob / Privacy / 記録のみ哲学) は本 ADR / ADR-0009 / ADR-0010 / ADR-0011 / ADR-0017 が **絶対上位**、OpenDesign 出力が矛盾しても採用しない (R-28 判定フロー)
 - OpenDesign 出力の採用版は `docs/mockups/v1.0/<screen>/index.html` にコピー保管 (BonsaiLog 完結性、git 管理)
 - 関連: R-16 改訂 / R-28 新設 (PR #266) / ADR-0021 Notes Amended (PR 3 で実施)
+
+### Notes Amended (2026-05-09): 盆栽詳細 Tab 構成変更 (mockup v1.0 整合)
+
+#### 改訂内容
+
+- mockups v1.0 (PR #269) の `detail-screens.jsx BonsaiDetailScreen` 整合に向け、本 ADR §Decision §33 で確定していた **タブ構成「タイムライン / 作業履歴 / 写真」を「作業履歴 / 予定タイムライン / 基本情報」に変更**
+- **写真タブ廃止** = 写真年次タイムライン (`getPhotosByBonsaiGroupedByYear`) は **作業履歴チップに統合** (mockup の `_HistoryPhotos`、各履歴エントリに紐づく写真を最大 3 枚 + `+N` バッジで省略表示)
+- **basic タブ追加** = 既存の `CreateBonsaiScreen` を `embedded=true` で再利用、入手情報 (取得日 / 樹種 / 樹形等) を編集可能にする
+- §Decision §33「Hero 280h + 3 Tabs: タイムライン / 作業履歴 / 写真」は本 Amended で「Hero 280h + 3 Tabs: 作業履歴 / 予定タイムライン / 基本情報」に改訂
+- §Follow-ups §132「Hero + 3 Tabs (タイムライン / 作業履歴 / 写真) 本格再構築」は「Hero + 3 Tabs (作業履歴 / 予定タイムライン / 基本情報) 本格再構築」に改訂
+- 本 Amended は **R-28 機能仕様変更 (写真タブ廃止 = 機能の所属変更)** に該当するため、実装着手前に ADR で先確定
+- 関連: mockups v1.0 `docs/mockups/v1.0/wireframes/detail-screens.jsx`、ADR-0021 Notes Amended (OpenDesign 出力 = 比較対象として参照)
+
+#### 4 ペルソナ評価 (本 Amended、写真タブ廃止 + history 統合)
+
+| 評価軸                  | 高橋 62 歳         | Marcus 35 歳 | 盆栽園プロ              | ライト               |
+| ----------------------- | ------------------ | ------------ | ----------------------- | -------------------- |
+| 写真表示 (history 統合) | ○ (作業ごとに写真) | ◎ (情報密度) | ◎ (作業 + 写真の関連性) | ◎ (1 画面で完結)     |
+| basic タブ追加          | ◎ (シンプル編集)   | ◎ (フォーム) | ◎ (一括編集)            | ◎                    |
+| 全体動線                | ◎                  | ◎            | ◎                       | ○ (3 タブで迷わない) |
+
+→ 全項目 ○ 以上、✕ ゼロ (R-10 クリア)
+
+#### 実装フェーズ (Phase A1〜A10、本 Amended 起点)
+
+| Phase | 内容                                                                  |
+| ----- | --------------------------------------------------------------------- |
+| A1    | 本 Notes Amended (本 PR、機能仕様変更を ADR で先確定)                 |
+| A2    | SCREEN_PAIRS.bonsai-detail + maestro/flows/ui-diff/bonsai-detail.yml  |
+| A3    | DetailHero + DetailHeader + DetailTabs UI 整合                        |
+| A4    | タブ ID リファクタ (timeline/history/photos → history/timeline/basic) |
+| A5    | BasicInfoTab 実装 (CreateBonsaiScreen embed)                          |
+| A6    | HistoryTab 強化 (\_buildChipsFor 14 作業 + \_HistoryPhotos)           |
+| A7    | TimelineTab + AddScheduleFlow                                         |
+| A8    | DetailMoreMenu (PDF / Archive)                                        |
+| A9    | ProLockModal                                                          |
+| A10   | §画面マップ row 7 整合済マーク (最終)                                 |
