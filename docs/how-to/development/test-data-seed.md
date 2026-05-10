@@ -4,6 +4,8 @@
 
 最終更新: 2026-05-10 (T1-4、Tier 1a 基盤整備)
 
+> **Notes Amended (本 PR、Phase 2)**: 当初推奨は **案 3 (Maestro flow 経由)** だったが、`expo-image-picker` の OS picker 自動化が困難 (アプリ外画面で Maestro 制御不可) と判明したため、**案 1 (アプリ内 dev シードボタン) に方針変更**。`src/dev/seedTestData.ts` で実装、設定タブの `__DEV__` 限定セクションから 1 タップ実行。Maestro flow は seed 投入を行わず、UI 整合検証のみに専念する。
+
 ---
 
 ## 背景
