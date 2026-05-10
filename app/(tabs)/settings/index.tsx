@@ -26,6 +26,7 @@ import { useColors } from '@/src/core/theme/useColors';
 import { formatDateToHhmm, parseHhmmToDate } from '@/src/features/notification/notificationTime';
 import { requestNotificationPermission } from '@/src/features/notification/scheduler';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
+import { clearAllData, seedTestData } from '@/src/dev/seedTestData';
 import { showAdPrivacyOptionsForm } from '@/src/services/adService';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
 import { useProStore } from '@/src/stores/proStore';
@@ -454,7 +455,6 @@ export default function SettingsScreen() {
               style={styles.entry}
               onPress={async () => {
                 try {
-                  const { seedTestData } = await import('@/src/dev/seedTestData');
                   const result = await seedTestData();
                   if (result.skipped === 'already_seeded') {
                     Alert.alert(
@@ -493,7 +493,6 @@ export default function SettingsScreen() {
                       style: 'destructive',
                       onPress: async () => {
                         try {
-                          const { clearAllData } = await import('@/src/dev/seedTestData');
                           await clearAllData();
                           Alert.alert('削除完了', '全データを削除しました。');
                         } catch (err) {
