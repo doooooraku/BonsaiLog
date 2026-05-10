@@ -44,6 +44,7 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { createBonsai } from '@/src/db/bonsaiRepository';
+import { addPhotoFromUri } from '@/src/db/photoRepository';
 import { BONSAI_STYLES, type BonsaiStyle } from '@/src/db/schema';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
 
@@ -143,13 +144,14 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
         style,
         acquiredAt: acquiredAt.trim() ? toIsoUtc(acquiredAt.trim()) : null,
       });
-      // T2-2-impl で対応予定: coverUri を persistPhotoFile + insertPhoto で永続化。
-      // 現状は UI 選択のみで保存しない (Issue 起票済、PR 本文の Test plan に明記)。
+      // T2-2-impl (Issue #369): coverUri を photoRepository.addPhotoFromUri で永続化。
+      // persistPhotoFile + insertPhoto を内部で呼び、photoId 整合性 (ファイル名 == DB id) を確保。
       if (coverUri != null) {
-        console.warn(
-          '[BonsaiCreateSheet] cover photo selected but not persisted (T2-2-impl pending):',
-          coverUri,
-        );
+        try {
+          await addPhotoFromUri({ bonsaiId: bonsai.id, sourceUri: coverUri });
+        } catch (err) {
+          console.warn('[BonsaiCreateSheet] photo persist failed (continuing):', err);
+        }
       }
       bottomSheetRef.current?.close();
       onCreated(bonsai.id);
