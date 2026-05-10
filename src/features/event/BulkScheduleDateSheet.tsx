@@ -11,24 +11,25 @@
  * - Day grid (週単位 row + flex:1 cell、firstDow padding)
  *   ※ MEMORY 索引 calendar-grid-saturday-overflow.md (PR #318): flexWrap + width 14% × 7 + gap > 100% で
  *     7 列目折り返し空欄化バグの再発防止。週行 + flex:1 リファクタ採用。
- * - 通知トグル (デフォルト OFF、R-28 + ADR-0011 整合、mockup `useState(true)` 撤回)
  * - Footer CTA「N件にまとめて予定追加」
  *
- * onSave 経由で親 (HomeScreen) に { occurredAtUtc, notify } を渡す。
+ * ADR-0014 整合 (Issue #344): 通知トグル UI は撤去。一括予定追加で作成された planned events は
+ * Settings の通知設定 (当日まとめ通知 / 水やり繰り返し通知の 2 系統) に従い自動的に対象となる。
+ * 個別 event ごとの scheduled notification は ADR-0014 のスコープ外、別 ADR 議論が必要。
+ *
+ * onSave 経由で親 (HomeScreen) に { occurredAtUtc } を渡す。
  */
 import BottomSheet, { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { CheckIcon } from '@/src/components/icons';
 import { nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
-  BORDER_STRONG,
   BRAND_GREEN,
   DANGER,
   ON_BRAND,
@@ -44,9 +45,8 @@ type Props = {
   visible: boolean;
   type: EventType;
   selectedBonsais: readonly { id: string; name: string }[];
-  /** 完全閉じる (selectMode 解除込み)。 */
   onClose: () => void;
-  onSave: (input: { occurredAtUtc: string; notify: boolean }) => void;
+  onSave: (input: { occurredAtUtc: string }) => void;
 };
 
 export function BulkScheduleDateSheet({ visible, type, selectedBonsais, onClose, onSave }: Props) {
@@ -54,9 +54,6 @@ export function BulkScheduleDateSheet({ visible, type, selectedBonsais, onClose,
   const c = useColors();
   const ref = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['88%'], []);
-
-  // R-28: 通知デフォルト OFF (principles.md v1.1 + ADR-0011 整合、mockup `useState(true)` は哲学逆走の残存と判断)。
-  const [notify, setNotify] = useState(false);
 
   // ADR-0008 §TZ 3 層防御: new Date() 引数なし禁止、nowUtc() 経由の ISO string を使う。
   const today = useMemo(() => new Date(nowUtc() as string), []);
@@ -71,7 +68,6 @@ export function BulkScheduleDateSheet({ visible, type, selectedBonsais, onClose,
   // visible になるたび state 初期化 (前回の選択をリセット)
   useEffect(() => {
     if (visible) {
-      setNotify(false);
       // ADR-0008 §TZ 3 層防御: nowUtc() 経由で current Date 取得。
       const t0 = new Date(nowUtc() as string);
       setYear(t0.getFullYear());
@@ -130,8 +126,6 @@ export function BulkScheduleDateSheet({ visible, type, selectedBonsais, onClose,
     .replace('{year}', String(year))
     .replace('{month}', String(month));
 
-  const dateLong = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
   const workLabelKey = `eventType_${type}` as Parameters<typeof t>[0];
   const workLabel = t(workLabelKey);
 
@@ -139,7 +133,7 @@ export function BulkScheduleDateSheet({ visible, type, selectedBonsais, onClose,
     // ローカル日付 (year-month-day) を UTC ISO 8601 に変換 (時刻 00:00 ローカル)
     const local = new Date(year, month - 1, day, 0, 0, 0, 0);
     const occurredAtUtc = local.toISOString();
-    onSave({ occurredAtUtc, notify });
+    onSave({ occurredAtUtc });
   };
 
   return (
@@ -250,42 +244,6 @@ export function BulkScheduleDateSheet({ visible, type, selectedBonsais, onClose,
               </View>
             ))}
           </View>
-
-          <Pressable
-            accessibilityRole="switch"
-            accessibilityState={{ checked: notify }}
-            style={[
-              styles.notifyBox,
-              {
-                backgroundColor: notify ? 'rgba(31, 58, 46, 0.06)' : c.background,
-                borderColor: notify ? BRAND_GREEN : c.border,
-              },
-            ]}
-            onPress={() => setNotify((n) => !n)}
-            testID="e2e_bulk_schedule_notify_toggle"
-          >
-            <View
-              style={[
-                styles.notifyCheckbox,
-                {
-                  backgroundColor: notify ? BRAND_GREEN : 'transparent',
-                  borderColor: notify ? BRAND_GREEN : BORDER_STRONG,
-                },
-              ]}
-            >
-              {notify && <CheckIcon size={14} color={ON_BRAND} />}
-            </View>
-            <View style={styles.notifyTextWrap}>
-              <ThemedText style={styles.notifyTitle}>
-                {notify ? t('bulkScheduleNotifyOn') : t('bulkScheduleNotifyOff')}
-              </ThemedText>
-              <ThemedText style={styles.notifySub}>
-                {notify
-                  ? t('bulkScheduleNotifyOnDesc').replace('{date}', dateLong)
-                  : t('bulkScheduleNotifyOffDesc')}
-              </ThemedText>
-            </View>
-          </Pressable>
         </BottomSheetScrollView>
 
         <View style={[styles.footer, { borderTopColor: c.border, backgroundColor: c.background }]}>
@@ -378,27 +336,6 @@ const styles = StyleSheet.create({
   },
   dayCellSelected: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
   dayText: { fontSize: 14 },
-  notifyBox: {
-    marginTop: 16,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  notifyCheckbox: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  notifyTextWrap: { flex: 1 },
-  notifyTitle: { fontSize: 14, fontWeight: '500', color: TEXT_PRIMARY },
-  notifySub: { fontSize: 12, color: TEXT_SECONDARY, marginTop: 2, lineHeight: 18 },
   footer: { padding: 16, paddingBottom: 22, borderTopWidth: 1 },
   cta: {
     height: 56,
