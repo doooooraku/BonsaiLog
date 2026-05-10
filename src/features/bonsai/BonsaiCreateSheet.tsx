@@ -1,9 +1,33 @@
-import { useRouter, type Href } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+/**
+ * 盆栽新規登録 BottomSheet (T2-1、Tier 2 着手 PR)。
+ *
+ * mockup `home-screens.jsx CreateBonsaiScreen` (L?) に整合する BottomSheet モーダル化の最小スコープ。
+ * 旧 `app/(tabs)/bonsai/new.tsx` (独立 page) を BottomSheet に移植 — 機能維持のみ、機能追加は T2-2 以降。
+ *
+ * 既存 4 項目 (name / 樹種 / 樹形 / 取得日) を BottomSheet 内 ScrollView に配置:
+ * - name (必須、64 字)
+ * - 樹種選択 (検索 + inline list、50 種)
+ * - 樹形選択 (chip、10 種)
+ * - 取得日 (YYYY-MM-DD inline 入力、Tier 2 後半で DateTimePicker 化予定)
+ *
+ * Props:
+ * - bottomSheetRef: 親が snapToIndex / close を制御する ref
+ * - onCreated: 新規登録成功後のコールバック (親が router.push などを実行)
+ *
+ * Tier 2 残課題 (本 PR スコープ外):
+ * - T2-2: 写真追加 UI (ADR-0022 1 件 1 枚厳密)
+ * - T2-3: 樹齢入力 + Bonsai schema 拡張
+ * - T2-4: 購入日入力 + Bonsai schema 拡張
+ * - T2-5: 樹種 / 樹形 を専用 Picker Sheet に分離 (mockup 04 / 04b 整合)
+ * - T2-6: タグ入力強化
+ * - T2-7: メモ入力 + Footer CTA + 必須/任意ラベル
+ */
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { nowUtc } from '@/src/core/datetime/clock';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
@@ -16,25 +40,31 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
-
 import { createBonsai } from '@/src/db/bonsaiRepository';
 import { BONSAI_STYLES, type BonsaiStyle } from '@/src/db/schema';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
 
-/**
- * 盆栽新規登録画面 (P2-01 PR-D)。
- * - name (必須) / 樹種 / 樹形 / 取得日 を入力
- * - 樹種選択は inline ScrollView (50 種、簡易検索付き)
- * - 樹形選択は Picker 風 (10 種)
- * - 取得日は ISO 8601 文字列 (YYYY-MM-DD のみ簡易入力、Phase 2 PoC で DateTimePicker 連携)
- *
- * Claude Design `create-screens.jsx` 整合 (ADR-0019 §149-159):
- *   tokens 経由化 + form フィールド radius / border 整合 + chip radius 12 + submit BRAND_GREEN。
- */
-export default function BonsaiNewScreen() {
+type Props = {
+  bottomSheetRef: React.RefObject<BottomSheet | null>;
+  /** 新規登録成功後のコールバック (親が router.push などを実行)。 */
+  onCreated: (bonsaiId: string) => void;
+  /** Sheet が閉じた時のコールバック (親が state リセット等)。 */
+  onClose?: () => void;
+};
+
+/** YYYY-MM-DD → ISO 8601 UTC TEXT (00:00:00Z)。new.tsx から移植、ADR-0008 §TZ 整合で nowUtc 使用。 */
+function toIsoUtc(yyyymmdd: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(yyyymmdd);
+  if (!m) return nowUtc();
+  const [, y, mo, d] = m;
+  return `${y}-${mo}-${d}T00:00:00.000Z`;
+}
+
+export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props) {
   const { t, lang } = useTranslation();
   const c = useColors();
-  const router = useRouter();
+  const snapPoints = useMemo(() => ['90%'], []);
+
   const [name, setName] = useState('');
   const [speciesId, setSpeciesId] = useState<string | null>(null);
   const [speciesList, setSpeciesList] = useState<SpeciesWithName[]>([]);
@@ -63,6 +93,22 @@ export default function BonsaiNewScreen() {
 
   const canSubmit = name.trim().length > 0 && !submitting;
 
+  const handleClose = useCallback(() => {
+    setName('');
+    setSpeciesId(null);
+    setSpeciesQuery('');
+    setStyle(null);
+    setAcquiredAt('');
+    onClose?.();
+  }, [onClose]);
+
+  const handleSheetChange = useCallback(
+    (index: number) => {
+      if (index === -1) handleClose();
+    },
+    [handleClose],
+  );
+
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
@@ -73,15 +119,24 @@ export default function BonsaiNewScreen() {
         style,
         acquiredAt: acquiredAt.trim() ? toIsoUtc(acquiredAt.trim()) : null,
       });
-      router.replace(`/(tabs)/bonsai/${bonsai.id}` as Href);
+      bottomSheetRef.current?.close();
+      onCreated(bonsai.id);
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: c.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <BottomSheet
+      ref={bottomSheetRef}
+      index={-1}
+      snapPoints={snapPoints}
+      enablePanDownToClose
+      onChange={handleSheetChange}
+      backgroundStyle={{ backgroundColor: c.background }}
+      handleIndicatorStyle={{ backgroundColor: c.border }}
+    >
+      <BottomSheetScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.field}>
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldName')} *</ThemedText>
           <TextInput
@@ -103,7 +158,7 @@ export default function BonsaiNewScreen() {
             placeholder={t('bonsaiFieldSpeciesSearch')}
             accessibilityLabel={t('bonsaiFieldSpeciesSearch')}
           />
-          <ScrollView style={styles.speciesScroll} nestedScrollEnabled>
+          <View style={styles.speciesScroll}>
             {filteredSpecies.slice(0, 30).map((s) => {
               const selected = s.id === speciesId;
               return (
@@ -122,7 +177,7 @@ export default function BonsaiNewScreen() {
                 </Pressable>
               );
             })}
-          </ScrollView>
+          </View>
         </View>
 
         <View style={styles.field}>
@@ -163,34 +218,25 @@ export default function BonsaiNewScreen() {
             keyboardType="numbers-and-punctuation"
           />
         </View>
-      </ScrollView>
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('save')}
-        accessibilityState={{ disabled: !canSubmit }}
-        style={[styles.submit, !canSubmit && styles.submitDisabled]}
-        onPress={handleSubmit}
-        disabled={!canSubmit}
-      >
-        <ThemedText style={styles.submitText}>{t('save')}</ThemedText>
-      </Pressable>
-    </ThemedView>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('save')}
+          accessibilityState={{ disabled: !canSubmit }}
+          style={[styles.submit, !canSubmit && styles.submitDisabled]}
+          onPress={handleSubmit}
+          disabled={!canSubmit}
+          testID="e2e_bonsai_create_submit"
+        >
+          <ThemedText style={styles.submitText}>{t('save')}</ThemedText>
+        </Pressable>
+      </BottomSheetScrollView>
+    </BottomSheet>
   );
 }
 
-/** YYYY-MM-DD → ISO 8601 UTC TEXT (00:00:00Z) */
-function toIsoUtc(yyyymmdd: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(yyyymmdd);
-  if (!m) return new Date().toISOString();
-  const [, y, mo, d] = m;
-  return `${y}-${mo}-${d}T00:00:00.000Z`;
-}
-
 const styles = StyleSheet.create({
-  // backgroundColor は useColors の c.background で動的指定
-  container: { flex: 1 },
-  scrollContent: { padding: 16, gap: 16 },
+  scrollContent: { padding: 16, gap: 16, paddingBottom: 32 },
   field: { gap: 8 },
   input: {
     borderWidth: 1,
@@ -218,7 +264,6 @@ const styles = StyleSheet.create({
   speciesNameSelected: { fontWeight: '600' },
   speciesSci: { fontSize: 12, color: TEXT_SECONDARY, fontStyle: 'italic' },
   styleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  // chip radius 12 (design_system.md §5 整合、旧 16 → 12)、padding 12 (タップ領域 36+)
   styleChip: {
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -233,7 +278,7 @@ const styles = StyleSheet.create({
   styleChipText: { fontSize: 13 },
   styleChipTextSelected: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
   submit: {
-    margin: 16,
+    marginTop: 8,
     paddingVertical: 16,
     borderRadius: 12,
     backgroundColor: BRAND_GREEN,
