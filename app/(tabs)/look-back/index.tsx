@@ -5,7 +5,7 @@
  * mockup `docs/mockups/v1.0/wireframes/care-screens.jsx CareHubScreen` (L1576-1719) を移植。
  *
  * 3 カード:
- * 1. 水やり履歴 → 横断ヒートマップ画面が現状未実装、別 Issue で対応 (暫定 alert)
+ * 1. 水やり履歴 → /(tabs)/look-back/watering-history (Issue #361 で本実装)
  * 2. 針金がけ一覧 → /(tabs)/plan/wiring (既存)
  * 3. 盆栽を検索 → /(tabs)/look-back/search (T1-8c で sub-route 化)
  *
@@ -15,7 +15,7 @@
  */
 import { useRouter, type Href } from 'expo-router';
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -45,17 +45,13 @@ export default function LookBackHubScreen() {
   const c = useColors();
   const router = useRouter();
 
-  const handleWateringPress = React.useCallback(() => {
-    Alert.alert(t('lookBackWateringComingSoonTitle'), t('lookBackWateringComingSoonBody'));
-  }, [t]);
-
   const cards: readonly CardDef[] = [
     {
       key: 'watering',
       title: t('lookBackCardWateringTitle'),
       desc: t('lookBackCardWateringDesc'),
       Icon: DropletIcon,
-      onPress: handleWateringPress,
+      onPress: () => router.push('/(tabs)/look-back/watering-history' as Href),
     },
     {
       key: 'wiring',
