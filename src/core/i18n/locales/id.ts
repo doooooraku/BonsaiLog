@@ -566,5 +566,16 @@ const id: Partial<Record<TranslationKey, string>> = {
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
   onboardingLanguageContinue: 'Continue with this language',
+  // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
+  lookBackHubSubtitle: 'Browse your care records.',
+  lookBackCardWateringTitle: 'Watering history',
+  lookBackCardWateringDesc: 'Calendar & heatmap of past waterings',
+  lookBackCardWiringTitle: 'Wiring list',
+  lookBackCardWiringDesc: 'All wirings with planned removal dates',
+  lookBackCardSearchTitle: 'Search bonsai',
+  lookBackCardSearchDesc: 'By name, species, notes, tags',
+  lookBackWateringComingSoonTitle: 'Watering history (coming soon)',
+  lookBackWateringComingSoonBody:
+    "A cross-bonsai view is coming soon. View per-bonsai watering history from each bonsai's detail screen.",
 };
 export default id;

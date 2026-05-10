@@ -572,6 +572,17 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailExportProTitle: 'Pro 限定機能',
   detailExportProDesc: 'PDF 書き出しは Pro プランの機能です。',
   onboardingLanguageContinue: '選択して続ける',
+  // --- T1-8c CareHub Hub (ADR-0020 §Decision §7) ---
+  lookBackHubSubtitle: '記録したケアを一覧で振り返るビューです。',
+  lookBackCardWateringTitle: '水やり履歴',
+  lookBackCardWateringDesc: 'カレンダー・ヒートマップで過去の水やりを確認',
+  lookBackCardWiringTitle: '針金がけ一覧',
+  lookBackCardWiringDesc: '巻いた針金と、自分で決めた外し予定を一覧',
+  lookBackCardSearchTitle: '盆栽を検索',
+  lookBackCardSearchDesc: '名前 / 樹種 / メモ / タグから探す',
+  lookBackWateringComingSoonTitle: '水やり履歴（準備中）',
+  lookBackWateringComingSoonBody:
+    '全盆栽の横断画面は準備中です。各盆栽の詳細画面から個別の水やり履歴を確認できます。',
 };
 
 export default ja;

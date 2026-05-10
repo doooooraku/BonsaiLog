@@ -24,6 +24,7 @@ export {
   CalendarIcon,
   CameraIcon,
   CheckIcon,
+  ChevronRightIcon,
   CloseIcon,
   CogIcon,
   EditIcon,

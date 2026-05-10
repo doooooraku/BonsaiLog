@@ -355,7 +355,7 @@ export default function SettingsScreen() {
             accessibilityLabel={t('searchAction')}
             testID="e2e_open_search"
             style={styles.entry}
-            onPress={() => router.push('/(tabs)/look-back' as Href)}
+            onPress={() => router.push('/(tabs)/look-back/search' as Href)}
           >
             <ThemedText type="defaultSemiBold">{t('searchAction')}</ThemedText>
             <ThemedText style={styles.entryDesc}>{t('searchDesc')}</ThemedText>

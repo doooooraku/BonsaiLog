@@ -159,6 +159,26 @@ export function MoreVerticalIcon({ size = 22, color = TEXT_PRIMARY }: IconProps)
   );
 }
 
+/**
+ * 右シェブロン (Chevron Right)。リスト項目の続きを示す 20px。
+ *
+ * mockup v1.0 care-screens.jsx CareHubScreen の Chev (L1579-1589) を移植。
+ * 3 カード Hub の各カード末尾に表示、押すと sub-route に遷移する目印。
+ */
+export function ChevronRightIcon({ size = 20, color = TEXT_PRIMARY }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+      <Path
+        d="M7.5 4l6 6-6 6"
+        stroke={color}
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 /** チェック (確定 / 完了)。FAB / Toast 18px、default color は washi。 */
 export function CheckIcon({ size = 18, color = BG_PRIMARY }: IconProps) {
   return (
