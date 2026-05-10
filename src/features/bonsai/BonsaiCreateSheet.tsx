@@ -1,28 +1,26 @@
 /**
- * 盆栽新規登録 BottomSheet (T2-1、Tier 2 着手 PR)。
+ * 盆栽新規登録 BottomSheet (Tier 2 完遂、mockup `create-screens.jsx CreateBonsaiScreen` 整合)。
  *
- * mockup `home-screens.jsx CreateBonsaiScreen` (L?) に整合する BottomSheet モーダル化の最小スコープ。
- * 旧 `app/(tabs)/bonsai/new.tsx` (独立 page) を BottomSheet に移植 — 機能維持のみ、機能追加は T2-2 以降。
+ * フィールド構成 (R-29 写経駆動):
+ * - 写真 (任意、cover 1 枚、ImagePicker → addPhotoFromUri 永続化)
+ * - 名前 (必須、64 字、赤バッジ)
+ * - 樹種 (任意、SpeciesPickerSheet 起動)
+ * - 樹形 (任意、StylePickerSheet 起動)
+ * - 取得日 / 樹齢 / 購入日 / タグ chip / メモ (全て任意、灰色ラベル)
  *
- * 既存 4 項目 (name / 樹種 / 樹形 / 取得日) を BottomSheet 内 ScrollView に配置:
- * - name (必須、64 字)
- * - 樹種選択 (検索 + inline list、50 種)
- * - 樹形選択 (chip、10 種)
- * - 取得日 (YYYY-MM-DD inline 入力、Tier 2 後半で DateTimePicker 化予定)
+ * Footer (mockup L779-818 sticky bottom save 整合):
+ * - BottomSheetFooter で画面下部固定、ScrollView と独立配置
  *
  * Props:
  * - bottomSheetRef: 親が snapToIndex / close を制御する ref
- * - onCreated: 新規登録成功後のコールバック (親が router.push などを実行)
- *
- * Tier 2 残課題 (本 PR スコープ外):
- * - T2-2: 写真追加 UI (ADR-0022 1 件 1 枚厳密)
- * - T2-3: 樹齢入力 + Bonsai schema 拡張
- * - T2-4: 購入日入力 + Bonsai schema 拡張
- * - T2-5: 樹種 / 樹形 を専用 Picker Sheet に分離 (mockup 04 / 04b 整合)
- * - T2-6: タグ入力強化
- * - T2-7: メモ入力 + Footer CTA + 必須/任意ラベル
+ * - onCreated: 新規登録成功後のコールバック
+ * - onClose?: Sheet が閉じた時のコールバック
  */
-import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, {
+  BottomSheetFooter,
+  type BottomSheetFooterProps,
+  BottomSheetScrollView,
+} from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -163,6 +161,30 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
     [handleClose],
   );
 
+  // Footer 下部固定 (mockup create-screens.jsx L779-818 sticky bottom save 整合)。
+  // BottomSheetFooter は ScrollView と独立配置され、キーボード表示時も追従する。
+  const renderFooter = useCallback(
+    (props: BottomSheetFooterProps) => (
+      <BottomSheetFooter {...props} bottomInset={0}>
+        <View style={styles.footer}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('save')}
+            accessibilityState={{ disabled: !canSubmit }}
+            style={[styles.footerButton, !canSubmit && styles.footerButtonDisabled]}
+            onPress={handleSubmit}
+            disabled={!canSubmit}
+            testID="e2e_bonsai_create_submit"
+          >
+            <ThemedText style={styles.footerButtonText}>{t('save')}</ThemedText>
+          </Pressable>
+        </View>
+      </BottomSheetFooter>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [canSubmit, t],
+  );
+
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
@@ -215,6 +237,7 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
       onChange={handleSheetChange}
       backgroundStyle={{ backgroundColor: c.background }}
       handleIndicatorStyle={{ backgroundColor: c.border }}
+      footerComponent={renderFooter}
     >
       <BottomSheetScrollView contentContainerStyle={styles.scrollContent}>
         {/* T2-2-ui (Issue #366 後続): 写真選択 UI (mockup create-screens.jsx CreateBonsaiScreen 整合)。
@@ -387,18 +410,6 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
             textAlignVertical="top"
           />
         </View>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('save')}
-          accessibilityState={{ disabled: !canSubmit }}
-          style={[styles.submit, !canSubmit && styles.submitDisabled]}
-          onPress={handleSubmit}
-          disabled={!canSubmit}
-          testID="e2e_bonsai_create_submit"
-        >
-          <ThemedText style={styles.submitText}>{t('save')}</ThemedText>
-        </Pressable>
       </BottomSheetScrollView>
 
       {/* T2-5: Picker Sheets — 親 BottomSheet 内に入れ子配置 (sibling として動作)。 */}
@@ -414,7 +425,8 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
 }
 
 const styles = StyleSheet.create({
-  scrollContent: { padding: 16, gap: 16, paddingBottom: 32 },
+  // Footer 高 (ボタン 56 + 上下 padding 12*2) + 余白 = 約 96。
+  scrollContent: { padding: 16, gap: 16, paddingBottom: 96 },
   field: { gap: 8 },
   photoBox: {
     width: 120,
@@ -491,15 +503,21 @@ const styles = StyleSheet.create({
   tagChipText: { fontSize: 13 },
   tagChipTextSelected: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
   tagsEmpty: { fontSize: 13, color: TEXT_MUTED },
-  submit: {
-    marginTop: 8,
-    paddingVertical: 16,
+  // Footer 下部固定 (mockup create-screens.jsx L779-818 sticky bottom save 整合)。
+  footer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+  },
+  footerButton: {
+    height: 56,
     borderRadius: 12,
     backgroundColor: BRAND_GREEN,
     alignItems: 'center',
-    minHeight: 56,
     justifyContent: 'center',
   },
-  submitDisabled: { backgroundColor: DISABLED_BG },
-  submitText: { color: ON_BRAND, fontSize: 17, fontWeight: '500', letterSpacing: 0.5 },
+  footerButtonDisabled: { backgroundColor: DISABLED_BG },
+  footerButtonText: { color: ON_BRAND, fontSize: 17, fontWeight: '500', letterSpacing: 0.5 },
 });
