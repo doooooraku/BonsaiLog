@@ -375,6 +375,7 @@ export default function BonsaiHomeScreen() {
         testIdSuffix="bonsai_home"
         selectMode={selectMode}
         onSelectPress={toggleSelectMode}
+        selectedCount={selectMode ? selectedIds.size : undefined}
       />
       <HomeFilterTabs
         chips={filterChips}
