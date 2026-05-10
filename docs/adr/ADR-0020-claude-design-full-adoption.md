@@ -302,3 +302,64 @@
 | A8    | DetailMoreMenu (PDF / Archive)                                        |
 | A9    | ProLockModal                                                          |
 | A10   | §画面マップ row 7 整合済マーク (最終)                                 |
+
+### Notes Amended (2026-05-10): §Decision §7 改訂 — 「探すタブ」→「ふりかえりタブ」(UI 100% mockup 採用)
+
+#### 改訂内容
+
+- 2026-05-10 ユーザー指示「**UI においては全て OpenDesign mockup が正しい**」+ BonsaiLog-Flow.html v1.7 final 整合により、本 ADR §Decision §7 で確定していた **「探すタブ = SearchScreen」を「ふりかえりタブ = CareHubScreen + look-back/search sub-route」に改訂**
+- TabBar 4 タブ目の **ラベル「探す」→「ふりかえり」**、icon **CompassNavIcon → PencilNavIcon** (mockup `home-screens.jsx HI.Pencil`)
+- 検索機能は撤回せず、**2 経路アクセス** で維持 (BonsaiLog-Flow.html v1.10 D9/D10 解消整合):
+  - **経路 1 (高速、1 タップ)**: Home Header 検索アイコン (虫眼鏡) → 盆栽検索画面
+  - **経路 2 (Hub 経由、3 タップ)**: TabBar「ふりかえり」 → CareHubScreen → 「盆栽を検索」カード → 盆栽検索画面
+- **CareHubScreen の中身** (mockup `care-screens.jsx CareHubScreen` L1576-1719): 3 カード Hub
+  - 水やり履歴 (カレンダー・ヒートマップで過去の水やりを確認)
+  - 針金がけ一覧 (巻いた針金と外し予定を一覧)
+  - 盆栽を検索 (名前 / 樹種 / メモ / タグから探す)
+- §Decision §7 は historical record として残し、本 Amended で改訂を明示
+- §画面マップ row 16 を本 Amended と T1-12 (PR で実施予定) で「10 LOOK BACK HUB (ふりかえりタブ)」に改訂
+- i18n 19 言語: `tabFind: '探す'` → `tabLookBack: 'ふりかえり'` (ja) / `'Activity'` (en) / 各言語最適化
+
+#### R-28 境界判定
+
+- **UI 表現** (タブラベル / アイコン / 動線): R-16 で OpenDesign が SoT、本 Amended で mockup 採用確定
+- **ビジネス仕様** (検索ロジック / FTS5 / tag 関連): F-09 維持、本 Amended で変更なし
+- **動線整合** (Home Header 検索アイコンの維持): BonsaiLog-Flow.html v1.10 D9 解消整合、UI 表現として mockup 採用
+
+#### 4 ペルソナ評価 (本 Amended、ふりかえり Hub + Header 検索)
+
+| 評価軸                         | 高橋 62 歳   | Marcus 35 歳      | 盆栽園プロ         | ライト     |
+| ------------------------------ | ------------ | ----------------- | ------------------ | ---------- |
+| 「ふりかえり」概念整合         | ◎ (和の品)   | ○ (Activity 翻訳) | ◎ (記録の振り返り) | ◎ (直感的) |
+| Hub 経由の検索 (3 タップ)      | ○ (発見性高) | ○ (探索的)        | △ (1 タップ希望)   | ○          |
+| Home Header 検索 (1 タップ)    | ◎ (高速)     | ◎ (D9 解消)       | ◎ (150 株運用整合) | ○          |
+| 水やり履歴 / 針金一覧 への動線 | ◎ (Hub 整合) | ◎ (Hub 概念)      | ◎ (業務動線)       | ○          |
+
+→ 全項目 ○ 以上、✕ ゼロ (R-10 クリア)、Marcus の英語版「Activity」翻訳で違和感解消
+
+#### 実装フェーズ (Tier 1b、T1-6〜T1-12)
+
+| Phase | 内容                                                                                                              | PR   |
+| ----- | ----------------------------------------------------------------------------------------------------------------- | ---- |
+| T1-6  | 本 Notes Amended (本 PR、ADR 改訂を先確定、コード変更なし)                                                        | (本) |
+| T1-7  | i18n 19 言語 `tabFind` → `tabLookBack` rename (ja=「ふりかえり」/ en=「Activity」/ 各言語最適化)                  | -    |
+| T1-8a | `app/(tabs)/find/` → `app/(tabs)/look-back/` rename + `_layout.tsx` 改修 (icon Pencil)                            | -    |
+| T1-8b | `NavIcons.tsx` に `PencilNavIcon` 追加 (mockup HI.Pencil の SVG path 移植)                                        | -    |
+| T1-8c | `look-back/index.tsx` を CareHubScreen 化 (3 カード Hub) + `look-back/search.tsx` 移行 (sub-route)                | -    |
+| T1-8d | `ui-diff/config.ts` SCREEN_PAIRS rename + Maestro flow rename (`find-tab` → `look-back-tab` + `look-back-search`) | -    |
+| T1-12 | §画面マップ row 16 「10 LOOK BACK HUB (ふりかえりタブ)」確定 (T1-8c 完了後)                                       | -    |
+
+- **Issue #339 のスコープ更新**: 「探すタブ大改修」を「ふりかえり Hub + look-back/search 統合実装」に再評価、T1-8c で実装し close 候補
+- **既存 PR #337/#338 (find-tab 部分整合済) の扱い**: 種別 row 16 に明記、T1-12 で「整合済 (Tier 1b 完了)」マーク
+
+#### 関連
+
+- BonsaiLog-Flow.html v1.7 final (`docs/mockups/v1.0/BonsaiLog-Flow.html` v1.10 改訂、D9/D10 解消)
+- mockup `home-screens.jsx` L344-350 (TabBar 4 タブ確定値)
+- mockup `care-screens.jsx CareHubScreen` L1576-1719 (3 カード Hub)
+- T1-1 (PR #352) `integration-criteria.md` (整合性レベル定義)
+- T1-2 (PR #353) `mockup-screenshots/` (mockup スクショ参照)
+- T1-3 (PR #354) PR テンプレ §7.5 (R-29 5 段階)
+- T1-5 + T1-9 (PR #357) 開発トラブルシューティング 2 文書
+- Issue #339 (探すタブ大改修、本 Amended でスコープ更新)
+- Issue #345 (ui-diff 実行、Tier 1b 完了後の検証用)
