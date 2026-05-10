@@ -48,6 +48,13 @@ const ja: Partial<Record<TranslationKey, string>> = {
   photoEmpty: 'まだ写真がありません。',
   photoLimitTitle: 'Free プランの上限です',
   photoLimitDesc: 'Free プランは盆栽 1 つにつき {count} 枚まで。Pro にすると無制限になります。',
+  // Repolog-style photoCard UI keys
+  photoCaptionPlaceholder: '画像の説明 (任意)',
+  photoMoveUpLabel: '上へ移動',
+  photoMoveDownLabel: '下へ移動',
+  photoCoverBadge: 'カバー',
+  photoSetCoverLabel: 'カバーに設定',
+  photoLimitPartialAdded: '{added} 枚追加しました（{skipped} 枚は上限超過のためスキップ）',
   photoPermissionTitle: '許可が必要です',
   photoPermissionDesc: '設定からカメラと写真の利用を許可してください。',
   photoActionTitle: '写真の操作',

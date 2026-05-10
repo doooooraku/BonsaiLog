@@ -122,6 +122,13 @@ const baseEn = {
   photoLimitTitle: 'Free limit reached',
   photoLimitDesc:
     'Free plan allows {count} photos per bonsai. Upgrade to Pro for unlimited photos.',
+  // Repolog-style photoCard UI keys
+  photoCaptionPlaceholder: 'Caption (optional)',
+  photoMoveUpLabel: 'Move up',
+  photoMoveDownLabel: 'Move down',
+  photoCoverBadge: 'Cover',
+  photoSetCoverLabel: 'Set as cover',
+  photoLimitPartialAdded: 'Added {added} photos ({skipped} skipped due to limit)',
   photoPermissionTitle: 'Permission needed',
   photoPermissionDesc: 'Please allow camera and photo library access in Settings.',
   photoActionTitle: 'Photo actions',
