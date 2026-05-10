@@ -21,7 +21,15 @@ import * as SQLite from 'expo-sqlite';
 
 import { nowUtc } from '@/src/core/datetime';
 
-import { SCHEMA_VERSION, schemaV2, schemaV3, schemaV4, schemaV5, schemaV6 } from './schema';
+import {
+  SCHEMA_VERSION,
+  schemaV2,
+  schemaV3,
+  schemaV4,
+  schemaV5,
+  schemaV6,
+  schemaV7,
+} from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -149,6 +157,18 @@ async function migrate(db: SQLite.SQLiteDatabase) {
       await db.execAsync(schemaV6);
     }
     version = 6;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v7 (T2-7、Tier 2): bonsai テーブルに memo カラム追加。
+  //
+  // estimated_age と同パターン: hasColumn ガードで二重実行回避。
+  // ---------------------------------------------------------------------------
+  if (version < 7) {
+    if (!(await hasColumn(db, 'bonsai', 'memo'))) {
+      await db.execAsync(schemaV7);
+    }
+    version = 7;
   }
 
   // Always set version UNCONDITIONALLY (not inside an if-block).

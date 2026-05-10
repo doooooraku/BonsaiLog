@@ -593,6 +593,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldEstimatedAge: '樹齢',
   bonsaiFieldEstimatedAgePlaceholder: '例: 35',
   ageEstimatedFormat: '{years}年（推定）',
+  // --- T2-7 メモ + 必須/任意ラベル (schema v7) ---
+  bonsaiFieldMemo: 'メモ',
+  bonsaiFieldMemoPlaceholder: '気になることを自由に',
+  fieldRequiredLabel: '必須',
+  fieldOptionalLabel: '任意',
 };
 
 export default ja;

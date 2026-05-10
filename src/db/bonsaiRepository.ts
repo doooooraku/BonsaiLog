@@ -35,6 +35,8 @@ export type CreateBonsaiInput = {
   potInfo?: Record<string, unknown> | null; // JSON 化される
   /** 推定樹齢 (年単位、null 可、T2-3 / schema v6 追加)。UI で「N年（推定）」表示。 */
   estimatedAge?: number | null;
+  /** メモ (free-form text、null 可、T2-7 / schema v7 追加)。 */
+  memo?: string | null;
 };
 
 export type UpdateBonsaiInput = Partial<CreateBonsaiInput>;
@@ -55,8 +57,8 @@ export async function createBonsai(input: CreateBonsaiInput): Promise<Bonsai> {
 
   await db.runAsync(
     `INSERT INTO bonsai
-       (id, name, species_id, acquired_at, style, pot_info, estimated_age, archived_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?);`,
+       (id, name, species_id, acquired_at, style, pot_info, estimated_age, memo, archived_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?);`,
     [
       id,
       input.name,
@@ -65,6 +67,7 @@ export async function createBonsai(input: CreateBonsaiInput): Promise<Bonsai> {
       input.style ?? null,
       potInfoStr,
       input.estimatedAge ?? null,
+      input.memo ?? null,
       now,
       now,
     ],
@@ -78,6 +81,7 @@ export async function createBonsai(input: CreateBonsaiInput): Promise<Bonsai> {
     style: input.style ?? null,
     potInfo: potInfoStr,
     estimatedAge: input.estimatedAge ?? null,
+    memo: input.memo ?? null,
     archivedAt: null,
     createdAt: now,
     updatedAt: now,
@@ -210,6 +214,10 @@ export async function updateBonsai(id: string, updates: UpdateBonsaiInput): Prom
   if (updates.estimatedAge !== undefined) {
     fields.push('estimated_age = ?');
     values.push(updates.estimatedAge);
+  }
+  if (updates.memo !== undefined) {
+    fields.push('memo = ?');
+    values.push(updates.memo);
   }
 
   values.push(id);

@@ -82,6 +82,8 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
   const [coverUri, setCoverUri] = useState<string | null>(null);
   // T2-3: 樹齢入力 (数字 string で保持、submit 時に parseInt、空文字なら null)。
   const [estimatedAgeText, setEstimatedAgeText] = useState('');
+  // T2-7: メモ入力 (multiline、空文字なら null で保存)。
+  const [memo, setMemo] = useState('');
   // T2-5: 樹種 / 樹形 Picker Sheet refs (BonsaiCreateSheet 内に入れ子配置)。
   const speciesSheetRef = useRef<BottomSheet>(null);
   const styleSheetRef = useRef<BottomSheet>(null);
@@ -111,6 +113,7 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
     setAcquiredAt('');
     setCoverUri(null);
     setEstimatedAgeText('');
+    setMemo('');
     onClose?.();
   }, [onClose]);
 
@@ -153,6 +156,7 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
         style,
         acquiredAt: acquiredAt.trim() ? toIsoUtc(acquiredAt.trim()) : null,
         estimatedAge,
+        memo: memo.trim() ? memo.trim() : null,
       });
       // T2-2-impl (Issue #369): coverUri を photoRepository.addPhotoFromUri で永続化。
       // persistPhotoFile + insertPhoto を内部で呼び、photoId 整合性 (ファイル名 == DB id) を確保。
@@ -203,8 +207,14 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
           </Pressable>
         </View>
 
+        {/* T2-7: 必須/任意ラベル整備、name は必須 (赤バッジ)。 */}
         <View style={styles.field}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldName')} *</ThemedText>
+          <View style={styles.fieldLabelRow}>
+            <ThemedText type="defaultSemiBold">{t('bonsaiFieldName')}</ThemedText>
+            <View style={styles.requiredBadge}>
+              <ThemedText style={styles.requiredBadgeText}>{t('fieldRequiredLabel')}</ThemedText>
+            </View>
+          </View>
           <TextInput
             style={styles.input}
             value={name}
@@ -263,7 +273,10 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
         </View>
 
         <View style={styles.field}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldEstimatedAge')}</ThemedText>
+          <View style={styles.fieldLabelRow}>
+            <ThemedText type="defaultSemiBold">{t('bonsaiFieldEstimatedAge')}</ThemedText>
+            <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+          </View>
           <TextInput
             style={styles.input}
             value={estimatedAgeText}
@@ -272,6 +285,25 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
             accessibilityLabel={t('bonsaiFieldEstimatedAge')}
             maxLength={4}
             keyboardType="number-pad"
+          />
+        </View>
+
+        {/* T2-7: メモ入力欄 (multiline、任意ラベル、4 行まで)。 */}
+        <View style={styles.field}>
+          <View style={styles.fieldLabelRow}>
+            <ThemedText type="defaultSemiBold">{t('bonsaiFieldMemo')}</ThemedText>
+            <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+          </View>
+          <TextInput
+            style={[styles.input, styles.inputMultiline]}
+            value={memo}
+            onChangeText={setMemo}
+            placeholder={t('bonsaiFieldMemoPlaceholder')}
+            accessibilityLabel={t('bonsaiFieldMemo')}
+            multiline
+            numberOfLines={4}
+            maxLength={500}
+            textAlignVertical="top"
           />
         </View>
 
@@ -341,6 +373,27 @@ const styles = StyleSheet.create({
     backgroundColor: BG_SURFACE,
   },
   pickerPlaceholder: { color: TEXT_MUTED },
+  // T2-7: 必須/任意ラベル (mockup create-screens.jsx field() helper L255-314 整合)。
+  fieldLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  requiredBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 8,
+    backgroundColor: '#8B2E2E', // DANGER
+  },
+  requiredBadgeText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    color: '#F7F3E8', // BG_PRIMARY
+    letterSpacing: 0.8,
+  },
+  optionalLabel: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    color: TEXT_MUTED,
+    letterSpacing: 0.8,
+  },
+  inputMultiline: { minHeight: 96, paddingVertical: 12 },
   submit: {
     marginTop: 8,
     paddingVertical: 16,

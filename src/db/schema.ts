@@ -26,7 +26,7 @@
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -115,6 +115,7 @@ export const bonsai = sqliteTable(
     style: text('style'), // 樹形 (例: chokkan, moyogi, shakan, kengai, han-kengai, bunjingi)
     potInfo: text('pot_info'), // JSON 文字列 (鉢の形状/色/サイズ/メーカー等)
     estimatedAge: integer('estimated_age'), // v6 追加: 推定樹齢 (年、null 可)
+    memo: text('memo'), // v7 追加: メモ (free-form text、null 可)
     archivedAt: text('archived_at'), // ISO 8601 UTC TEXT (NULL ならアクティブ)
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
@@ -480,6 +481,17 @@ WHERE deleted_at IS NULL;
  */
 export const schemaV6 = `
 ALTER TABLE bonsai ADD COLUMN estimated_age INTEGER;
+`;
+
+/**
+ * Migration v7 (T2-7、Tier 2): bonsai テーブルに memo カラム追加。
+ *
+ * - メモ (free-form text、null 可) を保存
+ * - mockup create-screens.jsx CreateBonsaiScreen の memo 入力欄整合
+ * - ALTER TABLE は db.ts 側の hasColumn ガードで二重実行回避
+ */
+export const schemaV7 = `
+ALTER TABLE bonsai ADD COLUMN memo TEXT;
 `;
 
 // ---------------------------------------------------------------------------
