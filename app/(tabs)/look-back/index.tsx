@@ -1,17 +1,12 @@
 /**
- * 探すタブ index (ADR-0020 Phase 6、Claude Design `care-screens.jsx SearchScreen` 整合)。
+ * ふりかえりタブ index (現状は SearchScreen ベース、T1-8c で CareHub Hub 画面に置換予定)。
  *
- * 構造:
- * - SearchHeader (タイトル「探す」+ 屋外モードトグルのみ、検索アイコンは自身が検索画面のため非表示)
- * - 検索バー + 検索ボタン (既存 app/search.tsx と機能等価)
- * - 検索履歴 chip (2 文字未満時) + 最近タグ chip (タグ AND フィルタ用)
- * - セクション (盆栽 / 樹種 / 作業履歴) ラベル + N 件表記
+ * ADR-0020 §Decision §7 (2026-05-10 改訂) で「探す」を「ふりかえり」に rename。
+ * SearchHeader タイトルは `tabLookBack` (= 「ふりかえり」) を表示するが、
+ * 本体は既存 SearchScreen の検索バー + 履歴 chip + セクション一覧をそのまま流用。
  *
  * 既存 app/search.tsx は本 PR では削除しない (settings.tsx からの導線が依然存在、
- * Phase 7 の Settings 改修時に link を /(tabs)/find に切替えてから削除)。
- *
- * F-09 Phase A〜H 既存ロジック (searchBonsaiByName / searchEventsWithSnippet / searchSpecies /
- * searchEventsByTags + useSearchHistoryStore) を再利用。Phase 6 は SearchHeader 装着 + タブ統合のみ。
+ * link は /(tabs)/look-back に切替済、T1-8c の CareHub 化と合わせて整理予定)。
  */
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useState } from 'react';
@@ -136,7 +131,7 @@ export default function FindScreen() {
       testID="e2e_find_screen"
     >
       <SearchHeader
-        title={t('tabFind')}
+        title={t('tabLookBack')}
         testIdSuffix="find"
         showSearch={false}
         showSettings={false}

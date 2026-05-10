@@ -69,17 +69,18 @@ export function CalendarIcon({ size = 28, color = TEXT_PRIMARY }: IconProps) {
   );
 }
 
-/** コンパス (探すタブ TabBar アイコン)。28px。 */
-export function CompassNavIcon({ size = 28, color = TEXT_PRIMARY }: IconProps) {
+/**
+ * 鉛筆 (ふりかえりタブ TabBar アイコン)。28px。
+ *
+ * mockup v1.0 home-screens.jsx HI.Pencil (L172-177) を移植。
+ * ADR-0020 §Decision §7: 4 番目のタブ「探す」を「ふりかえり」に rename した際、
+ * アイコンも CompassNavIcon (コンパス) から PencilNavIcon (鉛筆) に差し替え。
+ */
+export function PencilNavIcon({ size = 28, color = TEXT_PRIMARY }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.5" />
-      <Path
-        d="M15 9l-1.5 4.5L9 15l1.5-4.5L15 9z"
-        stroke={color}
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
+      <Path d="M4 20h4l10-10-4-4L4 16v4z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+      <Path d="M14 6l4 4" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
     </Svg>
   );
 }
