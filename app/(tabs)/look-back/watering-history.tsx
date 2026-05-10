@@ -9,8 +9,9 @@
  *
  * Tier 2 の編集機能完了後、CareHub Hub の watering Alert を本画面遷移に置換。
  */
-import { useFocusEffect } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import type BottomSheet from '@gorhom/bottom-sheet';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -26,9 +27,11 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
+import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getAllActiveWateringEventsLogged } from '@/src/db/eventRepository';
 import type { Event } from '@/src/db/schema';
 import { CrossWateringCalendar } from '@/src/features/watering/CrossWateringCalendar';
+import { WateringDayDetailSheet } from '@/src/features/watering/WateringDayDetailSheet';
 import { WateringHeatmap } from '@/src/features/watering/WateringHeatmap';
 import { buildIndividualSummary, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 
@@ -44,15 +47,23 @@ const RANGES: readonly RangeOption[] = [
 ];
 
 export default function CrossWateringHistoryScreen() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const router = useRouter();
   const c = useColors();
   const [events, setEvents] = useState<Event[]>([]);
   const [windowDays, setWindowDays] = useState<30 | 90 | 365>(90);
+  const [bonsaiList, setBonsaiList] = useState<BonsaiWithSpecies[]>([]);
+  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
+  const dayDetailSheetRef = useRef<BottomSheet>(null);
 
   const reload = useCallback(async () => {
-    const evs = await getAllActiveWateringEventsLogged();
+    const [evs, bs] = await Promise.all([
+      getAllActiveWateringEventsLogged(),
+      getAllActiveBonsaiWithSpecies(lang),
+    ]);
     setEvents(evs);
-  }, []);
+    setBonsaiList(bs);
+  }, [lang]);
 
   useFocusEffect(
     useCallback(() => {
@@ -74,6 +85,30 @@ export default function CrossWateringHistoryScreen() {
   const summary = useMemo(
     () => buildIndividualSummary(events, tzOffsetMin, windowDays, todayLocalKey),
     [events, tzOffsetMin, windowDays, todayLocalKey],
+  );
+
+  // 日付タップ → BottomSheet で当日詳細を表示。
+  const bonsaiById = useMemo(() => new Map(bonsaiList.map((b) => [b.id, b])), [bonsaiList]);
+  const selectedDayEvents = useMemo(() => {
+    if (selectedDateKey == null) return [];
+    return events.filter((e) => toLocalDateKey(e.occurredAtUtc, tzOffsetMin) === selectedDateKey);
+  }, [events, selectedDateKey, tzOffsetMin]);
+
+  const handleDayPress = useCallback((dateKey: string) => {
+    setSelectedDateKey(dateKey);
+    dayDetailSheetRef.current?.snapToIndex(0);
+  }, []);
+
+  const handleDayDetailClose = useCallback(() => {
+    setSelectedDateKey(null);
+  }, []);
+
+  const handlePressEntry = useCallback(
+    (bonsaiId: string) => {
+      dayDetailSheetRef.current?.close();
+      router.push(`/(tabs)/bonsai/${bonsaiId}` as Href);
+    },
+    [router],
   );
 
   return (
@@ -126,8 +161,12 @@ export default function CrossWateringHistoryScreen() {
           />
         </View>
 
-        {/* 月別カレンダー (Issue #361 追加スコープ、ヒートマップとは別の月単位ビュー) */}
-        <CrossWateringCalendar events={events} tzOffsetMin={tzOffsetMin} />
+        {/* 月別カレンダー (Issue #361 追加スコープ、ヒートマップとは別の月単位ビュー、日付タップで詳細 BottomSheet) */}
+        <CrossWateringCalendar
+          events={events}
+          tzOffsetMin={tzOffsetMin}
+          onDayPress={handleDayPress}
+        />
 
         {/* 期間内サマリー (個別画面の「最後の水やりから / 連続記録 / 2 回の日」は横断では意味が薄いため省略)。 */}
         <View style={styles.summaryRow}>
@@ -153,6 +192,16 @@ export default function CrossWateringHistoryScreen() {
           {t('wateringDisclaimerHeatmapMeaning')}
         </ThemedText>
       </ScrollView>
+
+      {/* 日付タップ詳細 BottomSheet (Calendar セル tap で開く) */}
+      <WateringDayDetailSheet
+        ref={dayDetailSheetRef}
+        dateKey={selectedDateKey}
+        events={selectedDayEvents}
+        bonsaiById={bonsaiById}
+        onClose={handleDayDetailClose}
+        onPressEntry={handlePressEntry}
+      />
     </ThemedView>
   );
 }

@@ -40,9 +40,11 @@ function pad(n: number): string {
 type Props = {
   events: readonly Event[];
   tzOffsetMin: number;
+  /** 日付セル tap callback (任意、未指定なら tap 不可)。 */
+  onDayPress?: (dateKey: string) => void;
 };
 
-export function CrossWateringCalendar({ events, tzOffsetMin }: Props) {
+export function CrossWateringCalendar({ events, tzOffsetMin, onDayPress }: Props) {
   const { t } = useTranslation();
   // ADR-0008 §TZ: new Date() 直接呼出禁止、nowUtc() 経由で生成。
   const today = useMemo(() => new Date(nowUtc() as string), []);
@@ -171,8 +173,8 @@ export function CrossWateringCalendar({ events, tzOffsetMin }: Props) {
               const dateKey = `${year}-${pad(month + 1)}-${pad(d)}`;
               const count = countsByDay.get(dateKey) ?? 0;
               const isToday = dateKey === todayLocalKey;
-              return (
-                <View key={i} style={styles.cell} testID={`e2e_cross_watering_cell_${dateKey}`}>
+              const cellContent = (
+                <>
                   <ThemedText
                     style={[
                       styles.cellText,
@@ -186,6 +188,25 @@ export function CrossWateringCalendar({ events, tzOffsetMin }: Props) {
                       <View key={k} style={styles.dot} />
                     ))}
                   </View>
+                </>
+              );
+              if (onDayPress != null) {
+                return (
+                  <Pressable
+                    key={i}
+                    accessibilityRole="button"
+                    accessibilityLabel={dateKey}
+                    style={styles.cell}
+                    onPress={() => onDayPress(dateKey)}
+                    testID={`e2e_cross_watering_cell_${dateKey}`}
+                  >
+                    {cellContent}
+                  </Pressable>
+                );
+              }
+              return (
+                <View key={i} style={styles.cell} testID={`e2e_cross_watering_cell_${dateKey}`}>
+                  {cellContent}
                 </View>
               );
             })}
