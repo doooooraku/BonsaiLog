@@ -50,7 +50,7 @@ import { SelectionToolbar } from '@/src/features/bonsai/SelectionToolbar';
 import { BulkLogConfirmSheet } from '@/src/features/event/BulkLogConfirmSheet';
 import { BulkScheduleDateSheet } from '@/src/features/event/BulkScheduleDateSheet';
 import { BulkWorkPickerSheet } from '@/src/features/event/BulkWorkPickerSheet';
-import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 
 const ALL_FILTER_ID = 'ALL';
 
@@ -82,7 +82,15 @@ function formatElapsed(
 }
 
 /**
- * Bonsai 1 件分の card data (cover photo URI + last watering/pruning text) を構築。
+ * Bonsai 1 件分の card data を構築 (T1-10 PR で BonsaiCard 縦型 220+3 段構造に整合)。
+ *
+ * lastAction は watering / pruning の最新イベントを比較して新しい方を採用。
+ * - kind: 'watering' | 'pruning'
+ * - elapsed: formatElapsed の結果 (例: '今日' / '3日' / '2週')
+ * - note: event.note (commentText の優先 fallback、null なら speciesCommonName → "—")
+ *
+ * ageText は Bonsai schema に age 系フィールドが未追加のため当面 null。
+ * Tier 2 編集画面 BottomSheet 化 (T2-x) で schema 拡張時に対応予定。
  */
 async function buildCardData(
   b: BonsaiWithSpecies,
@@ -91,42 +99,49 @@ async function buildCardData(
   t: ReturnType<typeof useTranslation>['t'],
 ): Promise<BonsaiCardData> {
   const [cover, events] = await Promise.all([getCoverPhoto(b.id), getActiveEventsByBonsai(b.id)]);
-  const wateringDays = getDaysSinceLastWatering(events, todayLocalKey, tzOffsetMin);
-  // pruning は wateringHeatmap helper を流用できないため inline で計算。
-  let pruningDays: number | null = null;
-  let lastPruningUtc: string | null = null;
+
+  let lastWateringEv: { utc: string; note: string | null } | null = null;
+  let lastPruningEv: { utc: string; note: string | null } | null = null;
   for (const e of events) {
-    if (e.type !== 'pruning' || e.status !== 'logged' || e.deletedAt != null) continue;
-    if (lastPruningUtc == null || e.occurredAtUtc > lastPruningUtc) {
-      lastPruningUtc = e.occurredAtUtc;
+    if (e.status !== 'logged' || e.deletedAt != null) continue;
+    if (e.type === 'watering') {
+      if (lastWateringEv == null || e.occurredAtUtc > lastWateringEv.utc) {
+        lastWateringEv = { utc: e.occurredAtUtc, note: e.note ?? null };
+      }
+    } else if (e.type === 'pruning') {
+      if (lastPruningEv == null || e.occurredAtUtc > lastPruningEv.utc) {
+        lastPruningEv = { utc: e.occurredAtUtc, note: e.note ?? null };
+      }
     }
   }
-  if (lastPruningUtc != null) {
-    const lastKey = toLocalDateKey(lastPruningUtc, tzOffsetMin);
-    // diffDayKeys は wateringHeatmap.ts の private、再実装回避のため簡易計算。
+
+  let lastAction: BonsaiCardData['lastAction'] = null;
+  const winner =
+    lastWateringEv == null && lastPruningEv == null
+      ? null
+      : lastWateringEv == null
+        ? { kind: 'pruning' as const, ev: lastPruningEv! }
+        : lastPruningEv == null
+          ? { kind: 'watering' as const, ev: lastWateringEv }
+          : lastWateringEv.utc >= lastPruningEv.utc
+            ? { kind: 'watering' as const, ev: lastWateringEv }
+            : { kind: 'pruning' as const, ev: lastPruningEv };
+  if (winner != null) {
+    const lastKey = toLocalDateKey(winner.ev.utc, tzOffsetMin);
     const todayMs = Date.parse(`${todayLocalKey}T00:00:00Z`);
     const lastMs = Date.parse(`${lastKey}T00:00:00Z`);
-    pruningDays = Math.max(0, Math.floor((todayMs - lastMs) / (24 * 60 * 60 * 1000)));
+    const days = Math.max(0, Math.floor((todayMs - lastMs) / (24 * 60 * 60 * 1000)));
+    const elapsed = formatElapsed(days, t) ?? '';
+    lastAction = { kind: winner.kind, elapsed, note: winner.ev.note };
   }
-
-  const lastWateringText =
-    wateringDays != null
-      ? t('homeCardLastWatering').replace('{elapsed}', formatElapsed(wateringDays, t) ?? '')
-      : null;
-  const lastPruningText =
-    pruningDays != null
-      ? t('homeCardLastPruning').replace('{elapsed}', formatElapsed(pruningDays, t) ?? '')
-      : null;
 
   return {
     id: b.id,
     name: b.name,
-    speciesCommonName: b.species?.commonName ?? null,
-    speciesScientificName: b.species?.scientificName ?? null,
-    styleLabel: b.style ?? null,
     coverUri: cover?.absoluteUri ?? null,
-    lastWateringText,
-    lastPruningText,
+    speciesCommonName: b.species?.commonName ?? null,
+    lastAction,
+    ageText: null,
   };
 }
 

@@ -577,5 +577,8 @@ const hi: Partial<Record<TranslationKey, string>> = {
   lookBackWateringComingSoonTitle: 'Watering history (coming soon)',
   lookBackWateringComingSoonBody:
     "A cross-bonsai view is coming soon. View per-bonsai watering history from each bonsai's detail screen.",
+  // --- T1-10 BonsaiCard 220+3 段構造 (English fallback) ---
+  homeCardElapsedAgo: '{elapsed} ago',
+  homeCardNoLog: 'No records yet',
 };
 export default hi;
