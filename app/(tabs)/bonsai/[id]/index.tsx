@@ -1,14 +1,15 @@
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { Image } from 'expo-image';
 import React, { useCallback, useState } from 'react';
-import { Alert, FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
 import { BonsaiCreateSheet } from '@/src/features/bonsai/BonsaiCreateSheet';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
+import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
+import { removePhotoAndNormalize, swapPhotos } from '@/src/features/bonsai/photoOrderUtils';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { BORDER_DEFAULT, BRAND_GREEN, DANGER, TEXT_SECONDARY } from '@/src/core/theme/colors';
@@ -20,12 +21,14 @@ import {
   type BonsaiWithSpecies,
 } from '@/src/db/bonsaiRepository';
 import {
-  canAddPhoto,
   deletePhoto,
   FREE_PHOTO_LIMIT_PER_BONSAI,
-  getPhotosByBonsaiGroupedByYear,
+  getPhotoCountByBonsai,
+  getPhotosByBonsai,
   insertPhoto,
+  reorderPhotos,
   setCoverPhoto,
+  updatePhotoCaption,
   type PhotoRead,
 } from '@/src/db/photoRepository';
 import {
@@ -68,9 +71,11 @@ export default function BonsaiDetailScreen() {
   const c = useColors();
   const [item, setItem] = useState<BonsaiWithSpecies | null>(null);
   const [loading, setLoading] = useState(true);
-  const [photoGroups, setPhotoGroups] = useState<{ year: number; photos: PhotoRead[] }[]>([]);
-  const [photoCount, setPhotoCount] = useState(0);
+  // Repolog 風 photoCard 縦リスト (orderIndex 順、年次グループ化は廃止)
+  const [photos, setPhotos] = useState<PhotoRead[]>([]);
+  const [captions, setCaptions] = useState<Record<string, string>>({});
   const [events, setEvents] = useState<Event[]>([]);
+  const photoCount = photos.length;
   // ADR-0020 §Notes Amended (2026-05-09): Hero + 3 Tabs (作業履歴 / 予定タイムライン / 基本情報)
   // mockup v1.0 detail-screens.jsx BonsaiDetailScreen の initialTab='history' 整合
   // 旧 photos タブは廃止、写真機能は history タブに統合 (A6 で _HistoryPhotos 正式化予定)
@@ -120,12 +125,9 @@ export default function BonsaiDetailScreen() {
   // Claude Design `detail-screens.jsx` DetailHero 整合 (Phase B-2): cover photo を抽出
   // (early return より前で呼ぶ — react-hooks/rules-of-hooks)
   const coverUri = React.useMemo(() => {
-    for (const g of photoGroups) {
-      const cover = g.photos.find((p) => p.isCover === 1);
-      if (cover) return cover.absoluteUri;
-    }
-    return null;
-  }, [photoGroups]);
+    const cover = photos.find((p) => p.isCover === 1);
+    return cover?.absoluteUri ?? null;
+  }, [photos]);
 
   const reload = useCallback(async () => {
     if (!id) return;
@@ -133,9 +135,14 @@ export default function BonsaiDetailScreen() {
     try {
       const data = await getBonsaiWithSpecies(id, lang);
       setItem(data);
-      const groups = await getPhotosByBonsaiGroupedByYear(id);
-      setPhotoGroups(groups);
-      setPhotoCount(groups.reduce((sum, g) => sum + g.photos.length, 0));
+      const list = await getPhotosByBonsai(id);
+      setPhotos(list);
+      // captions の controlled 値を DB の最新値で初期化。
+      const captionMap: Record<string, string> = {};
+      list.forEach((p) => {
+        captionMap[p.id] = p.caption ?? '';
+      });
+      setCaptions(captionMap);
       const evs = await getActiveEventsByBonsai(id);
       setEvents(evs);
     } finally {
@@ -171,8 +178,12 @@ export default function BonsaiDetailScreen() {
   const pickAndSavePhoto = useCallback(
     async (source: 'camera' | 'library') => {
       if (!item) return;
-      const allowed = await canAddPhoto(item.id, isPro);
-      if (!allowed) {
+      // Free 制限: 残枠計算 (Pro は無制限、Free は 3 - currentCount)。
+      const currentCount = await getPhotoCountByBonsai(item.id);
+      const remaining = isPro
+        ? Number.POSITIVE_INFINITY
+        : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - currentCount);
+      if (remaining === 0) {
         Alert.alert(
           t('photoLimitTitle'),
           t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_BONSAI)),
@@ -190,6 +201,7 @@ export default function BonsaiDetailScreen() {
         return;
       }
 
+      // ライブラリは複数選択対応 (Repolog 流用、selectionLimit: 0 = OS 上限まで)。
       const result =
         source === 'camera'
           ? await ImagePicker.launchCameraAsync({
@@ -198,19 +210,37 @@ export default function BonsaiDetailScreen() {
             })
           : await ImagePicker.launchImageLibraryAsync({
               mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsMultipleSelection: true,
+              selectionLimit: 0,
               quality: 0.85,
             });
       if (result.canceled || !result.assets || result.assets.length === 0) return;
 
-      const asset = result.assets[0];
+      // 残枠超過時は先頭から remaining 枚のみ受け入れ、超過分を Alert で告知 (Repolog resolvePhotoAddLimit 流用)。
+      const assets = result.assets;
+      const acceptedCount = isPro ? assets.length : Math.min(assets.length, remaining);
+      const accepted = assets.slice(0, acceptedCount);
+      const skipped = assets.length - accepted.length;
+
       try {
-        const { absoluteUri } = await persistPhotoFile(asset.uri, item.id);
-        await insertPhoto({
-          bonsaiId: item.id,
-          absoluteUri,
-          width: asset.width ?? null,
-          height: asset.height ?? null,
-        });
+        for (const asset of accepted) {
+          const { absoluteUri } = await persistPhotoFile(asset.uri, item.id);
+          await insertPhoto({
+            bonsaiId: item.id,
+            absoluteUri,
+            width: asset.width ?? null,
+            height: asset.height ?? null,
+          });
+        }
+        if (skipped > 0) {
+          Alert.alert(
+            t('photoLimitTitle'),
+            t('photoLimitPartialAdded')
+              .replace('{added}', String(accepted.length))
+              .replace('{skipped}', String(skipped)),
+            [{ text: t('ok') }],
+          );
+        }
         await reload();
       } catch (err) {
         Alert.alert(t('error'), String(err));
@@ -227,45 +257,74 @@ export default function BonsaiDetailScreen() {
     ]);
   }, [pickAndSavePhoto, t]);
 
-  const showPhotoActions = useCallback(
-    (photo: PhotoRead) => {
+  // PhotoCard 並び替え (↑↓ ボタン): 即時 state 更新 + DB 反映 (reorderPhotos)。
+  const handleMovePhoto = useCallback(
+    async (fromIndex: number, toIndex: number) => {
       if (!item) return;
-      Alert.alert(
-        t('photoActionTitle'),
-        undefined,
-        [
-          photo.isCover === 1
-            ? null
-            : {
-                text: t('photoActionSetCover'),
-                onPress: async () => {
-                  await setCoverPhoto(photo.id, item.id);
-                  await reload();
-                },
-              },
-          {
-            text: t('photoActionDelete'),
-            style: 'destructive' as const,
-            onPress: () => {
-              Alert.alert(t('photoDeleteConfirmTitle'), t('photoDeleteConfirmDesc'), [
-                { text: t('cancel'), style: 'cancel' },
-                {
-                  text: t('delete'),
-                  style: 'destructive',
-                  onPress: async () => {
-                    await deletePhoto(photo.id);
-                    await deletePhotoFile(photo.absoluteUri);
-                    await reload();
-                  },
-                },
-              ]);
-            },
-          },
-          { text: t('cancel'), style: 'cancel' as const },
-        ].filter((x): x is NonNullable<typeof x> => x !== null),
-      );
+      const next = swapPhotos(photos, fromIndex, toIndex);
+      if (next === photos) return;
+      setPhotos(next);
+      try {
+        await reorderPhotos(
+          item.id,
+          next.map((p) => p.id),
+        );
+      } catch (err) {
+        console.warn('[BonsaiDetail] reorder failed:', err);
+      }
     },
-    [item, t, reload],
+    [photos, item],
+  );
+
+  // PhotoCard caption: controlled 入力 (state) + blur で DB 反映。
+  const handleCaptionChange = useCallback((photoId: string, text: string) => {
+    setCaptions((prev) => ({ ...prev, [photoId]: text }));
+  }, []);
+  const handleCaptionBlur = useCallback(
+    async (photoId: string) => {
+      const text = captions[photoId] ?? '';
+      try {
+        await updatePhotoCaption(photoId, text.length > 0 ? text : null);
+      } catch (err) {
+        console.warn('[BonsaiDetail] caption save failed:', err);
+      }
+    },
+    [captions],
+  );
+
+  // PhotoCard ★ ボタン: カバー写真に設定。
+  const handleSetCover = useCallback(
+    async (photoId: string) => {
+      if (!item) return;
+      await setCoverPhoto(photoId, item.id);
+      await reload();
+    },
+    [item, reload],
+  );
+
+  // PhotoCard 削除ボタン: Alert 確認 → 即時削除。
+  const handleDeletePhoto = useCallback(
+    (photo: PhotoRead) => {
+      Alert.alert(t('photoDeleteConfirmTitle'), t('photoDeleteConfirmDesc'), [
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: t('delete'),
+          style: 'destructive',
+          onPress: async () => {
+            // 楽観的更新: state からも除去 (UI 反映を即時化)。
+            setPhotos((prev) => removePhotoAndNormalize(prev, photo.id));
+            try {
+              await deletePhoto(photo.id);
+              await deletePhotoFile(photo.absoluteUri);
+            } catch (err) {
+              console.warn('[BonsaiDetail] delete failed:', err);
+            }
+            await reload();
+          },
+        },
+      ]);
+    },
+    [t, reload],
   );
 
   if (loading) {
@@ -430,8 +489,8 @@ export default function BonsaiDetailScreen() {
           </View>
         )}
 
-        {/* history Tab 第 1 部分: 写真追加 + 年次タイムライン (旧 photos タブから移動、A6 で
-            _HistoryPhotos 形式に正式化予定) */}
+        {/* history Tab 第 1 部分: 写真追加 + photoCard 縦リスト (Repolog UI 流用、年次グループ廃止)。
+            複数選択 (allowsMultipleSelection) + ↑↓ 並び替え + caption 編集 + ★ カバー設定 + 削除。 */}
         {activeTab === 'history' && (
           <View style={styles.section}>
             <ThemedText type="subtitle">
@@ -447,36 +506,24 @@ export default function BonsaiDetailScreen() {
               <ThemedText style={styles.photoAddText}>+ {t('photoAddCta')}</ThemedText>
             </Pressable>
 
-            {photoGroups.length === 0 && (
+            {photos.length === 0 && (
               <ThemedText style={styles.emptyPhotos}>{t('photoEmpty')}</ThemedText>
             )}
 
-            {photoGroups.map((group) => (
-              <View key={group.year} style={styles.yearBlock}>
-                <ThemedText type="defaultSemiBold" style={styles.yearLabel}>
-                  {group.year}
-                </ThemedText>
-                <FlatList
-                  data={group.photos}
-                  horizontal
-                  keyExtractor={(p) => p.id}
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.photoRow}
-                  renderItem={({ item: photo }) => (
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={photo.caption ?? `photo-${photo.id}`}
-                      onPress={() => showPhotoActions(photo)}
-                    >
-                      <Image
-                        source={{ uri: photo.absoluteUri }}
-                        style={[styles.photoThumb, photo.isCover === 1 && styles.photoCover]}
-                        contentFit="cover"
-                      />
-                    </Pressable>
-                  )}
-                />
-              </View>
+            {photos.map((photo, idx) => (
+              <PhotoCard
+                key={photo.id}
+                photo={photo}
+                index={idx}
+                total={photos.length}
+                caption={captions[photo.id] ?? ''}
+                onCaptionChange={(text) => handleCaptionChange(photo.id, text)}
+                onCaptionBlur={() => void handleCaptionBlur(photo.id)}
+                onMoveUp={() => void handleMovePhoto(idx, idx - 1)}
+                onMoveDown={() => void handleMovePhoto(idx, idx + 1)}
+                onDelete={() => handleDeletePhoto(photo)}
+                onSetCover={() => void handleSetCover(photo.id)}
+              />
             ))}
           </View>
         )}
