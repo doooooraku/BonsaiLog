@@ -16,6 +16,14 @@ tags:
 # 1. Metro deeplink で起動
 - openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
 
+# 1.5. Expo Dev Client の初回起動 dialog を dismiss (capture-app.sh の force-stop で毎回復活)
+- runFlow:
+    when:
+      visible: 'Continue'
+    commands:
+      - tapOn: 'Continue'
+      - waitForAnimationToEnd
+
 # 2. 盆栽タブ「盆栽手帳」表示完了まで待つ (Metro バンドル + アプリ起動)
 - extendedWaitUntil:
     visible:
