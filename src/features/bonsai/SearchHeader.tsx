@@ -41,6 +41,14 @@ type Props = {
    * mockups v1.0 02-Home.html の HomeHeader 「複数選択」テキストボタン整合。
    */
   onSelectPress?: () => void;
+  /**
+   * Issue #346: selectMode 中の選択件数を表示するための件数。
+   * - selectMode false: 表示なし
+   * - selectMode true && selectedCount > 0: 「N件選択中」(タイトルの代替)
+   * - selectMode true && selectedCount === 0: 「項目を選択」(タイトルの代替)
+   * mockups v1.0 home-screens.jsx HomeHeader L410-459 整合。
+   */
+  selectedCount?: number;
   style?: ViewStyle;
   testIdSuffix?: string;
 };
@@ -52,6 +60,7 @@ export function SearchHeader({
   searchHref = '/search' as Href,
   selectMode = false,
   onSelectPress,
+  selectedCount,
   style,
   testIdSuffix = 'header',
 }: Props) {
@@ -61,6 +70,15 @@ export function SearchHeader({
   // Issue #259: status bar / notch と被らないよう safe-area top inset を吸収
   // (app/_layout.tsx で headerShown:false のため、各タブのコンテンツ側で吸収する必要あり)
   const insets = useSafeAreaInsets();
+
+  // Issue #346: selectMode 中はタイトルを件数表示に置換 (mockups v1.0 HomeHeader 整合)。
+  // selectedCount が undefined または selectMode false の場合はタイトル維持。
+  const displayTitle =
+    selectMode && selectedCount !== undefined
+      ? selectedCount > 0
+        ? t('bulkSelectedCount').replace('{count}', String(selectedCount))
+        : t('bulkSelectPlaceholder')
+      : title;
 
   return (
     <View
@@ -80,7 +98,7 @@ export function SearchHeader({
         numberOfLines={1}
         testID={`e2e_${testIdSuffix}_title`}
       >
-        {title}
+        {displayTitle}
       </ThemedText>
       <View style={styles.actions}>
         {onSelectPress && (

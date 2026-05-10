@@ -246,6 +246,8 @@ const sv: Partial<Record<TranslationKey, string>> = {
   bulkLogConfirmNotePlaceholder: 'Free note',
   bulkLogSaveCta: 'Log for {count} bonsai',
   bulkLogDoneToast: 'Logged actions for {count} bonsai',
+  bulkSelectedCount: '{count} selected',
+  bulkSelectPlaceholder: 'Select items',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Search...',
   searchEmpty: 'No results found.',
