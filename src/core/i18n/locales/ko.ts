@@ -454,6 +454,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   tabBonsai: 'Bonsai',
   tabPlan: 'Plan',
   tabFind: 'Find',
+  tabLookBack: '활동',
   tabSettings: 'Settings',
   tabPlanComingSoon: 'Coming soon',
   planScreenTitle: 'Care Schedule',
