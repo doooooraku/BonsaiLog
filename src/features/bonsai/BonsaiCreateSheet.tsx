@@ -47,8 +47,9 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { createBonsai, updateBonsai } from '@/src/db/bonsaiRepository';
-import { addPhotoFromUri } from '@/src/db/photoRepository';
+import { addPhotoFromUri, FREE_PHOTO_LIMIT_PER_BONSAI } from '@/src/db/photoRepository';
 import { type Bonsai, type BonsaiStyle } from '@/src/db/schema';
+import { useProStore } from '@/src/stores/proStore';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
 import {
   attachTagToBonsai,
@@ -105,8 +106,12 @@ export function BonsaiCreateSheet({
   const [style, setStyle] = useState<BonsaiStyle | null>(null);
   const [acquiredAt, setAcquiredAt] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  // T2-2-ui: 写真選択 (一時 URI)。
-  const [coverUri, setCoverUri] = useState<string | null>(null);
+  // 写真選択 (新規モード時のみ、複数枚 OK、保存時に for-loop で addPhotoFromUri)。
+  // 1 枚目が自動 cover (insertPhoto 内の初回判定)、残りは通常写真。
+  const [pendingPhotos, setPendingPhotos] = useState<
+    { uri: string; width: number | null; height: number | null }[]
+  >([]);
+  const isPro = useProStore((s) => s.isPro);
   // T2-3: 樹齢入力 (数字 string で保持、submit 時に parseInt、空文字なら null)。
   const [estimatedAgeText, setEstimatedAgeText] = useState('');
   // T2-7: メモ入力 (multiline、空文字なら null で保存)。
@@ -187,13 +192,13 @@ export function BonsaiCreateSheet({
       setMemo(editingBonsai.memo ?? '');
       setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
       setSelectedTagIds(new Set(originalTagIdsRef.current));
-      setCoverUri(null);
+      setPendingPhotos([]);
     } else {
       setName('');
       setSpeciesId(null);
       setStyle(null);
       setAcquiredAt('');
-      setCoverUri(null);
+      setPendingPhotos([]);
       setEstimatedAgeText('');
       setMemo('');
       setPurchaseDate('');
@@ -212,23 +217,55 @@ export function BonsaiCreateSheet({
     });
   }, []);
 
-  // T2-2-ui: 写真ライブラリから 1 枚選択 (cover photo 候補、保存は T2-2-impl)。
+  // 写真ライブラリから複数枚選択 (1 枚目自動 cover、Free 残枠で受け入れ枚数制限)。
   const handlePickPhoto = useCallback(async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
       Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
       return;
     }
+    // 残枠 = 上限 - 既選択枚数 (Pro は無制限)。
+    const remaining = isPro
+      ? Number.POSITIVE_INFINITY
+      : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - pendingPhotos.length);
+    if (remaining === 0) {
+      Alert.alert(
+        t('photoLimitTitle'),
+        t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_BONSAI)),
+        [{ text: t('ok') }],
+      );
+      return;
+    }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
+      allowsMultipleSelection: true,
+      selectionLimit: 0,
       quality: 0.85,
     });
-    if (!result.canceled && result.assets[0]) {
-      setCoverUri(result.assets[0].uri);
+    if (result.canceled || !result.assets || result.assets.length === 0) return;
+
+    const acceptedCount = isPro ? result.assets.length : Math.min(result.assets.length, remaining);
+    const accepted = result.assets.slice(0, acceptedCount).map((a) => ({
+      uri: a.uri,
+      width: a.width ?? null,
+      height: a.height ?? null,
+    }));
+    const skipped = result.assets.length - accepted.length;
+    setPendingPhotos((prev) => [...prev, ...accepted]);
+    if (skipped > 0) {
+      Alert.alert(
+        t('photoLimitTitle'),
+        t('photoLimitPartialAdded')
+          .replace('{added}', String(accepted.length))
+          .replace('{skipped}', String(skipped)),
+        [{ text: t('ok') }],
+      );
     }
-  }, [t]);
+  }, [isPro, pendingPhotos.length, t]);
+
+  const handleRemovePendingPhoto = useCallback((index: number) => {
+    setPendingPhotos((prev) => prev.filter((_, i) => i !== index));
+  }, []);
 
   const handleSheetChange = useCallback(
     (index: number) => {
@@ -297,13 +334,13 @@ export function BonsaiCreateSheet({
         bottomSheetRef.current?.close();
         onUpdated?.(editingBonsai.id);
       } else {
-        // 新規モード: createBonsai + cover 写真 + タグ attach。
+        // 新規モード: createBonsai + 写真複数枚 + タグ attach。
         const bonsai = await createBonsai(fields);
-        // T2-2-impl (Issue #369): coverUri を photoRepository.addPhotoFromUri で永続化。
-        // persistPhotoFile + insertPhoto を内部で呼び、photoId 整合性 (ファイル名 == DB id) を確保。
-        if (coverUri != null) {
+        // 写真は順番に永続化 (1 枚目自動 cover、orderIndex は insertPhoto 内で末尾追記)。
+        // 失敗しても盆栽登録は継続 (UX 配慮、ADR-0011 哲学)。
+        for (const p of pendingPhotos) {
           try {
-            await addPhotoFromUri({ bonsaiId: bonsai.id, sourceUri: coverUri });
+            await addPhotoFromUri({ bonsaiId: bonsai.id, sourceUri: p.uri });
           } catch (err) {
             console.warn('[BonsaiCreateSheet] photo persist failed (continuing):', err);
           }
@@ -338,27 +375,60 @@ export function BonsaiCreateSheet({
       footerComponent={renderFooter}
     >
       <BottomSheetScrollView contentContainerStyle={styles.scrollContent}>
-        {/* 写真選択 UI (新規モードのみ、mockup create-screens.jsx CreateBonsaiScreen 整合)。
-            edit モードでは詳細画面の「カバー写真設定」(setCoverPhoto) を使う前提でスコープ外。 */}
+        {/* 写真選択 UI (新規モードのみ、複数枚対応、Repolog photoStrip 流用)。
+            1 枚目が自動 cover (insertPhoto 内の初回判定)。edit モードでは詳細画面の photoCard で別管理。 */}
         {!isEdit && (
           <View style={styles.field}>
-            <ThemedText type="defaultSemiBold">{t('bonsaiFieldPhotos')}</ThemedText>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('photoAddCta')}
-              style={[styles.photoBox, coverUri != null && styles.photoBoxFilled]}
-              onPress={handlePickPhoto}
-              testID="e2e_bonsai_create_photo_pick"
-            >
-              {coverUri != null ? (
-                <Image source={{ uri: coverUri }} style={styles.photoPreview} contentFit="cover" />
-              ) : (
-                <View style={styles.photoEmpty}>
-                  <CameraIcon size={28} />
-                  <ThemedText style={styles.photoCta}>+ {t('photoAddCta')}</ThemedText>
-                </View>
+            <View style={styles.fieldLabelRow}>
+              <ThemedText type="defaultSemiBold">{t('bonsaiFieldPhotos')}</ThemedText>
+              <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+              {!isPro && (
+                <ThemedText style={styles.photoCount}>
+                  {pendingPhotos.length} / {FREE_PHOTO_LIMIT_PER_BONSAI}
+                </ThemedText>
               )}
-            </Pressable>
+            </View>
+            <View style={styles.photoStrip}>
+              {pendingPhotos.map((p, idx) => (
+                <View key={`${p.uri}-${idx}`} style={styles.photoStripCell}>
+                  <Image
+                    source={{ uri: p.uri }}
+                    style={styles.photoStripImage}
+                    contentFit="cover"
+                  />
+                  {idx === 0 && (
+                    <View style={styles.photoStripCoverBadge}>
+                      <ThemedText style={styles.photoStripCoverBadgeText}>
+                        {t('photoCoverBadge')}
+                      </ThemedText>
+                    </View>
+                  )}
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('delete')}
+                    style={styles.photoStripDeleteButton}
+                    onPress={() => handleRemovePendingPhoto(idx)}
+                    testID={`e2e_bonsai_create_photo_remove_${idx}`}
+                  >
+                    <ThemedText style={styles.photoStripDeleteText}>×</ThemedText>
+                  </Pressable>
+                </View>
+              ))}
+              {(isPro || pendingPhotos.length < FREE_PHOTO_LIMIT_PER_BONSAI) && (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('photoAddCta')}
+                  style={styles.photoBox}
+                  onPress={handlePickPhoto}
+                  testID="e2e_bonsai_create_photo_pick"
+                >
+                  <View style={styles.photoEmpty}>
+                    <CameraIcon size={28} />
+                    <ThemedText style={styles.photoCta}>+ {t('photoAddCta')}</ThemedText>
+                  </View>
+                </Pressable>
+              )}
+            </View>
           </View>
         )}
 
@@ -544,6 +614,46 @@ const styles = StyleSheet.create({
   photoPreview: { width: '100%', height: '100%' },
   photoEmpty: { alignItems: 'center', justifyContent: 'center', gap: 6 },
   photoCta: { fontSize: 12, color: TEXT_SECONDARY },
+  // 写真複数枚 strip (新規モード、Repolog photoStrip 流用、横スクロール wrap)
+  photoStrip: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  photoStripCell: {
+    width: 120,
+    height: 120,
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+  },
+  photoStripImage: { width: '100%', height: '100%' },
+  photoStripCoverBadge: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    backgroundColor: BRAND_GREEN,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  photoStripCoverBadgeText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    color: ON_BRAND,
+    letterSpacing: 0.6,
+  },
+  photoStripDeleteButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoStripDeleteText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', lineHeight: 18 },
+  photoCount: { fontSize: 11, color: TEXT_MUTED, marginLeft: 'auto' },
   input: {
     borderWidth: 1,
     borderColor: BORDER_DEFAULT,
