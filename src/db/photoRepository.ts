@@ -180,9 +180,42 @@ export async function addPhotoFromUri(input: AddPhotoFromUriInput): Promise<Phot
 // 取得
 // ---------------------------------------------------------------------------
 
-function toPhotoRead(row: Photo): PhotoRead {
-  const { relativePath, ...rest } = row;
-  return { ...rest, absoluteUri: toAbsolutePath(relativePath) };
+/**
+ * raw SQL `SELECT * FROM photos` の row は expo-sqlite の標準動作で
+ * column 名そのまま (snake_case) で返るため、TypeScript の Photo 型
+ * (drizzle 推論で camelCase) とは構造が乖離する。
+ * 本 helper で両対応 (snake/camel) してから PhotoRead に変換する。
+ */
+type PhotoRowAny = Partial<Photo> & {
+  relative_path?: string;
+  bonsai_id?: string;
+  event_id?: string | null;
+  taken_at?: string | null;
+  is_cover?: number;
+  order_index?: number;
+  created_at?: string;
+};
+
+function toPhotoRead(row: PhotoRowAny): PhotoRead {
+  const relativePath = row.relativePath ?? row.relative_path;
+  if (relativePath == null) {
+    throw new Error(
+      `[toPhotoRead] missing relative_path in row: ${JSON.stringify(Object.keys(row))}`,
+    );
+  }
+  return {
+    id: row.id ?? '',
+    bonsaiId: row.bonsaiId ?? row.bonsai_id ?? '',
+    eventId: row.eventId ?? row.event_id ?? null,
+    takenAt: row.takenAt ?? row.taken_at ?? null,
+    isCover: row.isCover ?? row.is_cover ?? 0,
+    width: row.width ?? null,
+    height: row.height ?? null,
+    orderIndex: row.orderIndex ?? row.order_index ?? 0,
+    caption: row.caption ?? null,
+    createdAt: row.createdAt ?? row.created_at ?? '',
+    absoluteUri: toAbsolutePath(relativePath),
+  };
 }
 
 /**
