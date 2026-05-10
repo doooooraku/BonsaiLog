@@ -263,9 +263,10 @@ export default function BonsaiHomeScreen() {
   }, []);
 
   // BulkScheduleDateSheet で保存 → bulkScheduleEvents で各 bonsai に planned event 作成 → reload。
-  // R-28: notify=true 時の notification scheduling は Issue #344 (本 PR スコープ外)。
+  // ADR-0014 整合 (Issue #344): 個別 event 通知は ADR-0014 のスコープ外、本 PR では notify トグル UI を撤去。
+  // 一括予定追加で作成された planned events は Settings 通知設定 (当日まとめ / 水やり繰り返し) に従う。
   const handleBulkSchedSave = useCallback(
-    async (input: { occurredAtUtc: string; notify: boolean }) => {
+    async (input: { occurredAtUtc: string }) => {
       await bulkScheduleEvents({
         bonsaiIds: Array.from(selectedIds),
         type: bulkSchedType,
