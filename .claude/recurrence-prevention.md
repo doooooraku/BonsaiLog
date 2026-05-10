@@ -199,6 +199,18 @@
 - **根拠**: 2026-05-07 議論で「PaywallScreen CTA 文言」「Empty state コピー」等 UI / ビジネス境界が曖昧な領域が判明。判定フロー明文化で「OpenDesign 9 割 UI 採用」方針と「F-10 撤回リスク」を両立。
 - **自動化**: `.claude/hooks/session-start-design-reminder.mjs` で R-28 判定フローを併せて注入。`/discuss` Skill チェックリストに R-28 を追加。
 
+### R-29. 写経駆動開発の強制 (5 段階チェックリスト)
+
+- **ルール**: 各 PR で mockup integration を行う際、以下 5 段階を必ず実施。PR 本文の checklist で確認:
+  1. **mockup の該当 jsx component を完全 Read** (file path + 行範囲を PR に明記)
+  2. **mockup の該当画面スクショを Read** (`docs/mockups/v1.0/screenshots/<id>.png`、T1-2 で生成済)
+  3. **既存 RN 実装ファイルを Read** (R-18 の延長)
+  4. **実装後、RN スクショを撮影** (実機 / Web / アタッチメント)
+  5. **mockup スクショと RN スクショを並べて Read で目視比較** → 整合性レベル明記 (`docs/reference/integration-criteria.md` 参照)
+- **整合性レベル要求**: レベル 2 (見た目 80% 一致) 以上で「整合済」マーク (将来レベル 3 へ)
+- **根拠**: 2026-05-10 セッションで PR #341/#342/#350 を「整合済」マークしたが、実機画像比較で乖離 (チェックマーク未表示 / SelectionToolbar 未表示 / FAB 連動失敗 / 「N件選択中」未表示) が発覚。「視覚確認ループ無し」+ 「整合済の定義不在」が根本原因。
+- **自動化**: `.github/pull_request_template.md` で 5 段階チェックボックス強制 (T1-3)。`docs/reference/integration-criteria.md` でレベル定義 (T1-1)。
+
 ---
 
 ## 運用ルール
@@ -206,7 +218,7 @@
 1. **本ファイルはセッション開始時に必読**（`AGENTS.md` Session Start Checklist 経由）。
 2. **新たな再発パターンが見つかったら本ファイルに追記**（lessons.md ではなく）。
 3. **R-N の番号は変更しない**（既存参照を破壊しない、削除する場合は「~~R-N: 削除~~」と注記）。
-4. **項目が 30 を超えたら別ファイル分割を検討**（**250 行以内** を維持、現状 R-1〜R-26）。`scripts/docs-lint.mjs` で自動検出。
+4. **項目が 30 を超えたら別ファイル分割を検討**（**250 行以内** を維持、現状 R-1〜R-29）。`scripts/docs-lint.mjs` で自動検出。
 5. **R-13 以降は Hook で構造的に防止**（注意ではなく仕組み化、`.claude/hooks/` 参照）。
 6. **3 回再発で昇華必須**（CLAUDE.md §9 記憶の昇華ルール）: 同一テーマが lessons / recurrence-prevention に 3 件以上溜まったら、hook / ESLint / CI / 型システムで構造的に防ぐ仕組みに昇華し、下位記憶からは該当記述を削除する。
 
