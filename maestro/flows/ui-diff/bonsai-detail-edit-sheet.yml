@@ -15,6 +15,14 @@ tags:
 ---
 - openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
 
+# Expo Dev Client の初回起動 dialog を dismiss (capture-app.sh の force-stop で毎回復活)
+- runFlow:
+    when:
+      visible: 'Continue'
+    commands:
+      - tapOn: 'Continue'
+      - waitForAnimationToEnd
+
 - extendedWaitUntil:
     visible:
       text: '盆栽手帳'
