@@ -76,8 +76,10 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
   const [style, setStyle] = useState<BonsaiStyle | null>(null);
   const [acquiredAt, setAcquiredAt] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  // T2-2-ui: 写真選択 (一時 URI、保存処理は T2-2-impl で実装予定)。
+  // T2-2-ui: 写真選択 (一時 URI)。
   const [coverUri, setCoverUri] = useState<string | null>(null);
+  // T2-3: 樹齢入力 (数字 string で保持、submit 時に parseInt、空文字なら null)。
+  const [estimatedAgeText, setEstimatedAgeText] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -106,6 +108,7 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
     setStyle(null);
     setAcquiredAt('');
     setCoverUri(null);
+    setEstimatedAgeText('');
     onClose?.();
   }, [onClose]);
 
@@ -138,11 +141,16 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
     if (!canSubmit) return;
     setSubmitting(true);
     try {
+      // T2-3: estimatedAge は数字 string を parseInt、不正値や空文字は null。
+      const parsedAge = estimatedAgeText.trim() ? parseInt(estimatedAgeText.trim(), 10) : NaN;
+      const estimatedAge =
+        Number.isFinite(parsedAge) && parsedAge > 0 && parsedAge < 10000 ? parsedAge : null;
       const bonsai = await createBonsai({
         name: name.trim(),
         speciesId,
         style,
         acquiredAt: acquiredAt.trim() ? toIsoUtc(acquiredAt.trim()) : null,
+        estimatedAge,
       });
       // T2-2-impl (Issue #369): coverUri を photoRepository.addPhotoFromUri で永続化。
       // persistPhotoFile + insertPhoto を内部で呼び、photoId 整合性 (ファイル名 == DB id) を確保。
@@ -272,6 +280,19 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
             accessibilityLabel={t('bonsaiFieldAcquiredAt')}
             maxLength={10}
             keyboardType="numbers-and-punctuation"
+          />
+        </View>
+
+        <View style={styles.field}>
+          <ThemedText type="defaultSemiBold">{t('bonsaiFieldEstimatedAge')}</ThemedText>
+          <TextInput
+            style={styles.input}
+            value={estimatedAgeText}
+            onChangeText={setEstimatedAgeText}
+            placeholder={t('bonsaiFieldEstimatedAgePlaceholder')}
+            accessibilityLabel={t('bonsaiFieldEstimatedAge')}
+            maxLength={4}
+            keyboardType="number-pad"
           />
         </View>
 

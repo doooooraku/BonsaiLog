@@ -583,5 +583,9 @@ const pt: Partial<Record<TranslationKey, string>> = {
   // --- T2-2-ui photo library permission ---
   photoPermissionDeniedTitle: 'Photo library permission required',
   photoPermissionDeniedBody: 'Please allow photo library access in Settings.',
+  // --- T2-3 estimated age (schema v6) ---
+  bonsaiFieldEstimatedAge: 'Estimated age',
+  bonsaiFieldEstimatedAgePlaceholder: 'e.g. 35',
+  ageEstimatedFormat: '{years} yr (est.)',
 };
 export default pt;

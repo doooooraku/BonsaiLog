@@ -8,8 +8,8 @@
 import { schemaV5, SCHEMA_VERSION } from '@/src/db/schema';
 
 describe('Migration v5 (events_fts に detail=column / remove_diacritics 1 を反映)', () => {
-  test('SCHEMA_VERSION が 5 に上がっている', () => {
-    expect(SCHEMA_VERSION).toBe(5);
+  test('SCHEMA_VERSION は 5 以上 (v6 以降への引き上げ後も schemaV5 は適用済前提)', () => {
+    expect(SCHEMA_VERSION).toBeGreaterThanOrEqual(5);
   });
 
   test('schemaV5 に DROP TABLE IF EXISTS events_fts が含まれる', () => {

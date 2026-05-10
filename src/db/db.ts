@@ -21,7 +21,7 @@ import * as SQLite from 'expo-sqlite';
 
 import { nowUtc } from '@/src/core/datetime';
 
-import { SCHEMA_VERSION, schemaV2, schemaV3, schemaV4, schemaV5 } from './schema';
+import { SCHEMA_VERSION, schemaV2, schemaV3, schemaV4, schemaV5, schemaV6 } from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -137,12 +137,23 @@ async function migrate(db: SQLite.SQLiteDatabase) {
     version = 5;
   }
 
+  // ---------------------------------------------------------------------------
+  // Migration v6 (T2-3、Tier 2): bonsai テーブルに estimated_age カラム追加。
+  //
+  // ALTER TABLE は SQLite で IF NOT EXISTS が使えないため hasColumn ガード必須
+  // (Repolog PR #213 lesson、本ファイル冒頭コメント参照)。二重実行 (= 二度目以降の起動)
+  // で "duplicate column name" を防ぐ。
+  // ---------------------------------------------------------------------------
+  if (version < 6) {
+    if (!(await hasColumn(db, 'bonsai', 'estimated_age'))) {
+      await db.execAsync(schemaV6);
+    }
+    version = 6;
+  }
+
   // Always set version UNCONDITIONALLY (not inside an if-block).
   // This is the most important line in this file — see Repolog PR #213.
   await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION};`);
-
-  // Suppress unused warning — remove when first ALTER migration is added
-  void hasColumn;
 }
 
 export async function getDb() {

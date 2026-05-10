@@ -26,7 +26,7 @@
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -102,6 +102,8 @@ export const photos = sqliteTable(
 
 /**
  * 盆栽 (BonsaiLog の中核エンティティ)。樹種への FK + 取得日 + 樹形 + 鉢情報 + アーカイブ機能。
+ *
+ * v6 (T2-3): estimatedAge カラム追加 (整数年、推定樹齢、UI で「N年（推定）」表示用)。
  */
 export const bonsai = sqliteTable(
   'bonsai',
@@ -112,6 +114,7 @@ export const bonsai = sqliteTable(
     acquiredAt: text('acquired_at'), // ISO 8601 UTC TEXT
     style: text('style'), // 樹形 (例: chokkan, moyogi, shakan, kengai, han-kengai, bunjingi)
     potInfo: text('pot_info'), // JSON 文字列 (鉢の形状/色/サイズ/メーカー等)
+    estimatedAge: integer('estimated_age'), // v6 追加: 推定樹齢 (年、null 可)
     archivedAt: text('archived_at'), // ISO 8601 UTC TEXT (NULL ならアクティブ)
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
@@ -466,6 +469,17 @@ INSERT INTO events_fts (event_id, bonsai_id, note, payload_text)
 SELECT id, bonsai_id, COALESCE(note, ''), COALESCE(payload_json, '')
 FROM events
 WHERE deleted_at IS NULL;
+`;
+
+/**
+ * Migration v6 (T2-3、Tier 2): bonsai テーブルに estimated_age カラム追加。
+ *
+ * - 推定樹齢 (年単位、null 可) を保存
+ * - mockup home-screens.jsx BonsaiCard L985-994 整合: 「N年（推定）」表示用
+ * - ALTER TABLE は db.ts 側の hasColumn ガードで二重実行回避
+ */
+export const schemaV6 = `
+ALTER TABLE bonsai ADD COLUMN estimated_age INTEGER;
 `;
 
 // ---------------------------------------------------------------------------

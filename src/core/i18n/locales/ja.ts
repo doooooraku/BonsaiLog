@@ -589,6 +589,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- T2-2-ui 写真ライブラリ permission ---
   photoPermissionDeniedTitle: '写真ライブラリの許可が必要です',
   photoPermissionDeniedBody: '設定アプリで写真ライブラリの権限を許可してください。',
+  // --- T2-3 樹齢 (estimated age、schema v6) ---
+  bonsaiFieldEstimatedAge: '樹齢',
+  bonsaiFieldEstimatedAgePlaceholder: '例: 35',
+  ageEstimatedFormat: '{years}年（推定）',
 };
 
 export default ja;
