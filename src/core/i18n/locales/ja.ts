@@ -55,6 +55,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   photoCoverBadge: 'カバー',
   photoSetCoverLabel: 'カバーに設定',
   photoLimitPartialAdded: '{added} 枚追加しました（{skipped} 枚は上限超過のためスキップ）',
+  photoDeletedBanner: '写真を削除しました',
+  photoUndoLabel: '元に戻す',
   photoPermissionTitle: '許可が必要です',
   photoPermissionDesc: '設定からカメラと写真の利用を許可してください。',
   photoActionTitle: '写真の操作',

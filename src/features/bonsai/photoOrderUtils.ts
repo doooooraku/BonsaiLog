@@ -33,3 +33,18 @@ export function swapPhotos(photos: PhotoRead[], fromIndex: number, toIndex: numb
   next[toIndex] = temp;
   return normalizePhotoOrder(next);
 }
+
+/**
+ * 削除 undo: photo を target index に挿入して再採番 (Repolog 流用)。
+ * out-of-range な targetIndex は clamp する。
+ */
+export function restorePhotoAtIndexAndNormalize(
+  photos: PhotoRead[],
+  photo: PhotoRead,
+  targetIndex: number,
+): PhotoRead[] {
+  const index = Math.max(0, Math.min(targetIndex, photos.length));
+  const next = [...photos];
+  next.splice(index, 0, photo);
+  return normalizePhotoOrder(next);
+}

@@ -9,7 +9,12 @@ import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
 import { BonsaiCreateSheet } from '@/src/features/bonsai/BonsaiCreateSheet';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
 import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
-import { removePhotoAndNormalize, swapPhotos } from '@/src/features/bonsai/photoOrderUtils';
+import { PhotoUndoBanner } from '@/src/features/bonsai/PhotoUndoBanner';
+import {
+  removePhotoAndNormalize,
+  restorePhotoAtIndexAndNormalize,
+  swapPhotos,
+} from '@/src/features/bonsai/photoOrderUtils';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { BORDER_DEFAULT, BRAND_GREEN, DANGER, TEXT_SECONDARY } from '@/src/core/theme/colors';
@@ -76,6 +81,14 @@ export default function BonsaiDetailScreen() {
   const [captions, setCaptions] = useState<Record<string, string>>({});
   const [events, setEvents] = useState<Event[]>([]);
   const photoCount = photos.length;
+  // 削除 undo (Repolog 流用): 5 秒以内に「元に戻す」で復元、超過 / 別操作で finalize → DB 物理削除。
+  type PendingDeletion = {
+    photo: PhotoRead;
+    previousIndex: number;
+  };
+  const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion | null>(null);
+  const pendingDeletionTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingDeletionRef = React.useRef<PendingDeletion | null>(null);
   // ADR-0020 §Notes Amended (2026-05-09): Hero + 3 Tabs (作業履歴 / 予定タイムライン / 基本情報)
   // mockup v1.0 detail-screens.jsx BonsaiDetailScreen の initialTab='history' 整合
   // 旧 photos タブは廃止、写真機能は history タブに統合 (A6 で _HistoryPhotos 正式化予定)
@@ -136,8 +149,12 @@ export default function BonsaiDetailScreen() {
       const data = await getBonsaiWithSpecies(id, lang);
       setItem(data);
       const list = await getPhotosByBonsai(id);
-      setPhotos(list);
-      // captions の controlled 値を DB の最新値で初期化。
+      // pending 削除中の photo は state に復活させない (DB にはまだ存在するが UI 上は削除済の見た目)。
+      // タイマー満了 or unmount で finalize → DB 削除されるまでの一時的な不可視化。
+      const pending = pendingDeletionRef.current;
+      const filtered = pending != null ? list.filter((p) => p.id !== pending.photo.id) : list;
+      setPhotos(filtered);
+      // captions の controlled 値を DB の最新値で初期化 (pending 含めて更新、復元時に caption も戻る)。
       const captionMap: Record<string, string> = {};
       list.forEach((p) => {
         captionMap[p.id] = p.caption ?? '';
@@ -302,7 +319,30 @@ export default function BonsaiDetailScreen() {
     [item, reload],
   );
 
-  // PhotoCard 削除ボタン: Alert 確認 → 即時削除。
+  // タイマー / pending state クリア共通ヘルパー (Repolog 流用)。
+  const clearPendingDeletionTimer = useCallback(() => {
+    if (pendingDeletionTimerRef.current != null) {
+      clearTimeout(pendingDeletionTimerRef.current);
+      pendingDeletionTimerRef.current = null;
+    }
+  }, []);
+
+  // 削除確定: DB 物理削除 + ファイル削除 (タイマー満了 or 別操作 or unmount で呼ばれる)。
+  const finalizePendingDeletion = useCallback(async () => {
+    clearPendingDeletionTimer();
+    const pending = pendingDeletionRef.current;
+    if (pending == null) return;
+    pendingDeletionRef.current = null;
+    setPendingDeletion(null);
+    try {
+      await deletePhoto(pending.photo.id);
+      await deletePhotoFile(pending.photo.absoluteUri);
+    } catch (err) {
+      console.warn('[BonsaiDetail] delete finalize failed:', err);
+    }
+  }, [clearPendingDeletionTimer]);
+
+  // PhotoCard 削除ボタン: Alert 確認 → 即時 state 除去 + undo banner 表示 (5 秒で確定)。
   const handleDeletePhoto = useCallback(
     (photo: PhotoRead) => {
       Alert.alert(t('photoDeleteConfirmTitle'), t('photoDeleteConfirmDesc'), [
@@ -311,21 +351,48 @@ export default function BonsaiDetailScreen() {
           text: t('delete'),
           style: 'destructive',
           onPress: async () => {
-            // 楽観的更新: state からも除去 (UI 反映を即時化)。
+            // 既存の pending があれば先に finalize (連続削除対応)。
+            await finalizePendingDeletion();
+            // photos 内の現在 index を保存 (undo で同じ位置に戻すため)。
+            const previousIndex = photos.findIndex((p) => p.id === photo.id);
+            if (previousIndex < 0) return;
+            // 楽観的 state 更新 (UI 反映を即時化)。
             setPhotos((prev) => removePhotoAndNormalize(prev, photo.id));
-            try {
-              await deletePhoto(photo.id);
-              await deletePhotoFile(photo.absoluteUri);
-            } catch (err) {
-              console.warn('[BonsaiDetail] delete failed:', err);
-            }
-            await reload();
+            const pending: PendingDeletion = { photo, previousIndex };
+            pendingDeletionRef.current = pending;
+            setPendingDeletion(pending);
+            // 5 秒後に自動 finalize。
+            clearPendingDeletionTimer();
+            pendingDeletionTimerRef.current = setTimeout(() => {
+              void finalizePendingDeletion();
+            }, 5000);
           },
         },
       ]);
     },
-    [t, reload],
+    [t, photos, finalizePendingDeletion, clearPendingDeletionTimer],
   );
+
+  // 「元に戻す」: タイマーキャンセル + state を pending 前の位置に復元。
+  const handleUndoDeletion = useCallback(() => {
+    clearPendingDeletionTimer();
+    const pending = pendingDeletionRef.current;
+    if (pending == null) return;
+    pendingDeletionRef.current = null;
+    setPendingDeletion(null);
+    setPhotos((prev) =>
+      restorePhotoAtIndexAndNormalize(prev, pending.photo, pending.previousIndex),
+    );
+  }, [clearPendingDeletionTimer]);
+
+  // unmount / 画面離脱時: pending を確定して clean state で離脱。
+  React.useEffect(() => {
+    return () => {
+      clearPendingDeletionTimer();
+      // 画面離脱時に DB 削除を確定 (banner が見えなくなる前に finalize)。
+      void finalizePendingDeletion();
+    };
+  }, [clearPendingDeletionTimer, finalizePendingDeletion]);
 
   if (loading) {
     return (
@@ -525,6 +592,15 @@ export default function BonsaiDetailScreen() {
                 onSetCover={() => void handleSetCover(photo.id)}
               />
             ))}
+
+            {/* 削除 undo Banner (Repolog 流用、5 秒以内に「元に戻す」で復元)。 */}
+            {pendingDeletion != null && (
+              <PhotoUndoBanner
+                text={t('photoDeletedBanner')}
+                actionLabel={t('photoUndoLabel')}
+                onUndo={handleUndoDeletion}
+              />
+            )}
           </View>
         )}
 
