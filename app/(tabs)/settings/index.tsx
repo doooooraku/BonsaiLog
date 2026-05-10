@@ -439,6 +439,79 @@ export default function SettingsScreen() {
             <ThemedText style={styles.entryDesc}>{t('settingsTutorialReplayDesc')}</ThemedText>
           </Pressable>
         </View>
+
+        {/* __DEV__ 限定: 開発者セクション (T1-4 / Issue #355、ui-diff pipeline 用テストデータ投入)。
+            production build には含まれない (Babel が __DEV__ === false で枝刈り)。 */}
+        {__DEV__ && (
+          <View style={styles.section}>
+            <ThemedText type="subtitle" style={styles.sectionTitle}>
+              [DEV] テストデータ
+            </ThemedText>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="seed test data"
+              testID="e2e_dev_seed_button"
+              style={styles.entry}
+              onPress={async () => {
+                try {
+                  const { seedTestData } = await import('@/src/dev/seedTestData');
+                  const result = await seedTestData();
+                  if (result.skipped === 'already_seeded') {
+                    Alert.alert(
+                      'テストデータ',
+                      `既に ${result.bonsaiCount} 件の盆栽があります。先に「全データ削除」してから再投入してください。`,
+                    );
+                  } else {
+                    Alert.alert(
+                      'テストデータ投入完了',
+                      `盆栽 ${result.bonsaiCount} 件 / 写真 ${result.photoCount} 枚 / 記録 ${result.eventCount} 件`,
+                    );
+                  }
+                } catch (err) {
+                  Alert.alert('seed エラー', String(err));
+                }
+              }}
+            >
+              <ThemedText type="defaultSemiBold">テストデータを投入</ThemedText>
+              <ThemedText style={styles.entryDesc}>
+                盆栽 3 件 + 写真 2 枚 + タグ 3 件 + 水やり記録 15 件
+              </ThemedText>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="clear all data"
+              testID="e2e_dev_clear_button"
+              style={styles.entry}
+              onPress={() => {
+                Alert.alert(
+                  '全データ削除',
+                  '盆栽 / 写真 / タグ / 記録をすべて削除します。樹種マスタ (50 種) は残ります。',
+                  [
+                    { text: 'キャンセル', style: 'cancel' },
+                    {
+                      text: '削除',
+                      style: 'destructive',
+                      onPress: async () => {
+                        try {
+                          const { clearAllData } = await import('@/src/dev/seedTestData');
+                          await clearAllData();
+                          Alert.alert('削除完了', '全データを削除しました。');
+                        } catch (err) {
+                          Alert.alert('削除エラー', String(err));
+                        }
+                      },
+                    },
+                  ],
+                );
+              }}
+            >
+              <ThemedText type="defaultSemiBold">全データ削除</ThemedText>
+              <ThemedText style={styles.entryDesc}>
+                盆栽 / 写真 / タグ / 記録をリセット (確認 Alert あり)
+              </ThemedText>
+            </Pressable>
+          </View>
+        )}
       </ScrollView>
     </ThemedView>
   );
