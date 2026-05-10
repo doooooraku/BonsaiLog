@@ -23,10 +23,13 @@
  * - T2-7: メモ入力 + Footer CTA + 必須/任意ラベル
  */
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { CameraIcon } from '@/src/components/icons';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
@@ -72,6 +75,8 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
   const [style, setStyle] = useState<BonsaiStyle | null>(null);
   const [acquiredAt, setAcquiredAt] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  // T2-2-ui: 写真選択 (一時 URI、保存処理は T2-2-impl で実装予定)。
+  const [coverUri, setCoverUri] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -99,8 +104,27 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
     setSpeciesQuery('');
     setStyle(null);
     setAcquiredAt('');
+    setCoverUri(null);
     onClose?.();
   }, [onClose]);
+
+  // T2-2-ui: 写真ライブラリから 1 枚選択 (cover photo 候補、保存は T2-2-impl)。
+  const handlePickPhoto = useCallback(async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.85,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setCoverUri(result.assets[0].uri);
+    }
+  }, [t]);
 
   const handleSheetChange = useCallback(
     (index: number) => {
@@ -119,6 +143,14 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
         style,
         acquiredAt: acquiredAt.trim() ? toIsoUtc(acquiredAt.trim()) : null,
       });
+      // T2-2-impl で対応予定: coverUri を persistPhotoFile + insertPhoto で永続化。
+      // 現状は UI 選択のみで保存しない (Issue 起票済、PR 本文の Test plan に明記)。
+      if (coverUri != null) {
+        console.warn(
+          '[BonsaiCreateSheet] cover photo selected but not persisted (T2-2-impl pending):',
+          coverUri,
+        );
+      }
       bottomSheetRef.current?.close();
       onCreated(bonsai.id);
     } finally {
@@ -137,6 +169,28 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
       handleIndicatorStyle={{ backgroundColor: c.border }}
     >
       <BottomSheetScrollView contentContainerStyle={styles.scrollContent}>
+        {/* T2-2-ui (Issue #366 後続): 写真選択 UI (mockup create-screens.jsx CreateBonsaiScreen 整合)。
+            保存処理は T2-2-impl で実装予定、本 PR は UI のみ。 */}
+        <View style={styles.field}>
+          <ThemedText type="defaultSemiBold">{t('bonsaiFieldPhotos')}</ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('photoAddCta')}
+            style={[styles.photoBox, coverUri != null && styles.photoBoxFilled]}
+            onPress={handlePickPhoto}
+            testID="e2e_bonsai_create_photo_pick"
+          >
+            {coverUri != null ? (
+              <Image source={{ uri: coverUri }} style={styles.photoPreview} contentFit="cover" />
+            ) : (
+              <View style={styles.photoEmpty}>
+                <CameraIcon size={28} />
+                <ThemedText style={styles.photoCta}>+ {t('photoAddCta')}</ThemedText>
+              </View>
+            )}
+          </Pressable>
+        </View>
+
         <View style={styles.field}>
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldName')} *</ThemedText>
           <TextInput
@@ -238,6 +292,22 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
 const styles = StyleSheet.create({
   scrollContent: { padding: 16, gap: 16, paddingBottom: 32 },
   field: { gap: 8 },
+  photoBox: {
+    width: 120,
+    height: 120,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: BORDER_DEFAULT,
+    borderStyle: 'dashed',
+    backgroundColor: BG_SURFACE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  photoBoxFilled: { borderStyle: 'solid', borderWidth: 1 },
+  photoPreview: { width: '100%', height: '100%' },
+  photoEmpty: { alignItems: 'center', justifyContent: 'center', gap: 6 },
+  photoCta: { fontSize: 12, color: TEXT_SECONDARY },
   input: {
     borderWidth: 1,
     borderColor: BORDER_DEFAULT,
