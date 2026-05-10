@@ -595,6 +595,11 @@ const baseEn = {
   bonsaiFieldEstimatedAge: 'Estimated age',
   bonsaiFieldEstimatedAgePlaceholder: 'e.g. 35',
   ageEstimatedFormat: '{years} yr (est.)',
+  // --- T2-7 memo + required/optional labels (schema v7) ---
+  bonsaiFieldMemo: 'Memo',
+  bonsaiFieldMemoPlaceholder: 'Free-form notes',
+  fieldRequiredLabel: 'required',
+  fieldOptionalLabel: 'optional',
 };
 
 export type TranslationKey = keyof typeof baseEn;
