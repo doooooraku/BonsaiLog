@@ -445,7 +445,6 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   // --- ADR-0020 Phase 1: 4-tab labels (English fallback for i18n.test.ts) ---
   tabBonsai: 'Bonsai',
   tabPlan: 'Plan',
-  tabFind: 'Find',
   tabLookBack: '活动',
   tabSettings: 'Settings',
   tabPlanComingSoon: 'Coming soon',

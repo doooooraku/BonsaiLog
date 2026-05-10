@@ -26,10 +26,10 @@ export {
   CheckIcon,
   CloseIcon,
   CogIcon,
-  CompassNavIcon,
   EditIcon,
   LeafIcon,
   MoreVerticalIcon,
+  PencilNavIcon,
   PlusIcon,
   SearchIcon,
 } from './NavIcons';

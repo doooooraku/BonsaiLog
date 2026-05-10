@@ -356,7 +356,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- ADR-0020 Phase 1: 4-tab labels (盆栽 / 予定 / 探す / 設定) ---
   tabBonsai: '盆栽',
   tabPlan: '予定',
-  tabFind: '探す',
   tabLookBack: 'ふりかえり',
   tabSettings: '設定',
   tabPlanComingSoon: '準備中',
