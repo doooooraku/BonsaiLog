@@ -26,12 +26,13 @@ const ICON = { ok: '✓', warn: '⚠', err: '✗' };
 
 // --- env / paths ---
 const ADB = process.env.ADB_BIN || '/usr/local/bin/adb';
-// DESIGN_ROOT は config.ts と同じ値を計算する (将来は config から import すべき、現状は重複)。
+// Phase 0.1 種別 B 切替: design 比較対象は事前撮影 PNG (screenshots) に変更。
+// 旧 wireframes (HTML) は capture-design.ts で参照しなくなったため、preflight からも削除。
 const here = fileURLToPath(import.meta.url);
 const hereDir = path.dirname(here);
 const REPO_ROOT = path.resolve(hereDir, '../..');
-const DESIGN_ROOT =
-  process.env.UI_DIFF_DESIGN_ROOT || path.join(REPO_ROOT, 'docs/mockups/v1.0/wireframes');
+const SCREENSHOTS_ROOT =
+  process.env.UI_DIFF_SCREENSHOTS_ROOT || path.join(REPO_ROOT, 'docs/mockups/v1.0/screenshots');
 const METRO_HOST = 'localhost';
 const METRO_PORT = 8081;
 
@@ -194,47 +195,7 @@ function checkMetro() {
   });
 }
 
-// --- 5. Playwright + chromium ---
-function checkPlaywright() {
-  const r = tryExec('pnpm', ['exec', 'playwright', '--version']);
-  if (!r.ok) {
-    record({
-      id: 'playwright',
-      name: 'Playwright',
-      status: 'err',
-      message: r.err || 'not installed',
-      hint: 'pnpm add -D playwright sharp tsx',
-    });
-    return;
-  }
-  const home = process.env.HOME || '/home/doooo';
-  const cacheDir = path.join(home, '.cache/ms-playwright');
-  if (!fs.existsSync(cacheDir)) {
-    record({
-      id: 'playwright-chromium',
-      name: 'Chromium binary',
-      status: 'err',
-      message: 'cache dir not found',
-      hint: 'pnpm exec playwright install chromium',
-    });
-    return;
-  }
-  const entries = fs.readdirSync(cacheDir);
-  const hasChromium = entries.some((e) => e.startsWith('chromium-'));
-  if (!hasChromium) {
-    record({
-      id: 'playwright-chromium',
-      name: 'Chromium binary',
-      status: 'err',
-      message: 'no chromium-* in cache',
-      hint: 'pnpm exec playwright install chromium',
-    });
-  } else {
-    record({ id: 'playwright', name: 'Playwright + chromium', status: 'ok', message: r.out });
-  }
-}
-
-// --- 6. ImageMagick compare ---
+// --- 5. ImageMagick compare ---
 function checkImageMagick() {
   const r = tryExec('compare', ['--version']);
   if (!r.ok) {
@@ -251,30 +212,34 @@ function checkImageMagick() {
   }
 }
 
-// --- 7. mockups v1.0 root ---
-function checkDesignRoot() {
-  if (!fs.existsSync(DESIGN_ROOT)) {
+// --- 6. mockups v1.0 screenshots (Phase 0.1 種別 B 切替) ---
+function checkScreenshotsRoot() {
+  if (!fs.existsSync(SCREENSHOTS_ROOT)) {
     record({
-      id: 'design-root',
-      name: 'mockups v1.0 root',
+      id: 'screenshots-root',
+      name: 'mockups v1.0 screenshots',
       status: 'err',
-      message: `${DESIGN_ROOT} not found`,
-      hint: 'docs/mockups/v1.0/wireframes/ が存在することを確認 (PR #269 で取り込み済み、git checkout で復元可)',
+      message: `${SCREENSHOTS_ROOT} not found`,
+      hint: 'docs/mockups/v1.0/screenshots/ が存在することを確認 (Issue #366 / PR #367 で生成、git checkout で復元可)',
     });
     return;
   }
-  const required = ['02-Home.html', 'tokens.css'];
-  const missing = required.filter((f) => !fs.existsSync(path.join(DESIGN_ROOT, f)));
-  if (missing.length > 0) {
+  const pngFiles = fs.readdirSync(SCREENSHOTS_ROOT).filter((f) => f.endsWith('.png'));
+  if (pngFiles.length === 0) {
     record({
-      id: 'design-root',
-      name: 'mockups v1.0 files',
+      id: 'screenshots-root',
+      name: 'mockups v1.0 screenshots',
       status: 'err',
-      message: `missing: ${missing.join(', ')}`,
-      hint: 'mockups v1.0 が壊れている可能性、git status で確認 + git checkout docs/mockups/v1.0/',
+      message: 'no PNG files',
+      hint: 'pnpm exec tsx scripts/ui-diff/generate-mockup-screenshots.ts で再生成',
     });
   } else {
-    record({ id: 'design-root', name: 'mockups v1.0 root', status: 'ok', message: DESIGN_ROOT });
+    record({
+      id: 'screenshots-root',
+      name: 'mockups v1.0 screenshots',
+      status: 'ok',
+      message: `${pngFiles.length} PNG file(s) in ${path.relative(REPO_ROOT, SCREENSHOTS_ROOT)}`,
+    });
   }
 }
 
@@ -284,9 +249,8 @@ async function main() {
   checkAdb();
   checkExpoGo();
   await checkMetro();
-  checkPlaywright();
   checkImageMagick();
-  checkDesignRoot();
+  checkScreenshotsRoot();
 
   console.log(`\n${C.bold}=== UI diff preflight ===${C.reset}`);
   for (const r of results) {
