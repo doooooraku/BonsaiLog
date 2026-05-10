@@ -580,9 +580,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   lookBackCardWiringDesc: '巻いた針金と、自分で決めた外し予定を一覧',
   lookBackCardSearchTitle: '盆栽を検索',
   lookBackCardSearchDesc: '名前 / 樹種 / メモ / タグから探す',
-  lookBackWateringComingSoonTitle: '水やり履歴（準備中）',
-  lookBackWateringComingSoonBody:
-    '全盆栽の横断画面は準備中です。各盆栽の詳細画面から個別の水やり履歴を確認できます。',
+  wateringHistoryAllSubtitle: '全盆栽 横断ビュー',
+  wateringHistoryAllBonsaiCount: '対象 {count} 件',
   // --- T1-10 BonsaiCard 220+3 段構造 (PR 予定) ---
   homeCardElapsedAgo: '{elapsed}前',
   homeCardNoLog: '記録はまだありません',
