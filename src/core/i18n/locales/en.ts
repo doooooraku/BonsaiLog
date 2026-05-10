@@ -602,6 +602,9 @@ const baseEn = {
   fieldOptionalLabel: 'optional',
   // --- T2-4 purchase date (schema v8) ---
   bonsaiFieldPurchaseDate: 'Purchase date',
+  // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
+  bonsaiFieldTags: 'Tags',
+  bonsaiTagsEmpty: 'No recent tags yet',
 };
 
 export type TranslationKey = keyof typeof baseEn;

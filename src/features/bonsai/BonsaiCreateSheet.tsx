@@ -47,6 +47,7 @@ import { createBonsai } from '@/src/db/bonsaiRepository';
 import { addPhotoFromUri } from '@/src/db/photoRepository';
 import { type BonsaiStyle } from '@/src/db/schema';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
+import { attachTagToBonsai, getRecentTags, type TagRecord } from '@/src/db/tagRepository';
 
 import { SpeciesPickerSheet } from './SpeciesPickerSheet';
 import { StylePickerSheet } from './StylePickerSheet';
@@ -86,6 +87,9 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
   const [memo, setMemo] = useState('');
   // T2-4: 購入日入力 (YYYY-MM-DD inline、空文字なら null)。
   const [purchaseDate, setPurchaseDate] = useState('');
+  // T2-6: タグ選択 (最近 8 件から chip 選択、保存時に bonsai_tags M:N 登録)。
+  const [recentTags, setRecentTags] = useState<TagRecord[]>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   // T2-5: 樹種 / 樹形 Picker Sheet refs (BonsaiCreateSheet 内に入れ子配置)。
   const speciesSheetRef = useRef<BottomSheet>(null);
   const styleSheetRef = useRef<BottomSheet>(null);
@@ -94,6 +98,9 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
     let cancelled = false;
     void getAllSpecies(lang).then((list) => {
       if (!cancelled) setSpeciesList(list);
+    });
+    void getRecentTags(8).then((tags) => {
+      if (!cancelled) setRecentTags(tags);
     });
     return () => {
       cancelled = true;
@@ -117,8 +124,19 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
     setEstimatedAgeText('');
     setMemo('');
     setPurchaseDate('');
+    setSelectedTagIds(new Set());
     onClose?.();
   }, [onClose]);
+
+  // T2-6: タグ chip toggle。
+  const toggleTag = useCallback((tagId: string) => {
+    setSelectedTagIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(tagId)) next.delete(tagId);
+      else next.add(tagId);
+      return next;
+    });
+  }, []);
 
   // T2-2-ui: 写真ライブラリから 1 枚選択 (cover photo 候補、保存は T2-2-impl)。
   const handlePickPhoto = useCallback(async () => {
@@ -169,6 +187,16 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
           await addPhotoFromUri({ bonsaiId: bonsai.id, sourceUri: coverUri });
         } catch (err) {
           console.warn('[BonsaiCreateSheet] photo persist failed (continuing):', err);
+        }
+      }
+      // T2-6: 選択中のタグを bonsai_tags M:N に登録。失敗しても盆栽登録は継続 (UX 配慮)。
+      if (selectedTagIds.size > 0) {
+        try {
+          await Promise.all(
+            Array.from(selectedTagIds).map((tagId) => attachTagToBonsai(bonsai.id, tagId)),
+          );
+        } catch (err) {
+          console.warn('[BonsaiCreateSheet] tag attach failed (continuing):', err);
         }
       }
       bottomSheetRef.current?.close();
@@ -309,6 +337,38 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
           />
         </View>
 
+        {/* T2-6: タグ chip (最近 8 件、複数選択可、bonsai_tags M:N で保存)。 */}
+        <View style={styles.field}>
+          <View style={styles.fieldLabelRow}>
+            <ThemedText type="defaultSemiBold">{t('bonsaiFieldTags')}</ThemedText>
+            <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+          </View>
+          {recentTags.length > 0 ? (
+            <View style={styles.tagChipRow}>
+              {recentTags.map((tg) => {
+                const selected = selectedTagIds.has(tg.id);
+                return (
+                  <Pressable
+                    key={tg.id}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: selected }}
+                    accessibilityLabel={tg.name}
+                    style={[styles.tagChip, selected && styles.tagChipSelected]}
+                    onPress={() => toggleTag(tg.id)}
+                    testID={`e2e_bonsai_create_tag_chip_${tg.id}`}
+                  >
+                    <ThemedText style={selected ? styles.tagChipTextSelected : styles.tagChipText}>
+                      {tg.name}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : (
+            <ThemedText style={styles.tagsEmpty}>{t('bonsaiTagsEmpty')}</ThemedText>
+          )}
+        </View>
+
         {/* T2-7: メモ入力欄 (multiline、任意ラベル、4 行まで)。 */}
         <View style={styles.field}>
           <View style={styles.fieldLabelRow}>
@@ -415,6 +475,22 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   inputMultiline: { minHeight: 96, paddingVertical: 12 },
+  // T2-6: タグ chip
+  tagChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  tagChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+    minHeight: 36,
+    justifyContent: 'center',
+  },
+  tagChipSelected: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
+  tagChipText: { fontSize: 13 },
+  tagChipTextSelected: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
+  tagsEmpty: { fontSize: 13, color: TEXT_MUTED },
   submit: {
     marginTop: 8,
     paddingVertical: 16,

@@ -600,6 +600,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   fieldOptionalLabel: '任意',
   // --- T2-4 購入日 (schema v8) ---
   bonsaiFieldPurchaseDate: '購入日',
+  // --- T2-6 タグ入力 (bonsai_tags M:N、schema v9) ---
+  bonsaiFieldTags: 'タグ',
+  bonsaiTagsEmpty: '最近使ったタグはまだありません',
 };
 
 export default ja;

@@ -139,3 +139,45 @@ export async function getTagsByEvent(eventId: string): Promise<TagRecord[]> {
     [eventId],
   );
 }
+
+// ---------------------------------------------------------------------------
+// Bonsai-Tag M:N (T2-6、schema v9)
+// ---------------------------------------------------------------------------
+
+/**
+ * bonsai に tag を関連付ける (bonsai_tags M:N、PRIMARY KEY 衝突は INSERT OR IGNORE で無音)。
+ */
+export async function attachTagToBonsai(bonsaiId: string, tagId: string): Promise<void> {
+  const db = await getDb();
+  const now = nowUtc() as string;
+  await db.runAsync(
+    'INSERT OR IGNORE INTO bonsai_tags (bonsai_id, tag_id, created_at) VALUES (?, ?, ?)',
+    [bonsaiId, tagId, now],
+  );
+}
+
+/**
+ * bonsai から tag の関連付けを外す。
+ */
+export async function detachTagFromBonsai(bonsaiId: string, tagId: string): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM bonsai_tags WHERE bonsai_id = ? AND tag_id = ?', [
+    bonsaiId,
+    tagId,
+  ]);
+}
+
+/**
+ * bonsai に紐づく tag 一覧を返す。
+ */
+export async function getTagsByBonsai(bonsaiId: string): Promise<TagRecord[]> {
+  const db = await getDb();
+  return db.getAllAsync<TagRecord>(
+    `SELECT t.id, t.name, t.name_normalized as nameNormalized, t.created_at as createdAt
+     FROM tags t
+     INNER JOIN bonsai_tags bt ON bt.tag_id = t.id
+     WHERE bt.bonsai_id = ?
+     ORDER BY t.name COLLATE NOCASE`,
+    [bonsaiId],
+  );
+}

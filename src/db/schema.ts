@@ -26,7 +26,7 @@
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 8;
+export const SCHEMA_VERSION = 9;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -505,6 +505,25 @@ ALTER TABLE bonsai ADD COLUMN memo TEXT;
  */
 export const schemaV8 = `
 ALTER TABLE bonsai ADD COLUMN purchase_date TEXT;
+`;
+
+/**
+ * Migration v9 (T2-6、Tier 2): bonsai_tags M:N テーブル新規作成。
+ *
+ * - 盆栽とタグの多対多関連を保存 (event_tags とは独立、盆栽自体への直接タグ付け)
+ * - mockup create-screens.jsx CreateBonsaiScreen のタグ chip (#要注意 / @ベランダ / #展示会候補) 整合
+ * - CREATE TABLE IF NOT EXISTS で冪等性確保
+ */
+export const schemaV9 = `
+CREATE TABLE IF NOT EXISTS bonsai_tags (
+  bonsai_id TEXT NOT NULL,
+  tag_id TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (bonsai_id, tag_id),
+  FOREIGN KEY (bonsai_id) REFERENCES bonsai(id) ON DELETE CASCADE,
+  FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_bonsai_tags_tag_id ON bonsai_tags(tag_id);
 `;
 
 // ---------------------------------------------------------------------------
