@@ -21,11 +21,19 @@ tags:
     timeout: 60000
     label: 'Metro バンドル + 盆栽タブ表示完了 (初回 60s 許容)'
 
+# BonsaiCard リスト loading 完了待ち (フィルタタブ「すべて」表示で判定)
+- extendedWaitUntil:
+    visible:
+      text: 'すべて'
+    timeout: 30000
+    label: 'BonsaiCard リスト loading 完了 (フィルタタブ表示)'
+
 - waitForAnimationToEnd
 
-# 最初の盆栽カードを tap (テスト盆栽 1 件以上前提、bonsai-detail.yml と同じ座標)
+# 最初の盆栽カード (1 件目、updated_at 降順) を tap
+# seed 投入後の 1 件目は「お師匠の真柏」だが、テストデータが変わっても座標 tap で対応
 - tapOn:
-    point: 50%,30%
+    point: 50%,40%
 
 - extendedWaitUntil:
     visible:

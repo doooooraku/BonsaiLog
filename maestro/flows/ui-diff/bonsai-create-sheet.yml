@@ -16,19 +16,25 @@ tags:
 # 1. Metro deeplink で起動
 - openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
 
-# 2. 盆栽タブ「盆栽手帳」表示完了まで待つ
+# 2. 盆栽タブ「盆栽手帳」表示完了まで待つ (Metro バンドル + アプリ起動)
 - extendedWaitUntil:
     visible:
       text: '盆栽手帳'
     timeout: 60000
     label: 'Metro バンドル + 盆栽タブ表示完了 (初回 60s 許容)'
 
+# 3. BonsaiCard リスト loading 完了 (フィルタタブ「すべて」表示で判定、FAB render 完了の指標)
+- extendedWaitUntil:
+    visible:
+      text: 'すべて'
+    timeout: 30000
+    label: 'BonsaiCard リスト loading 完了 (フィルタタブ表示)'
+
 - waitForAnimationToEnd
 
-# 3. FAB (+ ボタン) を tap して BottomSheet を開く
-#    FAB 位置は画面右下、座標 tap で対応 (PR #368 で testID e2e_bonsai_create_fab 整備予定)
+# 4. FAB (+) を testID で tap (loading 中の座標空振り回避)
 - tapOn:
-    point: 88%,90%
+    id: 'e2e_home_fab_create'
 
 # 4. BottomSheet 内の「写真」「名前」フィールドが表示されるまで待つ
 - extendedWaitUntil:
