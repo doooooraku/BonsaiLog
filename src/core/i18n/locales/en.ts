@@ -588,6 +588,9 @@ const baseEn = {
   // --- T1-10 BonsaiCard 220+3 段構造 ---
   homeCardElapsedAgo: '{elapsed} ago',
   homeCardNoLog: 'No records yet',
+  // --- T2-2-ui photo library permission ---
+  photoPermissionDeniedTitle: 'Photo library permission required',
+  photoPermissionDeniedBody: 'Please allow photo library access in Settings.',
 };
 
 export type TranslationKey = keyof typeof baseEn;

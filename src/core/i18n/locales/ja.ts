@@ -586,6 +586,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- T1-10 BonsaiCard 220+3 段構造 (PR 予定) ---
   homeCardElapsedAgo: '{elapsed}前',
   homeCardNoLog: '記録はまだありません',
+  // --- T2-2-ui 写真ライブラリ permission ---
+  photoPermissionDeniedTitle: '写真ライブラリの許可が必要です',
+  photoPermissionDeniedBody: '設定アプリで写真ライブラリの権限を許可してください。',
 };
 
 export default ja;
