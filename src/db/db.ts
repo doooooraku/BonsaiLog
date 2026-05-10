@@ -30,6 +30,7 @@ import {
   schemaV6,
   schemaV7,
   schemaV8,
+  schemaV9,
 } from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
@@ -182,6 +183,16 @@ async function migrate(db: SQLite.SQLiteDatabase) {
       await db.execAsync(schemaV8);
     }
     version = 8;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v9 (T2-6、Tier 2): bonsai_tags M:N テーブル新規作成。
+  //
+  // CREATE TABLE IF NOT EXISTS で冪等、二度目以降の起動でも安全。
+  // ---------------------------------------------------------------------------
+  if (version < 9) {
+    await db.execAsync(schemaV9);
+    version = 9;
   }
 
   // Always set version UNCONDITIONALLY (not inside an if-block).
