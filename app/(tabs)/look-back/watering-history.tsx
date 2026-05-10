@@ -28,6 +28,7 @@ import {
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveWateringEventsLogged } from '@/src/db/eventRepository';
 import type { Event } from '@/src/db/schema';
+import { CrossWateringCalendar } from '@/src/features/watering/CrossWateringCalendar';
 import { WateringHeatmap } from '@/src/features/watering/WateringHeatmap';
 import { buildIndividualSummary, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 
@@ -124,6 +125,9 @@ export default function CrossWateringHistoryScreen() {
             testID="e2e_cross_watering_heatmap"
           />
         </View>
+
+        {/* 月別カレンダー (Issue #361 追加スコープ、ヒートマップとは別の月単位ビュー) */}
+        <CrossWateringCalendar events={events} tzOffsetMin={tzOffsetMin} />
 
         {/* 期間内サマリー (個別画面の「最後の水やりから / 連続記録 / 2 回の日」は横断では意味が薄いため省略)。 */}
         <View style={styles.summaryRow}>
