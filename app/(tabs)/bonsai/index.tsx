@@ -23,7 +23,7 @@
  */
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -42,8 +42,10 @@ import {
 import { getCoverPhoto } from '@/src/db/photoRepository';
 import type { EventType } from '@/src/db/schema';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
+import type BottomSheet from '@gorhom/bottom-sheet';
 import { AdBanner } from '@/src/features/ads/AdBanner';
 import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCard';
+import { BonsaiCreateSheet } from '@/src/features/bonsai/BonsaiCreateSheet';
 import { HomeFilterTabs, type FilterChip } from '@/src/features/bonsai/HomeFilterTabs';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { SelectionToolbar } from '@/src/features/bonsai/SelectionToolbar';
@@ -168,6 +170,16 @@ export default function BonsaiHomeScreen() {
   // Issue #343: 一括記録フローの 2 step state (pickWork → confirm → null=完了/閉じる)。
   const [bulkLogStep, setBulkLogStep] = useState<BulkLogStep>(null);
   const [bulkLogType, setBulkLogType] = useState<EventType>('watering');
+
+  // T2-1: FAB / Empty CTA 押下時に開く新規登録 BottomSheet の ref。
+  const createSheetRef = useRef<BottomSheet>(null);
+  const openCreateSheet = useCallback(() => createSheetRef.current?.snapToIndex(0), []);
+  const handleCreated = useCallback(
+    (bonsaiId: string) => {
+      router.push(`/(tabs)/bonsai/${bonsaiId}` as Href);
+    },
+    [router],
+  );
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -362,7 +374,7 @@ export default function BonsaiHomeScreen() {
             accessibilityRole="button"
             accessibilityLabel={t('homeEmptyCta')}
             style={[styles.emptyCta, { backgroundColor: c.tint }]}
-            onPress={() => router.push('/(tabs)/bonsai/new' as Href)}
+            onPress={openCreateSheet}
             testID="e2e_home_empty_cta"
           >
             <PlusIcon size={20} color={ON_BRAND} />
@@ -371,6 +383,13 @@ export default function BonsaiHomeScreen() {
             </ThemedText>
           </Pressable>
         </View>
+        <BonsaiCreateSheet
+          bottomSheetRef={createSheetRef}
+          onCreated={(id) => {
+            void reload();
+            handleCreated(id);
+          }}
+        />
       </ThemedView>
     );
   }
@@ -424,7 +443,7 @@ export default function BonsaiHomeScreen() {
               bottom: tabBarHeight + AD_BANNER_HEIGHT_APPROX + 16,
             },
           ]}
-          onPress={() => router.push('/(tabs)/bonsai/new' as Href)}
+          onPress={openCreateSheet}
           testID="e2e_home_fab_create"
         >
           <PlusIcon size={28} color={ON_BRAND} />
@@ -463,6 +482,14 @@ export default function BonsaiHomeScreen() {
         selectedBonsais={selectedBonsais}
         onClose={handleBulkLogSheetsClose}
         onSave={handleBulkLogConfirmSave}
+      />
+      {/* T2-1: 新規盆栽登録 BottomSheet (旧 app/(tabs)/bonsai/new.tsx を移植、機能維持のみ)。 */}
+      <BonsaiCreateSheet
+        bottomSheetRef={createSheetRef}
+        onCreated={(id) => {
+          void reload();
+          handleCreated(id);
+        }}
       />
     </ThemedView>
   );
