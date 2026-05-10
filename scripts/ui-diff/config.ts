@@ -100,15 +100,25 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §Notes §画面マップ row 17 / monetization-screens.jsx PaywallScreen / src/features/pro/PaywallScreen.tsx + app/pro.tsx (薄ラッパー) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「設定」→「Proにアップグレード」(testID e2e_open_paywall) をタップして遷移、testID e2e_paywall_screen で可視待ち。R-28 ADR-0009 課金ロジック (RevenueCat 月額/年額/Lifetime) 維持厳守。',
   },
-  'find-tab': {
-    id: 'find-tab',
+  'look-back-tab': {
+    id: 'look-back-tab',
     description:
-      '探すタブ (TabBar「探す」遷移先、検索 input + 検索履歴 chip + 全盆栽から検索結果ハイライト)',
-    appFlow: 'maestro/flows/ui-diff/find-tab.yml',
+      'ふりかえりタブ Hub (TabBar「ふりかえり」遷移先、CareHub 3 カード: 水やり履歴 / 針金がけ一覧 / 盆栽を検索)',
+    appFlow: 'maestro/flows/ui-diff/look-back-tab.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="08 ふりかえり Hub"]',
+    notes:
+      'ADR-0020 §Decision §7 Notes Amended (2026-05-10、PR #358) / care-screens.jsx CareHubScreen L1576-1719 / app/(tabs)/look-back/index.tsx (T1-8c PR #362) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「ふりかえり」をタップして遷移、testID e2e_look_back_hub で可視待ち。データ依存なし。',
+  },
+  'look-back-search': {
+    id: 'look-back-search',
+    description:
+      'ふりかえり > 盆栽検索 sub-route (検索 input + 検索履歴 chip + タグ chip + 全盆栽から検索結果ハイライト)',
+    appFlow: 'maestro/flows/ui-diff/look-back-search.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="12 ケア 検索"]',
     notes:
-      'ADR-0020 §Notes §画面マップ row 16 / care-screens.jsx SearchScreen / app/(tabs)/find/index.tsx (Phase 6 大改修目標、385 行) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「探す」をタップして遷移、testID e2e_find_screen で可視待ち。データ依存は検索結果のみ (Empty state は表示可能)。',
+      'ADR-0020 §Notes §画面マップ row 16 / care-screens.jsx SearchScreen / app/(tabs)/look-back/search.tsx (T1-8c PR #362、旧 find/index.tsx 385 行を sub-route 化) / mockups v1.0 (PR #269)。動線: TabBar ふりかえり → CareHub → 盆栽を検索カード → search 画面 (3 タップ、経路 2)。testID e2e_find_screen は移植時に維持。データ依存は検索結果のみ。',
   },
   'home-bulk-sched-work': {
     id: 'home-bulk-sched-work',

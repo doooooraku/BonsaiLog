@@ -1,0 +1,51 @@
+# UI diff: ふりかえりタブ → 盆栽検索 sub-route のスクリーンショット取得用
+# ADR-0021 / ADR-0020 §Notes §画面マップ row 16 (検索画面 ⟷ care-screens.jsx SearchScreen)
+# 対象実装: app/(tabs)/look-back/search.tsx (testID e2e_find_screen は維持)
+# 対象モックアップ: docs/mockups/v1.0/wireframes/02-Home.html [data-screen-label="12 ケア 検索"]
+#
+# ADR-0020 §Decision §7 (2026-05-10 改訂) で「探す」→「ふりかえり」rename + CareHub 化されたため、
+# 検索画面までの動線は「TabBar ふりかえり → CareHub → 盆栽を検索カード → 検索画面」(経路 2、3 タップ)。
+# (経路 1 = Home Header 検索アイコン直行は別途配線時に対応予定)
+#
+# 前提:
+#   - 別途 Metro bundler (pnpm dev) を WSL2 内で起動済み、`adb reverse tcp:8081 tcp:8081` で
+#     実機から WSL ポートに到達可能。
+#   - オンボ完了済 (起動直後に盆栽タブが表示される状態)。
+#   - データ依存は検索結果のみ (Empty state でも screen 自体は表示可能)。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: look-back-search'
+tags:
+  - ui-diff
+---
+# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
+- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+
+# 2. 起動完了 (盆栽タブの「盆栽手帳」ヘッダー) を待つ
+- extendedWaitUntil:
+    visible:
+      text: '盆栽手帳'
+    timeout: 60000
+
+# 3. TabBar の「ふりかえり」タブをタップ
+- tapOn:
+    text: 'ふりかえり'
+
+# 4. CareHub Hub (testID e2e_look_back_hub) が表示されるまで待つ
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_look_back_hub'
+    timeout: 30000
+
+# 5. 「盆栽を検索」カード (testID e2e_look_back_card_search) をタップ
+- tapOn:
+    id: 'e2e_look_back_card_search'
+
+# 6. 検索画面 (testID e2e_find_screen) が表示されるまで待つ
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_find_screen'
+    timeout: 30000
+
+# 7. 全要素描画完了を待つ
+- waitForAnimationToEnd
