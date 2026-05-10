@@ -26,7 +26,7 @@
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 7;
+export const SCHEMA_VERSION = 8;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -116,6 +116,7 @@ export const bonsai = sqliteTable(
     potInfo: text('pot_info'), // JSON 文字列 (鉢の形状/色/サイズ/メーカー等)
     estimatedAge: integer('estimated_age'), // v6 追加: 推定樹齢 (年、null 可)
     memo: text('memo'), // v7 追加: メモ (free-form text、null 可)
+    purchaseDate: text('purchase_date'), // v8 追加: 購入日 (ISO 8601 UTC TEXT、acquiredAt とは別、null 可)
     archivedAt: text('archived_at'), // ISO 8601 UTC TEXT (NULL ならアクティブ)
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
@@ -492,6 +493,18 @@ ALTER TABLE bonsai ADD COLUMN estimated_age INTEGER;
  */
 export const schemaV7 = `
 ALTER TABLE bonsai ADD COLUMN memo TEXT;
+`;
+
+/**
+ * Migration v8 (T2-4、Tier 2): bonsai テーブルに purchase_date カラム追加。
+ *
+ * - 購入日 (ISO 8601 UTC TEXT、null 可) を保存
+ * - acquired_at (取得日) とは別物 (購入日 = お金を払って買った日)
+ * - mockup create-screens.jsx CreateBonsaiScreen の「購入日」入力欄整合
+ * - ALTER TABLE は db.ts 側の hasColumn ガードで二重実行回避
+ */
+export const schemaV8 = `
+ALTER TABLE bonsai ADD COLUMN purchase_date TEXT;
 `;
 
 // ---------------------------------------------------------------------------

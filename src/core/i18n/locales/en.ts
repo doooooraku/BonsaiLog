@@ -600,6 +600,8 @@ const baseEn = {
   bonsaiFieldMemoPlaceholder: 'Free-form notes',
   fieldRequiredLabel: 'required',
   fieldOptionalLabel: 'optional',
+  // --- T2-4 purchase date (schema v8) ---
+  bonsaiFieldPurchaseDate: 'Purchase date',
 };
 
 export type TranslationKey = keyof typeof baseEn;

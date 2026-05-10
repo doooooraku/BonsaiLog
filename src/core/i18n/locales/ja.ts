@@ -598,6 +598,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldMemoPlaceholder: '気になることを自由に',
   fieldRequiredLabel: '必須',
   fieldOptionalLabel: '任意',
+  // --- T2-4 購入日 (schema v8) ---
+  bonsaiFieldPurchaseDate: '購入日',
 };
 
 export default ja;
