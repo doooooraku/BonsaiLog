@@ -136,6 +136,45 @@ PR Template
 
 ---
 
+## 7.5. mockup 整合チェック（R-29 写経駆動開発 / REQUIRED if mockup 整合 PR）
+
+> mockup v1.0 (`docs/mockups/v1.0/wireframes/`) を実機 UI に反映する PR で **必須**。
+> 詳細: `docs/reference/integration-criteria.md` (整合性レベル定義) / `.claude/recurrence-prevention.md` R-29
+
+### 7.5.1. 5 段階チェック (REQUIRED)
+
+- [ ] **Step 1**: mockup の該当 jsx component を完全 Read 済
+  - file: `docs/mockups/v1.0/wireframes/<file>.jsx` 行範囲: `L<start>-L<end>`
+- [ ] **Step 2**: mockup の該当画面スクショを Read 済
+  - file: `docs/mockups/v1.0/screenshots/<id>.png`
+- [ ] **Step 3**: 既存 RN 実装ファイルを Read 済 (R-18)
+  - file: `<RN ファイルパス>`
+- [ ] **Step 4**: 実装後、RN スクショを撮影 (実機 / Web / アタッチメント)
+  - 撮影手順: `docs/how-to/development/screenshot-capture.md` (T1-9 以降参照)
+- [ ] **Step 5**: mockup スクショと RN スクショを並べて Read で目視比較
+
+### 7.5.2. 達成した整合性レベル (REQUIRED)
+
+本 PR で達成した整合性レベル: **[ ]** レベル 0 / **[ ]** レベル 1 / **[ ]** レベル 2 ⭐ / **[ ]** レベル 3
+
+> 「整合済」マークの最低水準は **レベル 2 (見た目 80% 一致)**。
+> レベル 0/1 のみの場合は「**部分整合**」として ADR-0020 §画面マップに明記、本格整合は別 Issue で対応。
+
+### 7.5.3. 必須一致項目チェック (レベル 2 達成のため、UI 整合 PR で REQUIRED)
+
+- [ ] 写真/画像のサイズ (mockup と同じ縦横サイズ)
+- [ ] フォント (NotoSerifJP_500 / NotoSansJP / IBMPlexMono 等の正しい使用)
+- [ ] 色トークン (BRAND_GREEN / BG_PRIMARY / BG_SURFACE / TEXT_PRIMARY 等、ハードコードなし)
+- [ ] 主要レイアウト (3 階層 / 2 階層 / Hero + Tabs 等の構造)
+- [ ] 主要ボタン/CTA の配置 (画面上下)
+
+### 7.5.4. 適用対象外の場合 (UI 整合と無関係な PR)
+
+- [ ] 本 PR は mockup 整合と無関係 (内部リファクタ / docs / config / build / test 等のみ)
+  - 理由: \_\_\_\_\_
+
+---
+
 ## 8. Docs影響（docs-as-code / REQUIRED）
 
 > 仕様書を死なせないための “分岐チェック”。
