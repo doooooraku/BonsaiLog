@@ -7,19 +7,19 @@
  * - FlatList<BonsaiCard> (写真サムネ + 名前 + 樹種 + 樹形 + 最後の水やり / 剪定からの日数)
  * - selectMode true 時: 下部 SelectionToolbar (一括記録 / 予定追加)、FAB 非表示
  * - selectMode false 時: FAB (+) (盆栽新規登録、右下、bottom 96px = TabBar 高さ + 余白)
- * - selectMode + 「予定追加」タップ時: BulkWorkPickerSheet → BulkScheduleDateSheet → bulkScheduleEvents
+ * - selectMode + 「予定追加」タップ時: BulkWorkPickerSheet (mode='schedule') → BulkScheduleDateSheet → bulkScheduleEvents
+ * - selectMode + 「一括記録」タップ時: BulkWorkPickerSheet (mode='log') → BulkLogConfirmSheet → bulkLogEvents
  *
  * Empty State: HomeEmptyScreen 整合 (PotIcon + タイトル + 説明 + 「+ 盆栽を登録」フル幅 CTA)
  *
  * Phase 9 で AdBanner を本ファイル末尾に配置済 (ADR-0010「ホーム下部のみ」、Repolog 同等構成)。
  *
- * mockup v1.0 02-Home.html 整合 (一括予定追加フロー):
+ * mockup v1.0 02-Home.html 整合 (一括予定追加 + 一括記録 フロー):
  * - 長押しで selectMode 入り (Pressable.onLongPress、500ms default)
  * - SearchHeader「複数選択 / キャンセル」テキストボタンでも selectMode トグル
  * - selectMode 中の BonsaiCard 短押し → toggle、長押し → no-op (既に selectMode 中)
- * - SelectionToolbar 「予定追加」ボタン → BulkWorkPickerSheet → BulkScheduleDateSheet
- *   → bulkScheduleEvents (Promise.allSettled で各 bonsai に planned event 作成)
- * - SelectionToolbar 「一括記録」ボタンは disabled (Issue で BulkLogConfirmSheet 実装後に enable)
+ * - SelectionToolbar 「予定追加」 → BulkWorkPickerSheet (mode='schedule') → BulkScheduleDateSheet → bulkScheduleEvents
+ * - SelectionToolbar 「一括記録」 → BulkWorkPickerSheet (mode='log') → BulkLogConfirmSheet → bulkLogEvents (Issue #343、G9 PR 1)
  */
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
@@ -34,7 +34,11 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 import { ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/bonsaiRepository';
-import { bulkScheduleEvents, getActiveEventsByBonsai } from '@/src/db/eventRepository';
+import {
+  bulkLogEvents,
+  bulkScheduleEvents,
+  getActiveEventsByBonsai,
+} from '@/src/db/eventRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
 import type { EventType } from '@/src/db/schema';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
@@ -43,6 +47,7 @@ import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCar
 import { HomeFilterTabs, type FilterChip } from '@/src/features/bonsai/HomeFilterTabs';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { SelectionToolbar } from '@/src/features/bonsai/SelectionToolbar';
+import { BulkLogConfirmSheet } from '@/src/features/event/BulkLogConfirmSheet';
 import { BulkScheduleDateSheet } from '@/src/features/event/BulkScheduleDateSheet';
 import { BulkWorkPickerSheet } from '@/src/features/event/BulkWorkPickerSheet';
 import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
@@ -58,6 +63,7 @@ const AD_BANNER_HEIGHT_APPROX = 60;
 const SELECTION_TOOLBAR_HEIGHT = 56;
 
 type BulkSchedStep = 'pickWork' | 'pickDate' | null;
+type BulkLogStep = 'pickWork' | 'confirm' | null;
 
 /**
  * 経過日数を「3日」「2週間」「5ヶ月」など短い文字列にフォーマット。
@@ -144,6 +150,9 @@ export default function BonsaiHomeScreen() {
   // 一括予定追加フローの 2 step state (pickWork → pickDate → null=完了/閉じる)。
   const [bulkSchedStep, setBulkSchedStep] = useState<BulkSchedStep>(null);
   const [bulkSchedType, setBulkSchedType] = useState<EventType>('fertilizing');
+  // Issue #343: 一括記録フローの 2 step state (pickWork → confirm → null=完了/閉じる)。
+  const [bulkLogStep, setBulkLogStep] = useState<BulkLogStep>(null);
+  const [bulkLogType, setBulkLogType] = useState<EventType>('watering');
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -185,11 +194,12 @@ export default function BonsaiHomeScreen() {
   // で SQL 側に委譲済 (M:N JOIN + AND セマンティクス)。クライアント側の追加フィルタは不要。
   const visibleItems = items;
 
-  // selectMode の入り / 終わりは selectedIds をリセット (mockup `cancelSelect` / `enterSelect` 整合)。
+  // selectMode の入り / 終わりは selectedIds と Bulk Sheet 各 step をリセット (mockup `cancelSelect` / `enterSelect` 整合)。
   const toggleSelectMode = useCallback(() => {
     setSelectMode((prev) => !prev);
     setSelectedIds(new Set());
     setBulkSchedStep(null);
+    setBulkLogStep(null);
   }, []);
 
   // BonsaiCard 短押し: selectMode 時 toggle、通常時 router.push (mockup `onCardClick` 整合)。
@@ -220,25 +230,40 @@ export default function BonsaiHomeScreen() {
     [selectMode],
   );
 
-  // SelectionToolbar 「予定追加」: BulkWorkPickerSheet を開く (bulkSchedStep='pickWork')。
+  // SelectionToolbar 「予定追加」: BulkWorkPickerSheet (mode='schedule') を開く。
   const handleBulkSchedule = useCallback(() => {
     setBulkSchedStep('pickWork');
   }, []);
 
-  // BulkWorkPickerSheet で作業選択 → BulkScheduleDateSheet へ遷移。
-  const handlePickWorkSelect = useCallback((type: EventType) => {
+  // SelectionToolbar 「一括記録」(Issue #343): BulkWorkPickerSheet (mode='log') を開く。
+  const handleBulkLog = useCallback(() => {
+    setBulkLogStep('pickWork');
+  }, []);
+
+  // BulkWorkPickerSheet (mode='schedule') で作業選択 → BulkScheduleDateSheet へ遷移。
+  const handlePickSchedWorkSelect = useCallback((type: EventType) => {
     setBulkSchedType(type);
     setBulkSchedStep('pickDate');
   }, []);
 
-  // Bulk Sheets の閉じる (drag down or onClose) → step null。
+  // BulkWorkPickerSheet (mode='log') で作業選択 → BulkLogConfirmSheet へ遷移。
+  const handlePickLogWorkSelect = useCallback((type: EventType) => {
+    setBulkLogType(type);
+    setBulkLogStep('confirm');
+  }, []);
+
+  // Bulk Sheets の閉じる (drag down or onClose) → 該当 step のみ null。
   // mockup `onDismiss` の動作整合 (selectMode は維持)。
-  const handleBulkSheetsClose = useCallback(() => {
+  const handleBulkSchedSheetsClose = useCallback(() => {
     setBulkSchedStep(null);
   }, []);
 
+  const handleBulkLogSheetsClose = useCallback(() => {
+    setBulkLogStep(null);
+  }, []);
+
   // BulkScheduleDateSheet で保存 → bulkScheduleEvents で各 bonsai に planned event 作成 → reload。
-  // R-28: notify=true 時の notification scheduling は Issue (本 PR スコープ外、別 Phase)。
+  // R-28: notify=true 時の notification scheduling は Issue #344 (本 PR スコープ外)。
   const handleBulkSchedSave = useCallback(
     async (input: { occurredAtUtc: string; notify: boolean }) => {
       await bulkScheduleEvents({
@@ -255,10 +280,36 @@ export default function BonsaiHomeScreen() {
     [selectedIds, bulkSchedType, reload],
   );
 
+  // BulkLogConfirmSheet (Issue #343) で保存 → bulkLogEvents で各 bonsai に logged event 作成 → reload。
+  const handleBulkLogConfirmSave = useCallback(
+    async (input: { note: string | null }) => {
+      await bulkLogEvents({
+        bonsaiIds: Array.from(selectedIds),
+        type: bulkLogType,
+        note: input.note,
+      });
+      // 完了 → selectMode 解除 + step リセット + 再 load
+      setSelectMode(false);
+      setSelectedIds(new Set());
+      setBulkLogStep(null);
+      await reload();
+    },
+    [selectedIds, bulkLogType, reload],
+  );
+
   const selectedBonsais = useMemo(
     () => items.filter((it) => selectedIds.has(it.id)).map((it) => ({ id: it.id, name: it.name })),
     [items, selectedIds],
   );
+
+  // BulkWorkPickerSheet の visible / mode / onSelect / onClose を bulkSchedStep と bulkLogStep の
+  // 排他状態から判定 (どちらか片方の pickWork のみ true、両方同時 true は不可)。
+  const bulkPickerVisible = bulkSchedStep === 'pickWork' || bulkLogStep === 'pickWork';
+  const bulkPickerMode: 'schedule' | 'log' = bulkSchedStep === 'pickWork' ? 'schedule' : 'log';
+  const bulkPickerOnSelect =
+    bulkSchedStep === 'pickWork' ? handlePickSchedWorkSelect : handlePickLogWorkSelect;
+  const bulkPickerOnClose =
+    bulkSchedStep === 'pickWork' ? handleBulkSchedSheetsClose : handleBulkLogSheetsClose;
 
   if (loading) {
     return (
@@ -309,8 +360,6 @@ export default function BonsaiHomeScreen() {
   }
 
   // selectMode 中は SelectionToolbar 分の paddingBottom を加算 (FAB は隠れる)。
-  // selectMode 中の SelectionToolbar の bottom は tabBarHeight + AdBanner で
-  // TabBar / AdBanner の上に配置 (mockup home-screens.jsx の `bottom: 56 + 34` 整合)。
   const listPaddingBottom =
     tabBarHeight + AD_BANNER_HEIGHT_APPROX + 32 + (selectMode ? SELECTION_TOOLBAR_HEIGHT : 0);
   const toolbarBottom = tabBarHeight + AD_BANNER_HEIGHT_APPROX;
@@ -355,7 +404,6 @@ export default function BonsaiHomeScreen() {
             styles.fab,
             {
               backgroundColor: c.tint,
-              // Issue #256: TabBar + AdBanner の上に FAB を配置 (元は bottom:24 で隠れていた)
               bottom: tabBarHeight + AD_BANNER_HEIGHT_APPROX + 16,
             },
           ]}
@@ -369,26 +417,35 @@ export default function BonsaiHomeScreen() {
         <View style={[styles.toolbarWrap, { bottom: toolbarBottom }]}>
           <SelectionToolbar
             count={selectedIds.size}
+            onBulkLog={handleBulkLog}
             onBulkSchedule={handleBulkSchedule}
+            enableBulkLog
             testID="e2e_home_selection_toolbar"
           />
         </View>
       )}
-      {/* ADR-0020 Phase 9: AdBanner を盆栽タブ最下部に配置 (ADR-0010「ホーム下部のみ」、Repolog 同等構成) */}
       <AdBanner />
-      {/* 一括予定追加 BottomSheets (mockup v1.0 home-screens.jsx HomeScreen `bulkSchedStep` 整合) */}
+      {/* 一括 (予定 / 記録) BottomSheets (mockup v1.0 home-screens.jsx HomeScreen `bulkSchedStep` 整合) */}
       <BulkWorkPickerSheet
-        visible={bulkSchedStep === 'pickWork'}
+        visible={bulkPickerVisible}
+        mode={bulkPickerMode}
         selectedBonsais={selectedBonsais}
-        onSelect={handlePickWorkSelect}
-        onClose={handleBulkSheetsClose}
+        onSelect={bulkPickerOnSelect}
+        onClose={bulkPickerOnClose}
       />
       <BulkScheduleDateSheet
         visible={bulkSchedStep === 'pickDate'}
         type={bulkSchedType}
         selectedBonsais={selectedBonsais}
-        onClose={handleBulkSheetsClose}
+        onClose={handleBulkSchedSheetsClose}
         onSave={handleBulkSchedSave}
+      />
+      <BulkLogConfirmSheet
+        visible={bulkLogStep === 'confirm'}
+        type={bulkLogType}
+        selectedBonsais={selectedBonsais}
+        onClose={handleBulkLogSheetsClose}
+        onSave={handleBulkLogConfirmSave}
       />
     </ThemedView>
   );
@@ -414,7 +471,6 @@ const styles = StyleSheet.create({
   },
   emptyBody: { fontSize: 16, lineHeight: 26, textAlign: 'center', maxWidth: 300 },
   emptyCtaWrap: { paddingHorizontal: 16, paddingBottom: 24 },
-  // mockup v1.0 home-screens.jsx HomeEmptyScreen 整合 (B4 PR、Empty 専用の強調 CTA、72dp / radius 14 / fontSize 20)
   emptyCta: {
     height: 72,
     borderRadius: 14,
@@ -424,12 +480,10 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emptyCtaText: { fontSize: 20, fontWeight: '500', letterSpacing: 0.8 },
-  // Issue #256: paddingBottom は実行時に tabBarHeight + AdBanner 分加算 (inline style)
   listContent: { paddingTop: 12 },
   fab: {
     position: 'absolute',
     right: 16,
-    // Issue #256: bottom は実行時に tabBarHeight + AdBanner 分加算 (inline style)
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -441,7 +495,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
   },
-  // SelectionToolbar 配置: 絶対配置、TabBar + AdBanner の上、左右いっぱい (mockup `position:'absolute'`, `bottom: 56+34` 整合)
   toolbarWrap: {
     position: 'absolute',
     left: 0,

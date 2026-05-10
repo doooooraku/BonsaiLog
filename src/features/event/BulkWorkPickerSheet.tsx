@@ -1,16 +1,20 @@
 /**
- * 一括予定追加・作業選択 BottomSheet (ADR-0020、mockup v1.0 02-Home.html `01c` 整合)。
+ * 一括 (予定追加 / 記録) 作業選択 BottomSheet (ADR-0020、mockup v1.0 02-Home.html `01c` 整合)。
  *
- * 構造 (mockup care-screens-v2.jsx BulkWorkPickerSheet 整合、mode='schedule' 専用):
+ * mode='schedule' (Issue #342、PR #342): 一括予定追加フローの作業選択
+ * mode='log'      (Issue #343、PR G9-1): 一括記録フローの作業選択
+ *
+ * 構造 (mockup care-screens-v2.jsx BulkWorkPickerSheet 整合):
  * - BottomSheet (snap '78%')
  * - drag handle
- * - タイトル「まとめて予定追加」+ サブ「N件の盆栽に同じ予定を追加」
+ * - タイトル + サブ (mode に応じて i18n 切替)
+ *   - schedule: 「まとめて予定追加」/「N件の盆栽に同じ予定を追加」
+ *   - log:      「まとめて記録」    /「N件の盆栽に同じ作業を記録」
  * - selected chips (横スクロール、各 chip = サムネ + 名前)
- * - 14 作業 grid (3 列、aspectRatio 1:1)
- *   - 既存 WorkPickerSheet と同じ 13 種別、`pineOnly` (candle_cut) のみ除外 (mockup `speciesOnly` filter 整合)
- * - NOTE box (なぜ松類限定が出ないかの説明)
+ * - 14 作業 grid (3 列、aspectRatio 1:1、`pineOnly` (candle_cut) 除外、mockup `speciesOnly` 整合)
+ * - NOTE box (mode に応じて i18n 切替、松類限定が出ない理由の説明)
  *
- * onSelect 経由で親 (HomeScreen) に EventType を渡す → 親が次 step (BulkScheduleDateSheet) に遷移。
+ * onSelect 経由で親 (HomeScreen) に EventType を渡す → 親が次 step に遷移。
  */
 import BottomSheet, { BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
 import React, { useEffect, useMemo, useRef } from 'react';
@@ -53,21 +57,27 @@ const WORK_TYPES: readonly WorkType[] = [
 
 type Props = {
   visible: boolean;
+  /** 一括予定追加 (schedule) or 一括記録 (log)。i18n 切替に使用。 */
+  mode: 'schedule' | 'log';
   selectedBonsais: readonly { id: string; name: string }[];
   onSelect: (type: EventType) => void;
   onClose: () => void;
 };
 
-export function BulkWorkPickerSheet({ visible, selectedBonsais, onSelect, onClose }: Props) {
+export function BulkWorkPickerSheet({ visible, mode, selectedBonsais, onSelect, onClose }: Props) {
   const { t } = useTranslation();
   const ref = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['78%'], []);
-  // schedule mode: pineOnly 除外 (mockup `items.filter(w => !w.speciesOnly)` 整合)
+  // schedule / log どちらも pineOnly 除外 (mockup `items.filter(w => !w.speciesOnly)` 整合)
   const items = useMemo(() => WORK_TYPES.filter((w) => !w.pineOnly), []);
 
   useEffect(() => {
     ref.current?.snapToIndex(visible ? 0 : -1);
   }, [visible]);
+
+  const titleKey = mode === 'log' ? 'bulkPickerSheetTitleLog' : 'bulkPickerSheetTitleSchedule';
+  const subKey = mode === 'log' ? 'bulkPickerSheetSubLog' : 'bulkPickerSheetSub';
+  const noteKey = mode === 'log' ? 'bulkPickerSheetNoteLog' : 'bulkPickerSheetNote';
 
   return (
     <BottomSheet
@@ -80,12 +90,11 @@ export function BulkWorkPickerSheet({ visible, selectedBonsais, onSelect, onClos
     >
       <BottomSheetView style={styles.content} testID="e2e_bulk_work_picker_sheet">
         <View style={styles.header}>
-          <ThemedText style={styles.title}>{t('bulkPickerSheetTitleSchedule')}</ThemedText>
+          <ThemedText style={styles.title}>{t(titleKey)}</ThemedText>
           <ThemedText style={styles.sub}>
-            {t('bulkPickerSheetSub').replace('{count}', String(selectedBonsais.length))}
+            {t(subKey).replace('{count}', String(selectedBonsais.length))}
           </ThemedText>
         </View>
-        {/* selected chips (横スクロール) */}
         <BottomSheetScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -120,7 +129,7 @@ export function BulkWorkPickerSheet({ visible, selectedBonsais, onSelect, onClos
           </View>
           <View style={styles.noteBox}>
             <ThemedText style={styles.noteLabel}>NOTE</ThemedText>
-            <ThemedText style={styles.noteText}>{t('bulkPickerSheetNote')}</ThemedText>
+            <ThemedText style={styles.noteText}>{t(noteKey)}</ThemedText>
           </View>
         </BottomSheetScrollView>
       </BottomSheetView>

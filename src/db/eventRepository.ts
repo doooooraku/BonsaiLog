@@ -546,3 +546,61 @@ export async function bulkScheduleEvents(input: BulkScheduleInput): Promise<Bulk
   });
   return { created, failed };
 }
+
+// ---------------------------------------------------------------------------
+// 一括記録 (Issue #343、ADR-0020 §画面マップ row 5、mockup v1.0 02-Home.html SelectionToolbar「一括記録」)
+// ---------------------------------------------------------------------------
+
+export type BulkLogInput = {
+  /** 対象盆栽 ID 配列 (重複なし、selectMode で選択された)。 */
+  bonsaiIds: readonly string[];
+  /** 全盆栽に共通の作業種別。 */
+  type: EventType;
+  /** 全盆栽に共通の自由メモ (任意、null なら未記入)。 */
+  note: string | null;
+};
+
+export type BulkLogResult = {
+  /** 作成成功した event 配列。 */
+  created: Event[];
+  /** 作成失敗した bonsaiId 配列 (個別エラーで他は continue)。 */
+  failed: string[];
+};
+
+/**
+ * 一括記録: 複数の盆栽に同じ EventType / 共通 note の logged event を作成。
+ *
+ * - Promise.allSettled で各 bonsai に createEvent を並列呼び出し
+ * - 1 件失敗しても他は continue (failed 配列に bonsaiId を返す)
+ * - payload は空 `{}` (Valibot 全 EventType で optional のみ、payloadValidator.ts 参照)
+ * - status='logged' (occurredAtUtc は createEvent 内部で now を設定)
+ *
+ * 注: 種別固有 payload (例: watering の amount、pruning の parts) は本 helper のスコープ外。
+ *     親 (HomeScreen) で UI 簡略化のため共通 note のみ受け取り、種別固有入力は単独記録経由
+ *     (mockup v1.0 BulkLogConfirmSheet の simplified 版、ADR-0011 整合)。
+ *
+ * Related:
+ * - ADR-0020 §Notes §画面マップ row 5 (HomeScreen 一括記録)
+ * - mockup v1.0 02-Home.html SelectionToolbar「一括記録」ボタン
+ * - Issue #343 (G9 サイクル PR 1)
+ */
+export async function bulkLogEvents(input: BulkLogInput): Promise<BulkLogResult> {
+  const results = await Promise.allSettled(
+    input.bonsaiIds.map((bonsaiId) =>
+      createEvent({
+        bonsaiId,
+        type: input.type,
+        status: 'logged',
+        payload: {},
+        note: input.note,
+      }),
+    ),
+  );
+  const created: Event[] = [];
+  const failed: string[] = [];
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') created.push(r.value);
+    else failed.push(input.bonsaiIds[i] as string);
+  });
+  return { created, failed };
+}
