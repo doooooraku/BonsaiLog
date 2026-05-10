@@ -1,0 +1,40 @@
+---
+# UI diff: 新規盆栽登録 BottomSheet (PR #377 Footer 固定 + PR #381 写真複数枚)
+# ADR-0021 / mockups v1.0 「03 新規登録 / 編集」 (create-screens.jsx CreateBonsaiScreen)
+#
+# 前提:
+#   - 別途 Metro bundler (pnpm dev) 起動済 + adb reverse tcp:8081 tcp:8081
+#   - 盆栽 0 件以上 (空でも FAB タップで sheet 開ける)
+#
+# 流れ: 起動 → 盆栽タブ「盆栽手帳」表示待ち → FAB タップ → BottomSheet open
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: bonsai-create-sheet'
+tags:
+  - ui-diff
+---
+# 1. Metro deeplink で起動
+- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+
+# 2. 盆栽タブ「盆栽手帳」表示完了まで待つ
+- extendedWaitUntil:
+    visible:
+      text: '盆栽手帳'
+    timeout: 60000
+    label: 'Metro バンドル + 盆栽タブ表示完了 (初回 60s 許容)'
+
+- waitForAnimationToEnd
+
+# 3. FAB (+ ボタン) を tap して BottomSheet を開く
+#    FAB 位置は画面右下、座標 tap で対応 (PR #368 で testID e2e_bonsai_create_fab 整備予定)
+- tapOn:
+    point: 88%,90%
+
+# 4. BottomSheet 内の「写真」「名前」フィールドが表示されるまで待つ
+- extendedWaitUntil:
+    visible:
+      text: '名前'
+    timeout: 15000
+    label: 'BonsaiCreateSheet 開く (名前フィールド表示)'
+
+- waitForAnimationToEnd
