@@ -25,11 +25,11 @@
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { CameraIcon } from '@/src/components/icons';
+import { CameraIcon, ChevronRightIcon } from '@/src/components/icons';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
@@ -37,16 +37,19 @@ import {
   BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
-  BRAND_GREEN_BG,
   DISABLED_BG,
   ON_BRAND,
+  TEXT_MUTED,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { createBonsai } from '@/src/db/bonsaiRepository';
 import { addPhotoFromUri } from '@/src/db/photoRepository';
-import { BONSAI_STYLES, type BonsaiStyle } from '@/src/db/schema';
+import { type BonsaiStyle } from '@/src/db/schema';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
+
+import { SpeciesPickerSheet } from './SpeciesPickerSheet';
+import { StylePickerSheet } from './StylePickerSheet';
 
 type Props = {
   bottomSheetRef: React.RefObject<BottomSheet | null>;
@@ -72,7 +75,6 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
   const [name, setName] = useState('');
   const [speciesId, setSpeciesId] = useState<string | null>(null);
   const [speciesList, setSpeciesList] = useState<SpeciesWithName[]>([]);
-  const [speciesQuery, setSpeciesQuery] = useState('');
   const [style, setStyle] = useState<BonsaiStyle | null>(null);
   const [acquiredAt, setAcquiredAt] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -80,6 +82,9 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
   const [coverUri, setCoverUri] = useState<string | null>(null);
   // T2-3: 樹齢入力 (数字 string で保持、submit 時に parseInt、空文字なら null)。
   const [estimatedAgeText, setEstimatedAgeText] = useState('');
+  // T2-5: 樹種 / 樹形 Picker Sheet refs (BonsaiCreateSheet 内に入れ子配置)。
+  const speciesSheetRef = useRef<BottomSheet>(null);
+  const styleSheetRef = useRef<BottomSheet>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -91,20 +96,17 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
     };
   }, [lang]);
 
-  const filteredSpecies = speciesQuery.trim()
-    ? speciesList.filter((s) =>
-        `${s.commonName}${s.scientificName}`
-          .toLowerCase()
-          .includes(speciesQuery.trim().toLowerCase()),
-      )
-    : speciesList;
+  // T2-5: 選択中の樹種名 (Picker から戻ってきた id を name に解決して表示)。
+  const selectedSpecies = useMemo(
+    () => (speciesId != null ? (speciesList.find((s) => s.id === speciesId) ?? null) : null),
+    [speciesId, speciesList],
+  );
 
   const canSubmit = name.trim().length > 0 && !submitting;
 
   const handleClose = useCallback(() => {
     setName('');
     setSpeciesId(null);
-    setSpeciesQuery('');
     setStyle(null);
     setAcquiredAt('');
     setCoverUri(null);
@@ -213,61 +215,38 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
           />
         </View>
 
+        {/* T2-5: 樹種フィールドを SpeciesPickerSheet に分離。タップで Picker 開く。 */}
         <View style={styles.field}>
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldSpecies')}</ThemedText>
-          <TextInput
-            style={styles.input}
-            value={speciesQuery}
-            onChangeText={setSpeciesQuery}
-            placeholder={t('bonsaiFieldSpeciesSearch')}
-            accessibilityLabel={t('bonsaiFieldSpeciesSearch')}
-          />
-          <View style={styles.speciesScroll}>
-            {filteredSpecies.slice(0, 30).map((s) => {
-              const selected = s.id === speciesId;
-              return (
-                <Pressable
-                  key={s.id}
-                  style={[styles.speciesRow, selected && styles.speciesRowSelected]}
-                  onPress={() => setSpeciesId(selected ? null : s.id)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected }}
-                  accessibilityLabel={s.commonName}
-                >
-                  <ThemedText style={selected ? styles.speciesNameSelected : undefined}>
-                    {s.commonName}
-                  </ThemedText>
-                  <ThemedText style={styles.speciesSci}>{s.scientificName}</ThemedText>
-                </Pressable>
-              );
-            })}
-          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('bonsaiFieldSpecies')}
+            style={styles.pickerRow}
+            onPress={() => speciesSheetRef.current?.snapToIndex(0)}
+            testID="e2e_bonsai_create_species_pick"
+          >
+            <ThemedText style={selectedSpecies != null ? undefined : styles.pickerPlaceholder}>
+              {selectedSpecies?.commonName ?? '―'}
+            </ThemedText>
+            <ChevronRightIcon size={20} color={TEXT_MUTED} />
+          </Pressable>
         </View>
 
+        {/* T2-5: 樹形フィールドを StylePickerSheet に分離。 */}
         <View style={styles.field}>
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldStyle')}</ThemedText>
-          <View style={styles.styleRow}>
-            {BONSAI_STYLES.map((s) => {
-              const selected = s === style;
-              const labelKey = `bonsaiStyle_${s}` as TranslationKey;
-              return (
-                <Pressable
-                  key={s}
-                  style={[styles.styleChip, selected && styles.styleChipSelected]}
-                  onPress={() => setStyle(selected ? null : s)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected }}
-                  accessibilityLabel={t(labelKey)}
-                >
-                  <ThemedText
-                    style={selected ? styles.styleChipTextSelected : styles.styleChipText}
-                  >
-                    {t(labelKey)}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('bonsaiFieldStyle')}
+            style={styles.pickerRow}
+            onPress={() => styleSheetRef.current?.snapToIndex(0)}
+            testID="e2e_bonsai_create_style_pick"
+          >
+            <ThemedText style={style != null ? undefined : styles.pickerPlaceholder}>
+              {style != null ? t(`bonsaiStyle_${style}` as TranslationKey) : '―'}
+            </ThemedText>
+            <ChevronRightIcon size={20} color={TEXT_MUTED} />
+          </Pressable>
         </View>
 
         <View style={styles.field}>
@@ -308,6 +287,15 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
           <ThemedText style={styles.submitText}>{t('save')}</ThemedText>
         </Pressable>
       </BottomSheetScrollView>
+
+      {/* T2-5: Picker Sheets — 親 BottomSheet 内に入れ子配置 (sibling として動作)。 */}
+      <SpeciesPickerSheet
+        bottomSheetRef={speciesSheetRef}
+        speciesList={speciesList}
+        current={speciesId}
+        onSelect={setSpeciesId}
+      />
+      <StylePickerSheet bottomSheetRef={styleSheetRef} current={style} onSelect={setStyle} />
     </BottomSheet>
   );
 }
@@ -340,36 +328,19 @@ const styles = StyleSheet.create({
     minHeight: 48,
     backgroundColor: BG_SURFACE,
   },
-  speciesScroll: {
-    maxHeight: 220,
+  pickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 48,
     borderWidth: 1,
     borderColor: BORDER_DEFAULT,
     borderRadius: 12,
     backgroundColor: BG_SURFACE,
   },
-  speciesRow: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
-  },
-  speciesRowSelected: { backgroundColor: BRAND_GREEN_BG },
-  speciesNameSelected: { fontWeight: '600' },
-  speciesSci: { fontSize: 12, color: TEXT_SECONDARY, fontStyle: 'italic' },
-  styleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  styleChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    minHeight: 36,
-    justifyContent: 'center',
-    backgroundColor: BG_SURFACE,
-  },
-  styleChipSelected: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
-  styleChipText: { fontSize: 13 },
-  styleChipTextSelected: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
+  pickerPlaceholder: { color: TEXT_MUTED },
   submit: {
     marginTop: 8,
     paddingVertical: 16,
