@@ -84,6 +84,8 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
   const [estimatedAgeText, setEstimatedAgeText] = useState('');
   // T2-7: メモ入力 (multiline、空文字なら null で保存)。
   const [memo, setMemo] = useState('');
+  // T2-4: 購入日入力 (YYYY-MM-DD inline、空文字なら null)。
+  const [purchaseDate, setPurchaseDate] = useState('');
   // T2-5: 樹種 / 樹形 Picker Sheet refs (BonsaiCreateSheet 内に入れ子配置)。
   const speciesSheetRef = useRef<BottomSheet>(null);
   const styleSheetRef = useRef<BottomSheet>(null);
@@ -114,6 +116,7 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
     setCoverUri(null);
     setEstimatedAgeText('');
     setMemo('');
+    setPurchaseDate('');
     onClose?.();
   }, [onClose]);
 
@@ -157,6 +160,7 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
         acquiredAt: acquiredAt.trim() ? toIsoUtc(acquiredAt.trim()) : null,
         estimatedAge,
         memo: memo.trim() ? memo.trim() : null,
+        purchaseDate: purchaseDate.trim() ? toIsoUtc(purchaseDate.trim()) : null,
       });
       // T2-2-impl (Issue #369): coverUri を photoRepository.addPhotoFromUri で永続化。
       // persistPhotoFile + insertPhoto を内部で呼び、photoId 整合性 (ファイル名 == DB id) を確保。
@@ -285,6 +289,23 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
             accessibilityLabel={t('bonsaiFieldEstimatedAge')}
             maxLength={4}
             keyboardType="number-pad"
+          />
+        </View>
+
+        {/* T2-4: 購入日入力欄 (任意、acquiredAt とは別、mockup 整合)。 */}
+        <View style={styles.field}>
+          <View style={styles.fieldLabelRow}>
+            <ThemedText type="defaultSemiBold">{t('bonsaiFieldPurchaseDate')}</ThemedText>
+            <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+          </View>
+          <TextInput
+            style={styles.input}
+            value={purchaseDate}
+            onChangeText={setPurchaseDate}
+            placeholder="YYYY-MM-DD"
+            accessibilityLabel={t('bonsaiFieldPurchaseDate')}
+            maxLength={10}
+            keyboardType="numbers-and-punctuation"
           />
         </View>
 

@@ -29,6 +29,7 @@ import {
   schemaV5,
   schemaV6,
   schemaV7,
+  schemaV8,
 } from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
@@ -169,6 +170,18 @@ async function migrate(db: SQLite.SQLiteDatabase) {
       await db.execAsync(schemaV7);
     }
     version = 7;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v8 (T2-4、Tier 2): bonsai テーブルに purchase_date カラム追加。
+  //
+  // estimated_age / memo と同パターン: hasColumn ガードで二重実行回避。
+  // ---------------------------------------------------------------------------
+  if (version < 8) {
+    if (!(await hasColumn(db, 'bonsai', 'purchase_date'))) {
+      await db.execAsync(schemaV8);
+    }
+    version = 8;
   }
 
   // Always set version UNCONDITIONALLY (not inside an if-block).
