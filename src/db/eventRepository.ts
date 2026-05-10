@@ -19,6 +19,7 @@ import { ulid } from 'ulid';
 import { getTzIana, getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 
 import { getDb } from './db';
+import { snakeToCamelRow, snakeToCamelRows } from './rowMapper';
 import { serializeEventPayload, validateEventPayload } from '@/src/features/event/payloadValidator';
 import type { Event, EventStatus, EventType } from './schema';
 
@@ -116,7 +117,11 @@ export async function createEvent(input: CreateEventInput): Promise<Event> {
 
 export async function getEventById(id: string): Promise<Event | null> {
   const db = await getDb();
-  return db.getFirstAsync<Event>('SELECT * FROM events WHERE id = ?;', [id]);
+  const row = await db.getFirstAsync<Record<string, unknown>>(
+    'SELECT * FROM events WHERE id = ?;',
+    [id],
+  );
+  return snakeToCamelRow<Event>(row);
 }
 
 /**
@@ -124,10 +129,11 @@ export async function getEventById(id: string): Promise<Event | null> {
  */
 export async function getActiveEventsByBonsai(bonsaiId: string): Promise<Event[]> {
   const db = await getDb();
-  return db.getAllAsync<Event>(
+  const rows = await db.getAllAsync<Record<string, unknown>>(
     'SELECT * FROM events WHERE bonsai_id = ? AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;',
     [bonsaiId],
   );
+  return snakeToCamelRows<Event>(rows);
 }
 
 /**
@@ -141,9 +147,10 @@ export async function getActiveEventsByBonsai(bonsaiId: string): Promise<Event[]
  */
 export async function getAllActiveWateringEventsLogged(): Promise<Event[]> {
   const db = await getDb();
-  return db.getAllAsync<Event>(
+  const rows = await db.getAllAsync<Record<string, unknown>>(
     "SELECT * FROM events WHERE type = 'watering' AND status = 'logged' AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;",
   );
+  return snakeToCamelRows<Event>(rows);
 }
 
 /**
@@ -155,9 +162,10 @@ export async function getAllActiveWateringEventsLogged(): Promise<Event[]> {
  */
 export async function getAllActivePlannedAndLoggedEvents(): Promise<Event[]> {
   const db = await getDb();
-  return db.getAllAsync<Event>(
+  const rows = await db.getAllAsync<Record<string, unknown>>(
     "SELECT * FROM events WHERE status IN ('planned', 'logged') AND deleted_at IS NULL ORDER BY occurred_at_utc ASC;",
   );
+  return snakeToCamelRows<Event>(rows);
 }
 
 /**
@@ -166,14 +174,16 @@ export async function getAllActivePlannedAndLoggedEvents(): Promise<Event[]> {
 export async function getTrashedEvents(bonsaiId?: string): Promise<Event[]> {
   const db = await getDb();
   if (bonsaiId) {
-    return db.getAllAsync<Event>(
+    const rows = await db.getAllAsync<Record<string, unknown>>(
       'SELECT * FROM events WHERE bonsai_id = ? AND deleted_at IS NOT NULL ORDER BY deleted_at DESC;',
       [bonsaiId],
     );
+    return snakeToCamelRows<Event>(rows);
   }
-  return db.getAllAsync<Event>(
+  const rows = await db.getAllAsync<Record<string, unknown>>(
     'SELECT * FROM events WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC;',
   );
+  return snakeToCamelRows<Event>(rows);
 }
 
 /**
@@ -181,10 +191,11 @@ export async function getTrashedEvents(bonsaiId?: string): Promise<Event[]> {
  */
 export async function getEventsByStatus(bonsaiId: string, status: EventStatus): Promise<Event[]> {
   const db = await getDb();
-  return db.getAllAsync<Event>(
+  const rows = await db.getAllAsync<Record<string, unknown>>(
     'SELECT * FROM events WHERE bonsai_id = ? AND status = ? AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;',
     [bonsaiId, status],
   );
+  return snakeToCamelRows<Event>(rows);
 }
 
 /**
@@ -197,15 +208,17 @@ export async function getEventsByType(
 ): Promise<Event[]> {
   const db = await getDb();
   if (options?.status) {
-    return db.getAllAsync<Event>(
+    const rows = await db.getAllAsync<Record<string, unknown>>(
       'SELECT * FROM events WHERE bonsai_id = ? AND type = ? AND status = ? AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;',
       [bonsaiId, type, options.status],
     );
+    return snakeToCamelRows<Event>(rows);
   }
-  return db.getAllAsync<Event>(
+  const rows = await db.getAllAsync<Record<string, unknown>>(
     'SELECT * FROM events WHERE bonsai_id = ? AND type = ? AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;',
     [bonsaiId, type],
   );
+  return snakeToCamelRows<Event>(rows);
 }
 
 // ---------------------------------------------------------------------------
@@ -410,10 +423,11 @@ export async function searchEvents(query: string, bonsaiId?: string): Promise<Ev
 
   const idList = ids.map((r) => r.event_id);
   const placeholders = idList.map(() => '?').join(',');
-  return db.getAllAsync<Event>(
+  const rows = await db.getAllAsync<Record<string, unknown>>(
     `SELECT * FROM events WHERE id IN (${placeholders}) AND deleted_at IS NULL ORDER BY occurred_at_utc DESC;`,
     idList,
   );
+  return snakeToCamelRows<Event>(rows);
 }
 
 /** {@link searchEventsWithSnippet} の戻り値: Event + マッチ箇所の前後抜粋 (snippet)。 */
@@ -430,7 +444,7 @@ export async function searchEventsByTags(tagIds: readonly string[]): Promise<Eve
   if (tagIds.length === 0) return [];
   const db = await getDb();
   const placeholders = tagIds.map(() => '?').join(',');
-  return db.getAllAsync<Event>(
+  const rows = await db.getAllAsync<Record<string, unknown>>(
     `SELECT e.* FROM events e
      INNER JOIN event_tags et ON et.event_id = e.id
      WHERE et.tag_id IN (${placeholders}) AND e.deleted_at IS NULL
@@ -439,6 +453,7 @@ export async function searchEventsByTags(tagIds: readonly string[]): Promise<Eve
      ORDER BY e.occurred_at_utc DESC;`,
     [...tagIds, tagIds.length],
   );
+  return snakeToCamelRows<Event>(rows);
 }
 
 /**
@@ -475,10 +490,11 @@ export async function searchEventsWithSnippet(
   const rankMap = new Map(rows.map((r) => [r.event_id, r.rank]));
   const idList = rows.map((r) => r.event_id);
   const placeholders = idList.map(() => '?').join(',');
-  const events = await db.getAllAsync<Event>(
+  const eventRows = await db.getAllAsync<Record<string, unknown>>(
     `SELECT * FROM events WHERE id IN (${placeholders}) AND deleted_at IS NULL;`,
     idList,
   );
+  const events = snakeToCamelRows<Event>(eventRows);
   return events
     .map((ev) => ({ ...ev, snippet: snippetMap.get(ev.id) ?? null }))
     .sort((a, b) => {

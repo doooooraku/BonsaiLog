@@ -16,6 +16,7 @@ import { ulid } from 'ulid';
 import { nowUtc } from '@/src/core/datetime';
 
 import { getDb } from './db';
+import { snakeToCamelRow, snakeToCamelRows } from './rowMapper';
 import type { Bonsai, BonsaiStyle } from './schema';
 import { getSpeciesById, type SpeciesWithName } from './speciesRepository';
 
@@ -101,7 +102,11 @@ export async function createBonsai(input: CreateBonsaiInput): Promise<Bonsai> {
  */
 export async function getBonsaiById(id: string): Promise<Bonsai | null> {
   const db = await getDb();
-  return db.getFirstAsync<Bonsai>('SELECT * FROM bonsai WHERE id = ?;', [id]);
+  const row = await db.getFirstAsync<Record<string, unknown>>(
+    'SELECT * FROM bonsai WHERE id = ?;',
+    [id],
+  );
+  return snakeToCamelRow<Bonsai>(row);
 }
 
 /**
@@ -133,14 +138,15 @@ export async function getAllActiveBonsai(options?: {
   const tagIds = options?.tagIds;
 
   if (!tagIds || tagIds.length === 0) {
-    return db.getAllAsync<Bonsai>(
+    const rows = await db.getAllAsync<Record<string, unknown>>(
       'SELECT * FROM bonsai WHERE archived_at IS NULL ORDER BY updated_at DESC;',
     );
+    return snakeToCamelRows<Bonsai>(rows);
   }
 
   // M:N filter: 全 tagIds を持つ events を持つ bonsai のみ
   const placeholders = tagIds.map(() => '?').join(',');
-  return db.getAllAsync<Bonsai>(
+  const rows = await db.getAllAsync<Record<string, unknown>>(
     `SELECT b.* FROM bonsai b
      INNER JOIN events e ON e.bonsai_id = b.id
      INNER JOIN event_tags et ON et.event_id = e.id
@@ -152,6 +158,7 @@ export async function getAllActiveBonsai(options?: {
      ORDER BY b.updated_at DESC;`,
     [...tagIds, tagIds.length],
   );
+  return snakeToCamelRows<Bonsai>(rows);
 }
 
 /**
@@ -159,9 +166,10 @@ export async function getAllActiveBonsai(options?: {
  */
 export async function getAllArchivedBonsai(): Promise<Bonsai[]> {
   const db = await getDb();
-  return db.getAllAsync<Bonsai>(
+  const rows = await db.getAllAsync<Record<string, unknown>>(
     'SELECT * FROM bonsai WHERE archived_at IS NOT NULL ORDER BY archived_at DESC;',
   );
+  return snakeToCamelRows<Bonsai>(rows);
 }
 
 /**
@@ -284,10 +292,11 @@ export async function searchBonsaiByName(query: string, limit = 50): Promise<Bon
   // LIKE のメタ文字 (% _ \) をエスケープ。日本語の case-insensitive は Phase B (name_normalized) で改善。
   const escaped = trimmed.replace(/[\\%_]/g, (c) => '\\' + c);
   const like = `%${escaped}%`;
-  return db.getAllAsync<Bonsai>(
+  const rows = await db.getAllAsync<Record<string, unknown>>(
     "SELECT * FROM bonsai WHERE name LIKE ? ESCAPE '\\' AND archived_at IS NULL ORDER BY name LIMIT ?;",
     [like, limit],
   );
+  return snakeToCamelRows<Bonsai>(rows);
 }
 
 // ---------------------------------------------------------------------------
