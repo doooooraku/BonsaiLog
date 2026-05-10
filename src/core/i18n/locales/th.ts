@@ -132,6 +132,8 @@ const th: Partial<Record<TranslationKey, string>> = {
   photoCoverBadge: 'Cover',
   photoSetCoverLabel: 'Set as cover',
   photoLimitPartialAdded: 'Added {added} photos ({skipped} skipped due to limit)',
+  photoDeletedBanner: 'Photo deleted',
+  photoUndoLabel: 'Undo',
   photoPermissionTitle: 'Permission needed',
   photoPermissionDesc: 'Please allow camera and photo library access in Settings.',
   photoActionTitle: 'Photo actions',
