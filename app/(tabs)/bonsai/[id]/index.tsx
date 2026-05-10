@@ -7,6 +7,7 @@ import { Alert, FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
+import { BonsaiCreateSheet } from '@/src/features/bonsai/BonsaiCreateSheet';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
@@ -82,6 +83,8 @@ export default function BonsaiDetailScreen() {
   const workPickerRef = React.useRef<BottomSheet>(null);
   // ADR-0020 v1.x-3: 作業記録 詳細 form BottomSheet (Claude Design WorkLogConfirmSheet 整合)
   const workConfirmRef = React.useRef<BottomSheet>(null);
+  // 基本情報 編集 BottomSheet (BonsaiCreateSheet edit モード、mockup CreateBonsaiScreen 整合)
+  const bonsaiEditRef = React.useRef<BottomSheet>(null);
   const [pendingWorkType, setPendingWorkType] = useState<EventType | null>(null);
   const FORM_TYPES: readonly EventType[] = ['watering', 'pruning', 'wiring'];
   const handleWorkPickerSelect = React.useCallback(
@@ -577,8 +580,9 @@ export default function BonsaiDetailScreen() {
           </View>
         )}
 
-        {/* basic Tab 第 2 部分: 更新日 + 編集ボタン (placeholder、別 Issue で
-            BonsaiBasicForm 抽出 + embed 化予定) + アーカイブ */}
+        {/* basic Tab 第 2 部分: 更新日 + 編集ボタン + アーカイブ。
+            編集ボタンは BonsaiCreateSheet を edit モード (editingBonsai prop) で起動 — mockup
+            CreateBonsaiScreen の prefill prop 整合 (create / edit 単一コンポーネント方針)。 */}
         {activeTab === 'basic' && (
           <>
             <View style={styles.section}>
@@ -590,9 +594,7 @@ export default function BonsaiDetailScreen() {
               accessibilityRole="button"
               accessibilityLabel={t('detailBasicEdit')}
               style={styles.basicEditButton}
-              onPress={() => {
-                // 別 Issue で BonsaiBasicForm 抽出 + embed 化、本 PR は placeholder noop
-              }}
+              onPress={() => bonsaiEditRef.current?.snapToIndex(0)}
               testID="e2e_detail_basic_edit_button"
             >
               <ThemedText style={styles.basicEditButtonText}>{t('detailBasicEdit')}</ThemedText>
@@ -648,6 +650,18 @@ export default function BonsaiDetailScreen() {
         selectedType={pendingWorkType}
         onSubmit={handleWorkLogSubmit}
         onClose={() => setPendingWorkType(null)}
+      />
+
+      {/* 基本情報 編集 BottomSheet (BonsaiCreateSheet edit モード、mockup CreateBonsaiScreen prefill 整合) */}
+      <BonsaiCreateSheet
+        bottomSheetRef={bonsaiEditRef}
+        editingBonsai={item}
+        onCreated={() => {
+          /* edit モードでは呼ばれない */
+        }}
+        onUpdated={() => {
+          void reload();
+        }}
       />
     </ThemedView>
   );

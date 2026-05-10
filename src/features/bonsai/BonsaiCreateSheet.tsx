@@ -1,8 +1,11 @@
 /**
- * 盆栽新規登録 BottomSheet (Tier 2 完遂、mockup `create-screens.jsx CreateBonsaiScreen` 整合)。
+ * 盆栽 新規登録 / 編集 BottomSheet (Tier 2 完遂、mockup `create-screens.jsx CreateBonsaiScreen` 整合)。
+ *
+ * mockup CreateBonsaiScreen は prefill prop 経由で create / edit 両対応の単一コンポーネント。
+ * 本実装も `editingBonsai` prop が渡されたら edit モード、なければ create モードに分岐する。
  *
  * フィールド構成 (R-29 写経駆動):
- * - 写真 (任意、cover 1 枚、ImagePicker → addPhotoFromUri 永続化)
+ * - 写真 (任意、cover 1 枚、ImagePicker → addPhotoFromUri 永続化、create のみ — edit は詳細画面のカバー設定で別管理)
  * - 名前 (必須、64 字、赤バッジ)
  * - 樹種 (任意、SpeciesPickerSheet 起動)
  * - 樹形 (任意、StylePickerSheet 起動)
@@ -14,6 +17,8 @@
  * Props:
  * - bottomSheetRef: 親が snapToIndex / close を制御する ref
  * - onCreated: 新規登録成功後のコールバック
+ * - onUpdated?: 編集モードでの更新成功後のコールバック
+ * - editingBonsai?: 編集対象 (null/undefined なら新規モード)
  * - onClose?: Sheet が閉じた時のコールバック
  */
 import BottomSheet, {
@@ -41,11 +46,17 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
-import { createBonsai } from '@/src/db/bonsaiRepository';
+import { createBonsai, updateBonsai } from '@/src/db/bonsaiRepository';
 import { addPhotoFromUri } from '@/src/db/photoRepository';
-import { type BonsaiStyle } from '@/src/db/schema';
+import { type Bonsai, type BonsaiStyle } from '@/src/db/schema';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
-import { attachTagToBonsai, getRecentTags, type TagRecord } from '@/src/db/tagRepository';
+import {
+  attachTagToBonsai,
+  detachTagFromBonsai,
+  getRecentTags,
+  getTagsByBonsai,
+  type TagRecord,
+} from '@/src/db/tagRepository';
 
 import { SpeciesPickerSheet } from './SpeciesPickerSheet';
 import { StylePickerSheet } from './StylePickerSheet';
@@ -54,6 +65,10 @@ type Props = {
   bottomSheetRef: React.RefObject<BottomSheet | null>;
   /** 新規登録成功後のコールバック (親が router.push などを実行)。 */
   onCreated: (bonsaiId: string) => void;
+  /** 編集モードでの更新成功後のコールバック (親が reload 等)。 */
+  onUpdated?: (bonsaiId: string) => void;
+  /** 編集対象。null/undefined なら新規モード (mockup CreateBonsaiScreen の prefill prop 整合)。 */
+  editingBonsai?: Bonsai | null;
   /** Sheet が閉じた時のコールバック (親が state リセット等)。 */
   onClose?: () => void;
 };
@@ -66,7 +81,20 @@ function toIsoUtc(yyyymmdd: string): string {
   return `${y}-${mo}-${d}T00:00:00.000Z`;
 }
 
-export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props) {
+/** ISO 8601 → YYYY-MM-DD (UI 入力欄 prefill 用、null/不正値は空文字)。 */
+function isoToYmd(iso: string | null | undefined): string {
+  if (!iso || iso.length < 10) return '';
+  return iso.slice(0, 10);
+}
+
+export function BonsaiCreateSheet({
+  bottomSheetRef,
+  onCreated,
+  onUpdated,
+  editingBonsai,
+  onClose,
+}: Props) {
+  const isEdit = editingBonsai != null;
   const { t, lang } = useTranslation();
   const c = useColors();
   const snapPoints = useMemo(() => ['90%'], []);
@@ -91,6 +119,8 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
   // T2-5: 樹種 / 樹形 Picker Sheet refs (BonsaiCreateSheet 内に入れ子配置)。
   const speciesSheetRef = useRef<BottomSheet>(null);
   const styleSheetRef = useRef<BottomSheet>(null);
+  // 編集モード時の元タグ集合 (差分更新用、submit 時に attach/detach 計算)。
+  const originalTagIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -105,6 +135,36 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
     };
   }, [lang]);
 
+  // 編集モード: editingBonsai が変化したら全 state を prefill。
+  // null/undefined になったら create モードに戻すために空にリセット。
+  useEffect(() => {
+    if (editingBonsai == null) {
+      originalTagIdsRef.current = new Set();
+      return;
+    }
+    setName(editingBonsai.name);
+    setSpeciesId(editingBonsai.speciesId);
+    // Bonsai.style は drizzle 推論で string | null だが実値は BonsaiStyle union のいずれか (createBonsai/updateBonsai が enforce)。
+    setStyle(editingBonsai.style as BonsaiStyle | null);
+    setAcquiredAt(isoToYmd(editingBonsai.acquiredAt));
+    setEstimatedAgeText(
+      editingBonsai.estimatedAge != null ? String(editingBonsai.estimatedAge) : '',
+    );
+    setMemo(editingBonsai.memo ?? '');
+    setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
+    // タグは別 fetch、selectedTagIds と original ref 両方に格納。
+    let cancelled = false;
+    void getTagsByBonsai(editingBonsai.id).then((tags) => {
+      if (cancelled) return;
+      const ids = new Set(tags.map((tg) => tg.id));
+      setSelectedTagIds(ids);
+      originalTagIdsRef.current = new Set(ids);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [editingBonsai]);
+
   // T2-5: 選択中の樹種名 (Picker から戻ってきた id を name に解決して表示)。
   const selectedSpecies = useMemo(
     () => (speciesId != null ? (speciesList.find((s) => s.id === speciesId) ?? null) : null),
@@ -114,17 +174,33 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
   const canSubmit = name.trim().length > 0 && !submitting;
 
   const handleClose = useCallback(() => {
-    setName('');
-    setSpeciesId(null);
-    setStyle(null);
-    setAcquiredAt('');
-    setCoverUri(null);
-    setEstimatedAgeText('');
-    setMemo('');
-    setPurchaseDate('');
-    setSelectedTagIds(new Set());
+    if (editingBonsai != null) {
+      // edit モード: 入力途中で閉じても再オープン時に元値が見えるよう、handleClose で prefill 戻す。
+      // (useEffect[editingBonsai] は同一参照の再オープンでは走らないため、明示的に同期)
+      setName(editingBonsai.name);
+      setSpeciesId(editingBonsai.speciesId);
+      setStyle(editingBonsai.style as BonsaiStyle | null);
+      setAcquiredAt(isoToYmd(editingBonsai.acquiredAt));
+      setEstimatedAgeText(
+        editingBonsai.estimatedAge != null ? String(editingBonsai.estimatedAge) : '',
+      );
+      setMemo(editingBonsai.memo ?? '');
+      setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
+      setSelectedTagIds(new Set(originalTagIdsRef.current));
+      setCoverUri(null);
+    } else {
+      setName('');
+      setSpeciesId(null);
+      setStyle(null);
+      setAcquiredAt('');
+      setCoverUri(null);
+      setEstimatedAgeText('');
+      setMemo('');
+      setPurchaseDate('');
+      setSelectedTagIds(new Set());
+    }
     onClose?.();
-  }, [onClose]);
+  }, [editingBonsai, onClose]);
 
   // T2-6: タグ chip toggle。
   const toggleTag = useCallback((tagId: string) => {
@@ -193,7 +269,7 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
       const parsedAge = estimatedAgeText.trim() ? parseInt(estimatedAgeText.trim(), 10) : NaN;
       const estimatedAge =
         Number.isFinite(parsedAge) && parsedAge > 0 && parsedAge < 10000 ? parsedAge : null;
-      const bonsai = await createBonsai({
+      const fields = {
         name: name.trim(),
         speciesId,
         style,
@@ -201,28 +277,50 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
         estimatedAge,
         memo: memo.trim() ? memo.trim() : null,
         purchaseDate: purchaseDate.trim() ? toIsoUtc(purchaseDate.trim()) : null,
-      });
-      // T2-2-impl (Issue #369): coverUri を photoRepository.addPhotoFromUri で永続化。
-      // persistPhotoFile + insertPhoto を内部で呼び、photoId 整合性 (ファイル名 == DB id) を確保。
-      if (coverUri != null) {
+      };
+
+      if (editingBonsai != null) {
+        // 編集モード: updateBonsai + タグ差分更新。
+        await updateBonsai(editingBonsai.id, fields);
+        // タグ差分: original ↔ selected の集合差を attach/detach。
+        const original = originalTagIdsRef.current;
+        const toAttach = Array.from(selectedTagIds).filter((id) => !original.has(id));
+        const toDetach = Array.from(original).filter((id) => !selectedTagIds.has(id));
         try {
-          await addPhotoFromUri({ bonsaiId: bonsai.id, sourceUri: coverUri });
+          await Promise.all([
+            ...toAttach.map((tagId) => attachTagToBonsai(editingBonsai.id, tagId)),
+            ...toDetach.map((tagId) => detachTagFromBonsai(editingBonsai.id, tagId)),
+          ]);
         } catch (err) {
-          console.warn('[BonsaiCreateSheet] photo persist failed (continuing):', err);
+          console.warn('[BonsaiCreateSheet] tag diff update failed (continuing):', err);
         }
-      }
-      // T2-6: 選択中のタグを bonsai_tags M:N に登録。失敗しても盆栽登録は継続 (UX 配慮)。
-      if (selectedTagIds.size > 0) {
-        try {
-          await Promise.all(
-            Array.from(selectedTagIds).map((tagId) => attachTagToBonsai(bonsai.id, tagId)),
-          );
-        } catch (err) {
-          console.warn('[BonsaiCreateSheet] tag attach failed (continuing):', err);
+        bottomSheetRef.current?.close();
+        onUpdated?.(editingBonsai.id);
+      } else {
+        // 新規モード: createBonsai + cover 写真 + タグ attach。
+        const bonsai = await createBonsai(fields);
+        // T2-2-impl (Issue #369): coverUri を photoRepository.addPhotoFromUri で永続化。
+        // persistPhotoFile + insertPhoto を内部で呼び、photoId 整合性 (ファイル名 == DB id) を確保。
+        if (coverUri != null) {
+          try {
+            await addPhotoFromUri({ bonsaiId: bonsai.id, sourceUri: coverUri });
+          } catch (err) {
+            console.warn('[BonsaiCreateSheet] photo persist failed (continuing):', err);
+          }
         }
+        // T2-6: 選択中のタグを bonsai_tags M:N に登録。失敗しても盆栽登録は継続 (UX 配慮)。
+        if (selectedTagIds.size > 0) {
+          try {
+            await Promise.all(
+              Array.from(selectedTagIds).map((tagId) => attachTagToBonsai(bonsai.id, tagId)),
+            );
+          } catch (err) {
+            console.warn('[BonsaiCreateSheet] tag attach failed (continuing):', err);
+          }
+        }
+        bottomSheetRef.current?.close();
+        onCreated(bonsai.id);
       }
-      bottomSheetRef.current?.close();
-      onCreated(bonsai.id);
     } finally {
       setSubmitting(false);
     }
@@ -240,27 +338,29 @@ export function BonsaiCreateSheet({ bottomSheetRef, onCreated, onClose }: Props)
       footerComponent={renderFooter}
     >
       <BottomSheetScrollView contentContainerStyle={styles.scrollContent}>
-        {/* T2-2-ui (Issue #366 後続): 写真選択 UI (mockup create-screens.jsx CreateBonsaiScreen 整合)。
-            保存処理は T2-2-impl で実装予定、本 PR は UI のみ。 */}
-        <View style={styles.field}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldPhotos')}</ThemedText>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('photoAddCta')}
-            style={[styles.photoBox, coverUri != null && styles.photoBoxFilled]}
-            onPress={handlePickPhoto}
-            testID="e2e_bonsai_create_photo_pick"
-          >
-            {coverUri != null ? (
-              <Image source={{ uri: coverUri }} style={styles.photoPreview} contentFit="cover" />
-            ) : (
-              <View style={styles.photoEmpty}>
-                <CameraIcon size={28} />
-                <ThemedText style={styles.photoCta}>+ {t('photoAddCta')}</ThemedText>
-              </View>
-            )}
-          </Pressable>
-        </View>
+        {/* 写真選択 UI (新規モードのみ、mockup create-screens.jsx CreateBonsaiScreen 整合)。
+            edit モードでは詳細画面の「カバー写真設定」(setCoverPhoto) を使う前提でスコープ外。 */}
+        {!isEdit && (
+          <View style={styles.field}>
+            <ThemedText type="defaultSemiBold">{t('bonsaiFieldPhotos')}</ThemedText>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('photoAddCta')}
+              style={[styles.photoBox, coverUri != null && styles.photoBoxFilled]}
+              onPress={handlePickPhoto}
+              testID="e2e_bonsai_create_photo_pick"
+            >
+              {coverUri != null ? (
+                <Image source={{ uri: coverUri }} style={styles.photoPreview} contentFit="cover" />
+              ) : (
+                <View style={styles.photoEmpty}>
+                  <CameraIcon size={28} />
+                  <ThemedText style={styles.photoCta}>+ {t('photoAddCta')}</ThemedText>
+                </View>
+              )}
+            </Pressable>
+          </View>
+        )}
 
         {/* T2-7: 必須/任意ラベル整備、name は必須 (赤バッジ)。 */}
         <View style={styles.field}>
