@@ -57,6 +57,9 @@ app-example
 
 # Store screenshots output
 screenshots/
+# Whitelist: mockup v1.0 screenshots は写経駆動開発 (R-29) 参照用に commit する (T1-2)
+!docs/mockups/v1.0/screenshots/
+!docs/mockups/v1.0/screenshots/**
 
 # UI diff output (ADR-0021)
 scripts/ui-diff/out/
