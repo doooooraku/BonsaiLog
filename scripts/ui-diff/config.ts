@@ -140,6 +140,36 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §Notes §画面マップ row 5 (HomeScreen) / care-screens-v2.jsx BulkScheduleDateSheet / src/features/event/BulkScheduleDateSheet.tsx (Phase 2 PR 実装) / mockups v1.0 (PR #269)。R-28 通知デフォルト OFF (principles.md v1.1 / ADR-0011 整合、mockup useState(true) は哲学逆走の残存と判断)。前提: 上記 home-bulk-sched-work から「肥料」(fertilizing) 等の作業を選択して遷移、testID e2e_bulk_schedule_date_sheet で可視待ち。calendar-grid-saturday-overflow.md (PR #318) の罠回避のため週行 + flex:1 採用。',
   },
+  // 本セッション Tier 2 / photo UX / 横断水やり 主要 3 flow (Phase 4)
+  'bonsai-create-sheet': {
+    id: 'bonsai-create-sheet',
+    description:
+      '新規盆栽登録 BottomSheet (PR #377 Footer 固定 + PR #381 写真複数枚、写真 strip + 名前 + 樹種 + 樹形 + 取得日 + 樹齢 + 購入日 + タグ + メモ)',
+    appFlow: 'maestro/flows/ui-diff/bonsai-create-sheet.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="03 新規登録 / 編集"]',
+    notes:
+      'ADR-0020 §画面マップ row 4 / create-screens.jsx CreateBonsaiScreen / src/features/bonsai/BonsaiCreateSheet.tsx (PR #368 BottomSheet 化 → #370/#371 写真 → #372-#376 樹齢/メモ/購入日/Picker/タグ → #377 Footer 固定 → #381 写真複数枚) / mockups v1.0 「03 新規登録 / 編集」。前提: 盆栽タブ起動完了後 FAB タップで sheet open。',
+  },
+  'bonsai-detail-edit-sheet': {
+    id: 'bonsai-detail-edit-sheet',
+    description: '盆栽編集 BottomSheet (PR #378 編集モード対応、prefill 済 BonsaiCreateSheet)',
+    appFlow: 'maestro/flows/ui-diff/bonsai-detail-edit-sheet.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="03 新規登録 / 編集"]',
+    notes:
+      'ADR-0020 §画面マップ row 4 / create-screens.jsx CreateBonsaiScreen prefill モード / src/features/bonsai/BonsaiCreateSheet.tsx editingBonsai prop (PR #378) / mockups v1.0 「03 新規登録 / 編集」 (create / edit 兼用)。前提: テスト盆栽 1 件以上登録済 + 詳細画面 → 基本情報タブ → 編集ボタン (e2e_detail_basic_edit_button) で sheet open。',
+  },
+  'look-back-watering-history': {
+    id: 'look-back-watering-history',
+    description:
+      '横断水やり履歴画面 (PR #379 ヒートマップ + PR #383 月別 Calendar + PR #384 日付タップ詳細、Issue #361)',
+    appFlow: 'maestro/flows/ui-diff/look-back-watering-history.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="09 ケア 水やり履歴ヒートマップ"]',
+    notes:
+      'ADR-0021 / Issue #361 / app/(tabs)/look-back/watering-history.tsx (PR #379/#383/#384) / mockup HTML には横断版の対応 PhoneShell が無いため、暫定で個別盆栽 HeatmapScreen を比較対象に流用 (整合度低いが画面構造は近い)。完全整合は将来の mockup HTML 追加で対応。前提: watering events 1 件以上 (seed 済) + ふりかえりタブ → 水やり履歴カード tap で遷移。',
+  },
   // PoC 安定後にユーザーと相談して順次追加 (ADR-0020 §Decision §3-§10):
   // 'work-log-confirm':   care-screens.jsx WorkLogConfirmSheet
 };

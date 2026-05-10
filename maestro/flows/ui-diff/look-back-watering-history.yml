@@ -1,0 +1,50 @@
+---
+# UI diff: 横断水やり履歴画面 (PR #379 ヒートマップ + PR #383 Calendar + PR #384 日付詳細)
+# ADR-0021 / Issue #361 (横断水やり履歴) — mockup HTML には対応 PhoneShell が無いため、
+# 暫定で個別盆栽の HeatmapScreen ([data-screen-label="09 ケア 水やり履歴ヒートマップ"]) を比較対象に流用。
+# 完全整合は将来の mockup HTML 追加で対応。
+#
+# 前提:
+#   - 別途 Metro bundler (pnpm dev) 起動済 + adb reverse tcp:8081 tcp:8081
+#   - watering events 1 件以上 (seed 投入済 = 盆栽 3 件 × 5 件 = 15 件想定)
+#
+# 流れ: 起動 → ふりかえりタブ → 水やり履歴カード tap → 横断画面 (ヒートマップ + Calendar)
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: look-back-watering-history'
+tags:
+  - ui-diff
+---
+- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+
+- extendedWaitUntil:
+    visible:
+      text: '盆栽手帳'
+    timeout: 60000
+    label: 'Metro バンドル + 盆栽タブ表示完了 (初回 60s 許容)'
+
+- waitForAnimationToEnd
+
+# TabBar の「ふりかえり」(4 番目) を tap
+- tapOn:
+    text: 'ふりかえり'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_look_back_hub'
+    timeout: 15000
+    label: 'CareHub Hub 表示完了'
+
+- waitForAnimationToEnd
+
+# 「水やり履歴」カード (1 番目) を tap (testID e2e_look_back_card_watering、PR #379 配線済)
+- tapOn:
+    id: 'e2e_look_back_card_watering'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_cross_watering_history_screen'
+    timeout: 15000
+    label: '横断水やり履歴画面表示完了 (ヒートマップ + Calendar)'
+
+- waitForAnimationToEnd
