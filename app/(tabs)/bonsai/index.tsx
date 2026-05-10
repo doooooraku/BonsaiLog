@@ -137,13 +137,20 @@ async function buildCardData(
     lastAction = { kind: winner.kind, elapsed, note: winner.ev.note };
   }
 
+  // T2-3: schema v6 の estimated_age (年単位) を「N年（推定）」表示文字列に変換。
+  // 既存盆栽 (estimated_age=null) は ageText=null で非表示。
+  const ageText =
+    b.estimatedAge != null && b.estimatedAge > 0
+      ? t('ageEstimatedFormat').replace('{years}', String(b.estimatedAge))
+      : null;
+
   return {
     id: b.id,
     name: b.name,
     coverUri: cover?.absoluteUri ?? null,
     speciesCommonName: b.species?.commonName ?? null,
     lastAction,
-    ageText: null,
+    ageText,
   };
 }
 
