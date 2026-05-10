@@ -357,6 +357,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tabBonsai: '盆栽',
   tabPlan: '予定',
   tabFind: '探す',
+  tabLookBack: 'ふりかえり',
   tabSettings: '設定',
   tabPlanComingSoon: '準備中',
   planScreenTitle: '作業予定',

@@ -454,6 +454,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   tabBonsai: 'Bonsai',
   tabPlan: 'Plan',
   tabFind: 'Find',
+  tabLookBack: 'Activity',
   tabSettings: 'Settings',
   tabPlanComingSoon: 'Coming soon',
   planScreenTitle: 'Care Schedule',

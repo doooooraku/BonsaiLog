@@ -446,6 +446,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   tabBonsai: 'Bonsai',
   tabPlan: 'Plan',
   tabFind: 'Find',
+  tabLookBack: '活动',
   tabSettings: 'Settings',
   tabPlanComingSoon: 'Coming soon',
   planScreenTitle: 'Care Schedule',
