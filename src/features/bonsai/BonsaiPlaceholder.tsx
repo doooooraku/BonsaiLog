@@ -13,10 +13,17 @@ const BG_COLORS = ['#E7DFC9', '#D9D1BF', '#D2C9B3', '#DED6C3', '#EAE1CB'];
 const STROKE_COLORS = ['#5A4637', '#3E5C39', '#1F3A2E', '#5A4637', '#3E5C39'];
 
 type Props = {
-  size: number;
+  /** 正方形時の一辺 (w/h と排他、両方未指定なら w/h 必須)。 */
+  size?: number;
+  /** 横幅 (h とセット、size と排他、横長 hero 写真用)。 */
+  w?: number;
+  /** 高さ (w とセット、size と排他、横長 hero 写真用)。 */
+  h?: number;
   /** seed (default 0)。bonsai.id 文字列なら hashSeed() で数値化してから渡す。 */
   seed?: number;
   radius?: number;
+  /** true なら border / shadow を抑制 (BonsaiCard hero 等、外側カードと一体化させる用途)。 */
+  noBorder?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -27,19 +34,27 @@ export function hashSeed(s: string): number {
   return Math.abs(h) % 5;
 }
 
-export function BonsaiPlaceholder({ size, seed = 0, radius = 12, style }: Props) {
+export function BonsaiPlaceholder({
+  size,
+  w: wProp,
+  h: hProp,
+  seed = 0,
+  radius = 12,
+  noBorder: _noBorder = false,
+  style,
+}: Props) {
   const bg = BG_COLORS[seed % 5];
   const stroke = STROKE_COLORS[seed % 5];
   const pid = `pp-${seed}`;
-  const w = size;
-  const h = size;
+  const w = wProp ?? size ?? 0;
+  const h = hProp ?? size ?? 0;
 
   return (
     <View
       style={[
         {
-          width: size,
-          height: size,
+          width: w,
+          height: h,
           borderRadius: radius,
           overflow: 'hidden',
           backgroundColor: bg,

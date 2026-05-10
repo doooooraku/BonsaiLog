@@ -1,49 +1,67 @@
 /**
- * 盆栽カード (Claude Design `home-screens.jsx BonsaiCard` 整合)。
+ * 盆栽カード (mockup home-screens.jsx BonsaiCard L867-1014 整合、T1-10 PR で完全再構築)。
  *
- * - 写真サムネ 120×120 (cover photo or BonsaiPlaceholder)
- * - 名前 NotoSerifJP 22pt (1 行 ellipsis)
- * - 樹種名 + 学名 italic NotoSansJP 13pt
- * - 樹形 mono 11pt (任意)
- * - 区切り線 + 最後の水やり / 剪定からの日数 (任意)
- * - radius 16、border 1、padding 16、minHeight 152
+ * 縦型 Repolog 準拠カード:
+ * - ヒーロー写真 220h × 横全幅 (上部、padding なし、cover photo or BonsaiPlaceholder)
+ * - 本体 3 段構造 (padding 14/16/16、gap 4):
+ *   1. タイトル: 名前 NotoSerifJP 18pt weight 600 letterSpacing 0.02em (1 行 ellipsis)
+ *   2. メタ行: 左「{N}日前 / 水やり (icon)」+ 右「{age}」(任意、tabular-nums)
+ *   3. コメント行: 直近作業 note → 樹種名 → "—" の優先順位 (1 行 ellipsis)
+ * - 角丸 14、border 1、box-shadow subtle、overflow hidden
  *
- * 複数選択モード対応 (mockups v1.0 home-screens.jsx BonsaiCard 整合):
- * - selecting=true 時、写真左上に 24×24 円形チェックマーク overlay (Apple Photos 同型)
- *   - selected=true: BRAND_GREEN 背景 + CheckIcon (washi 色)
- *   - selected=false: BG_SURFACE 背景 + BORDER_STRONG 枠
- * - onLongPress 設定時、長押しで親に通知 (selectMode 入りトリガ用、500ms default)
+ * 複数選択モード対応 (mockup `selecting` / `selected` 整合):
+ * - selecting=true 時、写真左上に 28×28 円形チェックマーク overlay (Apple Photos 同型)
+ * - selected=true: BRAND_GREEN 背景 + CheckIcon (washi 色)
+ * - selected=false: 半透明 BG_SURFACE 背景 + 白枠
+ *
+ * Repolog 哲学: 直近の作業事実のみ表示 (推奨は出さない、全ペルソナ ○ 以上)。
+ * line jitter 防止: lastAction null 時は「記録はまだありません」、commentText は常に 1 行確保。
  */
 import { Image } from 'expo-image';
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { CheckIcon, DropletIcon, ScissorsIcon } from '@/src/components/icons';
+import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   ACCENT_BARK,
   BG_SURFACE,
   BORDER_DEFAULT,
-  BORDER_STRONG,
   BRAND_GREEN,
   ON_BRAND,
+  TEXT_MUTED,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 
 import { BonsaiPlaceholder, hashSeed } from './BonsaiPlaceholder';
 
+const HERO_HEIGHT = 220;
+// CARD_WIDTH = 画面幅 - 左右マージン 16 × 2 (mockup home-screens.jsx CARD_W = 393 - 32 整合)。
+// 縦持ち固定アプリのため Dimensions のキャッシュは問題にならない。
+const CARD_WIDTH = Dimensions.get('window').width - 32;
+
+export type BonsaiCardLastAction = {
+  /** 'watering' | 'pruning' (icon と種別ラベルに使用)。 */
+  kind: 'watering' | 'pruning';
+  /** i18n 済の経過テキスト (例: '今日' / '3日' / '2週' / '5ヶ月' / '1年')。 */
+  elapsed: string;
+  /** 作業メモ (event.note)、null なら commentText は次の fallback を使う。 */
+  note: string | null;
+};
+
 export type BonsaiCardData = {
   id: string;
   name: string;
-  speciesCommonName: string | null;
-  speciesScientificName: string | null;
-  styleLabel: string | null;
+  /** カバー写真の絶対 URI、null なら BonsaiPlaceholder を表示。 */
   coverUri: string | null;
-  /** 「最後の水やりから X 日」の表示文字列 (i18n 済)、null なら非表示。 */
-  lastWateringText: string | null;
-  /** 「最後の剪定から X 日」の表示文字列 (i18n 済)、null なら非表示。 */
-  lastPruningText: string | null;
+  /** 樹種名 (commentText fallback 用)、null/空なら "—"。 */
+  speciesCommonName: string | null;
+  /** 直近作業 (watering/pruning の最新)、null なら「記録はまだありません」。 */
+  lastAction: BonsaiCardLastAction | null;
+  /** 樹齢の表示文字列 (例: '35年（推定）')、null なら非表示。Tier 2 で schema 拡張予定。 */
+  ageText: string | null;
 };
 
 type Props = {
@@ -66,23 +84,38 @@ export function BonsaiCard({
   onLongPress,
   testID,
 }: Props) {
+  const { t } = useTranslation();
   const seed = hashSeed(data.id);
+
+  // commentText: lastAction.note → speciesCommonName → "—" の優先順位 (mockup L871 整合)。
+  const commentText =
+    data.lastAction?.note ??
+    (data.speciesCommonName != null && data.speciesCommonName.length > 0
+      ? data.speciesCommonName
+      : '—');
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={data.name}
       accessibilityState={selecting ? { selected } : undefined}
-      style={styles.card}
+      style={[styles.card, selected && styles.cardSelected]}
       onPress={() => onPress(data.id)}
       onLongPress={onLongPress != null ? () => onLongPress(data.id) : undefined}
       testID={testID}
     >
-      <View style={styles.thumbWrap}>
+      <View style={styles.hero}>
         {data.coverUri != null && data.coverUri.length > 0 ? (
-          <Image source={{ uri: data.coverUri }} style={styles.thumb} contentFit="cover" />
+          <Image source={{ uri: data.coverUri }} style={styles.heroImage} contentFit="cover" />
         ) : (
-          <BonsaiPlaceholder size={120} seed={seed} radius={12} style={styles.thumb} />
+          <BonsaiPlaceholder
+            w={CARD_WIDTH}
+            h={HERO_HEIGHT}
+            radius={0}
+            seed={seed}
+            noBorder
+            style={styles.heroImage}
+          />
         )}
         {selecting && (
           <View
@@ -96,53 +129,48 @@ export function BonsaiCard({
                 : `${testID ?? 'e2e_bonsai_card'}_unchecked`
             }
           >
-            {selected && <CheckIcon size={14} color={ON_BRAND} />}
+            {selected && <CheckIcon size={16} color={ON_BRAND} />}
           </View>
         )}
       </View>
 
       <View style={styles.body}>
-        <ThemedText style={styles.name} numberOfLines={1}>
+        <ThemedText style={styles.title} numberOfLines={1}>
           {data.name}
         </ThemedText>
-        {(data.speciesCommonName != null || data.speciesScientificName != null) && (
-          <ThemedText style={styles.species} numberOfLines={1}>
-            {data.speciesCommonName ?? ''}
-            {data.speciesScientificName != null && (
-              <ThemedText style={styles.scientific}>
-                {data.speciesCommonName != null ? '  ' : ''}
-                {data.speciesScientificName}
-              </ThemedText>
-            )}
-          </ThemedText>
-        )}
-        {data.styleLabel != null && data.styleLabel.length > 0 && (
-          <ThemedText style={styles.styleLabel}>{data.styleLabel}</ThemedText>
-        )}
 
-        {(data.lastWateringText != null || data.lastPruningText != null) && (
-          <>
-            <View style={styles.divider} />
-            <View style={styles.metaCol}>
-              {data.lastWateringText != null && (
-                <View style={styles.metaRow}>
-                  <DropletIcon size={14} />
-                  <ThemedText style={styles.metaText} numberOfLines={1}>
-                    {data.lastWateringText}
-                  </ThemedText>
-                </View>
-              )}
-              {data.lastPruningText != null && (
-                <View style={styles.metaRow}>
+        <View style={styles.metaRow}>
+          {data.lastAction != null ? (
+            <>
+              <ThemedText style={styles.elapsedText}>
+                {data.lastAction.elapsed === t('elapsedToday')
+                  ? data.lastAction.elapsed
+                  : t('homeCardElapsedAgo').replace('{elapsed}', data.lastAction.elapsed)}
+              </ThemedText>
+              <View style={styles.kindBox}>
+                {data.lastAction.kind === 'pruning' ? (
                   <ScissorsIcon size={14} />
-                  <ThemedText style={styles.metaText} numberOfLines={1}>
-                    {data.lastPruningText}
-                  </ThemedText>
-                </View>
-              )}
-            </View>
-          </>
-        )}
+                ) : (
+                  <DropletIcon size={14} />
+                )}
+                <ThemedText style={styles.kindText}>
+                  {data.lastAction.kind === 'pruning'
+                    ? t('eventType_pruning')
+                    : t('eventType_watering')}
+                </ThemedText>
+              </View>
+            </>
+          ) : (
+            <ThemedText style={styles.noLogText}>{t('homeCardNoLog')}</ThemedText>
+          )}
+          {data.ageText != null && data.ageText.length > 0 && (
+            <ThemedText style={styles.ageText}>{data.ageText}</ThemedText>
+          )}
+        </View>
+
+        <ThemedText style={styles.comment} numberOfLines={1}>
+          {commentText}
+        </ThemedText>
       </View>
     </Pressable>
   );
@@ -150,56 +178,73 @@ export function BonsaiCard({
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
-    gap: 16,
-    padding: 16,
     marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 16,
     backgroundColor: BG_SURFACE,
     borderWidth: 1,
     borderColor: BORDER_DEFAULT,
-    borderRadius: 16,
-    minHeight: 152,
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#1F3A2E',
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
-  thumbWrap: { position: 'relative', width: 120, height: 120 },
-  thumb: { width: 120, height: 120, borderRadius: 12 },
+  cardSelected: {
+    borderColor: BRAND_GREEN,
+    shadowOpacity: 0.18,
+  },
+  hero: { position: 'relative', width: '100%', height: HERO_HEIGHT },
+  heroImage: { width: '100%', height: HERO_HEIGHT },
   checkbox: {
     position: 'absolute',
-    top: 6,
-    left: 6,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    top: 12,
+    left: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
+    borderWidth: 2,
   },
   checkboxSelected: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
-  checkboxUnselected: { backgroundColor: BG_SURFACE, borderColor: BORDER_STRONG },
-  body: { flex: 1, minWidth: 0 },
-  name: {
-    fontFamily: 'NotoSerifJP_500Medium',
-    fontSize: 22,
-    lineHeight: 28,
-    color: TEXT_PRIMARY,
-    letterSpacing: 0.4,
+  checkboxUnselected: {
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderColor: 'rgba(255,255,255,0.95)',
   },
-  species: {
+  body: { paddingTop: 14, paddingBottom: 16, paddingHorizontal: 16, gap: 4 },
+  title: {
+    fontFamily: 'NotoSerifJP_500Medium',
+    fontSize: 18,
+    lineHeight: 28,
+    fontWeight: '600',
+    color: TEXT_PRIMARY,
+    letterSpacing: 0.36,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 20,
+  },
+  elapsedText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    lineHeight: 20,
+    color: ACCENT_BARK,
+    letterSpacing: 0.56,
+  },
+  kindBox: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  kindText: { fontSize: 14, lineHeight: 20, color: TEXT_SECONDARY },
+  noLogText: { fontSize: 14, lineHeight: 20, color: TEXT_MUTED },
+  ageText: {
+    marginLeft: 'auto',
+    fontFamily: 'Inter_400Regular',
     fontSize: 13,
     lineHeight: 20,
-    color: TEXT_SECONDARY,
-    marginTop: 2,
-  },
-  scientific: { fontStyle: 'italic' },
-  styleLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
     color: ACCENT_BARK,
-    letterSpacing: 1.0,
-    marginTop: 2,
+    letterSpacing: 0.26,
   },
-  divider: { height: 1, backgroundColor: BORDER_DEFAULT, marginTop: 10, marginBottom: 8 },
-  metaCol: { gap: 4 },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  metaText: { fontSize: 13, color: TEXT_SECONDARY, flex: 1 },
+  comment: { fontSize: 14, lineHeight: 20, color: TEXT_SECONDARY },
 });
