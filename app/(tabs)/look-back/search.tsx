@@ -21,7 +21,6 @@ import {
   BORDER_DEFAULT,
   BRAND_GREEN,
   BRAND_GREEN_BG,
-  DISABLED_BG,
   ON_BRAND,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
@@ -47,7 +46,7 @@ export default function LookBackSearchScreen() {
   const [speciesResults, setSpeciesResults] = useState<SpeciesWithName[]>([]);
   const [eventResults, setEventResults] = useState<EventWithSnippet[]>([]);
   const [searched, setSearched] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [, setBusy] = useState(false);
   const [recentTags, setRecentTags] = useState<TagRecord[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<readonly string[]>([]);
   const searchHistory = useSearchHistoryStore((s) => s.history);
@@ -138,33 +137,40 @@ export default function LookBackSearchScreen() {
         showSettings={false}
       />
 
+      {/* Issue #339 Phase 1: live search (300ms debounce、L106-119 既存) のみで動作、
+          「検索する」 ボタン廃止 + clear (×) アイコン追加で mockup v1.0 SearchScreen 整合に近づける。
+          Phase 2 (Search-as-Header 化) と Phase 3 (match highlight) は別 PR。 */}
       <View style={styles.searchBox}>
-        <TextInput
-          accessibilityLabel={t('searchPlaceholder')}
-          testID="e2e_find_input"
-          style={[
-            styles.input,
-            { color: c.text, borderColor: c.border, backgroundColor: BG_SURFACE },
-          ]}
-          value={query}
-          onChangeText={setQuery}
-          onSubmitEditing={() => void runSearch()}
-          placeholder={t('searchPlaceholder')}
-          placeholderTextColor={c.textSecondary}
-          returnKeyType="search"
-          autoCorrect={false}
-          autoCapitalize="none"
-        />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('searchAction')}
-          testID="e2e_find_action"
-          style={[styles.searchButton, busy && styles.disabledButton]}
-          onPress={() => void runSearch()}
-          disabled={busy}
-        >
-          <ThemedText style={styles.searchButtonText}>{t('searchAction')}</ThemedText>
-        </Pressable>
+        <View style={styles.inputWrap}>
+          <TextInput
+            accessibilityLabel={t('searchPlaceholder')}
+            testID="e2e_find_input"
+            style={[
+              styles.input,
+              { color: c.text, borderColor: c.border, backgroundColor: BG_SURFACE },
+            ]}
+            value={query}
+            onChangeText={setQuery}
+            onSubmitEditing={() => void runSearch()}
+            placeholder={t('searchPlaceholder')}
+            placeholderTextColor={c.textSecondary}
+            returnKeyType="search"
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
+          {query.length > 0 && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('cancel')}
+              testID="e2e_find_clear"
+              style={styles.clearButton}
+              onPress={() => setQuery('')}
+              hitSlop={8}
+            >
+              <ThemedText style={styles.clearButtonX}>×</ThemedText>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -320,10 +326,13 @@ export default function LookBackSearchScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  searchBox: { flexDirection: 'row', gap: 8, padding: 16 },
+  searchBox: { padding: 16 },
+  // Issue #339 Phase 1: inputWrap で TextInput + clear (×) を重ね合わせ。
+  // mockup v1.0 SearchScreen の「search input + clear ×」 整合。
+  inputWrap: { position: 'relative' },
   input: {
-    flex: 1,
     paddingHorizontal: 14,
+    paddingRight: 40,
     paddingVertical: 12,
     minHeight: 48,
     borderWidth: 1,
@@ -332,18 +341,16 @@ const styles = StyleSheet.create({
     backgroundColor: BG_SURFACE,
     fontSize: 17,
   },
-  searchButton: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    minHeight: 48,
-    minWidth: 64,
-    borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
+  clearButton: {
+    position: 'absolute',
+    right: 8,
+    top: 0,
+    bottom: 0,
+    width: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  searchButtonText: { color: ON_BRAND, fontSize: 17, fontWeight: '600' },
-  disabledButton: { opacity: 0.6, backgroundColor: DISABLED_BG },
+  clearButtonX: { fontSize: 22, color: TEXT_SECONDARY, lineHeight: 22 },
   scroll: { padding: 16, gap: 16, paddingBottom: 96 },
   empty: { textAlign: 'center', opacity: 0.7, paddingVertical: 32 },
   section: { gap: 8, marginBottom: 8 },
