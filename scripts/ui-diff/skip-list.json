@@ -39,8 +39,10 @@
       "artifact": "scripts/ui-diff/out/20260511-0056/",
       "rationale": "レベル 2 必須項目 (写真サイズ/フォント/主要レイアウト/CTA 配置) 全て mockup と一致。残差は AdMob banner と status bar の環境差のみ。",
       "judgedBy": "auto-improve-loop cycle 1",
-      "needsReeval": true,
-      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-11T11:32:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260511-2032/",
+      "reevalRationale": "PR #442 構造系 4 項目チェックで再評価通過。タブ構成 (4 タブ 盆栽/予定/ふりかえり/設定) ✅、セクション構成 (Header + 複数選択 + 検索 + 設定 + フィルタ chip すべて/#要注意/@ベランダ/#展示会候補 + カードリスト) ✅、UI 種別 (カードリスト縦並び) ✅、スクロール範囲 (全画面スクロール可) ✅。残差は seed data 差 (note 内容 + SVG plain) と AdMob banner (永久 skip 候補)、構造的整合性は完全一致。reevalReason フィールドは削除済 (needsReeval=false で代替)。"
     },
     {
       "flow": "bonsai-create-sheet",
