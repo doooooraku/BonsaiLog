@@ -393,3 +393,39 @@
 - **Issue #361**: 横断水やり履歴画面の本実装 (CareHub「水やり履歴」カードの暫定 Alert 解消)
 - **Issue #345**: ui-diff 実行 (`look-back-tab` / `look-back-search`) で実機 SS と mockup の並列比較 (整合性レベル 3 評価)
 - **Tier 2 (T2-1〜T2-7)**: 編集画面 BottomSheet 化 + 写真追加 + 樹齢/購入日 + Picker Sheet + タグ + メモ + Footer CTA
+
+---
+
+### Notes Amended (2026-05-11、Phase 1.5-T2): look-back-watering-history の整合判定方針
+
+**背景**: ui-diff 自動改善ループ Phase 1 (2026-05-11) で skipped に分類された 10 flow のうち、`look-back-watering-history` (横断 watering 履歴画面、PR #379/#383/#384、Issue #361 本実装) について、mockup HTML 側に「横断版」の対応 PhoneShell が存在しないため整合判定が成立しない事象を確認。
+
+**現状**:
+
+- 実機: `app/(tabs)/look-back/watering-history.tsx` (横断 watering、全盆栽対象)
+- mockup: `care-screens-v2.jsx HeatmapScreen` (個別盆栽の watering ヒートマップ、§画面マップ row 13 で「整合済」)
+- ui-diff config: `mockupFile: 'watering-heatmap.png'` で個別版 mockup を「暫定流用」して比較
+
+**判定** (R-28 適用):
+
+- **UI 表現**: 横断版 mockup HTML が無い = 比較対象不在
+- **整合判定**: 「achievable / not-achievable」の二択で **「not-achievable (横断版 mockup 不在)」と確定**
+- **ループ運用**: `scripts/ui-diff/skip-list.json` の `skipped` 配列に永続維持 (achieved に移動しない)
+
+**画面マップへの追加** (row 16b として明文化):
+
+| #   | Claude Design ファイル      | スクリーン                        | 実装側ルート                                | 種別                                                                                                             |
+| --- | --------------------------- | --------------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| 16b | (mockup 不在、横断版未提供) | 13 横断 水やり履歴 (cross-bonsai) | `app/(tabs)/look-back/watering-history.tsx` | **整合判定対象外** (mockup HTML 横断版不在のため整合判定不能、PR #379/#383/#384 で実装完了、Issue #361 close 済) |
+
+**将来の解消経路**:
+
+1. OpenDesign 出力に横断 watering 履歴画面の PhoneShell が追加されたら、`config.ts mockupFile` を更新 + 再キャプチャ + 整合判定
+2. または横断版を「不採用」と確定 → row 16b の種別を「不採用」に変更 + config から flow 削除
+
+**関連**:
+
+- PR #401 (Phase 1.5-T1 seed 拡張、本ループの前段)
+- PR #400 (skipped 10 flow 永続化、Phase 1 完遂)
+- Issue #361 (横断水やり履歴本実装、close 済)
+- `scripts/ui-diff/skip-list.json` (skipped 永続維持)
