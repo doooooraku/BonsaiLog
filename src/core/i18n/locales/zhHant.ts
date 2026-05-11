@@ -615,5 +615,6 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Tags',
   bonsaiTagsEmpty: 'No recent tags yet',
+  settingsThemeRowLabel: 'Theme',
 };
 export default zhHant;

@@ -629,6 +629,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 タグ入力 (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'タグ',
   bonsaiTagsEmpty: '最近使ったタグはまだありません',
+  settingsThemeRowLabel: 'テーマ',
 };
 
 export default ja;

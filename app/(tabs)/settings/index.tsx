@@ -21,7 +21,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-na
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { ACCENT_GOLD, BORDER_DEFAULT, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { ACCENT_GOLD, BORDER_DEFAULT, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { formatDateToHhmm, parseHhmmToDate } from '@/src/features/notification/notificationTime';
 import { requestNotificationPermission } from '@/src/features/notification/scheduler';
@@ -128,6 +128,29 @@ export default function SettingsScreen() {
     { value: 'dark', labelKey: 'settingsThemeDark' },
   ];
 
+  // Phase 1.6-T6 (Issue #330 A1): mockup v1.0 SettingsScreen「テーマ」行を
+  // 3 chip 横並びから 1 行 list (label / value / chevron) + Alert ダイアログに変更。
+  // themeMode 3 種 (system/light/dark) は維持、UI 表現のみ整合。
+  const currentThemeLabel = React.useMemo(() => {
+    const opt = themeOptions.find((o) => o.value === themeMode);
+    return opt ? t(opt.labelKey as Parameters<typeof t>[0]) : '';
+    // themeOptions は labelKey が変わらない限り再計算不要、配列リテラル毎回新規だが
+    // 中身は固定。t / themeMode のみ依存とする。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [themeMode, t]);
+
+  const handleThemePress = React.useCallback(() => {
+    Alert.alert(t('settingsThemeRowLabel'), undefined, [
+      ...themeOptions.map((opt) => ({
+        text: t(opt.labelKey as Parameters<typeof t>[0]),
+        onPress: () => setThemeMode(opt.value),
+      })),
+      { text: t('cancel'), style: 'cancel' as const },
+    ]);
+    // themeOptions は ref 不変 (上記コメント参照)、setThemeMode は store action で安定
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t, setThemeMode]);
+
   return (
     <ThemedView
       style={[styles.container, { backgroundColor: c.background }]}
@@ -202,29 +225,24 @@ export default function SettingsScreen() {
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
             {t('settingsThemeSection')}
           </ThemedText>
-          <View style={styles.themeRow} testID="e2e_theme_mode_row">
-            {themeOptions.map((opt) => {
-              const selected = themeMode === opt.value;
-              return (
-                <Pressable
-                  key={opt.value}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected }}
-                  accessibilityLabel={t(opt.labelKey as Parameters<typeof t>[0])}
-                  testID={`e2e_theme_mode_${opt.value}`}
-                  style={[styles.themeChip, selected && styles.themeChipSelected]}
-                  onPress={() => setThemeMode(opt.value)}
-                >
-                  <ThemedText
-                    type={selected ? 'defaultSemiBold' : 'default'}
-                    style={selected ? styles.themeChipTextSelected : undefined}
-                  >
-                    {t(opt.labelKey as Parameters<typeof t>[0])}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-          </View>
+          {/* Phase 1.6-T6 (Issue #330 A1): mockup v1.0 「テーマ システム設定に従う ›」 整合の
+              1 行 list 形式。タップで Alert ダイアログを開き、3 mode から選択する。 */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('settingsThemeRowLabel')}
+            accessibilityValue={{ text: currentThemeLabel }}
+            testID="e2e_theme_mode_row"
+            style={styles.entry}
+            onPress={handleThemePress}
+          >
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('settingsThemeRowLabel')}</ThemedText>
+              <View style={styles.rowRight}>
+                <ThemedText style={styles.rowValue}>{currentThemeLabel}</ThemedText>
+                <ThemedText style={styles.chevron}>›</ThemedText>
+              </View>
+            </View>
+          </Pressable>
         </View>
 
         {/* --- 3. F-05 通知設定 (Issue #25、ADR-0011) --- */}
@@ -619,24 +637,17 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   toggleLabelBox: { flex: 1, gap: 4 },
-  themeRow: {
+  // Phase 1.6-T6 (Issue #330 A1): list-row 共通 style (label / value / chevron)。
+  // A4 で他行にも展開予定。
+  rowInner: {
     flexDirection: 'row',
-    gap: 8,
-  },
-  themeChip: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
   },
-  themeChipSelected: {
-    backgroundColor: BRAND_GREEN,
-    borderColor: BRAND_GREEN,
-  },
-  themeChipTextSelected: { color: ON_BRAND },
+  rowRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  rowValue: { fontSize: 14, opacity: 0.7 },
+  chevron: { fontSize: 18, opacity: 0.5, lineHeight: 18 },
   proRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   proRowLabel: { flex: 1 },
   proBadge: {
