@@ -45,6 +45,15 @@ tags:
 
 # 3. 「父の黒松」カード (cover photo あり) を text マッチで tap
 #    seed 1 件目「父の黒松」は assets/dev-seed/sample-1.jpg を cover に持つため Hero overlay 表示可能
+#    実機の BonsaiCard は updated_at 降順なので 3 件目になり画面下端で not visible のことがある
+#    scrollUntilVisible で確実に表示してから tap
+- scrollUntilVisible:
+    element:
+      text: '父の黒松'
+    direction: DOWN
+    timeout: 15000
+    speed: 40
+
 - tapOn:
     text: '父の黒松'
 
