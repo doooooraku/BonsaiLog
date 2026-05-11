@@ -77,6 +77,16 @@
       "artifact": "scripts/ui-diff/out/20260511-1054/",
       "rationale": "レベル 2 必須項目 (Header/Subtitle/3 カード = 水やり履歴/針金がけ一覧/盆栽を検索 + サブ説明文)、TabBar 全て mockup CareHub と完全一致。差分は文言の微差 (「巻いた針金を」 vs 「巻いた針金」) のみで許容範囲。",
       "judgedBy": "auto-improve-loop cycle 4"
+    },
+    {
+      "flow": "bonsai-detail-edit-sheet",
+      "achievedAt": "2026-05-11T03:04:00Z",
+      "level": 2,
+      "rmseAtAchievement": 23546.5,
+      "rmseNormalized": 0.359296,
+      "artifact": "scripts/ui-diff/out/20260511-1102/",
+      "rationale": "BonsaiCreateSheet (editingBonsai prop) で prefill 値 (お師匠の真柏 / 斜幹 / 2022-09-21 / 45) が正しく表示。UI 構造は bonsai-create-sheet (achieved) と同じ 90% sheet。レベル 2 達成。flow 修正で scrollUntilVisible 追加 (基本情報 tab 末尾の編集ボタン到達)。",
+      "judgedBy": "auto-improve-loop cycle 6"
     }
   ]
 }
