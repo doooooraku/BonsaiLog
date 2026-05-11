@@ -82,3 +82,18 @@ export function groupContinuousEvents(events: Event[], tzOffsetMin: number): Eve
   }
   return result;
 }
+
+/**
+ * 昇順 (occurredAtUtc 古い → 新しい) 入力版。予定タブで未来へ向かって表示する timeline
+ * (Issue #441 Phase 1) のために用意。内部で desc 反転 → group → 結果反転で実現。
+ * group 内 events も最終的に asc に揃える。
+ */
+export function groupContinuousEventsAsc(events: Event[], tzOffsetMin: number): EventGroupEntry[] {
+  const desc = [...events].reverse();
+  const descGroups = groupContinuousEvents(desc, tzOffsetMin);
+  // groups 自体を反転 + 各 group の events 配列も asc に反転。
+  return descGroups
+    .slice()
+    .reverse()
+    .map((g) => (g.kind === 'group' ? { ...g, events: [...g.events].reverse() } : g));
+}

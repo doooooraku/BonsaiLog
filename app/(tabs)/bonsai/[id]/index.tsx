@@ -60,6 +60,7 @@ import { type Event, type EventType } from '@/src/db/schema';
 import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
 import {
   groupContinuousEvents,
+  groupContinuousEventsAsc,
   type EventGroupEntry,
 } from '@/src/features/event/groupContinuousEvents';
 import { HistoryChipRow } from '@/src/features/event/HistoryChip';
@@ -776,23 +777,15 @@ export default function BonsaiDetailScreen() {
         )}
 
         {/*
-         * Issue #298 Phase 1: timeline タブで planned events を時系列表示。
-         * AddScheduleFlow + _PickDateTimeSheet + _DateTimePicker は Phase 2 で実装。
-         * 本 PR は当該盆栽の status='planned' events を occurredAtUtc 昇順で表示。
+         * Issue #441 Phase 1: 予定タブを timeline 縦線 + 連続日 mark + 詳細メモに改修。
+         * mockup `bonsai-detail-timeline-01/02.png` 整合。FAB は ScrollView の外 (root)
+         * に absolute 配置。
          */}
         {activeTab === 'timeline' && (
           <View style={styles.section}>
-            <ThemedText type="subtitle">{t('detailTimelineTabTitle')}</ThemedText>
-            {/* Issue #298 Phase 2: 「+ 予定を追加」 ボタン */}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('addScheduleCta')}
-              testID="e2e_timeline_add_schedule"
-              style={styles.eventAddBtn}
-              onPress={() => schedulePickerRef.current?.snapToIndex(0)}
-            >
-              <ThemedText style={styles.eventAddText}>+ {t('addScheduleCta')}</ThemedText>
-            </Pressable>
+            <View style={styles.timelineHeader}>
+              <ThemedText type="subtitle">{t('detailTimelineSectionTitle')}</ThemedText>
+            </View>
             {(() => {
               const plannedEvents = events
                 .filter((e) => e.status === 'planned')
@@ -804,22 +797,16 @@ export default function BonsaiDetailScreen() {
                   </ThemedText>
                 );
               }
-              return plannedEvents.map((ev) => (
-                <View key={ev.id} style={styles.eventEntry} testID={`e2e_timeline_event_${ev.id}`}>
-                  <View style={styles.eventHeader}>
-                    <ThemedText type="defaultSemiBold">
-                      {t(`eventType_${ev.type}` as Parameters<typeof t>[0])}
-                    </ThemedText>
-                    <ThemedText style={styles.eventDate}>
-                      {ev.occurredAtUtc.slice(0, 10)}
-                    </ThemedText>
-                  </View>
-                  {ev.note && (
-                    <ThemedText style={styles.entryDesc} numberOfLines={2}>
-                      {ev.note}
-                    </ThemedText>
-                  )}
-                </View>
+              const groups = groupContinuousEventsAsc(plannedEvents, getTzOffsetMin());
+              return groups.map((entry, idx) => (
+                <TimelineRow
+                  key={entry.kind === 'group' ? entry.events[0].id : entry.event.id}
+                  entry={entry}
+                  isFirst={idx === 0}
+                  isLast={idx === groups.length - 1}
+                  lang={lang}
+                  t={t}
+                />
               ));
             })()}
           </View>
@@ -835,6 +822,21 @@ export default function BonsaiDetailScreen() {
           style={styles.historyFab}
           onPress={() => showEventTypePicker()}
           testID="e2e_history_fab"
+        >
+          <ThemedText style={styles.historyFabPlus}>+</ThemedText>
+        </Pressable>
+      )}
+
+      {/* Issue #441 Phase 1: 予定タブ FAB (画面右下、tab bar の上)。tap で
+          schedulePickerRef (WorkPickerSheet を mode 切替で再利用) を開く。
+          mockup `bonsai-detail-timeline-01/02.png` の緑「+」FAB 整合。 */}
+      {activeTab === 'timeline' && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('addScheduleCta')}
+          style={styles.historyFab}
+          onPress={() => schedulePickerRef.current?.snapToIndex(0)}
+          testID="e2e_timeline_fab"
         >
           <ThemedText style={styles.historyFabPlus}>+</ThemedText>
         </Pressable>
@@ -1021,6 +1023,87 @@ function formatDate(iso: string, locale: string): string {
 }
 
 /**
+ * Issue #441 Phase 1: 予定タブの timeline 行 (縦線 + 緑円マーカー + 連続日 mark + 詳細メモ)。
+ * mockup `bonsai-detail-timeline-01/02.png` 整合。
+ * - 左側: 上半線 / 緑円マーカー / 下半線 (firstRow は上線、lastRow は下線を非表示)
+ * - 右側: 日付 (range or 単発) + N 日連続 (group のみ) + 作業名 + ×N badge (group のみ) + note
+ */
+function TimelineRow({
+  entry,
+  isFirst,
+  isLast,
+  lang,
+  t,
+}: {
+  entry: EventGroupEntry;
+  isFirst: boolean;
+  isLast: boolean;
+  lang: string;
+  t: (key: TranslationKey) => string;
+}) {
+  if (entry.kind === 'group') {
+    const startLabel = formatDate(`${entry.startDate}T00:00:00.000Z`, lang);
+    const endLabel = formatDate(`${entry.endDate}T00:00:00.000Z`, lang);
+    const note = entry.events.find((ev) => ev.note)?.note ?? null;
+    return (
+      <View style={styles.timelineRow} testID={`e2e_timeline_event_${entry.events[0].id}`}>
+        <View style={styles.timelineLeft}>
+          <View style={[styles.timelineLine, isFirst && styles.timelineLineHidden]} />
+          <View style={styles.timelineDot} />
+          <View style={[styles.timelineLine, isLast && styles.timelineLineHidden]} />
+        </View>
+        <View style={styles.timelineContent}>
+          <View style={styles.timelineRowMain}>
+            <ThemedText style={styles.timelineDateRange}>
+              {startLabel} ～ {endLabel}
+            </ThemedText>
+            <ThemedText style={styles.timelineConsecutive}>
+              {t('timelineConsecutive').replace('{count}', String(entry.events.length))}
+            </ThemedText>
+          </View>
+          <View style={styles.eventLabelWithCount}>
+            <ThemedText style={styles.eventLabel}>
+              {t(`eventType_${entry.type}` as TranslationKey)}
+            </ThemedText>
+            <View style={styles.eventCountBadge}>
+              <ThemedText style={styles.eventCountBadgeText}>×{entry.events.length}</ThemedText>
+            </View>
+          </View>
+          {note && (
+            <ThemedText style={styles.eventRowNote} numberOfLines={2}>
+              {note}
+            </ThemedText>
+          )}
+        </View>
+      </View>
+    );
+  }
+  const ev = entry.event;
+  return (
+    <View style={styles.timelineRow} testID={`e2e_timeline_event_${ev.id}`}>
+      <View style={styles.timelineLeft}>
+        <View style={[styles.timelineLine, isFirst && styles.timelineLineHidden]} />
+        <View style={styles.timelineDot} />
+        <View style={[styles.timelineLine, isLast && styles.timelineLineHidden]} />
+      </View>
+      <View style={styles.timelineContent}>
+        <ThemedText style={styles.timelineDateRange}>
+          {formatDate(ev.occurredAtUtc, lang)}
+        </ThemedText>
+        <ThemedText style={styles.eventLabel}>
+          {t(`eventType_${ev.type}` as TranslationKey)}
+        </ThemedText>
+        {ev.note && (
+          <ThemedText style={styles.eventRowNote} numberOfLines={2}>
+            {ev.note}
+          </ThemedText>
+        )}
+      </View>
+    </View>
+  );
+}
+
+/**
  * Issue #440 Phase 1: 作業履歴の単一 event 行 (連続日 group 展開時 + フィルタ後の単独 event)。
  * 元 BonsaiDetailScreen body 内の events.map(...) ロジックを関数化、wiring 装着期間 +
  * scheduled unwire + note + chip 描画を踏襲。
@@ -1186,6 +1269,51 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   historyFabPlus: { color: '#FFFFFF', fontSize: 28, fontWeight: '300', lineHeight: 32 },
+  // Issue #441 Phase 1: 予定タブ timeline UI (mockup `bonsai-detail-timeline-01/02.png` 整合)
+  timelineHeader: { marginBottom: 8 },
+  timelineRow: {
+    flexDirection: 'row',
+    minHeight: 80,
+  },
+  timelineLeft: {
+    width: 32,
+    alignItems: 'center',
+    paddingTop: 0,
+  },
+  // 縦線 (上半 + 下半)。flex:1 で row の縦方向に伸ばす。
+  timelineLine: {
+    flex: 1,
+    width: 2,
+    backgroundColor: BRAND_GREEN,
+  },
+  timelineLineHidden: { backgroundColor: 'transparent' },
+  // 緑円マーカー (mockup 整合)
+  timelineDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: BRAND_GREEN,
+    backgroundColor: '#FFFFFF',
+    marginVertical: 2,
+  },
+  timelineContent: {
+    flex: 1,
+    paddingLeft: 12,
+    paddingVertical: 8,
+    gap: 4,
+  },
+  timelineRowMain: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  timelineDateRange: { fontSize: 13, color: TEXT_SECONDARY, fontVariant: ['tabular-nums'] },
+  timelineConsecutive: {
+    fontSize: 11,
+    color: BRAND_GREEN,
+    fontWeight: '600',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    backgroundColor: '#E8F0EA',
+  },
   // ADR-0020 v1.x-2: DetailTabs (Claude Design detail-screens.jsx)
   detailTabs: {
     flexDirection: 'row',

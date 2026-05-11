@@ -676,6 +676,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   addScheduleCta: '予定を追加',
   historyFilterAll: 'すべて',
   historyGroupToggle: '{count}回まとめて表示 · 個別に開く {caret}',
+  detailTimelineSectionTitle: 'これからの予定',
+  timelineConsecutive: '{count}日連続',
 };
 
 export default ja;
