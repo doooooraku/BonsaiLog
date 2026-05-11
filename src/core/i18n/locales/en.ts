@@ -633,6 +633,7 @@ const baseEn = {
   bonsaiTagsEmpty: 'No recent tags yet',
   settingsThemeRowLabel: 'Theme',
   settingsLanguageRowLabel: 'Language',
+  settingsNotificationRowLabel: 'Notifications',
 };
 
 export type TranslationKey = keyof typeof baseEn;
