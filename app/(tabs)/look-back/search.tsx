@@ -39,6 +39,48 @@ import { searchSpecies, type SpeciesWithName } from '@/src/db/speciesRepository'
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
 import { useSearchHistoryStore } from '@/src/features/search/searchHistoryStore';
 
+/**
+ * Issue #339 Phase 3: FTS5 snippet の `«match»` 部分を highlight 背景色で強調表示。
+ * searchEventsWithSnippet() は `«` / `»` で match 部分を囲んだ string を返す
+ * (eventRepository.ts L479)。本 component で分割して部分背景色付け。
+ */
+function HighlightedSnippet({ text }: { text: string }) {
+  // « ... » を分割、奇数 index が match 部分
+  const segments: { value: string; highlight: boolean }[] = [];
+  let cursor = 0;
+  while (cursor < text.length) {
+    const start = text.indexOf('«', cursor);
+    if (start === -1) {
+      segments.push({ value: text.slice(cursor), highlight: false });
+      break;
+    }
+    if (start > cursor) {
+      segments.push({ value: text.slice(cursor, start), highlight: false });
+    }
+    const end = text.indexOf('»', start + 1);
+    if (end === -1) {
+      // closing delimiter なし、残りをそのまま (delimiter は除く)
+      segments.push({ value: text.slice(start + 1), highlight: false });
+      break;
+    }
+    segments.push({ value: text.slice(start + 1, end), highlight: true });
+    cursor = end + 1;
+  }
+  return (
+    <ThemedText style={styles.entryDesc} numberOfLines={2}>
+      {segments.map((s, i) =>
+        s.highlight ? (
+          <ThemedText key={i} style={styles.snippetMatch}>
+            {s.value}
+          </ThemedText>
+        ) : (
+          <ThemedText key={i}>{s.value}</ThemedText>
+        ),
+      )}
+    </ThemedText>
+  );
+}
+
 export default function LookBackSearchScreen() {
   const { t, lang } = useTranslation();
   const c = useColors();
@@ -319,11 +361,7 @@ export default function LookBackSearchScreen() {
                   onPress={() => router.push(`/(tabs)/bonsai/${e.bonsaiId}` as Href)}
                 >
                   <ThemedText type="defaultSemiBold">{e.type}</ThemedText>
-                  {desc != null && desc.length > 0 && (
-                    <ThemedText style={styles.entryDesc} numberOfLines={2}>
-                      {desc}
-                    </ThemedText>
-                  )}
+                  {desc != null && desc.length > 0 && <HighlightedSnippet text={desc} />}
                 </Pressable>
               );
             })}
@@ -399,6 +437,12 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   entryDesc: { fontSize: 13, color: TEXT_SECONDARY, lineHeight: 18 },
+  // Issue #339 Phase 3: FTS5 snippet match 部分の highlight (mockup v1.0 整合、#EDE7D8 系 washi 背景)
+  snippetMatch: {
+    backgroundColor: '#EDE7D8',
+    color: TEXT_SECONDARY,
+    fontWeight: '600',
+  },
   scientific: { fontSize: 13, color: TEXT_SECONDARY, fontStyle: 'italic' },
   tagsRow: { gap: 8 },
   historyHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
