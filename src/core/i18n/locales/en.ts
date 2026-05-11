@@ -674,6 +674,8 @@ const baseEn = {
   historyLabelRepotRootsHeavy: '1/2',
   detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: 'No scheduled tasks yet.',
+  addScheduleTitle: 'Add a scheduled task',
+  addScheduleCta: 'Add a scheduled task',
 };
 
 export type TranslationKey = keyof typeof baseEn;

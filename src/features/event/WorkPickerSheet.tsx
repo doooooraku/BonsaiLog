@@ -60,10 +60,12 @@ type Props = {
   isPine?: boolean;
   onSelect: (type: EventType) => void;
   onClose: () => void;
+  /** Issue #298 Phase 2: 「予定を追加」 モード時のタイトル override (デフォルトは t('workPickerTitle'))。 */
+  titleOverrideKey?: 'workPickerTitle' | 'addScheduleTitle';
 };
 
 export const WorkPickerSheet = React.forwardRef<BottomSheet, Props>(function WorkPickerSheet(
-  { index, bonsaiName, isPine = false, onSelect, onClose }: Props,
+  { index, bonsaiName, isPine = false, onSelect, onClose, titleOverrideKey }: Props,
   ref,
 ) {
   const { t } = useTranslation();
@@ -81,7 +83,7 @@ export const WorkPickerSheet = React.forwardRef<BottomSheet, Props>(function Wor
     >
       <BottomSheetView style={styles.content}>
         <View style={styles.header}>
-          <ThemedText style={styles.title}>{t('workPickerTitle')}</ThemedText>
+          <ThemedText style={styles.title}>{t(titleOverrideKey ?? 'workPickerTitle')}</ThemedText>
           <ThemedText style={styles.subject}>{bonsaiName}</ThemedText>
         </View>
         <View style={styles.grid} testID="e2e_work_picker_grid">
