@@ -16,6 +16,12 @@ export type ScreenPair = {
   appFlow: string; // maestro/flows/ui-diff/<id>.yml
   designHtml: string; // OpenDesign 採用版 HTML のファイル名 (DESIGN_ROOT 直下)
   designSelector: string; // PhoneShell の data-screen-label
+  /**
+   * mockup PNG ファイル名の override (docs/mockups/v1.0/screenshots/ 直下、拡張子込み)。
+   * 省略時は capture-design.ts が `<id>.png` → `<id>-01.png` の順に解決する。
+   * flow id と mockup ファイル名が一致しない場合に明示指定する (例: bonsai-detail → bonsai-detail-history-01.png)。
+   */
+  mockupFile?: string;
   notes?: string;
 };
 
@@ -47,6 +53,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/bonsai-detail.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="05 詳細 作業履歴（初期タブ）"]',
+    mockupFile: 'bonsai-detail-history-01.png',
     notes:
       'ADR-0020 §Notes Amended (2026-05-09、写真タブ廃止 + basic タブ追加) / detail-screens.jsx BonsaiDetailScreen / app/(tabs)/bonsai/[id]/index.tsx / mockups v1.0 (PR #269)。前提: テスト盆栽 1 件以上登録済 (新規インストールでは盆栽カード無し → flow timeout)。Detail Tabs 名は A4 リファクタ完了後 (作業履歴 / 予定タイムライン / 基本情報) を可視待ちアンカーに使用。',
   },
@@ -107,6 +114,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/look-back-tab.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="08 ふりかえり Hub"]',
+    mockupFile: 'care-hub.png',
     notes:
       'ADR-0020 §Decision §7 Notes Amended (2026-05-10、PR #358) / care-screens.jsx CareHubScreen L1576-1719 / app/(tabs)/look-back/index.tsx (T1-8c PR #362) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「ふりかえり」をタップして遷移、testID e2e_look_back_hub で可視待ち。データ依存なし。',
   },
@@ -117,6 +125,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/look-back-search.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="12 ケア 検索"]',
+    mockupFile: 'care-search.png',
     notes:
       'ADR-0020 §Notes §画面マップ row 16 / care-screens.jsx SearchScreen / app/(tabs)/look-back/search.tsx (T1-8c PR #362、旧 find/index.tsx 385 行を sub-route 化) / mockups v1.0 (PR #269)。動線: TabBar ふりかえり → CareHub → 盆栽を検索カード → search 画面 (3 タップ、経路 2)。testID e2e_find_screen は移植時に維持。データ依存は検索結果のみ。',
   },
@@ -148,6 +157,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/bonsai-create-sheet.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="03 新規登録 / 編集"]',
+    mockupFile: 'bonsai-create-01.png',
     notes:
       'ADR-0020 §画面マップ row 4 / create-screens.jsx CreateBonsaiScreen / src/features/bonsai/BonsaiCreateSheet.tsx (PR #368 BottomSheet 化 → #370/#371 写真 → #372-#376 樹齢/メモ/購入日/Picker/タグ → #377 Footer 固定 → #381 写真複数枚) / mockups v1.0 「03 新規登録 / 編集」。前提: 盆栽タブ起動完了後 FAB タップで sheet open。',
   },
@@ -157,8 +167,9 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/bonsai-detail-edit-sheet.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="03 新規登録 / 編集"]',
+    mockupFile: 'bonsai-create-01.png',
     notes:
-      'ADR-0020 §画面マップ row 4 / create-screens.jsx CreateBonsaiScreen prefill モード / src/features/bonsai/BonsaiCreateSheet.tsx editingBonsai prop (PR #378) / mockups v1.0 「03 新規登録 / 編集」 (create / edit 兼用)。前提: テスト盆栽 1 件以上登録済 + 詳細画面 → 基本情報タブ → 編集ボタン (e2e_detail_basic_edit_button) で sheet open。',
+      'ADR-0020 §画面マップ row 4 / create-screens.jsx CreateBonsaiScreen prefill モード / src/features/bonsai/BonsaiCreateSheet.tsx editingBonsai prop (PR #378) / mockups v1.0 「03 新規登録 / 編集」 (create / edit 兼用、mockup PNG は create と同じ) / 前提: テスト盆栽 1 件以上登録済 + 詳細画面 → 基本情報タブ → 編集ボタン (e2e_detail_basic_edit_button) で sheet open。',
   },
   'look-back-watering-history': {
     id: 'look-back-watering-history',
@@ -167,6 +178,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/look-back-watering-history.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="09 ケア 水やり履歴ヒートマップ"]',
+    mockupFile: 'watering-heatmap.png',
     notes:
       'ADR-0021 / Issue #361 / app/(tabs)/look-back/watering-history.tsx (PR #379/#383/#384) / mockup HTML には横断版の対応 PhoneShell が無いため、暫定で個別盆栽 HeatmapScreen を比較対象に流用 (整合度低いが画面構造は近い)。完全整合は将来の mockup HTML 追加で対応。前提: watering events 1 件以上 (seed 済) + ふりかえりタブ → 水やり履歴カード tap で遷移。',
   },
