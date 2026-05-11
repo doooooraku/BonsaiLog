@@ -670,6 +670,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   historyLabelRepotRootsLight: '軽く整理',
   historyLabelRepotRootsHalf: '1/3整理',
   historyLabelRepotRootsHeavy: '1/2整理',
+  detailTimelineTabTitle: '予定された作業',
+  detailTimelineEmpty: 'まだ予定はありません',
 };
 
 export default ja;
