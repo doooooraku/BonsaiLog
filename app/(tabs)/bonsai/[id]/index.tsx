@@ -735,15 +735,42 @@ export default function BonsaiDetailScreen() {
         )}
 
         {/*
-         * A7 (Detail mockup 完全整合 全 10 PR の 7/10) — TimelineTab + AddScheduleFlow +
-         * _PickDateTimeSheet + _DateTimePicker の本格実装は Issue #298 で track 化
-         * (推定 4 サブ PR)。本 PR は placeholder text の文言維持のみ。
+         * Issue #298 Phase 1: timeline タブで planned events を時系列表示。
+         * AddScheduleFlow + _PickDateTimeSheet + _DateTimePicker は Phase 2 で実装。
+         * 本 PR は当該盆栽の status='planned' events を occurredAtUtc 昇順で表示。
          */}
         {activeTab === 'timeline' && (
           <View style={styles.section}>
-            <ThemedText style={styles.placeholderText}>
-              {t('detailPlanTimelinePlaceholder')}
-            </ThemedText>
+            <ThemedText type="subtitle">{t('detailTimelineTabTitle')}</ThemedText>
+            {(() => {
+              const plannedEvents = events
+                .filter((e) => e.status === 'planned')
+                .sort((a, b) => a.occurredAtUtc.localeCompare(b.occurredAtUtc));
+              if (plannedEvents.length === 0) {
+                return (
+                  <ThemedText style={styles.emptyPhotos} testID="e2e_timeline_empty">
+                    {t('detailTimelineEmpty')}
+                  </ThemedText>
+                );
+              }
+              return plannedEvents.map((ev) => (
+                <View key={ev.id} style={styles.eventEntry} testID={`e2e_timeline_event_${ev.id}`}>
+                  <View style={styles.eventHeader}>
+                    <ThemedText type="defaultSemiBold">
+                      {t(`eventType_${ev.type}` as Parameters<typeof t>[0])}
+                    </ThemedText>
+                    <ThemedText style={styles.eventDate}>
+                      {ev.occurredAtUtc.slice(0, 10)}
+                    </ThemedText>
+                  </View>
+                  {ev.note && (
+                    <ThemedText style={styles.entryDesc} numberOfLines={2}>
+                      {ev.note}
+                    </ThemedText>
+                  )}
+                </View>
+              ));
+            })()}
           </View>
         )}
       </ScrollView>
@@ -1045,6 +1072,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: 24,
   },
+  // Issue #298 Phase 1: timeline タブ planned events 表示用 (Card 風)
+  eventEntry: {
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    gap: 4,
+    marginBottom: 8,
+  },
+  eventHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  eventDate: { fontSize: 13, color: TEXT_SECONDARY, fontVariant: ['tabular-nums'] },
+  entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
   basicScientific: {
     fontSize: 13,
     color: TEXT_SECONDARY,

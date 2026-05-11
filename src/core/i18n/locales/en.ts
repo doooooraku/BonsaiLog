@@ -672,6 +672,8 @@ const baseEn = {
   historyLabelRepotRootsLight: 'Light',
   historyLabelRepotRootsHalf: '1/3',
   historyLabelRepotRootsHeavy: '1/2',
+  detailTimelineTabTitle: 'Scheduled tasks',
+  detailTimelineEmpty: 'No scheduled tasks yet.',
 };
 
 export type TranslationKey = keyof typeof baseEn;
