@@ -632,6 +632,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsThemeRowLabel: 'テーマ',
   settingsLanguageRowLabel: '言語',
   settingsNotificationRowLabel: '通知設定',
+  settingsNotifTimeRangeRowLabel: '通知の時間帯',
+  settingsNotifTimeRangeNone: '設定なし',
+  settingsNotifMasterOffBanner:
+    '通知がオフです。設定画面のマスタースイッチをオンにすると、ここの項目を操作できます。',
 };
 
 export default ja;

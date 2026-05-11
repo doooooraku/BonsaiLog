@@ -15,7 +15,7 @@
  */
 import { useRouter, type Href } from 'expo-router';
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -60,6 +60,13 @@ export default function SettingsScreen() {
   const c = useColors();
   const themeMode = useSettingsStore((s) => s.themeMode);
   const setThemeMode = useSettingsStore((s) => s.setThemeMode);
+  // ADR-0014 §30 / Issue #423: 通知マスタートグル + 動的範囲表示用 state
+  const notificationMasterEnabled = useSettingsStore((s) => s.notificationMasterEnabled);
+  const setNotificationMasterEnabled = useSettingsStore((s) => s.setNotificationMasterEnabled);
+  const notifSummaryEnabled = useSettingsStore((s) => s.notificationDailySummaryEnabled);
+  const notifSummaryTime = useSettingsStore((s) => s.notificationDailySummaryTime);
+  const notifWateringEnabled = useSettingsStore((s) => s.notificationWateringRepeatEnabled);
+  const notifWateringTimes = useSettingsStore((s) => s.notificationWateringRepeatTimes);
   const isPro = useProStore((s) => s.isPro);
   const planType = useProStore((s) => s.planType);
 
@@ -115,6 +122,20 @@ export default function SettingsScreen() {
   const currentLanguageLabel = React.useMemo(() => {
     return findLanguageOption(lang)?.native ?? lang;
   }, [lang]);
+
+  // Phase 1.6-T6 (Issue #423 / Issue #330 A2b): mockup v1.0「通知の時間帯 8:00 – 20:00」
+  // 整合の動的範囲表示。当日まとめ + 水やり通知の有効な時刻から min/max を計算。
+  // 全 OFF の場合は「設定なし」 placeholder。
+  const notificationTimeRangeLabel = React.useMemo(() => {
+    const activeTimes: string[] = [];
+    if (notifSummaryEnabled) activeTimes.push(notifSummaryTime);
+    if (notifWateringEnabled) activeTimes.push(...notifWateringTimes);
+    if (activeTimes.length === 0) return t('settingsNotifTimeRangeNone');
+    const sorted = [...activeTimes].sort();
+    const min = sorted[0];
+    const max = sorted[sorted.length - 1];
+    return min === max ? min : `${min} – ${max}`;
+  }, [notifSummaryEnabled, notifSummaryTime, notifWateringEnabled, notifWateringTimes, t]);
 
   const handleThemePress = React.useCallback(() => {
     Alert.alert(t('settingsThemeRowLabel'), undefined, [
@@ -237,22 +258,45 @@ export default function SettingsScreen() {
         </SettingsSection>
 
         {/* --- 3. F-05/F-16 通知設定 (Issue #25/#30、ADR-0011/0014) ---
-            Phase 1.6-T6 (Issue #330 A2a): mockup v1.0 整合のため、3 toggle +
-            時刻設定をサブ画面 /settings/notifications に集約、本セクションは
-            「通知設定 ›」 1 行のみに簡素化。
-            残作業 (A2b、別 Issue): ADR-0014 §30 マスタートグル + mockup 完全
-            整合 (「通知 [Switch] / 通知の時間帯 ›」 2 行表示)。 */}
+            Phase 1.6-T6 (Issue #423 / Issue #330 A2b): mockup v1.0 整合の 2 行構造。
+            行 1: 「通知 [Switch]」 — マスタートグル (ADR-0014 §30 / §32)
+            行 2: 「通知の時間帯 [動的範囲] ›」 — タップでサブ画面 /settings/notifications に遷移。
+            サブ画面で master OFF 時は grey out / 注意 banner 表示。 */}
         <SettingsSection title={t('settingsNotificationSection')}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('settingsNotificationRowLabel')}
-            testID="e2e_settings_notifications_row"
+          {/* 行 1: マスタートグル */}
+          <View
             style={styles.entry}
-            onPress={() => router.push('/settings/notifications' as Href)}
+            testID="e2e_settings_notification_master_row"
+            accessibilityLabel={t('settingsNotificationRowLabel')}
           >
             <View style={styles.rowInner}>
               <ThemedText type="defaultSemiBold">{t('settingsNotificationRowLabel')}</ThemedText>
-              <ThemedText style={styles.chevron}>›</ThemedText>
+              <Switch
+                accessibilityRole="switch"
+                accessibilityLabel={t('settingsNotificationRowLabel')}
+                testID="e2e_settings_notification_master_toggle"
+                value={notificationMasterEnabled}
+                onValueChange={setNotificationMasterEnabled}
+              />
+            </View>
+          </View>
+          {/* 行 2: 通知の時間帯 (サブ画面遷移)、master OFF 時は opacity 落として disabled 化 */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('settingsNotifTimeRangeRowLabel')}
+            accessibilityValue={{ text: notificationTimeRangeLabel }}
+            accessibilityState={{ disabled: !notificationMasterEnabled }}
+            testID="e2e_settings_notifications_row"
+            style={[styles.entry, !notificationMasterEnabled && styles.entryDisabled]}
+            disabled={!notificationMasterEnabled}
+            onPress={() => router.push('/settings/notifications' as Href)}
+          >
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('settingsNotifTimeRangeRowLabel')}</ThemedText>
+              <View style={styles.rowRight}>
+                <ThemedText style={styles.rowValue}>{notificationTimeRangeLabel}</ThemedText>
+                <ThemedText style={styles.chevron}>›</ThemedText>
+              </View>
             </View>
           </Pressable>
         </SettingsSection>

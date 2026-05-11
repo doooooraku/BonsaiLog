@@ -253,3 +253,20 @@ export async function cancelAllManagedNotifications(): Promise<void> {
   await cancelByPrefix(SUMMARY_IDENTIFIER_PREFIX);
   await cancelByPrefix(WATERING_IDENTIFIER_PREFIX);
 }
+
+// ---------------------------------------------------------------------------
+// マスタートグル連動 helper (ADR-0014 §30、Issue #423)
+// ---------------------------------------------------------------------------
+
+/**
+ * マスタートグル状態を考慮した「通知が実際に発火するか」 判定。
+ *
+ * - masterEnabled=false: 個別 toggle に関わらず false (= 通知発火しない)
+ * - masterEnabled=true: 個別 toggle の値で決まる
+ *
+ * 用途: reschedule\*Notifications を呼ぶ側で `enabled: isNotificationActive(...)`
+ * のように使い、master OFF 時は scheduler が cancelByPrefix のみ実行する。
+ */
+export function isNotificationActive(masterEnabled: boolean, individualEnabled: boolean): boolean {
+  return masterEnabled && individualEnabled;
+}
