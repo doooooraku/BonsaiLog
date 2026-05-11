@@ -3,89 +3,144 @@
   "skipped": [
     {
       "flow": "plan-tab",
-      "skippedAt": "2026-05-11T03:00:00Z",
-      "reason": "seed データに plan/event 予定が無く、mockup の「今日 3件」相当が表示されない。UI 構造は一致 (Calendar + 下リスト) だが要素空。seed 拡張 PR が必要 = 機能改修扱い、人間判断要。",
-      "needsHumanReview": true,
-      "artifact": "scripts/ui-diff/out/20260510-0130/"
+      "reason": "seed データに plan/event 予定が無く mockup の「今日 3件」相当が空表示。UI 構造は一致 (Calendar + 下リスト) だが要素空。seed 拡張 PR 要 = 機能改修扱い、人間判断要。",
+      "added_at": "2026-05-11T03:00:00Z",
+      "fail_count": 0,
+      "permanent": true,
+      "artifact": "scripts/ui-diff/out/20260510-0130/",
+      "needsHumanReview": true
     },
     {
       "flow": "wiring-list",
-      "skippedAt": "2026-05-11T03:00:00Z",
-      "reason": "seed データに wiring event が無く、装着中 5 件が空表示。UI は一致だが要素空。seed 拡張要 = 機能改修扱い、人間判断要。",
-      "needsHumanReview": true,
-      "artifact": "scripts/ui-diff/out/20260510-0159/"
+      "reason": "seed データに wiring event が無く 装着中 5 件が空表示。UI は一致だが要素空。seed 拡張要 = 機能改修扱い、人間判断要。",
+      "added_at": "2026-05-11T03:00:00Z",
+      "fail_count": 0,
+      "permanent": true,
+      "artifact": "scripts/ui-diff/out/20260510-0159/",
+      "needsHumanReview": true
     },
     {
       "flow": "bonsai-detail",
-      "skippedAt": "2026-05-11T03:00:00Z",
       "reason": "構造大差: mockup は Hero photo full-bleed + name overlay + Repolog 風 event list、実機は title only + summary card 構成。レベル 2 達成には Hero component 新規 + EventList 大改修 + scientific name 表示 (schema 拡張) 必要 = 機能変更扱い、別 Issue 起票推奨。",
-      "needsHumanReview": true,
-      "artifact": "scripts/ui-diff/out/20260511-1050/"
+      "added_at": "2026-05-11T03:00:00Z",
+      "fail_count": 0,
+      "permanent": true,
+      "artifact": "scripts/ui-diff/out/20260511-1050/",
+      "needsHumanReview": true
     },
     {
       "flow": "home-bulk-sched-work",
-      "skippedAt": "2026-05-11T03:00:00Z",
       "reason": "Grid 列数 (mockup 4 列 vs 実機 3 列) + work icon 語彙差 (例: 「葉刈り」 vs 「全葉刈」)。レイアウト変更 + i18n key 再整理要、UX 影響あるため人間判断要。",
-      "needsHumanReview": true,
-      "artifact": "scripts/ui-diff/out/20260511-1056/"
+      "added_at": "2026-05-11T03:00:00Z",
+      "fail_count": 0,
+      "permanent": true,
+      "artifact": "scripts/ui-diff/out/20260511-1056/",
+      "needsHumanReview": true
     },
     {
       "flow": "look-back-search",
-      "skippedAt": "2026-05-11T03:00:00Z",
       "reason": "flow 改修要: mockup は検索 input 入力後の結果画面、実機 flow は初期画面 (input 空) で停止。Maestro flow に typeText + 検索ボタンタップ + 結果待機 step 追加要。",
-      "needsHumanReview": true,
-      "artifact": "scripts/ui-diff/out/20260511-1055/"
+      "added_at": "2026-05-11T03:00:00Z",
+      "fail_count": 0,
+      "permanent": true,
+      "artifact": "scripts/ui-diff/out/20260511-1055/",
+      "needsHumanReview": true
+    },
+    {
+      "flow": "home-bulk-sched-date",
+      "reason": "flow 状態問題: SS が「まとめて記録」(record mode) を表示しており schedule mode の DatePicker に遷移していない。e2e_bulk_work_picker_fertilizing tap 後の sheet 切替が想定と異なる状態に到達。flow 改修 (waitFor 強化 / 状態確認) 要。",
+      "added_at": "2026-05-11T03:10:00Z",
+      "fail_count": 0,
+      "permanent": true,
+      "artifact": "scripts/ui-diff/out/20260511-1058/",
+      "needsHumanReview": true
+    },
+    {
+      "flow": "settings-tab",
+      "reason": "構造大改修要: mockup「アカウント → 表示 (テーマ単一行) → 通知 (toggle + 時間帯)」 vs 実機「表示 (segmented 3 way) → アカウント → 通知設定 (3 セクション + 時刻変更)」。セクション順序・通知 UI 分割は ADR-0020 Issue #330 (本格 8 セクション分離) で track 済、別 Issue 推奨。",
+      "added_at": "2026-05-11T03:10:00Z",
+      "fail_count": 0,
+      "permanent": true,
+      "artifact": "scripts/ui-diff/out/20260510-0219/",
+      "needsHumanReview": true
+    },
+    {
+      "flow": "paywall",
+      "reason": "比較表拡張要: mockup 8 行 vs 実機 5 行。追加 3 行 (バックアップ/年次タイムライン/テーマ) は Pro gating の事実確認要 = 機能判断、人間判断要。CTA 文言「購読する」vs「月額プランを開始」も Issue #335 で track 済。",
+      "added_at": "2026-05-11T03:10:00Z",
+      "fail_count": 0,
+      "permanent": true,
+      "artifact": "scripts/ui-diff/out/20260510-0257/",
+      "needsHumanReview": true
+    },
+    {
+      "flow": "look-back-watering-history",
+      "reason": "mockup mismatch: 実機は横断 watering 履歴画面 (Issue #361)、mockup は個別盆栽 watering heatmap (config 暫定流用)。横断版の mockup HTML 不在のため整合判定不能。将来の mockup HTML 追加 or 既存 watering-heatmap の解釈変更要、人間判断要。",
+      "added_at": "2026-05-11T03:10:00Z",
+      "fail_count": 0,
+      "permanent": true,
+      "artifact": "scripts/ui-diff/out/20260510-2343/",
+      "needsHumanReview": true
+    },
+    {
+      "flow": "onboarding-welcome",
+      "reason": "env 要: 実機の onboarding.completed=true 状態のため flow が timeout する。「設定 → ヘルプ → チュートリアルを再表示」で reset 後再試走可能。本ループでは未対応 = 環境準備 (人間操作要)。",
+      "added_at": "2026-05-11T03:10:00Z",
+      "fail_count": 0,
+      "permanent": true,
+      "artifact": null,
+      "needsHumanReview": true
     }
   ],
   "achieved": [
     {
       "flow": "bonsai-tab",
-      "achievedAt": "2026-05-11T02:00:00Z",
       "level": 2,
-      "rmseAtAchievement": 26859.7,
+      "rmse": 26859.7,
+      "achieved_at": "2026-05-11T02:00:00Z",
       "rmseNormalized": 0.409853,
       "artifact": "scripts/ui-diff/out/20260511-0056/",
-      "rationale": "レベル 2 必須項目 (写真サイズ/フォント/主要レイアウト/CTA 配置) 全て mockup と一致。残差は AdMob banner (実機 free モード、mockup 無し) と status bar (時刻表示差) の環境差のみで実装で直せない。",
+      "rationale": "レベル 2 必須項目 (写真サイズ/フォント/主要レイアウト/CTA 配置) 全て mockup と一致。残差は AdMob banner と status bar の環境差のみ。",
       "judgedBy": "auto-improve-loop cycle 1"
     },
     {
       "flow": "bonsai-create-sheet",
-      "achievedAt": "2026-05-11T02:15:00Z",
       "level": 2,
-      "rmseAtAchievement": 21815.6,
+      "rmse": 21815.6,
+      "achieved_at": "2026-05-11T02:15:00Z",
       "rmseNormalized": 0.332771,
       "artifact": "scripts/ui-diff/out/20260510-2340/",
-      "rationale": "レベル 2 必須項目 (写真サイズ/フォント/レイアウト 9 フィールド/footer CTA) 全て mockup CreateBonsaiScreen と一致。差分は placeholder 視認性 (実機色薄め) と必須/任意ラベル仕様差 (mockup 写真=必須、実装=任意は ADR-0020 仕様判断、変更要人間判断)。",
+      "rationale": "レベル 2 必須項目 (写真/フォント/レイアウト 9 フィールド/footer CTA) 全て mockup CreateBonsaiScreen と一致。差分は placeholder 視認性と必須/任意ラベル仕様差で許容。",
       "judgedBy": "auto-improve-loop cycle 2"
     },
     {
       "flow": "watering-heatmap",
-      "achievedAt": "2026-05-11T02:55:00Z",
       "level": 2,
-      "rmseAtAchievement": 23437.8,
+      "rmse": 23437.8,
+      "achieved_at": "2026-05-11T02:55:00Z",
       "rmseNormalized": 0.357637,
       "artifact": "scripts/ui-diff/out/20260511-1052/",
-      "rationale": "レベル 2 必須項目 (Header/Segmented/Heatmap grid 4 段階濃淡/Footer Summary/Disclaimer) 全て一致。差分は Title scientific name 二段表示 (species 取得経路不在、schema 改修要) と seed の watering 記録数差のみ。",
+      "rationale": "レベル 2 必須項目 (Header/Segmented/Heatmap grid 4 段階濃淡/Footer Summary/Disclaimer) 全て一致。差分は Title scientific name と seed 記録数差のみ。",
       "judgedBy": "auto-improve-loop cycle 4"
     },
     {
       "flow": "look-back-tab",
-      "achievedAt": "2026-05-11T02:56:00Z",
       "level": 2,
-      "rmseAtAchievement": 21804.8,
+      "rmse": 21804.8,
+      "achieved_at": "2026-05-11T02:56:00Z",
       "rmseNormalized": 0.332719,
       "artifact": "scripts/ui-diff/out/20260511-1054/",
-      "rationale": "レベル 2 必須項目 (Header/Subtitle/3 カード = 水やり履歴/針金がけ一覧/盆栽を検索 + サブ説明文)、TabBar 全て mockup CareHub と完全一致。差分は文言の微差 (「巻いた針金を」 vs 「巻いた針金」) のみで許容範囲。",
+      "rationale": "レベル 2 必須項目 (Header/Subtitle/3 カード + TabBar) 完全一致。差分は文言の微差のみ。",
       "judgedBy": "auto-improve-loop cycle 4"
     },
     {
       "flow": "bonsai-detail-edit-sheet",
-      "achievedAt": "2026-05-11T03:04:00Z",
       "level": 2,
-      "rmseAtAchievement": 23546.5,
+      "rmse": 23546.5,
+      "achieved_at": "2026-05-11T03:04:00Z",
       "rmseNormalized": 0.359296,
       "artifact": "scripts/ui-diff/out/20260511-1102/",
-      "rationale": "BonsaiCreateSheet (editingBonsai prop) で prefill 値 (お師匠の真柏 / 斜幹 / 2022-09-21 / 45) が正しく表示。UI 構造は bonsai-create-sheet (achieved) と同じ 90% sheet。レベル 2 達成。flow 修正で scrollUntilVisible 追加 (基本情報 tab 末尾の編集ボタン到達)。",
+      "rationale": "BonsaiCreateSheet (editingBonsai prop) で prefill 値正しく表示。UI 構造は bonsai-create-sheet と同じ 90% sheet、レベル 2 達成。",
       "judgedBy": "auto-improve-loop cycle 6"
     }
   ]
