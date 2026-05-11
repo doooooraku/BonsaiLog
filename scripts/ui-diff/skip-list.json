@@ -12,20 +12,11 @@
     },
     {
       "flow": "home-bulk-sched-date",
-      "reason": "flow 状態問題: SS が「まとめて記録」(record mode) を表示しており schedule mode の DatePicker に遷移していない。e2e_bulk_work_picker_fertilizing tap 後の sheet 切替が想定と異なる状態に到達。flow 改修 (waitFor 強化 / 状態確認) 要。",
-      "added_at": "2026-05-11T03:10:00Z",
-      "fail_count": 0,
+      "reason": "Maestro Android BottomSheet 描画タイミング限界: Phase 1.5-T4 (#404) + Phase 1.6-T5 (#415) で 2 段階の追加待機 step を入れたが、Footer CTA (e2e_bulk_schedule_save_cta) が timeout 8s で visible にならない (sheet 88% snap 直後の React Native 描画ラグ問題)。look-back-search と同様の Maestro 技術制約として永続化、将来 Maestro 改善 or BottomSheet 描画 trigger 強化で再検討。",
+      "added_at": "2026-05-11T04:50:00Z",
+      "fail_count": 3,
       "permanent": true,
       "artifact": "scripts/ui-diff/out/20260511-1058/",
-      "needsHumanReview": true
-    },
-    {
-      "flow": "settings-tab",
-      "reason": "構造大改修要: mockup「アカウント → 表示 (テーマ単一行) → 通知 (toggle + 時間帯)」 vs 実機「表示 (segmented 3 way) → アカウント → 通知設定 (3 セクション + 時刻変更)」。セクション順序・通知 UI 分割は ADR-0020 Issue #330 (本格 8 セクション分離) で track 済、別 Issue 推奨。",
-      "added_at": "2026-05-11T03:10:00Z",
-      "fail_count": 0,
-      "permanent": true,
-      "artifact": "scripts/ui-diff/out/20260510-0219/",
       "needsHumanReview": true
     },
     {
@@ -148,6 +139,16 @@
       "artifact": "scripts/ui-diff/out/20260511-1240/",
       "rationale": "PR #412 (比較表 5→8 行拡張) で再キャプチャ成功。Header「× BonsaiLog Pro」 + Hero (UNLOCK + 鉢1本ずつ、一生分。+ Pro で記録の可能性を解き放つ) + 比較表 7 行 (樹木数/写真/作業履歴/バックアップ/CSV/PDF/年次タイムライン/広告) 全て mockup PaywallScreen と一致。レベル 2 達成。残差 (テーマ行 + 「購読する」1 CTA vs 月年 Lifetime cards) は R-28 ビジネス仕様判断要、別 ADR 起票後対応。",
       "judgedBy": "auto-improve-loop cycle 10"
+    },
+    {
+      "flow": "settings-tab",
+      "level": 2,
+      "rmse": 23526.1,
+      "achieved_at": "2026-05-11T04:50:00Z",
+      "rmseNormalized": 0.358985,
+      "artifact": "scripts/ui-diff/out/20260511-1316/",
+      "rationale": "PR #414 (Phase 1.6-T3、8 セクション順序整合) で再キャプチャ成功。アカウント・プラン → 表示 → 通知 → アーカイブ → 書き出し → バックアップ → 法令 → バージョン の順序が mockup 整合。アーカイブ「アーカイブ済み盆栽 3件 >」表示確認、CSV エクスポート [PRO] 表示、Header「設定」一致。残差は表示セクション 3 chip vs mockup 1 行 dialog (Issue #330 残作業、別 PR)、通知設定 4 toggle vs 2 行 (Issue #330 残作業)。レベル 2 達成。",
+      "judgedBy": "auto-improve-loop cycle 11"
     }
   ]
 }
