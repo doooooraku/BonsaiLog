@@ -12,10 +12,9 @@
 // - 下端比較は Phase 0.5 以降で footer 専用 flow を別途追加 (Q1=(c) ハイブリッド)
 //
 // mockup PNG 解決順:
-// 1. <id>.png (static 画面)
-// 2. <id>-01.png (scrollable 画面の上端)
-// 3. SCREEN_PAIRS[id].designSelector の "数字 名前" prefix から推定
-//    例: "[data-screen-label=\"03 新規登録 / 編集\"]" → bonsai-create-01.png に近似
+// 1. SCREEN_PAIRS[id].mockupFile が指定されていればそれを優先 (flow id ≠ mockup ファイル名の場合)
+// 2. <id>.png (static 画面)
+// 3. <id>-01.png (scrollable 画面の上端)
 // 4. 見つからない → エラー
 
 import * as fs from 'node:fs/promises';
@@ -29,22 +28,22 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '../..');
 const SCREENSHOTS_DIR = path.join(ROOT, 'docs/mockups/v1.0/screenshots');
 
+async function fileExists(p: string): Promise<boolean> {
+  return fs
+    .access(p)
+    .then(() => true)
+    .catch(() => false);
+}
+
 /** mockup PNG のファイルパス候補を順に試して最初に見つかったものを返す。 */
 async function resolveMockupPng(screenId: string): Promise<string | null> {
-  const candidates = [
-    `${screenId}.png`, // static
-    `${screenId}-01.png`, // scrollable 上端
-  ];
+  const pair = SCREEN_PAIRS[screenId];
+  const candidates: string[] = [];
+  if (pair?.mockupFile) candidates.push(pair.mockupFile);
+  candidates.push(`${screenId}.png`, `${screenId}-01.png`);
   for (const candidate of candidates) {
     const p = path.join(SCREENSHOTS_DIR, candidate);
-    if (
-      await fs
-        .access(p)
-        .then(() => true)
-        .catch(() => false)
-    ) {
-      return p;
-    }
+    if (await fileExists(p)) return p;
   }
   return null;
 }
@@ -59,11 +58,15 @@ async function captureDesign(screenId: string, outDir: string): Promise<string> 
 
   const sourcePath = await resolveMockupPng(screenId);
   if (!sourcePath) {
+    const candidatesShown = [pair.mockupFile, `${screenId}.png`, `${screenId}-01.png`]
+      .filter(Boolean)
+      .join(', ');
     throw new Error(
       `[capture-design] mockup screenshot not found for: ${screenId}\n` +
         `  searched in: ${SCREENSHOTS_DIR}\n` +
-        `  candidates: ${screenId}.png, ${screenId}-01.png\n` +
-        `  → docs/mockups/v1.0/screenshots/ に該当 PNG があることを確認 (Issue #366 PR #367)`,
+        `  candidates: ${candidatesShown}\n` +
+        `  → docs/mockups/v1.0/screenshots/ に該当 PNG があることを確認 (Issue #366 PR #367)\n` +
+        `  → flow id と PNG 名が異なる場合は SCREEN_PAIRS[id].mockupFile に明示指定`,
     );
   }
 
