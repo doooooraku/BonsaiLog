@@ -131,6 +131,10 @@ function checkRuleDocsLineLimit() {
     { path: 'docs/reference/tasks/lessons/docs.md', max: 200 },
     { path: 'docs/reference/tasks/lessons/runtime.md', max: 200 },
     { path: 'docs/reference/tasks/lessons/store.md', max: 200 },
+    { path: 'docs/reference/tasks/lessons/wsl2-mobile.md', max: 200 },
+    { path: 'docs/reference/tasks/lessons/auto-improve-loop.md', max: 200 },
+    // Issue #443 受けて追加 (2026-05-11): 索引専用ファイルは 50 行制限で「読まれる索引」 を維持
+    { path: 'docs/reference/tasks/lessons.md', max: 50 },
     { path: '.claude/recurrence-prevention.md', max: 250 },
   ];
   for (const { path, max } of limits) {

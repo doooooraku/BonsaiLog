@@ -213,12 +213,24 @@
 
 ---
 
+### R-25. 機械判定のみで「達成」 判定禁止 (Claude Read 主導)
+
+- **ルール**: ImageMagick RMSE / CI / lint 等の機械的検証ツール合格だけで「達成 / 完遂」 と判定してはいけない。最終判定は **Claude Read による目視評価** が必須。
+- **根拠**: 2026-05-11 セッションで ImageMagick RMSE 22249 (5.4% 改善) のみで bonsai-detail 達成と判定したが、ユーザー指摘で構造的大差 (read-only vs 編集 form / list vs timeline) を見逃していたことが発覚 (Issue #439-#441 で再起票、PR #442 で運用切替)。
+- **自動化**: `.claude/hooks/check-structure-eval-before-skiplist-update.mjs` で skip-list.json 編集時に構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) のキーワード未含有を block。`.github/pull_request_template.md` §7.6 で PR description に構造系 4 項目記載を必須化。
+
+### R-26. Phase 完遂 ≠ Issue 完遂、PR description で明示
+
+- **ルール**: Phase 分割 PR の description で「完遂」「達成」 と書く場合、**Phase X 完遂 ≠ Issue 全体完遂** を明示し、残り Phase を Related に明記する。
+- **根拠**: 2026-05-11 セッションで PR #435+#438 (Issue #298 TimelineTab + AddSchedule) を「Phase 2 で Issue 完遂」 と書いたが、実は最小実装で構造的に未達。Issue #441 で本実装が必要と判明。
+- **自動化**: `.github/pull_request_template.md` §7.6.2 で「完遂」「達成」 表記時の Phase 分割明示を必須化。
+
 ## 運用ルール
 
 1. **本ファイルはセッション開始時に必読**（`AGENTS.md` Session Start Checklist 経由）。
 2. **新たな再発パターンが見つかったら本ファイルに追記**（lessons.md ではなく）。
 3. **R-N の番号は変更しない**（既存参照を破壊しない、削除する場合は「~~R-N: 削除~~」と注記）。
-4. **項目が 30 を超えたら別ファイル分割を検討**（**250 行以内** を維持、現状 R-1〜R-29）。`scripts/docs-lint.mjs` で自動検出。
+4. **項目が 30 を超えたら別ファイル分割を検討**（**250 行以内** を維持、現状 R-1〜R-26）。`scripts/docs-lint.mjs` で自動検出。
 5. **R-13 以降は Hook で構造的に防止**（注意ではなく仕組み化、`.claude/hooks/` 参照）。
 6. **3 回再発で昇華必須**（CLAUDE.md §9 記憶の昇華ルール）: 同一テーマが lessons / recurrence-prevention に 3 件以上溜まったら、hook / ESLint / CI / 型システムで構造的に防ぐ仕組みに昇華し、下位記憶からは該当記述を削除する。
 
