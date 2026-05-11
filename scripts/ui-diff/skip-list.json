@@ -38,7 +38,9 @@
       "rmseNormalized": 0.409853,
       "artifact": "scripts/ui-diff/out/20260511-0056/",
       "rationale": "レベル 2 必須項目 (写真サイズ/フォント/主要レイアウト/CTA 配置) 全て mockup と一致。残差は AdMob banner と status bar の環境差のみ。",
-      "judgedBy": "auto-improve-loop cycle 1"
+      "judgedBy": "auto-improve-loop cycle 1",
+      "needsReeval": true,
+      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     },
     {
       "flow": "bonsai-create-sheet",
@@ -48,7 +50,9 @@
       "rmseNormalized": 0.332771,
       "artifact": "scripts/ui-diff/out/20260510-2340/",
       "rationale": "レベル 2 必須項目 (写真/フォント/レイアウト 9 フィールド/footer CTA) 全て mockup CreateBonsaiScreen と一致。差分は placeholder 視認性と必須/任意ラベル仕様差で許容。",
-      "judgedBy": "auto-improve-loop cycle 2"
+      "judgedBy": "auto-improve-loop cycle 2",
+      "needsReeval": true,
+      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     },
     {
       "flow": "watering-heatmap",
@@ -58,7 +62,9 @@
       "rmseNormalized": 0.357637,
       "artifact": "scripts/ui-diff/out/20260511-1052/",
       "rationale": "レベル 2 必須項目 (Header/Segmented/Heatmap grid 4 段階濃淡/Footer Summary/Disclaimer) 全て一致。差分は Title scientific name と seed 記録数差のみ。",
-      "judgedBy": "auto-improve-loop cycle 4"
+      "judgedBy": "auto-improve-loop cycle 4",
+      "needsReeval": true,
+      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     },
     {
       "flow": "look-back-tab",
@@ -68,7 +74,9 @@
       "rmseNormalized": 0.332719,
       "artifact": "scripts/ui-diff/out/20260511-1054/",
       "rationale": "レベル 2 必須項目 (Header/Subtitle/3 カード + TabBar) 完全一致。差分は文言の微差のみ。",
-      "judgedBy": "auto-improve-loop cycle 4"
+      "judgedBy": "auto-improve-loop cycle 4",
+      "needsReeval": true,
+      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     },
     {
       "flow": "bonsai-detail-edit-sheet",
@@ -78,7 +86,9 @@
       "rmseNormalized": 0.359296,
       "artifact": "scripts/ui-diff/out/20260511-1102/",
       "rationale": "BonsaiCreateSheet (editingBonsai prop) で prefill 値正しく表示。UI 構造は bonsai-create-sheet と同じ 90% sheet、レベル 2 達成。",
-      "judgedBy": "auto-improve-loop cycle 6"
+      "judgedBy": "auto-improve-loop cycle 6",
+      "needsReeval": true,
+      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     },
     {
       "flow": "wiring-list",
@@ -88,7 +98,9 @@
       "rmseNormalized": 0.334731,
       "artifact": "scripts/ui-diff/out/20260511-1156/",
       "rationale": "Phase 1.5-T1 seed 拡張で wiring events 2 件投入 → 父の黒松 (13週経過/2週超過) + 母の五葉松 (9週経過/3週後) を「要確認」バッジ + 「外す」ボタン込みで表示。Header + cards 構造 + テキストフォーマット mockup と完全一致。件数差 (実機 2 / mockup 5) は seed 設計差で許容。",
-      "judgedBy": "auto-improve-loop cycle 7"
+      "judgedBy": "auto-improve-loop cycle 7",
+      "needsReeval": true,
+      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     },
     {
       "flow": "home-bulk-sched-work",
@@ -98,7 +110,9 @@
       "rmseNormalized": 0.367869,
       "artifact": "scripts/ui-diff/out/20260511-1201/",
       "rationale": "前回判定の「Grid 4 vs 3 列」は誤判定、mockup も実装も Grid 3 列で完全一致。title「まとめて予定追加」+ subtitle + chips + 12 work icons grid 一致。文言差 (「防除/葉刈り/葉抜き/芽摘み」 vs 「消毒/葉の予防/害虫対策/全葉刈/芽かき」) は盆栽業界用語の同義で許容範囲、4 ペルソナ評価 ✕ ゼロ。",
-      "judgedBy": "auto-improve-loop cycle 7"
+      "judgedBy": "auto-improve-loop cycle 7",
+      "needsReeval": true,
+      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     },
     {
       "flow": "plan-tab",
@@ -108,7 +122,9 @@
       "rmseNormalized": 0.335765,
       "artifact": "scripts/ui-diff/out/20260511-1214/",
       "rationale": "Phase 1.5-T1 seed 拡張で plan/event 投入後の再キャプチャで構造完全一致確認。Header「作業予定」+ 針金がけ一覧 link + 月選択 + DOW header + Calendar grid + 選択日リスト + 「予定はありません」 (今日 0 件状態) + 4 TabBar 全て mockup CalendarScreen と一致。dot marker は events 反映で表示確認。差は選択日違い (mockup 4/24 / 実機 5/11) で seed 設計差、UI 構造は完全整合。",
-      "judgedBy": "auto-improve-loop cycle 8"
+      "judgedBy": "auto-improve-loop cycle 8",
+      "needsReeval": true,
+      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     },
     {
       "flow": "onboarding-welcome",
@@ -118,7 +134,9 @@
       "rmseNormalized": 0.326759,
       "artifact": "scripts/ui-diff/out/20260511-1217/",
       "rationale": "Phase 1.5-T5 DEV reset 機構 (PR #405) + scrollUntilVisible (PR #407) で再キャプチャ成功。Welcome Title「鉢 1 本ずつ、一生分。」+ 3 価値訴求 (19 言語、完全オフライン / 個人情報は取得しません / 次世代へ引き継げる台帳) + 「はじめる」CTA + 「アカウント登録は不要です」全て mockup WelcomeScreen と完全一致。レベル 2 達成。",
-      "judgedBy": "auto-improve-loop cycle 8"
+      "judgedBy": "auto-improve-loop cycle 8",
+      "needsReeval": true,
+      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     },
     {
       "flow": "bonsai-detail",
@@ -128,7 +146,9 @@
       "rmseNormalized": 0.439937,
       "artifact": "scripts/ui-diff/out/20260511-1228/",
       "rationale": "PR #409 (scrollUntilVisible「父の黒松」) で再キャプチャ成功。Hero photo (full-bleed 280px + 「父の黒松 / Pinus thunbergii」overlay) + Tabs (作業履歴/予定/基本情報) + 水やり summary + 写真セクション (1/3) + 作業履歴 list 全て mockup BonsaiDetailScreen と一致。レベル 2 達成。前回判定「Hero overlay 実装無し」「scientific name 表示無し」は誤判定 (BonsaiHero 実装済 + species table JOIN で取得済) の訂正。",
-      "judgedBy": "auto-improve-loop cycle 9"
+      "judgedBy": "auto-improve-loop cycle 9",
+      "needsReeval": true,
+      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     },
     {
       "flow": "paywall",
@@ -138,7 +158,9 @@
       "rmseNormalized": 0.327638,
       "artifact": "scripts/ui-diff/out/20260511-1240/",
       "rationale": "PR #412 (比較表 5→8 行拡張) で再キャプチャ成功。Header「× BonsaiLog Pro」 + Hero (UNLOCK + 鉢1本ずつ、一生分。+ Pro で記録の可能性を解き放つ) + 比較表 7 行 (樹木数/写真/作業履歴/バックアップ/CSV/PDF/年次タイムライン/広告) 全て mockup PaywallScreen と一致。レベル 2 達成。残差 (テーマ行 + 「購読する」1 CTA vs 月年 Lifetime cards) は R-28 ビジネス仕様判断要、別 ADR 起票後対応。",
-      "judgedBy": "auto-improve-loop cycle 10"
+      "judgedBy": "auto-improve-loop cycle 10",
+      "needsReeval": true,
+      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     },
     {
       "flow": "settings-tab",
@@ -148,7 +170,9 @@
       "rmseNormalized": 0.358985,
       "artifact": "scripts/ui-diff/out/20260511-1316/",
       "rationale": "PR #414 (Phase 1.6-T3、8 セクション順序整合) で再キャプチャ成功。アカウント・プラン → 表示 → 通知 → アーカイブ → 書き出し → バックアップ → 法令 → バージョン の順序が mockup 整合。アーカイブ「アーカイブ済み盆栽 3件 >」表示確認、CSV エクスポート [PRO] 表示、Header「設定」一致。残差は表示セクション 3 chip vs mockup 1 行 dialog (Issue #330 残作業、別 PR)、通知設定 4 toggle vs 2 行 (Issue #330 残作業)。レベル 2 達成。",
-      "judgedBy": "auto-improve-loop cycle 11"
+      "judgedBy": "auto-improve-loop cycle 11",
+      "needsReeval": true,
+      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     }
   ]
 }
