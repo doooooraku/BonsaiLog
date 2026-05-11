@@ -109,7 +109,64 @@ async function main(): Promise<void> {
   );
 }
 
-main().catch((err) => {
+// Retro-D: flow 失敗時の自動 fail_count 更新 + 3 回到達で permanent skip 自動追加。
+async function recordFailure(screenId: string, errMessage: string): Promise<void> {
+  const SKIP_LIST_PATH = path.join(__dirname, 'skip-list.json');
+  let raw: string;
+  try {
+    raw = await fs.readFile(SKIP_LIST_PATH, 'utf-8');
+  } catch {
+    return; // skip-list が無ければ何もしない
+  }
+  type SkippedT = {
+    flow: string;
+    reason: string;
+    added_at: string;
+    fail_count: number;
+    permanent: boolean;
+    status?: 'provisional' | 'confirmed';
+    [k: string]: unknown;
+  };
+  let parsed: { version: number; skipped: SkippedT[]; achieved: unknown[] };
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return;
+  }
+  const existing = parsed.skipped.find((s) => s.flow === screenId);
+  if (existing) {
+    existing.fail_count += 1;
+    if (existing.fail_count >= 3 && !existing.permanent) {
+      existing.permanent = true;
+      existing.status = 'confirmed';
+      console.log(
+        `\n[ui-diff] ⚠️ ${screenId} が 3 回失敗 → permanent skip + status=confirmed に自動更新`,
+      );
+    }
+  } else {
+    parsed.skipped.push({
+      flow: screenId,
+      reason: `flow 失敗 (Retro-D 自動追加): ${errMessage.slice(0, 200)}`,
+      added_at: new Date().toISOString(),
+      fail_count: 1,
+      permanent: false,
+      status: 'provisional',
+    });
+    console.log(`\n[ui-diff] ℹ️ ${screenId} を skip-list.provisional に自動追加 (fail_count=1)`);
+  }
+  await fs.writeFile(SKIP_LIST_PATH, JSON.stringify(parsed, null, 2) + '\n', 'utf-8');
+}
+
+main().catch(async (err) => {
   console.error('[ui-diff]', err);
+  // Retro-D: 失敗時に fail_count 自動更新
+  const screenId = process.argv[2];
+  if (screenId && SCREEN_PAIRS[screenId]) {
+    try {
+      await recordFailure(screenId, (err as Error).message);
+    } catch (e) {
+      console.error('[ui-diff] failed to update skip-list:', e);
+    }
+  }
   process.exit(1);
 });
