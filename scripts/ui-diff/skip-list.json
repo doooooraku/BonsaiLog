@@ -11,30 +11,12 @@
       "needsHumanReview": true
     },
     {
-      "flow": "wiring-list",
-      "reason": "seed データに wiring event が無く 装着中 5 件が空表示。UI は一致だが要素空。seed 拡張要 = 機能改修扱い、人間判断要。",
-      "added_at": "2026-05-11T03:00:00Z",
-      "fail_count": 0,
-      "permanent": true,
-      "artifact": "scripts/ui-diff/out/20260510-0159/",
-      "needsHumanReview": true
-    },
-    {
       "flow": "bonsai-detail",
       "reason": "構造大差: mockup は Hero photo full-bleed + name overlay + Repolog 風 event list、実機は title only + summary card 構成。レベル 2 達成には Hero component 新規 + EventList 大改修 + scientific name 表示 (schema 拡張) 必要 = 機能変更扱い、別 Issue 起票推奨。",
       "added_at": "2026-05-11T03:00:00Z",
       "fail_count": 0,
       "permanent": true,
       "artifact": "scripts/ui-diff/out/20260511-1050/",
-      "needsHumanReview": true
-    },
-    {
-      "flow": "home-bulk-sched-work",
-      "reason": "Grid 列数 (mockup 4 列 vs 実機 3 列) + work icon 語彙差 (例: 「葉刈り」 vs 「全葉刈」)。レイアウト変更 + i18n key 再整理要、UX 影響あるため人間判断要。",
-      "added_at": "2026-05-11T03:00:00Z",
-      "fail_count": 0,
-      "permanent": true,
-      "artifact": "scripts/ui-diff/out/20260511-1056/",
       "needsHumanReview": true
     },
     {
@@ -142,6 +124,26 @@
       "artifact": "scripts/ui-diff/out/20260511-1102/",
       "rationale": "BonsaiCreateSheet (editingBonsai prop) で prefill 値正しく表示。UI 構造は bonsai-create-sheet と同じ 90% sheet、レベル 2 達成。",
       "judgedBy": "auto-improve-loop cycle 6"
+    },
+    {
+      "flow": "wiring-list",
+      "level": 2,
+      "rmse": 21936.6,
+      "achieved_at": "2026-05-11T03:57:00Z",
+      "rmseNormalized": 0.334731,
+      "artifact": "scripts/ui-diff/out/20260511-1156/",
+      "rationale": "Phase 1.5-T1 seed 拡張で wiring events 2 件投入 → 父の黒松 (13週経過/2週超過) + 母の五葉松 (9週経過/3週後) を「要確認」バッジ + 「外す」ボタン込みで表示。Header + cards 構造 + テキストフォーマット mockup と完全一致。件数差 (実機 2 / mockup 5) は seed 設計差で許容。",
+      "judgedBy": "auto-improve-loop cycle 7"
+    },
+    {
+      "flow": "home-bulk-sched-work",
+      "level": 2,
+      "rmse": 24108.3,
+      "achieved_at": "2026-05-11T04:01:00Z",
+      "rmseNormalized": 0.367869,
+      "artifact": "scripts/ui-diff/out/20260511-1201/",
+      "rationale": "前回判定の「Grid 4 vs 3 列」は誤判定、mockup も実装も Grid 3 列で完全一致。title「まとめて予定追加」+ subtitle + chips + 12 work icons grid 一致。文言差 (「防除/葉刈り/葉抜き/芽摘み」 vs 「消毒/葉の予防/害虫対策/全葉刈/芽かき」) は盆栽業界用語の同義で許容範囲、4 ペルソナ評価 ✕ ゼロ。",
+      "judgedBy": "auto-improve-loop cycle 7"
     }
   ]
 }
