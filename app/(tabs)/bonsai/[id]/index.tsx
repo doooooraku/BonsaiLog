@@ -1,5 +1,5 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Stack, useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -23,7 +23,13 @@ import {
 } from '@/src/features/bonsai/photoOrderUtils';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-import { BORDER_DEFAULT, BRAND_GREEN, DANGER, TEXT_SECONDARY } from '@/src/core/theme/colors';
+import {
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  DANGER,
+  TEXT_SECONDARY,
+} from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 
 import {
@@ -52,11 +58,13 @@ import {
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { type Event, type EventType } from '@/src/db/schema';
 import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
+import {
+  groupContinuousEvents,
+  type EventGroupEntry,
+} from '@/src/features/event/groupContinuousEvents';
 import { HistoryChipRow } from '@/src/features/event/HistoryChip';
 import { WorkLogConfirmSheet, type WorkLogPayload } from '@/src/features/event/WorkLogConfirmSheet';
 import { WorkPickerSheet } from '@/src/features/event/WorkPickerSheet';
-import { LastWateredText } from '@/src/features/watering/LastWateredText';
-import { getDaysSinceLastWatering, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 import type BottomSheet from '@gorhom/bottom-sheet';
 import { WiringPeriodDisplay } from '@/src/features/wiring/WiringPeriodDisplay';
 import {
@@ -171,13 +179,6 @@ export default function BonsaiDetailScreen() {
     [pendingScheduleType, id, t],
   );
 
-  // F-04 Phase A: 「最後の水やりから X 日」(ADR-0013、純関数の説明は wateringHeatmap.ts)
-  const daysSinceLastWatering = React.useMemo(() => {
-    const tzOffsetMin = getTzOffsetMin();
-    const todayLocalKey = toLocalDateKey(nowUtc() as string, tzOffsetMin);
-    return getDaysSinceLastWatering(events, todayLocalKey, tzOffsetMin);
-  }, [events]);
-
   // Claude Design `detail-screens.jsx` DetailHero 整合 (Phase B-2): cover photo を抽出
   // (early return より前で呼ぶ — react-hooks/rules-of-hooks)
   const coverUri = React.useMemo(() => {
@@ -224,6 +225,44 @@ export default function BonsaiDetailScreen() {
       void reload();
     },
   });
+
+  // Issue #440 Phase 1: 作業履歴タブのフィルタ chip (すべて / 水やり / 剪定 / 針金 / 植替え)。
+  // mockup `bonsai-detail-history-01.png` 整合、横並び single row。
+  type HistoryFilter = 'all' | 'watering' | 'pruning' | 'wiring' | 'repotting';
+  const [historyFilter, setHistoryFilter] = useState<HistoryFilter>('all');
+  // 連続日まとめの展開状態 (group の events[0].id を key にして個別開閉)
+  const [expandedGroupIds, setExpandedGroupIds] = useState<Set<string>>(new Set());
+  const toggleGroupExpand = useCallback((key: string) => {
+    setExpandedGroupIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  // フィルタ chip → event.type 集合への対応 (剪定系 5 種、針金 2 種を集約)。
+  const FILTER_TO_TYPES: Record<HistoryFilter, readonly EventType[]> = {
+    all: [],
+    watering: ['watering'],
+    pruning: ['pruning', 'leaf_trimming', 'defoliation', 'deshoot', 'candle_cut'],
+    wiring: ['wiring', 'unwiring'],
+    repotting: ['repotting'],
+  };
+
+  // logged event のみ + フィルタ適用 + occurredAtUtc 降順 + 連続日グルーピング。
+  const historyGroups = React.useMemo<EventGroupEntry[]>(() => {
+    const types = FILTER_TO_TYPES[historyFilter];
+    const filtered = events.filter((ev) => {
+      if (ev.status !== 'logged') return false;
+      if (types.length === 0) return true;
+      return types.includes(ev.type as EventType);
+    });
+    // 既存 events は updated_at 順なので occurredAtUtc 降順に並び替える。
+    const sorted = [...filtered].sort((a, b) => b.occurredAtUtc.localeCompare(a.occurredAtUtc));
+    return groupContinuousEvents(sorted, getTzOffsetMin());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events, historyFilter]);
 
   const handleArchive = useCallback(() => {
     if (!item) return;
@@ -557,30 +596,8 @@ export default function BonsaiDetailScreen() {
             <BonsaiBasicFormPickerSheets> として配置している。 */}
         {activeTab === 'basic' && <BonsaiBasicSection form={basicForm} />}
 
-        {/*
-         * A6 (Detail mockup 完全整合 全 10 PR の 6/10) — _buildChipsFor 14 作業 + _HistoryChip /
-         * _ChipRow / _HistoryPhotos の本格実装は Issue #296 で track 化 (推定 4 サブ PR)。
-         * 本 PR は Issue 起票 + コメント反映のみで A6 placeholder。
-         */}
-        {/* history Tab 第 0 部分: 水やり概要 (旧 timeline から history 最上部に移動、A5 PR) */}
-        {activeTab === 'history' && (
-          <View style={styles.section}>
-            <ThemedText type="subtitle">{t('wateringSectionTitle')}</ThemedText>
-            <LastWateredText daysSinceLast={daysSinceLastWatering} />
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('wateringHistoryLinkTitle')}
-              style={styles.wateringHistoryLink}
-              onPress={() => router.push(`/(tabs)/bonsai/${item.id}/watering` as Href)}
-              testID="e2e_open_watering_history"
-            >
-              <ThemedText style={styles.wateringHistoryLinkText}>
-                {t('wateringHistoryLinkTitle')}
-              </ThemedText>
-              <ThemedText style={styles.wateringHistoryLinkArrow}>{'›'}</ThemedText>
-            </Pressable>
-          </View>
-        )}
+        {/* Issue #440 Phase 1: 旧 水やり概要セクション (LastWateredText + 水やり履歴を見るボタン)
+            は削除。横断 watering 履歴は CareHub (ふりかえりタブ) 経由で到達可能。 */}
 
         {/* history Tab 第 1 部分: 写真追加 + photoCard 縦リスト (Repolog UI 流用、年次グループ廃止)。
             複数選択 (allowsMultipleSelection) + ↑↓ 並び替え + caption 編集 + ★ カバー設定 + 削除。 */}
@@ -630,103 +647,115 @@ export default function BonsaiDetailScreen() {
           </View>
         )}
 
-        {/* 作業履歴 Tab: 作業記録 CTA + events 一覧 */}
+        {/* Issue #440 Phase 1: 作業履歴 Tab — フィルタ chip + 連続日まとめ events 一覧。
+            mockup `bonsai-detail-history-01/02/03.png` 整合。FAB は ScrollView の外 (root)
+            に absolute 配置 (画面右下、tab bar の上)。 */}
         {activeTab === 'history' && (
           <View style={styles.section}>
-            <ThemedText type="subtitle">{t('eventsTitle')}</ThemedText>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('eventLogCta')}
-              style={styles.eventAddBtn}
-              onPress={() => showEventTypePicker()}
-            >
-              <ThemedText style={styles.eventAddText}>+ {t('eventLogCta')}</ThemedText>
-            </Pressable>
+            {/* フィルタ chip 行 (横並び、すべて / 水やり / 剪定 / 針金 / 植替え) */}
+            <View style={styles.historyFilterRow}>
+              {(['all', 'watering', 'pruning', 'wiring', 'repotting'] as const).map((f) => {
+                const on = historyFilter === f;
+                const labelKey: TranslationKey =
+                  f === 'all'
+                    ? 'historyFilterAll'
+                    : f === 'watering'
+                      ? 'eventType_watering'
+                      : f === 'pruning'
+                        ? 'eventType_pruning'
+                        : f === 'wiring'
+                          ? 'eventType_wiring'
+                          : 'eventType_repotting';
+                return (
+                  <Pressable
+                    key={f}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: on }}
+                    accessibilityLabel={t(labelKey)}
+                    style={[styles.historyFilterChip, on && styles.historyFilterChipOn]}
+                    onPress={() => setHistoryFilter(f)}
+                    testID={`e2e_history_filter_${f}`}
+                  >
+                    <ThemedText
+                      style={[styles.historyFilterChipText, on && styles.historyFilterChipTextOn]}
+                    >
+                      {t(labelKey)}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
+            </View>
 
-            {events.length === 0 && (
+            {historyGroups.length === 0 && (
               <ThemedText style={styles.emptyPhotos}>{t('eventEmpty')}</ThemedText>
             )}
 
-            {events.slice(0, 50).map((ev) => {
-              // F-07 Phase B (Issue #24, ADR-0014 §48-49): wiring の場合のみ
-              // 「装着期間: X 週 (経過済 / あと N 週 / 完了)」をアプリ内表示。
-              // 通知は ADR-0014 で削除済 (鬱陶しいフィードバックを受けて事実表示に変更)。
-              // 完了状態 (AC10-1 「完了」): この wiring event 以後の同盆栽 unwiring event 有無で判定。
-              let wiringDuration: {
-                weeks: number;
-                kind: 'within' | 'overdue';
-                isUnwired: boolean;
-              } | null = null;
-              // F-07 Phase C (Issue #24): payload_json の scheduled_unwire_at が設定済の場合に
-              // 「外す予定: YYYY-MM-DD」を表示。F-02 status='planned' 統合は Phase D。
-              let scheduledUnwireLabel: string | null = null;
-              if (ev.type === 'wiring' && ev.status === 'logged') {
-                const days = getDaysSinceWired(ev, new Date(nowUtc() as string));
-                const weeks = getWeeksSinceWired(days);
-                const kind = classifyWiringDuration(days);
-                const isUnwired = events.some(
-                  (other) =>
-                    other.type === 'unwiring' &&
-                    other.status === 'logged' &&
-                    other.occurredAtUtc >= ev.occurredAtUtc,
+            {historyGroups.map((entry) => {
+              // 連続日 group: 「水やり ×3  4月20日 ～ 4月22日  3回まとめて表示 個別に開く ▼」
+              if (entry.kind === 'group') {
+                const key = entry.events[0].id;
+                const expanded = expandedGroupIds.has(key);
+                const startLabel = formatDate(`${entry.startDate}T00:00:00.000Z`, lang);
+                const endLabel = formatDate(`${entry.endDate}T00:00:00.000Z`, lang);
+                return (
+                  <View key={key}>
+                    <Pressable
+                      style={styles.eventRow}
+                      accessibilityRole="button"
+                      accessibilityLabel={t(`eventType_${entry.type}` as TranslationKey)}
+                      onPress={() => toggleGroupExpand(key)}
+                      testID={`e2e_history_group_toggle_${key}`}
+                    >
+                      <View style={styles.eventIconBox}>
+                        <EventIcon type={entry.type} size={20} />
+                      </View>
+                      <View style={styles.eventContent}>
+                        <View style={styles.eventRowMain}>
+                          <View style={styles.eventLabelWithCount}>
+                            <ThemedText style={styles.eventLabel}>
+                              {t(`eventType_${entry.type}` as TranslationKey)}
+                            </ThemedText>
+                            <View style={styles.eventCountBadge}>
+                              <ThemedText style={styles.eventCountBadgeText}>
+                                ×{entry.events.length}
+                              </ThemedText>
+                            </View>
+                          </View>
+                          <ThemedText style={styles.eventRowDate}>
+                            {startLabel} ～ {endLabel}
+                          </ThemedText>
+                        </View>
+                        <ThemedText style={styles.eventGroupToggle}>
+                          {t('historyGroupToggle')
+                            .replace('{count}', String(entry.events.length))
+                            .replace('{caret}', expanded ? '▲' : '▼')}
+                        </ThemedText>
+                      </View>
+                    </Pressable>
+                    {expanded &&
+                      entry.events.map((ev) => (
+                        <EventSingleRow
+                          key={ev.id}
+                          ev={ev}
+                          events={events}
+                          lang={lang}
+                          t={t}
+                          confirmDeleteEvent={confirmDeleteEvent}
+                          indent
+                        />
+                      ))}
+                  </View>
                 );
-                wiringDuration = { weeks, kind, isUnwired };
-                const scheduled = getScheduledUnwireAt(ev);
-                if (scheduled) {
-                  scheduledUnwireLabel = t('wiringScheduledUnwireSet').replace(
-                    '{date}',
-                    scheduled.slice(0, 10),
-                  );
-                }
               }
               return (
-                <Pressable
-                  key={ev.id}
-                  style={styles.eventRow}
-                  accessibilityRole="button"
-                  accessibilityLabel={t(`eventType_${ev.type}` as TranslationKey)}
-                  onLongPress={() => confirmDeleteEvent(ev)}
-                >
-                  {/* Claude Design `detail-screens.jsx` HistoryTab 整合: icon 40×40 box + content */}
-                  <View style={styles.eventIconBox}>
-                    <EventIcon type={ev.type as EventType} size={20} />
-                  </View>
-                  <View style={styles.eventContent}>
-                    <View style={styles.eventRowMain}>
-                      <ThemedText style={styles.eventLabel}>
-                        {t(`eventType_${ev.type}` as TranslationKey)}
-                      </ThemedText>
-                      <ThemedText style={styles.eventRowDate}>
-                        {formatDate(ev.occurredAtUtc, lang)}
-                      </ThemedText>
-                    </View>
-                    {wiringDuration && (
-                      <WiringPeriodDisplay
-                        weeks={wiringDuration.weeks}
-                        kind={wiringDuration.kind}
-                        isUnwired={wiringDuration.isUnwired}
-                        style={styles.eventRowNote}
-                        testID={`e2e_wiring_duration_${ev.id}`}
-                      />
-                    )}
-                    {scheduledUnwireLabel && (
-                      <ThemedText
-                        style={styles.eventRowNote}
-                        testID={`e2e_wiring_scheduled_${ev.id}`}
-                      >
-                        {scheduledUnwireLabel}
-                      </ThemedText>
-                    )}
-                    {ev.note && (
-                      <ThemedText style={styles.eventRowNote} numberOfLines={2}>
-                        {ev.note}
-                      </ThemedText>
-                    )}
-                    {/* Issue #296 Phase 3: display-schema.md v1.3 整合の chip 表示。
-                        payload 構造化フィールドを chip[] へ展開、HistoryChipRow で描画。 */}
-                    <HistoryChipRow chips={buildHistoryChips(ev)} />
-                  </View>
-                </Pressable>
+                <EventSingleRow
+                  key={entry.event.id}
+                  ev={entry.event}
+                  events={events}
+                  lang={lang}
+                  t={t}
+                  confirmDeleteEvent={confirmDeleteEvent}
+                />
               );
             })}
           </View>
@@ -796,6 +825,20 @@ export default function BonsaiDetailScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Issue #440 Phase 1: 緑 FAB (画面右下、tab bar の上)。作業履歴タブ表示中のみ可視、
+          tap で WorkPickerSheet を開く (mockup `bonsai-detail-history-01.png` の緑「+」FAB 整合)。 */}
+      {activeTab === 'history' && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('eventLogCta')}
+          style={styles.historyFab}
+          onPress={() => showEventTypePicker()}
+          testID="e2e_history_fab"
+        >
+          <ThemedText style={styles.historyFabPlus}>+</ThemedText>
+        </Pressable>
+      )}
 
       {/* ADR-0020 Phase 4: 作業記録 BottomSheet (Claude Design WorkPickerSheet 整合) */}
       <WorkPickerSheet
@@ -977,6 +1020,93 @@ function formatDate(iso: string, locale: string): string {
   }
 }
 
+/**
+ * Issue #440 Phase 1: 作業履歴の単一 event 行 (連続日 group 展開時 + フィルタ後の単独 event)。
+ * 元 BonsaiDetailScreen body 内の events.map(...) ロジックを関数化、wiring 装着期間 +
+ * scheduled unwire + note + chip 描画を踏襲。
+ */
+function EventSingleRow({
+  ev,
+  events,
+  lang,
+  t,
+  confirmDeleteEvent,
+  indent = false,
+}: {
+  ev: Event;
+  events: Event[];
+  lang: string;
+  t: (key: TranslationKey) => string;
+  confirmDeleteEvent: (ev: Event) => void;
+  indent?: boolean;
+}) {
+  let wiringDuration: {
+    weeks: number;
+    kind: 'within' | 'overdue';
+    isUnwired: boolean;
+  } | null = null;
+  let scheduledUnwireLabel: string | null = null;
+  if (ev.type === 'wiring' && ev.status === 'logged') {
+    const days = getDaysSinceWired(ev, new Date(nowUtc() as string));
+    const weeks = getWeeksSinceWired(days);
+    const kind = classifyWiringDuration(days);
+    const isUnwired = events.some(
+      (other) =>
+        other.type === 'unwiring' &&
+        other.status === 'logged' &&
+        other.occurredAtUtc >= ev.occurredAtUtc,
+    );
+    wiringDuration = { weeks, kind, isUnwired };
+    const scheduled = getScheduledUnwireAt(ev);
+    if (scheduled) {
+      scheduledUnwireLabel = t('wiringScheduledUnwireSet').replace(
+        '{date}',
+        scheduled.slice(0, 10),
+      );
+    }
+  }
+  return (
+    <Pressable
+      style={[styles.eventRow, indent && styles.eventRowIndent]}
+      accessibilityRole="button"
+      accessibilityLabel={t(`eventType_${ev.type}` as TranslationKey)}
+      onLongPress={() => confirmDeleteEvent(ev)}
+    >
+      <View style={styles.eventIconBox}>
+        <EventIcon type={ev.type as EventType} size={20} />
+      </View>
+      <View style={styles.eventContent}>
+        <View style={styles.eventRowMain}>
+          <ThemedText style={styles.eventLabel}>
+            {t(`eventType_${ev.type}` as TranslationKey)}
+          </ThemedText>
+          <ThemedText style={styles.eventRowDate}>{formatDate(ev.occurredAtUtc, lang)}</ThemedText>
+        </View>
+        {wiringDuration && (
+          <WiringPeriodDisplay
+            weeks={wiringDuration.weeks}
+            kind={wiringDuration.kind}
+            isUnwired={wiringDuration.isUnwired}
+            style={styles.eventRowNote}
+            testID={`e2e_wiring_duration_${ev.id}`}
+          />
+        )}
+        {scheduledUnwireLabel && (
+          <ThemedText style={styles.eventRowNote} testID={`e2e_wiring_scheduled_${ev.id}`}>
+            {scheduledUnwireLabel}
+          </ThemedText>
+        )}
+        {ev.note && (
+          <ThemedText style={styles.eventRowNote} numberOfLines={2}>
+            {ev.note}
+          </ThemedText>
+        )}
+        <HistoryChipRow chips={buildHistoryChips(ev)} />
+      </View>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   // backgroundColor は useColors の c.background で動的指定 (light/dark 両対応)
   container: { flex: 1 },
@@ -1002,6 +1132,60 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   archiveText: { color: DANGER, fontSize: 15, fontWeight: '500' },
+  // Issue #440 Phase 1: 作業履歴フィルタ chip (mockup `bonsai-detail-history-01.png` 整合)
+  historyFilterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 4,
+  },
+  historyFilterChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+    minHeight: 36,
+    justifyContent: 'center',
+  },
+  historyFilterChipOn: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
+  historyFilterChipText: { fontSize: 13 },
+  historyFilterChipTextOn: { color: '#FFFFFF', fontWeight: '600' },
+  // Issue #440 Phase 1: 連続日 group の `×N` バッジ + 「N 回まとめて表示 個別に開く ▼」
+  eventLabelWithCount: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  eventCountBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    backgroundColor: BRAND_GREEN,
+  },
+  eventCountBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.4,
+  },
+  eventGroupToggle: { fontSize: 12, color: TEXT_SECONDARY, marginTop: 4 },
+  eventRowIndent: { paddingLeft: 32 },
+  // Issue #440 Phase 1: 緑円形 FAB (mockup right-bottom)
+  historyFab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: BRAND_GREEN,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  historyFabPlus: { color: '#FFFFFF', fontSize: 28, fontWeight: '300', lineHeight: 32 },
   // ADR-0020 v1.x-2: DetailTabs (Claude Design detail-screens.jsx)
   detailTabs: {
     flexDirection: 'row',

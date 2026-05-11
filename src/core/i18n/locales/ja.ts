@@ -674,6 +674,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailTimelineEmpty: 'まだ予定はありません',
   addScheduleTitle: '予定を追加',
   addScheduleCta: '予定を追加',
+  historyFilterAll: 'すべて',
+  historyGroupToggle: '{count}回まとめて表示 · 個別に開く {caret}',
 };
 
 export default ja;
