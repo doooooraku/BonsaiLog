@@ -636,6 +636,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeNone: '設定なし',
   settingsNotifMasterOffBanner:
     '通知がオフです。設定画面のマスタースイッチをオンにすると、ここの項目を操作できます。',
+  wiringRowUnwireAction: '外す',
+  wiringUnwireConfirmTitle: '{name} の針金を外しますか?',
 };
 
 export default ja;

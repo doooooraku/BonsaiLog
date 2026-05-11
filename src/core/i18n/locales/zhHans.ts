@@ -622,5 +622,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeNone: 'No notifications enabled',
   settingsNotifMasterOffBanner:
     'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+  wiringRowUnwireAction: 'Remove',
+  wiringUnwireConfirmTitle: 'Remove the wire from {name}?',
 };
 export default zhHans;
