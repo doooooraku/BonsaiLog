@@ -77,8 +77,10 @@
       "artifact": "scripts/ui-diff/out/20260511-1054/",
       "rationale": "レベル 2 必須項目 (Header/Subtitle/3 カード + TabBar) 完全一致。差分は文言の微差のみ。",
       "judgedBy": "auto-improve-loop cycle 4",
-      "needsReeval": true,
-      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-11T11:33:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260511-1054/",
+      "reevalRationale": "PR #442 構造系 4 項目チェックで再評価通過。タブ構成 (4 タブ 盆栽/予定/ふりかえり/設定) ✅、セクション構成 (Header「ふりかえり」 + サブテキスト「記録したケアを一覧で振り返るビューです。」 + 3 カード 水やり履歴/針金がけ一覧/盆栽を検索) ✅、UI 種別 (カードリスト 3 カード縦並び) ✅、スクロール範囲 (全画面スクロール可、コンテンツ短く unscroll でも OK) ✅。残差は status bar 環境差のみ、構造的整合性は完全一致。"
     },
     {
       "flow": "bonsai-detail-edit-sheet",
@@ -173,8 +175,10 @@
       "artifact": "scripts/ui-diff/out/20260511-1316/",
       "rationale": "PR #414 (Phase 1.6-T3、8 セクション順序整合) で再キャプチャ成功。アカウント・プラン → 表示 → 通知 → アーカイブ → 書き出し → バックアップ → 法令 → バージョン の順序が mockup 整合。アーカイブ「アーカイブ済み盆栽 3件 >」表示確認、CSV エクスポート [PRO] 表示、Header「設定」一致。残差は表示セクション 3 chip vs mockup 1 行 dialog (Issue #330 残作業、別 PR)、通知設定 4 toggle vs 2 行 (Issue #330 残作業)。レベル 2 達成。",
       "judgedBy": "auto-improve-loop cycle 11",
-      "needsReeval": true,
-      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-11T11:37:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260511-2036/",
+      "reevalRationale": "PR #442 構造系 4 項目チェックで再評価通過 (PR #426 通知マスタートグル 2 行構造反映後の再キャプチャ)。タブ構成 (4 タブ) ✅、セクション構成 (アカウント + 表示 言語/テーマ + 通知設定 [通知設定 Switch + 通知の時間帯 07:00 ›] **2 行** + アーカイブ + エクスポート) ✅、UI 種別 (リスト + white card + section header) ✅、スクロール範囲 (全画面スクロール可) ✅。残差は section header 文言差 (実機「アカウント」/mockup「アカウント・プラン」、「通知設定」/「通知」) と通知の時間帯動的計算値 (state 違い、機能 OK)。構造的整合性は完全一致。"
     }
   ]
 }
