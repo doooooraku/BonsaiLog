@@ -8,6 +8,10 @@
           {
             "type": "command",
             "command": "node .claude/hooks/check-read-before-edit.mjs"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/check-structure-eval-before-skiplist-update.mjs"
           }
         ]
       },
