@@ -1,7 +1,11 @@
 /**
  * Issue #440 Phase 1: 連続日 event グルーピングの純関数 test。
  */
-import { groupContinuousEvents, prevDay } from '@/src/features/event/groupContinuousEvents';
+import {
+  groupContinuousEvents,
+  groupContinuousEventsAsc,
+  prevDay,
+} from '@/src/features/event/groupContinuousEvents';
 import type { Event } from '@/src/db/schema';
 
 function makeEvent(id: string, type: string, occurredAtLocal: string): Event {
@@ -127,5 +131,44 @@ describe('groupContinuousEvents', () => {
     expect(result[1]).toEqual({ kind: 'single', event: e4 });
     // 3rd: watering single (5/1)
     expect(result[2]).toEqual({ kind: 'single', event: e5 });
+  });
+});
+
+describe('groupContinuousEventsAsc', () => {
+  const tz = 0;
+
+  it('空配列は空配列を返す', () => {
+    expect(groupContinuousEventsAsc([], tz)).toEqual([]);
+  });
+
+  it('昇順入力 連続 3 日 同 type は group + group 内 events も asc', () => {
+    // 昇順入力: 5/9, 5/10, 5/11
+    const e1 = makeEvent('e1', 'watering', '2026-05-09T08:00:00');
+    const e2 = makeEvent('e2', 'watering', '2026-05-10T08:00:00');
+    const e3 = makeEvent('e3', 'watering', '2026-05-11T08:00:00');
+    const result = groupContinuousEventsAsc([e1, e2, e3], tz);
+    expect(result).toHaveLength(1);
+    expect(result[0].kind).toBe('group');
+    if (result[0].kind === 'group') {
+      expect(result[0].events).toEqual([e1, e2, e3]); // asc 維持
+      expect(result[0].startDate).toBe('2026-05-09');
+      expect(result[0].endDate).toBe('2026-05-11');
+    }
+  });
+
+  it('昇順入力 複数 group の順序が時系列維持', () => {
+    // 5/1 watering, 5/5 pruning, 5/9 + 5/10 watering
+    const e1 = makeEvent('e1', 'watering', '2026-05-01T08:00:00');
+    const e2 = makeEvent('e2', 'pruning', '2026-05-05T08:00:00');
+    const e3 = makeEvent('e3', 'watering', '2026-05-09T08:00:00');
+    const e4 = makeEvent('e4', 'watering', '2026-05-10T08:00:00');
+    const result = groupContinuousEventsAsc([e1, e2, e3, e4], tz);
+    expect(result).toHaveLength(3);
+    expect(result[0]).toEqual({ kind: 'single', event: e1 });
+    expect(result[1]).toEqual({ kind: 'single', event: e2 });
+    expect(result[2].kind).toBe('group');
+    if (result[2].kind === 'group') {
+      expect(result[2].events).toEqual([e3, e4]);
+    }
   });
 });

@@ -670,5 +670,7 @@ const pl: Partial<Record<TranslationKey, string>> = {
   addScheduleCta: 'Add a scheduled task',
   historyFilterAll: 'All',
   historyGroupToggle: '{count} entries · tap to expand {caret}',
+  detailTimelineSectionTitle: 'Upcoming schedule',
+  timelineConsecutive: '{count} consecutive days',
 };
 export default pl;
