@@ -668,5 +668,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   detailTimelineEmpty: 'No scheduled tasks yet.',
   addScheduleTitle: 'Add a scheduled task',
   addScheduleCta: 'Add a scheduled task',
+  historyFilterAll: 'All',
+  historyGroupToggle: '{count} entries · tap to expand {caret}',
 };
 export default nl;
