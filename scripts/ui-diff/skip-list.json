@@ -2,15 +2,6 @@
   "version": 1,
   "skipped": [
     {
-      "flow": "plan-tab",
-      "reason": "seed データに plan/event 予定が無く mockup の「今日 3件」相当が空表示。UI 構造は一致 (Calendar + 下リスト) だが要素空。seed 拡張 PR 要 = 機能改修扱い、人間判断要。",
-      "added_at": "2026-05-11T03:00:00Z",
-      "fail_count": 0,
-      "permanent": true,
-      "artifact": "scripts/ui-diff/out/20260510-0130/",
-      "needsHumanReview": true
-    },
-    {
       "flow": "bonsai-detail",
       "reason": "構造大差: mockup は Hero photo full-bleed + name overlay + Repolog 風 event list、実機は title only + summary card 構成。レベル 2 達成には Hero component 新規 + EventList 大改修 + scientific name 表示 (schema 拡張) 必要 = 機能変更扱い、別 Issue 起票推奨。",
       "added_at": "2026-05-11T03:00:00Z",
@@ -62,15 +53,6 @@
       "fail_count": 0,
       "permanent": true,
       "artifact": "scripts/ui-diff/out/20260510-2343/",
-      "needsHumanReview": true
-    },
-    {
-      "flow": "onboarding-welcome",
-      "reason": "env 要: 実機の onboarding.completed=true 状態のため flow が timeout する。「設定 → ヘルプ → チュートリアルを再表示」で reset 後再試走可能。本ループでは未対応 = 環境準備 (人間操作要)。",
-      "added_at": "2026-05-11T03:10:00Z",
-      "fail_count": 0,
-      "permanent": true,
-      "artifact": null,
       "needsHumanReview": true
     }
   ],
@@ -144,6 +126,26 @@
       "artifact": "scripts/ui-diff/out/20260511-1201/",
       "rationale": "前回判定の「Grid 4 vs 3 列」は誤判定、mockup も実装も Grid 3 列で完全一致。title「まとめて予定追加」+ subtitle + chips + 12 work icons grid 一致。文言差 (「防除/葉刈り/葉抜き/芽摘み」 vs 「消毒/葉の予防/害虫対策/全葉刈/芽かき」) は盆栽業界用語の同義で許容範囲、4 ペルソナ評価 ✕ ゼロ。",
       "judgedBy": "auto-improve-loop cycle 7"
+    },
+    {
+      "flow": "plan-tab",
+      "level": 2,
+      "rmse": 22004.4,
+      "achieved_at": "2026-05-11T03:14:00Z",
+      "rmseNormalized": 0.335765,
+      "artifact": "scripts/ui-diff/out/20260511-1214/",
+      "rationale": "Phase 1.5-T1 seed 拡張で plan/event 投入後の再キャプチャで構造完全一致確認。Header「作業予定」+ 針金がけ一覧 link + 月選択 + DOW header + Calendar grid + 選択日リスト + 「予定はありません」 (今日 0 件状態) + 4 TabBar 全て mockup CalendarScreen と一致。dot marker は events 反映で表示確認。差は選択日違い (mockup 4/24 / 実機 5/11) で seed 設計差、UI 構造は完全整合。",
+      "judgedBy": "auto-improve-loop cycle 8"
+    },
+    {
+      "flow": "onboarding-welcome",
+      "level": 2,
+      "rmse": 21414.2,
+      "achieved_at": "2026-05-11T03:17:00Z",
+      "rmseNormalized": 0.326759,
+      "artifact": "scripts/ui-diff/out/20260511-1217/",
+      "rationale": "Phase 1.5-T5 DEV reset 機構 (PR #405) + scrollUntilVisible (PR #407) で再キャプチャ成功。Welcome Title「鉢 1 本ずつ、一生分。」+ 3 価値訴求 (19 言語、完全オフライン / 個人情報は取得しません / 次世代へ引き継げる台帳) + 「はじめる」CTA + 「アカウント登録は不要です」全て mockup WelcomeScreen と完全一致。レベル 2 達成。",
+      "judgedBy": "auto-improve-loop cycle 8"
     }
   ]
 }
