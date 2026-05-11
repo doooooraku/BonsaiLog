@@ -73,4 +73,12 @@ tags:
     timeout: 5000
     label: 'BulkScheduleDateSheet 内 title 表示完了 (sheet 切替アニメ完了)'
 
+# 10. Phase 1.6-T5: Footer CTA (testID e2e_bulk_schedule_save_cta) visible 待ちで
+#     Calendar 描画 + sheet 88% snap 到達まで確実に待つ (撮影タイミング保証)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_schedule_save_cta'
+    timeout: 8000
+    label: 'BulkScheduleDateSheet Footer CTA 表示完了'
+
 - waitForAnimationToEnd
