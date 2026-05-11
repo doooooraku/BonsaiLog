@@ -638,6 +638,8 @@ const baseEn = {
   settingsNotifTimeRangeNone: 'No notifications enabled',
   settingsNotifMasterOffBanner:
     'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+  wiringRowUnwireAction: 'Remove',
+  wiringUnwireConfirmTitle: 'Remove the wire from {name}?',
 };
 
 export type TranslationKey = keyof typeof baseEn;

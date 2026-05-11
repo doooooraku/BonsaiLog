@@ -12,7 +12,7 @@
 import { Image } from 'expo-image';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -24,6 +24,7 @@ import {
   BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
+  BRAND_GREEN,
   DANGER,
   TEXT_MUTED,
   TEXT_PRIMARY,
@@ -31,7 +32,7 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
-import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
+import { createEvent, getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
 import type { Bonsai, Event } from '@/src/db/schema';
 import {
@@ -92,6 +93,35 @@ export default function WiringListScreen() {
     useCallback(() => {
       void reload();
     }, [reload]),
+  );
+
+  // Issue #325: 「外す」アクション、Alert 確認 → unwiring event 作成 → reload。
+  // body_part は元の wiring event から引き継ぐ (mockup v1.0 整合)。
+  const handleUnwire = useCallback(
+    (row: WiringRow) => {
+      const bonsaiName = row.bonsai?.name ?? '';
+      Alert.alert(t('wiringUnwireConfirmTitle').replace('{name}', bonsaiName), undefined, [
+        { text: t('cancel'), style: 'cancel' as const },
+        {
+          text: t('wiringRowUnwireAction'),
+          style: 'destructive' as const,
+          onPress: async () => {
+            try {
+              await createEvent({
+                bonsaiId: row.event.bonsaiId,
+                type: 'unwiring',
+                status: 'logged',
+                payload: row.part ? { body_part: row.part } : {},
+              });
+              await reload();
+            } catch (err) {
+              Alert.alert(t('error'), String(err));
+            }
+          },
+        },
+      ]);
+    },
+    [reload, t],
   );
 
   const today = useMemo(() => new Date(nowUtc() as string), []);
@@ -212,6 +242,23 @@ export default function WiringListScreen() {
                     {scheduleText(row, t)}
                   </ThemedText>
                 </View>
+                {/* Issue #325: 「外す」 アクションボタン (mockup v1.0 整合)、
+                    親 Pressable の onPress 伝播を防ぐため stopPropagation 系の代わりに onPress 内で完結 */}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('wiringRowUnwireAction')}
+                  testID={`e2e_wiring_row_unwire_${row.event.id}`}
+                  style={styles.unwireButton}
+                  onPress={(e) => {
+                    e.stopPropagation?.();
+                    handleUnwire(row);
+                  }}
+                  hitSlop={8}
+                >
+                  <ThemedText style={styles.unwireButtonText}>
+                    {t('wiringRowUnwireAction')}
+                  </ThemedText>
+                </Pressable>
               </Pressable>
             );
           })
@@ -267,6 +314,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Issue #325: 「外す」アクションボタン (mockup v1.0 整合、rounded + border)
+  unwireButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  unwireButtonText: { fontSize: 13, fontWeight: '600', color: BRAND_GREEN },
   cardBody: { flex: 1, minWidth: 0, gap: 4 },
   cardHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   cardName: { fontSize: 16, fontWeight: '500', color: TEXT_PRIMARY, flex: 1 },
