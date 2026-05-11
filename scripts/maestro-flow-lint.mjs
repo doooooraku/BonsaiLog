@@ -24,6 +24,7 @@ import * as path from 'node:path';
 const FLOWS_DIR = path.resolve('maestro/flows/ui-diff');
 const LEGACY_FLOWS_DIR = path.resolve('maestro/flows');
 const errors = [];
+const warnings = []; // Retro-C: WARN レベル (新規 flow から段階適用、既存は許容)
 
 function walk(dir) {
   if (!fs.existsSync(dir)) return [];
@@ -90,6 +91,38 @@ function lintFile(filePath) {
       }
     }
   }
+
+  // Retro-C (WARN): ui-diff/ 配下の flow は Continue dialog dismiss step 必須
+  // PR #391 で主要 4 flow に追加、Phase 1.5-T4/T5 で残 flow も追加完了。
+  // 新規 flow が同じパターンを忘れないよう WARN で気づかせる。
+  if (filePath.includes('/ui-diff/')) {
+    const hasContinueDismiss =
+      content.includes("visible: 'Continue'") ||
+      content.includes('visible: "Continue"') ||
+      content.includes('visible: Continue');
+    if (!hasContinueDismiss) {
+      warnings.push(
+        `${filePath}: Continue dialog dismiss step が見つかりません。` +
+          `\n    → 推奨: openLink の直後に \`runFlow when visible 'Continue'\` で dismiss step を追加` +
+          `\n    (Expo Dev Client 起動時の dialog が capture-app.sh の force-stop で毎回復活する罠、PR #391 パターン)`,
+      );
+    }
+  }
+
+  // Retro-C (WARN): 座標タップ (point: N%,M%) は testID / text へ置き換え推奨
+  // 理由: 画面サイズ変更や DOM 構造変更で壊れやすい (本セッションで bonsai-detail が
+  // 「お師匠の真柏」 tap してしまい誤判定したパターン、PR #409 で text マッチに修正)。
+  for (let i = 0; i < lines.length; i++) {
+    if (skipMarker(lines[i])) continue;
+    const m = lines[i].match(/^\s+point:\s*(\d+%,\d+%)/);
+    if (m) {
+      warnings.push(
+        `${filePath}:${i + 1}: 座標タップ \`point: ${m[1]}\` は脆弱、testID / text へ置き換え推奨。` +
+          `\n    → 推奨: \`tapOn: text: '...' \` or \`tapOn: id: 'e2e_...'\` を使う` +
+          `\n    (PR #409 bonsai-detail の誤判定再発防止、Retro-C)`,
+      );
+    }
+  }
 }
 
 const files = walk(FLOWS_DIR);
@@ -104,6 +137,13 @@ if (errors.length > 0) {
 }
 
 console.log(`✅ maestro-flow-lint passed (${files.length} flow file(s) OK)`);
+
+// Retro-C: WARN は exit 1 にせず、情報表示のみ (新規 flow の品質保証 + 既存 flow の段階移行)
+if (warnings.length > 0) {
+  console.log(`\nℹ️  ${warnings.length} 件の WARN (新規 flow 推奨パターン):`);
+  warnings.forEach((w) => console.log(`  ${w}\n`));
+  console.log('参考: PR #391 (Continue dismiss) / PR #409 (text マッチ tapOn)');
+}
 
 // 参考情報: 既存 maestro/flows/*.yml (本 lint 対象外) の 1.x 構文残存件数を info 表示
 if (LEGACY_FLOWS_DIR !== FLOWS_DIR) {
