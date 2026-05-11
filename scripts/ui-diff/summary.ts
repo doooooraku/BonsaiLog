@@ -24,12 +24,20 @@ const OUT_ROOT = path.join(ROOT, 'scripts/ui-diff/out');
 const SKIP_LIST_PATH = path.join(__dirname, 'skip-list.json');
 const SUMMARY_PATH = path.join(OUT_ROOT, 'SUMMARY-loop.md');
 
+// Retro-A: schema 定義 (Retro PR で validation 実装)
+// Retro-E: status フィールド (provisional = 初回試走で skip、confirmed = 3 回試走後)
+type SkipStatus = 'provisional' | 'confirmed';
+
 type SkipEntry = {
   flow: string;
   reason: string;
   added_at: string;
   fail_count: number;
   permanent: boolean;
+  status?: SkipStatus; // Retro-E: 省略時は confirmed 扱い (後方互換)
+  // 任意の追加情報 (artifact / needsHumanReview 等は許容)
+  artifact?: string | null;
+  needsHumanReview?: boolean;
 };
 
 type AchievedEntry = {
@@ -37,6 +45,11 @@ type AchievedEntry = {
   level: number;
   rmse: number;
   achieved_at: string;
+  // 任意フィールド
+  rmseNormalized?: number;
+  artifact?: string;
+  rationale?: string;
+  judgedBy?: string;
 };
 
 type SkipList = {
@@ -45,11 +58,79 @@ type SkipList = {
   achieved: AchievedEntry[];
 };
 
+/** Retro-A: SkipList schema validation。
+ *  必須フィールドの欠落 / 型違いを検出してエラーで停止 (camelCase/snake_case mismatch 早期検出)。 */
+function validateSkipList(data: unknown): SkipList {
+  if (typeof data !== 'object' || data === null) {
+    throw new Error('[skip-list] root must be an object');
+  }
+  const d = data as Record<string, unknown>;
+  if (typeof d.version !== 'number') throw new Error('[skip-list] version must be number');
+  if (!Array.isArray(d.skipped)) throw new Error('[skip-list] skipped must be array');
+  if (!Array.isArray(d.achieved)) throw new Error('[skip-list] achieved must be array');
+
+  const skippedRequired = ['flow', 'reason', 'added_at', 'fail_count', 'permanent'] as const;
+  for (const [i, raw] of d.skipped.entries()) {
+    if (typeof raw !== 'object' || raw === null) {
+      throw new Error(`[skip-list] skipped[${i}] must be object`);
+    }
+    const s = raw as Record<string, unknown>;
+    for (const k of skippedRequired) {
+      if (!(k in s))
+        throw new Error(
+          `[skip-list] skipped[${i}] (flow="${typeof s.flow === 'string' ? s.flow : '?'}") missing required field "${k}"`,
+        );
+    }
+    if (typeof s.flow !== 'string')
+      throw new Error(`[skip-list] skipped[${i}].flow must be string`);
+    if (typeof s.fail_count !== 'number')
+      throw new Error(`[skip-list] skipped[${i}].fail_count must be number`);
+    if (typeof s.permanent !== 'boolean')
+      throw new Error(`[skip-list] skipped[${i}].permanent must be boolean`);
+    if (s.status != null && s.status !== 'provisional' && s.status !== 'confirmed') {
+      throw new Error(
+        `[skip-list] skipped[${i}].status must be 'provisional' | 'confirmed' if present`,
+      );
+    }
+  }
+
+  const achievedRequired = ['flow', 'level', 'rmse', 'achieved_at'] as const;
+  for (const [i, raw] of d.achieved.entries()) {
+    if (typeof raw !== 'object' || raw === null) {
+      throw new Error(`[skip-list] achieved[${i}] must be object`);
+    }
+    const a = raw as Record<string, unknown>;
+    for (const k of achievedRequired) {
+      if (!(k in a))
+        throw new Error(
+          `[skip-list] achieved[${i}] (flow="${typeof a.flow === 'string' ? a.flow : '?'}") missing required field "${k}"`,
+        );
+    }
+    if (typeof a.flow !== 'string')
+      throw new Error(`[skip-list] achieved[${i}].flow must be string`);
+    if (typeof a.level !== 'number')
+      throw new Error(`[skip-list] achieved[${i}].level must be number`);
+    if (typeof a.rmse !== 'number')
+      throw new Error(`[skip-list] achieved[${i}].rmse must be number`);
+  }
+
+  return d as unknown as SkipList;
+}
+
 async function loadSkipList(): Promise<SkipList> {
   const raw = await fs
     .readFile(SKIP_LIST_PATH, 'utf-8')
     .catch(() => '{"version":1,"skipped":[],"achieved":[]}');
-  return JSON.parse(raw) as SkipList;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (err) {
+    throw new Error(
+      `[skip-list] JSON parse error: ${(err as Error).message}\n` +
+        `  → ${path.relative(ROOT, SKIP_LIST_PATH)} の構文を確認してください`,
+    );
+  }
+  return validateSkipList(parsed);
 }
 
 async function collectLatestReports(): Promise<Map<string, { rmse: number; timestamp: string }>> {
@@ -119,16 +200,27 @@ async function main(): Promise<void> {
   lines.push('');
 
   if (skipList.skipped.length > 0) {
-    lines.push('## 永久 skip リスト');
+    // Retro-E: status (provisional / confirmed) を表示
+    lines.push('## skip リスト');
     lines.push('');
-    lines.push('| flow | 理由 | 失敗回数 | skip 日 | permanent |');
-    lines.push('|---|---|---|---|---|');
+    lines.push('| flow | 理由 | 失敗回数 | skip 日 | status | permanent |');
+    lines.push('|---|---|---|---|---|---|');
     for (const s of skipList.skipped) {
+      const status = s.status ?? (s.permanent ? 'confirmed' : 'provisional');
       lines.push(
-        `| \`${s.flow}\` | ${s.reason} | ${s.fail_count} | ${s.added_at} | ${s.permanent ? 'YES' : 'no'} |`,
+        `| \`${s.flow}\` | ${s.reason} | ${s.fail_count} | ${s.added_at} | ${status} | ${s.permanent ? 'YES' : 'no'} |`,
       );
     }
     lines.push('');
+    const provisionalCount = skipList.skipped.filter(
+      (s) => (s.status ?? (s.permanent ? 'confirmed' : 'provisional')) === 'provisional',
+    ).length;
+    if (provisionalCount > 0) {
+      lines.push(
+        `> ℹ️ provisional (仮置き) **${provisionalCount} 件** あり。再評価で達成可能性あり。`,
+      );
+      lines.push('');
+    }
   }
 
   if (skipList.achieved.length > 0) {
