@@ -11,6 +11,16 @@
       "artifact": "scripts/ui-diff/out/20260511-0056/",
       "rationale": "レベル 2 必須項目 (写真サイズ/フォント/主要レイアウト/CTA 配置) 全て mockup と一致。残差は AdMob banner (実機 free モード、mockup 無し) と status bar (時刻表示差) の環境差のみで実装で直せない。",
       "judgedBy": "auto-improve-loop cycle 1"
+    },
+    {
+      "flow": "bonsai-create-sheet",
+      "achievedAt": "2026-05-11T02:15:00Z",
+      "level": 2,
+      "rmseAtAchievement": 21815.6,
+      "rmseNormalized": 0.332771,
+      "artifact": "scripts/ui-diff/out/20260510-2340/",
+      "rationale": "レベル 2 必須項目 (写真サイズ/フォント/レイアウト 9 フィールド/footer CTA) 全て mockup CreateBonsaiScreen と一致。差分は placeholder 視認性 (実機色薄め) と必須/任意ラベル仕様差 (mockup 写真=必須、実装=任意は ADR-0020 仕様判断、変更要人間判断)。",
+      "judgedBy": "auto-improve-loop cycle 2"
     }
   ]
 }
