@@ -58,6 +58,14 @@ tags:
 - waitForAnimationToEnd
 
 # 「編集」ボタンを tap (testID e2e_detail_basic_edit_button、PR #378 で配線済)
+# 基本情報タブ末尾 (画面下端) にあるため scrollUntilVisible で可視化してから tap
+- scrollUntilVisible:
+    element:
+      id: 'e2e_detail_basic_edit_button'
+    direction: DOWN
+    timeout: 10000
+    speed: 40
+
 - tapOn:
     id: 'e2e_detail_basic_edit_button'
 
