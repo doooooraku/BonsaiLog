@@ -680,6 +680,7 @@ const baseEn = {
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'Upcoming schedule',
   timelineConsecutive: '{count} consecutive days',
+  detailTimelinePastCollapsed: 'Past watering: collapsed',
 };
 
 export type TranslationKey = keyof typeof baseEn;

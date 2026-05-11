@@ -786,8 +786,14 @@ export default function BonsaiDetailScreen() {
          */}
         {activeTab === 'timeline' && (
           <View style={styles.section}>
+            {/* Issue #441 Phase 2: 「これからの予定」 + 右側 secondary label
+                「過去水やりは折りたたみ」 (mockup `bonsai-detail-timeline-01/02.png` 整合)。
+                過去水やりは作業履歴タブ + ふりかえりタブ CrossWateringHistory で参照可能。 */}
             <View style={styles.timelineHeader}>
               <ThemedText type="subtitle">{t('detailTimelineSectionTitle')}</ThemedText>
+              <ThemedText style={styles.timelineHeaderSecondary}>
+                {t('detailTimelinePastCollapsed')}
+              </ThemedText>
             </View>
             {(() => {
               const plannedEvents = events
@@ -1273,7 +1279,13 @@ const styles = StyleSheet.create({
   },
   historyFabPlus: { color: '#FFFFFF', fontSize: 28, fontWeight: '300', lineHeight: 32 },
   // Issue #441 Phase 1: 予定タブ timeline UI (mockup `bonsai-detail-timeline-01/02.png` 整合)
-  timelineHeader: { marginBottom: 8 },
+  timelineHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  timelineHeaderSecondary: { fontSize: 11, color: TEXT_SECONDARY },
   timelineRow: {
     flexDirection: 'row',
     minHeight: 80,

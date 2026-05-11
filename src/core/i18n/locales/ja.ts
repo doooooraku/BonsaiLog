@@ -678,6 +678,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   historyGroupToggle: '{count}回まとめて表示 · 個別に開く {caret}',
   detailTimelineSectionTitle: 'これからの予定',
   timelineConsecutive: '{count}日連続',
+  detailTimelinePastCollapsed: '過去水やりは折りたたみ',
 };
 
 export default ja;
