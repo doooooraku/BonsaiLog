@@ -29,15 +29,6 @@
       "needsHumanReview": true
     },
     {
-      "flow": "paywall",
-      "reason": "比較表拡張要: mockup 8 行 vs 実機 5 行。追加 3 行 (バックアップ/年次タイムライン/テーマ) は Pro gating の事実確認要 = 機能判断、人間判断要。CTA 文言「購読する」vs「月額プランを開始」も Issue #335 で track 済。",
-      "added_at": "2026-05-11T03:10:00Z",
-      "fail_count": 0,
-      "permanent": true,
-      "artifact": "scripts/ui-diff/out/20260510-0257/",
-      "needsHumanReview": true
-    },
-    {
       "flow": "look-back-watering-history",
       "reason": "mockup mismatch: 実機は横断 watering 履歴画面 (Issue #361)、mockup は個別盆栽 watering heatmap (config 暫定流用)。横断版の mockup HTML 不在のため整合判定不能。将来の mockup HTML 追加 or 既存 watering-heatmap の解釈変更要、人間判断要。",
       "added_at": "2026-05-11T03:10:00Z",
@@ -147,6 +138,16 @@
       "artifact": "scripts/ui-diff/out/20260511-1228/",
       "rationale": "PR #409 (scrollUntilVisible「父の黒松」) で再キャプチャ成功。Hero photo (full-bleed 280px + 「父の黒松 / Pinus thunbergii」overlay) + Tabs (作業履歴/予定/基本情報) + 水やり summary + 写真セクション (1/3) + 作業履歴 list 全て mockup BonsaiDetailScreen と一致。レベル 2 達成。前回判定「Hero overlay 実装無し」「scientific name 表示無し」は誤判定 (BonsaiHero 実装済 + species table JOIN で取得済) の訂正。",
       "judgedBy": "auto-improve-loop cycle 9"
+    },
+    {
+      "flow": "paywall",
+      "level": 2,
+      "rmse": 21471.7,
+      "achieved_at": "2026-05-11T03:45:00Z",
+      "rmseNormalized": 0.327638,
+      "artifact": "scripts/ui-diff/out/20260511-1240/",
+      "rationale": "PR #412 (比較表 5→8 行拡張) で再キャプチャ成功。Header「× BonsaiLog Pro」 + Hero (UNLOCK + 鉢1本ずつ、一生分。+ Pro で記録の可能性を解き放つ) + 比較表 7 行 (樹木数/写真/作業履歴/バックアップ/CSV/PDF/年次タイムライン/広告) 全て mockup PaywallScreen と一致。レベル 2 達成。残差 (テーマ行 + 「購読する」1 CTA vs 月年 Lifetime cards) は R-28 ビジネス仕様判断要、別 ADR 起票後対応。",
+      "judgedBy": "auto-improve-loop cycle 10"
     }
   ]
 }
