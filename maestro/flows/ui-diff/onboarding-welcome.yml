@@ -45,11 +45,14 @@ tags:
       # 設定タブに遷移
       - tapOn:
           text: '設定'
-      - extendedWaitUntil:
-          visible:
+      - waitForAnimationToEnd
+      # DEV reset onboarding ボタンは画面下端の DEV セクション末尾にあるため scroll で可視化
+      - scrollUntilVisible:
+          element:
             id: 'e2e_dev_reset_onboarding'
-          timeout: 10000
-          label: 'DEV reset onboarding ボタン visible (__DEV__ ビルド前提)'
+          direction: DOWN
+          timeout: 15000
+          speed: 40
       # DEV reset onboarding ボタンを tap → /onboarding/welcome に遷移
       - tapOn:
           id: 'e2e_dev_reset_onboarding'

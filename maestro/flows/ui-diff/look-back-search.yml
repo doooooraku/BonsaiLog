@@ -47,22 +47,19 @@ tags:
       id: 'e2e_find_screen'
     timeout: 30000
 
-# 7. 検索 input (testID e2e_find_input) に「黒松」を入力 → 結果表示状態の mockup と整合
-# mockup 02-Home.html [data-screen-label="12 ケア 検索"] は input 入力済の結果リスト状態
-- tapOn:
-    id: 'e2e_find_input'
-- inputText: '黒松'
-
-# 8. 検索ボタン (testID e2e_find_action) をタップ → 結果リスト出現
+# 7. 検索ボタン (testID e2e_find_action) をタップ → 全件結果リスト出現
+# NOTE: 当初 inputText で「黒松」入力予定だったが Maestro Android が日本語非対応
+# (UnicodeNotSupportedError)。空クエリで全件結果を表示し、mockup の「結果リスト表示中」状態と
+# 整合を取る (フィルタ chips + 盆栽セクション + 作業履歴セクションの構造一致)。
 - tapOn:
     id: 'e2e_find_action'
 
-# 9. 結果セクション (testID e2e_find_bonsai_section) が表示されるまで待つ
-#    seed に「父の黒松」「母の五葉松」が存在するため必ず 1 件以上ヒットする
+# 8. 結果セクション (testID e2e_find_bonsai_section) が表示されるまで待つ
+#    seed の盆栽 3 件が全件ヒットして表示される (空クエリ時の挙動)
 - extendedWaitUntil:
     visible:
       id: 'e2e_find_bonsai_section'
     timeout: 15000
 
-# 10. 全要素描画完了を待つ
+# 9. 全要素描画完了を待つ
 - waitForAnimationToEnd
