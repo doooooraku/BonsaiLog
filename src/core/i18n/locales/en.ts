@@ -640,6 +640,7 @@ const baseEn = {
     'Notifications are disabled. Turn on the master switch in Settings to use these options.',
   wiringRowUnwireAction: 'Remove',
   wiringUnwireConfirmTitle: 'Remove the wire from {name}?',
+  paywallFeatureTheme: 'Themes',
 };
 
 export type TranslationKey = keyof typeof baseEn;

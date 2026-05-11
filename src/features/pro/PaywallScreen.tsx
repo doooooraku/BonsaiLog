@@ -219,6 +219,9 @@ export default function PaywallScreen() {
           <FeatureRow label={t('paywallFeatureCsv')} free="—" pro="◎" />
           <FeatureRow label={t('paywallFeaturePdf')} free="—" pro="◎" />
           <FeatureRow label={t('paywallFeatureYearlyTimeline')} free="—" pro="◎" />
+          {/* Issue #335: mockup v1.0 「テーマ」 行追加。ADR-0015 整合 (theme は 3 mode 全 Free)、
+              機能差なし = 両方 ◎ で表記。mockup の「標準/◎」 表記は古い情報、ADR 優先 (R-28)。 */}
+          <FeatureRow label={t('paywallFeatureTheme')} free="◎" pro="◎" />
           <FeatureRow
             label={t('paywallFeatureNoAds')}
             free={t('paywallFeatureNoAdsFreeValue')}
