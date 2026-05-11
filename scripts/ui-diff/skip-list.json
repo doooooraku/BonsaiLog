@@ -21,6 +21,26 @@
       "artifact": "scripts/ui-diff/out/20260510-2340/",
       "rationale": "レベル 2 必須項目 (写真サイズ/フォント/レイアウト 9 フィールド/footer CTA) 全て mockup CreateBonsaiScreen と一致。差分は placeholder 視認性 (実機色薄め) と必須/任意ラベル仕様差 (mockup 写真=必須、実装=任意は ADR-0020 仕様判断、変更要人間判断)。",
       "judgedBy": "auto-improve-loop cycle 2"
+    },
+    {
+      "flow": "watering-heatmap",
+      "achievedAt": "2026-05-11T02:55:00Z",
+      "level": 2,
+      "rmseAtAchievement": 23437.8,
+      "rmseNormalized": 0.357637,
+      "artifact": "scripts/ui-diff/out/20260511-1052/",
+      "rationale": "レベル 2 必須項目 (Header/Segmented/Heatmap grid 4 段階濃淡/Footer Summary/Disclaimer) 全て一致。差分は Title scientific name 二段表示 (species 取得経路不在、schema 改修要) と seed の watering 記録数差のみ。",
+      "judgedBy": "auto-improve-loop cycle 4"
+    },
+    {
+      "flow": "look-back-tab",
+      "achievedAt": "2026-05-11T02:56:00Z",
+      "level": 2,
+      "rmseAtAchievement": 21804.8,
+      "rmseNormalized": 0.332719,
+      "artifact": "scripts/ui-diff/out/20260511-1054/",
+      "rationale": "レベル 2 必須項目 (Header/Subtitle/3 カード = 水やり履歴/針金がけ一覧/盆栽を検索 + サブ説明文)、TabBar 全て mockup CareHub と完全一致。差分は文言の微差 (「巻いた針金を」 vs 「巻いた針金」) のみで許容範囲。",
+      "judgedBy": "auto-improve-loop cycle 4"
     }
   ]
 }
