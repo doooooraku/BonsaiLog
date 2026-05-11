@@ -21,7 +21,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { findLanguageOption } from '@/src/core/i18n/languageOptions';
-import { ACCENT_GOLD, BORDER_DEFAULT, ON_BRAND } from '@/src/core/theme/colors';
+import { ACCENT_GOLD, BG_SURFACE, BORDER_DEFAULT, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { clearAllData, seedTestData } from '@/src/dev/seedTestData';
@@ -29,6 +29,30 @@ import { showAdPrivacyOptionsForm } from '@/src/services/adService';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
 import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
+
+/**
+ * Phase 1.6-T6 (Issue #330 A4-2): mockup v1.0 整合の section wrapper。
+ * section header (mono uppercase) → white surface card (radius 12 + overflow hidden) +
+ * 内部 entries の構造を統一。`type` で section title type を切替 (DEV は subtitle)。
+ */
+function SettingsSection({
+  title,
+  titleType = 'defaultSemiBold',
+  children,
+}: {
+  title: string;
+  titleType?: 'defaultSemiBold' | 'subtitle';
+  children: React.ReactNode;
+}) {
+  return (
+    <View style={styles.section}>
+      <ThemedText type={titleType} style={styles.sectionTitle}>
+        {title}
+      </ThemedText>
+      <View style={styles.sectionCard}>{children}</View>
+    </View>
+  );
+}
 
 export default function SettingsScreen() {
   const { t, lang } = useTranslation();
@@ -110,8 +134,7 @@ export default function SettingsScreen() {
       testID="e2e_settings_screen"
     >
       {/* ADR-0020 Phase 7 / Issue #255: SearchHeader (タイトル「設定」+ 検索)。
-          設定タブ自身では Cog 遷移ボタンは不要のため showSettings={false}。
-          屋外モードは下の独立トグル (toggleRow) に集約。 */}
+          設定タブ自身では Cog 遷移ボタンは不要のため showSettings={false}。 */}
       <SearchHeader
         title={t('tabSettings')}
         testIdSuffix="settings"
@@ -125,10 +148,7 @@ export default function SettingsScreen() {
             実機固有 (検索 / ヘルプ / DEV) は末尾に配置。 */}
 
         {/* --- 1. F-13 Phase 1b Pro / Paywall 導線 (Issue #20、ADR-0009) --- */}
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            {t('settingsAccountSection')}
-          </ThemedText>
+        <SettingsSection title={t('settingsAccountSection')}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('proTitle')}
@@ -174,13 +194,10 @@ export default function SettingsScreen() {
               <ThemedText style={styles.chevron}>›</ThemedText>
             </View>
           </Pressable>
-        </View>
+        </SettingsSection>
 
         {/* --- 2. F-15 表示 (テーマ、Issue #32、ADR-0015) + 言語 (ADR-0004) --- */}
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            {t('settingsThemeSection')}
-          </ThemedText>
+        <SettingsSection title={t('settingsThemeSection')}>
           {/* Phase 1.6-T6 (Issue #330 A3): mockup v1.0「言語 日本語 ›」整合。
               タップで /settings/language に遷移、現在の言語の native 表記を value 表示。 */}
           <Pressable
@@ -217,7 +234,7 @@ export default function SettingsScreen() {
               </View>
             </View>
           </Pressable>
-        </View>
+        </SettingsSection>
 
         {/* --- 3. F-05/F-16 通知設定 (Issue #25/#30、ADR-0011/0014) ---
             Phase 1.6-T6 (Issue #330 A2a): mockup v1.0 整合のため、3 toggle +
@@ -225,10 +242,7 @@ export default function SettingsScreen() {
             「通知設定 ›」 1 行のみに簡素化。
             残作業 (A2b、別 Issue): ADR-0014 §30 マスタートグル + mockup 完全
             整合 (「通知 [Switch] / 通知の時間帯 ›」 2 行表示)。 */}
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            {t('settingsNotificationSection')}
-          </ThemedText>
+        <SettingsSection title={t('settingsNotificationSection')}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('settingsNotificationRowLabel')}
@@ -241,13 +255,10 @@ export default function SettingsScreen() {
               <ThemedText style={styles.chevron}>›</ThemedText>
             </View>
           </Pressable>
-        </View>
+        </SettingsSection>
 
         {/* --- 4. アーカイブ (Phase 1.6-T3 新規、Issue #330 AC) --- */}
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            {t('settingsArchiveSection')}
-          </ThemedText>
+        <SettingsSection title={t('settingsArchiveSection')}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('settingsArchiveTitle')}
@@ -263,15 +274,12 @@ export default function SettingsScreen() {
               <ThemedText style={styles.chevron}>›</ThemedText>
             </View>
           </Pressable>
-        </View>
+        </SettingsSection>
 
         {/* --- 5. F-10 書き出し Phase A (Issue #33、ADR-0016) ---
             mockup v1.0「CSV エクスポート PRO」「PDF エクスポート PRO」整合の
             label + PRO badge + chevron 構造。Pro 制限ロジックは export/* 各画面側 */}
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            {t('settingsExportSection')}
-          </ThemedText>
+        <SettingsSection title={t('settingsExportSection')}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('exportCsvTitle')}
@@ -327,13 +335,10 @@ export default function SettingsScreen() {
               </View>
             </View>
           </Pressable>
-        </View>
+        </SettingsSection>
 
         {/* --- 6. F-11 バックアップ (Phase 1.6-T3 で位置変更、お引っ越し → バックアップ) --- */}
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            {t('settingsBackupSection')}
-          </ThemedText>
+        <SettingsSection title={t('settingsBackupSection')}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('backupExportTitle')}
@@ -360,13 +365,10 @@ export default function SettingsScreen() {
               <ThemedText style={styles.chevron}>›</ThemedText>
             </View>
           </Pressable>
-        </View>
+        </SettingsSection>
 
         {/* --- 7. その他/法令 (Phase 1.6-T3 新規、Issue #330 AC) --- */}
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            {t('settingsLegalSection')}
-          </ThemedText>
+        <SettingsSection title={t('settingsLegalSection')}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('settingsLegalTerms')}
@@ -411,27 +413,21 @@ export default function SettingsScreen() {
               </View>
             </Pressable>
           )}
-        </View>
+        </SettingsSection>
 
         {/* --- 8. バージョン (Phase 1.6-T3 新規、Issue #330 AC) ---
             mockup v1.0「アプリバージョン 1.0.0」整合の label + value 行 (chevron 無し、read-only)。 */}
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            {t('settingsVersionSection')}
-          </ThemedText>
+        <SettingsSection title={t('settingsVersionSection')}>
           <View style={styles.entry} testID="e2e_settings_version_row">
             <View style={styles.rowInner}>
               <ThemedText type="defaultSemiBold">{t('settingsVersionLabel')}</ThemedText>
               <ThemedText style={styles.rowValue}>1.0.0</ThemedText>
             </View>
           </View>
-        </View>
+        </SettingsSection>
 
         {/* --- (実機固有) F-09 検索 (Issue #31、ADR-0008 改訂) --- */}
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            {t('settingsSearchSection')}
-          </ThemedText>
+        <SettingsSection title={t('settingsSearchSection')}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('searchAction')}
@@ -458,13 +454,10 @@ export default function SettingsScreen() {
               <ThemedText style={styles.chevron}>›</ThemedText>
             </View>
           </Pressable>
-        </View>
+        </SettingsSection>
 
         {/* --- (実機固有) F-26 Phase H ヘルプ (Issue #26、ADR-0018): チュートリアル再表示 --- */}
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            {t('settingsHelpSection')}
-          </ThemedText>
+        <SettingsSection title={t('settingsHelpSection')}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('settingsTutorialReplayTitle')}
@@ -483,15 +476,12 @@ export default function SettingsScreen() {
               <ThemedText style={styles.chevron}>›</ThemedText>
             </View>
           </Pressable>
-        </View>
+        </SettingsSection>
 
         {/* __DEV__ 限定: 開発者セクション (T1-4 / Issue #355、ui-diff pipeline 用テストデータ投入)。
             production build には含まれない (Babel が __DEV__ === false で枝刈り)。 */}
         {__DEV__ && (
-          <View style={styles.section}>
-            <ThemedText type="subtitle" style={styles.sectionTitle}>
-              [DEV] テストデータ
-            </ThemedText>
+          <SettingsSection title="[DEV] テストデータ" titleType="subtitle">
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="seed test data"
@@ -571,7 +561,7 @@ export default function SettingsScreen() {
                 onboarding.completed=false に戻して Welcome 画面を再表示 (ui-diff flow 用)
               </ThemedText>
             </Pressable>
-          </View>
+          </SettingsSection>
         )}
       </ScrollView>
     </ThemedView>
@@ -582,30 +572,27 @@ const styles = StyleSheet.create({
   // backgroundColor は useColors の c.background で動的指定
   container: { flex: 1 },
   scroll: { padding: 16, gap: 16 },
-  title: { marginBottom: 8 },
-  section: { gap: 12 },
+  // Phase 1.6-T6 (Issue #330 A4-2): mockup v1.0 整合の section card wrapper。
+  // 各 section header (mono uppercase) 直下に white surface card (radius 12 +
+  // overflow hidden) を配置、内部の entry を border-bottom 1px divider で区切る。
+  // section 内 gap 0 = card 内で密着、最終 entry の下にも divider が薄く見える
+  // (mockup screenshot 整合)。
+  section: { gap: 8 },
+  sectionCard: {
+    backgroundColor: BG_SURFACE,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
   // mockup v1.0 monetization-screens.jsx SettingsScreen SectionHeader 整合 (C1 PR、mono 風 small caps)
   sectionTitle: { fontSize: 11, opacity: 0.7, textTransform: 'uppercase', letterSpacing: 1.5 },
   entry: {
     padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER_DEFAULT,
     gap: 6,
   },
   entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
   entryDisabled: { opacity: 0.6 },
-  toggleRow: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  toggleLabelBox: { flex: 1, gap: 4 },
   // Phase 1.6-T6 (Issue #330 A1): list-row 共通 style (label / value / chevron)。
   // A4 で他行にも展開予定。
   rowInner: {
