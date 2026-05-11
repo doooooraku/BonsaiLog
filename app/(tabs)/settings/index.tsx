@@ -143,38 +143,12 @@ export default function SettingsScreen() {
         showSettings={false}
       />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        {/* --- F-15 Phase A テーマ (Issue #32、ADR-0015) --- */}
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            {t('settingsThemeSection')}
-          </ThemedText>
-          <View style={styles.themeRow} testID="e2e_theme_mode_row">
-            {themeOptions.map((opt) => {
-              const selected = themeMode === opt.value;
-              return (
-                <Pressable
-                  key={opt.value}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected }}
-                  accessibilityLabel={t(opt.labelKey as Parameters<typeof t>[0])}
-                  testID={`e2e_theme_mode_${opt.value}`}
-                  style={[styles.themeChip, selected && styles.themeChipSelected]}
-                  onPress={() => setThemeMode(opt.value)}
-                >
-                  <ThemedText
-                    type={selected ? 'defaultSemiBold' : 'default'}
-                    style={selected ? styles.themeChipTextSelected : undefined}
-                  >
-                    {t(opt.labelKey as Parameters<typeof t>[0])}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-          </View>
-          {/* ADR-0015 Notes Amended (2026-05-10、PR #312): 屋外モード削除、4 mode → 3 mode (Auto/Light/Dark) */}
-        </View>
+        {/* === Phase 1.6-T3 (Issue #330): mockup v1.0 SettingsScreen 8 セクション順序整合 ===
+            1. アカウント・プラン → 2. 表示 → 3. 通知 → 4. アーカイブ → 5. 書き出し
+            → 6. バックアップ → 7. その他 (法令) → 8. バージョン
+            実機固有 (検索 / ヘルプ / DEV) は末尾に配置。 */}
 
-        {/* --- F-13 Phase 1b Pro / Paywall 導線 (Issue #20、ADR-0009) --- */}
+        {/* --- 1. F-13 Phase 1b Pro / Paywall 導線 (Issue #20、ADR-0009) --- */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
             {t('settingsAccountSection')}
@@ -223,7 +197,37 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
-        {/* --- F-05 通知設定 (Issue #25、ADR-0011) --- */}
+        {/* --- 2. F-15 表示 (テーマ、Issue #32、ADR-0015) --- */}
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+            {t('settingsThemeSection')}
+          </ThemedText>
+          <View style={styles.themeRow} testID="e2e_theme_mode_row">
+            {themeOptions.map((opt) => {
+              const selected = themeMode === opt.value;
+              return (
+                <Pressable
+                  key={opt.value}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={t(opt.labelKey as Parameters<typeof t>[0])}
+                  testID={`e2e_theme_mode_${opt.value}`}
+                  style={[styles.themeChip, selected && styles.themeChipSelected]}
+                  onPress={() => setThemeMode(opt.value)}
+                >
+                  <ThemedText
+                    type={selected ? 'defaultSemiBold' : 'default'}
+                    style={selected ? styles.themeChipTextSelected : undefined}
+                  >
+                    {t(opt.labelKey as Parameters<typeof t>[0])}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* --- 3. F-05 通知設定 (Issue #25、ADR-0011) --- */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
             {t('settingsNotificationSection')}
@@ -308,7 +312,26 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* --- F-10 エクスポート Phase A (Issue #33、ADR-0016) --- */}
+        {/* --- 4. アーカイブ (Phase 1.6-T3 新規、Issue #330 AC) --- */}
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+            {t('settingsArchiveSection')}
+          </ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('settingsArchiveTitle')}
+            testID="e2e_open_archive"
+            style={styles.entry}
+            onPress={() => {
+              Alert.alert(t('settingsArchiveTitle'), t('settingsArchiveDesc'));
+            }}
+          >
+            <ThemedText type="defaultSemiBold">{t('settingsArchiveTitle')}</ThemedText>
+            <ThemedText style={styles.entryDesc}>{t('settingsArchiveDesc')}</ThemedText>
+          </Pressable>
+        </View>
+
+        {/* --- 5. F-10 書き出し Phase A (Issue #33、ADR-0016) --- */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
             {t('settingsExportSection')}
@@ -346,53 +369,7 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
-        {/* --- F-09 検索 (Issue #31、ADR-0008 改訂) --- */}
-        <View style={styles.section}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            {t('settingsSearchSection')}
-          </ThemedText>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('searchAction')}
-            testID="e2e_open_search"
-            style={styles.entry}
-            onPress={() => router.push('/(tabs)/look-back/search' as Href)}
-          >
-            <ThemedText type="defaultSemiBold">{t('searchAction')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('searchDesc')}</ThemedText>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('tagsManagerTitle')}
-            testID="e2e_open_tags"
-            style={styles.entry}
-            onPress={() => router.push('/tags' as Href)}
-          >
-            <ThemedText type="defaultSemiBold">{t('tagsManagerTitle')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('tagsManagerDesc')}</ThemedText>
-          </Pressable>
-        </View>
-
-        {/* --- F-LEGAL-001 Phase A 広告のプライバシー設定 (Issue #37、ADR-0017、Free のみ表示) --- */}
-        {!isPro && (
-          <View style={styles.section}>
-            <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-              {t('settingsAdPrivacySection')}
-            </ThemedText>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('settingsAdPrivacyOptionsTitle')}
-              testID="e2e_open_ad_privacy_options"
-              style={styles.entry}
-              onPress={handleAdPrivacyOptionsPress}
-            >
-              <ThemedText type="defaultSemiBold">{t('settingsAdPrivacyOptionsTitle')}</ThemedText>
-              <ThemedText style={styles.entryDesc}>{t('settingsAdPrivacyOptionsDesc')}</ThemedText>
-            </Pressable>
-          </View>
-        )}
-
-        {/* --- F-11 お引っ越し --- */}
+        {/* --- 6. F-11 バックアップ (Phase 1.6-T3 で位置変更、お引っ越し → バックアップ) --- */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
             {t('settingsBackupSection')}
@@ -419,7 +396,87 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
-        {/* --- F-26 Phase H ヘルプ (Issue #26、ADR-0018): チュートリアル再表示 --- */}
+        {/* --- 7. その他/法令 (Phase 1.6-T3 新規、Issue #330 AC) --- */}
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+            {t('settingsLegalSection')}
+          </ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('settingsLegalTerms')}
+            testID="e2e_open_legal_terms"
+            style={styles.entry}
+            onPress={() => {
+              Alert.alert(t('settingsLegalTerms'), 'docs/legal/terms.md (準備中)');
+            }}
+          >
+            <ThemedText type="defaultSemiBold">{t('settingsLegalTerms')}</ThemedText>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('settingsLegalPrivacy')}
+            testID="e2e_open_legal_privacy"
+            style={styles.entry}
+            onPress={() => {
+              Alert.alert(t('settingsLegalPrivacy'), 'docs/legal/privacy.md (準備中)');
+            }}
+          >
+            <ThemedText type="defaultSemiBold">{t('settingsLegalPrivacy')}</ThemedText>
+          </Pressable>
+          {/* AdMob プライバシーオプション (Free のみ表示、既存 F-LEGAL-001 Phase A 流用) */}
+          {!isPro && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('settingsAdPrivacyOptionsTitle')}
+              testID="e2e_open_ad_privacy_options"
+              style={styles.entry}
+              onPress={handleAdPrivacyOptionsPress}
+            >
+              <ThemedText type="defaultSemiBold">{t('settingsAdPrivacyOptionsTitle')}</ThemedText>
+              <ThemedText style={styles.entryDesc}>{t('settingsAdPrivacyOptionsDesc')}</ThemedText>
+            </Pressable>
+          )}
+        </View>
+
+        {/* --- 8. バージョン (Phase 1.6-T3 新規、Issue #330 AC) --- */}
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+            {t('settingsVersionSection')}
+          </ThemedText>
+          <View style={styles.entry} testID="e2e_settings_version_row">
+            <ThemedText type="defaultSemiBold">{t('settingsVersionLabel')}</ThemedText>
+            <ThemedText style={styles.entryDesc}>1.0.0</ThemedText>
+          </View>
+        </View>
+
+        {/* --- (実機固有) F-09 検索 (Issue #31、ADR-0008 改訂) --- */}
+        <View style={styles.section}>
+          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+            {t('settingsSearchSection')}
+          </ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('searchAction')}
+            testID="e2e_open_search"
+            style={styles.entry}
+            onPress={() => router.push('/(tabs)/look-back/search' as Href)}
+          >
+            <ThemedText type="defaultSemiBold">{t('searchAction')}</ThemedText>
+            <ThemedText style={styles.entryDesc}>{t('searchDesc')}</ThemedText>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('tagsManagerTitle')}
+            testID="e2e_open_tags"
+            style={styles.entry}
+            onPress={() => router.push('/tags' as Href)}
+          >
+            <ThemedText type="defaultSemiBold">{t('tagsManagerTitle')}</ThemedText>
+            <ThemedText style={styles.entryDesc}>{t('tagsManagerDesc')}</ThemedText>
+          </Pressable>
+        </View>
+
+        {/* --- (実機固有) F-26 Phase H ヘルプ (Issue #26、ADR-0018): チュートリアル再表示 --- */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
             {t('settingsHelpSection')}
