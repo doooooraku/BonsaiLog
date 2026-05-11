@@ -175,6 +175,35 @@ PR Template
 
 ---
 
+## 7.6. Claude Read 評価ガイド遵守（ui-diff / 達成判定 PR で REQUIRED）
+
+> **背景**: 2026-05-11 セッションで ImageMagick RMSE のみで「達成」 と判定し、bonsai-detail 3 タブで構造的大差を見逃した (Issue #439-#441 で再起票)。PR #442 で「ImageMagick は第一フィルタ、最終判定は Claude Read 主導」 に運用切替。
+
+### 7.6.1. ui-diff / skip-list 編集 PR の構造系 4 項目チェック (REQUIRED)
+
+- [ ] mockup 該当 PNG を **Read で目視確認**した (artifact パス: \_\_\_\_\_)
+- [ ] 実機 SS を **Read で目視確認**した (artifact パス: \_\_\_\_\_)
+- [ ] **構造系 4 項目** のチェック結果を PR description に記載:
+  - [ ] **タブ構成**: タブ名 / 順序 / 数が mockup と一致
+  - [ ] **セクション構成**: 各タブの上から下までのセクションが一致
+  - [ ] **UI 種別**: list / timeline / form / grid のどれか、mockup と一致
+  - [ ] **スクロール範囲**: 全画面スクロール可能か (Hero 固定 + 下のみスクロール NG)
+- [ ] RMSE 数値 **+ 構造系 4 項目** の両方を満たす
+
+### 7.6.2. 「完遂」/「達成」 表記時の Phase 分割明示 (REQUIRED if 「完遂」 表記)
+
+> Phase 分割 PR で「Issue 完遂」 と書くと Issue 全体達成と誤解される事例あり (Issue #298 が最小実装で完遂報告された)。
+
+- [ ] PR description で「完遂」「達成」 と書く場合、**Phase X 完遂 ≠ Issue 全体完遂** を明示
+- [ ] 「Phase X 完了」 表記時は **残り Phase Y/Z を Related に明記**
+
+### 7.6.3. 適用対象外の場合
+
+- [ ] 本 PR は ui-diff / 達成判定と無関係 (機能追加 / 内部 refactor / docs only 等)
+  - 理由: \_\_\_\_\_
+
+---
+
 ## 8. Docs影響（docs-as-code / REQUIRED）
 
 > 仕様書を死なせないための “分岐チェック”。
