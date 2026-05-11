@@ -86,6 +86,26 @@ Claude は以下を順次実行:
 
 ユーザーは別作業 / 寝てて OK。10 秒以内に応答する必要なし。
 
+### Retro-G: 「ループ開始」 と再開タイミング (2026-05-11 学び)
+
+半自走モードでは、Claude が長い処理 (capture / verify / CI 待ち) で **一時的に待機状態** になることがある。
+本セッションでは ScheduleWakeup (Claude が自分で目覚ましをかける仕組み) が動かないケースがあり、
+ユーザーが手動で **「ループ開始」** と入力して Claude を再開させた。
+
+**現状の実用知識**:
+
+- ✅ **Background task 完了通知 (task-notification)** は自動届く、確実
+- ⚠️ **ScheduleWakeup** は環境によっては動かない (本セッション数回発生)
+- ✅ **ユーザー手動「ループ開始」** が確実な再開手段
+
+**推奨運用**:
+
+- 長い処理は `run_in_background: true` で task 化 → 完了通知主体で進める
+- ScheduleWakeup を使う場合も、ユーザーが手動再開できるよう「ループ開始」を案内する
+- 次セッション以降で別仕組み (例: Polling / webhook) が出たら本 doc 更新
+
+詳細学びは `docs/reference/tasks/lessons/auto-improve-loop.md` §4 参照。
+
 ---
 
 ## 終了条件 (Q4=(a))
