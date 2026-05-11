@@ -11,11 +11,26 @@ tags:
 # 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
 - openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
 
+# Expo Dev Client の初回起動 dialog を dismiss (capture-app.sh の force-stop で毎回復活)
+# PR #391 の主要 4 flow パターンを本 flow にも適用 (Phase 1.5-T4)
+- runFlow:
+    when:
+      visible: 'Continue'
+    commands:
+      - tapOn: 'Continue'
+      - waitForAnimationToEnd
+
 # 2. ヘッダー「盆栽手帳」が表示されるまで待つ (Metro 初回バンドル 60s 許容)
 - extendedWaitUntil:
     visible:
       text: '盆栽手帳'
     timeout: 60000
+
+# BonsaiCard リスト loading 完了待ち (フィルタタブ「すべて」表示で判定、PR #390 パターン)
+- extendedWaitUntil:
+    visible:
+      text: 'すべて'
+    timeout: 30000
 
 # 3. リスト / フィルタ描画完了を待つ
 - waitForAnimationToEnd
@@ -30,11 +45,13 @@ tags:
 - tapOn:
     id: 'e2e_home_selection_toolbar_schedule'
 
-# 6. BulkWorkPickerSheet が表示されるまで待つ (snap '78%')
+# 6. BulkWorkPickerSheet が schedule mode で表示されることを確認 (title「まとめて予定追加」)
+#    mode='log' (「まとめて記録」) で起動した場合は flow を失敗させる (mode 検証)
 - extendedWaitUntil:
     visible:
-      id: 'e2e_bulk_work_picker_sheet'
+      text: 'まとめて予定追加'
     timeout: 5000
+    label: 'BulkWorkPickerSheet が schedule mode で起動 (mode=log で起動時は失敗)'
 
 - waitForAnimationToEnd
 
@@ -46,6 +63,14 @@ tags:
 - extendedWaitUntil:
     visible:
       id: 'e2e_bulk_schedule_date_sheet'
+    timeout: 10000
+
+# 9. BulkScheduleDateSheet 内の title「施肥の予定日」visible で sheet 完全描画を確認
+#    work picker sheet が閉じる前に capture されると mock と乖離するため明示待機
+- extendedWaitUntil:
+    visible:
+      text: '施肥の予定日'
     timeout: 5000
+    label: 'BulkScheduleDateSheet 内 title 表示完了 (sheet 切替アニメ完了)'
 
 - waitForAnimationToEnd
