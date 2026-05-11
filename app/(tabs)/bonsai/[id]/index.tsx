@@ -7,7 +7,12 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
-import { BonsaiCreateSheet } from '@/src/features/bonsai/BonsaiCreateSheet';
+import {
+  BonsaiBasicFormFields,
+  BonsaiBasicFormPickerSheets,
+  type BonsaiBasicFormState,
+  useBonsaiBasicForm,
+} from '@/src/features/bonsai/BonsaiBasicForm';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
 import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
 import { PhotoUndoBanner } from '@/src/features/bonsai/PhotoUndoBanner';
@@ -104,8 +109,6 @@ export default function BonsaiDetailScreen() {
   const workPickerRef = React.useRef<BottomSheet>(null);
   // ADR-0020 v1.x-3: 作業記録 詳細 form BottomSheet (Claude Design WorkLogConfirmSheet 整合)
   const workConfirmRef = React.useRef<BottomSheet>(null);
-  // 基本情報 編集 BottomSheet (BonsaiCreateSheet edit モード、mockup CreateBonsaiScreen 整合)
-  const bonsaiEditRef = React.useRef<BottomSheet>(null);
   // Issue #298 Phase 2: 予定追加 BottomSheet (WorkPickerSheet を mode 切替で再利用)
   const schedulePickerRef = React.useRef<BottomSheet>(null);
   const [pendingScheduleType, setPendingScheduleType] = useState<EventType | null>(null);
@@ -212,6 +215,15 @@ export default function BonsaiDetailScreen() {
       void reload();
     }, [reload]),
   );
+
+  // Issue #439: 基本情報タブの inline 編集フォーム state (BonsaiCreateSheet と同じフック)。
+  // 親で hook を呼ぶことで、picker BottomSheet を画面 root に配置できる (ScrollView 内 nest 禁止)。
+  const basicForm = useBonsaiBasicForm({
+    editingBonsai: item,
+    onUpdated: () => {
+      void reload();
+    },
+  });
 
   const handleArchive = useCallback(() => {
     if (!item) return;
@@ -495,15 +507,8 @@ export default function BonsaiDetailScreen() {
           ),
         }}
       />
-      <BonsaiHero
-        coverUri={coverUri}
-        bonsaiName={item.name}
-        speciesCommonName={item.species?.commonName ?? null}
-        speciesScientificName={item.species?.scientificName ?? null}
-        styleLabel={item.style ? t(`bonsaiStyle_${item.style}` as TranslationKey) : null}
-      />
-
       {/* ADR-0020 §Notes Amended (2026-05-09): DetailTabs 順序 = 作業履歴 / 予定 / 基本情報 (mockup v1.0 整合) */}
+      {/* Issue #439: タブバーは sticky (画面上部固定)、Hero は ScrollView 内に移動して全画面スクロールできるようにする */}
       <View style={styles.detailTabs}>
         {(['history', 'timeline', 'basic'] as const).map((tab) => {
           const on = activeTab === tab;
@@ -536,40 +541,21 @@ export default function BonsaiDetailScreen() {
         })}
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* basic Tab 第 1 部分: 基本情報 read-only 表示 (A5 PR、BonsaiBasicForm 抽出 +
-            CreateBonsaiScreen embed 化は別 Issue で v1.x 実装予定) */}
-        {activeTab === 'basic' && (
-          <>
-            <View style={styles.section}>
-              <ThemedText type="subtitle">{t('bonsaiFieldName')}</ThemedText>
-              <ThemedText>{item.name}</ThemedText>
-            </View>
-            {item.species && (
-              <View style={styles.section}>
-                <ThemedText type="subtitle">{t('bonsaiFieldSpecies')}</ThemedText>
-                <ThemedText>{item.species.commonName}</ThemedText>
-                {item.species.scientificName ? (
-                  <ThemedText style={styles.basicScientific}>
-                    {item.species.scientificName}
-                  </ThemedText>
-                ) : null}
-              </View>
-            )}
-            {item.style && (
-              <View style={styles.section}>
-                <ThemedText type="subtitle">{t('bonsaiFieldStyle')}</ThemedText>
-                <ThemedText>{t(`bonsaiStyle_${item.style}` as TranslationKey)}</ThemedText>
-              </View>
-            )}
-            {item.acquiredAt && (
-              <View style={styles.section}>
-                <ThemedText type="subtitle">{t('bonsaiFieldAcquiredAt')}</ThemedText>
-                <ThemedText>{formatDate(item.acquiredAt, lang)}</ThemedText>
-              </View>
-            )}
-          </>
-        )}
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        {/* Issue #439: Hero を ScrollView 内に移動 (画像が見える範囲より下のみスクロールできる問題を解消、Hero 含めて全画面スクロール可能に) */}
+        <BonsaiHero
+          coverUri={coverUri}
+          bonsaiName={item.name}
+          speciesCommonName={item.species?.commonName ?? null}
+          speciesScientificName={item.species?.scientificName ?? null}
+          styleLabel={item.style ? t(`bonsaiStyle_${item.style}` as TranslationKey) : null}
+        />
+
+        {/* Issue #439: 基本情報タブ = BonsaiBasicFormFields (edit モード、BonsaiCreateSheet と共有)。
+            mockup v1.0 bonsai-detail-basic-01/02/03.png 整合の編集兼用フォーム。
+            Picker BottomSheet (樹種 / 樹形) は ScrollView 内 nest 不可のため、画面 root に別途
+            <BonsaiBasicFormPickerSheets> として配置している。 */}
+        {activeTab === 'basic' && <BonsaiBasicSection form={basicForm} />}
 
         {/*
          * A6 (Detail mockup 完全整合 全 10 PR の 6/10) — _buildChipsFor 14 作業 + _HistoryChip /
@@ -746,35 +732,18 @@ export default function BonsaiDetailScreen() {
           </View>
         )}
 
-        {/* basic Tab 第 2 部分: 更新日 + 編集ボタン + アーカイブ。
-            編集ボタンは BonsaiCreateSheet を edit モード (editingBonsai prop) で起動 — mockup
-            CreateBonsaiScreen の prefill prop 整合 (create / edit 単一コンポーネント方針)。 */}
+        {/* basic Tab 末尾: アーカイブボタン (mockup `この盆栽をアーカイブ` 整合)。
+            Issue #439: 編集ボタン + 別 BottomSheet は廃止 (BonsaiBasicSection に inline 化)。
+            「保存」ボタンは BonsaiBasicSection の末尾に inline 配置。 */}
         {activeTab === 'basic' && (
-          <>
-            <View style={styles.section}>
-              <ThemedText type="subtitle">{t('bonsaiFieldUpdatedAt')}</ThemedText>
-              <ThemedText>{formatDate(item.updatedAt, lang)}</ThemedText>
-            </View>
-
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('detailBasicEdit')}
-              style={styles.basicEditButton}
-              onPress={() => bonsaiEditRef.current?.snapToIndex(0)}
-              testID="e2e_detail_basic_edit_button"
-            >
-              <ThemedText style={styles.basicEditButtonText}>{t('detailBasicEdit')}</ThemedText>
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('bonsaiArchive')}
-              style={styles.archiveBtn}
-              onPress={handleArchive}
-            >
-              <ThemedText style={styles.archiveText}>{t('bonsaiArchive')}</ThemedText>
-            </Pressable>
-          </>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('bonsaiArchive')}
+            style={styles.archiveBtn}
+            onPress={handleArchive}
+          >
+            <ThemedText style={styles.archiveText}>{t('bonsaiArchive')}</ThemedText>
+          </Pressable>
         )}
 
         {/*
@@ -889,17 +858,10 @@ export default function BonsaiDetailScreen() {
         onClose={() => setPendingWorkType(null)}
       />
 
-      {/* 基本情報 編集 BottomSheet (BonsaiCreateSheet edit モード、mockup CreateBonsaiScreen prefill 整合) */}
-      <BonsaiCreateSheet
-        bottomSheetRef={bonsaiEditRef}
-        editingBonsai={item}
-        onCreated={() => {
-          /* edit モードでは呼ばれない */
-        }}
-        onUpdated={() => {
-          void reload();
-        }}
-      />
+      {/* Issue #439: 基本情報タブ 編集フォームの 樹種 / 樹形 Picker BottomSheet。
+          @gorhom/bottom-sheet は ScrollView 内に nest すると closed (index=-1) でも
+          inline で leak するため、画面 root 直下に配置する。 */}
+      <BonsaiBasicFormPickerSheets form={basicForm} />
     </ThemedView>
   );
 
@@ -1175,26 +1137,52 @@ const styles = StyleSheet.create({
   },
   eventDate: { fontSize: 13, color: TEXT_SECONDARY, fontVariant: ['tabular-nums'] },
   entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
-  basicScientific: {
-    fontSize: 13,
-    color: TEXT_SECONDARY,
-    fontStyle: 'italic',
-    marginTop: 2,
-  },
-  basicEditButton: {
-    marginHorizontal: 16,
-    marginTop: 4,
-    paddingVertical: 14,
+  // Issue #439: 基本情報タブ inline form の保存ボタン (mockup `保存` 整合)。
+  basicSaveButton: {
+    height: 56,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
+    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 48,
+    marginTop: 8,
   },
-  basicEditButtonText: {
-    fontSize: 15,
+  basicSaveButtonDisabled: {
+    backgroundColor: BORDER_DEFAULT,
+  },
+  basicSaveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
     fontWeight: '500',
-    color: BRAND_GREEN,
+    letterSpacing: 0.5,
+  },
+  basicFormSection: {
+    padding: 16,
+    gap: 16,
   },
 });
+
+/**
+ * Issue #439: 基本情報タブの inline 編集フォーム。
+ * BonsaiCreateSheet と同じ `useBonsaiBasicForm` フックを親で呼んで state を共有し、
+ * mockup `bonsai-detail-basic-01/02/03.png` 整合の編集兼用フォームを実現する。
+ * Picker BottomSheet は親側で画面 root に配置 (ScrollView 内 nest 禁止)。
+ */
+function BonsaiBasicSection({ form }: { form: BonsaiBasicFormState }) {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.basicFormSection}>
+      <BonsaiBasicFormFields form={form} showPhotos={false} />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('save')}
+        accessibilityState={{ disabled: !form.canSubmit }}
+        style={[styles.basicSaveButton, !form.canSubmit && styles.basicSaveButtonDisabled]}
+        onPress={() => void form.handleSubmit()}
+        disabled={!form.canSubmit}
+        testID="e2e_detail_basic_save_button"
+      >
+        <ThemedText style={styles.basicSaveButtonText}>{t('save')}</ThemedText>
+      </Pressable>
+    </View>
+  );
+}
