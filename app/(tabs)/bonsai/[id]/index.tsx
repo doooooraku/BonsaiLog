@@ -591,18 +591,14 @@ export default function BonsaiDetailScreen() {
           styleLabel={item.style ? t(`bonsaiStyle_${item.style}` as TranslationKey) : null}
         />
 
-        {/* Issue #439: 基本情報タブ = BonsaiBasicFormFields (edit モード、BonsaiCreateSheet と共有)。
-            mockup v1.0 bonsai-detail-basic-01/02/03.png 整合の編集兼用フォーム。
-            Picker BottomSheet (樹種 / 樹形) は ScrollView 内 nest 不可のため、画面 root に別途
-            <BonsaiBasicFormPickerSheets> として配置している。 */}
-        {activeTab === 'basic' && <BonsaiBasicSection form={basicForm} />}
-
         {/* Issue #440 Phase 1: 旧 水やり概要セクション (LastWateredText + 水やり履歴を見るボタン)
             は削除。横断 watering 履歴は CareHub (ふりかえりタブ) 経由で到達可能。 */}
 
-        {/* history Tab 第 1 部分: 写真追加 + photoCard 縦リスト (Repolog UI 流用、年次グループ廃止)。
-            複数選択 (allowsMultipleSelection) + ↑↓ 並び替え + caption 編集 + ★ カバー設定 + 削除。 */}
-        {activeTab === 'history' && (
+        {/* Issue #440 Phase 2: 写真セクション (写真追加 + photoCard 縦リスト) を作業履歴タブ
+            → 基本情報タブ上部に移動 (BonsaiBasicSection form より前に配置、mockup PNG 01
+            の写真追加 placeholder 整合)。既存写真は photoCard 縦リスト + 並び替え + カバー設定
+            + 削除 + undo を維持。複数選択 (allowsMultipleSelection) + ↑↓ + caption + ★ + ×。 */}
+        {activeTab === 'basic' && (
           <View style={styles.section}>
             <ThemedText type="subtitle">
               {t('bonsaiFieldPhotos')}
@@ -647,6 +643,13 @@ export default function BonsaiDetailScreen() {
             )}
           </View>
         )}
+
+        {/* Issue #439: 基本情報タブ = BonsaiBasicFormFields (edit モード、BonsaiCreateSheet と共有)。
+            mockup v1.0 bonsai-detail-basic-01/02/03.png 整合の編集兼用フォーム。
+            Picker BottomSheet (樹種 / 樹形) は ScrollView 内 nest 不可のため、画面 root に別途
+            <BonsaiBasicFormPickerSheets> として配置している。
+            Issue #440 Phase 2: 写真セクションを上に移動したため form は写真の下。 */}
+        {activeTab === 'basic' && <BonsaiBasicSection form={basicForm} />}
 
         {/* Issue #440 Phase 1: 作業履歴 Tab — フィルタ chip + 連続日まとめ events 一覧。
             mockup `bonsai-detail-history-01/02/03.png` 整合。FAB は ScrollView の外 (root)
