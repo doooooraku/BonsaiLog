@@ -45,6 +45,8 @@ import {
 } from '@/src/db/eventRepository';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { type Event, type EventType } from '@/src/db/schema';
+import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
+import { HistoryChipRow } from '@/src/features/event/HistoryChip';
 import { WorkLogConfirmSheet, type WorkLogPayload } from '@/src/features/event/WorkLogConfirmSheet';
 import { WorkPickerSheet } from '@/src/features/event/WorkPickerSheet';
 import { LastWateredText } from '@/src/features/watering/LastWateredText';
@@ -696,6 +698,9 @@ export default function BonsaiDetailScreen() {
                         {ev.note}
                       </ThemedText>
                     )}
+                    {/* Issue #296 Phase 3: display-schema.md v1.3 整合の chip 表示。
+                        payload 構造化フィールドを chip[] へ展開、HistoryChipRow で描画。 */}
+                    <HistoryChipRow chips={buildHistoryChips(ev)} />
                   </View>
                 </Pressable>
               );
