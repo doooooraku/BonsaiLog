@@ -20,45 +20,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { setLang, useTranslation } from '@/src/core/i18n/i18n';
 import type { Lang } from '@/src/core/i18n/langCode';
-import {
-  BG_PRIMARY,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  BRAND_GREEN_BG,
-  ON_BRAND,
-} from '@/src/core/theme/colors';
+import { LANGUAGE_OPTIONS } from '@/src/core/i18n/languageOptions';
+import { BORDER_DEFAULT, BRAND_GREEN, BRAND_GREEN_BG, ON_BRAND } from '@/src/core/theme/colors';
 import { getNextOnboardingStep } from '@/src/features/onboarding/onboardingFlow';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
-
-type LanguageOption = {
-  code: Lang;
-  /** 母語表記 (各言語自身)。 */
-  native: string;
-  /** Latin 併記 (英字、シニアが OS UI 表記で区別できるよう)。 */
-  latin: string;
-};
-
-const LANGUAGE_OPTIONS: LanguageOption[] = [
-  { code: 'en', native: 'English', latin: 'English' },
-  { code: 'ja', native: '日本語', latin: 'Japanese' },
-  { code: 'fr', native: 'Français', latin: 'French' },
-  { code: 'es', native: 'Español', latin: 'Spanish' },
-  { code: 'de', native: 'Deutsch', latin: 'German' },
-  { code: 'it', native: 'Italiano', latin: 'Italian' },
-  { code: 'pt', native: 'Português', latin: 'Portuguese' },
-  { code: 'ru', native: 'Русский', latin: 'Russian' },
-  { code: 'zhHans', native: '简体中文', latin: 'Chinese (Simplified)' },
-  { code: 'zhHant', native: '繁體中文', latin: 'Chinese (Traditional)' },
-  { code: 'ko', native: '한국어', latin: 'Korean' },
-  { code: 'hi', native: 'हिन्दी', latin: 'Hindi' },
-  { code: 'id', native: 'Bahasa Indonesia', latin: 'Indonesian' },
-  { code: 'th', native: 'ไทย', latin: 'Thai' },
-  { code: 'vi', native: 'Tiếng Việt', latin: 'Vietnamese' },
-  { code: 'tr', native: 'Türkçe', latin: 'Turkish' },
-  { code: 'nl', native: 'Nederlands', latin: 'Dutch' },
-  { code: 'pl', native: 'Polski', latin: 'Polish' },
-  { code: 'sv', native: 'Svenska', latin: 'Swedish' },
-];
 
 export default function OnboardingLanguageScreen() {
   const { t, lang } = useTranslation();
