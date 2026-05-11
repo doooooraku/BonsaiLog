@@ -211,6 +211,8 @@ export default function PlanScreen() {
                     {Array.from({ length: Math.min(dots, 3) }).map((_, k) => (
                       <View key={k} style={styles.dot} />
                     ))}
+                    {/* Issue #321: mockup v1.0 「●●●+」 整合、4+ で「+」 インジケーター */}
+                    {dots > 3 && <ThemedText style={styles.dotPlus}>+</ThemedText>}
                   </View>
                 </Pressable>
               );
@@ -334,8 +336,10 @@ const styles = StyleSheet.create({
   },
   cellText: { fontSize: 15, color: TEXT_PRIMARY },
   cellTextToday: { fontWeight: '700' },
-  dotRow: { flexDirection: 'row', gap: 2, minHeight: 6 },
+  dotRow: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 6 },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: BRAND_GREEN },
+  // Issue #321: 4+ events で「+」インジケーター (mockup v1.0「●●●+」整合)
+  dotPlus: { fontSize: 10, lineHeight: 10, color: BRAND_GREEN, fontWeight: '700' },
   listContent: { padding: 16, gap: 8, paddingBottom: 96 },
   listLabel: {
     fontFamily: 'Inter_400Regular',
