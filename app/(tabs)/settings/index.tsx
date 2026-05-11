@@ -21,6 +21,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-na
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import { findLanguageOption } from '@/src/core/i18n/languageOptions';
 import { ACCENT_GOLD, BORDER_DEFAULT, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { formatDateToHhmm, parseHhmmToDate } from '@/src/features/notification/notificationTime';
@@ -33,7 +34,7 @@ import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
 export default function SettingsScreen() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const router = useRouter();
   const c = useColors();
   const eventOverloadEnabled = useSettingsStore((s) => s.eventOverloadEnabled);
@@ -139,6 +140,12 @@ export default function SettingsScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [themeMode, t]);
 
+  // Phase 1.6-T6 (Issue #330 A3): mockup v1.0 SettingsScreen「言語 日本語 ›」 整合のため、
+  // 現在の言語の native 表記を value 表示する。
+  const currentLanguageLabel = React.useMemo(() => {
+    return findLanguageOption(lang)?.native ?? lang;
+  }, [lang]);
+
   const handleThemePress = React.useCallback(() => {
     Alert.alert(t('settingsThemeRowLabel'), undefined, [
       ...themeOptions.map((opt) => ({
@@ -220,11 +227,29 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
-        {/* --- 2. F-15 表示 (テーマ、Issue #32、ADR-0015) --- */}
+        {/* --- 2. F-15 表示 (テーマ、Issue #32、ADR-0015) + 言語 (ADR-0004) --- */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
             {t('settingsThemeSection')}
           </ThemedText>
+          {/* Phase 1.6-T6 (Issue #330 A3): mockup v1.0「言語 日本語 ›」整合。
+              タップで /settings/language に遷移、現在の言語の native 表記を value 表示。 */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('settingsLanguageRowLabel')}
+            accessibilityValue={{ text: currentLanguageLabel }}
+            testID="e2e_settings_language_row"
+            style={styles.entry}
+            onPress={() => router.push('/settings/language' as Href)}
+          >
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('settingsLanguageRowLabel')}</ThemedText>
+              <View style={styles.rowRight}>
+                <ThemedText style={styles.rowValue}>{currentLanguageLabel}</ThemedText>
+                <ThemedText style={styles.chevron}>›</ThemedText>
+              </View>
+            </View>
+          </Pressable>
           {/* Phase 1.6-T6 (Issue #330 A1): mockup v1.0 「テーマ システム設定に従う ›」 整合の
               1 行 list 形式。タップで Alert ダイアログを開き、3 mode から選択する。 */}
           <Pressable

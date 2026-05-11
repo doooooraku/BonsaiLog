@@ -623,5 +623,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldTags: 'Tags',
   bonsaiTagsEmpty: 'No recent tags yet',
   settingsThemeRowLabel: 'Theme',
+  settingsLanguageRowLabel: 'Language',
 };
 export default vi;
