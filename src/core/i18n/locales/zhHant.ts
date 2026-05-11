@@ -664,5 +664,6 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'Upcoming schedule',
   timelineConsecutive: '{count} consecutive days',
+  detailTimelinePastCollapsed: 'Past watering: collapsed',
 };
 export default zhHant;
