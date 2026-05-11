@@ -617,5 +617,6 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   bonsaiTagsEmpty: 'No recent tags yet',
   settingsThemeRowLabel: 'Theme',
   settingsLanguageRowLabel: 'Language',
+  settingsNotificationRowLabel: 'Notifications',
 };
 export default zhHans;

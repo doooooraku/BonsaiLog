@@ -631,6 +631,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bonsaiTagsEmpty: '最近使ったタグはまだありません',
   settingsThemeRowLabel: 'テーマ',
   settingsLanguageRowLabel: '言語',
+  settingsNotificationRowLabel: '通知設定',
 };
 
 export default ja;

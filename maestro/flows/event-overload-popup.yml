@@ -23,6 +23,11 @@ steps:
       id: 'e2e_settings_screen'
       label: '設定画面が表示されることを確認 (testID)'
       optional: true
+  # Phase 1.6-T6 A2a (Issue #330): 通知 toggle はサブ画面 /settings/notifications に集約済
+  - tapOn:
+      id: 'e2e_settings_notifications_row'
+      label: '「通知設定 ›」 行タップで通知設定サブ画面へ遷移'
+      optional: true
   - assertVisible:
       id: 'e2e_event_overload_toggle'
       label: 'F-05 通知設定トグルが表示されることを確認 (testID)'

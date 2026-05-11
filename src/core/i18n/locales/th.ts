@@ -624,5 +624,6 @@ const th: Partial<Record<TranslationKey, string>> = {
   bonsaiTagsEmpty: 'No recent tags yet',
   settingsThemeRowLabel: 'Theme',
   settingsLanguageRowLabel: 'Language',
+  settingsNotificationRowLabel: 'Notifications',
 };
 export default th;
