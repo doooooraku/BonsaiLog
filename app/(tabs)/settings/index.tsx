@@ -509,6 +509,24 @@ export default function SettingsScreen() {
                 盆栽 / 写真 / タグ / 記録をリセット (確認 Alert あり)
               </ThemedText>
             </Pressable>
+            {/* Phase 1.5-T5: ui-diff onboarding-welcome flow 用 reset (__DEV__ 限定、本番では枝刈り)。
+                onboarding.completed=false に戻して /onboarding/welcome に遷移する。 */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="reset onboarding"
+              testID="e2e_dev_reset_onboarding"
+              style={styles.entry}
+              onPress={() => {
+                useOnboardingStore.getState().resetTutorial();
+                useOnboardingStore.getState().setCompleted(false);
+                router.replace('/onboarding/welcome' as Href);
+              }}
+            >
+              <ThemedText type="defaultSemiBold">Onboarding をリセット</ThemedText>
+              <ThemedText style={styles.entryDesc}>
+                onboarding.completed=false に戻して Welcome 画面を再表示 (ui-diff flow 用)
+              </ThemedText>
+            </Pressable>
           </View>
         )}
       </ScrollView>
