@@ -638,6 +638,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
     '通知がオフです。設定画面のマスタースイッチをオンにすると、ここの項目を操作できます。',
   wiringRowUnwireAction: '外す',
   wiringUnwireConfirmTitle: '{name} の針金を外しますか?',
+  paywallFeatureTheme: 'テーマ',
 };
 
 export default ja;

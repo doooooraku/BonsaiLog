@@ -631,5 +631,6 @@ const th: Partial<Record<TranslationKey, string>> = {
     'Notifications are disabled. Turn on the master switch in Settings to use these options.',
   wiringRowUnwireAction: 'Remove',
   wiringUnwireConfirmTitle: 'Remove the wire from {name}?',
+  paywallFeatureTheme: 'Themes',
 };
 export default th;
