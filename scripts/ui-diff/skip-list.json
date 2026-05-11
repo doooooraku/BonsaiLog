@@ -1,5 +1,16 @@
 {
   "version": 1,
   "skipped": [],
-  "achieved": []
+  "achieved": [
+    {
+      "flow": "bonsai-tab",
+      "achievedAt": "2026-05-11T02:00:00Z",
+      "level": 2,
+      "rmseAtAchievement": 26859.7,
+      "rmseNormalized": 0.409853,
+      "artifact": "scripts/ui-diff/out/20260511-0056/",
+      "rationale": "レベル 2 必須項目 (写真サイズ/フォント/主要レイアウト/CTA 配置) 全て mockup と一致。残差は AdMob banner (実機 free モード、mockup 無し) と status bar (時刻表示差) の環境差のみで実装で直せない。",
+      "judgedBy": "auto-improve-loop cycle 1"
+    }
+  ]
 }
