@@ -163,13 +163,16 @@ export default function SettingsScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('settingsRestoreTitle')}
+            accessibilityHint={t('settingsRestoreDesc')}
             testID="e2e_settings_restore_purchase"
             style={[styles.entry, restoring && styles.entryDisabled]}
             disabled={restoring}
             onPress={handleRestorePress}
           >
-            <ThemedText type="defaultSemiBold">{t('settingsRestoreTitle')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('settingsRestoreDesc')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('settingsRestoreTitle')}</ThemedText>
+              <ThemedText style={styles.chevron}>›</ThemedText>
+            </View>
           </Pressable>
         </View>
 
@@ -248,18 +251,23 @@ export default function SettingsScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('settingsArchiveTitle')}
+            accessibilityHint={t('settingsArchiveDesc')}
             testID="e2e_open_archive"
             style={styles.entry}
             onPress={() => {
               Alert.alert(t('settingsArchiveTitle'), t('settingsArchiveDesc'));
             }}
           >
-            <ThemedText type="defaultSemiBold">{t('settingsArchiveTitle')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('settingsArchiveDesc')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('settingsArchiveTitle')}</ThemedText>
+              <ThemedText style={styles.chevron}>›</ThemedText>
+            </View>
           </Pressable>
         </View>
 
-        {/* --- 5. F-10 書き出し Phase A (Issue #33、ADR-0016) --- */}
+        {/* --- 5. F-10 書き出し Phase A (Issue #33、ADR-0016) ---
+            mockup v1.0「CSV エクスポート PRO」「PDF エクスポート PRO」整合の
+            label + PRO badge + chevron 構造。Pro 制限ロジックは export/* 各画面側 */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
             {t('settingsExportSection')}
@@ -267,33 +275,57 @@ export default function SettingsScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('exportCsvTitle')}
+            accessibilityHint={t('exportCsvDesc')}
             testID="e2e_open_export_csv"
             style={styles.entry}
             onPress={() => router.push('/export/csv' as Href)}
           >
-            <ThemedText type="defaultSemiBold">{t('exportCsvTitle')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('exportCsvDesc')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('exportCsvTitle')}</ThemedText>
+              <View style={styles.rowRight}>
+                <View style={styles.proBadgeRow}>
+                  <ThemedText style={styles.proBadgeRowText}>{t('proBadgeShort')}</ThemedText>
+                </View>
+                <ThemedText style={styles.chevron}>›</ThemedText>
+              </View>
+            </View>
           </Pressable>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('exportPdfTitle')}
+            accessibilityHint={t('exportPdfDesc')}
             testID="e2e_open_export_pdf"
             style={styles.entry}
             onPress={() => router.push('/export/pdf' as Href)}
           >
-            <ThemedText type="defaultSemiBold">{t('exportPdfTitle')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('exportPdfDesc')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('exportPdfTitle')}</ThemedText>
+              <View style={styles.rowRight}>
+                <View style={styles.proBadgeRow}>
+                  <ThemedText style={styles.proBadgeRowText}>{t('proBadgeShort')}</ThemedText>
+                </View>
+                <ThemedText style={styles.chevron}>›</ThemedText>
+              </View>
+            </View>
           </Pressable>
           {/* F-10 Phase K (Issue #33, ADR-0016 AC2 list_pdf): 全盆栽リスト PDF 導線 */}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('settingsExportListPdfTitle')}
+            accessibilityHint={t('settingsExportListPdfDesc')}
             testID="e2e_open_export_list_pdf"
             style={styles.entry}
             onPress={() => router.push('/export/list-pdf' as Href)}
           >
-            <ThemedText type="defaultSemiBold">{t('settingsExportListPdfTitle')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('settingsExportListPdfDesc')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('settingsExportListPdfTitle')}</ThemedText>
+              <View style={styles.rowRight}>
+                <View style={styles.proBadgeRow}>
+                  <ThemedText style={styles.proBadgeRowText}>{t('proBadgeShort')}</ThemedText>
+                </View>
+                <ThemedText style={styles.chevron}>›</ThemedText>
+              </View>
+            </View>
           </Pressable>
         </View>
 
@@ -305,22 +337,28 @@ export default function SettingsScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('backupExportTitle')}
+            accessibilityHint={t('backupExportDesc')}
             testID="e2e_open_backup_export"
             style={styles.entry}
             onPress={() => router.push('/backup/export' as Href)}
           >
-            <ThemedText type="defaultSemiBold">{t('backupExportTitle')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('backupExportDesc')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('backupExportTitle')}</ThemedText>
+              <ThemedText style={styles.chevron}>›</ThemedText>
+            </View>
           </Pressable>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('backupImportTitle')}
+            accessibilityHint={t('backupImportDesc')}
             testID="e2e_open_backup_import"
             style={styles.entry}
             onPress={() => router.push('/backup/import' as Href)}
           >
-            <ThemedText type="defaultSemiBold">{t('backupImportTitle')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('backupImportDesc')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('backupImportTitle')}</ThemedText>
+              <ThemedText style={styles.chevron}>›</ThemedText>
+            </View>
           </Pressable>
         </View>
 
@@ -338,7 +376,10 @@ export default function SettingsScreen() {
               Alert.alert(t('settingsLegalTerms'), 'docs/legal/terms.md (準備中)');
             }}
           >
-            <ThemedText type="defaultSemiBold">{t('settingsLegalTerms')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('settingsLegalTerms')}</ThemedText>
+              <ThemedText style={styles.chevron}>›</ThemedText>
+            </View>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -349,31 +390,40 @@ export default function SettingsScreen() {
               Alert.alert(t('settingsLegalPrivacy'), 'docs/legal/privacy.md (準備中)');
             }}
           >
-            <ThemedText type="defaultSemiBold">{t('settingsLegalPrivacy')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('settingsLegalPrivacy')}</ThemedText>
+              <ThemedText style={styles.chevron}>›</ThemedText>
+            </View>
           </Pressable>
           {/* AdMob プライバシーオプション (Free のみ表示、既存 F-LEGAL-001 Phase A 流用) */}
           {!isPro && (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('settingsAdPrivacyOptionsTitle')}
+              accessibilityHint={t('settingsAdPrivacyOptionsDesc')}
               testID="e2e_open_ad_privacy_options"
               style={styles.entry}
               onPress={handleAdPrivacyOptionsPress}
             >
-              <ThemedText type="defaultSemiBold">{t('settingsAdPrivacyOptionsTitle')}</ThemedText>
-              <ThemedText style={styles.entryDesc}>{t('settingsAdPrivacyOptionsDesc')}</ThemedText>
+              <View style={styles.rowInner}>
+                <ThemedText type="defaultSemiBold">{t('settingsAdPrivacyOptionsTitle')}</ThemedText>
+                <ThemedText style={styles.chevron}>›</ThemedText>
+              </View>
             </Pressable>
           )}
         </View>
 
-        {/* --- 8. バージョン (Phase 1.6-T3 新規、Issue #330 AC) --- */}
+        {/* --- 8. バージョン (Phase 1.6-T3 新規、Issue #330 AC) ---
+            mockup v1.0「アプリバージョン 1.0.0」整合の label + value 行 (chevron 無し、read-only)。 */}
         <View style={styles.section}>
           <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
             {t('settingsVersionSection')}
           </ThemedText>
           <View style={styles.entry} testID="e2e_settings_version_row">
-            <ThemedText type="defaultSemiBold">{t('settingsVersionLabel')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>1.0.0</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('settingsVersionLabel')}</ThemedText>
+              <ThemedText style={styles.rowValue}>1.0.0</ThemedText>
+            </View>
           </View>
         </View>
 
@@ -385,22 +435,28 @@ export default function SettingsScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('searchAction')}
+            accessibilityHint={t('searchDesc')}
             testID="e2e_open_search"
             style={styles.entry}
             onPress={() => router.push('/(tabs)/look-back/search' as Href)}
           >
-            <ThemedText type="defaultSemiBold">{t('searchAction')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('searchDesc')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('searchAction')}</ThemedText>
+              <ThemedText style={styles.chevron}>›</ThemedText>
+            </View>
           </Pressable>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('tagsManagerTitle')}
+            accessibilityHint={t('tagsManagerDesc')}
             testID="e2e_open_tags"
             style={styles.entry}
             onPress={() => router.push('/tags' as Href)}
           >
-            <ThemedText type="defaultSemiBold">{t('tagsManagerTitle')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('tagsManagerDesc')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('tagsManagerTitle')}</ThemedText>
+              <ThemedText style={styles.chevron}>›</ThemedText>
+            </View>
           </Pressable>
         </View>
 
@@ -412,6 +468,7 @@ export default function SettingsScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('settingsTutorialReplayTitle')}
+            accessibilityHint={t('settingsTutorialReplayDesc')}
             testID="e2e_open_tutorial_replay"
             style={styles.entry}
             onPress={() => {
@@ -421,8 +478,10 @@ export default function SettingsScreen() {
               router.push('/onboarding/tut/tut1' as Href);
             }}
           >
-            <ThemedText type="defaultSemiBold">{t('settingsTutorialReplayTitle')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('settingsTutorialReplayDesc')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('settingsTutorialReplayTitle')}</ThemedText>
+              <ThemedText style={styles.chevron}>›</ThemedText>
+            </View>
           </Pressable>
         </View>
 
@@ -567,4 +626,18 @@ const styles = StyleSheet.create({
     backgroundColor: ACCENT_GOLD,
   },
   proBadgeText: { color: ON_BRAND, fontSize: 11, fontWeight: '700' },
+  // Phase 1.6-T6 (Issue #330 A4-1): 行 value 位置の PRO badge (label + PRO + chevron 構造)。
+  // proBadge より小さく、灰色ベースで mockup の `PRO` 表記整合。
+  proBadgeRow: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+    backgroundColor: ACCENT_GOLD,
+  },
+  proBadgeRowText: {
+    color: ON_BRAND,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
 });
