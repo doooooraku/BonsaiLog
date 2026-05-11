@@ -21,6 +21,15 @@ type SettingsState = {
   setThemeMode: (mode: ThemeMode) => void;
   // ADR-0015 Notes Amended (2026-05-10、PR #312): outdoor mode 削除済 (E4 PR、本セッション)
   /**
+   * F-16 通知マスタートグル (ADR-0014 §30、Issue #423 / Issue #330 A2b)。
+   * - デフォルト true (有効)、AsyncStorage キー 'myapp-settings.notificationMasterEnabled'
+   * - OFF 時、scheduler.ts は通知予約を全停止 (個別 toggle の状態に関わらず)
+   * - OFF → ON 復帰時、個別 toggle (summary / watering / event overload) は永続化された
+   *   前回値で復元 (本 state は独立)
+   */
+  notificationMasterEnabled: boolean;
+  setNotificationMasterEnabled: (enabled: boolean) => void;
+  /**
    * F-05 気遣い型ポップアップを表示するかどうか (ADR-0011、Issue #25)。
    * - デフォルト ON
    * - Settings → 通知設定 でユーザーが OFF にできる
@@ -57,6 +66,9 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       themeMode: 'system',
       setThemeMode: (mode) => set({ themeMode: mode }),
+      // ADR-0014 §30 / §32: master = ON 既定、AsyncStorage 永続化 ('myapp-settings')
+      notificationMasterEnabled: true,
+      setNotificationMasterEnabled: (enabled) => set({ notificationMasterEnabled: enabled }),
       eventOverloadEnabled: true,
       setEventOverloadEnabled: (enabled) => set({ eventOverloadEnabled: enabled }),
       notificationDailySummaryEnabled: false,

@@ -34,6 +34,10 @@ import { useSettingsStore } from '@/src/stores/settingsStore';
 export default function SettingsNotificationsScreen() {
   const { t } = useTranslation();
 
+  // ADR-0014 §30 / Issue #423: マスタートグル OFF 時は全 toggle を grey out + 注意 banner 表示
+  const notificationMasterEnabled = useSettingsStore((s) => s.notificationMasterEnabled);
+  const masterOff = !notificationMasterEnabled;
+
   const eventOverloadEnabled = useSettingsStore((s) => s.eventOverloadEnabled);
   const setEventOverloadEnabled = useSettingsStore((s) => s.setEventOverloadEnabled);
 
@@ -90,9 +94,20 @@ export default function SettingsNotificationsScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']} testID="e2e_settings_notifications_screen">
-      <Stack.Screen options={{ title: t('settingsNotificationRowLabel') }} />
+      <Stack.Screen options={{ title: t('settingsNotifTimeRangeRowLabel') }} />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.toggleRow} testID="e2e_event_overload_toggle_row">
+        {/* ADR-0014 §30 / Issue #423: master OFF 時の注意 banner */}
+        {masterOff && (
+          <View style={styles.masterOffBanner} testID="e2e_settings_notif_master_off_banner">
+            <ThemedText style={styles.masterOffBannerText}>
+              {t('settingsNotifMasterOffBanner')}
+            </ThemedText>
+          </View>
+        )}
+        <View
+          style={[styles.toggleRow, masterOff && styles.toggleRowDisabled]}
+          testID="e2e_event_overload_toggle_row"
+        >
           <View style={styles.toggleLabelBox}>
             <ThemedText type="defaultSemiBold">{t('settingsEventOverloadToggle')}</ThemedText>
             <ThemedText style={styles.entryDesc}>{t('settingsEventOverloadToggleDesc')}</ThemedText>
@@ -103,11 +118,15 @@ export default function SettingsNotificationsScreen() {
             testID="e2e_event_overload_toggle"
             value={eventOverloadEnabled}
             onValueChange={setEventOverloadEnabled}
+            disabled={masterOff}
           />
         </View>
 
         {/* F-16 Phase B (Issue #30, ADR-0014): 当日まとめ通知 + 水やり繰り返し通知トグル */}
-        <View style={styles.toggleRow} testID="e2e_notif_summary_toggle_row">
+        <View
+          style={[styles.toggleRow, masterOff && styles.toggleRowDisabled]}
+          testID="e2e_notif_summary_toggle_row"
+        >
           <View style={styles.toggleLabelBox}>
             <ThemedText type="defaultSemiBold">{t('settingsNotifSummaryToggle')}</ThemedText>
             <ThemedText style={styles.entryDesc}>
@@ -120,10 +139,11 @@ export default function SettingsNotificationsScreen() {
             testID="e2e_notif_summary_toggle"
             value={notifSummaryEnabled}
             onValueChange={(v) => void handleToggleNotifSummary(v)}
+            disabled={masterOff}
           />
         </View>
         {/* F-16 Phase C (Issue #30): 通知時刻変更 (DateTimePicker)、ON 時のみ表示 */}
-        {notifSummaryEnabled && (
+        {notifSummaryEnabled && !masterOff && (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('settingsNotifSummaryEditTime')}
@@ -150,7 +170,10 @@ export default function SettingsNotificationsScreen() {
           />
         )}
 
-        <View style={styles.toggleRow} testID="e2e_notif_watering_toggle_row">
+        <View
+          style={[styles.toggleRow, masterOff && styles.toggleRowDisabled]}
+          testID="e2e_notif_watering_toggle_row"
+        >
           <View style={styles.toggleLabelBox}>
             <ThemedText type="defaultSemiBold">{t('settingsNotifWateringToggle')}</ThemedText>
             <ThemedText style={styles.entryDesc}>
@@ -166,6 +189,7 @@ export default function SettingsNotificationsScreen() {
             testID="e2e_notif_watering_toggle"
             value={notifWateringEnabled}
             onValueChange={(v) => void handleToggleNotifWatering(v)}
+            disabled={masterOff}
           />
         </View>
       </ScrollView>
@@ -195,4 +219,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   toggleLabelBox: { flex: 1, gap: 4 },
+  // Phase 1.6-T6 (Issue #423): master OFF 時の grey out + 注意 banner
+  toggleRowDisabled: { opacity: 0.4 },
+  masterOffBanner: {
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#FFF4E1',
+    borderWidth: 1,
+    borderColor: '#E6C067',
+  },
+  masterOffBannerText: { fontSize: 13, lineHeight: 18, color: '#7A5A1F' },
 });

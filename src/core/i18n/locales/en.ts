@@ -634,6 +634,10 @@ const baseEn = {
   settingsThemeRowLabel: 'Theme',
   settingsLanguageRowLabel: 'Language',
   settingsNotificationRowLabel: 'Notifications',
+  settingsNotifTimeRangeRowLabel: 'Notification time range',
+  settingsNotifTimeRangeNone: 'No notifications enabled',
+  settingsNotifMasterOffBanner:
+    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
 };
 
 export type TranslationKey = keyof typeof baseEn;

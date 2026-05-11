@@ -626,5 +626,9 @@ const hi: Partial<Record<TranslationKey, string>> = {
   settingsThemeRowLabel: 'Theme',
   settingsLanguageRowLabel: 'Language',
   settingsNotificationRowLabel: 'Notifications',
+  settingsNotifTimeRangeRowLabel: 'Notification time range',
+  settingsNotifTimeRangeNone: 'No notifications enabled',
+  settingsNotifMasterOffBanner:
+    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
 };
 export default hi;
