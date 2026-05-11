@@ -9,6 +9,7 @@
  *
  * 上位画面: `app/(tabs)/plan/index.tsx` の「針金がけ一覧」リンクで遷移。
  */
+import { Image } from 'expo-image';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -20,6 +21,7 @@ import { nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   ACCENT_GOLD,
+  BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
   DANGER,
@@ -30,6 +32,7 @@ import {
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
 import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
+import { getCoverPhoto } from '@/src/db/photoRepository';
 import type { Bonsai, Event } from '@/src/db/schema';
 import {
   classifyWiringDuration,
@@ -61,6 +64,8 @@ export default function WiringListScreen() {
   const c = useColors();
   const [events, setEvents] = useState<Event[]>([]);
   const [bonsai, setBonsai] = useState<Bonsai[]>([]);
+  // Issue #326: mockup v1.0 各行 64×64 サムネ表示用 (BonsaiCard と同じ cover photo ロジック)
+  const [photoMap, setPhotoMap] = useState<Map<string, string>>(new Map());
 
   const reload = useCallback(async () => {
     const [evs, bs] = await Promise.all([
@@ -69,6 +74,18 @@ export default function WiringListScreen() {
     ]);
     setEvents(evs);
     setBonsai(bs);
+    // wiring 一覧で表示する盆栽の cover photo を並列取得 (BonsaiCard と同じ absoluteUri)
+    const entries = await Promise.all(
+      bs.map(async (b) => {
+        const photo = await getCoverPhoto(b.id);
+        return [b.id, photo?.absoluteUri ?? null] as const;
+      }),
+    );
+    const map = new Map<string, string>();
+    for (const [id, uri] of entries) {
+      if (uri) map.set(id, uri);
+    }
+    setPhotoMap(map);
   }, []);
 
   useFocusEffect(
@@ -160,6 +177,22 @@ export default function WiringListScreen() {
                 onPress={() => router.push(`/(tabs)/bonsai/${row.event.bonsaiId}` as Href)}
                 testID={`e2e_wiring_row_${row.event.id}`}
               >
+                {/* Issue #326: mockup v1.0 各行 64×64 サムネ (radius 8)、photo なしは placeholder */}
+                {row.bonsai && photoMap.get(row.bonsai.id) ? (
+                  <Image
+                    source={{ uri: photoMap.get(row.bonsai.id)! }}
+                    style={styles.thumb}
+                    contentFit="cover"
+                    testID={`e2e_wiring_thumb_${row.event.id}`}
+                  />
+                ) : (
+                  <View
+                    style={styles.thumbPlaceholder}
+                    testID={`e2e_wiring_thumb_placeholder_${row.event.id}`}
+                  >
+                    <WireIcon size={24} color={TEXT_MUTED} />
+                  </View>
+                )}
                 <View style={styles.cardBody}>
                   <View style={styles.cardHeaderRow}>
                     <ThemedText style={styles.cardName} numberOfLines={1}>
@@ -224,6 +257,16 @@ const styles = StyleSheet.create({
     minHeight: 96,
   },
   cardWarn: { borderColor: DANGER },
+  // Issue #326: mockup v1.0 64×64 thumbnail (radius 8、cover photo)
+  thumb: { width: 64, height: 64, borderRadius: 8, backgroundColor: BG_PRIMARY },
+  thumbPlaceholder: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    backgroundColor: BG_PRIMARY,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cardBody: { flex: 1, minWidth: 0, gap: 4 },
   cardHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   cardName: { fontSize: 16, fontWeight: '500', color: TEXT_PRIMARY, flex: 1 },
