@@ -13,6 +13,8 @@ import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
@@ -22,6 +24,7 @@ import {
   BRAND_GREEN,
   BRAND_GREEN_BG,
   ON_BRAND,
+  TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
@@ -34,7 +37,6 @@ import {
 import type { Bonsai } from '@/src/db/schema';
 import { searchSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
-import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { useSearchHistoryStore } from '@/src/features/search/searchHistoryStore';
 
 export default function LookBackSearchScreen() {
@@ -130,48 +132,56 @@ export default function LookBackSearchScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_find_screen"
     >
-      <SearchHeader
-        title={t('searchAction')}
-        testIdSuffix="find"
-        showSearch={false}
-        showSettings={false}
-      />
-
-      {/* Issue #339 Phase 1: live search (300ms debounce、L106-119 既存) のみで動作、
-          「検索する」 ボタン廃止 + clear (×) アイコン追加で mockup v1.0 SearchScreen 整合に近づける。
-          Phase 2 (Search-as-Header 化) と Phase 3 (match highlight) は別 PR。 */}
-      <View style={styles.searchBox}>
-        <View style={styles.inputWrap}>
-          <TextInput
-            accessibilityLabel={t('searchPlaceholder')}
-            testID="e2e_find_input"
-            style={[
-              styles.input,
-              { color: c.text, borderColor: c.border, backgroundColor: BG_SURFACE },
-            ]}
-            value={query}
-            onChangeText={setQuery}
-            onSubmitEditing={() => void runSearch()}
-            placeholder={t('searchPlaceholder')}
-            placeholderTextColor={c.textSecondary}
-            returnKeyType="search"
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-          {query.length > 0 && (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('cancel')}
-              testID="e2e_find_clear"
-              style={styles.clearButton}
-              onPress={() => setQuery('')}
-              hitSlop={8}
-            >
-              <ThemedText style={styles.clearButtonX}>×</ThemedText>
-            </Pressable>
-          )}
+      {/* Issue #339 Phase 2: mockup v1.0 SearchScreen 整合の Search-as-Header。
+          back arrow (router.back) + search input + clear (×) を 1 行に統合、
+          旧 SearchHeader (title + 検索アイコン) を廃止して画面密度を改善。
+          Phase 1 で「検索する」 ボタン廃止 + clear × 追加完遂、Phase 3 で
+          match highlight 予定。 */}
+      <SafeAreaView edges={['top']} style={styles.headerSafe}>
+        <View style={styles.header}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('cancel')}
+            testID="e2e_find_back"
+            style={styles.backButton}
+            onPress={() => router.back()}
+            hitSlop={8}
+          >
+            <ThemedText style={styles.backButtonText}>{'‹'}</ThemedText>
+          </Pressable>
+          <View style={styles.inputWrap}>
+            <TextInput
+              accessibilityLabel={t('searchPlaceholder')}
+              testID="e2e_find_input"
+              style={[
+                styles.input,
+                { color: c.text, borderColor: c.border, backgroundColor: BG_SURFACE },
+              ]}
+              value={query}
+              onChangeText={setQuery}
+              onSubmitEditing={() => void runSearch()}
+              placeholder={t('searchPlaceholder')}
+              placeholderTextColor={c.textSecondary}
+              returnKeyType="search"
+              autoCorrect={false}
+              autoCapitalize="none"
+              autoFocus
+            />
+            {query.length > 0 && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('cancel')}
+                testID="e2e_find_clear"
+                style={styles.clearButton}
+                onPress={() => setQuery('')}
+                hitSlop={8}
+              >
+                <ThemedText style={styles.clearButtonX}>×</ThemedText>
+              </Pressable>
+            )}
+          </View>
         </View>
-      </View>
+      </SafeAreaView>
 
       <ScrollView contentContainerStyle={styles.scroll}>
         {searchHistory.length > 0 && !searched && (
@@ -326,10 +336,27 @@ export default function LookBackSearchScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  searchBox: { padding: 16 },
-  // Issue #339 Phase 1: inputWrap で TextInput + clear (×) を重ね合わせ。
-  // mockup v1.0 SearchScreen の「search input + clear ×」 整合。
-  inputWrap: { position: 'relative' },
+  // Issue #339 Phase 2: Search-as-Header (back + input + clear)、SafeAreaView で top notch 対応
+  headerSafe: { backgroundColor: BG_SURFACE },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER_DEFAULT,
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backButtonText: { fontSize: 28, color: TEXT_PRIMARY, lineHeight: 28 },
+  // inputWrap で TextInput + clear (×) を重ね合わせ。Phase 1 で導入、Phase 2 で
+  // Header 内に移動 (旧 searchBox は廃止)。
+  inputWrap: { flex: 1, position: 'relative' },
   input: {
     paddingHorizontal: 14,
     paddingRight: 40,
