@@ -214,8 +214,11 @@ export default function PaywallScreen() {
           </View>
           <FeatureRow label={t('paywallFeatureBonsaiCount')} free="∞" pro="∞" />
           <FeatureRow label={t('paywallFeaturePhotos')} free="3" pro="∞" highlight />
+          <FeatureRow label={t('paywallFeatureHistory')} free="∞" pro="∞" />
+          <FeatureRow label={t('paywallFeatureBackup')} free="◎" pro="◎" />
           <FeatureRow label={t('paywallFeatureCsv')} free="—" pro="◎" />
           <FeatureRow label={t('paywallFeaturePdf')} free="—" pro="◎" />
+          <FeatureRow label={t('paywallFeatureYearlyTimeline')} free="—" pro="◎" />
           <FeatureRow
             label={t('paywallFeatureNoAds')}
             free={t('paywallFeatureNoAdsFreeValue')}
