@@ -672,6 +672,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   historyLabelRepotRootsHeavy: '1/2整理',
   detailTimelineTabTitle: '予定された作業',
   detailTimelineEmpty: 'まだ予定はありません',
+  addScheduleTitle: '予定を追加',
+  addScheduleCta: '予定を追加',
 };
 
 export default ja;

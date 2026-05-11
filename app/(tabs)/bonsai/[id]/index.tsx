@@ -1,3 +1,4 @@
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useState } from 'react';
@@ -105,6 +106,10 @@ export default function BonsaiDetailScreen() {
   const workConfirmRef = React.useRef<BottomSheet>(null);
   // 基本情報 編集 BottomSheet (BonsaiCreateSheet edit モード、mockup CreateBonsaiScreen 整合)
   const bonsaiEditRef = React.useRef<BottomSheet>(null);
+  // Issue #298 Phase 2: 予定追加 BottomSheet (WorkPickerSheet を mode 切替で再利用)
+  const schedulePickerRef = React.useRef<BottomSheet>(null);
+  const [pendingScheduleType, setPendingScheduleType] = useState<EventType | null>(null);
+  const [showSchedulePicker, setShowSchedulePicker] = useState(false);
   const [pendingWorkType, setPendingWorkType] = useState<EventType | null>(null);
   const FORM_TYPES: readonly EventType[] = ['watering', 'pruning', 'wiring'];
   const handleWorkPickerSelect = React.useCallback(
@@ -128,6 +133,39 @@ export default function BonsaiDetailScreen() {
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [item],
+  );
+
+  // Issue #298 Phase 2: 予定追加フロー (3 step を 2 step に簡略化、確認ステップ省略)
+  // Step 1: WorkPickerSheet (再利用、titleOverrideKey='addScheduleTitle') で作業選択
+  // Step 2: DateTimePicker (mode='date') で日付選択 → createEvent({ status: 'planned' })
+  const handleSchedulePickerSelect = React.useCallback((type: EventType) => {
+    schedulePickerRef.current?.close();
+    setPendingScheduleType(type);
+    setTimeout(() => setShowSchedulePicker(true), 200);
+  }, []);
+
+  const handleScheduleDateSelect = React.useCallback(
+    async (date: Date | null) => {
+      setShowSchedulePicker(false);
+      if (!date || !pendingScheduleType || !id) {
+        setPendingScheduleType(null);
+        return;
+      }
+      try {
+        await createEvent({
+          bonsaiId: id,
+          type: pendingScheduleType,
+          status: 'planned',
+          occurredAtUtc: date.toISOString(),
+        });
+        setPendingScheduleType(null);
+        await reload();
+      } catch (err) {
+        Alert.alert(t('error'), String(err));
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pendingScheduleType, id, t],
   );
 
   // F-04 Phase A: 「最後の水やりから X 日」(ADR-0013、純関数の説明は wateringHeatmap.ts)
@@ -747,6 +785,16 @@ export default function BonsaiDetailScreen() {
         {activeTab === 'timeline' && (
           <View style={styles.section}>
             <ThemedText type="subtitle">{t('detailTimelineTabTitle')}</ThemedText>
+            {/* Issue #298 Phase 2: 「+ 予定を追加」 ボタン */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('addScheduleCta')}
+              testID="e2e_timeline_add_schedule"
+              style={styles.eventAddBtn}
+              onPress={() => schedulePickerRef.current?.snapToIndex(0)}
+            >
+              <ThemedText style={styles.eventAddText}>+ {t('addScheduleCta')}</ThemedText>
+            </Pressable>
             {(() => {
               const plannedEvents = events
                 .filter((e) => e.status === 'planned')
@@ -796,6 +844,40 @@ export default function BonsaiDetailScreen() {
           /* close 時に追加処理が必要なら ここで */
         }}
       />
+
+      {/* Issue #298 Phase 2: 予定追加 BottomSheet (WorkPickerSheet を titleOverride で再利用) */}
+      <WorkPickerSheet
+        ref={schedulePickerRef}
+        index={-1}
+        bonsaiName={item.name}
+        isPine={
+          (item.species?.commonName ?? '').toLowerCase().includes('pine') ||
+          (item.species?.scientificName ?? '').toLowerCase().includes('pinus') ||
+          (item.species?.commonName ?? '').includes('松')
+        }
+        onSelect={handleSchedulePickerSelect}
+        onClose={() => {
+          /* close 時の処理なし */
+        }}
+        titleOverrideKey="addScheduleTitle"
+      />
+
+      {/* Issue #298 Phase 2: 予定追加 日付 picker (action 選択後に表示) */}
+      {showSchedulePicker && (
+        <DateTimePicker
+          testID="e2e_schedule_date_picker"
+          value={new Date(Date.now() + 86_400_000)} // デフォルト 明日
+          mode="date"
+          minimumDate={new Date()}
+          onChange={(event, date) => {
+            if (event.type === 'set' && date) {
+              void handleScheduleDateSelect(date);
+            } else {
+              void handleScheduleDateSelect(null);
+            }
+          }}
+        />
+      )}
 
       {/* ADR-0020 v1.x-3: 作業記録 詳細 form BottomSheet (water / pruning / wiring) */}
       <WorkLogConfirmSheet

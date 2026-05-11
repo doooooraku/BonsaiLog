@@ -666,5 +666,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   historyLabelRepotRootsHeavy: '1/2',
   detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: 'No scheduled tasks yet.',
+  addScheduleTitle: 'Add a scheduled task',
+  addScheduleCta: 'Add a scheduled task',
 };
 export default ru;
