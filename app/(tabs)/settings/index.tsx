@@ -187,7 +187,10 @@ export default function SettingsScreen() {
             → 6. バックアップ → 7. その他 (法令) → 8. バージョン
             実機固有 (検索 / ヘルプ / DEV) は末尾に配置。 */}
 
-        {/* --- 1. F-13 Phase 1b Pro / Paywall 導線 (Issue #20、ADR-0009) --- */}
+        {/* --- 1. F-13 Phase 1b Pro / Paywall 導線 (Issue #20、ADR-0009) ---
+            Issue #457 Phase 2: mockup `settings-tab-01.png` 整合の 1 行 row レイアウト
+            (label 「プラン」 + Free/Lifetime badge + Upgrade CTA badge)。
+            旧 2 行 stacked (title + entryDesc) は廃止。 */}
         <SettingsSection title={t('settingsAccountSection')}>
           <Pressable
             accessibilityRole="button"
@@ -196,27 +199,32 @@ export default function SettingsScreen() {
             style={styles.entry}
             onPress={() => router.push('/pro' as Href)}
           >
-            <View style={styles.proRow}>
-              <ThemedText type="defaultSemiBold" style={styles.proRowLabel}>
-                {planType === 'lifetime'
-                  ? t('settingsAccountProLifetimeTitle')
-                  : isPro
-                    ? t('settingsAccountProActive')
-                    : t('proTitle')}
-              </ThemedText>
-              {isPro && (
-                <View style={styles.proBadge} testID="e2e_settings_pro_badge">
-                  <ThemedText style={styles.proBadgeText}>{t('proBadgeShort')}</ThemedText>
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('settingsPlanLabel')}</ThemedText>
+              <View style={styles.rowRight}>
+                <View
+                  style={[styles.planStatusBadge, isPro && styles.planStatusBadgePro]}
+                  testID="e2e_settings_plan_status_badge"
+                >
+                  <ThemedText
+                    style={[styles.planStatusBadgeText, isPro && styles.planStatusBadgeTextPro]}
+                  >
+                    {planType === 'lifetime'
+                      ? t('proPlanLifetimeTitle')
+                      : isPro
+                        ? t('proBadgeShort')
+                        : t('proPlanFreeTitle')}
+                  </ThemedText>
                 </View>
-              )}
+                {!isPro && (
+                  <View style={styles.planUpgradeBadge} testID="e2e_settings_plan_upgrade_cta">
+                    <ThemedText style={styles.planUpgradeBadgeText}>
+                      {t('settingsPlanUpgradeBadge')}
+                    </ThemedText>
+                  </View>
+                )}
+              </View>
             </View>
-            <ThemedText style={styles.entryDesc}>
-              {planType === 'lifetime'
-                ? t('settingsAccountProLifetimeDesc')
-                : isPro
-                  ? t('settingsAccountProActiveDesc')
-                  : t('settingsAccountProInactiveDesc')}
-            </ThemedText>
           </Pressable>
 
           {/* F-13 Phase 2d (Issue #20, ADR-0009 AC4-1): Settings からの購入復元 (Apple Review 3.1.1) */}
@@ -672,6 +680,32 @@ const styles = StyleSheet.create({
   rowRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   rowValue: { fontSize: 14, opacity: 0.7 },
   chevron: { fontSize: 18, opacity: 0.5, lineHeight: 18 },
+  // Issue #457 Phase 2: 「プラン」 row の 3 要素 (label + 状態 badge + Upgrade CTA)
+  // mockup `settings-tab-01.png` 整合: Free/Pro/Lifetime のステータス表示 + 緑 CTA。
+  planStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+  },
+  planStatusBadgePro: { borderColor: ACCENT_GOLD, backgroundColor: ACCENT_GOLD },
+  planStatusBadgeText: { fontSize: 11, fontWeight: '600', letterSpacing: 0.4 },
+  planStatusBadgeTextPro: { color: ON_BRAND },
+  planUpgradeBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#1F3A2E', // BRAND_GREEN を直接参照 (color util 重複 import 回避)
+  },
+  planUpgradeBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+  },
+  // 旧 (Issue #457 Phase 2 で廃止)、削除候補だが後方互換のため残置 (settings 内未参照)。
   proRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   proRowLabel: { flex: 1 },
   proBadge: {
