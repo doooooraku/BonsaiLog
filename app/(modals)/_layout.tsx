@@ -40,6 +40,10 @@ export default function ModalsLayout() {
         name="bulk-schedule-date"
         options={{ ...FORM_SHEET_OPTIONS, title: '予定日を選ぶ' }}
       />
+      <Stack.Screen
+        name="watering-day-detail"
+        options={{ ...FORM_SHEET_OPTIONS, title: 'この日の水やり' }}
+      />
     </Stack>
   );
 }

@@ -9,9 +9,8 @@
  *
  * Tier 2 の編集機能完了後、CareHub Hub の watering Alert を本画面遷移に置換。
  */
-import type BottomSheet from '@gorhom/bottom-sheet';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -31,8 +30,8 @@ import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/
 import { getAllActiveWateringEventsLogged } from '@/src/db/eventRepository';
 import type { Event } from '@/src/db/schema';
 import { CrossWateringCalendar } from '@/src/features/watering/CrossWateringCalendar';
-import { WateringDayDetailSheet } from '@/src/features/watering/WateringDayDetailSheet';
 import { WateringHeatmap } from '@/src/features/watering/WateringHeatmap';
+import { usePickerStore } from '@/src/stores/pickerStore';
 import { buildIndividualSummary, toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 
 type RangeOption = {
@@ -53,8 +52,8 @@ export default function CrossWateringHistoryScreen() {
   const [events, setEvents] = useState<Event[]>([]);
   const [windowDays, setWindowDays] = useState<30 | 90 | 365>(90);
   const [bonsaiList, setBonsaiList] = useState<BonsaiWithSpecies[]>([]);
-  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
-  const dayDetailSheetRef = useRef<BottomSheet>(null);
+  // Phase G4 part 1 (ADR-0024 Accepted): WateringDayDetailSheet → (modals)/watering-day-detail
+  // (formSheet) に置換、selectedDateKey / sheetRef は不要 (router 経路 + store 経由)。
 
   const reload = useCallback(async () => {
     const [evs, bs] = await Promise.all([
@@ -87,28 +86,32 @@ export default function CrossWateringHistoryScreen() {
     [events, tzOffsetMin, windowDays, todayLocalKey],
   );
 
-  // 日付タップ → BottomSheet で当日詳細を表示。
+  // 日付タップ → (modals)/watering-day-detail (formSheet) で当日詳細を表示。
   const bonsaiById = useMemo(() => new Map(bonsaiList.map((b) => [b.id, b])), [bonsaiList]);
-  const selectedDayEvents = useMemo(() => {
-    if (selectedDateKey == null) return [];
-    return events.filter((e) => toLocalDateKey(e.occurredAtUtc, tzOffsetMin) === selectedDateKey);
-  }, [events, selectedDateKey, tzOffsetMin]);
 
-  const handleDayPress = useCallback((dateKey: string) => {
-    setSelectedDateKey(dateKey);
-    dayDetailSheetRef.current?.snapToIndex(0);
-  }, []);
-
-  const handleDayDetailClose = useCallback(() => {
-    setSelectedDateKey(null);
-  }, []);
-
-  const handlePressEntry = useCallback(
-    (bonsaiId: string) => {
-      dayDetailSheetRef.current?.close();
-      router.push(`/(tabs)/bonsai/${bonsaiId}` as Href);
+  const handleDayPress = useCallback(
+    (dateKey: string) => {
+      const dayEvents = events.filter(
+        (e) => toLocalDateKey(e.occurredAtUtc, tzOffsetMin) === dateKey,
+      );
+      usePickerStore.getState().setWateringDayDetailContext({
+        dateKey,
+        events: dayEvents,
+        bonsaiById,
+      });
+      router.push('/watering-day-detail' as Href);
     },
-    [router],
+    [events, bonsaiById, router, tzOffsetMin],
+  );
+
+  // watering-day-detail Screen から戻った時に entry tap 結果を消費 → 盆栽詳細へ遷移。
+  useFocusEffect(
+    useCallback(() => {
+      const bonsaiId = usePickerStore.getState().consumeWateringDayDetailEntry();
+      if (bonsaiId != null) {
+        router.push(`/(tabs)/bonsai/${bonsaiId}` as Href);
+      }
+    }, [router]),
   );
 
   return (
@@ -193,15 +196,8 @@ export default function CrossWateringHistoryScreen() {
         </ThemedText>
       </ScrollView>
 
-      {/* 日付タップ詳細 BottomSheet (Calendar セル tap で開く) */}
-      <WateringDayDetailSheet
-        ref={dayDetailSheetRef}
-        dateKey={selectedDateKey}
-        events={selectedDayEvents}
-        bonsaiById={bonsaiById}
-        onClose={handleDayDetailClose}
-        onPressEntry={handlePressEntry}
-      />
+      {/* Phase G4 part 1 (ADR-0024 Accepted): 日付タップ詳細は (modals)/watering-day-detail
+          (formSheet) に置換、本ファイル直下 JSX 不要 (router.push 経路)。 */}
     </ThemedView>
   );
 }
