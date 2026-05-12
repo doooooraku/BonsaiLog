@@ -101,7 +101,8 @@ export function useBonsaiBasicForm({
   const [estimatedAgeText, setEstimatedAgeText] = useState('');
   const [memo, setMemo] = useState('');
   const [purchaseDate, setPurchaseDate] = useState('');
-  const [acquiredFrom, setAcquiredFrom] = useState('');
+  // Issue #455 Phase 2: 鉢情報 (テキスト自由入力、既存 pot_info JSON に { description } で保存)。
+  const [potInfoText, setPotInfoText] = useState('');
   const [recentTags, setRecentTags] = useState<TagRecord[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const speciesSheetRef = useRef<BottomSheet>(null);
@@ -137,7 +138,13 @@ export function useBonsaiBasicForm({
     );
     setMemo(editingBonsai.memo ?? '');
     setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
-    setAcquiredFrom(editingBonsai.acquiredFrom ?? '');
+    // pot_info JSON から description を復元 (parse 失敗時は空文字 = legacy)
+    try {
+      const parsed = editingBonsai.potInfo ? JSON.parse(editingBonsai.potInfo) : null;
+      setPotInfoText(typeof parsed?.description === 'string' ? parsed.description : '');
+    } catch {
+      setPotInfoText('');
+    }
     let cancelled = false;
     void getTagsByBonsai(editingBonsai.id).then((tags) => {
       if (cancelled) return;
@@ -169,7 +176,12 @@ export function useBonsaiBasicForm({
       );
       setMemo(editingBonsai.memo ?? '');
       setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
-      setAcquiredFrom(editingBonsai.acquiredFrom ?? '');
+      try {
+        const parsed = editingBonsai.potInfo ? JSON.parse(editingBonsai.potInfo) : null;
+        setPotInfoText(typeof parsed?.description === 'string' ? parsed.description : '');
+      } catch {
+        setPotInfoText('');
+      }
       setSelectedTagIds(new Set(originalTagIdsRef.current));
       setPendingPhotos([]);
     } else {
@@ -181,7 +193,7 @@ export function useBonsaiBasicForm({
       setEstimatedAgeText('');
       setMemo('');
       setPurchaseDate('');
-      setAcquiredFrom('');
+      setPotInfoText('');
       setSelectedTagIds(new Set());
     }
   }, [editingBonsai]);
@@ -258,7 +270,9 @@ export function useBonsaiBasicForm({
         estimatedAge,
         memo: memo.trim() ? memo.trim() : null,
         purchaseDate: purchaseDate.trim() ? toIsoUtc(purchaseDate.trim()) : null,
-        acquiredFrom: acquiredFrom.trim() ? acquiredFrom.trim() : null,
+        // Issue #455 Phase 2: 鉢情報を { description } JSON で pot_info column に保存
+        // (将来 size_cm / shape / material 等を増やすときも同 JSON 拡張で対応)。
+        potInfo: potInfoText.trim() ? { description: potInfoText.trim() } : null,
       };
 
       if (editingBonsai != null) {
@@ -311,7 +325,7 @@ export function useBonsaiBasicForm({
     acquiredAt,
     memo,
     purchaseDate,
-    acquiredFrom,
+    potInfoText,
     editingBonsai,
     selectedTagIds,
     pendingPhotos,
@@ -339,8 +353,8 @@ export function useBonsaiBasicForm({
     setMemo,
     purchaseDate,
     setPurchaseDate,
-    acquiredFrom,
-    setAcquiredFrom,
+    potInfoText,
+    setPotInfoText,
     recentTags,
     selectedTagIds,
     toggleTag,
@@ -386,8 +400,8 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     setMemo,
     purchaseDate,
     setPurchaseDate,
-    acquiredFrom,
-    setAcquiredFrom,
+    potInfoText,
+    setPotInfoText,
     recentTags,
     selectedTagIds,
     toggleTag,
@@ -548,19 +562,19 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         />
       </View>
 
-      {/* Issue #455 Phase 1: 入手元メモ (任意、mockup `bonsai-detail-basic-02.png` 整合)。
-          schema v10 で acquired_from column 新規追加。 */}
+      {/* Issue #455 Phase 2: 鉢情報 (任意、mockup `bonsai-detail-basic-02.png` 整合)。
+          既存 pot_info JSON column 活用 (A 案、schema migration なし)、構造化は v2 以降。 */}
       <View style={styles.field}>
         <View style={styles.fieldLabelRow}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldAcquiredFrom')}</ThemedText>
+          <ThemedText type="defaultSemiBold">{t('bonsaiFieldPotInfo')}</ThemedText>
           <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
         </View>
         <TextInput
           style={styles.input}
-          value={acquiredFrom}
-          onChangeText={setAcquiredFrom}
-          placeholder={t('bonsaiFieldAcquiredFromPlaceholder')}
-          accessibilityLabel={t('bonsaiFieldAcquiredFrom')}
+          value={potInfoText}
+          onChangeText={setPotInfoText}
+          placeholder={t('bonsaiFieldPotInfoPlaceholder')}
+          accessibilityLabel={t('bonsaiFieldPotInfo')}
           maxLength={200}
         />
       </View>
