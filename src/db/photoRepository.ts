@@ -22,8 +22,18 @@ import { getDb } from './db';
 import { toAbsolutePath, toRelativePath } from './filePathUtils';
 import type { Photo } from './schema';
 
-/** Free プランの 1 樹あたり写真上限 (constraints §2-2)。 */
-export const FREE_PHOTO_LIMIT_PER_BONSAI = 3;
+/**
+ * 1 樹あたり写真上限 (Issue #458 Phase 2 で「写真制限撤廃」 適用、principles.md v1.0
+ * 「Pro = 出力 + 体験、写真枚数は Free でも無制限」 整合)。
+ *
+ * 旧 (Phase 2 適用前): Free = 3 枚 / Pro = 無制限 (constraints §2-2 旧版)。
+ * 新: 全プラン無制限 (`Number.POSITIVE_INFINITY`、UI の残枠表示・上限アラートは Infinity
+ * 評価で自動的に no-op になる)。
+ *
+ * 定数自体は legacy として残置 (UI/storage で参照中の callsite を一括変更せずに済む)。
+ * Pro 訴求は CSV/PDF エクスポート / Year-in-Photos / Theme / 広告なし に集約。
+ */
+export const FREE_PHOTO_LIMIT_PER_BONSAI = Number.POSITIVE_INFINITY;
 
 /** 相対パスの anchor (絶対パス → 相対パス変換時の起点)。 */
 const PHOTO_PATH_ANCHOR = 'bonsailog/photos/';
