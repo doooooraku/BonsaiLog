@@ -279,18 +279,22 @@ export default function WiringListScreen() {
                     {scheduleText(row, t)}
                   </ThemedText>
                 </View>
-                {/* Issue #325: 「外す」 アクションボタン (mockup v1.0 整合)、
-                    親 Pressable の onPress 伝播を防ぐため stopPropagation 系の代わりに onPress 内で完結 */}
+                {/* Issue #325: 「外す」 アクションボタン (mockup v1.0 整合)。
+                    Phase E (Pressable 階層問題対応): hitSlop 8 → 20 に拡張、
+                    accessibilityLabel に盆栽名併記で Maestro tap 精度向上。
+                    親 Pressable の onPress 伝播は stopPropagation で抑制 (React Native
+                    の Pressable は完全な event bubble 制御を持たないため、最終的解決は
+                    M 案 (外側 Pressable → View 構造変更) を v2 検討)。 */}
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={t('wiringRowUnwireAction')}
+                  accessibilityLabel={`${row.bonsai?.name ?? ''} ${t('wiringRowUnwireAction')}`}
                   testID={`e2e_wiring_row_unwire_${row.event.id}`}
                   style={styles.unwireButton}
                   onPress={(e) => {
                     e.stopPropagation?.();
                     handleUnwire(row);
                   }}
-                  hitSlop={8}
+                  hitSlop={20}
                 >
                   <ThemedText style={styles.unwireButtonText}>
                     {t('wiringRowUnwireAction')}
