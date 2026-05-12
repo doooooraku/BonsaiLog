@@ -681,6 +681,16 @@ const baseEn = {
   detailTimelineSectionTitle: 'Upcoming schedule',
   timelineConsecutive: '{count} consecutive days',
   detailTimelinePastCollapsed: 'Past watering: collapsed',
+
+  // i18n keys added in PR #472 batch (en.ts source of TranslationKey type)
+  settingsArchivedCountValue: '{count} items',
+  bonsaiTagsAddCta: 'Add tag',
+  settingsPlanLabel: 'Plan',
+  settingsPlanUpgradeBadge: 'Upgrade',
+  bonsaiFieldAcquiredFrom: 'Acquired from',
+  bonsaiFieldAcquiredFromPlaceholder: 'e.g., Inherited from father / Takasaki Bonsai Market',
+  bonsaiFieldPotInfo: 'Pot info',
+  bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
 };
 
 export type TranslationKey = keyof typeof baseEn;

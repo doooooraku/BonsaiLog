@@ -679,6 +679,16 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailTimelineSectionTitle: 'これからの予定',
   timelineConsecutive: '{count}日連続',
   detailTimelinePastCollapsed: '過去水やりは折りたたみ',
+
+  // i18n keys added in PR #472 batch (en.ts source of TranslationKey type)
+  settingsArchivedCountValue: '{count} 件',
+  bonsaiTagsAddCta: 'タグ追加',
+  settingsPlanLabel: 'プラン',
+  settingsPlanUpgradeBadge: 'Upgrade',
+  bonsaiFieldAcquiredFrom: '入手元メモ',
+  bonsaiFieldAcquiredFromPlaceholder: '例: 父から継承 / 高崎盆栽市',
+  bonsaiFieldPotInfo: '鉢情報',
+  bonsaiFieldPotInfoPlaceholder: '例: 朱泥 楕円 12cm / 中野鉢',
 };
 
 export default ja;
