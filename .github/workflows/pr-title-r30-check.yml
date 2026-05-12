@@ -1,0 +1,54 @@
+# S4 (2026-05-13): R-30 PR title hook
+#
+# 外部 testing lib (@gorhom/bottom-sheet / detox / maestro) の remove/replace を含む PR title で
+# ADR-XXXX 言及 + PoC 結果リンク (results.md or 3/3 PASS 文言) を必須化。
+# R-30 (外部 lib テスト stability 変更時 PoC 必須) を構造的に強制。
+#
+# Trigger: PR opened / edited / synchronize
+# Fail conditions:
+#   1. PR title が `(@gorhom|detox|maestro).*?(remove|replace|delete|drop)` に match
+#   2. PR body に `ADR-\d{4}` 言及なし → error
+#   3. PR body に `3/3 PASS` or `results\.md` リンクなし → error
+
+name: PR Title R-30 Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  check-r30:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title for R-30 patterns
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -e
+          # R-30 対象パターン (外部 testing lib + remove/replace)
+          if echo "$PR_TITLE" | grep -iE "(@gorhom|detox|maestro)" | grep -iE "(remove|replace|delete|drop)" > /dev/null; then
+            echo "::notice::R-30 pattern detected in PR title: $PR_TITLE"
+
+            FAIL=0
+
+            # ADR-XXXX 言及確認
+            if ! echo "$PR_BODY" | grep -E "ADR-[0-9]{4}" > /dev/null; then
+              echo "::error::R-30 違反: PR title が外部 testing lib 削除/置換 pattern に match (${PR_TITLE})。PR body に ADR-XXXX 言及が必須 (R-30 ADR 先行原則)。"
+              FAIL=1
+            fi
+
+            # PoC 結果リンク確認 (3/3 PASS or results.md or PR #XXX のいずれか)
+            if ! echo "$PR_BODY" | grep -E "3/3 PASS|results\.md|PR #[0-9]+" > /dev/null; then
+              echo "::error::R-30 違反: PR body に PoC 結果リンク (3/3 PASS / results.md / 関連 PR #XXX) が必須。"
+              FAIL=1
+            fi
+
+            if [ "$FAIL" -eq 1 ]; then
+              exit 1
+            fi
+
+            echo "::notice::R-30 チェック通過: ADR 言及 + PoC 結果リンクあり"
+          else
+            echo "R-30 対象外 PR (外部 testing lib remove/replace pattern に該当しない)"
+          fi
