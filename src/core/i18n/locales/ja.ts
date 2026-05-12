@@ -177,7 +177,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   errorDeleteFailed: '削除に失敗しました。',
 
   // --- 設定セクション (F-05 通知 + F-11 お引っ越し) ---
-  settingsNotificationSection: '通知設定',
+  settingsNotificationSection: '通知',
   settingsEventOverloadToggle: '予定が多い時の確認ポップアップ',
   settingsEventOverloadToggleDesc:
     'ON にすると、同じ日に 6 件目の作業を記録するときに、無理のない範囲を確認するメッセージが出ます。',
@@ -354,7 +354,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   searchTagFilterClear: 'フィルタを解除',
 
   // --- F-13 設定 → アカウント / Paywall 導線 (Phase 1b、Issue #20、ADR-0009) ---
-  settingsAccountSection: 'アカウント',
+  settingsAccountSection: 'アカウント・プラン',
   settingsAccountProActive: 'Pro メンバー',
   settingsAccountProActiveDesc: 'ここからサブスクリプションを管理できます。',
   settingsAccountProInactiveDesc: 'プランを見てアップグレード。',
