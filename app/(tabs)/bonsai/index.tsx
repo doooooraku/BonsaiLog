@@ -42,10 +42,8 @@ import {
 import { getCoverPhoto } from '@/src/db/photoRepository';
 import type { EventType } from '@/src/db/schema';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
-import type BottomSheet from '@gorhom/bottom-sheet';
 import { AdBanner } from '@/src/features/ads/AdBanner';
 import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCard';
-import { BonsaiCreateSheet } from '@/src/features/bonsai/BonsaiCreateSheet';
 import { HomeFilterTabs, type FilterChip } from '@/src/features/bonsai/HomeFilterTabs';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { SelectionToolbar } from '@/src/features/bonsai/SelectionToolbar';
@@ -174,15 +172,11 @@ export default function BonsaiHomeScreen() {
   const [bulkSchedType, setBulkSchedType] = useState<EventType>('fertilizing');
   const [bulkLogType, setBulkLogType] = useState<EventType>('watering');
 
-  // T2-1: FAB / Empty CTA 押下時に開く新規登録 BottomSheet の ref。
-  const createSheetRef = useRef<BottomSheet>(null);
-  const openCreateSheet = useCallback(() => createSheetRef.current?.snapToIndex(0), []);
-  const handleCreated = useCallback(
-    (bonsaiId: string) => {
-      router.push(`/(tabs)/bonsai/${bonsaiId}` as Href);
-    },
-    [router],
-  );
+  // Phase G4 part 2 (ADR-0024 Accepted): 新規登録 BottomSheet を `(modals)/bonsai-new` (modal、
+  // functional_spec §6.2 既存設計) に置換、ref は不要 (router 経路 + store 経由)。
+  const openCreateSheet = useCallback(() => {
+    router.push('/bonsai-new' as Href);
+  }, [router]);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -314,11 +308,12 @@ export default function BonsaiHomeScreen() {
     [selectedIds, bulkLogType, reload],
   );
 
-  // Phase G3a-G3b: bulk-* formSheet から戻った時に結果を消費。
+  // Phase G3a-G4: bulk-* / bonsai-new modal から戻った時に結果を消費。
   // - workResult.mode === 'log' → bulkLogType を保持して /bulk-log-confirm へ次遷移
   // - workResult.mode === 'schedule' → bulkSchedType を保持して /bulk-schedule-date へ次遷移
   // - logResult あれば bulkLogEvents 経由で DB 書込
   // - schedResult あれば bulkScheduleEvents 経由で DB 書込
+  // - bonsaiCreateResult あれば reload + /bonsai/<id> 遷移
   useFocusEffect(
     useCallback(() => {
       const workResult = usePickerStore.getState().consumeBulkWorkPickerResult();
@@ -339,7 +334,12 @@ export default function BonsaiHomeScreen() {
       if (schedResult) {
         void handleBulkSchedSave(schedResult);
       }
-    }, [router, handleBulkLogConfirmSave, handleBulkSchedSave]),
+      const newBonsaiId = usePickerStore.getState().consumeBonsaiCreateResult();
+      if (newBonsaiId != null) {
+        void reload();
+        router.push(`/(tabs)/bonsai/${newBonsaiId}` as Href);
+      }
+    }, [router, handleBulkLogConfirmSave, handleBulkSchedSave, reload]),
   );
 
   if (loading) {
@@ -386,13 +386,8 @@ export default function BonsaiHomeScreen() {
             </ThemedText>
           </Pressable>
         </View>
-        <BonsaiCreateSheet
-          bottomSheetRef={createSheetRef}
-          onCreated={(id) => {
-            void reload();
-            handleCreated(id);
-          }}
-        />
+        {/* Phase G4 part 2 (ADR-0024 Accepted): BonsaiCreate は (modals)/bonsai-new (modal)
+            に置換、JSX 直接配置不要 (router.push 経路、empty state で同経路使用)。 */}
       </ThemedView>
     );
   }
@@ -464,16 +459,8 @@ export default function BonsaiHomeScreen() {
         </View>
       )}
       <AdBanner />
-      {/* Phase G3a-G3b (ADR-0024 Accepted): BulkWorkPicker + BulkLogConfirm + BulkScheduleDate
-          は全 formSheet 化、JSX 直接配置不要 (router.push 経路)。 */}
-      {/* T2-1: 新規盆栽登録 BottomSheet (旧 app/(tabs)/bonsai/new.tsx を移植、機能維持のみ)。 */}
-      <BonsaiCreateSheet
-        bottomSheetRef={createSheetRef}
-        onCreated={(id) => {
-          void reload();
-          handleCreated(id);
-        }}
-      />
+      {/* Phase G3a-G4 (ADR-0024 Accepted): BulkWorkPicker + BulkLogConfirm + BulkScheduleDate
+          + BonsaiCreate は全 formSheet/modal 化、JSX 直接配置不要 (router.push 経路)。 */}
     </ThemedView>
   );
 }
