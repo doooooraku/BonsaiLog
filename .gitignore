@@ -62,7 +62,11 @@ screenshots/
 !docs/mockups/v1.0/screenshots/**
 
 # UI diff output (ADR-0021)
-scripts/ui-diff/out/
+scripts/ui-diff/out/*
+
+# Whitelist: G0 PoC results template (ADR-0024 Phase G0、ユーザー実機検証結果記録)
+!scripts/ui-diff/out/poc-g0/
+!scripts/ui-diff/out/poc-g0/**
 
 # OpenDesign チャット履歴 DB (ローカル参照のみ、ユーザープロンプト履歴を含む 4MB+ binary)
 docs/mockups/v1.0/app.sqlite
