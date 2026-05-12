@@ -1,0 +1,57 @@
+## Maestro flow テンプレート (ADR-0024 / 本セッション仕組み化、retro 結果反映)
+##
+## 新規 Maestro flow を作成する際の **必須 boilerplate**。本 template を `cp` してから flow を書き始める:
+##   cp maestro/flows/_template.yml maestro/flows/<new-flow>.yml
+##
+## R-31 (Maestro flow 新規作成時の事前 testID 検索) を遵守:
+## 1. 関連画面の testID grep (`grep -rn 'e2e_' app/<screen>/ src/features/<feature>/`)
+## 2. _template.yml をコピー
+## 3. 標準 step 順序を維持 (launchApp → pressKey:Back → extendedWaitUntil → 固有手順)
+##
+## 反復実行コマンド (3 回反復、業界標準):
+##   PASS=0; for i in 1 2 3; do
+##     ~/.maestro/bin/maestro test maestro/flows/<flow>.yml > /tmp/m-$i.log 2>&1
+##     if [ $? -eq 0 ]; then PASS=$((PASS+1)); echo "Run $i: PASS"; else echo "Run $i: FAIL"; fi
+##   done; echo "$PASS/3"
+##
+## timeout 値 (2026-05-12 retro 結果で短縮):
+## - bundle load 待ち: 30000 → 20000 (33% 削減、bundle 初回 ~15s + margin 5s)
+## - Continue dismiss 後: 3000 → 2000 (33% 削減、back キー直後 animation 300ms)
+## - waitForAnimationToEnd: 5000 → 3000 (40% 削減、animation 500ms + margin)
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    # clearState: true は Onboarding 起動 + DB clean。
+    # 既存 state を維持したい場合は false (~3 分短縮可能)。
+    clearState: true
+
+# Dev Client menu → localhost:8081 tap でアプリ本体起動 (development build 専用 step)
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Expo Dev Client Continue dialog 自動 dismiss (Back キー、毎回必須)
+# 注: tapOn: text: 'Continue' は Developer Menu を起動するため絶対 NG。
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# bundle load 完了待ち (起点画面の testID を assert)
+# 例: 盆栽タブ empty 状態なら 'e2e_home_empty_cta'、list 状態なら 'e2e_bonsai_home_list'
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_xxx_screen' # ← 起点画面の testID に書き換え
+    timeout: 20000
+# === ここから flow 固有の手順 ===
+# 全 tap step に retryTapIfNoChange: true を必須付与 (ghost tap 防止)
+# 全 tap step 後に waitForAnimationToEnd: { timeout: 3000 } 必須 (animation 完了待ち)
+# text tap は禁止、testID 経由のみ (Developer Menu 誤起動防止)
+#
+# - tapOn:
+#     id: 'e2e_xxx_button'
+#     retryTapIfNoChange: true
+# - waitForAnimationToEnd:
+#     timeout: 3000

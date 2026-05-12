@@ -204,6 +204,27 @@ PR Template
 
 ---
 
+## 7.7. Maestro flow 変更チェック (Maestro flow 変更 PR で REQUIRED、R-31 関連)
+
+> **背景**: 2026-05-12 セッションで text tap (`tapOn: text: '設定'`) が Expo Dev Client Developer Menu を誤起動し、6 段階の試行錯誤で 1 時間ロス (R-9 violation)。 testID 経由のみ + template 利用で再発防止。
+
+### 7.7.1. Maestro flow 新規作成 / 修正時の必須チェック
+
+- [ ] `_template.yml` から派生 or 既存類似 flow をコピー (`cp maestro/flows/_template.yml maestro/flows/<new>.yml`)
+- [ ] **`tapOn: text: '...'` 不使用** (testID 経由 `id: 'e2e_xxx'` のみ、Developer Menu 誤起動防止)
+- [ ] `appId: 'com.doooooraku.bonsailog'` (誤 appId `app.bonsailog` 等は NG)
+- [ ] `launchApp` 直後に `pressKey: 'Back'` (Continue dialog dismiss、毎回必須)
+- [ ] 全 `tapOn` 直後に `waitForAnimationToEnd` (ghost tap 防止)
+- [ ] 関連画面の testID 事前 grep 実施 (`grep -rn 'e2e_' app/<screen>/ src/features/<feature>/`)
+- [ ] 反復実行: **3 回反復** (業界標準、2026-05-12 retro で 5 → 3 に短縮)
+
+### 7.7.2. 適用対象外の場合
+
+- [ ] 本 PR は Maestro flow 変更を含まない
+  - 理由: \_\_\_\_\_
+
+---
+
 ## 8. Docs影響（docs-as-code / REQUIRED）
 
 > 仕様書を死なせないための “分岐チェック”。
