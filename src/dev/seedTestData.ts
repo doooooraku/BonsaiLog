@@ -179,7 +179,15 @@ export async function seedTestData(): Promise<SeedResult> {
   }
 
   // 6. events: 各盆栽に watering を 5 件、過去 30 日で 1 週間ごと (status='logged')
-  for (const bonsaiId of createdBonsaiIds) {
+  // 直近 (i=0) の watering に mockup 整合の note を付与 (Issue #460: BonsaiCard comment 行
+  // fallback が `lastAction.note → species → "—"` のため、note 未設定だと commentText が
+  // species 名のみで Home カードの 3 階層構造が痩せて見える)。
+  const FIRST_WATERING_NOTES: readonly string[] = [
+    '葉色やや薄め、潅水量を増やす',
+    '土の乾き早し、朝夕 2 回',
+    '受け皿に水が残らない量で',
+  ];
+  for (const [bonsaiIdx, bonsaiId] of createdBonsaiIds.entries()) {
     for (let i = 0; i < 5; i++) {
       try {
         await createEvent({
@@ -187,6 +195,7 @@ export async function seedTestData(): Promise<SeedResult> {
           type: 'watering',
           status: 'logged',
           occurredAtUtc: pastUtc(2 + i * 6, 7),
+          note: i === 0 ? FIRST_WATERING_NOTES[bonsaiIdx] : undefined,
         });
         eventCount += 1;
       } catch (err) {
