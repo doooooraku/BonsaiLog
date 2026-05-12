@@ -44,6 +44,37 @@ import {
   getWireSize,
 } from '@/src/features/wiring/wiringDuration';
 
+/**
+ * 装着状態 3 段階 (Issue #459、mockup `wiring-list.png` 整合):
+ * - within_safe: scheduled_unwire_at まで余裕あり (灰)
+ * - within_warning: scheduled_unwire_at まで 14 日以下 (橙、外し時期接近)
+ * - overdue: scheduled_unwire_at を超過、または unwire 予定なしで 6 週超 (赤、要確認バッジ + 赤枠)
+ */
+type WiringStatusKind = 'within_safe' | 'within_warning' | 'overdue';
+
+/** scheduled_unwire_at まで残り 14 日 (2 週) 以下を warning と判定。 */
+const WARNING_WINDOW_DAYS = 14;
+
+/** 既定の overdue しきい値 (scheduled_unwire_at 未指定時、wiringDuration の既定 42 日と同値)。 */
+const FALLBACK_OVERDUE_DAYS = 42;
+
+/**
+ * 装着状態 3 段階を判定 (純関数、Issue #459)。
+ * scheduled_unwire_at が指定されていれば「外し予定日からの残り日数」で判定。
+ * 未指定なら経過日数 (装着開始から) のしきい値判定に fallback。
+ */
+function classifyByScheduledUnwire(
+  daysSinceWired: number,
+  daysUntilUnwire: number | null,
+): WiringStatusKind {
+  if (daysUntilUnwire != null) {
+    if (daysUntilUnwire < 0) return 'overdue';
+    if (daysUntilUnwire <= WARNING_WINDOW_DAYS) return 'within_warning';
+    return 'within_safe';
+  }
+  return daysSinceWired >= FALLBACK_OVERDUE_DAYS ? 'overdue' : 'within_safe';
+}
+
 type WiringRow = {
   event: Event;
   bonsai: Bonsai | undefined;
@@ -51,8 +82,8 @@ type WiringRow = {
   scheduledUnwireAt: string | null;
   /** unwire 予定までの残週数 (null = 未指定、負値は overdue)。 */
   weeksUntilUnwire: number | null;
-  /** しきい値超過 (overdue) 判定。 */
-  overdue: boolean;
+  /** 装着状態 3 段階 (Issue #459)。 */
+  kind: WiringStatusKind;
   /** payload から: "1mm" 等。null は表示省略。 */
   gauge: string | null;
   /** payload から: "枝" "幹" 等。null は表示省略。 */
@@ -166,14 +197,20 @@ export default function WiringListScreen() {
         const diffDays = Math.ceil(diffMs / 86_400_000);
         weeksUntilUnwire = Math.ceil(Math.abs(diffDays) / 7) * (diffDays >= 0 ? 1 : -1);
       }
-      const overdue = classifyWiringDuration(days) === 'overdue';
+      // Issue #459: scheduled_unwire_at までの残り日数で 3 段階判定
+      // (旧 classifyWiringDuration は scheduled_unwire_at を考慮しないため、
+      //  予定内でも 6 週超で overdue と誤判定していた)。
+      const daysUntilUnwire = scheduledUnwireAt
+        ? Math.ceil((new Date(scheduledUnwireAt).getTime() - today.getTime()) / 86_400_000)
+        : null;
+      const kind = classifyByScheduledUnwire(days, daysUntilUnwire);
       rows.push({
         event: latestWiring,
         bonsai: bonsaiMap.get(bId),
         weeks,
         scheduledUnwireAt,
         weeksUntilUnwire,
-        overdue,
+        kind,
         gauge: getWireSize(latestWiring),
         part: getBodyPart(latestWiring),
       });
@@ -203,7 +240,7 @@ export default function WiringListScreen() {
                 key={row.event.id}
                 accessibilityRole="button"
                 accessibilityLabel={row.bonsai?.name ?? ''}
-                style={[styles.card, row.overdue && styles.cardWarn]}
+                style={[styles.card, row.kind === 'overdue' && styles.cardWarn]}
                 onPress={() => router.push(`/(tabs)/bonsai/${row.event.bonsaiId}` as Href)}
                 testID={`e2e_wiring_row_${row.event.id}`}
               >
@@ -228,7 +265,7 @@ export default function WiringListScreen() {
                     <ThemedText style={styles.cardName} numberOfLines={1}>
                       {row.bonsai?.name ?? ''}
                     </ThemedText>
-                    {row.overdue && (
+                    {row.kind === 'overdue' && (
                       <ThemedText style={styles.warnBadge}>{t('wiringOverdueBadge')}</ThemedText>
                     )}
                   </View>
@@ -269,10 +306,8 @@ export default function WiringListScreen() {
 }
 
 function scheduleColor(row: WiringRow): string {
-  if (row.overdue) return DANGER;
-  if (row.weeksUntilUnwire != null && row.weeksUntilUnwire >= 0 && row.weeksUntilUnwire <= 2) {
-    return ACCENT_GOLD;
-  }
+  if (row.kind === 'overdue') return DANGER;
+  if (row.kind === 'within_warning') return ACCENT_GOLD;
   return TEXT_SECONDARY;
 }
 
