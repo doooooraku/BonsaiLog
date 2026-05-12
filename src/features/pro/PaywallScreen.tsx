@@ -213,7 +213,9 @@ export default function PaywallScreen() {
             <ThemedText style={styles.featureHeaderPro}>PRO</ThemedText>
           </View>
           <FeatureRow label={t('paywallFeatureBonsaiCount')} free="∞" pro="∞" />
-          <FeatureRow label={t('paywallFeaturePhotos')} free="3" pro="∞" highlight />
+          {/* Issue #458 Phase 2: 写真制限撤廃 (principles.md v1.0「写真枚数 Free/Pro
+              いずれも無制限」)。Free/Pro 同じ ∞/∞ で冗長なため比較表 row 削除。
+              paywallFeaturePhotos key は legacy 残置。 */}
           <FeatureRow label={t('paywallFeatureHistory')} free="∞" pro="∞" />
           <FeatureRow label={t('paywallFeatureBackup')} free="◎" pro="◎" />
           {/* Issue #458 Phase 3: mockup `paywall-01.png` 整合で CSV/PDF を 1 行に統合
