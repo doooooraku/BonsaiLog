@@ -97,9 +97,9 @@ appId: 'com.doooooraku.bonsailog'
       id: 'e2e_home_empty_cta'
     timeout: 30000
 
-# 設定タブ tap → seedTestData
+# 設定タブ tap (testID 経由、「設定」 text tap だと Developer Menu 誤起動) → seedTestData
 - tapOn:
-    text: '設定'
+    id: 'e2e_tab_settings'
     retryTapIfNoChange: true
 - waitForAnimationToEnd:
     timeout: 3000
@@ -123,9 +123,9 @@ appId: 'com.doooooraku.bonsailog'
 - waitForAnimationToEnd:
     timeout: 3000
 
-# 盆栽タブへ戻る
+# 盆栽タブへ戻る (testID 経由)
 - tapOn:
-    text: '盆栽'
+    id: 'e2e_tab_bonsai'
     retryTapIfNoChange: true
 - waitForAnimationToEnd:
     timeout: 3000
