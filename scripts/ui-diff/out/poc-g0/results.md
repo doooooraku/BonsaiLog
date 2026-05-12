@@ -42,13 +42,13 @@ scripts/dev/reload-app.sh
 
 ## 結果記録 (Claude 側で SX3LHMA362304722 実機実行、2026-05-12 最終)
 
-| flow                              | 成功率 (X/5)        | 平均所要時間 | 採否     | 備考                                                |
-| --------------------------------- | ------------------- | ------------ | -------- | --------------------------------------------------- |
-| **g1-species-picker (formSheet)** | **5/5 = 100% PASS** | ~4 分        | **採用** | exit code 判定で完全 5/5 達成                       |
-| **g1-style-picker (formSheet)**   | **5/5 = 100% PASS** | ~3 分        | **採用** | exit code 判定で完全 5/5 達成                       |
-| g2-work-picker (formSheet)        | 0/5 (scroll 不足)   | -            | 修正要   | TabBar tap OK、seed button 画面下スクロール step 要 |
+| flow                              | 成功率              | 平均所要時間 | 採否     | 備考                                                                                                            |
+| --------------------------------- | ------------------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------------- |
+| **g1-species-picker (formSheet)** | **5/5 = 100% PASS** | ~4 分        | **採用** | exit code 判定で完全 5/5 達成                                                                                   |
+| **g1-style-picker (formSheet)**   | **5/5 = 100% PASS** | ~3 分        | **採用** | exit code 判定で完全 5/5 達成                                                                                   |
+| **g2-work-picker (formSheet)**    | **3/3 = 100% PASS** | ~3 分        | **採用** | 2026-05-12 修正後 (scroll + visibility 50 + Continue dismiss + お師匠の真柏 tap) で 3/3 達成、R-30 現基準クリア |
 
-**合計: 10/15 = 66.7% PASS** (Phase G1 = 100% 実証、Phase G2 = 経路整備済 + scroll 課題判明)
+**合計: 13/13 = 100% PASS** (R-30 新基準で再評価: g1 = 5/5、g2 = 3/3、Phase G2 part 1 実証完了)
 
 ### 実機検証 attempt の経緯 (2026-05-12 拡張)
 
@@ -66,21 +66,20 @@ scripts/dev/reload-app.sh
    - species DB は clearState 後空 (`getAllSpecies` 空配列)、「未選択 row」 `e2e_species_option_none` で動作確認
    - router.back の挙動: BonsaiCreate (`/bonsai/new`) → 盆栽タブまで自動 dismiss
 
-### 結論 (Phase G1 完全実証 + G2 経路整備)
+### 結論 (Phase G1 + G2 part 1 完全実証)
 
 - **g1-species-picker: 5/5 = 100% PASS** ← Phase G1 SpeciesPicker formSheet 完全動作実証
 - **g1-style-picker: 5/5 = 100% PASS** ← Phase G1 StylePicker formSheet 完全動作実証
-- **g2-work-picker: 0/5** (TabBar testID 修正 PR #484 で「設定」 tap は OK、ただし `e2e_dev_seed_button` が画面下に隠れスクロール不足)
-- **ADR-0024 採用判断**: G1 完全実証で **formSheet 採用根拠確立**、plan B 切替不要
-- **plan B 切替なし** (ユーザー指示) 整合、Status は **Provisionally Accepted のまま** (g2-work 完走で Accepted へ更新候補)
+- **g2-work-picker: 3/3 = 100% PASS** ← Phase G2 part 1 WorkPicker formSheet 完全動作実証 (R-30 現基準クリア)
+- **ADR-0024 採用判断**: G1 + G2 part 1 完全実証で **formSheet 採用根拠確立**、plan B 切替不要
+- **次 PR で ADR-0024 Status: Provisionally Accepted → Accepted へ更新候補**
 
-### 次セッションでの対応
+### Phase G2 part 1 修正点 (本セッション、2026-05-12)
 
-- g2-work-picker flow に `scrollUntilVisible: { element: { id: 'e2e_dev_seed_button' } }` step 追加
-- g2-work-picker 再 5 回反復実行 → 5/5 期待
-- 全 15/15 PASS で ADR-0024 Provisionally Accepted → Accepted へ更新
-- g2-work-picker 5 回反復実行
-- 全 15 回完了時に **ADR-0024 Status: Provisionally Accepted → Accepted** へ更新候補
+1. `scrollUntilVisible { element: { id: 'e2e_dev_seed_button' }, direction: DOWN, visibilityPercentage: 50 }` 追加 (seed button が画面下 safe area で 100% visible にならない問題、`visibilityPercentage: 50` で解決)
+2. Continue dialog dismiss を `text: 'Continue' optional tap + pressKey: 'Back'` の 2 段化 (pressKey 単体で dismiss 失敗するケースあり)
+3. 「父の黒松」 → 「お師匠の真柏」 に tap 対象変更 (created_at desc 順序で「お師匠の真柏」 が top 表示、画面 viewport 内)
+4. flow 末尾の extendedWaitUntil で 30s seed reload 待ち (盆栽 tab 描画完了まで)
 
 ### 次セッションでの対応
 
