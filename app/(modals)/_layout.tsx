@@ -44,6 +44,7 @@ export default function ModalsLayout() {
         name="watering-day-detail"
         options={{ ...FORM_SHEET_OPTIONS, title: 'この日の水やり' }}
       />
+      <Stack.Screen name="bonsai-new" options={{ presentation: 'modal', title: '盆栽を登録' }} />
     </Stack>
   );
 }

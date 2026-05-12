@@ -1,0 +1,116 @@
+## Phase G4 part 2 BonsaiCreate modal 実機検証 flow (ADR-0024 Accepted)
+##
+## 検証目的: `(modals)/bonsai-new` (modal、functional_spec §6.2 既存設計) が実機で 3/3 安定動作するか確認。
+##
+## 経路:
+## 1. App 起動 (clearState) + Dev Client + Onboarding skip
+## 2. 盆栽タブ Empty CTA (e2e_home_empty_cta) tap → /bonsai-new (modal) 表示
+## 3. modal の form 表示確認 (e2e_bonsai_create_screen)
+## 4. 名前入力 (Maestro Android Unicode 制約により ASCII のみ)、save CTA tap
+## 5. router.back + reload + /bonsai/<id> 遷移確認
+##
+## 実機実行コマンド (3 回反復、R-30 現基準):
+##   for i in 1 2 3; do maestro test maestro/flows/g4-bonsai-new.yml; done
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- tapOn:
+    text: 'Continue'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut2'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut3'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut4'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 盆栽タブ Empty CTA tap → /bonsai-new modal
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_home_empty_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# bonsai-new modal 表示確認 (画面要素 = modal が router.push で開いている)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_create_screen'
+    timeout: 10000
+# 名前 TextInput auto focus でキーボードが画面下 submit を隠す問題:
+# scrollUntilVisible で submit を画面内に持ってくる (scroll に伴い keyboard も dismiss)。
+# pressKey:Back / hideKeyboard は keyboard 未起動時に modal を閉じるリスクあり。
+- scrollUntilVisible:
+    element:
+      id: 'e2e_bonsai_create_submit'
+    direction: DOWN
+    timeout: 10000
+    visibilityPercentage: 30
