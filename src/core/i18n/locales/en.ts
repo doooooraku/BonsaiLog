@@ -53,6 +53,8 @@ const baseEn = {
 
   // --- Pro / Paywall ---
   proTitle: 'Upgrade to Pro',
+  settingsPlanLabel: 'Plan',
+  settingsPlanUpgradeBadge: 'Upgrade',
   paywallModalHeaderTitle: 'BonsaiLog Pro',
   proPlanFreeTitle: 'Free',
   proPlanMonthlyTitle: 'Monthly',

@@ -142,6 +142,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
 
   // --- Pro / Paywall ---
   proTitle: 'Proにアップグレード',
+  settingsPlanLabel: 'プラン',
+  settingsPlanUpgradeBadge: 'Upgrade',
   paywallModalHeaderTitle: 'BonsaiLog Pro',
   proPlanFreeTitle: '無料',
   proPlanMonthlyTitle: '月額',
