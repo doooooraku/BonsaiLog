@@ -123,6 +123,51 @@ function lintFile(filePath) {
       );
     }
   }
+
+  // S1 (2026-05-13、ADR-0024 Phase G retro): 4 つの教訓を WARN/ERROR 検出
+  for (let i = 0; i < lines.length; i++) {
+    if (skipMarker(lines[i])) continue;
+
+    // (S1-a) ERROR: `wait: <number>` 固定 wait は禁止 (waitForAnimationToEnd を使う)
+    if (/^\s+-?\s*wait:\s*\d+/.test(lines[i])) {
+      errors.push(
+        `${filePath}:${i + 1}: 固定 \`wait: <number>\` は禁止。` +
+          `\n    → 修正: \`- waitForAnimationToEnd\` (引数なし) or \`extendedWaitUntil\` を使う` +
+          `\n    (Phase G retro、maestro-standard-pattern.md §7)`,
+      );
+    }
+
+    // (S1-b) WARN: `pressKey: 'Back'` modal/Screen 内検証では keyboard 未起動時 modal close リスク
+    if (/^\s+-?\s*pressKey:\s*['"]?Back['"]?/.test(lines[i])) {
+      warnings.push(
+        `${filePath}:${i + 1}: \`pressKey: 'Back'\` は modal 内検証で modal close リスクあり。` +
+          `\n    → 推奨: \`scrollUntilVisible\` で間接 dismiss、または Onboarding skip 用途なら問題なし` +
+          `\n    (Phase G part 2 PR #493 で 5 回試行ロス、maestro-standard-pattern.md §7.1)`,
+      );
+    }
+
+    // (S1-c) WARN: `tapOn: text:` (testID なし) は modal/sheet 内 hidden リスク
+    // 直前/同行に `id:` がなく `text:` 単独の tapOn パターン
+    if (/^\s+-?\s*tapOn:\s*$/.test(lines[i])) {
+      // 次の 5 行で id 不在 + text: 存在を確認
+      let hasId = false;
+      let hasText = false;
+      for (let j = i + 1; j < Math.min(i + 6, lines.length); j++) {
+        const baseIndent = lines[i].match(/^(\s*)/)[1].length;
+        const jIndent = (lines[j].match(/^(\s*)/) || [''])[1].length;
+        if (jIndent <= baseIndent && lines[j].trim() !== '') break;
+        if (/^\s+id:/.test(lines[j])) hasId = true;
+        if (/^\s+text:/.test(lines[j])) hasText = true;
+      }
+      if (hasText && !hasId) {
+        warnings.push(
+          `${filePath}:${i + 1}: \`tapOn: text:\` は modal/sheet 内で hidden になる場合あり、testID 推奨。` +
+            `\n    → 推奨: \`tapOn: { id: 'e2e_<screen>_<element>', retryTapIfNoChange: true }\`` +
+            `\n    (Phase G retro、maestro-standard-pattern.md §5)`,
+        );
+      }
+    }
+  }
 }
 
 const files = walk(FLOWS_DIR);
