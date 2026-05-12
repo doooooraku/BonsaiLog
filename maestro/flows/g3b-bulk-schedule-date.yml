@@ -1,0 +1,186 @@
+## Phase G3b BulkScheduleDate formSheet 実機検証 flow (ADR-0024 Accepted、skip-list home-bulk-sched-date 解消)
+##
+## 検証目的: `(modals)/bulk-schedule-date` (formSheet) が実機で 3/3 安定動作するか確認。
+## 旧 home-bulk-sched-date skip (Phase 1.5-T4 #404 + Phase 1.6-T5 #415 で 2 段階追加待機しても解消せず) を
+## formSheet 化で根本解消。Phase G の主目的の 1 件。
+##
+## 経路:
+## 1. App 起動 (clearState) + Dev Client + Onboarding skip
+## 2. 設定タブ → seedTestData → 盆栽タブ
+## 3. お師匠の真柏 を長押し → selectMode (1 件選択)
+## 4. SelectionToolbar 「予定追加」 tap → /bulk-work-picker (formSheet)
+## 5. fertilizing (施肥) tap → /bulk-schedule-date (formSheet)
+## 6. 今日の日付がデフォルト選択、save CTA tap → bulkScheduleEvents で DB write
+## 7. selectMode 解除確認
+##
+## 実機実行コマンド (3 回反復、R-30 現基準):
+##   for i in 1 2 3; do maestro test maestro/flows/g3b-bulk-schedule-date.yml; done
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- tapOn:
+    text: 'Continue'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut2'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut3'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut4'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+- tapOn:
+    id: 'e2e_tab_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+    visibilityPercentage: 50
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- tapOn:
+    text: 'OK'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    id: 'e2e_tab_bonsai'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      text: 'お師匠の真柏'
+    timeout: 30000
+
+# 長押しで selectMode 入り
+- longPressOn:
+    text: 'お師匠の真柏'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# SelectionToolbar 「予定追加」 tap → /bulk-work-picker
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_selection_toolbar_schedule'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_home_selection_toolbar_schedule'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# bulk-work-picker formSheet 表示確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_work_picker_screen'
+    timeout: 10000
+
+# fertilizing (施肥) tap → /bulk-schedule-date へ自動遷移
+- tapOn:
+    id: 'e2e_bulk_work_picker_fertilizing'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# bulk-schedule-date formSheet 表示確認 (旧 home-bulk-sched-date skip の対象画面)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_schedule_date_screen'
+    timeout: 10000
+- assertVisible:
+    id: 'e2e_bulk_schedule_save_cta'
+
+# save CTA tap → 盆栽タブに戻り + selectMode 解除
+- tapOn:
+    id: 'e2e_bulk_schedule_save_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 8000
+
+# selectMode 解除後の盆栽タブ確認
+- extendedWaitUntil:
+    visible:
+      text: 'お師匠の真柏'
+    timeout: 10000
