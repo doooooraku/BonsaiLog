@@ -672,5 +672,15 @@ const th: Partial<Record<TranslationKey, string>> = {
   detailTimelineSectionTitle: 'Upcoming schedule',
   timelineConsecutive: '{count} consecutive days',
   detailTimelinePastCollapsed: 'Past watering: collapsed',
+
+  // i18n fallback for PR #466-#471 new keys (R-1 pattern)
+  settingsArchivedCountValue: '{count} items',
+  bonsaiTagsAddCta: 'Add tag',
+  settingsPlanLabel: 'Plan',
+  settingsPlanUpgradeBadge: 'Upgrade',
+  bonsaiFieldAcquiredFrom: 'Acquired from',
+  bonsaiFieldAcquiredFromPlaceholder: 'e.g., Inherited from father / Takasaki Bonsai Market',
+  bonsaiFieldPotInfo: 'Pot info',
+  bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
 };
 export default th;
