@@ -138,17 +138,9 @@ export default function PlanScreen() {
     >
       <SearchHeader title={t('planScreenTitle')} showSearch={false} testIdSuffix="plan" />
 
-      {/* ADR-0020 v1.x-4: 針金がけ一覧へのリンク */}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('planWiringListLink')}
-        style={styles.wiringLink}
-        onPress={() => router.push('/(tabs)/plan/wiring' as Href)}
-        testID="e2e_plan_open_wiring"
-      >
-        <ThemedText style={styles.wiringLinkText}>{t('planWiringListLink')}</ThemedText>
-        <ThemedText style={styles.wiringLinkArrow}>{'›'}</ThemedText>
-      </Pressable>
+      {/* Issue #456: 「針金がけ一覧」 row を削除。mockup `plan-tab-{01,02}.png` 整合、
+          動線は CareHub (ふりかえりタブ) → 針金がけ一覧 カード経由が単一情報源。
+          principles.md v1.3 動線整合性ルール参照。 */}
 
       <View style={styles.monthRow}>
         <Pressable
@@ -272,21 +264,6 @@ export default function PlanScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  wiringLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginHorizontal: 16,
-    marginTop: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    minHeight: 48,
-  },
-  wiringLinkText: { fontSize: 14, fontWeight: '500', color: BRAND_GREEN },
-  wiringLinkArrow: { fontSize: 20, color: TEXT_SECONDARY },
   monthRow: {
     flexDirection: 'row',
     alignItems: 'center',
