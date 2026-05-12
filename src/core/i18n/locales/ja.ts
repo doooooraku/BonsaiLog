@@ -577,6 +577,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
   settingsArchiveSection: 'アーカイブ',
   settingsArchiveTitle: 'アーカイブ済み盆栽',
+  settingsArchivedCountValue: '{count} 件',
   settingsArchiveDesc: 'しまってある盆栽の一覧を確認',
   settingsLegalSection: 'その他',
   settingsLegalTerms: '利用規約',
