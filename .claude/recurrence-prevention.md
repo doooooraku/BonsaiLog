@@ -227,16 +227,26 @@
 
 ### R-30. 外部 lib のテスト stability 変更時 PoC 必須化
 
-- **ルール**: 外部ライブラリ (Maestro / Detox / @gorhom 等 testing 関連) の変更・置換・削除を伴う移行は、本実装前に PoC で 5/5 = 100% 厳格基準で実証する。PoC 不合格時は plan B / plan C を ADR で先確定。
+- **ルール**: 外部ライブラリ (Maestro / Detox / @gorhom 等 testing 関連) の変更・置換・削除を伴う移行は、本実装前に PoC で **3/3 = 100% 厳格基準** で実証する (2026-05-12 retro で 5 回 → 3 回業界標準へ短縮)。PoC 不合格時は plan B / plan C を ADR で先確定。
 - **根拠**: 2026-05-12 セッションで Phase G (@gorhom 全廃) 設計時、過去 PR #404/#415 で `waitForAnimationToEnd` 追加実装も `home-bulk-sched-date` の Maestro skip が解消せず永続化した経緯あり。実証なしに移行すると同じ失敗を繰り返すリスクが高い。
-- **自動化**: ADR-0024 Phase G 完了後に lint rule 起票 (PR タイトルに `@gorhom`/`detox`/`maestro` 等 + `remove`/`replace` を含む場合、ADR 先行原則 + PoC 5/5 結果リンクを必須化)。
+- **自動化**: ADR-0024 Phase G 完了後に lint rule 起票 (PR タイトルに `@gorhom`/`detox`/`maestro` 等 + `remove`/`replace` を含む場合、ADR 先行原則 + PoC 3/3 結果リンクを必須化)。
+
+### R-31. Maestro flow 新規作成時の事前 testID 検索 + template 使用
+
+- **ルール**: 新規 `maestro/flows/*.yml` 作成時、必ず以下を実施:
+  1. 関連画面の testID 事前 grep (`grep -rn 'e2e_' app/<screen>/ src/features/<feature>/`)
+  2. `maestro/flows/_template.yml` をコピーして start (`cp maestro/flows/_template.yml maestro/flows/<new>.yml`)
+  3. 標準 step 順序を維持 (launchApp → pressKey:Back → extendedWaitUntil → 固有手順)
+  4. `tapOn: text: '...'` 禁止 (testID 経由のみ、TabBar 「設定」 text tap で Developer Menu 誤起動回避)
+- **根拠**: 2026-05-12 セッションで testID 確認を後回しにし、6 段階の試行錯誤で 1 時間ロス (R-9 violation)。`text: '設定'` tap で Expo Dev Client Developer Menu が誤起動した事例あり。
+- **自動化**: `.claude/hooks/check-maestro-flow-creation.mjs` で PreToolUse Write at `maestro/flows/*.yml` を hook、禁止パターン (text tap / 誤 appId) 検出で exit 2 block。`scripts/lint-maestro.mjs` で CI 強制 (pnpm verify:maestro-lint)。
 
 ## 運用ルール
 
 1. **本ファイルはセッション開始時に必読**（`AGENTS.md` Session Start Checklist 経由）。
 2. **新たな再発パターンが見つかったら本ファイルに追記**（lessons.md ではなく）。
 3. **R-N の番号は変更しない**（既存参照を破壊しない、削除する場合は「~~R-N: 削除~~」と注記）。
-4. **項目が 30 を超えたら別ファイル分割を検討**（**250 行以内** を維持、現状 R-1〜R-26）。`scripts/docs-lint.mjs` で自動検出。
+4. **項目が 30 を超えたら別ファイル分割を検討**（**250 行以内** を維持、現状 R-1〜R-31）。`scripts/docs-lint.mjs` で自動検出。
 5. **R-13 以降は Hook で構造的に防止**（注意ではなく仕組み化、`.claude/hooks/` 参照）。
 6. **3 回再発で昇華必須**（CLAUDE.md §9 記憶の昇華ルール）: 同一テーマが lessons / recurrence-prevention に 3 件以上溜まったら、hook / ESLint / CI / 型システムで構造的に防ぐ仕組みに昇華し、下位記憶からは該当記述を削除する。
 

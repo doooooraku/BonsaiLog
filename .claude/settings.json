@@ -12,6 +12,10 @@
           {
             "type": "command",
             "command": "node .claude/hooks/check-structure-eval-before-skiplist-update.mjs"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/check-maestro-flow-creation.mjs"
           }
         ]
       },
