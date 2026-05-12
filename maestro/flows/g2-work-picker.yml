@@ -1,0 +1,52 @@
+## Phase G2 part 1 WorkPicker formSheet 実機検証 flow (ADR-0024 Provisionally Accepted)
+##
+## 検証目的: `(modals)/work-picker` (formSheet) が実機で 5/5 安定動作するか確認。
+##
+## 検証手順:
+## 1. App 起動
+## 2. 盆栽タブで 1 件目の盆栽を tap → 詳細画面 (BonsaiDetailScreen)
+## 3. 作業履歴タブ表示 + 緑 FAB「+」 tap → /(modals)/work-picker?mode=log (formSheet) 表示
+## 4. 「watering (水やり)」 tap → router.back() で詳細画面に戻る
+## 5. handleWorkPickerSelect で watering なら logEvent (即時記録) or workConfirmRef.snap (WorkLogConfirm 開く)
+##    - watering は FORM_TYPES に含まれるため workConfirmRef.snap が呼ばれる
+##    - WorkLogConfirmSheet 表示 (G2 part 2 で formSheet 化予定、本 PR は BottomSheet のまま)
+##
+## 実機実行コマンド:
+##   maestro test maestro/flows/g2-work-picker.yml --repeat 5
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    id: 'e2e_bonsai_tab_screen'
+    optional: true
+
+# 1 件目の盆栽カードを tap → 詳細画面
+- tapOn:
+    id: 'e2e_bonsai_card_0'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 詳細画面で作業履歴タブが default 表示、緑 FAB tap
+- tapOn:
+    id: 'e2e_history_fab'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# work-picker formSheet 表示確認
+- assertVisible:
+    id: 'e2e_work_picker_screen'
+- assertVisible:
+    id: 'e2e_work_picker_grid'
+
+# watering (水やり) 選択 → router.back()
+- tapOn:
+    id: 'e2e_work_picker_watering'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+# 詳細画面に戻り、WorkLogConfirmSheet (BottomSheet、G2 part 2 で formSheet 化予定) が開く
+# 本 flow では WorkLogConfirm の表示確認まで (詳細入力 + submit は別 flow で検証)

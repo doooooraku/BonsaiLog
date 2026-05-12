@@ -23,6 +23,7 @@ export default function ModalsLayout() {
         options={{ ...FORM_SHEET_OPTIONS, title: '樹種を選ぶ' }}
       />
       <Stack.Screen name="style-picker" options={{ ...FORM_SHEET_OPTIONS, title: '樹形を選ぶ' }} />
+      <Stack.Screen name="work-picker" options={{ ...FORM_SHEET_OPTIONS, title: '作業を選ぶ' }} />
     </Stack>
   );
 }

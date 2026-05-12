@@ -1,0 +1,59 @@
+## Phase G1 SpeciesPicker formSheet 実機検証 flow (ADR-0024 Provisionally Accepted)
+##
+## 検証目的: `(modals)/species-picker` (formSheet) が実機で 5/5 安定動作するか確認。
+##
+## 経路 (空 state、Dev Client 経由起動):
+## 1. App 起動 (clearState: true)
+## 2. Dev Client menu → localhost:8081 tap でアプリ本体起動 + bundle load
+## 3. 盆栽タブ empty CTA「盆栽を登録」tap → BonsaiCreate 画面
+## 4. 樹種選択 row tap → /(modals)/species-picker (formSheet) 表示
+## 5. species-picker 内で「黒松」 tap → router.back() で BonsaiCreate に戻る
+## 6. 樹種フィールドが pick row として再表示確認
+##
+## 実機実行コマンド (5 回反復):
+##   for i in 1 2 3 4 5; do maestro test maestro/flows/g1-species-picker.yml; done
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: true
+
+# Dev Client menu → localhost:8081 tap でアプリ本体起動 (development build 専用 step)
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# 盆栽タブ empty 状態の CTA tap → BonsaiCreate (timeout 30s で bundle load 完了待ち)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_home_empty_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 樹種選択 row tap
+- tapOn:
+    id: 'e2e_bonsai_create_species_pick'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# species-picker formSheet 表示確認
+- assertVisible:
+    id: 'e2e_species_picker_screen'
+
+# 黒松選択 (id: kuromatsu) → router.back()
+- tapOn:
+    id: 'e2e_species_option_kuromatsu'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# BonsaiCreate に戻り、樹種フィールド再表示を確認
+- assertVisible:
+    id: 'e2e_bonsai_create_species_pick'

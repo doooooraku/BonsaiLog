@@ -11,10 +11,15 @@
  */
 import { create } from 'zustand';
 
-import type { BonsaiStyle } from '@/src/db/schema';
+import type { BonsaiStyle, EventType } from '@/src/db/schema';
 
 type SpeciesResult = string | null | 'CONSUMED';
 type StyleResult = BonsaiStyle | null | 'CONSUMED';
+
+/** 作業選択モード: 'log' = 即時記録、'schedule' = 予定追加 (Issue #298 Phase 2)。 */
+export type WorkPickerMode = 'log' | 'schedule';
+type WorkPickerValue = { type: EventType; mode: WorkPickerMode };
+type WorkPickerResult = WorkPickerValue | 'CONSUMED';
 
 type PickerStore = {
   // 樹種 (species)
@@ -26,6 +31,11 @@ type PickerStore = {
   stylePickerResult: StyleResult;
   setStylePickerResult: (s: BonsaiStyle | null) => void;
   consumeStylePickerResult: () => BonsaiStyle | null | undefined;
+
+  // 作業選択 (work、Phase G2 part 1)
+  workPickerResult: WorkPickerResult;
+  setWorkPickerResult: (result: WorkPickerValue) => void;
+  consumeWorkPickerResult: () => WorkPickerValue | undefined;
 };
 
 export const usePickerStore = create<PickerStore>((set, get) => ({
@@ -44,6 +54,15 @@ export const usePickerStore = create<PickerStore>((set, get) => ({
     const result = get().stylePickerResult;
     if (result === 'CONSUMED') return undefined;
     set({ stylePickerResult: 'CONSUMED' });
+    return result;
+  },
+
+  workPickerResult: 'CONSUMED',
+  setWorkPickerResult: (result) => set({ workPickerResult: result }),
+  consumeWorkPickerResult: () => {
+    const result = get().workPickerResult;
+    if (result === 'CONSUMED') return undefined;
+    set({ workPickerResult: 'CONSUMED' });
     return result;
   },
 }));
