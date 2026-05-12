@@ -592,7 +592,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeNote: 'アカウント登録は不要です',
   detailMoreMenu: 'メニュー',
   detailTabBasic: '基本情報',
-  detailTabPlanTimeline: '予定',
+  detailTabPlanTimeline: '作業予定',
   detailPlanTimelinePlaceholder: '予定機能は v1.x で実装予定です。',
   detailBasicEdit: '編集',
   detailMenuExportPdf: 'PDFで書き出し',
