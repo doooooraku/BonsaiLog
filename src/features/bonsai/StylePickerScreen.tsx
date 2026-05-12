@@ -1,14 +1,15 @@
 /**
- * 樹形ピッカー BottomSheet (T2-5、Tier 2)。
+ * 樹形 (BonsaiStyle) ピッカー画面 (Phase G1、ADR-0024 Provisionally Accepted)。
  *
- * mockup create-screens.jsx StylePickerSheet (L1422-) 整合の BottomSheet モーダル。
- * BonsaiCreateSheet から呼び出され、chip 選択で BonsaiStyle を返却。
+ * 旧 `StylePickerSheet.tsx` (`@gorhom/bottom-sheet` snap 60%) を画面化、
+ * `(modals)/style-picker` route で `presentation: 'formSheet'` 配下に配置。
  *
- * snap point 60% (mockup より少し低め、10 種の chip 表示に十分)。
+ * BONSAI_STYLES (10 種) を chip grid 表示、選択時に `usePickerStore.setStylePickerResult` +
+ * `router.back()` で caller に返却。
  */
-import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import React, { useCallback, useMemo } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
@@ -16,44 +17,36 @@ import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { BG_SURFACE, BORDER_DEFAULT, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { BONSAI_STYLES, type BonsaiStyle } from '@/src/db/schema';
+import { usePickerStore } from '@/src/stores/pickerStore';
 
-type Props = {
-  bottomSheetRef: React.RefObject<BottomSheet | null>;
-  current: BonsaiStyle | null;
-  onSelect: (style: BonsaiStyle | null) => void;
-};
-
-export function StylePickerSheet({ bottomSheetRef, current, onSelect }: Props) {
+export default function StylePickerScreen() {
   const { t } = useTranslation();
   const c = useColors();
-  const snapPoints = useMemo(() => ['60%'], []);
+  const params = useLocalSearchParams<{ initial?: string }>();
+  const initial = params.initial as BonsaiStyle | undefined;
+  const [current, setCurrent] = useState<BonsaiStyle | null>(initial ?? null);
 
-  const handleSelect = useCallback(
-    (s: BonsaiStyle | null) => {
-      onSelect(s);
-      bottomSheetRef.current?.close();
-    },
-    [bottomSheetRef, onSelect],
-  );
+  const handleSelect = (s: BonsaiStyle | null) => {
+    setCurrent(s);
+    usePickerStore.getState().setStylePickerResult(s);
+    router.back();
+  };
 
   return (
-    <BottomSheet
-      ref={bottomSheetRef}
-      index={-1}
-      snapPoints={snapPoints}
-      enablePanDownToClose
-      backgroundStyle={{ backgroundColor: c.background }}
-      handleIndicatorStyle={{ backgroundColor: c.border }}
+    <View
+      style={[styles.container, { backgroundColor: c.background }]}
+      testID="e2e_style_picker_screen"
     >
       <View style={styles.header}>
         <ThemedText type="defaultSemiBold" style={styles.title}>
           {t('bonsaiFieldStyle')}
         </ThemedText>
       </View>
-      <BottomSheetScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView contentContainerStyle={styles.scroll}>
         <Pressable
-          accessibilityRole="radio"
-          accessibilityState={{ selected: current == null }}
+          testID="e2e_style_option_none"
+          accessibilityRole="button"
+          accessibilityLabel="未選択"
           style={[styles.chip, current == null && styles.chipSelected]}
           onPress={() => handleSelect(null)}
         >
@@ -67,8 +60,9 @@ export function StylePickerSheet({ bottomSheetRef, current, onSelect }: Props) {
           return (
             <Pressable
               key={s}
-              accessibilityRole="radio"
-              accessibilityState={{ selected }}
+              testID={`e2e_style_option_${s}`}
+              accessibilityRole="button"
+              accessibilityLabel={t(labelKey)}
               style={[styles.chip, selected && styles.chipSelected]}
               onPress={() => handleSelect(s)}
             >
@@ -78,13 +72,14 @@ export function StylePickerSheet({ bottomSheetRef, current, onSelect }: Props) {
             </Pressable>
           );
         })}
-      </BottomSheetScrollView>
-    </BottomSheet>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8 },
+  container: { flex: 1 },
+  header: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
   title: { fontSize: 18 },
   scroll: {
     paddingHorizontal: 16,
