@@ -18,14 +18,19 @@
  * Pressable と Skia Rect は同一座標で重なるため、視覚 = Skia / hit test = Pressable
  * となる二層構成。
  */
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Canvas, Rect } from '@shopify/react-native-skia';
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { HEATMAP_COLORS } from '@/src/core/theme/colors';
+import {
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  HEATMAP_COLORS,
+  TEXT_PRIMARY,
+  TEXT_SECONDARY,
+} from '@/src/core/theme/colors';
 import {
   buildHeatmapDateKeys,
   buildHeatmapSummary,
@@ -67,15 +72,11 @@ export function WateringHeatmap({
   testID,
 }: Props) {
   const { t } = useTranslation();
-  const sheetRef = React.useRef<BottomSheet>(null);
+  // Phase G4 (ADR-0024 Accepted): 内蔵 @gorhom BottomSheet を inline View に置換、
+  // heatmap セル tap → 凡例下に「YYYY-MM-DD / N 回」 を inline 表示。
   const [selected, setSelected] = React.useState<{ dateKey: string; count: number } | null>(null);
-  const snapPoints = React.useMemo(() => ['25%'], []);
   const handleCellPress = React.useCallback((dateKey: string, count: number) => {
-    setSelected({ dateKey, count });
-    sheetRef.current?.snapToIndex(0);
-  }, []);
-  const handleSheetClose = React.useCallback(() => {
-    setSelected(null);
+    setSelected((prev) => (prev != null && prev.dateKey === dateKey ? null : { dateKey, count }));
   }, []);
 
   const cellSize = windowDays === 365 ? 6 : windowDays === 30 ? 22 : 14;
@@ -192,26 +193,16 @@ export function WateringHeatmap({
         )}
       </View>
 
-      <BottomSheet
-        ref={sheetRef}
-        index={-1}
-        snapPoints={snapPoints}
-        enablePanDownToClose
-        onClose={handleSheetClose}
-      >
-        <BottomSheetView style={styles.sheetContent} testID="e2e_heatmap_cell_detail_sheet">
-          {selected && (
-            <>
-              <ThemedText type="defaultSemiBold" style={styles.sheetTitle}>
-                {t('wateringHeatmapDetailTitle').replace('{date}', selected.dateKey)}
-              </ThemedText>
-              <ThemedText style={styles.sheetCount}>
-                {t('wateringHeatmapDetailCount').replace('{count}', String(selected.count))}
-              </ThemedText>
-            </>
-          )}
-        </BottomSheetView>
-      </BottomSheet>
+      {selected != null && (
+        <View style={styles.detailInline} testID="e2e_heatmap_cell_detail">
+          <ThemedText type="defaultSemiBold" style={styles.detailTitle}>
+            {t('wateringHeatmapDetailTitle').replace('{date}', selected.dateKey)}
+          </ThemedText>
+          <ThemedText style={styles.detailCount}>
+            {t('wateringHeatmapDetailCount').replace('{count}', String(selected.count))}
+          </ThemedText>
+        </View>
+      )}
     </View>
   );
 }
@@ -237,7 +228,15 @@ const styles = StyleSheet.create({
   legendItemText: { fontSize: 12 },
   summary: { marginTop: 4, gap: 2 },
   summaryLine: { fontSize: 12, opacity: 0.85 },
-  sheetContent: { padding: 16, gap: 8 },
-  sheetTitle: { fontSize: 16 },
-  sheetCount: { fontSize: 14, opacity: 0.8 },
+  detailInline: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: BG_SURFACE,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    gap: 4,
+  },
+  detailTitle: { fontSize: 14, color: TEXT_PRIMARY },
+  detailCount: { fontSize: 12, color: TEXT_SECONDARY },
 });
