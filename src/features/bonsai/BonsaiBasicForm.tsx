@@ -22,6 +22,7 @@
 import type BottomSheet from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
@@ -362,6 +363,7 @@ export type BonsaiBasicFormFieldsProps = {
  */
 export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFormFieldsProps) {
   const { t } = useTranslation();
+  const router = useRouter();
   const {
     isEdit,
     name,
@@ -541,9 +543,9 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldTags')}</ThemedText>
           <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
         </View>
-        {recentTags.length > 0 ? (
-          <View style={styles.tagChipRow}>
-            {recentTags.map((tg) => {
+        <View style={styles.tagChipRow}>
+          {recentTags.length > 0 ? (
+            recentTags.map((tg) => {
               const selected = selectedTagIds.has(tg.id);
               return (
                 <Pressable
@@ -560,11 +562,23 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
                   </ThemedText>
                 </Pressable>
               );
-            })}
-          </View>
-        ) : (
-          <ThemedText style={styles.tagsEmpty}>{t('bonsaiTagsEmpty')}</ThemedText>
-        )}
+            })
+          ) : (
+            <ThemedText style={styles.tagsEmpty}>{t('bonsaiTagsEmpty')}</ThemedText>
+          )}
+          {/* Issue #455 Phase 3: mockup `bonsai-detail-basic-02.png` 整合の
+              「+ タグ追加」 dashed border button (tag chip 列末尾、常時表示)。
+              tap で /tags に遷移し新規タグを追加可能。 */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('bonsaiTagsAddCta')}
+            style={styles.tagAddChip}
+            onPress={() => router.push('/tags' as Href)}
+            testID="e2e_bonsai_tag_add"
+          >
+            <ThemedText style={styles.tagAddChipText}>+ {t('bonsaiTagsAddCta')}</ThemedText>
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.field}>
@@ -727,4 +741,16 @@ const styles = StyleSheet.create({
   tagChipText: { fontSize: 13 },
   tagChipTextSelected: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
   tagsEmpty: { fontSize: 13, color: TEXT_MUTED },
+  // Issue #455 Phase 3: mockup `bonsai-detail-basic-02.png` 整合の dashed border button
+  tagAddChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: BORDER_DEFAULT,
+    minHeight: 36,
+    justifyContent: 'center',
+  },
+  tagAddChipText: { fontSize: 13, color: TEXT_SECONDARY },
 });

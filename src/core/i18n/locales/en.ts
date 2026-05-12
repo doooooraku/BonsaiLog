@@ -99,6 +99,7 @@ const baseEn = {
   bonsaiFieldAcquiredAt: 'Acquired on',
   bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Archive',
+  bonsaiTagsAddCta: 'Add tag',
   bonsaiArchiveConfirmTitle: 'Archive this bonsai?',
   bonsaiArchiveConfirmDesc: 'You can restore it later from Settings.',
   bonsaiStyle_chokkan: 'Formal upright (chokkan)',
