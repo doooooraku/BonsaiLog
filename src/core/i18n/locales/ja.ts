@@ -425,7 +425,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   paywallFeaturePhotos: '1本あたりの写真',
   paywallFeatureHistory: '作業履歴',
   paywallFeatureBackup: '全データバックアップ(ZIP)',
-  paywallFeatureCsv: 'CSV エクスポート',
+  paywallFeatureCsv: 'CSV/PDF エクスポート',
   paywallFeaturePdf: 'PDF エクスポート',
   paywallFeatureYearlyTimeline: '年次タイムライン画像',
   paywallFeatureNoAds: '広告表示',

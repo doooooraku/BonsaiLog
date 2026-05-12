@@ -216,8 +216,9 @@ export default function PaywallScreen() {
           <FeatureRow label={t('paywallFeaturePhotos')} free="3" pro="∞" highlight />
           <FeatureRow label={t('paywallFeatureHistory')} free="∞" pro="∞" />
           <FeatureRow label={t('paywallFeatureBackup')} free="◎" pro="◎" />
+          {/* Issue #458 Phase 3: mockup `paywall-01.png` 整合で CSV/PDF を 1 行に統合
+              (paywallFeaturePdf key は legacy で残置)。 */}
           <FeatureRow label={t('paywallFeatureCsv')} free="—" pro="◎" />
-          <FeatureRow label={t('paywallFeaturePdf')} free="—" pro="◎" />
           <FeatureRow label={t('paywallFeatureYearlyTimeline')} free="—" pro="◎" />
           {/* Issue #335: mockup v1.0 「テーマ」 行追加。ADR-0015 整合 (theme は 3 mode 全 Free)、
               機能差なし = 両方 ◎ で表記。mockup の「標準/◎」 表記は古い情報、ADR 優先 (R-28)。 */}
