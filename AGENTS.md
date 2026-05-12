@@ -59,6 +59,12 @@ These rules apply to **ALL AI agents** working on this project:
 - Prove it works before marking a task complete.
 - Ask: "Would a senior engineer approve this?"
 
+### 1.7 Type ownership (Store-first、ADR-0024 Phase G retro 由来)
+
+- Picker/Screen の戻り値型は **Store 側で定義し、Screen から re-export** する単方向設計を維持する
+- 理由: Store → Screen の型 import で循環依存が発生し、ESLint `import/no-cycle` が error を出す (2026-05-13 PR S3 で error 化済)
+- 例: `WorkLogPayload` は `src/stores/pickerStore.ts` で定義、`WorkLogConfirmScreen.tsx` は `import type { WorkLogPayload } from '@/src/stores/pickerStore'` + `export type { WorkLogPayload }` で参照
+
 ---
 
 ## 2. Project Context

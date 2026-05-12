@@ -13,6 +13,14 @@ module.exports = defineConfig([
       'docs/mockups/**', // OpenDesign 生成物 (凍結保管、BonsaiLog 規則の対象外)
     ],
   },
+  // S3 (2026-05-13): import/no-cycle を error 化 (ADR-0024 Phase G retro より)。
+  // 型循環依存 (Store ↔ Screen) を静的に検出。型は Store 側で定義する規約は AGENTS.md。
+  {
+    files: ['src/**/*.{ts,tsx}', 'app/**/*.{ts,tsx}'],
+    rules: {
+      'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }],
+    },
+  },
   // app.config.ts uses dynamic env var access by design (required/optional helpers)
   {
     files: ['app.config.ts'],
