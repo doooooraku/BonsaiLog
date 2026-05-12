@@ -49,7 +49,6 @@ import { BonsaiCreateSheet } from '@/src/features/bonsai/BonsaiCreateSheet';
 import { HomeFilterTabs, type FilterChip } from '@/src/features/bonsai/HomeFilterTabs';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { SelectionToolbar } from '@/src/features/bonsai/SelectionToolbar';
-import { BulkScheduleDateSheet } from '@/src/features/event/BulkScheduleDateSheet';
 import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
@@ -63,10 +62,8 @@ const AD_BANNER_HEIGHT_APPROX = 60;
 // SelectionToolbar 高さ (本コンポーネントの minHeight 56 と一致)
 const SELECTION_TOOLBAR_HEIGHT = 56;
 
-// Phase G3a (ADR-0024 Accepted): bulk-work-picker / bulk-log-confirm は formSheet 化、
-// caller では router.push + useFocusEffect 経路に統一。bulkSchedStep は BulkScheduleDateSheet
-// (@gorhom、Phase G3b で formSheet 化予定) 用に 'pickDate' のみ保持。
-type BulkSchedStep = 'pickDate' | null;
+// Phase G3a-G3b (ADR-0024 Accepted): bulk-work-picker / bulk-log-confirm / bulk-schedule-date
+// は全 formSheet 化、caller では router.push + useFocusEffect 経路に統一 (bulkSched state 不要)。
 
 /**
  * 経過日数を「3日」「2週間」「5ヶ月」など短い文字列にフォーマット。
@@ -173,9 +170,8 @@ export default function BonsaiHomeScreen() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   // mockups v1.0 02-Home.html `bulkSchedStep` / `bulkSchedType` 整合:
   // 一括予定追加フローの 2 step state (pickWork → pickDate → null=完了/閉じる)。
-  const [bulkSchedStep, setBulkSchedStep] = useState<BulkSchedStep>(null);
+  // Phase G3a-G3b: bulk-* は全 formSheet 化、type のみ保持 (useFocusEffect で DB 書込時利用)
   const [bulkSchedType, setBulkSchedType] = useState<EventType>('fertilizing');
-  // Phase G3a: bulk-log-confirm は formSheet 化、bulkLogType のみ保持 (useFocusEffect で記録時利用)
   const [bulkLogType, setBulkLogType] = useState<EventType>('watering');
 
   // T2-1: FAB / Empty CTA 押下時に開く新規登録 BottomSheet の ref。
@@ -228,11 +224,11 @@ export default function BonsaiHomeScreen() {
   // で SQL 側に委譲済 (M:N JOIN + AND セマンティクス)。クライアント側の追加フィルタは不要。
   const visibleItems = items;
 
-  // selectMode の入り / 終わりは selectedIds と Bulk Sheet 各 step をリセット (mockup `cancelSelect` / `enterSelect` 整合)。
+  // selectMode の入り / 終わりは selectedIds リセット (mockup `cancelSelect` / `enterSelect` 整合)。
+  // Phase G3a-G3b: bulk-* sheets は全 formSheet 化、modal の自動 dismiss で state リセット不要。
   const toggleSelectMode = useCallback(() => {
     setSelectMode((prev) => !prev);
     setSelectedIds(new Set());
-    setBulkSchedStep(null);
   }, []);
 
   // BonsaiCard 短押し: selectMode 時 toggle、通常時 router.push (mockup `onCardClick` 整合)。
@@ -285,14 +281,7 @@ export default function BonsaiHomeScreen() {
     pushBulkWorkPicker('log');
   }, [pushBulkWorkPicker]);
 
-  // Bulk Sheets の閉じる (drag down or onClose) → 該当 step のみ null。
-  // mockup `onDismiss` の動作整合 (selectMode は維持)。BulkScheduleDateSheet (@gorhom) 用、
-  // Phase G3b で formSheet 化予定。
-  const handleBulkSchedSheetsClose = useCallback(() => {
-    setBulkSchedStep(null);
-  }, []);
-
-  // BulkScheduleDateSheet で保存 → bulkScheduleEvents で各 bonsai に planned event 作成 → reload。
+  // bulk-schedule-date (formSheet、Phase G3b) で保存 → bulkScheduleEvents で各 bonsai に planned event 作成 → reload。
   // ADR-0014 整合 (Issue #344): 個別 event 通知は ADR-0014 のスコープ外、本 PR では notify トグル UI を撤去。
   // 一括予定追加で作成された planned events は Settings 通知設定 (当日まとめ / 水やり繰り返し) に従う。
   const handleBulkSchedSave = useCallback(
@@ -302,10 +291,8 @@ export default function BonsaiHomeScreen() {
         type: bulkSchedType,
         occurredAtUtc: input.occurredAtUtc,
       });
-      // 完了 → selectMode 解除 + step リセット + 再 load
       setSelectMode(false);
       setSelectedIds(new Set());
-      setBulkSchedStep(null);
       await reload();
     },
     [selectedIds, bulkSchedType, reload],
@@ -327,10 +314,11 @@ export default function BonsaiHomeScreen() {
     [selectedIds, bulkLogType, reload],
   );
 
-  // Phase G3a: bulk-work-picker / bulk-log-confirm から戻った時に結果を消費。
+  // Phase G3a-G3b: bulk-* formSheet から戻った時に結果を消費。
   // - workResult.mode === 'log' → bulkLogType を保持して /bulk-log-confirm へ次遷移
-  // - workResult.mode === 'schedule' → bulkSchedType を保持して BulkScheduleDateSheet (@gorhom) を開く (Phase G3b で formSheet 化)
+  // - workResult.mode === 'schedule' → bulkSchedType を保持して /bulk-schedule-date へ次遷移
   // - logResult あれば bulkLogEvents 経由で DB 書込
+  // - schedResult あれば bulkScheduleEvents 経由で DB 書込
   useFocusEffect(
     useCallback(() => {
       const workResult = usePickerStore.getState().consumeBulkWorkPickerResult();
@@ -340,19 +328,18 @@ export default function BonsaiHomeScreen() {
           router.push(`/bulk-log-confirm?type=${workResult.type}` as Href);
         } else {
           setBulkSchedType(workResult.type);
-          setBulkSchedStep('pickDate');
+          router.push(`/bulk-schedule-date?type=${workResult.type}` as Href);
         }
       }
       const logResult = usePickerStore.getState().consumeBulkLogConfirmResult();
       if (logResult) {
         void handleBulkLogConfirmSave(logResult);
       }
-    }, [router, handleBulkLogConfirmSave]),
-  );
-
-  const selectedBonsais = useMemo(
-    () => items.filter((it) => selectedIds.has(it.id)).map((it) => ({ id: it.id, name: it.name })),
-    [items, selectedIds],
+      const schedResult = usePickerStore.getState().consumeBulkScheduleDateResult();
+      if (schedResult) {
+        void handleBulkSchedSave(schedResult);
+      }
+    }, [router, handleBulkLogConfirmSave, handleBulkSchedSave]),
   );
 
   if (loading) {
@@ -477,15 +464,8 @@ export default function BonsaiHomeScreen() {
         </View>
       )}
       <AdBanner />
-      {/* Phase G3a (ADR-0024 Accepted): BulkWorkPicker + BulkLogConfirm は formSheet 化、
-          JSX 直接配置不要 (router.push 経路)。BulkScheduleDateSheet は Phase G3b で formSheet 化予定。 */}
-      <BulkScheduleDateSheet
-        visible={bulkSchedStep === 'pickDate'}
-        type={bulkSchedType}
-        selectedBonsais={selectedBonsais}
-        onClose={handleBulkSchedSheetsClose}
-        onSave={handleBulkSchedSave}
-      />
+      {/* Phase G3a-G3b (ADR-0024 Accepted): BulkWorkPicker + BulkLogConfirm + BulkScheduleDate
+          は全 formSheet 化、JSX 直接配置不要 (router.push 経路)。 */}
       {/* T2-1: 新規盆栽登録 BottomSheet (旧 app/(tabs)/bonsai/new.tsx を移植、機能維持のみ)。 */}
       <BonsaiCreateSheet
         bottomSheetRef={createSheetRef}

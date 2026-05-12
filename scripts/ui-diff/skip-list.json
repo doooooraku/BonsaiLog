@@ -11,15 +11,6 @@
       "needsHumanReview": true
     },
     {
-      "flow": "home-bulk-sched-date",
-      "reason": "Maestro Android BottomSheet 描画タイミング限界: Phase 1.5-T4 (#404) + Phase 1.6-T5 (#415) で 2 段階の追加待機 step を入れたが、Footer CTA (e2e_bulk_schedule_save_cta) が timeout 8s で visible にならない (sheet 88% snap 直後の React Native 描画ラグ問題)。look-back-search と同様の Maestro 技術制約として永続化、将来 Maestro 改善 or BottomSheet 描画 trigger 強化で再検討。",
-      "added_at": "2026-05-11T04:50:00Z",
-      "fail_count": 3,
-      "permanent": true,
-      "artifact": "scripts/ui-diff/out/20260511-1058/",
-      "needsHumanReview": true
-    },
-    {
       "flow": "look-back-watering-history",
       "reason": "mockup mismatch: 実機は横断 watering 履歴画面 (Issue #361)、mockup は個別盆栽 watering heatmap (config 暫定流用)。横断版の mockup HTML 不在のため整合判定不能。将来の mockup HTML 追加 or 既存 watering-heatmap の解釈変更要、人間判断要。",
       "added_at": "2026-05-11T03:10:00Z",

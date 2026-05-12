@@ -36,6 +36,10 @@ export default function ModalsLayout() {
         name="bulk-log-confirm"
         options={{ ...FORM_SHEET_OPTIONS, title: 'まとめて記録' }}
       />
+      <Stack.Screen
+        name="bulk-schedule-date"
+        options={{ ...FORM_SHEET_OPTIONS, title: '予定日を選ぶ' }}
+      />
     </Stack>
   );
 }

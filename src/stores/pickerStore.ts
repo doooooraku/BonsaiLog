@@ -42,6 +42,9 @@ type BulkWorkPickerResult = BulkWorkPickerValue | 'CONSUMED';
 export type BulkLogConfirmInput = { note: string | null };
 type BulkLogConfirmResult = BulkLogConfirmInput | 'CONSUMED';
 
+export type BulkScheduleDateInput = { occurredAtUtc: string };
+type BulkScheduleDateResult = BulkScheduleDateInput | 'CONSUMED';
+
 type PickerStore = {
   // 樹種 (species)
   speciesPickerResult: SpeciesResult;
@@ -76,6 +79,11 @@ type PickerStore = {
   bulkLogConfirmResult: BulkLogConfirmResult;
   setBulkLogConfirmResult: (input: BulkLogConfirmInput) => void;
   consumeBulkLogConfirmResult: () => BulkLogConfirmInput | undefined;
+
+  // 一括予定追加 日付選択 (bulk-schedule-date、Phase G3b)
+  bulkScheduleDateResult: BulkScheduleDateResult;
+  setBulkScheduleDateResult: (input: BulkScheduleDateInput) => void;
+  consumeBulkScheduleDateResult: () => BulkScheduleDateInput | undefined;
 };
 
 export const usePickerStore = create<PickerStore>((set, get) => ({
@@ -133,6 +141,15 @@ export const usePickerStore = create<PickerStore>((set, get) => ({
     const result = get().bulkLogConfirmResult;
     if (result === 'CONSUMED') return undefined;
     set({ bulkLogConfirmResult: 'CONSUMED' });
+    return result;
+  },
+
+  bulkScheduleDateResult: 'CONSUMED',
+  setBulkScheduleDateResult: (input) => set({ bulkScheduleDateResult: input }),
+  consumeBulkScheduleDateResult: () => {
+    const result = get().bulkScheduleDateResult;
+    if (result === 'CONSUMED') return undefined;
+    set({ bulkScheduleDateResult: 'CONSUMED' });
     return result;
   },
 }));
