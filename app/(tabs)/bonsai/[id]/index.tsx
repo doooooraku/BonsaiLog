@@ -9,7 +9,6 @@ import { ThemedView } from '@/components/themed-view';
 import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
 import {
   BonsaiBasicFormFields,
-  BonsaiBasicFormPickerSheets,
   type BonsaiBasicFormState,
   useBonsaiBasicForm,
 } from '@/src/features/bonsai/BonsaiBasicForm';
@@ -892,13 +891,8 @@ export default function BonsaiDetailScreen() {
         />
       )}
 
-      {/* Phase G2 part 2 (ADR-0024 Accepted): 作業記録 詳細 form は (modals)/work-log-confirm
-          formSheet に移行、本ファイル直下の JSX は不要。 */}
-
-      {/* Issue #439: 基本情報タブ 編集フォームの 樹種 / 樹形 Picker BottomSheet。
-          @gorhom/bottom-sheet は ScrollView 内に nest すると closed (index=-1) でも
-          inline で leak するため、画面 root 直下に配置する。 */}
-      <BonsaiBasicFormPickerSheets form={basicForm} />
+      {/* Phase G2-G5 (ADR-0024 Accepted): 作業記録 / 樹種 / 樹形 picker は全 formSheet 化、
+          BonsaiBasicFormPickerSheets (旧 @gorhom 空関数) は Phase G5 で削除済。 */}
     </ThemedView>
   );
 
