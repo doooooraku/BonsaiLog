@@ -19,10 +19,9 @@
  *
  * Issue #439 で BonsaiCreateSheet から抽出。
  */
-import type BottomSheet from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter, type Href } from 'expo-router';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
@@ -50,10 +49,8 @@ import {
   getTagsByBonsai,
   type TagRecord,
 } from '@/src/db/tagRepository';
+import { usePickerStore } from '@/src/stores/pickerStore';
 import { useProStore } from '@/src/stores/proStore';
-
-import { SpeciesPickerSheet } from './SpeciesPickerSheet';
-import { StylePickerSheet } from './StylePickerSheet';
 
 /** YYYY-MM-DD → ISO 8601 UTC TEXT (00:00:00Z)。ADR-0008 §TZ 整合で nowUtc 使用。 */
 function toIsoUtc(yyyymmdd: string): string {
@@ -105,9 +102,22 @@ export function useBonsaiBasicForm({
   const [potInfoText, setPotInfoText] = useState('');
   const [recentTags, setRecentTags] = useState<TagRecord[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
-  const speciesSheetRef = useRef<BottomSheet>(null);
-  const styleSheetRef = useRef<BottomSheet>(null);
   const originalTagIdsRef = useRef<Set<string>>(new Set());
+
+  // Phase G1 (ADR-0024 Provisionally Accepted): @gorhom Sheet を `(modals)/{species,style}-picker`
+  // route に置換、戻り値は usePickerStore 経由で受け取る。
+  useFocusEffect(
+    useCallback(() => {
+      const speciesResult = usePickerStore.getState().consumeSpeciesPickerResult();
+      if (speciesResult !== undefined) {
+        setSpeciesId(speciesResult);
+      }
+      const styleResult = usePickerStore.getState().consumeStylePickerResult();
+      if (styleResult !== undefined) {
+        setStyle(styleResult);
+      }
+    }, []),
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -364,9 +374,6 @@ export function useBonsaiBasicForm({
     isPro,
     canSubmit,
     submitting,
-    // refs
-    speciesSheetRef,
-    styleSheetRef,
     // actions
     handleSubmit,
     resetToInitial,
@@ -390,6 +397,7 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     isEdit,
     name,
     setName,
+    speciesId,
     selectedSpecies,
     style,
     acquiredAt,
@@ -409,8 +417,6 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     handlePickPhoto,
     handleRemovePendingPhoto,
     isPro,
-    speciesSheetRef,
-    styleSheetRef,
   } = form;
 
   const showPhotoField = showPhotos && !isEdit;
@@ -491,7 +497,13 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
           accessibilityRole="button"
           accessibilityLabel={t('bonsaiFieldSpecies')}
           style={styles.pickerRow}
-          onPress={() => speciesSheetRef.current?.snapToIndex(0)}
+          onPress={() =>
+            router.push(
+              (speciesId != null
+                ? `/species-picker?initial=${encodeURIComponent(speciesId)}`
+                : '/species-picker') as Href,
+            )
+          }
           testID="e2e_bonsai_create_species_pick"
         >
           <ThemedText style={selectedSpecies != null ? undefined : styles.pickerPlaceholder}>
@@ -507,7 +519,13 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
           accessibilityRole="button"
           accessibilityLabel={t('bonsaiFieldStyle')}
           style={styles.pickerRow}
-          onPress={() => styleSheetRef.current?.snapToIndex(0)}
+          onPress={() =>
+            router.push(
+              (style != null
+                ? `/style-picker?initial=${encodeURIComponent(style)}`
+                : '/style-picker') as Href,
+            )
+          }
           testID="e2e_bonsai_create_style_pick"
         >
           <ThemedText style={style != null ? undefined : styles.pickerPlaceholder}>
@@ -648,26 +666,20 @@ export type BonsaiBasicFormPickerSheetsProps = {
 };
 
 /**
- * 樹種 / 樹形 Picker BottomSheet (2 個まとめ)。
+ * 樹種 / 樹形 Picker (Phase G1、ADR-0024 Provisionally Accepted)。
  *
- * 呼び出し側は ScrollView の外 (画面 root もしくは親 BottomSheet の sibling) に配置する。
- * ScrollView 内に nest すると @gorhom/bottom-sheet が index=-1 でも inline で leak し、
- * フォーム末尾に picker が固まりとして表示される。
+ * 旧 `@gorhom/bottom-sheet` 自作 Sheet (`SpeciesPickerSheet` / `StylePickerSheet`) は廃止、
+ * `(modals)/species-picker` + `(modals)/style-picker` route (presentation: 'formSheet') に
+ * 置換 (BonsaiBasicFormFields の Pressable onPress で `router.push` 起動、戻り値は
+ * `usePickerStore` 経由 + `useFocusEffect` で受信)。
+ *
+ * 本関数は backward compat で残置 (BonsaiCreateSheet など caller の影響を最小化)、
+ * 内容は空 (return null)。Phase G5 で本関数 + Props 型を完全削除予定。
  */
-export function BonsaiBasicFormPickerSheets({ form }: BonsaiBasicFormPickerSheetsProps) {
-  const { speciesId, setSpeciesId, speciesList, style, setStyle, speciesSheetRef, styleSheetRef } =
-    form;
-  return (
-    <>
-      <SpeciesPickerSheet
-        bottomSheetRef={speciesSheetRef}
-        speciesList={speciesList}
-        current={speciesId}
-        onSelect={setSpeciesId}
-      />
-      <StylePickerSheet bottomSheetRef={styleSheetRef} current={style} onSelect={setStyle} />
-    </>
-  );
+export function BonsaiBasicFormPickerSheets(
+  _props: BonsaiBasicFormPickerSheetsProps,
+): React.ReactNode {
+  return null;
 }
 
 const styles = StyleSheet.create({

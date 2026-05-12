@@ -1,9 +1,11 @@
 # ADR-0024: @gorhom/bottom-sheet 全廃 + native presentation 置換 (Phase G)
 
-- Status: Proposed
+- Status: **Provisionally Accepted** (2026-05-12 Phase G1 着手時、実機 5/5 検証は Phase G1 完了後)
 - Date: 2026-05-12
 - Deciders: @doooooraku
 - Related: Issue #475 / ADR-0020 (Notes Amended 2026-05-12) / `docs/reference/functional_spec.md` §6.2 / §7.2 / §9.3.4 / §22
+
+> **2026-05-12 Phase G1 着手時 update**: ユーザー明示承認下で **実機 5 回 × 3 案 = 15 回検証 (PoC) をスキップ**、暫定 formSheet 採用で Phase G1 (SpeciesPicker + StylePicker 本実装) を着手。R-25 / R-30 リスク受容、実機 5/5 検証は Phase G1 完了後または G2-G4 内で順次実施、不合格判明時は revert + plan B (Expo UI BottomSheet) 切替。詳細は本 ADR §Notes Amended (2026-05-12 Phase G1) 参照。
 
 ---
 
