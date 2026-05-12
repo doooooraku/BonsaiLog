@@ -1,5 +1,5 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -65,7 +65,7 @@ import {
 } from '@/src/features/event/groupContinuousEvents';
 import { HistoryChipRow } from '@/src/features/event/HistoryChip';
 import { WorkLogConfirmSheet, type WorkLogPayload } from '@/src/features/event/WorkLogConfirmSheet';
-import { WorkPickerSheet } from '@/src/features/event/WorkPickerSheet';
+import { usePickerStore } from '@/src/stores/pickerStore';
 import type BottomSheet from '@gorhom/bottom-sheet';
 import { WiringPeriodDisplay } from '@/src/features/wiring/WiringPeriodDisplay';
 import {
@@ -114,19 +114,17 @@ export default function BonsaiDetailScreen() {
   // CreateBonsaiScreen embed に正式化予定)
   const [activeTab, setActiveTab] = useState<'history' | 'timeline' | 'basic'>('history');
 
-  // ADR-0020 Phase 4: 作業記録 BottomSheet (Claude Design WorkPickerSheet 整合)
-  const workPickerRef = React.useRef<BottomSheet>(null);
-  // ADR-0020 v1.x-3: 作業記録 詳細 form BottomSheet (Claude Design WorkLogConfirmSheet 整合)
+  // Phase G2 part 1 (ADR-0024): 作業記録 BottomSheet を `(modals)/work-picker` (formSheet) に置換、
+  // 旧 workPickerRef / schedulePickerRef は廃止 (router.push + usePickerStore で代替)。
+  // ADR-0020 v1.x-3: 作業記録 詳細 form BottomSheet (G2 part 2 で formSheet 化予定、本 PR は維持)
   const workConfirmRef = React.useRef<BottomSheet>(null);
-  // Issue #298 Phase 2: 予定追加 BottomSheet (WorkPickerSheet を mode 切替で再利用)
-  const schedulePickerRef = React.useRef<BottomSheet>(null);
   const [pendingScheduleType, setPendingScheduleType] = useState<EventType | null>(null);
   const [showSchedulePicker, setShowSchedulePicker] = useState(false);
   const [pendingWorkType, setPendingWorkType] = useState<EventType | null>(null);
   const FORM_TYPES: readonly EventType[] = ['watering', 'pruning', 'wiring'];
   const handleWorkPickerSelect = React.useCallback(
     (type: EventType) => {
-      workPickerRef.current?.close();
+      // Phase G2 part 1: workPickerRef.close() は不要 (router.back で picker 画面が閉じている)。
       // 詳細 form 対応 type は WorkLogConfirmSheet に進む、それ以外は即時記録
       if (FORM_TYPES.includes(type)) {
         setPendingWorkType(type);
@@ -151,10 +149,24 @@ export default function BonsaiDetailScreen() {
   // Step 1: WorkPickerSheet (再利用、titleOverrideKey='addScheduleTitle') で作業選択
   // Step 2: DateTimePicker (mode='date') で日付選択 → createEvent({ status: 'planned' })
   const handleSchedulePickerSelect = React.useCallback((type: EventType) => {
-    schedulePickerRef.current?.close();
+    // Phase G2 part 1: schedulePickerRef.close() は不要 (router.back で picker 画面が閉じている)。
     setPendingScheduleType(type);
     setTimeout(() => setShowSchedulePicker(true), 200);
   }, []);
+
+  // Phase G2 part 1 (ADR-0024): `/work-picker` から戻った時に workPickerResult を消費、
+  // mode に応じて log / schedule 分岐。
+  useFocusEffect(
+    React.useCallback(() => {
+      const result = usePickerStore.getState().consumeWorkPickerResult();
+      if (!result) return;
+      if (result.mode === 'log') {
+        handleWorkPickerSelect(result.type);
+      } else {
+        handleSchedulePickerSelect(result.type);
+      }
+    }, [handleWorkPickerSelect, handleSchedulePickerSelect]),
+  );
 
   const handleScheduleDateSelect = React.useCallback(
     async (date: Date | null) => {
@@ -836,54 +848,33 @@ export default function BonsaiDetailScreen() {
         </Pressable>
       )}
 
-      {/* Issue #441 Phase 1: 予定タブ FAB (画面右下、tab bar の上)。tap で
-          schedulePickerRef (WorkPickerSheet を mode 切替で再利用) を開く。
+      {/* Issue #441 Phase 1 + Phase G2 part 1 (ADR-0024): 予定タブ FAB。tap で
+          `/work-picker?mode=schedule` (formSheet) を開く (旧 schedulePickerRef は廃止)。
           mockup `bonsai-detail-timeline-01/02.png` の緑「+」FAB 整合。 */}
       {activeTab === 'timeline' && (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('addScheduleCta')}
           style={styles.historyFab}
-          onPress={() => schedulePickerRef.current?.snapToIndex(0)}
+          onPress={() => {
+            if (!item) return;
+            const isPineFlag =
+              (item.species?.commonName ?? '').toLowerCase().includes('pine') ||
+              (item.species?.scientificName ?? '').toLowerCase().includes('pinus') ||
+              (item.species?.commonName ?? '').includes('松');
+            router.push(
+              `/work-picker?bonsaiName=${encodeURIComponent(item.name)}&isPine=${isPineFlag}&mode=schedule` as Href,
+            );
+          }}
           testID="e2e_timeline_fab"
         >
           <ThemedText style={styles.historyFabPlus}>+</ThemedText>
         </Pressable>
       )}
 
-      {/* ADR-0020 Phase 4: 作業記録 BottomSheet (Claude Design WorkPickerSheet 整合) */}
-      <WorkPickerSheet
-        ref={workPickerRef}
-        index={-1}
-        bonsaiName={item.name}
-        isPine={
-          // 樹種から松類か判定 (commonName に「松」/ "Pine" / "Pinus")。簡易判定、Phase 12 で species.category に格納検討。
-          (item.species?.commonName ?? '').toLowerCase().includes('pine') ||
-          (item.species?.scientificName ?? '').toLowerCase().includes('pinus') ||
-          (item.species?.commonName ?? '').includes('松')
-        }
-        onSelect={handleWorkPickerSelect}
-        onClose={() => {
-          /* close 時に追加処理が必要なら ここで */
-        }}
-      />
-
-      {/* Issue #298 Phase 2: 予定追加 BottomSheet (WorkPickerSheet を titleOverride で再利用) */}
-      <WorkPickerSheet
-        ref={schedulePickerRef}
-        index={-1}
-        bonsaiName={item.name}
-        isPine={
-          (item.species?.commonName ?? '').toLowerCase().includes('pine') ||
-          (item.species?.scientificName ?? '').toLowerCase().includes('pinus') ||
-          (item.species?.commonName ?? '').includes('松')
-        }
-        onSelect={handleSchedulePickerSelect}
-        onClose={() => {
-          /* close 時の処理なし */
-        }}
-        titleOverrideKey="addScheduleTitle"
-      />
+      {/* Phase G2 part 1 (ADR-0024): 旧 <WorkPickerSheet> 2 件 (記録モード + 予定モード) は
+          `(modals)/work-picker` (formSheet) に置換、本コンポーネント直下から削除済。
+          handleWorkPickerSelect / handleSchedulePickerSelect は useFocusEffect 経由で呼び出し。 */}
 
       {/* Issue #298 Phase 2: 予定追加 日付 picker (action 選択後に表示) */}
       {showSchedulePicker && (
@@ -938,7 +929,13 @@ export default function BonsaiDetailScreen() {
 
   function showEventTypePicker() {
     if (!item) return;
-    workPickerRef.current?.snapToIndex(0);
+    const isPineFlag =
+      (item.species?.commonName ?? '').toLowerCase().includes('pine') ||
+      (item.species?.scientificName ?? '').toLowerCase().includes('pinus') ||
+      (item.species?.commonName ?? '').includes('松');
+    router.push(
+      `/work-picker?bonsaiName=${encodeURIComponent(item.name)}&isPine=${isPineFlag}&mode=log` as Href,
+    );
   }
 
   /**

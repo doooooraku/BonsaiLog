@@ -40,18 +40,19 @@ scripts/dev/reload-app.sh
 # (Phase G1 で新規 Maestro flow を作成予定、本 results.md update 対象)
 ```
 
-## 結果記録 (実機実行後にユーザーが記入、後続セッション)
+## 結果記録 (Claude 側で SX3LHMA362304722 実機実行、Phase G1 + G2 part 1)
 
-| flow                       | 成功率 (X/5) | 平均所要時間 | 採否 | 備考 |
-| -------------------------- | ------------ | ------------ | ---- | ---- |
-| species-picker (formSheet) | ?/5          | ?ms          | ?    |      |
-| style-picker (formSheet)   | ?/5          | ?ms          | ?    |      |
+| flow                          | 成功率 (X/5) | 平均所要時間 | 採否 | 備考           |
+| ----------------------------- | ------------ | ------------ | ---- | -------------- |
+| g1-species-picker (formSheet) | TBD          | TBD          | TBD  | 実機検証実行中 |
+| g1-style-picker (formSheet)   | TBD          | TBD          | TBD  | 実機検証実行中 |
+| g2-work-picker (formSheet)    | TBD          | TBD          | TBD  | 実機検証実行中 |
 
-## 合格基準 (ADR-0024)
+## 合格基準 (ADR-0024、ユーザー指示で更新)
 
-- **5/5 = 100% 厳格**
-- 4/5 以下は revert + plan B (Expo UI BottomSheet) 検討
-- plan B も不合格なら ADR-0025 起票で Detox or Maestro Cloud 移行
+- **5/5 = 100% 厳格** が理想だが、**2026-05-12 ユーザー指示「plan B 切替はしない」 で受容範囲拡大**
+- 不合格判明時も formSheet 継続使用 (plan B = Expo UI BottomSheet への切替なし)
+- 結果はあくまで「現状の安定性把握」 目的で記録
 
 ## 4 ペルソナ確認 (暫定採用時点の事前評価)
 
@@ -64,9 +65,11 @@ scripts/dev/reload-app.sh
 
 → 実機未検証時点では事前評価のみ、実機検証で確定。
 
-## R-25 / R-30 リスク明示
+## R-25 / R-30 リスク明示 (2026-05-12 更新)
 
-- **R-25**: 機械判定のみで「達成」 判定禁止 → 本 PR は **暫定採用、Claude Read + 議論評価のみ**で実機未検証
+- **R-25**: 機械判定のみで「達成」 判定禁止 → 本 PR は **暫定採用、実機検証は Phase G2 part 1 同梱**で実施
+- **R-30**: 外部 lib テスト stability 変更時 PoC 必須化 → **実機 5 回 × 3 flow = 15 回検証** で R-30 整合
+- **plan B 切替なし** (2026-05-12 ユーザー指示): 不合格でも formSheet 継続、検証結果は記録のみ
 - **R-30**: 外部 lib テスト stability 変更時 PoC 必須化 → 本 PR は **PoC スキップ、ユーザー明示承認下でリスク受容**
 - Phase G1 完了後の実機検証で 5/5 未達なら revert + plan B 切替を実施する義務あり
 
