@@ -37,6 +37,7 @@ export default function TabLayout() {
         options={{
           title: t('tabBonsai'),
           tabBarIcon: ({ color }) => <LeafIcon size={28} color={color} />,
+          tabBarButtonTestID: 'e2e_tab_bonsai',
         }}
       />
       <Tabs.Screen
@@ -44,6 +45,7 @@ export default function TabLayout() {
         options={{
           title: t('tabPlan'),
           tabBarIcon: ({ color }) => <CalendarIcon size={28} color={color} />,
+          tabBarButtonTestID: 'e2e_tab_plan',
         }}
       />
       <Tabs.Screen
@@ -51,6 +53,7 @@ export default function TabLayout() {
         options={{
           title: t('tabLookBack'),
           tabBarIcon: ({ color }) => <PencilNavIcon size={28} color={color} />,
+          tabBarButtonTestID: 'e2e_tab_look_back',
         }}
       />
       <Tabs.Screen
@@ -58,6 +61,7 @@ export default function TabLayout() {
         options={{
           title: t('tabSettings'),
           tabBarIcon: ({ color }) => <CogIcon size={28} color={color} />,
+          tabBarButtonTestID: 'e2e_tab_settings',
         }}
       />
     </Tabs>
