@@ -1,0 +1,189 @@
+## Phase G3a Bulk WorkPicker + LogConfirm formSheet 実機検証 flow (ADR-0024 Accepted)
+##
+## 検証目的: `(modals)/bulk-work-picker` + `(modals)/bulk-log-confirm` (formSheet) が
+## 実機で 3/3 安定動作するか確認。
+##
+## 経路 (Dev Client + Onboarding skip + seedTestData + 複数選択 mode + 一括記録 flow):
+## 1. App 起動 (clearState: true)
+## 2. Dev Client + Continue dismiss
+## 3. Onboarding skip
+## 4. 設定タブ → seedTestData → 盆栽タブ
+## 5. お師匠の真柏 を長押し → selectMode 入り (1 件選択済)
+## 6. SelectionToolbar の「一括記録」 tap → /bulk-work-picker (formSheet) 表示
+## 7. watering tap → /bulk-log-confirm (formSheet) 表示
+## 8. 一括記録 save CTA tap → bulkLogEvents で DB write → 盆栽タブに戻る + selectMode 解除
+##
+## 実機実行コマンド (3 回反復、R-30 現基準):
+##   for i in 1 2 3; do maestro test maestro/flows/g3a-bulk-log.yml; done
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- tapOn:
+    text: 'Continue'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut2'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut3'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut4'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 盆栽タブ到達確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+# 設定タブ → seedTestData
+- tapOn:
+    id: 'e2e_tab_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+    visibilityPercentage: 50
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- tapOn:
+    text: 'OK'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 盆栽タブへ戻る
+- tapOn:
+    id: 'e2e_tab_bonsai'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      text: 'お師匠の真柏'
+    timeout: 30000
+
+# 長押しで selectMode 入り
+- longPressOn:
+    text: 'お師匠の真柏'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# SelectionToolbar 表示確認 + 「一括記録」 tap
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_selection_toolbar_log'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_home_selection_toolbar_log'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# bulk-work-picker formSheet 表示確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_work_picker_screen'
+    timeout: 10000
+
+# watering (水やり) tap → bulk-log-confirm へ自動遷移
+- tapOn:
+    id: 'e2e_bulk_work_picker_watering'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# bulk-log-confirm formSheet 表示確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_log_confirm_screen'
+    timeout: 10000
+- assertVisible:
+    id: 'e2e_bulk_log_save_cta'
+
+# 一括記録 CTA tap → 盆栽タブに戻り
+- tapOn:
+    id: 'e2e_bulk_log_save_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 8000
+
+# selectMode 解除後の盆栽タブ確認 (お師匠の真柏 が単独表示モードに戻る)
+- extendedWaitUntil:
+    visible:
+      text: 'お師匠の真柏'
+    timeout: 10000

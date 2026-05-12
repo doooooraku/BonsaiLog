@@ -48,8 +48,9 @@ scripts/dev/reload-app.sh
 | **g1-style-picker (formSheet)**    | **5/5 = 100% PASS** | ~3 分        | **採用** | exit code 判定で完全 5/5 達成                                                                                   |
 | **g2-work-picker (formSheet)**     | **3/3 = 100% PASS** | ~3 分        | **採用** | 2026-05-12 修正後 (scroll + visibility 50 + Continue dismiss + お師匠の真柏 tap) で 3/3 達成、R-30 現基準クリア |
 | **g2-worklog-confirm (formSheet)** | **3/3 = 100% PASS** | ~3 分        | **採用** | 2026-05-12 Phase G2 part 2 で work-picker → work-log-confirm → save → 詳細復帰の 3/3 達成                       |
+| **g3a-bulk-log (formSheet)**       | **3/3 = 100% PASS** | ~3 分        | **採用** | 2026-05-12 Phase G3a で複数選択 → bulk-work-picker → bulk-log-confirm → save → selectMode 解除の 3/3 達成       |
 
-**合計: 16/16 = 100% PASS** (R-30 新基準で評価: g1 = 5/5、g2 = 3/3、Phase G2 完遂、formSheet 案 PoC 採用根拠確立)
+**合計: 19/19 = 100% PASS** (R-30 新基準で評価: g1 = 5/5、g2 = 3/3、g3a = 3/3、Phase G3a 完遂、formSheet 案 PoC 採用根拠確立)
 
 ### 実機検証 attempt の経緯 (2026-05-12 拡張)
 
