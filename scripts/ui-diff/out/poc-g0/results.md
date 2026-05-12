@@ -40,13 +40,15 @@ scripts/dev/reload-app.sh
 # (Phase G1 で新規 Maestro flow を作成予定、本 results.md update 対象)
 ```
 
-## 結果記録 (Claude 側で SX3LHMA362304722 実機 attempt、2026-05-12 Phase G2 part 1 + 追加検証)
+## 結果記録 (Claude 側で SX3LHMA362304722 実機実行、2026-05-12 最終)
 
-| flow                            | 成功率 (X/5)               | 平均所要時間 | 採否     | 備考                                                     |
-| ------------------------------- | -------------------------- | ------------ | -------- | -------------------------------------------------------- |
-| g1-species-picker (formSheet)   | **動作実証** (単発)        | ~4 分        | **採用** | 単発実行で全 step COMPLETED 確認、5 回反復は次セッション |
-| **g1-style-picker (formSheet)** | **5/5 = 100% PASS**        | ~3 分        | **採用** | **本セッション完走、ADR-0024 Accepted 候補**             |
-| g2-work-picker (formSheet)      | 動作確認段階 (1 step fail) | -            | 修正要   | 「設定」 tap で Developer Menu が誤起動、testID 指定要   |
+| flow                              | 成功率 (X/5)        | 平均所要時間 | 採否     | 備考                                                |
+| --------------------------------- | ------------------- | ------------ | -------- | --------------------------------------------------- |
+| **g1-species-picker (formSheet)** | **5/5 = 100% PASS** | ~4 分        | **採用** | exit code 判定で完全 5/5 達成                       |
+| **g1-style-picker (formSheet)**   | **5/5 = 100% PASS** | ~3 分        | **採用** | exit code 判定で完全 5/5 達成                       |
+| g2-work-picker (formSheet)        | 0/5 (scroll 不足)   | -            | 修正要   | TabBar tap OK、seed button 画面下スクロール step 要 |
+
+**合計: 10/15 = 66.7% PASS** (Phase G1 = 100% 実証、Phase G2 = 経路整備済 + scroll 課題判明)
 
 ### 実機検証 attempt の経緯 (2026-05-12 拡張)
 
@@ -64,17 +66,19 @@ scripts/dev/reload-app.sh
    - species DB は clearState 後空 (`getAllSpecies` 空配列)、「未選択 row」 `e2e_species_option_none` で動作確認
    - router.back の挙動: BonsaiCreate (`/bonsai/new`) → 盆栽タブまで自動 dismiss
 
-### 結論 (動作実証 + 5/5 統計達成)
+### 結論 (Phase G1 完全実証 + G2 経路整備)
 
-- **g1-style-picker: 5/5 = 100% PASS 達成** ← **本セッションの最大成果**、formSheet 採用の確実な実証
-- **g1-species-picker: 動作実証完了** (単発全 step COMPLETED)、5 回反復は exit code 判定で再実行 (次セッション)
-- **g2-work-picker: 1 step fail** (「設定」 text tap が Expo Dev Client Developer Menu を誤起動)、testID 指定で修正可
-- **plan B 切替なし** (ユーザー指示) で formSheet 採用継続、g1-style 5/5 で十分な根拠
+- **g1-species-picker: 5/5 = 100% PASS** ← Phase G1 SpeciesPicker formSheet 完全動作実証
+- **g1-style-picker: 5/5 = 100% PASS** ← Phase G1 StylePicker formSheet 完全動作実証
+- **g2-work-picker: 0/5** (TabBar testID 修正 PR #484 で「設定」 tap は OK、ただし `e2e_dev_seed_button` が画面下に隠れスクロール不足)
+- **ADR-0024 採用判断**: G1 完全実証で **formSheet 採用根拠確立**、plan B 切替不要
+- **plan B 切替なし** (ユーザー指示) 整合、Status は **Provisionally Accepted のまま** (g2-work 完走で Accepted へ更新候補)
 
 ### 次セッションでの対応
 
-- g1-species-picker exit code 判定で 5 回反復実行 → 5/5 期待 (動作実証済)
-- g2-work-picker 修正: 「設定」 text tap → TabBar testID 経由に置換 (`e2e_settings_tab` 等)
+- g2-work-picker flow に `scrollUntilVisible: { element: { id: 'e2e_dev_seed_button' } }` step 追加
+- g2-work-picker 再 5 回反復実行 → 5/5 期待
+- 全 15/15 PASS で ADR-0024 Provisionally Accepted → Accepted へ更新
 - g2-work-picker 5 回反復実行
 - 全 15 回完了時に **ADR-0024 Status: Provisionally Accepted → Accepted** へ更新候補
 
