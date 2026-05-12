@@ -40,6 +40,8 @@ export type CreateBonsaiInput = {
   memo?: string | null;
   /** 購入日 (ISO 8601 UTC TEXT、null 可、T2-4 / schema v8 追加、acquiredAt とは別)。 */
   purchaseDate?: string | null;
+  /** 入手元メモ (free-form text、null 可、Issue #455 Phase 1 / schema v10 追加)。 */
+  acquiredFrom?: string | null;
 };
 
 export type UpdateBonsaiInput = Partial<CreateBonsaiInput>;
@@ -60,8 +62,8 @@ export async function createBonsai(input: CreateBonsaiInput): Promise<Bonsai> {
 
   await db.runAsync(
     `INSERT INTO bonsai
-       (id, name, species_id, acquired_at, style, pot_info, estimated_age, memo, purchase_date, archived_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?);`,
+       (id, name, species_id, acquired_at, style, pot_info, estimated_age, memo, purchase_date, acquired_from, archived_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?);`,
     [
       id,
       input.name,
@@ -72,6 +74,7 @@ export async function createBonsai(input: CreateBonsaiInput): Promise<Bonsai> {
       input.estimatedAge ?? null,
       input.memo ?? null,
       input.purchaseDate ?? null,
+      input.acquiredFrom ?? null,
       now,
       now,
     ],
@@ -87,6 +90,7 @@ export async function createBonsai(input: CreateBonsaiInput): Promise<Bonsai> {
     estimatedAge: input.estimatedAge ?? null,
     memo: input.memo ?? null,
     purchaseDate: input.purchaseDate ?? null,
+    acquiredFrom: input.acquiredFrom ?? null,
     archivedAt: null,
     createdAt: now,
     updatedAt: now,
@@ -245,6 +249,10 @@ export async function updateBonsai(id: string, updates: UpdateBonsaiInput): Prom
   if (updates.purchaseDate !== undefined) {
     fields.push('purchase_date = ?');
     values.push(updates.purchaseDate);
+  }
+  if (updates.acquiredFrom !== undefined) {
+    fields.push('acquired_from = ?');
+    values.push(updates.acquiredFrom);
   }
 
   values.push(id);

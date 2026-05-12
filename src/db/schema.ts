@@ -26,7 +26,7 @@
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 9;
+export const SCHEMA_VERSION = 10;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -117,6 +117,7 @@ export const bonsai = sqliteTable(
     estimatedAge: integer('estimated_age'), // v6 追加: 推定樹齢 (年、null 可)
     memo: text('memo'), // v7 追加: メモ (free-form text、null 可)
     purchaseDate: text('purchase_date'), // v8 追加: 購入日 (ISO 8601 UTC TEXT、acquiredAt とは別、null 可)
+    acquiredFrom: text('acquired_from'), // v10 追加: 入手元メモ (free-form text、null 可、Issue #455 Phase 1)
     archivedAt: text('archived_at'), // ISO 8601 UTC TEXT (NULL ならアクティブ)
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
@@ -514,6 +515,10 @@ ALTER TABLE bonsai ADD COLUMN purchase_date TEXT;
  * - mockup create-screens.jsx CreateBonsaiScreen のタグ chip (#要注意 / @ベランダ / #展示会候補) 整合
  * - CREATE TABLE IF NOT EXISTS で冪等性確保
  */
+export const schemaV10 = `
+ALTER TABLE bonsai ADD COLUMN acquired_from TEXT;
+`;
+
 export const schemaV9 = `
 CREATE TABLE IF NOT EXISTS bonsai_tags (
   bonsai_id TEXT NOT NULL,

@@ -24,6 +24,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldSpeciesSearch: '樹種を検索…',
   bonsaiFieldStyle: '樹形',
   bonsaiFieldAcquiredAt: '取得日',
+  bonsaiFieldAcquiredFrom: '入手元メモ',
+  bonsaiFieldAcquiredFromPlaceholder: '例: 父から継承 / 高崎盆栽市',
   bonsaiFieldUpdatedAt: '最終更新',
   bonsaiArchive: 'アーカイブ',
   bonsaiTagsAddCta: 'タグ追加',
