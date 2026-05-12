@@ -1,19 +1,21 @@
-## Phase G2 part 1 WorkPicker formSheet 実機検証 flow (ADR-0024 Provisionally Accepted)
+## Phase G2 part 1 WorkPicker formSheet 実機検証 flow (ADR-0024)
 ##
-## 検証目的: `(modals)/work-picker` (formSheet) が実機で 5/5 安定動作するか確認。
+## 検証目的: `(modals)/work-picker` (formSheet) が実機で 3/3 安定動作するか確認。
+## 結果: 2026-05-12 R-30 現基準 3/3 = 100% PASS 達成 (scroll + visibility 50 + Continue dismiss + お師匠の真柏 tap)。
 ##
 ## 経路 (Dev Client + Onboarding skip + seedTestData + 詳細画面):
 ## 1. App 起動 (clearState: true)
 ## 2. Dev Client menu → localhost:8081 tap
-## 3. Onboarding skip (Welcome → Language ja → Tut1-5 skip)
-## 4. 盆栽タブ → 設定タブ → seedTestData → 盆栽タブへ
-## 5. 1 件目の盆栽 (父の黒松) を tap → 詳細画面
-## 6. 履歴タブ FAB tap → /(modals)/work-picker (formSheet) 表示
-## 7. watering (水やり) tap → router.back() で詳細画面に戻る
+## 3. Continue dialog dismiss (text tap + pressKey 両方)
+## 4. Onboarding skip (Welcome → Language ja → Tut1-5 skip)
+## 5. 盆栽タブ → 設定タブ → scrollUntilVisible seed button (visibilityPercentage 50) → seedTestData → 盆栽タブへ
+## 6. 1 件目の盆栽 (お師匠の真柏、created_at desc で top) を tap → 詳細画面
+## 7. 履歴タブ FAB tap → /(modals)/work-picker (formSheet) 表示
+## 8. watering (水やり) tap → router.back() で詳細画面に戻る
 ##    (WorkLogConfirmSheet は G2 part 2 で formSheet 化予定、本 flow では表示確認まで)
 ##
-## 実機実行コマンド (5 回反復):
-##   for i in 1 2 3 4 5; do maestro test maestro/flows/g2-work-picker.yml; done
+## 実機実行コマンド (3 回反復、R-30 現基準):
+##   for i in 1 2 3; do maestro test maestro/flows/g2-work-picker.yml; done
 appId: 'com.doooooraku.bonsailog'
 ---
 - launchApp:
@@ -27,7 +29,13 @@ appId: 'com.doooooraku.bonsailog'
 - waitForAnimationToEnd:
     timeout: 15000
 
-# Expo Dev Client Continue dialog 自動 dismiss
+# Expo Dev Client Continue dialog 自動 dismiss (text tap + pressKey 両方で確実)
+- tapOn:
+    text: 'Continue'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
 - pressKey: 'Back'
 - waitForAnimationToEnd:
     timeout: 3000
@@ -104,11 +112,14 @@ appId: 'com.doooooraku.bonsailog'
 - waitForAnimationToEnd:
     timeout: 3000
 
-# seedTestData button tap
-- extendedWaitUntil:
-    visible:
+# seedTestData button は画面下にあるため scrollUntilVisible で確実に到達
+# visibilityPercentage: 50 で一部画面内なら OK (100% だと bottom safe area で届かず)
+- scrollUntilVisible:
+    element:
       id: 'e2e_dev_seed_button'
-    timeout: 10000
+    direction: DOWN
+    timeout: 15000
+    visibilityPercentage: 50
 - tapOn:
     id: 'e2e_dev_seed_button'
     retryTapIfNoChange: true
@@ -130,9 +141,13 @@ appId: 'com.doooooraku.bonsailog'
 - waitForAnimationToEnd:
     timeout: 3000
 
-# 1 件目の盆栽 (父の黒松) tap → 詳細画面
+# 1 件目の盆栽 (お師匠の真柏) が seedTestData の DB write + reload 後に visible になるまで待つ
+- extendedWaitUntil:
+    visible:
+      text: 'お師匠の真柏'
+    timeout: 30000
 - tapOn:
-    text: '父の黒松'
+    text: 'お師匠の真柏'
     retryTapIfNoChange: true
 - waitForAnimationToEnd:
     timeout: 5000
