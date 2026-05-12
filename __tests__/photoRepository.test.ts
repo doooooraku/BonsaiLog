@@ -2,7 +2,7 @@
  * photoRepository 静的解析 + 純関数テスト (P2-02 PR-B)。
  *
  * 実 DB 接続テストは PR-C の Maestro E2E でカバー。本テストは:
- * - FREE_PHOTO_LIMIT_PER_BONSAI 定数 = 3 (constraints.md §2-2)
+ * - FREE_PHOTO_LIMIT_PER_BONSAI 定数 = Infinity (写真制限撤廃、PR #470 / Issue #458 Phase 2)
  * - PHOTO_PATH_ANCHOR が 'bonsailog/photos/' (Repolog PR #281 lesson)
  * - Repository が必要な関数を export
  * - 値プレースホルダ (?) 使用 (SQL injection 防止)
@@ -14,8 +14,8 @@ import * as path from 'node:path';
 import { FREE_PHOTO_LIMIT_PER_BONSAI } from '../src/db/photoRepository';
 
 describe('FREE_PHOTO_LIMIT_PER_BONSAI', () => {
-  test('constraints §2-2 で 3 枚と確定', () => {
-    expect(FREE_PHOTO_LIMIT_PER_BONSAI).toBe(3);
+  test('写真制限撤廃で Infinity (PR #470 / Issue #458 Phase 2)', () => {
+    expect(FREE_PHOTO_LIMIT_PER_BONSAI).toBe(Number.POSITIVE_INFINITY);
   });
 });
 
