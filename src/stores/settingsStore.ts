@@ -64,7 +64,10 @@ type SettingsState = {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      themeMode: 'system',
+      // default を 'light' に変更 (2026-05-13): Maestro 検証 + 動作確認を light で統一。
+      // 既存 install (zustand persist で themeMode 永続化済) は維持、新規 install / clearState 後は light スタート。
+      // ユーザーは設定タブで auto / light / dark に切替可能。
+      themeMode: 'light',
       setThemeMode: (mode) => set({ themeMode: mode }),
       // ADR-0014 §30 / §32: master = ON 既定、AsyncStorage 永続化 ('myapp-settings')
       notificationMasterEnabled: true,
