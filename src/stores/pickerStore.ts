@@ -1,12 +1,12 @@
 /**
- * Picker 戻り値受け渡し store (Phase G1、ADR-0024 Provisionally Accepted)。
+ * Picker 戻り値受け渡し store (Phase G1-G2、ADR-0024 Accepted)。
  *
- * Picker 画面で `set{Species,Style}PickerResult(value)` → `router.back()` → caller で
- * `useFocusEffect` 内で `consume{Species,Style}PickerResult()` を呼んで結果取得 + state クリア。
+ * Picker 画面で `set{Species,Style,Work,WorkLogConfirm}PickerResult(value)` → `router.back()`
+ * → caller で `useFocusEffect` 内で `consume{...}Result()` を呼んで結果取得 + state クリア。
  *
  * 'CONSUMED' sentinel で「未設定」 と「null 選択 (= 未選択)」 を区別。
  *
- * Phase G2-G4 で work-picker / work-log-confirm / bulk-* も追加予定。
+ * Phase G3-G4 で bulk-* も追加予定。
  * 将来 React Navigation 8.0 の `pushParams` API or `useLocalSearchParams` 経由に置換候補。
  */
 import { create } from 'zustand';
@@ -20,6 +20,17 @@ type StyleResult = BonsaiStyle | null | 'CONSUMED';
 export type WorkPickerMode = 'log' | 'schedule';
 type WorkPickerValue = { type: EventType; mode: WorkPickerMode };
 type WorkPickerResult = WorkPickerValue | 'CONSUMED';
+
+/**
+ * 作業記録 詳細 入力の戻り値 (Phase G2 part 2、ADR-0024 Accepted)。
+ * 循環依存回避のため WorkLogConfirmScreen ではなく本 store 側で型定義し、Screen 側 import する。
+ */
+export type WorkLogPayload = {
+  type: EventType;
+  note: string;
+  payload: Record<string, unknown>;
+};
+type WorkLogConfirmResult = WorkLogPayload | 'CONSUMED';
 
 type PickerStore = {
   // 樹種 (species)
@@ -36,6 +47,11 @@ type PickerStore = {
   workPickerResult: WorkPickerResult;
   setWorkPickerResult: (result: WorkPickerValue) => void;
   consumeWorkPickerResult: () => WorkPickerValue | undefined;
+
+  // 作業記録 詳細 (work-log-confirm、Phase G2 part 2)
+  workLogConfirmResult: WorkLogConfirmResult;
+  setWorkLogConfirmResult: (payload: WorkLogPayload) => void;
+  consumeWorkLogConfirmResult: () => WorkLogPayload | undefined;
 };
 
 export const usePickerStore = create<PickerStore>((set, get) => ({
@@ -63,6 +79,15 @@ export const usePickerStore = create<PickerStore>((set, get) => ({
     const result = get().workPickerResult;
     if (result === 'CONSUMED') return undefined;
     set({ workPickerResult: 'CONSUMED' });
+    return result;
+  },
+
+  workLogConfirmResult: 'CONSUMED',
+  setWorkLogConfirmResult: (payload) => set({ workLogConfirmResult: payload }),
+  consumeWorkLogConfirmResult: () => {
+    const result = get().workLogConfirmResult;
+    if (result === 'CONSUMED') return undefined;
+    set({ workLogConfirmResult: 'CONSUMED' });
     return result;
   },
 }));

@@ -64,9 +64,8 @@ import {
   type EventGroupEntry,
 } from '@/src/features/event/groupContinuousEvents';
 import { HistoryChipRow } from '@/src/features/event/HistoryChip';
-import { WorkLogConfirmSheet, type WorkLogPayload } from '@/src/features/event/WorkLogConfirmSheet';
+import type { WorkLogPayload } from '@/src/stores/pickerStore';
 import { usePickerStore } from '@/src/stores/pickerStore';
-import type BottomSheet from '@gorhom/bottom-sheet';
 import { WiringPeriodDisplay } from '@/src/features/wiring/WiringPeriodDisplay';
 import {
   classifyWiringDuration,
@@ -114,32 +113,24 @@ export default function BonsaiDetailScreen() {
   // CreateBonsaiScreen embed に正式化予定)
   const [activeTab, setActiveTab] = useState<'history' | 'timeline' | 'basic'>('history');
 
-  // Phase G2 part 1 (ADR-0024): 作業記録 BottomSheet を `(modals)/work-picker` (formSheet) に置換、
-  // 旧 workPickerRef / schedulePickerRef は廃止 (router.push + usePickerStore で代替)。
-  // ADR-0020 v1.x-3: 作業記録 詳細 form BottomSheet (G2 part 2 で formSheet 化予定、本 PR は維持)
-  const workConfirmRef = React.useRef<BottomSheet>(null);
+  // Phase G2 part 1-2 (ADR-0024 Accepted): 作業記録 BottomSheet を `(modals)/work-picker` +
+  // `(modals)/work-log-confirm` (formSheet) に置換、ref 経由の Sheet 制御は全廃 (router.push +
+  // usePickerStore で代替)。
   const [pendingScheduleType, setPendingScheduleType] = useState<EventType | null>(null);
   const [showSchedulePicker, setShowSchedulePicker] = useState(false);
-  const [pendingWorkType, setPendingWorkType] = useState<EventType | null>(null);
   const FORM_TYPES: readonly EventType[] = ['watering', 'pruning', 'wiring'];
   const handleWorkPickerSelect = React.useCallback(
     (type: EventType) => {
-      // Phase G2 part 1: workPickerRef.close() は不要 (router.back で picker 画面が閉じている)。
-      // 詳細 form 対応 type は WorkLogConfirmSheet に進む、それ以外は即時記録
+      // 詳細 form 対応 type (watering / pruning / wiring) は (modals)/work-log-confirm へ
+      // formSheet 遷移、それ以外は即時記録。
+      if (!item) return;
       if (FORM_TYPES.includes(type)) {
-        setPendingWorkType(type);
-        setTimeout(() => workConfirmRef.current?.snapToIndex(0), 50);
+        router.push(
+          `/work-log-confirm?bonsaiName=${encodeURIComponent(item.name)}&type=${type}` as Href,
+        );
       } else {
         void logEvent(type);
       }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [item],
-  );
-  const handleWorkLogSubmit = React.useCallback(
-    (payload: WorkLogPayload) => {
-      workConfirmRef.current?.close();
-      void persistEventWithPayload(payload);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [item],
@@ -156,15 +147,23 @@ export default function BonsaiDetailScreen() {
 
   // Phase G2 part 1 (ADR-0024): `/work-picker` から戻った時に workPickerResult を消費、
   // mode に応じて log / schedule 分岐。
+  // Phase G2 part 2 (ADR-0024 Accepted): `/work-log-confirm` から戻った時は workLogConfirmResult
+  // を消費して createEvent で DB に書込 (旧 onSubmit callback 経路の置換)。
   useFocusEffect(
     React.useCallback(() => {
-      const result = usePickerStore.getState().consumeWorkPickerResult();
-      if (!result) return;
-      if (result.mode === 'log') {
-        handleWorkPickerSelect(result.type);
-      } else {
-        handleSchedulePickerSelect(result.type);
+      const workResult = usePickerStore.getState().consumeWorkPickerResult();
+      if (workResult) {
+        if (workResult.mode === 'log') {
+          handleWorkPickerSelect(workResult.type);
+        } else {
+          handleSchedulePickerSelect(workResult.type);
+        }
       }
+      const logResult = usePickerStore.getState().consumeWorkLogConfirmResult();
+      if (logResult) {
+        void persistEventWithPayload(logResult);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [handleWorkPickerSelect, handleSchedulePickerSelect]),
   );
 
@@ -893,15 +892,8 @@ export default function BonsaiDetailScreen() {
         />
       )}
 
-      {/* ADR-0020 v1.x-3: 作業記録 詳細 form BottomSheet (water / pruning / wiring) */}
-      <WorkLogConfirmSheet
-        ref={workConfirmRef}
-        index={-1}
-        bonsaiName={item.name}
-        selectedType={pendingWorkType}
-        onSubmit={handleWorkLogSubmit}
-        onClose={() => setPendingWorkType(null)}
-      />
+      {/* Phase G2 part 2 (ADR-0024 Accepted): 作業記録 詳細 form は (modals)/work-log-confirm
+          formSheet に移行、本ファイル直下の JSX は不要。 */}
 
       {/* Issue #439: 基本情報タブ 編集フォームの 樹種 / 樹形 Picker BottomSheet。
           @gorhom/bottom-sheet は ScrollView 内に nest すると closed (index=-1) でも
