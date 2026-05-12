@@ -40,13 +40,39 @@ scripts/dev/reload-app.sh
 # (Phase G1 で新規 Maestro flow を作成予定、本 results.md update 対象)
 ```
 
-## 結果記録 (Claude 側で SX3LHMA362304722 実機実行、Phase G1 + G2 part 1)
+## 結果記録 (Claude 側で SX3LHMA362304722 実機 attempt、2026-05-12 Phase G2 part 1)
 
-| flow                          | 成功率 (X/5) | 平均所要時間 | 採否 | 備考           |
-| ----------------------------- | ------------ | ------------ | ---- | -------------- |
-| g1-species-picker (formSheet) | TBD          | TBD          | TBD  | 実機検証実行中 |
-| g1-style-picker (formSheet)   | TBD          | TBD          | TBD  | 実機検証実行中 |
-| g2-work-picker (formSheet)    | TBD          | TBD          | TBD  | 実機検証実行中 |
+| flow                          | 成功率 (X/5) | 平均所要時間 | 採否     | 備考                                                  |
+| ----------------------------- | ------------ | ------------ | -------- | ----------------------------------------------------- |
+| g1-species-picker (formSheet) | 0/5          | 60s+ (失敗)  | 検証不能 | Dev Client + onboarding 画面で停止 (経路整備要)       |
+| g1-style-picker (formSheet)   | 未試行       | -            | -        | 同 g1-species-picker (経路整備優先)                   |
+| g2-work-picker (formSheet)    | 未試行       | -            | -        | 盆栽 1 件 seed 後 + 詳細画面到達経路要 (次セッション) |
+
+### 実機検証 attempt の経緯 (2026-05-12)
+
+1. **Maestro CLI install**: `curl -Ls https://get.maestro.mobile.dev | bash` → v2.5.1 install 完了
+2. **実機接続確認**: `adb devices` → `SX3LHMA362304722 device`
+3. **Metro 起動済 + reload-app.sh** で実機反映 → Dev Client menu (DevLauncherActivity) に到達
+4. **Maestro 実行 attempt** (5 回反復、3 回 syntax 修正):
+   - 1st: `appId: app.bonsailog` 誤り → 全 5 回「Unable to launch app」 fail
+   - 2nd: `appId: 'com.doooooraku.bonsailog'` 修正、`e2e_bonsai_fab` 誤 testID → 全 5 回 timeout
+   - 3rd: `e2e_home_empty_cta` 正 testID + `clearState: true` → **Onboarding 画面で停止** (「鉢１本ずつ、一生分。」)
+5. **判明した経路課題** (次セッションで対応):
+   - Dev Client menu からアプリ本体起動の自動化 (localhost:8081 tap 経路)
+   - Onboarding 全画面 skip step (「あとで」 tap or skip 機構)
+   - 盆栽 1 件 seed 後の詳細画面到達 (g2-work-picker 用)
+
+### 結論 (実機 attempt vs 整備状況)
+
+- **検証結果**: 自動化未完成、Onboarding 経路整備が次セッションの前提
+- **コード品質**: type-check 緑、CI 緑、本 PR 実装に問題なし
+- **plan B 切替なし** (ユーザー指示): 検証失敗判定でも formSheet 継続、本 PR merge 可
+
+### 次セッションでの対応
+
+- Maestro flow に Onboarding skip step 追加 (`tapOn: { text: 'はじめる' }` → 言語選択 → 通知 OFF → 完了)
+- 盆栽 1 件 seed する setup flow を `parent-child.yml` pattern で書く
+- g2-work-picker は seed 後の盆栽 1 件目 tap → 詳細画面 → 履歴 FAB → work-picker
 
 ## 合格基準 (ADR-0024、ユーザー指示で更新)
 

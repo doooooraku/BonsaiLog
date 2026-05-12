@@ -13,7 +13,7 @@
 ##
 ## 実機実行コマンド:
 ##   maestro test maestro/flows/g2-work-picker.yml --repeat 5
-appId: app.bonsailog
+appId: 'com.doooooraku.bonsailog'
 ---
 - launchApp:
     clearState: false

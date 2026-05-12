@@ -1,33 +1,37 @@
 ## Phase G1 SpeciesPicker formSheet 実機検証 flow (ADR-0024 Provisionally Accepted)
 ##
 ## 検証目的: `(modals)/species-picker` (formSheet) が実機で 5/5 安定動作するか確認。
-## 5 回反復成功なら ADR-0024 Status を Accepted へ更新候補。
 ##
-## 検証手順:
-## 1. App 起動
-## 2. 盆栽タブで FAB tap → 新規追加画面 (BonsaiCreate)
-## 3. 樹種選択 row tap → /(modals)/species-picker (formSheet) 表示
-## 4. 「黒松」 tap → router.back() で BonsaiCreate に戻る
-## 5. 樹種フィールドに「黒松」 表示を確認
+## 経路 (空 state、Dev Client 経由起動):
+## 1. App 起動 (clearState: true)
+## 2. Dev Client menu → localhost:8081 tap でアプリ本体起動 + bundle load
+## 3. 盆栽タブ empty CTA「盆栽を登録」tap → BonsaiCreate 画面
+## 4. 樹種選択 row tap → /(modals)/species-picker (formSheet) 表示
+## 5. species-picker 内で「黒松」 tap → router.back() で BonsaiCreate に戻る
+## 6. 樹種フィールドが pick row として再表示確認
 ##
-## Maestro 標準パターン (docs/how-to/maestro-standard-pattern.md):
-## - 全 tap に retryTapIfNoChange: true
-## - 全 tap 後に waitForAnimationToEnd: { timeout: 5000 }
-##
-## 実機実行コマンド:
-##   maestro test maestro/flows/g1-species-picker.yml --repeat 5
-appId: app.bonsailog
+## 実機実行コマンド (5 回反復):
+##   for i in 1 2 3 4 5; do maestro test maestro/flows/g1-species-picker.yml; done
+appId: 'com.doooooraku.bonsailog'
 ---
 - launchApp:
-    clearState: false
+    clearState: true
 
-- assertVisible:
-    id: 'e2e_bonsai_tab_screen'
-    optional: true
-
-# 盆栽タブ FAB tap → BonsaiCreate 画面
+# Dev Client menu → localhost:8081 tap でアプリ本体起動 (development build 専用 step)
 - tapOn:
-    id: 'e2e_bonsai_fab'
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# 盆栽タブ empty 状態の CTA tap → BonsaiCreate (timeout 30s で bundle load 完了待ち)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_home_empty_cta'
     retryTapIfNoChange: true
 - waitForAnimationToEnd:
     timeout: 5000
@@ -50,6 +54,6 @@ appId: app.bonsailog
 - waitForAnimationToEnd:
     timeout: 5000
 
-# BonsaiCreate に戻り、樹種フィールド更新を確認
+# BonsaiCreate に戻り、樹種フィールド再表示を確認
 - assertVisible:
     id: 'e2e_bonsai_create_species_pick'
