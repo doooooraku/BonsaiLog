@@ -130,12 +130,40 @@ appId: app.bonsailog
 
 ## 7. 禁止パターン (flaky 原因)
 
-| パターン                                  | 理由                                                 |
-| ----------------------------------------- | ---------------------------------------------------- |
-| `tapOn: { text: "..." }` (modal/sheet 内) | accessibility tree で hidden、Maestro 検出不能       |
-| `wait: 1000` (固定 wait)                  | アニメーション可変時間に対応不可、本質的解決にならず |
-| `retryTapIfNoChange: false` (デフォルト)  | ghost tap で 1 回失敗、再試行なし                    |
-| testID なし要素を text で tap             | i18n 変更で flow が壊れる、accessibility tree 不確定 |
+| パターン                                                    | 理由                                                                                                                                                        |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tapOn: { text: "..." }` (modal/sheet 内)                   | accessibility tree で hidden、Maestro 検出不能                                                                                                              |
+| `wait: 1000` (固定 wait)                                    | アニメーション可変時間に対応不可、本質的解決にならず                                                                                                        |
+| `retryTapIfNoChange: false` (デフォルト)                    | ghost tap で 1 回失敗、再試行なし                                                                                                                           |
+| testID なし要素を text で tap                               | i18n 変更で flow が壊れる、accessibility tree 不確定                                                                                                        |
+| `pressKey: 'Back'` (modal 内)                               | Android で keyboard 未起動時に **modal を閉じる**、`hideKeyboard` も同様。代わりに `scrollUntilVisible` で keyboard を間接 dismiss (Phase G4 part 2 で実証) |
+| `extendedWaitUntil { visible: id }` のみ で画面下要素を待つ | 画面外要素は visible 判定にならない (Maestro 仕様)、`scrollUntilVisible (visibilityPercentage: 30-50)` で確実化 (Phase G2/G4 で実証)                        |
+
+## 7.1. 画面外要素 / キーボード隠れ問題への対処 (Phase G2/G4 教訓、ADR-0024)
+
+### 症状
+
+- 設定タブの seed button のように **画面下 safe area で 100% visible にならない**
+- modal/Screen で TextInput が auto focus、**キーボードが画面下 submit を隠す**
+
+### 対処パターン (実証済、3/3 PASS 達成)
+
+```yaml
+# 画面下要素を確実に visible に持ってくる
+- scrollUntilVisible:
+    element:
+      id: 'e2e_<screen>_<element>'
+    direction: DOWN
+    timeout: 15000
+    visibilityPercentage: 30 # or 50、100% は厳格すぎる
+```
+
+### 試行錯誤履歴 (失敗パターン、これらは使わない)
+
+- ❌ `pressKey: 'Back'` で keyboard dismiss → keyboard 未起動時に **modal close**
+- ❌ `hideKeyboard` Action → Android で `pressKey Back` 相当、同じく **modal close**
+- ❌ `extendedWaitUntil { visible: id }` 単独 → 画面下要素は永久 timeout
+- ✅ `scrollUntilVisible (visibilityPercentage: 30)` → keyboard が同時に dismiss + element 内側へ
 
 ---
 

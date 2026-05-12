@@ -661,26 +661,9 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
   );
 }
 
-export type BonsaiBasicFormPickerSheetsProps = {
-  form: BonsaiBasicFormState;
-};
-
-/**
- * 樹種 / 樹形 Picker (Phase G1、ADR-0024 Provisionally Accepted)。
- *
- * 旧 `@gorhom/bottom-sheet` 自作 Sheet (`SpeciesPickerSheet` / `StylePickerSheet`) は廃止、
- * `(modals)/species-picker` + `(modals)/style-picker` route (presentation: 'formSheet') に
- * 置換 (BonsaiBasicFormFields の Pressable onPress で `router.push` 起動、戻り値は
- * `usePickerStore` 経由 + `useFocusEffect` で受信)。
- *
- * 本関数は backward compat で残置 (BonsaiCreateSheet など caller の影響を最小化)、
- * 内容は空 (return null)。Phase G5 で本関数 + Props 型を完全削除予定。
- */
-export function BonsaiBasicFormPickerSheets(
-  _props: BonsaiBasicFormPickerSheetsProps,
-): React.ReactNode {
-  return null;
-}
+// Phase G5 (ADR-0024 Accepted): 旧 `BonsaiBasicFormPickerSheets` 空関数 + Props 型を削除。
+// 樹種 / 樹形 Picker は `(modals)/species-picker` + `(modals)/style-picker` route
+// (presentation: 'formSheet') に完全移行済。
 
 const styles = StyleSheet.create({
   field: { gap: 8 },

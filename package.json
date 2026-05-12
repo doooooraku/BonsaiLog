@@ -59,7 +59,6 @@
     "@expo-google-fonts/noto-sans-jp": "^0.4.3",
     "@expo-google-fonts/noto-serif-jp": "^0.4.3",
     "@expo/vector-icons": "^15.1.1",
-    "@gorhom/bottom-sheet": "^5.2.13",
     "@react-native-async-storage/async-storage": "^3.0.2",
     "@react-native-community/datetimepicker": "^9.1.0",
     "@react-navigation/bottom-tabs": "^7.15.11",
