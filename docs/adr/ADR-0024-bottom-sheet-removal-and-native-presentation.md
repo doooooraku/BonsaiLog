@@ -1,6 +1,6 @@
 # ADR-0024: @gorhom/bottom-sheet 全廃 + native presentation 置換 (Phase G)
 
-- Status: **Provisionally Accepted** (2026-05-12 Phase G1 着手時、実機 5/5 検証は Phase G1 完了後)
+- Status: **Accepted** (2026-05-12 Phase G2 part 1 完了時に Provisionally Accepted → Accepted へ昇格、実機 13/13 PASS 達成)
 - Date: 2026-05-12
 - Deciders: @doooooraku
 - Related: Issue #475 / ADR-0020 (Notes Amended 2026-05-12) / `docs/reference/functional_spec.md` §6.2 / §7.2 / §9.3.4 / §22
@@ -8,6 +8,8 @@
 > **2026-05-12 Phase G1 着手時 update**: ユーザー明示承認下で **実機 5 回 × 3 案 = 15 回検証 (PoC) をスキップ**、暫定 formSheet 採用で Phase G1 (SpeciesPicker + StylePicker 本実装) を着手。R-25 / R-30 リスク受容、実機 5/5 検証は Phase G1 完了後または G2-G4 内で順次実施、不合格判明時は revert + plan B (Expo UI BottomSheet) 切替。詳細は本 ADR §Notes Amended (2026-05-12 Phase G1) 参照。
 >
 > **2026-05-12 retro update**: 反復回数を **5 回 → 3 回 (業界標準)** に短縮、timeout 値も 33-40% 短縮 (各 run ~4 分 → ~3 分、3 flow 検証 60 分 → 27 分、55% 削減)。Phase G1 実機検証は実質 5/5 + 5/5 = 10/10 PASS で完了 (g1-species + g1-style)、g2-work は scroll 課題のみ残。合格基準は新基準 **3/3 = 100%** で運用、R-30 update 済。
+>
+> **2026-05-12 Phase G2 part 1 完了時 update (Provisionally Accepted → Accepted)**: g2-work-picker formSheet 実機検証で **3/3 = 100% PASS** 達成 (PR #487)、ADR-0024 全体で **g1-species 5/5 + g1-style 5/5 + g2-work 3/3 = 13/13 = 100% PASS**。formSheet 案 PoC 採用根拠完全確立、plan B (Expo UI BottomSheet) 切替不要。Status を **Accepted** に昇格。残 Phase G2 part 2 / G3 / G4 / G5 は本 ADR Decision の延長 (採用方針継続)、新たな決定なし。
 
 ---
 
@@ -111,21 +113,22 @@
 
 ### Follow-ups（後でやる宿題）
 
-- [ ] PoC G0 PR 実装 (X / Y / Z 3 ブランチ並列)
-- [ ] PoC 結果記録 PR (`scripts/ui-diff/out/poc-g0/results.md` 新規)
-- [ ] ADR-0024 を Proposed → Accepted に更新 (PoC 結果反映)
-- [ ] Phase G1 (Species + Style picker)
-- [ ] Phase G2 (Work picker + Log confirm)
+- [x] PoC G0 PR 実装 (X / Y / Z 3 ブランチ並列 → 1 ブランチで 3 案並存に簡素化、PR #478/#479)
+- [x] PoC 結果記録 PR (`scripts/ui-diff/out/poc-g0/results.md` 新規、本 PR で update)
+- [x] ADR-0024 を Proposed → Accepted に更新 (PoC 結果反映、本 PR)
+- [x] Phase G1 (Species + Style picker、PR #480-#483 で完了、g1-species 5/5 + g1-style 5/5 PASS)
+- [x] Phase G2 part 1 (Work picker formSheet 化、PR #482/#484 + #487 で完了、g2-work 3/3 PASS)
+- [ ] Phase G2 part 2 (WorkLogConfirm formSheet 化)
 - [ ] Phase G3a (Bulk work picker + Bulk log confirm)
 - [ ] Phase G3b (Bulk schedule date)
 - [ ] Phase G4 (Bonsai create modal + Heatmap formSheet)
 - [ ] Phase G5 (`@gorhom/bottom-sheet` 依存削除 + skip-list update)
-- [ ] R-30 (外部 lib テスト stability 変更時 PoC 必須化) を `.claude/recurrence-prevention.md` に追加
-- [ ] `docs/how-to/maestro-standard-pattern.md` 新規作成 (本 ADR 同 PR)
+- [x] R-30 (外部 lib テスト stability 変更時 PoC 必須化) を `.claude/recurrence-prevention.md` に追加 (PR #486)
+- [x] `docs/how-to/maestro-standard-pattern.md` 新規作成 (PR #476/#477)
 - [ ] Maestro flow lint rule 起票 (waitForAnimationToEnd 不在検出、Phase G 完了後)
 - [ ] testID ESLint rule 起票 (新規 screen 必須、Phase G 完了後)
-- [ ] `functional_spec.md` の native presentation 記述明確化 (本 ADR 同 PR)
-- [ ] ADR-0020 Notes Amended (BonsaiFilterSheet 廃止 → 10 箇所全廃に拡大、R-16 言及破棄反映) (本 ADR 同 PR)
+- [x] `functional_spec.md` の native presentation 記述明確化 (PR #476/#477)
+- [x] ADR-0020 Notes Amended (BonsaiFilterSheet 廃止 → 10 箇所全廃に拡大、R-16 言及破棄反映) (PR #476/#477)
 
 ---
 
