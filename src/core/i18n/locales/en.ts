@@ -579,6 +579,7 @@ const baseEn = {
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
   settingsArchiveSection: 'Archive',
   settingsArchiveTitle: 'Archived bonsai',
+  settingsArchivedCountValue: '{count} items',
   settingsArchiveDesc: 'View archived bonsai list',
   settingsLegalSection: 'Other',
   settingsLegalTerms: 'Terms of Service',

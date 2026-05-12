@@ -173,6 +173,17 @@ export async function getAllArchivedBonsai(): Promise<Bonsai[]> {
 }
 
 /**
+ * アーカイブ済盆栽の件数を取得 (Issue #457 Phase 5、設定画面 right value 表示用)。
+ */
+export async function countArchivedBonsai(): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM bonsai WHERE archived_at IS NOT NULL;',
+  );
+  return row?.count ?? 0;
+}
+
+/**
  * 全盆栽を樹種付きで取得 (一覧画面用、アクティブのみ)。
  *
  * Issue #253: getAllActiveBonsai() の tagIds オプションをそのまま委譲して M:N フィルタ可能。
