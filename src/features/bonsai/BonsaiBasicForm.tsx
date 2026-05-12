@@ -101,6 +101,7 @@ export function useBonsaiBasicForm({
   const [estimatedAgeText, setEstimatedAgeText] = useState('');
   const [memo, setMemo] = useState('');
   const [purchaseDate, setPurchaseDate] = useState('');
+  const [acquiredFrom, setAcquiredFrom] = useState('');
   const [recentTags, setRecentTags] = useState<TagRecord[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const speciesSheetRef = useRef<BottomSheet>(null);
@@ -136,6 +137,7 @@ export function useBonsaiBasicForm({
     );
     setMemo(editingBonsai.memo ?? '');
     setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
+    setAcquiredFrom(editingBonsai.acquiredFrom ?? '');
     let cancelled = false;
     void getTagsByBonsai(editingBonsai.id).then((tags) => {
       if (cancelled) return;
@@ -167,6 +169,7 @@ export function useBonsaiBasicForm({
       );
       setMemo(editingBonsai.memo ?? '');
       setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
+      setAcquiredFrom(editingBonsai.acquiredFrom ?? '');
       setSelectedTagIds(new Set(originalTagIdsRef.current));
       setPendingPhotos([]);
     } else {
@@ -178,6 +181,7 @@ export function useBonsaiBasicForm({
       setEstimatedAgeText('');
       setMemo('');
       setPurchaseDate('');
+      setAcquiredFrom('');
       setSelectedTagIds(new Set());
     }
   }, [editingBonsai]);
@@ -254,6 +258,7 @@ export function useBonsaiBasicForm({
         estimatedAge,
         memo: memo.trim() ? memo.trim() : null,
         purchaseDate: purchaseDate.trim() ? toIsoUtc(purchaseDate.trim()) : null,
+        acquiredFrom: acquiredFrom.trim() ? acquiredFrom.trim() : null,
       };
 
       if (editingBonsai != null) {
@@ -306,6 +311,7 @@ export function useBonsaiBasicForm({
     acquiredAt,
     memo,
     purchaseDate,
+    acquiredFrom,
     editingBonsai,
     selectedTagIds,
     pendingPhotos,
@@ -333,6 +339,8 @@ export function useBonsaiBasicForm({
     setMemo,
     purchaseDate,
     setPurchaseDate,
+    acquiredFrom,
+    setAcquiredFrom,
     recentTags,
     selectedTagIds,
     toggleTag,
@@ -378,6 +386,8 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     setMemo,
     purchaseDate,
     setPurchaseDate,
+    acquiredFrom,
+    setAcquiredFrom,
     recentTags,
     selectedTagIds,
     toggleTag,
@@ -535,6 +545,23 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
           accessibilityLabel={t('bonsaiFieldPurchaseDate')}
           maxLength={10}
           keyboardType="numbers-and-punctuation"
+        />
+      </View>
+
+      {/* Issue #455 Phase 1: 入手元メモ (任意、mockup `bonsai-detail-basic-02.png` 整合)。
+          schema v10 で acquired_from column 新規追加。 */}
+      <View style={styles.field}>
+        <View style={styles.fieldLabelRow}>
+          <ThemedText type="defaultSemiBold">{t('bonsaiFieldAcquiredFrom')}</ThemedText>
+          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+        </View>
+        <TextInput
+          style={styles.input}
+          value={acquiredFrom}
+          onChangeText={setAcquiredFrom}
+          placeholder={t('bonsaiFieldAcquiredFromPlaceholder')}
+          accessibilityLabel={t('bonsaiFieldAcquiredFrom')}
+          maxLength={200}
         />
       </View>
 

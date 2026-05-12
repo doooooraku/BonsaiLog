@@ -31,6 +31,7 @@ import {
   schemaV7,
   schemaV8,
   schemaV9,
+  schemaV10,
 } from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
@@ -193,6 +194,20 @@ async function migrate(db: SQLite.SQLiteDatabase) {
   if (version < 9) {
     await db.execAsync(schemaV9);
     version = 9;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v10 (Issue #455 Phase 1): bonsai テーブルに acquired_from カラム追加。
+  //
+  // - 入手元メモ (free-form text、null 可) を保存
+  // - mockup `bonsai-detail-basic-02.png` の「入手元メモ」 入力欄整合
+  // - estimated_age / memo / purchase_date と同パターン: hasColumn ガード
+  // ---------------------------------------------------------------------------
+  if (version < 10) {
+    if (!(await hasColumn(db, 'bonsai', 'acquired_from'))) {
+      await db.execAsync(schemaV10);
+    }
+    version = 10;
   }
 
   // Always set version UNCONDITIONALLY (not inside an if-block).
