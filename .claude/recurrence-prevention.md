@@ -225,6 +225,12 @@
 - **根拠**: 2026-05-11 セッションで PR #435+#438 (Issue #298 TimelineTab + AddSchedule) を「Phase 2 で Issue 完遂」 と書いたが、実は最小実装で構造的に未達。Issue #441 で本実装が必要と判明。
 - **自動化**: `.github/pull_request_template.md` §7.6.2 で「完遂」「達成」 表記時の Phase 分割明示を必須化。
 
+### R-30. 外部 lib のテスト stability 変更時 PoC 必須化
+
+- **ルール**: 外部ライブラリ (Maestro / Detox / @gorhom 等 testing 関連) の変更・置換・削除を伴う移行は、本実装前に PoC で 5/5 = 100% 厳格基準で実証する。PoC 不合格時は plan B / plan C を ADR で先確定。
+- **根拠**: 2026-05-12 セッションで Phase G (@gorhom 全廃) 設計時、過去 PR #404/#415 で `waitForAnimationToEnd` 追加実装も `home-bulk-sched-date` の Maestro skip が解消せず永続化した経緯あり。実証なしに移行すると同じ失敗を繰り返すリスクが高い。
+- **自動化**: ADR-0024 Phase G 完了後に lint rule 起票 (PR タイトルに `@gorhom`/`detox`/`maestro` 等 + `remove`/`replace` を含む場合、ADR 先行原則 + PoC 5/5 結果リンクを必須化)。
+
 ## 運用ルール
 
 1. **本ファイルはセッション開始時に必読**（`AGENTS.md` Session Start Checklist 経由）。

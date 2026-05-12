@@ -696,10 +696,11 @@ graph LR
   ```
 - 集約モード (K2 達成率 %) は ADR-0020 で廃止、stats タブ削除に伴い削除済
 
-#### §9.3.4 タップ詳細（Apple Health 風 BottomSheet）
+#### §9.3.4 タップ詳細（Apple Health 風 シート）
 
-- ライブラリ: `@gorhom/bottom-sheet`
-- ヒートマップセルをタップ → 下から BottomSheet がせり上がる（画面遷移なし、シニア UX◎）
+- **実装** (Phase G 完了後): Expo Router `presentation: 'formSheet'` + `sheetAllowedDetents: [0.5, 1]` + `contentStyle: { height: '100%' }` (ADR-0024 参照)
+- **現状** (Phase G 着手前): `@gorhom/bottom-sheet` v5.2.13 (Phase G で廃止予定、ADR-0024 / Issue #475)
+- ヒートマップセルをタップ → 下から シート がせり上がる（画面遷移なし、シニア UX◎）
 - シート内容:
   - 日付（"2026年4月15日 (水)"）
   - 水やり回数

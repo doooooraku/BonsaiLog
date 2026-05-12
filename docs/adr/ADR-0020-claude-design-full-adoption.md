@@ -429,3 +429,50 @@
 - PR #400 (skipped 10 flow 永続化、Phase 1 完遂)
 - Issue #361 (横断水やり履歴本実装、close 済)
 - `scripts/ui-diff/skip-list.json` (skipped 永続維持)
+
+---
+
+### Notes Amended (2026-05-12): Phase G - @gorhom/bottom-sheet 全廃 + R-16 破棄反映
+
+**背景**: 2026-05-12 議論セッションで以下が確定:
+
+1. **R-16 (ADR 優先ルール) 破棄**: F 案採用 (法令系 ADR-0005/0009/0017 のみ ADR 優先、運用系は user 判定)
+2. **Phase G (Issue #475)**: `@gorhom/bottom-sheet` を 10 箇所 (8 component + `BulkLogConfirmSheet` + ヒートマップタップ Sheet) で全廃し、Expo Router native presentation (`modal`/`formSheet`/`fullScreenModal`) に置換 (ADR-0024 で詳細決定)
+
+**§Decision §Notes 修正点**:
+
+#### 修正 1: §削除する機能 (Issue #29 close 解除) の拡大
+
+- **Before** (L235 周辺): `BonsaiFilterSheet` のみ「集約モード廃止に伴い不要」
+- **After** (2026-05-12 拡大): Phase G で 10 箇所 全 `@gorhom/bottom-sheet` 利用箇所を廃止 (`BonsaiFilterSheet` 含む)
+
+| 廃止対象                                                    | 廃止理由                                                |
+| ----------------------------------------------------------- | ------------------------------------------------------- |
+| `BonsaiFilterSheet` (既廃止予定)                            | 集約モード廃止に伴い不要                                |
+| `BonsaiCreateSheet`                                         | Phase G、`presentation: 'modal'` 置換                   |
+| `WorkPickerSheet`                                           | Phase G、`presentation: 'formSheet'` 置換               |
+| `WorkLogConfirmSheet`                                       | Phase G、`presentation: 'formSheet'` 置換               |
+| `BulkWorkPickerSheet`                                       | Phase G、PoC 結果案 (推定 `formSheet`)                  |
+| `BulkScheduleDateSheet`                                     | Phase G、PoC 結果案 (推定 `formSheet`)                  |
+| `BulkLogConfirmSheet` (本 Notes で追加発見)                 | Phase G、PoC 結果案                                     |
+| `SpeciesPickerSheet`                                        | Phase G、PoC 結果案 (Stack push or formSheet)           |
+| `StylePickerSheet`                                          | Phase G、PoC 結果案 (Stack push or formSheet)           |
+| ヒートマップタップ BottomSheet (`bonsai/[id]/watering.tsx`) | Phase G、`presentation: 'formSheet'` + detents [0.5, 1] |
+
+#### 修正 2: §Notes Amended (2026-05-10) §R-28 境界判定の改訂
+
+- **Before** (L325): 「UI 表現 (タブラベル / アイコン / 動線): **R-16 で OpenDesign が SoT**、本 Amended で mockup 採用確定」
+- **After** (2026-05-12 R-16 破棄反映): R-16 (ADR 優先ルール) は **F 案 (法令系 ADR のみ維持) に置換済**。本 ADR-0020 は運用系に分類されるため、UI 表現の SoT は **user 判定** + 本 ADR の §画面マップ (継続更新)
+
+#### 修正 3: 本 ADR の運用系分類確認
+
+- 本 ADR-0020 は **運用系 ADR** (UI 表現 / タブ構成 / 画面マップ) であり、F 案で user 判定優先
+- 法令系 ADR (ADR-0005 iOS 暗号化 / ADR-0009 RevenueCat / ADR-0017 Privacy / ATT / UMP) は引き続き ADR 優先
+
+#### 関連
+
+- ADR-0024 (Phase G 詳細、本 Notes Amended と同 PR で起票)
+- Issue #475 (Phase G 実装、本 Notes Amended と同 PR でタイトル + 本文 update)
+- `.claude/recurrence-prevention.md` R-30 (外部 lib テスト stability PoC 必須化、本 Notes Amended と同 PR で追加)
+- `docs/how-to/maestro-standard-pattern.md` (Phase G 以降の Maestro 標準パターン、本 Notes Amended と同 PR で新規)
+- 2026-05-12 セッション議論 (`session_summary` Engram #185、`decision` #186)
