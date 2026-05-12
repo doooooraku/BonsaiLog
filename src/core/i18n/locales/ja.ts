@@ -26,6 +26,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldAcquiredAt: '取得日',
   bonsaiFieldUpdatedAt: '最終更新',
   bonsaiArchive: 'アーカイブ',
+  bonsaiTagsAddCta: 'タグ追加',
   bonsaiArchiveConfirmTitle: 'この盆栽をアーカイブしますか?',
   bonsaiArchiveConfirmDesc: '設定から後で復元できます。',
   bonsaiStyle_chokkan: '直幹',
