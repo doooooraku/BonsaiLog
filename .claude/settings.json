@@ -31,6 +31,10 @@
           {
             "type": "command",
             "command": "node .claude/hooks/session-end-cleanup-check.mjs"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/stop-verify-suggestion.mjs"
           }
         ]
       }
