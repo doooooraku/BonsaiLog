@@ -28,6 +28,14 @@ export default function ModalsLayout() {
         name="work-log-confirm"
         options={{ ...FORM_SHEET_OPTIONS, title: '作業を記録' }}
       />
+      <Stack.Screen
+        name="bulk-work-picker"
+        options={{ ...FORM_SHEET_OPTIONS, title: 'まとめて作業を選ぶ' }}
+      />
+      <Stack.Screen
+        name="bulk-log-confirm"
+        options={{ ...FORM_SHEET_OPTIONS, title: 'まとめて記録' }}
+      />
     </Stack>
   );
 }

@@ -32,6 +32,16 @@ export type WorkLogPayload = {
 };
 type WorkLogConfirmResult = WorkLogPayload | 'CONSUMED';
 
+/** 一括操作の context (selectedBonsais を Screen 間で共有、Phase G3a)。 */
+export type BulkBonsaiRef = { id: string; name: string };
+export type BulkContext = { selectedBonsais: readonly BulkBonsaiRef[] };
+
+type BulkWorkPickerValue = { type: EventType; mode: 'log' | 'schedule' };
+type BulkWorkPickerResult = BulkWorkPickerValue | 'CONSUMED';
+
+export type BulkLogConfirmInput = { note: string | null };
+type BulkLogConfirmResult = BulkLogConfirmInput | 'CONSUMED';
+
 type PickerStore = {
   // 樹種 (species)
   speciesPickerResult: SpeciesResult;
@@ -52,6 +62,20 @@ type PickerStore = {
   workLogConfirmResult: WorkLogConfirmResult;
   setWorkLogConfirmResult: (payload: WorkLogPayload) => void;
   consumeWorkLogConfirmResult: () => WorkLogPayload | undefined;
+
+  // 一括操作 context (selectedBonsais を Screen 間共有、Phase G3a)
+  bulkContext: BulkContext | null;
+  setBulkContext: (ctx: BulkContext | null) => void;
+
+  // 一括作業選択 (bulk-work-picker、Phase G3a)
+  bulkWorkPickerResult: BulkWorkPickerResult;
+  setBulkWorkPickerResult: (result: BulkWorkPickerValue) => void;
+  consumeBulkWorkPickerResult: () => BulkWorkPickerValue | undefined;
+
+  // 一括記録 詳細 (bulk-log-confirm、Phase G3a)
+  bulkLogConfirmResult: BulkLogConfirmResult;
+  setBulkLogConfirmResult: (input: BulkLogConfirmInput) => void;
+  consumeBulkLogConfirmResult: () => BulkLogConfirmInput | undefined;
 };
 
 export const usePickerStore = create<PickerStore>((set, get) => ({
@@ -88,6 +112,27 @@ export const usePickerStore = create<PickerStore>((set, get) => ({
     const result = get().workLogConfirmResult;
     if (result === 'CONSUMED') return undefined;
     set({ workLogConfirmResult: 'CONSUMED' });
+    return result;
+  },
+
+  bulkContext: null,
+  setBulkContext: (ctx) => set({ bulkContext: ctx }),
+
+  bulkWorkPickerResult: 'CONSUMED',
+  setBulkWorkPickerResult: (result) => set({ bulkWorkPickerResult: result }),
+  consumeBulkWorkPickerResult: () => {
+    const result = get().bulkWorkPickerResult;
+    if (result === 'CONSUMED') return undefined;
+    set({ bulkWorkPickerResult: 'CONSUMED' });
+    return result;
+  },
+
+  bulkLogConfirmResult: 'CONSUMED',
+  setBulkLogConfirmResult: (input) => set({ bulkLogConfirmResult: input }),
+  consumeBulkLogConfirmResult: () => {
+    const result = get().bulkLogConfirmResult;
+    if (result === 'CONSUMED') return undefined;
+    set({ bulkLogConfirmResult: 'CONSUMED' });
     return result;
   },
 }));
