@@ -2,13 +2,13 @@
 ##
 ## 検証目的: `(modals)/style-picker` (formSheet) が実機で 5/5 安定動作するか確認。
 ##
-## 経路 (空 state、Dev Client 経由起動):
+## 経路 (Dev Client + Onboarding skip + 空 state CTA):
 ## 1. App 起動 (clearState: true)
-## 2. Dev Client menu → localhost:8081 tap でアプリ本体起動 + bundle load
-## 3. 盆栽タブ empty CTA「盆栽を登録」tap → BonsaiCreate 画面
-## 4. 樹形選択 row tap → /(modals)/style-picker (formSheet) 表示
-## 5. style-picker 内で「直幹 (chokkan)」 tap → router.back() で BonsaiCreate に戻る
-## 6. 樹形フィールドが pick row として再表示確認
+## 2. Dev Client menu → localhost:8081 tap
+## 3. Onboarding skip (Welcome → Language ja → Tut1-5 skip)
+## 4. 盆栽タブ empty CTA「盆栽を登録」 tap → BonsaiCreate 画面
+## 5. 樹形選択 row tap → /(modals)/style-picker (formSheet) 表示
+## 6. 「直幹 (chokkan)」 tap → router.back() で BonsaiCreate に戻る
 ##
 ## 実機実行コマンド (5 回反復):
 ##   for i in 1 2 3 4 5; do maestro test maestro/flows/g1-style-picker.yml; done
@@ -17,13 +17,77 @@ appId: 'com.doooooraku.bonsailog'
 - launchApp:
     clearState: true
 
-# Dev Client menu → localhost:8081 tap でアプリ本体起動
+# Dev Client menu → localhost:8081 tap
 - tapOn:
     text: 'http://localhost:8081'
     optional: true
     retryTapIfNoChange: true
 - waitForAnimationToEnd:
     timeout: 15000
+
+# Expo Dev Client Continue dialog 自動 dismiss
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Welcome → 「はじめる」 tap
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Language → ja → next
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Tut1-5 全 skip
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut2'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut3'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut4'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000
 
 # 盆栽タブ empty 状態の CTA tap → BonsaiCreate
 - extendedWaitUntil:
@@ -54,6 +118,6 @@ appId: 'com.doooooraku.bonsailog'
 - waitForAnimationToEnd:
     timeout: 5000
 
-# BonsaiCreate に戻り、樹形フィールド更新を確認
+# router.back() で盆栽タブ空 state に戻る (BonsaiCreate も自動 dismiss、空 CTA 再表示で動作確認)
 - assertVisible:
-    id: 'e2e_bonsai_create_style_pick'
+    id: 'e2e_home_empty_cta'

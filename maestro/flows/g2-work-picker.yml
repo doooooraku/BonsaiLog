@@ -2,34 +2,146 @@
 ##
 ## 検証目的: `(modals)/work-picker` (formSheet) が実機で 5/5 安定動作するか確認。
 ##
-## 検証手順:
-## 1. App 起動
-## 2. 盆栽タブで 1 件目の盆栽を tap → 詳細画面 (BonsaiDetailScreen)
-## 3. 作業履歴タブ表示 + 緑 FAB「+」 tap → /(modals)/work-picker?mode=log (formSheet) 表示
-## 4. 「watering (水やり)」 tap → router.back() で詳細画面に戻る
-## 5. handleWorkPickerSelect で watering なら logEvent (即時記録) or workConfirmRef.snap (WorkLogConfirm 開く)
-##    - watering は FORM_TYPES に含まれるため workConfirmRef.snap が呼ばれる
-##    - WorkLogConfirmSheet 表示 (G2 part 2 で formSheet 化予定、本 PR は BottomSheet のまま)
+## 経路 (Dev Client + Onboarding skip + seedTestData + 詳細画面):
+## 1. App 起動 (clearState: true)
+## 2. Dev Client menu → localhost:8081 tap
+## 3. Onboarding skip (Welcome → Language ja → Tut1-5 skip)
+## 4. 盆栽タブ → 設定タブ → seedTestData → 盆栽タブへ
+## 5. 1 件目の盆栽 (父の黒松) を tap → 詳細画面
+## 6. 履歴タブ FAB tap → /(modals)/work-picker (formSheet) 表示
+## 7. watering (水やり) tap → router.back() で詳細画面に戻る
+##    (WorkLogConfirmSheet は G2 part 2 で formSheet 化予定、本 flow では表示確認まで)
 ##
-## 実機実行コマンド:
-##   maestro test maestro/flows/g2-work-picker.yml --repeat 5
+## 実機実行コマンド (5 回反復):
+##   for i in 1 2 3 4 5; do maestro test maestro/flows/g2-work-picker.yml; done
 appId: 'com.doooooraku.bonsailog'
 ---
 - launchApp:
-    clearState: false
+    clearState: true
 
-- assertVisible:
-    id: 'e2e_bonsai_tab_screen'
-    optional: true
-
-# 1 件目の盆栽カードを tap → 詳細画面
+# Dev Client menu → localhost:8081 tap
 - tapOn:
-    id: 'e2e_bonsai_card_0'
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# Expo Dev Client Continue dialog 自動 dismiss
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Welcome → 「はじめる」 tap
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Language → ja → next
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Tut1-5 全 skip
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut2'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut3'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut4'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 盆栽タブ到達確認 (empty CTA 可視で判定)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+# 設定タブ tap → seedTestData
+- tapOn:
+    text: '設定'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# seedTestData button tap
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_dev_seed_button'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Alert OK dismiss
+- tapOn:
+    text: 'OK'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 盆栽タブへ戻る
+- tapOn:
+    text: '盆栽'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 1 件目の盆栽 (父の黒松) tap → 詳細画面
+- tapOn:
+    text: '父の黒松'
     retryTapIfNoChange: true
 - waitForAnimationToEnd:
     timeout: 5000
 
 # 詳細画面で作業履歴タブが default 表示、緑 FAB tap
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_history_fab'
+    timeout: 10000
 - tapOn:
     id: 'e2e_history_fab'
     retryTapIfNoChange: true
@@ -42,11 +154,13 @@ appId: 'com.doooooraku.bonsailog'
 - assertVisible:
     id: 'e2e_work_picker_grid'
 
-# watering (水やり) 選択 → router.back()
+# watering (水やり) 選択 → router.back() で詳細画面に戻り
 - tapOn:
     id: 'e2e_work_picker_watering'
     retryTapIfNoChange: true
 - waitForAnimationToEnd:
     timeout: 5000
-# 詳細画面に戻り、WorkLogConfirmSheet (BottomSheet、G2 part 2 で formSheet 化予定) が開く
-# 本 flow では WorkLogConfirm の表示確認まで (詳細入力 + submit は別 flow で検証)
+
+# 詳細画面の履歴タブ FAB 再表示で動作確認 (work-picker → WorkLogConfirmSheet 自動展開予定だが本 flow では FAB 可視で OK)
+- assertVisible:
+    id: 'e2e_history_fab'
