@@ -1,68 +1,161 @@
----
-# UI diff: 盆栽詳細画面のスクリーンショット取得用
-# ADR-0021 / ADR-0020 §Notes Amended (2026-05-09、写真タブ廃止 + basic タブ追加) /
-# detail-screens.jsx BonsaiDetailScreen / app/(tabs)/bonsai/[id]/index.tsx
-#
-# 前提:
-#   - 別途 Metro bundler (pnpm dev) を起動済み、`adb reverse tcp:8081 tcp:8081`
-#   - seed テストデータ投入済 (盆栽「父の黒松」「母の五葉松」「お師匠の真柏」)
-#   - 「父の黒松」が cover photo あり (seed 1 件目)、Hero overlay 表示確認用
-#
-# 改修 (Phase 1.5 再キャプチャ fallout):
-#   - 当初 50%,30% 座標 tap で「お師匠の真柏」(3 件目、photo 無し) を tap してしまい Hero overlay 不可視
-#   - text マッチで「父の黒松」を確実に tap して写真ある盆栽の詳細を撮る
+## UI diff capture: bonsai-detail
+##
+## ADR-0021 / ADR-0020 §Notes Amended / detail-screens.jsx BonsaiDetailScreen / app/(tabs)/bonsai/[id]/index.tsx
+##
+## 経路 (clearState + Onboarding skip + DEV seed 自動投入 + 「父の黒松」 tap):
+## 1. App 起動 (clearState: true、AsyncStorage クリア)
+## 2. Dev Client menu → localhost:8081 tap + bundle load
+## 3. Continue dismiss
+## 4. Onboarding skip (Welcome → Language ja → Tut1-5)
+## 5. 盆栽タブ Empty CTA visible (e2e_home_empty_cta)
+## 6. 設定タブ tap (e2e_tab_settings)
+## 7. DEV seed button scroll + tap (e2e_dev_seed_button、seed 3 盆栽 + 写真 + 記録 投入)
+## 8. Alert dismiss (text: 'OK' tap、Alert は OS 標準 dialog で testID 不能のため R-31 例外)
+## 9. 盆栽タブ tap (e2e_tab_bonsai)
+## 10. 「父の黒松」 scrollUntilVisible + tap
+## 11. Bonsai detail 表示確認 (e2e_detail_tab_basic タブ)
+##
+## 2 回反復 2/2 PASS 基準 (2026-05-13 user 指示)。
+##
+## 前提:
+##   - 別途 Metro bundler (pnpm dev) 起動済 + adb reverse tcp:8081 tcp:8081
+##   - 実機が __DEV__ ビルド (DEV seed button が表示される)
 
 appId: 'com.doooooraku.bonsailog'
 name: 'UI diff capture: bonsai-detail'
 tags:
   - ui-diff
 ---
-# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
-- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+- launchApp:
+    clearState: true
 
-# Expo Dev Client の初回起動 dialog を dismiss
-- runFlow:
-    when:
-      visible: 'Continue'
-    commands:
-      - tapOn: 'Continue'
-      - waitForAnimationToEnd
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
 
-# 2. 盆栽タブの「盆栽手帳」ヘッダーが表示されるまで待つ
+# Expo Dev Client Continue dialog 自動 dismiss
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Welcome → 「はじめる」
 - extendedWaitUntil:
     visible:
-      text: '盆栽手帳'
+      id: 'e2e_onboarding_welcome_cta'
     timeout: 60000
-    label: 'Metro バンドル + 盆栽タブ表示完了 (初回 60s 許容)'
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
-# BonsaiCard リスト loading 完了待ち
+# Onboarding Language → ja → next
 - extendedWaitUntil:
     visible:
-      text: 'すべて'
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Tut1-5 全 skip
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut2'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut3'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut4'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 盆栽タブ Empty CTA visible 確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
     timeout: 30000
 
-- waitForAnimationToEnd
+# 設定タブ tap
+- tapOn:
+    id: 'e2e_tab_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
-# 3. 「父の黒松」カード (cover photo あり) を text マッチで tap
-#    seed 1 件目「父の黒松」は assets/dev-seed/sample-1.jpg を cover に持つため Hero overlay 表示可能
-#    実機の BonsaiCard は updated_at 降順なので 3 件目になり画面下端で not visible のことがある
-#    scrollUntilVisible で確実に表示してから tap
+# DEV seed button scroll + tap (画面下端の DEV セクション)
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+    speed: 40
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Alert 'テストデータ投入完了' を OK で dismiss (R-31 例外、OS 標準 dialog で testID 不能)
+- tapOn:
+    text: 'OK'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 盆栽タブに戻る
+- tapOn:
+    id: 'e2e_tab_bonsai'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 「父の黒松」 (seed 1 件目、cover photo あり) を scrollUntilVisible + tap
 - scrollUntilVisible:
     element:
       text: '父の黒松'
     direction: DOWN
     timeout: 15000
     speed: 40
-
 - tapOn:
     text: '父の黒松'
+    retryTapIfNoChange: true
 
-# 4. Detail 画面の Tabs (基本情報 / 作業履歴 / 予定タイムライン) のいずれかが表示されるまで待つ
-#    A4 リファクタ完了後の最終形タブ名「基本情報」を可視待ちアンカーに使用
+# Bonsai detail 表示確認 (Tabs の基本情報 visible)
 - extendedWaitUntil:
     visible:
-      text: '基本情報'
+      id: 'e2e_detail_tab_basic'
     timeout: 30000
-    label: 'Detail 画面遷移完了 (Tabs 表示)'
 
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 3000
