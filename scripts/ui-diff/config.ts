@@ -67,6 +67,16 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'Issue #510 Phase 1 (bonsai-detail 他タブ R-25 評価) / detail-screens.jsx BonsaiDetailScreen 基本情報タブ / app/(tabs)/bonsai/[id]/index.tsx の activeTab=basic 状態 / mockups v1.0。前提: bonsai-detail.yml と同経路 + 末尾で e2e_detail_tab_basic tap で切替、testID 経由で 2 回反復 2/2 PASS。',
   },
+  'bonsai-detail-timeline': {
+    id: 'bonsai-detail-timeline',
+    description: '盆栽詳細 作業予定タブ (default 作業履歴 → 作業予定切替後の timeline list)',
+    appFlow: 'maestro/flows/ui-diff/bonsai-detail-timeline.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="07 詳細 作業予定"]',
+    mockupFile: 'bonsai-detail-timeline-01.png',
+    notes:
+      'Issue #510 Phase 2 (bonsai-detail 他タブ R-25 評価) / detail-screens.jsx BonsaiDetailScreen 作業予定タブ / app/(tabs)/bonsai/[id]/index.tsx の activeTab=timeline 状態 / mockups v1.0。前提: bonsai-detail.yml と同経路 + 末尾で e2e_detail_tab_timeline tap で切替、testID 経由で 2 回反復 2/2 PASS。',
+  },
   'plan-tab': {
     id: 'plan-tab',
     description:

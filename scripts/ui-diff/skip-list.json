@@ -186,6 +186,22 @@
       "reevalRationale": "Issue #510 Phase 1 R-25 評価通過。タブ構成 (作業履歴/作業予定/基本情報 3 タブ、基本情報 selected) ✅、セクション構成 (Header + Hero + Tabs + 写真セクション [写真追加 + photoCard 1/2 カバー] + 基本情報 form [名称/樹種、scroll 下方]) ✅、UI 種別 (縦並び Hero + Tabs + 写真 + form) ✅、スクロール範囲 (全画面 scroll で form 表示) ✅。残差: (1) Hero 有無 (mockup 基本情報タブには Hero 無し、実機は二段構造、Issue #510 Phase 3 Stack header 整合判断と連動)、(2) 写真セクション差 (mockup placeholder 1 件 vs 実機 photoCard list、Issue #458 写真 Free 制限撤廃で意図的拡張、philosophy 整合)、(3) Stack header「← 盆栽の詳細 ⚙」 実機のみ (Issue #510 Phase 3)。Issue #439-#441 で発覚していた「基本情報 read-only」 は **誤判定または修正済**、実機は編集 form あり。構造的整合性は意図的差を除き完全一致。",
       "reevalIteration": "2/2",
       "reevalTrackingIssue": 510
+    },
+    {
+      "flow": "bonsai-detail-timeline",
+      "level": 2,
+      "rmse": 26800,
+      "achieved_at": "2026-05-13T20:22:00Z",
+      "rmseNormalized": 0.4,
+      "artifact": "scripts/ui-diff/out/20260513-2022/",
+      "rationale": "Issue #510 Phase 2 (bonsai-detail 他タブ R-25 評価) で新規評価。bonsai-detail.yml 経路 + e2e_detail_tab_timeline tap で作業予定タブ切替後の capture。",
+      "judgedBy": "Sess1-A2 (2026-05-13)",
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-13T20:22:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260513-2022/",
+      "reevalRationale": "Issue #510 Phase 2 R-25 評価通過。タブ構成 (作業履歴/作業予定/基本情報 3 タブ、作業予定 selected) ✅、セクション構成 (Header + Hero + Tabs + 「これからの予定」 heading + 「過去 水やりは おわったね」 link + timeline event list + FAB) ✅、UI 種別 (縦並び Hero + Tabs + heading + timeline list) ✅、スクロール範囲 (全画面 scroll) ✅。残差: (1) Hero 有無 (mockup 作業予定タブには Hero 無し、Issue #510 Phase 3 と連動)、(2) timeline list 内容差 (mockup 多数 / 実機 2 件、seed events 配置差で許容)、(3) Header text 差 (mockup「← 父の黒松」 / 実機「← 盆栽の詳細」、Issue #510 Phase 3 で整合判断)。Issue #439-#441 で発覚していた「予定 list 1 行」 は **誤判定または修正済**、実機 2 行 + 「水やりは おわったね」 link あり。構造的整合性は意図的差を除き完全一致。",
+      "reevalIteration": "2/2",
+      "reevalTrackingIssue": 510
     }
   ]
 }

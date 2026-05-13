@@ -1,0 +1,136 @@
+## UI diff capture: bonsai-detail-timeline
+##
+## ADR-0021 / Issue #510 Phase 2 (bonsai-detail 他タブ R-25 評価)
+## 対象: bonsai-detail.yml と同経路、末尾で e2e_detail_tab_timeline tap で 作業予定タブ切替 + capture
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: bonsai-detail-timeline'
+tags:
+  - ui-diff
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 60000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut2'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut3'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut4'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+- tapOn:
+    id: 'e2e_tab_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+    speed: 40
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- tapOn:
+    text: 'OK'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    id: 'e2e_tab_bonsai'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- scrollUntilVisible:
+    element:
+      text: '父の黒松'
+    direction: DOWN
+    timeout: 15000
+    speed: 40
+- tapOn:
+    text: '父の黒松'
+    retryTapIfNoChange: true
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_detail_tab_basic'
+    timeout: 30000
+
+# 作業予定タブ tap (default 作業履歴 → 作業予定 切替)
+- tapOn:
+    id: 'e2e_detail_tab_timeline'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
