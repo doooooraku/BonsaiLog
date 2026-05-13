@@ -1,51 +1,159 @@
-# UI diff: 針金がけ一覧画面のスクリーンショット取得用
-# ADR-0021 / ADR-0020 §Notes §画面マップ row 15 (針金がけ一覧 ⟷ care-screens.jsx WiringListScreen)
-# 対象実装: app/(tabs)/plan/wiring.tsx (testID e2e_wiring_list_screen)
-# 対象モックアップ: docs/mockups/v1.0/wireframes/02-Home.html [data-screen-label="11 ケア 針金がけ一覧"]
-#
-# 前提:
-#   - 別途 Metro bundler (pnpm dev) を WSL2 内で起動済み、`adb reverse tcp:8081 tcp:8081` で
-#     実機から WSL ポートに到達可能。
-#   - オンボ完了済 (起動直後に盆栽タブが表示される状態)。
-#   - 予定タブ内の「針金がけ一覧」リンク (testID e2e_plan_open_wiring) をタップして遷移。
+## UI diff capture: wiring-list
+##
+## ADR-0021 / ADR-0020 §Notes §画面マップ row 15 (針金がけ一覧 ⟷ care-screens.jsx WiringListScreen)
+## 対象実装: app/(tabs)/plan/wiring.tsx (testID e2e_wiring_list_screen)
+## 対象モックアップ: docs/mockups/v1.0/wireframes/02-Home.html [data-screen-label="11 ケア 針金がけ一覧"]
+##
+## 経路 (clearState + Onboarding skip + DEV seed 自動投入 + 予定タブ → 針金がけ一覧 link tap):
+## 1. App 起動 (clearState: true)
+## 2. Dev Client menu + Continue dismiss
+## 3. Onboarding skip
+## 4. 盆栽タブ Empty CTA visible
+## 5. 設定タブ → DEV seed button tap → Alert dismiss (wiring events 「父の黒松」「母の五葉松」 投入)
+## 6. 予定タブ tap (e2e_tab_plan)
+## 7. e2e_plan_screen 待ち
+## 8. e2e_plan_open_wiring scroll + tap
+## 9. e2e_wiring_list_screen 表示確認
+##
+## 2 回反復 2/2 PASS 基準 (2026-05-13 user 指示)。
 
 appId: 'com.doooooraku.bonsailog'
 name: 'UI diff capture: wiring-list'
 tags:
   - ui-diff
 ---
-# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
-- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+- launchApp:
+    clearState: true
 
-# 2. 起動完了 (盆栽タブの「盆栽手帳」ヘッダー) を待つ
-#    Metro 初回バンドルが 30-60 秒かかるため timeout を 60000ms に拡張。
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Welcome → 「はじめる」
 - extendedWaitUntil:
     visible:
-      text: '盆栽手帳'
+      id: 'e2e_onboarding_welcome_cta'
     timeout: 60000
-    label: 'Metro バンドル + 起動完了 (盆栽タブ表示)'
-
-# 3. TabBar の「予定」タブをタップ
 - tapOn:
-    text: '予定'
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
-# 4. 予定タブの ThemedView (testID e2e_plan_screen) が表示されるまで待つ
+# Onboarding Language → ja → next
 - extendedWaitUntil:
     visible:
-      id: 'e2e_plan_screen'
-    timeout: 30000
-    label: '予定タブ表示完了 (e2e_plan_screen 可視)'
-
-# 5. 「針金がけ一覧 ›」リンク (testID e2e_plan_open_wiring) をタップ
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
 - tapOn:
-    id: 'e2e_plan_open_wiring'
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
-# 6. 針金がけ一覧の ThemedView (testID e2e_wiring_list_screen) が表示されるまで待つ
+# Onboarding Tut1-5 全 skip
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut2'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut3'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut4'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 盆栽タブ Empty CTA visible 確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+# 設定タブ tap (seed 投入用)
+- tapOn:
+    id: 'e2e_tab_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# DEV seed button scroll + tap
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+    speed: 40
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Alert dismiss (OS 標準 dialog、R-31 例外)
+- tapOn:
+    text: 'OK'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# ふりかえりタブ tap (testID 経由、PR #462 で plan-tab の e2e_plan_open_wiring link 削除済、
+# 現経路は look-back hub の e2e_look_back_card_wiring 経由)
+- tapOn:
+    id: 'e2e_tab_look_back'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# CareHub Hub 画面 visible
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_look_back_hub'
+    timeout: 10000
+
+# 「針金がけ一覧」 card tap (look-back hub 3 card のうち wiring)
+- tapOn:
+    id: 'e2e_look_back_card_wiring'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 針金がけ一覧画面表示確認
 - extendedWaitUntil:
     visible:
       id: 'e2e_wiring_list_screen'
     timeout: 30000
-    label: '針金がけ一覧表示完了 (e2e_wiring_list_screen 可視)'
 
-# 7. リスト描画完了 (FlatList / ScrollView アニメーション終了) を待つ
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 3000

@@ -75,11 +75,14 @@
       "rmse": 21936.6,
       "achieved_at": "2026-05-11T03:57:00Z",
       "rmseNormalized": 0.334731,
-      "artifact": "scripts/ui-diff/out/20260511-1156/",
+      "artifact": "scripts/ui-diff/out/20260513-1331/",
       "rationale": "Phase 1.5-T1 seed 拡張で wiring events 2 件投入 → 父の黒松 (13週経過/2週超過) + 母の五葉松 (9週経過/3週後) を「要確認」バッジ + 「外す」ボタン込みで表示。Header + cards 構造 + テキストフォーマット mockup と完全一致。件数差 (実機 2 / mockup 5) は seed 設計差で許容。",
       "judgedBy": "auto-improve-loop cycle 7",
-      "needsReeval": true,
-      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-13T04:31:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260513-1331/",
+      "reevalRationale": "2026-05-13 R-25 再評価通過 + ui-diff/wiring-list.yml を ふりかえりタブ → CareHub → 針金がけ card 経由に書き直し (PR #462 で plan-tab の e2e_plan_open_wiring link 削除済への対応)。タブ構成 (TabBar 4 タブ、mockup は省略表示) ✅、セクション構成 (Header「← 針金がけ一覧 ⚙」 + wiring card list + 各「外す」 button + 「要確認」 chip) ✅、UI 種別 (縦並びカードリスト) ✅、スクロール範囲 (全画面スクロール可) ✅。残差: (1) 件数差 (実機 2 / mockup 5、seed data 差、許容)、(2) Header「⚙」 設定アイコン (実機のみ、軽微)。構造的整合性は完全一致。",
+      "reevalIteration": "2/2"
     },
     {
       "flow": "home-bulk-sched-work",
