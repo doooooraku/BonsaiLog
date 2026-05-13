@@ -57,6 +57,16 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §Notes Amended (2026-05-09、写真タブ廃止 + basic タブ追加) / detail-screens.jsx BonsaiDetailScreen / app/(tabs)/bonsai/[id]/index.tsx / mockups v1.0 (PR #269)。前提: テスト盆栽 1 件以上登録済 (新規インストールでは盆栽カード無し → flow timeout)。Detail Tabs 名は A4 リファクタ完了後 (作業履歴 / 予定タイムライン / 基本情報) を可視待ちアンカーに使用。',
   },
+  'bonsai-detail-basic': {
+    id: 'bonsai-detail-basic',
+    description: '盆栽詳細 基本情報タブ (default 作業履歴 → 基本情報切替後の form 表示)',
+    appFlow: 'maestro/flows/ui-diff/bonsai-detail-basic.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="06 詳細 基本情報"]',
+    mockupFile: 'bonsai-detail-basic-01.png',
+    notes:
+      'Issue #510 Phase 1 (bonsai-detail 他タブ R-25 評価) / detail-screens.jsx BonsaiDetailScreen 基本情報タブ / app/(tabs)/bonsai/[id]/index.tsx の activeTab=basic 状態 / mockups v1.0。前提: bonsai-detail.yml と同経路 + 末尾で e2e_detail_tab_basic tap で切替、testID 経由で 2 回反復 2/2 PASS。',
+  },
   'plan-tab': {
     id: 'plan-tab',
     description:
