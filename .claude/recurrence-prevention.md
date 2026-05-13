@@ -227,9 +227,9 @@
 
 ### R-30. 外部 lib のテスト stability 変更時 PoC 必須化
 
-- **ルール**: 外部ライブラリ (Maestro / Detox / @gorhom 等 testing 関連) の変更・置換・削除を伴う移行は、本実装前に PoC で **3/3 = 100% 厳格基準** で実証する (2026-05-12 retro で 5 回 → 3 回業界標準へ短縮)。PoC 不合格時は plan B / plan C を ADR で先確定。
-- **根拠**: 2026-05-12 セッションで Phase G (@gorhom 全廃) 設計時、過去 PR #404/#415 で `waitForAnimationToEnd` 追加実装も `home-bulk-sched-date` の Maestro skip が解消せず永続化した経緯あり。実証なしに移行すると同じ失敗を繰り返すリスクが高い。
-- **自動化**: ADR-0024 Phase G 完了後に lint rule 起票 (PR タイトルに `@gorhom`/`detox`/`maestro` 等 + `remove`/`replace` を含む場合、ADR 先行原則 + PoC 3/3 結果リンクを必須化)。
+- **ルール**: 外部ライブラリ (Maestro / Detox / @gorhom 等 testing 関連) の変更・置換・削除を伴う移行 + ui-diff flow の R-25 再評価は、本実装前に PoC で **2/2 = 100% 厳格基準** で実証する (2026-05-13 user 指示で 3 → 2 短縮、2026-05-12 retro で 5 → 3 短縮の更新)。PoC 不合格時は plan B / plan C を ADR で先確定。
+- **根拠**: 2026-05-12 セッションで Phase G (@gorhom 全廃) 設計時、過去 PR #404/#415 で `waitForAnimationToEnd` 追加実装も `home-bulk-sched-date` の Maestro skip が解消せず永続化した経緯あり。実証なしに移行すると同じ失敗を繰り返すリスクが高い。2026-05-13 P3 セッションで 2 回反復で十分との user 判断、検証時間 33% 削減 + ループ高速化。
+- **自動化**: ADR-0024 Phase G 完了後に lint rule 起票 (PR タイトルに `@gorhom`/`detox`/`maestro` 等 + `remove`/`replace` を含む場合、ADR 先行原則 + PoC 2/2 結果リンクを必須化)。S5 iteration consistency lint で R-30 baseline 自動チェック。
 
 ### R-31. Maestro flow 新規作成時の事前 testID 検索 + template 使用
 
