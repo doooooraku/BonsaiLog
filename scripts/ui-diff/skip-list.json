@@ -2,22 +2,14 @@
   "version": 1,
   "skipped": [
     {
-      "flow": "look-back-search",
-      "reason": "Maestro Android 技術制約: (1) inputText で日本語非対応 (UnicodeNotSupportedError)、(2) tag chip text マッチ tap で onPress 発火が不安定 (Pressable 外殻と TextView 内殻の階層問題)。結果セクション (e2e_find_bonsai_section) が timeout で visible にならず capture 不能。検索初期画面 (input + chips のみ、結果無し) で capture する代案は mockup「結果リスト表示中」と乖離。横断版 mockup が無い limit と判断、本ループでは技術制約 skip 永続化。将来 Maestro 改善 (Unicode 対応 / Pressable 階層解決) or 別 flow (検索初期画面用) で再検討。",
-      "added_at": "2026-05-11T04:30:00Z",
-      "fail_count": 3,
-      "permanent": true,
-      "artifact": "scripts/ui-diff/out/20260511-1055/",
-      "needsHumanReview": true
-    },
-    {
       "flow": "look-back-watering-history",
-      "reason": "mockup mismatch: 実機は横断 watering 履歴画面 (Issue #361)、mockup は個別盆栽 watering heatmap (config 暫定流用)。横断版の mockup HTML 不在のため整合判定不能。将来の mockup HTML 追加 or 既存 watering-heatmap の解釈変更要、人間判断要。",
+      "reason": "mockup HTML 不在: 実機は横断 watering 履歴画面 (Issue #361)、mockup は個別盆栽 watering heatmap (config 暫定流用)。横断版の mockup HTML 新規作成が user 領域として必要、Issue #502 で追跡中。Claude 側は mockup 完成後に再評価実施予定。",
       "added_at": "2026-05-11T03:10:00Z",
       "fail_count": 0,
       "permanent": true,
       "artifact": "scripts/ui-diff/out/20260510-2343/",
-      "needsHumanReview": true
+      "needsHumanReview": true,
+      "trackingIssue": 502
     }
   ],
   "achieved": [

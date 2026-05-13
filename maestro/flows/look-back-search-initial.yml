@@ -1,0 +1,128 @@
+## look-back-search 検索 初期画面 (input + chips、結果無し) capture flow
+##
+## 旧 look-back-search.yml は Maestro Android 技術制約 (日本語 inputText 非対応、
+## Pressable 階層問題) で永続 skip 化。本 flow は **文字入力 / chip tap を一切行わず**、
+## 検索画面の **初期状態のみ** capture することで制約を回避。
+##
+## skip-list.json 永続 skip 「look-back-search」 の Q2 c 対処 (2026-05-13 議論セッション)。
+##
+## 経路 (Dev Client + Onboarding skip):
+## 1. App 起動 (clearState: true、seed 0 件で OK)
+## 2. Dev Client menu → localhost:8081 tap でアプリ本体起動 + bundle load
+## 3. Onboarding skip (Welcome → Language ja → Tut1-5 skip)
+## 4. 盆栽タブ empty 状態到達
+## 5. ふりかえりタブ tap (`e2e_tab_look_back`)
+## 6. CareHub Hub 画面確認 (`e2e_look_back_hub`)
+## 7. 「盆栽を検索」 card tap (`e2e_look_back_card_search`)
+## 8. 検索画面到達 (`e2e_find_screen` + `e2e_find_input`)
+##
+## R-31 適用済 (testID 事前 grep + _template.yml ベース + tapOn:text 禁止)。
+##
+## 実機実行コマンド (3 回反復で 5/5 実証目標、業界標準、ADR-0024 §Notes):
+##   for i in 1 2 3; do maestro test maestro/flows/look-back-search-initial.yml; done
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: true
+
+# Dev Client menu → localhost:8081 tap (development build 専用 step)
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# Expo Dev Client Continue dialog 自動 dismiss (back キー)
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Welcome → 「はじめる」 tap
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Language → ja → next
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Tut1-5 全 skip
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut2'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut3'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut4'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 盆栽タブ empty 状態到達 (seed 0、CTA 表示)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+# ふりかえりタブ tap (testID 経由、text tap は Developer Menu 誤起動 NG)
+- tapOn:
+    id: 'e2e_tab_look_back'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# CareHub Hub 画面到達確認
+- assertVisible:
+    id: 'e2e_look_back_hub'
+
+# 「盆栽を検索」 card tap (look-back hub 3 card のうち search)
+- tapOn:
+    id: 'e2e_look_back_card_search'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 検索画面到達 + 初期画面 (input 表示) 確認
+- assertVisible:
+    id: 'e2e_find_screen'
+- assertVisible:
+    id: 'e2e_find_input'
