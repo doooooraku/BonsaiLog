@@ -1,68 +1,49 @@
----
-# UI diff: オンボーディング Welcome 画面のスクリーンショット取得用
-# ADR-0021 / ADR-0020 §Notes §画面マップ / ADR-0018 (オンボ統合フロー)
-# 対象実装: app/onboarding/welcome.tsx (testID e2e_onboarding_welcome)
-# 対象モックアップ: docs/mockups/v1.0/wireframes/01-Onboarding.html [data-screen-label="02 Welcome"]
-#
-# Phase 1.5-T5 改修: 設定タブ DEV ボタン (e2e_dev_reset_onboarding) で onboarding.completed=false
-# に戻してから /onboarding/welcome に遷移する。これにより onboarding 完了済の実機でも
-# 自動で Welcome 画面を撮影可能 (__DEV__ 限定ボタン、本番では枝刈り)。
-#
-# 前提:
-#   - 別途 Metro bundler (pnpm dev) を起動済み、`adb reverse tcp:8081 tcp:8081`
-#   - 実機が __DEV__ ビルド (Expo Dev Client) で起動済
+## UI diff capture: onboarding-welcome
+##
+## ADR-0021 / ADR-0020 §Notes §画面マップ / ADR-0018 (オンボ統合フロー)
+## 対象実装: app/onboarding/welcome.tsx (testID e2e_onboarding_welcome_cta)
+## 対象モックアップ: docs/mockups/v1.0/wireframes/01-Onboarding.html [data-screen-label="02 Welcome"]
+##
+## 経路 (clearState で onboarding reset → Welcome 画面到達、シンプル化):
+## 1. App 起動 (clearState: true、AsyncStorage クリア → onboarding.completed=false → Welcome 自動表示)
+## 2. Dev Client menu → localhost:8081 tap + bundle load
+## 3. Continue dialog 自動 dismiss
+## 4. Welcome 画面到達確認 (e2e_onboarding_welcome_cta testID)
+## 5. waitForAnimationToEnd (価値訴求 3 件のアニメ確定)
+##
+## 2 回反復 2/2 PASS 基準 (2026-05-13 user 指示)。
+## 旧 flow の「設定タブ DEV reset」 経由は clearState で代替 (シンプル化)。
+##
+## 前提:
+##   - 別途 Metro bundler (pnpm dev) 起動済 + adb reverse tcp:8081 tcp:8081
+##   - 実機が __DEV__ ビルド (Expo Dev Client)
 
 appId: 'com.doooooraku.bonsailog'
 name: 'UI diff capture: onboarding-welcome'
 tags:
   - ui-diff
 ---
-# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
-- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+- launchApp:
+    clearState: true
 
-# Expo Dev Client の初回起動 dialog を dismiss (PR #391 パターン適用)
-- runFlow:
-    when:
-      visible: 'Continue'
-    commands:
-      - tapOn: 'Continue'
-      - waitForAnimationToEnd
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
 
-# 2. 既存 onboarding 状態に応じて分岐:
-#    case A) onboarding.completed=false の場合 → Welcome 直接表示 (skip reset)
-#    case B) onboarding.completed=true の場合 → 設定タブ → DEV reset → Welcome 再表示
-- runFlow:
-    when:
-      notVisible:
-        text: '鉢 1 本ずつ、一生分。'
-    commands:
-      # 盆栽タブ表示確認 (オンボ完了済の通常状態)
-      - extendedWaitUntil:
-          visible:
-            text: '盆栽手帳'
-          timeout: 60000
-          label: 'Metro バンドル + 盆栽タブ表示完了 (オンボ完了済)'
-      # 設定タブに遷移
-      - tapOn:
-          text: '設定'
-      - waitForAnimationToEnd
-      # DEV reset onboarding ボタンは画面下端の DEV セクション末尾にあるため scroll で可視化
-      - scrollUntilVisible:
-          element:
-            id: 'e2e_dev_reset_onboarding'
-          direction: DOWN
-          timeout: 15000
-          speed: 40
-      # DEV reset onboarding ボタンを tap → /onboarding/welcome に遷移
-      - tapOn:
-          id: 'e2e_dev_reset_onboarding'
+# Expo Dev Client Continue dialog 自動 dismiss (back キー)
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
 
-# 3. Welcome 画面の Title 「鉢 1 本ずつ、一生分。」 が表示されるまで待つ
+# Welcome 画面到達 (clearState で onboarding.completed=false、Welcome 自動表示)
 - extendedWaitUntil:
     visible:
-      text: '鉢 1 本ずつ、一生分。'
-    timeout: 30000
-    label: 'Welcome 表示完了'
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 60000
 
-# 4. 価値訴求 3 件のアニメ / レイアウト確定を待つ
-- waitForAnimationToEnd
+# 価値訴求 3 件のアニメ / レイアウト確定を待つ
+- waitForAnimationToEnd:
+    timeout: 3000
