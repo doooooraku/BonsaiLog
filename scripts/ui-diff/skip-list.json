@@ -108,14 +108,17 @@
     {
       "flow": "onboarding-welcome",
       "level": 2,
-      "rmse": 21414.2,
+      "rmse": 21393,
       "achieved_at": "2026-05-11T03:17:00Z",
-      "rmseNormalized": 0.326759,
-      "artifact": "scripts/ui-diff/out/20260511-1217/",
+      "rmseNormalized": 0.326436,
+      "artifact": "scripts/ui-diff/out/20260513-1251/",
       "rationale": "Phase 1.5-T5 DEV reset 機構 (PR #405) + scrollUntilVisible (PR #407) で再キャプチャ成功。Welcome Title「鉢 1 本ずつ、一生分。」+ 3 価値訴求 (19 言語、完全オフライン / 個人情報は取得しません / 次世代へ引き継げる台帳) + 「はじめる」CTA + 「アカウント登録は不要です」全て mockup WelcomeScreen と完全一致。レベル 2 達成。",
       "judgedBy": "auto-improve-loop cycle 8",
-      "needsReeval": true,
-      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-13T03:51:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260513-1251/",
+      "reevalRationale": "2026-05-13 R-25 再評価通過 + ui-diff/onboarding-welcome.yml シンプル化 (DEV reset 経由廃止、clearState で代替)。タブ構成 (onboarding、タブなし) ✅、セクション構成 (Title「鉢 1 本ずつ、一生分。」 + 3 価値訴求 ItemRow + CTA「はじめる」 + サブテキスト「アカウント登録は不要です」 全 6 要素一致) ✅、UI 種別 (縦並びリスト) ✅、スクロール範囲 (1 画面内収まり、スクロール無し) ✅。残差は status bar 環境差 (mockup 9:41 vs 実機 12:52) のみ、構造的整合性は完全一致。",
+      "reevalIteration": "2/2"
     },
     {
       "flow": "bonsai-detail",
