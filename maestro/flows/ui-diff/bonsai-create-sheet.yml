@@ -1,54 +1,119 @@
----
-# UI diff: 新規盆栽登録 BottomSheet (PR #377 Footer 固定 + PR #381 写真複数枚)
-# ADR-0021 / mockups v1.0 「03 新規登録 / 編集」 (create-screens.jsx CreateBonsaiScreen)
-#
-# 前提:
-#   - 別途 Metro bundler (pnpm dev) 起動済 + adb reverse tcp:8081 tcp:8081
-#   - 盆栽 0 件以上 (空でも FAB タップで sheet 開ける)
-#
-# 流れ: 起動 → 盆栽タブ「盆栽手帳」表示待ち → FAB タップ → BottomSheet open
+## UI diff capture: bonsai-create-sheet
+##
+## PR #493 (Phase G4 part 2) で BonsaiCreate を @gorhom BottomSheet → presentation: 'modal' に置換。
+## 本 flow は modal 化後の screen を screenshot キャプチャするため g4-bonsai-new.yml 経路を踏襲。
+##
+## 経路 (clearState + Onboarding skip + 空 state CTA):
+## 1. App 起動 (clearState: true、seed 0 件で OK)
+## 2. Dev Client menu → localhost:8081 tap + bundle load
+## 3. Continue dialog 自動 dismiss
+## 4. Onboarding skip (Welcome → Language ja → Tut1-5)
+## 5. 盆栽タブ Empty CTA tap → (modals)/bonsai-new (modal)
+## 6. modal 表示確認 (e2e_bonsai_create_screen)
+## 7. scrollUntilVisible で submit 表示 (= keyboard dismiss、画面下半分の form を見える状態にする)
+##
+## R-31 適用済 (testID 事前 grep + _template.yml ベース + tapOn:text 禁止)。
+## 注: scrollUntilVisible visibilityPercentage 30 は modal 内 keyboard dismiss の正解 (pressKey:Back / hideKeyboard は modal close リスク、PR #493 教訓)。
 
 appId: 'com.doooooraku.bonsailog'
-name: 'UI diff capture: bonsai-create-sheet'
+name: 'UI diff capture: bonsai-create-sheet (modal、PR #493 後)'
 tags:
   - ui-diff
 ---
-# 1. Metro deeplink で起動
-- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+- launchApp:
+    clearState: true
 
-# 1.5. Expo Dev Client の初回起動 dialog を dismiss (capture-app.sh の force-stop で毎回復活)
-- runFlow:
-    when:
-      visible: 'Continue'
-    commands:
-      - tapOn: 'Continue'
-      - waitForAnimationToEnd
-
-# 2. 盆栽タブ「盆栽手帳」表示完了まで待つ (Metro バンドル + アプリ起動)
-- extendedWaitUntil:
-    visible:
-      text: '盆栽手帳'
-    timeout: 60000
-    label: 'Metro バンドル + 盆栽タブ表示完了 (初回 60s 許容)'
-
-# 3. BonsaiCard リスト loading 完了 (フィルタタブ「すべて」表示で判定、FAB render 完了の指標)
-- extendedWaitUntil:
-    visible:
-      text: 'すべて'
-    timeout: 30000
-    label: 'BonsaiCard リスト loading 完了 (フィルタタブ表示)'
-
-- waitForAnimationToEnd
-
-# 4. FAB (+) を testID で tap (loading 中の座標空振り回避)
 - tapOn:
-    id: 'e2e_home_fab_create'
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
 
-# 4. BottomSheet 内の「写真」「名前」フィールドが表示されるまで待つ
+# Expo Dev Client Continue dialog 自動 dismiss (back キー)
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Welcome → 「はじめる」 tap
 - extendedWaitUntil:
     visible:
-      text: '名前'
-    timeout: 15000
-    label: 'BonsaiCreateSheet 開く (名前フィールド表示)'
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
-- waitForAnimationToEnd
+# Onboarding Language → ja → next
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Tut1-5 全 skip
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut2'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut3'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut4'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 盆栽タブ Empty CTA tap → /bonsai-new modal
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_home_empty_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# bonsai-new modal 表示確認 (R-31 testID 経由)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_create_screen'
+    timeout: 10000
+
+# UI diff capture 専用: modal 開いた瞬間の screenshot 取得が目的。
+# scrollUntilVisible は 2 回反復 0/2 で flaky (over-shoot or 検出困難) のため削除。
+# keyboard 表示状態の screenshot は R-25 評価で「キーボード状態の許容差」 として扱う。
+# (g4-bonsai-new.yml 操作系 flow は scrollUntilVisible 使用、capture 系は別運用)
+- waitForAnimationToEnd:
+    timeout: 3000

@@ -30,14 +30,18 @@
     {
       "flow": "bonsai-create-sheet",
       "level": 2,
-      "rmse": 21815.6,
+      "rmse": 21572.6,
       "achieved_at": "2026-05-11T02:15:00Z",
-      "rmseNormalized": 0.332771,
-      "artifact": "scripts/ui-diff/out/20260510-2340/",
+      "rmseNormalized": 0.329177,
+      "artifact": "scripts/ui-diff/out/20260513-1237/",
       "rationale": "レベル 2 必須項目 (写真/フォント/レイアウト 9 フィールド/footer CTA) 全て mockup CreateBonsaiScreen と一致。差分は placeholder 視認性と必須/任意ラベル仕様差で許容。",
       "judgedBy": "auto-improve-loop cycle 2",
-      "needsReeval": true,
-      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-13T03:38:51Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260513-1237/",
+      "reevalRationale": "PR #493 (Phase G4 part 2、@gorhom BottomSheet → presentation: 'modal') 後の再キャプチャで Claude Read 構造系 4 項目チェック通過。タブ構成 (modal、タブなし) ✅、セクション構成 (写真 + 名前 + 樹種 + 樹形 + 取得日 + 樹齢 + 購入日 + タグ + メモ + 保存 主要 9 フィールド一致) ✅、UI 種別 (BottomSheet → modal、ADR-0024 Phase G4 part 2 意図的変更) ✅、スクロール範囲 (modal 全画面内 scroll、mockup sheet 内 scroll より範囲拡大) ✅。残差: (1) header に「(modals)」 group route 名誤表示 (Stack.Screen title option 反映されず、Issue #507 で別追跡)、(2) クローズボタン × → ← (modal 慣行で許容)、(3) 保存ボタン位置 header 右 → footer 固定 (PR #377 意図的)。Issue #507 (bug) は本 reeval 通過と独立、別 PR で対処予定。",
+      "reevalIteration": "2/2",
+      "reevalTrackingIssue": 507
     },
     {
       "flow": "look-back-tab",
