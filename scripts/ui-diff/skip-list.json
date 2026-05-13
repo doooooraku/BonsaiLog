@@ -102,11 +102,14 @@
       "rmse": 22004.4,
       "achieved_at": "2026-05-11T03:14:00Z",
       "rmseNormalized": 0.335765,
-      "artifact": "scripts/ui-diff/out/20260511-1214/",
+      "artifact": "scripts/ui-diff/out/20260513-1339/",
       "rationale": "Phase 1.5-T1 seed 拡張で plan/event 投入後の再キャプチャで構造完全一致確認。Header「作業予定」+ 針金がけ一覧 link + 月選択 + DOW header + Calendar grid + 選択日リスト + 「予定はありません」 (今日 0 件状態) + 4 TabBar 全て mockup CalendarScreen と一致。dot marker は events 反映で表示確認。差は選択日違い (mockup 4/24 / 実機 5/11) で seed 設計差、UI 構造は完全整合。",
       "judgedBy": "auto-improve-loop cycle 8",
-      "needsReeval": true,
-      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-13T04:39:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260513-1339/",
+      "reevalRationale": "2026-05-13 R-25 再評価通過 + ui-diff/plan-tab.yml を Onboarding skip + seed 投入経路に書き直し (旧「盆栽手帳」 text マッチ + text マッチ「予定」 tap → testID 経由 e2e_tab_plan + e2e_plan_screen)。タブ構成 (TabBar 4 タブ 盆栽/予定/ふりかえり/設定) ✅、セクション構成 (Header「作業予定 ⚙」 + 月選択 + DOW header 日月火水木金土 + Calendar grid + 選択日リスト) ✅、UI 種別 (縦並び Header + Calendar + リスト) ✅、スクロール範囲 (1 画面内 + 下部リスト) ✅。残差: (1) 月差 (実機 5 月 / mockup 4 月、date 動的、許容)、(2) today 差 (実機 13 / mockup 24)、(3) 選択日リスト内容差 (実機 0 件「予定はありません」 / mockup 3 件 父の黒松/真柏・枝枯れ/Ficus retusa、seed events 配置 + today 差で許容)。構造的整合性は完全一致。",
+      "reevalIteration": "2/2"
     },
     {
       "flow": "onboarding-welcome",
