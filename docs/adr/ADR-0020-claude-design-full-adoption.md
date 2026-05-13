@@ -539,3 +539,86 @@ ui-diff flow から seed data 自動投入が可能になった (settings/index.
 - PR #470 (Issue #458 写真 Free 制限撤廃)
 - Issue #443 (R-25 全件再評価親、本 Notes で全 11 件達成)
 - 2026-05-13 セッション議論 (アプローチ B 採用 + Q2 c 採用 + R-30 基準短縮)
+
+#### 議論結果 (2026-05-13 後半 ultrathink 議論セッション、Q1-Q6 user 採用)
+
+本セッション末の議論モード (/discuss、ultrathink、4 ラウンド議論、6 専門家 + 4 ペルソナ + フラット視点) で残タスク優先順位策定。Web 調査 (Maestro 2026 best practice / visual regression Percy/Chromatic 比較 / Expo + Maestro E2E トレンド) も実施。
+
+##### Q1: 完了基準 = 整合済 25/41 = 61% MVP 採用 (案 b)
+
+- **41 画面の正本定義**: 主要画面、variant 統合カウント (Q4 連動)
+- **整合済 11 件** (現在) + **未測定 14 件** (グループ A/B/D) = 25 件 = 61%
+- **残 16 件** = グループ C (Export Hub 7 件) + グループ F (機能追加) + variant skip 許容
+- 業界事例 (visual regression は構造系 4 項目で十分、pixel-perfect 不要) + 4 ペルソナ全員 ○ 以上 で確定
+
+##### Q2: 次セッション着手 = A + E 並列 (案 a)
+
+- **グループ A**: bonsai-detail 他タブ (Issue #510 基本情報 / 作業予定 R-25 評価) + Stack header 整合判断
+- **グループ E (主要 bug fix)**: Issue #507 (modal header 誤表示) + Issue #505 (deadcode 実体削除)
+- 想定 1 セッション (1.5 セッションに膨らむ可能性、Issue #439-#441 構造大差再発覚時)
+- 整合済 11 → 13/41 = 32% 達成見込み
+
+##### Q3: regression テスト = 手動 cold-start (1-2 件、段階的) 採用 (案 b)
+
+- **毎セッション末に冷温始動 1-2 件確認** (前回セッションで整合済マーク済の flow を再実行 + diff 無し確認)
+- CI 組み込み (ADR-0021 §9 update 要) は **セッション 5 で段階的検討**
+- 業界事例 (Percy / Chromatic は必ず CI) と乖離あるが、個人開発 + Maestro CI 環境構築コスト高で許容
+
+##### Q4: 41 画面の正本定義 = ADR-0020 で明文化 (案 a)
+
+- **本 §Notes Amended (議論結果) で「41 = 主要画面、variant 統合カウント」 を明文化** (本 sub-section)
+- mockup screenshots 69 件は variant 込み、変動するため正本扱いしない
+- skip-list.json (achieved 11 件) + 残 14 件 (A/B/D グループ) = 主要 25 画面 (整合済 + 整合予定)
+- 残 16 画面 = variant skip (許容) + Export Hub (グループ C、追加 task) + 機能追加 (グループ F)
+- 41 = ADR-0020 §画面マップ + ADR-0018 Onboarding 6 画面 + ADR-0024 modal/formSheet 系 を統合カウント (将来セッションで row 単位の対応表作成も検討)
+
+##### Q5: R-25 評価 user 抜き打ち再確認 = リアルタイム 1 件 (案 b)
+
+- **次セッション 1 セッション目に user が抜き打ち 1 件確認** (整合済 11 件のうち 1 件、user 選択)
+- Claude 主観判定の誤り (Issue #439-#441 事例) 検知のため
+- 段階的拡大 (1 件 → 必要なら 3 件) 余地あり
+
+##### Q6: 半自走モード継続 = 1 文計画 + 10 秒待機 採用 (案 a)
+
+- 本セッション 10 PR の効率実績、stop 機能で安全担保
+- scope 大幅変更時は再承認 (R-17)、毎 PR 個別承認 (R-17 厳格) は適用しない
+
+##### 5 セッション計画 (整合済 25/41 = 61% MVP 達成までの目安)
+
+| セッション      | 着手内容                                                                            | 整合済 達成見込み |
+| --------------- | ----------------------------------------------------------------------------------- | ----------------- |
+| **次 (Sess 1)** | A (bonsai-detail 他タブ Issue #510) + E (Issue #507/#505 bug fix)                   | 13/41 = 32%       |
+| Sess 2          | B (ADR-0024 PoC flow 5 件転用 → ui-diff/)                                           | 18/41 = 44%       |
+| Sess 3          | D part1 (Onboarding 6 画面のうち Splash + 言語 + 通知 + 機能 2)                     | 22/41 = 54%       |
+| Sess 4          | D part2 (Onboarding 残) + variant skip 整理                                         | 25/41 = 61%       |
+| Sess 5          | E 残 (S5 lint baseline + 全 flow comment update + 41 画面定義) + regression CI 検討 | 25/41 達成、MVP   |
+
+##### 5 セッション完遂後の追加 task 優先順位 (将来議論候補)
+
+61% MVP 達成後、user 判断で以下を順次着手:
+
+1. **グループ C (Export Hub 7 画面、Issue #310)**: Pro 限定機能本実装込み、2-3 セッション
+2. **グループ F (機能追加 Issue)**: #298 (TimelineTab + AddSchedule) / #216 (タグ AC4-1) / #22 (F-14 ads) 等
+3. **variant 整合 (paywall-02 / plan-tab-02 等の軽微 variant)**: 既存通過済の派生、簡易
+
+##### 議論で確認された 表面化していない問題 7 件 (R-7、対処方針確定)
+
+1. **整合済 SoT (正本) 分散**: skip-list.json (機械) / ADR-0020 §画面マップ (人間判定) / docs/reference/ui-diff-flow-mapping.md (表示) → DRY 原則明文化 (Sess 5 で対処)
+2. **41 画面正本定義**: 本 §Notes で確定 (主要画面、variant 統合)
+3. **regression テスト不在 (drift リスク)**: 手動 cold-start (Sess 5 で CI 検討)
+4. **半自走 context 圧迫**: docs/reference/ui-diff-flow-mapping.md + ADR-0020 Notes が handoff チェックリスト機能
+5. **R-25 Claude 主観判定**: リアルタイム user 抜き打ち 1 件で担保 (Q5)
+6. **ADR-0024 PoC flow 転用**: 1 件試行 → 横展開 (Sess 2)
+7. **ストア審査リスク**: 整合 61% で問題なし (機能 + プライバシー審査中心、業界事例で確認)
+
+##### 1 次情報調査 結果 (議論時)
+
+- **Maestro 公式 (2026)**: flakiness rate < 1%、`--retry-on-failure` 推奨 (本プロジェクトは 2/2 PASS 厳格基準で未採用、現方針維持)
+- **visual regression 業界 (2026)**: Percy + BrowserStack は実機 pixel-perfect、Chromatic は Storybook 必須、本プロジェクトの DIY (Maestro + ImageMagick + Claude Read) は個人開発に最適コスト
+- **Expo + Maestro (2026)**: Detox は Expo eject 不要なら不要、Maestro 推奨が業界整合
+- **テストピラミッド (2026)**: 70% unit / 20% integration / 10% E2E、本プロジェクトは E2E 偏重だが「mockup 整合」 が主目的で許容
+
+##### 関連
+
+- 2026-05-13 後半 ultrathink 議論セッション (Q1-Q6 採用)
+- WebSearch 結果 (Maestro 2026 best practice / Percy vs Chromatic / Expo + Maestro)
