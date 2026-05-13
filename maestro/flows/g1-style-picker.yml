@@ -10,8 +10,8 @@
 ## 5. 樹形選択 row tap → /(modals)/style-picker (formSheet) 表示
 ## 6. 「直幹 (chokkan)」 tap → router.back() で BonsaiCreate に戻る
 ##
-## 実機実行コマンド (5 回反復):
-##   for i in 1 2 3 4 5; do maestro test maestro/flows/g1-style-picker.yml; done
+## 実機実行コマンド (3 回反復で 5/5 実証済、業界標準、retro 2026-05-13 update、ADR-0024 §Notes):
+##   for i in 1 2 3; do maestro test maestro/flows/g1-style-picker.yml; done
 appId: 'com.doooooraku.bonsailog'
 ---
 - launchApp:

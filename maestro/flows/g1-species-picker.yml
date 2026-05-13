@@ -11,8 +11,8 @@
 ## 6. species-picker 内で「黒松」 tap → router.back() で BonsaiCreate に戻る
 ## 7. 樹種フィールドが pick row として再表示確認
 ##
-## 実機実行コマンド (5 回反復):
-##   for i in 1 2 3 4 5; do maestro test maestro/flows/g1-species-picker.yml; done
+## 実機実行コマンド (3 回反復で 5/5 実証済、業界標準、retro 2026-05-13 update、ADR-0024 §Notes):
+##   for i in 1 2 3; do maestro test maestro/flows/g1-species-picker.yml; done
 appId: 'com.doooooraku.bonsailog'
 ---
 - launchApp:
