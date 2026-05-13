@@ -40,18 +40,6 @@
       "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
     },
     {
-      "flow": "watering-heatmap",
-      "level": 2,
-      "rmse": 23437.8,
-      "achieved_at": "2026-05-11T02:55:00Z",
-      "rmseNormalized": 0.357637,
-      "artifact": "scripts/ui-diff/out/20260511-1052/",
-      "rationale": "レベル 2 必須項目 (Header/Segmented/Heatmap grid 4 段階濃淡/Footer Summary/Disclaimer) 全て一致。差分は Title scientific name と seed 記録数差のみ。",
-      "judgedBy": "auto-improve-loop cycle 4",
-      "needsReeval": true,
-      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
-    },
-    {
       "flow": "look-back-tab",
       "level": 2,
       "rmse": 21804.8,
