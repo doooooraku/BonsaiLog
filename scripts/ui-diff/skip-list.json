@@ -139,14 +139,17 @@
     {
       "flow": "paywall",
       "level": 2,
-      "rmse": 21471.7,
+      "rmse": 21228.3,
       "achieved_at": "2026-05-11T03:45:00Z",
-      "rmseNormalized": 0.327638,
-      "artifact": "scripts/ui-diff/out/20260511-1240/",
+      "rmseNormalized": 0.323923,
+      "artifact": "scripts/ui-diff/out/20260513-1317/",
       "rationale": "PR #412 (比較表 5→8 行拡張) で再キャプチャ成功。Header「× BonsaiLog Pro」 + Hero (UNLOCK + 鉢1本ずつ、一生分。+ Pro で記録の可能性を解き放つ) + 比較表 7 行 (樹木数/写真/作業履歴/バックアップ/CSV/PDF/年次タイムライン/広告) 全て mockup PaywallScreen と一致。レベル 2 達成。残差 (テーマ行 + 「購読する」1 CTA vs 月年 Lifetime cards) は R-28 ビジネス仕様判断要、別 ADR 起票後対応。",
       "judgedBy": "auto-improve-loop cycle 10",
-      "needsReeval": true,
-      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-13T04:17:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260513-1317/",
+      "reevalRationale": "2026-05-13 R-25 再評価通過 + ui-diff/paywall.yml を Onboarding skip 経路に書き直し (旧「盆栽手帳」 text マッチ + text マッチ「設定」 tap → testID 経由 e2e_tab_settings + e2e_settings_screen + e2e_open_paywall scroll + tap)。タブ構成 (modal、タブなし) ✅、セクション構成 (Header × BonsaiLog Pro + Hero UNLOCK + 比較表 7 行 + CTA 購読する + プラン表示) ✅、UI 種別 (modal 縦スクロール) ✅、スクロール範囲 (全画面スクロール可) ✅。残差: (1) 比較表 写真枚数行 mockup 有 vs 実機 無 (Issue #458 で写真 Free 制限撤廃に伴い意図的削除済、philosophy 整合)、(2) 実機にプラン表示 section (月額/利用不可) あり、mockup はプラン card で別表現 (R-28 ビジネス仕様、ADR-0009 維持)、(3) Header テキスト「BonsaiLog Pro」 正常表示 (Issue #507 と異なる)。構造的整合性は完全一致。",
+      "reevalIteration": "2/2"
     },
     {
       "flow": "settings-tab",
