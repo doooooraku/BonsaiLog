@@ -476,3 +476,66 @@
 - `.claude/recurrence-prevention.md` R-30 (外部 lib テスト stability PoC 必須化、本 Notes Amended と同 PR で追加)
 - `docs/how-to/maestro-standard-pattern.md` (Phase G 以降の Maestro 標準パターン、本 Notes Amended と同 PR で新規)
 - 2026-05-12 セッション議論 (`session_summary` Engram #185、`decision` #186)
+
+### Notes Amended (2026-05-13): R-25 全件再評価通過 + 41 画面整合状況確定
+
+#### 改訂内容
+
+2026-05-13 セッションで全 ui-diff flow の R-25 構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) Claude Read 主導再評価を実施、`scripts/ui-diff/skip-list.json` の `needsReeval: true` 9 件 + 本セッション PR 実装 2 件 = 11 件すべて再評価通過。
+
+#### 41 画面整合状況 (2026-05-13 時点)
+
+| 区分                                            | 件数       | 内訳                                                                                                                                                                                      |
+| ----------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R-25 構造系 4 項目通過 (needsReeval: false)** | 11 件      | bonsai-tab / bonsai-create-sheet / look-back-tab / bonsai-detail-edit-sheet / wiring-list / home-bulk-sched-work / plan-tab / onboarding-welcome / bonsai-detail / paywall / settings-tab |
+| **永続 skip (mockup HTML 不在)**                | 1 件       | look-back-watering-history (Issue #502 で user 領域追跡)                                                                                                                                  |
+| **削除済 (deadcode 整理)**                      | 1 件       | watering-heatmap (Issue #440 Phase 1 で到達経路削除、Issue #505 起票)                                                                                                                     |
+| **未測定 (Maestro flow 未作成)**                | 推定 26 件 | 41 画面 - 15 ui-diff flow = 残り、次セッション handoff (対応表整備 P4)                                                                                                                    |
+
+#### 本セッション PR (累計 9 PR、Phase 1-3 全完遂)
+
+**Phase 1 (後片付け、6 PR)**:
+
+- PR #503: S5 iteration warning 解消 (g1-\* flow 表記統一)
+- PR #504: look-back-search-initial 別 flow 新規 (永続 skip 解消、Q2 c)
+- PR #506: watering-heatmap 古い flow 2 件削除 + skip-list 削除 (deadcode 整理 P1-T3 案 A)
+- - Issue #475 close (Phase G 完遂) / Issue #502 (look-back-watering-history mockup 不在) / Issue #505 (bonsai/[id]/watering.tsx deadcode) 起票
+
+**Phase 2 (Phase G 影響 再キャプチャ、1 PR)**:
+
+- PR #508: bonsai-create-sheet R-25 再評価通過 (PR #493 modal 化後、Issue #507 bug 別追跡起票)
+
+**Phase 3 (R-25 主要 5 件再評価、5 PR)**:
+
+- PR #509: onboarding-welcome (flow simplify + 2/2 PASS)
+- PR #511: bonsai-detail (seed 自動投入 + 2/2 PASS、Issue #510 follow-up 起票)
+- PR #512: paywall (Onboarding skip 経路 + 2/2 PASS)
+- PR #513: wiring-list (ふりかえりタブ経路 + seed 投入 + 2/2 PASS、PR #462 対応)
+- PR #514: plan-tab (seed 投入 + 2/2 PASS、Phase 3 全完遂)
+
+#### 新基準 (user 指示 2026-05-13)
+
+R-30 (外部 lib テスト stability PoC) の反復基準を **3 回 → 2 回** に短縮。recurrence-prevention.md L228 R-30 + flow comment を本 PR で文書 update (lint script + 全 flow の comment 整合は次セッション task)。
+
+#### seed 自動投入仕組み (2026-05-13 確立)
+
+ui-diff flow から seed data 自動投入が可能になった (settings/index.tsx L564 `e2e_dev_seed_button` testID + Alert OK dismiss は R-31 例外として許容)。bonsai-detail / wiring-list / plan-tab で再利用、今後の seed 必要 ui-diff flow で標準採用。
+
+#### 未解決 follow-up (次セッション handoff)
+
+- **Issue #502**: 横断 watering history mockup HTML 不在 (user 領域)
+- **Issue #505**: bonsai/[id]/watering.tsx deadcode 実体削除 + route 削除
+- **Issue #507**: (modals)/bonsai-new modal の header「(modals)」 誤表示 (Stack.Screen title option 反映されず)
+- **Issue #510**: bonsai-detail 他タブ (基本情報 / 作業予定) R-25 評価 + Stack header 整合判断
+- **対応表整備**: 41 画面 ↔ 15 ui-diff flow 対応表 + 残 26 件 (未測定) の Maestro flow 新規実装計画
+- **S5 lint baseline + 全 flow comment update**: R-30 基準 2 回反復に伴う lint script (R30*BASELINE) + 全 flow (g1-*, g2-\_, g3*, g4-*, look-back-search-initial 等) の comment update
+
+#### 関連
+
+- 本 PR (P4 recap、本 Notes Amended と同 PR、対応表 + 次セッション handoff)
+- PR #493 (Phase G4 part 2 BonsaiCreate modal 化)
+- PR #492 (Phase G4 part 1 WateringHeatmap inline 化)
+- PR #462 (plan-tab 針金がけ row 削除)
+- PR #470 (Issue #458 写真 Free 制限撤廃)
+- Issue #443 (R-25 全件再評価親、本 Notes で全 11 件達成)
+- 2026-05-13 セッション議論 (アプローチ B 採用 + Q2 c 採用 + R-30 基準短縮)
