@@ -1,42 +1,143 @@
-# UI diff: 予定タブ画面のスクリーンショット取得用
-# ADR-0021 / ADR-0020 §Notes §画面マップ row 14 (予定タブ ⟷ care-screens.jsx CalendarScreen)
-# 対象実装: app/(tabs)/plan/index.tsx (testID e2e_plan_screen)
-# 対象モックアップ: docs/mockups/v1.0/wireframes/02-Home.html [data-screen-label="10 ケア 作業予定カレンダー"]
-#
-# 前提:
-#   - 別途 Metro bundler (pnpm dev) を WSL2 内で起動済み、`adb reverse tcp:8081 tcp:8081` で
-#     実機から WSL ポートに到達可能。
-#   - オンボ完了済 (起動直後に盆栽タブが表示される状態)。
-#   - bonsai-tab.yml と同一の Metro deep link 方式で起動 (Expo Go との衝突回避のため
-#     Dev Launcher 専用 scheme を使う)。
+## UI diff capture: plan-tab
+##
+## ADR-0021 / ADR-0020 §Notes §画面マップ row 14 (予定タブ ⟷ care-screens.jsx CalendarScreen)
+## 対象実装: app/(tabs)/plan/index.tsx (testID e2e_plan_screen)
+## 対象モックアップ: docs/mockups/v1.0/wireframes/02-Home.html [data-screen-label="10 ケア 作業予定カレンダー"]
+##
+## 経路 (clearState + Onboarding skip + DEV seed 自動投入 + 予定タブ tap):
+## 1. App 起動 (clearState: true)
+## 2. Dev Client menu + Continue dismiss
+## 3. Onboarding skip
+## 4. 盆栽タブ Empty CTA visible
+## 5. 設定タブ → DEV seed button tap → Alert dismiss
+## 6. 予定タブ tap (e2e_tab_plan)
+## 7. e2e_plan_screen 表示確認
+##
+## 2 回反復 2/2 PASS 基準 (2026-05-13 user 指示)。
 
 appId: 'com.doooooraku.bonsailog'
 name: 'UI diff capture: plan-tab'
 tags:
   - ui-diff
 ---
-# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
-- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+- launchApp:
+    clearState: true
 
-# 2. 起動完了 (盆栽タブの「盆栽手帳」ヘッダーが表示) を待つ
-#    Metro 初回バンドルが 30-60 秒かかるため timeout を 60000ms に拡張。
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Onboarding Welcome
 - extendedWaitUntil:
     visible:
-      text: '盆栽手帳'
+      id: 'e2e_onboarding_welcome_cta'
     timeout: 60000
-    label: 'Metro バンドル + 起動完了 (盆栽タブ表示)'
-
-# 3. TabBar の「予定」タブをタップして予定タブへ遷移
-#    起動直後は SearchHeader が「盆栽」のため「予定」テキストは TabBar のみで重複なし。
 - tapOn:
-    text: '予定'
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
 
-# 4. 予定タブの ThemedView (testID e2e_plan_screen) が表示されるまで待つ
+# Language ja
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Tut1-5 skip
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut2'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut3'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut4'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 盆栽タブ Empty CTA visible 確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+# 設定タブ tap (seed 投入用)
+- tapOn:
+    id: 'e2e_tab_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# DEV seed button scroll + tap
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+    speed: 40
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Alert dismiss (R-31 例外)
+- tapOn:
+    text: 'OK'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 予定タブ tap (testID 経由)
+- tapOn:
+    id: 'e2e_tab_plan'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 予定タブ画面表示確認
 - extendedWaitUntil:
     visible:
       id: 'e2e_plan_screen'
     timeout: 30000
-    label: '予定タブ表示完了 (e2e_plan_screen 可視)'
 
-# 5. カレンダーグリッド / 選択日リストの描画完了を待つ
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 3000
