@@ -2,7 +2,7 @@
  * 横断 水やり履歴 画面 (Issue #361 / ADR-0020 §Decision §7)。
  *
  * mockup `care-screens.jsx CareHubScreen` L1593 「水やり履歴」カードの遷移先。
- * 個別盆栽用 `app/(tabs)/bonsai/[id]/watering.tsx` の構造を流用しつつ、横断特有の調整:
+ * 横断特有の調整:
  * - 全盆栽の watering events を 1 つのヒートマップに集約 (getAllActiveWateringEventsLogged)
  * - 「最後の水やりから N 日」「連続記録」「2 回の日」は意味が薄いため非表示
  * - 「対象盆栽件数」(events から uniq な bonsaiId 数) を新規追加
