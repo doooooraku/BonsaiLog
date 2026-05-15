@@ -1,0 +1,58 @@
+## UI diff capture: onboarding-notification (tut5)
+##
+## ADR-0018 / ADR-0020 §10 Onboarding 6 画面の 1 つ (Notification = tut5)
+## Welcome → Language → Next で tut5 (Notification) 画面到達 capture
+## Closes #526 (tut1 / tut2 は Issue #531 で mockup HTML 作成待ち = 永続 skip)
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: onboarding-notification'
+tags:
+  - ui-diff
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- pressKey: 'Back'
+- waitForAnimationToEnd
+
+# Welcome → 「はじめる」 → Language
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 90000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# Language ja 選択 → Next → tut5 (Notification)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# tut5 (Notification) 画面到達確認 (capture 対象)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_tut_next_tut5'
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_tut_skip_tut5'
+    timeout: 10000
+
+- waitForAnimationToEnd

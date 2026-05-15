@@ -57,6 +57,17 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0018 / app/onboarding/language.tsx / mockups v1.0。前提: Welcome 完了後の言語選択画面、testID e2e_onboarding_lang_ja + e2e_onboarding_lang_next で可視待ち。',
   },
+  'onboarding-notification': {
+    id: 'onboarding-notification',
+    description:
+      'オンボーディング 通知 (tut5) 画面 (Welcome → Language → Next で表示、bell icon + 文言 + 通知を有効にする CTA + あとで skip)',
+    appFlow: 'maestro/flows/ui-diff/onboarding-notification.yml',
+    designHtml: '01-Onboarding.html',
+    designSelector: '[data-screen-label="06 NOTIFICATION"]',
+    mockupFile: 'onboarding-notification.png',
+    notes:
+      'ADR-0018 / ADR-0020 §10 (Onboarding 6 画面) / screens.jsx NotificationScreen / app/onboarding/tut/[step].tsx (tut5、ADR-0020 v1.x-1 改訂で TUTORIAL_STEPS 順序を tut5 → tut1 → tut2 に再編、Issue #526 真因確定済)。前提: Welcome 完了 + Language ja 選択完了 → tut5 (Notification) 画面、testID e2e_onboarding_tut_next_tut5 + e2e_onboarding_tut_skip_tut5 で可視待ち。',
+  },
   'bonsai-detail': {
     id: 'bonsai-detail',
     description:

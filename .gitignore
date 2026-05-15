@@ -72,3 +72,6 @@ scripts/ui-diff/out/*
 docs/mockups/v1.0/app.sqlite
 docs/mockups/v1.0/app.sqlite-shm
 docs/mockups/v1.0/app.sqlite-wal
+
+# Sess 一時 capture (user 確認用 SS、commit 不要)
+tmp-captures/

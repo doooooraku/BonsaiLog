@@ -10,6 +10,26 @@
       "artifact": "scripts/ui-diff/out/20260510-2343/",
       "needsHumanReview": true,
       "trackingIssue": 502
+    },
+    {
+      "flow": "onboarding-tut1",
+      "reason": "mockup HTML 不在: 実機 tut1 (機能 1 = 盆栽追加チュート) は app/onboarding/tut/[step].tsx で動的表示済 (品質十分) だが、mockup screens.jsx に Tut1Screen wireframe が存在せず、docs/mockups/v1.0/screenshots/ にも onboarding-tut1.png なし。Issue #531 で mockup HTML 作成依頼追跡中、Claude 側は mockup 完成後に再評価予定。",
+      "added_at": "2026-05-16T01:50:00Z",
+      "fail_count": 0,
+      "permanent": true,
+      "artifact": null,
+      "needsHumanReview": true,
+      "trackingIssue": 531
+    },
+    {
+      "flow": "onboarding-tut2",
+      "reason": "mockup HTML 不在: 実機 tut2 (機能 2 = 樹種登録チュート) は app/onboarding/tut/[step].tsx で動的表示済 (品質十分) だが、mockup screens.jsx に Tut2Screen wireframe が存在せず、docs/mockups/v1.0/screenshots/ にも onboarding-tut2.png なし。Issue #531 で mockup HTML 作成依頼追跡中、Claude 側は mockup 完成後に再評価予定。",
+      "added_at": "2026-05-16T01:50:00Z",
+      "fail_count": 0,
+      "permanent": true,
+      "artifact": null,
+      "needsHumanReview": true,
+      "trackingIssue": 531
     }
   ],
   "achieved": [
@@ -261,6 +281,21 @@
       "reevalRationale": "Issue #510 Phase 1 R-25 評価通過。タブ構成 (作業履歴/作業予定/基本情報 3 タブ、基本情報 selected) ✅、セクション構成 (Header + Hero + Tabs + 写真セクション [写真追加 + photoCard 1/2 カバー] + 基本情報 form [名称/樹種、scroll 下方]) ✅、UI 種別 (縦並び Hero + Tabs + 写真 + form) ✅、スクロール範囲 (全画面 scroll で form 表示) ✅。残差: (1) Hero 有無 (mockup 基本情報タブには Hero 無し、実機は二段構造、Issue #510 Phase 3 Stack header 整合判断と連動)、(2) 写真セクション差 (mockup placeholder 1 件 vs 実機 photoCard list、Issue #458 写真 Free 制限撤廃で意図的拡張、philosophy 整合)、(3) Stack header「← 盆栽の詳細 ⚙」 実機のみ (Issue #510 Phase 3)。Issue #439-#441 で発覚していた「基本情報 read-only」 は **誤判定または修正済**、実機は編集 form あり。構造的整合性は意図的差を除き完全一致。",
       "reevalIteration": "2/2",
       "reevalTrackingIssue": 510
+    },
+    {
+      "flow": "onboarding-notification",
+      "level": 2,
+      "rmse": 26000,
+      "achieved_at": "2026-05-16T01:56:00Z",
+      "rmseNormalized": 0.4,
+      "artifact": "scripts/ui-diff/out/20260516-0156/",
+      "rationale": "Sess1 PR-2 R-25 構造系 4 項目評価通過。Issue #526 真因確定 (ONBOARDING_STEP_ORDER で Language Next 後は tut5、tut1 ではない) 後の新規 ui-diff flow。Maestro 2/2 PASS (R-30 基準)。",
+      "judgedBy": "Sess1 PR-2 (2026-05-16)",
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-16T01:56:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260516-0156/",
+      "reevalRationale": "R-25 評価通過。タブ構成 (onboarding modal、タブなし) ✅、セクション構成 (Bell icon + Title「あなたが決めた予定だけお知らせ」 + 本文「あなたが決めた予定をお知らせします。通知はオフにもできます。いつでも設定から変更可能です。」 + 通知を有効にする CTA + あとで skip = 主要 5 要素完全一致) ✅、UI 種別 (縦並び center align) ✅、スクロール範囲 (1 画面内収まりスクロール無し) ✅。残差: (1) Bell icon 表現差 (mockup outline / 実機 🔔 emoji 黄色塗り、ICON_FALLBACK 仕様で許容)、(2) 右上 ⚙ 設定アイコン (実機のみ、Stack header 残骸、Issue #510 Phase 3 と同型 follow-up 候補)、(3) Header back button (mockup < あり / 実機 なし、onboarding 動線設計差で許容)、(4) Status bar 表示差 (mockup 9:41 / 実機 1:56、環境差で許容)。構造的整合性は完全一致。Issue #526 Closes、tut1/tut2 は mockup HTML 不在 (Issue #531) で永続 skip。",
+      "reevalIteration": "2/2"
     },
     {
       "flow": "bonsai-detail-timeline",
