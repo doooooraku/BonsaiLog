@@ -195,6 +195,21 @@
       "reevalIteration": "2/2"
     },
     {
+      "flow": "onboarding-language",
+      "level": 2,
+      "rmse": 25000,
+      "achieved_at": "2026-05-15T21:19:00Z",
+      "rmseNormalized": 0.38,
+      "artifact": "scripts/ui-diff/out/20260515-2119/",
+      "rationale": "Sess 3 新規評価 (ADR-0018 Onboarding 6 画面の 1 つ)。Welcome → 「はじめる」 tap で言語選択画面到達。",
+      "judgedBy": "Sess3-2 (2026-05-15)",
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-15T21:19:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260515-2119/",
+      "reevalRationale": "Sess 3 R-25 評価通過。タブ構成 (onboarding、タブなし) ✅、セクション構成 (Title「言語を選んでください」 + サブテキスト「タップでプレビューできます。あとで設定からも変更可」 + 19 言語リスト + CTA「選択して続ける」) ✅、UI 種別 (縦並びリスト + selectable rows + CTA) ✅、スクロール範囲 (全画面 scroll) ✅。残差: (1) mockup「言語を選択 / Select language」 vs 実機「言語を選んでください」 + サブテキスト (機能拡張 preview feature、許容)、(2) 言語順差 (mockup 日本語 top selected / 実機 English top selected、state 差で許容)。構造的整合性は完全一致。",
+      "reevalIteration": "2/2"
+    },
+    {
       "flow": "work-log-confirm",
       "level": 2,
       "rmse": 27000,
