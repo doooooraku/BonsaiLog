@@ -88,6 +88,16 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0024 g2 / WorkPickerScreen / app/(modals)/work-picker.tsx (formSheet、modal 親なし、Issue #522 影響なし想定) / mockups v1.0。前提: bonsai detail → 履歴タブ FAB tap で formSheet 表示、testID e2e_work_picker_screen + e2e_work_picker_grid で可視待ち。',
   },
+  'work-log-confirm': {
+    id: 'work-log-confirm',
+    description: '作業記録確認 formSheet (work-picker → 水やり tap で表示、formSheet → formSheet)',
+    appFlow: 'maestro/flows/ui-diff/work-log-confirm.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="05 作業を記録"]',
+    mockupFile: 'work-log-confirm-01.png',
+    notes:
+      'ADR-0024 g2 / WorkLogConfirmScreen / app/(modals)/work-log-confirm.tsx / mockups v1.0。前提: work-picker → e2e_work_picker_watering tap で formSheet 表示、formSheet → formSheet で Issue #522 影響なし想定。',
+  },
   'plan-tab': {
     id: 'plan-tab',
     description:

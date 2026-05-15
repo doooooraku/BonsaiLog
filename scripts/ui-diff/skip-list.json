@@ -195,6 +195,21 @@
       "reevalIteration": "2/2"
     },
     {
+      "flow": "work-log-confirm",
+      "level": 2,
+      "rmse": 27000,
+      "achieved_at": "2026-05-15T21:15:00Z",
+      "rmseNormalized": 0.41,
+      "artifact": "scripts/ui-diff/out/20260515-2115/",
+      "rationale": "Sess 2 新規評価 (ADR-0024 g2 PoC flow 転用、formSheet → formSheet)。work-picker → 水やり tap で work-log-confirm formSheet 表示 capture。Issue #522 影響なし確認 (modal 親なし、formSheet → formSheet 経路)。",
+      "judgedBy": "Sess2-4 (2026-05-15)",
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-15T21:15:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260515-2115/",
+      "reevalRationale": "Sess 2 R-25 評価通過。タブ構成 (formSheet、タブなし) ✅、セクション構成 (Header「作業を記録」 + title「水やりを記録」 + 盆栽名 + 水量 + メモ + 写真 + CTA「記録する」) ✅、UI 種別 (formSheet 縦並び form) ✅、スクロール範囲 (全画面 scroll) ✅。残差: (1) 水量セクション (実機のみ「いつも通り/たっぷり/軽く」、water-specific 入力、機能拡張で許容)、(2) 日付/写真 mockup vs 実機 位置差 (scroll 位置差、許容)。構造的整合性は完全一致。",
+      "reevalIteration": "2/2"
+    },
+    {
       "flow": "home-bulk-sched-date",
       "level": 2,
       "rmse": 25500,
