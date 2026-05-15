@@ -10,14 +10,6 @@
       "artifact": "scripts/ui-diff/out/20260510-2343/",
       "needsHumanReview": true,
       "trackingIssue": 502
-    },
-    {
-      "flow": "home-bulk-sched-date",
-      "reason": "flow 失敗 (Retro-D 自動追加): Step 1/4: capture app exited with code 1\n",
-      "added_at": "2026-05-15T11:42:29.662Z",
-      "fail_count": 1,
-      "permanent": false,
-      "status": "provisional"
     }
   ],
   "achieved": [

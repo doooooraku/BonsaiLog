@@ -433,8 +433,8 @@ export function useUpdateBonsai() {
 ### §7.2 画面 / 入口
 
 - 盆栽詳細（`bonsai/[id]`）内の「作業を記録」ボタン
-- 作業種別選択シート（`(sheets)/work-type`、`formSheet` presentation）
-- 作業記録確認画面（`(sheets)/work-confirm`、同上）
+- 作業種別選択画面（`(modals)/work-picker`、`modal` presentation、ADR-0024 Notes Amended 2026-05-15）
+- 作業記録確認画面（`(modals)/work-log-confirm`、同上）
 
 ### §7.3 期待動作
 
@@ -443,7 +443,7 @@ export function useUpdateBonsai() {
 ```mermaid
 stateDiagram-v2
   [*] --> Detail: 盆栽詳細
-  Detail --> TypeSheet: 「作業を記録」タップ (formSheet)
+  Detail --> TypeSheet: 「作業を記録」タップ (modal)
   TypeSheet --> Detail: スワイプダウン or Back
   TypeSheet --> Confirm: 作業種別選択 (push)
   Confirm --> Saving: 保存タップ
@@ -698,8 +698,8 @@ graph LR
 
 #### §9.3.4 タップ詳細（Apple Health 風 シート）
 
-- **実装** (Phase G 完了後): Expo Router `presentation: 'formSheet'` + `sheetAllowedDetents: [0.5, 1]` + `contentStyle: { height: '100%' }` (ADR-0024 参照)
-- **現状** (Phase G 着手前): `@gorhom/bottom-sheet` v5.2.13 (Phase G で廃止予定、ADR-0024 / Issue #475)
+- **実装** (ADR-0024 Notes Amended 2026-05-15 改訂): Expo Router `presentation: 'modal'` 一本化 (formSheet 全廃、`(modals)/watering-day-detail` 経由)
+- **過去経緯** (Phase G 着手前): `@gorhom/bottom-sheet` v5.2.13 → Phase G で廃止 (ADR-0024 / Issue #475 close 済)
 - ヒートマップセルをタップ → 下から シート がせり上がる（画面遷移なし、シニア UX◎）
 - シート内容:
   - 日付（"2026年4月15日 (水)"）
