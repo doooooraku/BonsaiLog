@@ -88,6 +88,16 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'Issue #510 Phase 2 (bonsai-detail 他タブ R-25 評価) / detail-screens.jsx BonsaiDetailScreen 作業予定タブ / app/(tabs)/bonsai/[id]/index.tsx の activeTab=timeline 状態 / mockups v1.0。前提: bonsai-detail.yml と同経路 + 末尾で e2e_detail_tab_timeline tap で切替、testID 経由で 2 回反復 2/2 PASS。',
   },
+  'species-picker': {
+    id: 'species-picker',
+    description: '樹種選択 modal (ADR-0024 Notes Amended 2026-05-15 で formSheet → modal 化)',
+    appFlow: 'maestro/flows/ui-diff/species-picker.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="03b 樹種を選ぶ"]',
+    mockupFile: 'species-picker.png',
+    notes:
+      'ADR-0024 Notes Amended 2026-05-15 / SpeciesPickerScreen / app/(modals)/species-picker.tsx (modal、formSheet 全廃) / mockups v1.0。前提: 盆栽タブ Empty CTA → BonsaiCreate → 樹種 row tap で modal 表示、Issue #522 完全解消。',
+  },
   'work-picker': {
     id: 'work-picker',
     description:

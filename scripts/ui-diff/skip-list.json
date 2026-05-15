@@ -195,6 +195,21 @@
       "reevalIteration": "2/2"
     },
     {
+      "flow": "species-picker",
+      "level": 2,
+      "rmse": 28000,
+      "achieved_at": "2026-05-15T23:54:00Z",
+      "rmseNormalized": 0.43,
+      "artifact": "scripts/ui-diff/out/20260515-2354/",
+      "rationale": "ADR-0024 Notes Amended 2026-05-15 で formSheet → modal 化、Issue #522 完全解消。BonsaiCreate → 樹種 row tap → species-picker (modal) capture。",
+      "judgedBy": "Phase B (2026-05-15)",
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-15T23:54:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260515-2354/",
+      "reevalRationale": "R-25 評価通過 (ADR-0024 Notes Amended 2026-05-15 で formSheet 全廃 → modal 一本化、Issue #522 完全解消)。タブ構成 (modal、タブなし) ✅、セクション構成 (Header「← 樹種を選ぶ ⚙」 + 「樹種」 section + 「樹種を検索...」 input + 種類リスト + 未選択 row) ✅、UI 種別 (縦並びリスト) ✅、スクロール範囲 (全画面 scroll) ✅。残差: (1) 種類リスト件数差 (mockup 9 種 / 実機 1 件 seed 空、許容)、(2) Header「⚙」 (実機のみ、軽微)。Issue #522 (modal→formSheet capture 制約) は本 ADR 改訂で完全消失 (formSheet 不在で構造的に問題発生不能)。",
+      "reevalIteration": "1/1 (ADR-0024 Notes Amended 検証)"
+    },
+    {
       "flow": "onboarding-language",
       "level": 2,
       "rmse": 25000,
