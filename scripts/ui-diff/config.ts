@@ -46,6 +46,17 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §Notes §画面マップ / ADR-0018 (オンボ統合フロー、Welcome 文言採用) / screens.jsx WelcomeScreen / app/onboarding/welcome.tsx / mockups v1.0 (PR #269、ADR-0021 Notes Amended で OpenDesign 出力を比較対象として参照)。前提: アプリ onboarding.completed=false 状態 (新規インストール / 「チュートリアルを再表示」reset 済)。',
   },
+  'onboarding-language': {
+    id: 'onboarding-language',
+    description:
+      'オンボーディング 言語選択画面 (Welcome → 「はじめる」 tap で表示、19 言語 picker)',
+    appFlow: 'maestro/flows/ui-diff/onboarding-language.yml',
+    designHtml: '01-Onboarding.html',
+    designSelector: '[data-screen-label="03 言語"]',
+    mockupFile: 'onboarding-language-01.png',
+    notes:
+      'ADR-0018 / app/onboarding/language.tsx / mockups v1.0。前提: Welcome 完了後の言語選択画面、testID e2e_onboarding_lang_ja + e2e_onboarding_lang_next で可視待ち。',
+  },
   'bonsai-detail': {
     id: 'bonsai-detail',
     description:

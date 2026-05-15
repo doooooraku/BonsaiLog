@@ -1,0 +1,47 @@
+## UI diff capture: onboarding-language
+##
+## ADR-0018 Onboarding 6 画面の 1 つ (LanguagePicker)
+## launchApp clearState → Welcome → 「はじめる」 tap → 言語選択画面 capture
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: onboarding-language'
+tags:
+  - ui-diff
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 15000
+
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Welcome 画面 → 「はじめる」 tap → 言語選択画面
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 60000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 言語選択画面到達確認 (capture 対象)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_next'
+    timeout: 10000
+
+- waitForAnimationToEnd:
+    timeout: 5000
