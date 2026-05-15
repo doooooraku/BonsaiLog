@@ -134,6 +134,10 @@ export default function RootLayout() {
           {/* fix/247 (post-ADR-0020): Paywall は自前 Header を持つので Stack header 非表示。
               modal presentation で × タップ時に history が空でも自然に閉じられる。 */}
           <Stack.Screen name="pro" options={{ headerShown: false, presentation: 'modal' }} />
+          {/* Issue #507: (modals) group の root Stack 登録漏れ修正。
+              expo-router で group route が root Stack に未登録だと default header が「(modals)」 を表示する。
+              (modals)/_layout.tsx の child Stack で各 modal の title 制御 (例: bonsai-new → 「盆栽を登録」)。 */}
+          <Stack.Screen name="(modals)" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style={effectiveScheme === 'dark' ? 'light' : 'dark'} />
       </ThemeProvider>
