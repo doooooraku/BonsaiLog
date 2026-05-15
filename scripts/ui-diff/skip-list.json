@@ -39,9 +39,9 @@
       "needsReeval": false,
       "reevalPassedAt": "2026-05-13T03:38:51Z",
       "reevalArtifact": "scripts/ui-diff/out/20260513-1237/",
-      "reevalRationale": "PR #493 (Phase G4 part 2、@gorhom BottomSheet → presentation: 'modal') 後の再キャプチャで Claude Read 構造系 4 項目チェック通過。タブ構成 (modal、タブなし) ✅、セクション構成 (写真 + 名前 + 樹種 + 樹形 + 取得日 + 樹齢 + 購入日 + タグ + メモ + 保存 主要 9 フィールド一致) ✅、UI 種別 (BottomSheet → modal、ADR-0024 Phase G4 part 2 意図的変更) ✅、スクロール範囲 (modal 全画面内 scroll、mockup sheet 内 scroll より範囲拡大) ✅。残差: (1) header に「(modals)」 group route 名誤表示 (Stack.Screen title option 反映されず、Issue #507 で別追跡)、(2) クローズボタン × → ← (modal 慣行で許容)、(3) 保存ボタン位置 header 右 → footer 固定 (PR #377 意図的)。Issue #507 (bug) は本 reeval 通過と独立、別 PR で対処予定。",
+      "reevalRationale": "PR #493 (Phase G4 part 2、@gorhom BottomSheet → presentation: 'modal') + Issue #507 修正後の再キャプチャで Claude Read 構造系 4 項目チェック通過。タブ構成 (modal、タブなし) ✅、セクション構成 (Header「盆栽を登録」 + 写真 + 名前 + 樹種 + 樹形 + 取得日 + 樹齢 + 購入日 + タグ + メモ + 保存 主要 10 要素一致) ✅、UI 種別 (BottomSheet → modal、ADR-0024 Phase G4 part 2 意図的変更) ✅、スクロール範囲 (modal 全画面内 scroll、mockup sheet 内 scroll より範囲拡大) ✅。残差: (1) header text「盆栽を登録」 vs mockup「新しい盆栽を登録」 (微差、許容)、(2) クローズボタン × → ← (modal 慣行で許容)、(3) 保存ボタン位置 header 右 → footer 固定 (PR #377 意図的)。**Issue #507 解消** (artifact: scripts/ui-diff/out/20260515-2031/、app/_layout.tsx に <Stack.Screen name=\"(modals)\" headerShown:false /> 追加で root Stack header 非表示 → (modals)/_layout.tsx 内部 Stack header「盆栽を登録」 が正しく表示)。",
       "reevalIteration": "2/2",
-      "reevalTrackingIssue": 507
+      "reevalArtifactLatest": "scripts/ui-diff/out/20260515-2031/"
     },
     {
       "flow": "look-back-tab",
