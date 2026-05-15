@@ -50,8 +50,7 @@ tags:
 
 # UMP Privacy Options Form (system-level dialog) または
 # 要件外リージョンの Alert がモーダル表示される
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # 戻る → Settings に復帰
 - back:

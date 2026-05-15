@@ -20,8 +20,7 @@ tags:
 # Home に到達するまでに UMP フォームが OS overlay として出る。
 # Maestro view 階層外なので、フォーム上の「Consent / Manage Options」が
 # 見えるかをタイミング確認 → タップで進める。
-- waitForAnimationToEnd:
-    timeout: 8000
+- waitForAnimationToEnd
 
 # UMP 同意フォームの「同意」「Consent」「Manage Options」相当ラベルを
 # 検出 (UMP は Google 提供の HTML フォーム、文言は地域依存)

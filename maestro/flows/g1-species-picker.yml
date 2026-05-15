@@ -23,13 +23,11 @@ appId: 'com.doooooraku.bonsailog'
     text: 'http://localhost:8081'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 15000
+- waitForAnimationToEnd
 
 # Expo Dev Client Continue dialog 自動 dismiss (back キーで dialog 外)
 - pressKey: 'Back'
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Welcome → 「はじめる」 tap
 - extendedWaitUntil:
@@ -39,8 +37,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_onboarding_welcome_cta'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Language → ja 選択 → next
 - extendedWaitUntil:
@@ -50,45 +47,38 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_onboarding_lang_ja'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_lang_next'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Tut1-5 全 skip
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut1'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut2'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut3'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut4'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut5'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # 盆栽タブ empty 状態の CTA tap → BonsaiCreate
 - extendedWaitUntil:
@@ -98,15 +88,13 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_home_empty_cta'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # 樹種選択 row tap
 - tapOn:
     id: 'e2e_bonsai_create_species_pick'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # species-picker formSheet 表示確認
 # (clearState 後で species DB 空のため、「未選択」 row のみで動作検証)
@@ -117,8 +105,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_species_option_none'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # router.back() で盆栽タブ空 state に戻る (BonsaiCreate も自動 dismiss、空 CTA 再表示で動作確認)
 - assertVisible:

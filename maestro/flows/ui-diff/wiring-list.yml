@@ -29,12 +29,10 @@ tags:
     text: 'http://localhost:8081'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 15000
+- waitForAnimationToEnd
 
 - pressKey: 'Back'
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Welcome → 「はじめる」
 - extendedWaitUntil:
@@ -44,8 +42,7 @@ tags:
 - tapOn:
     id: 'e2e_onboarding_welcome_cta'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Language → ja → next
 - extendedWaitUntil:
@@ -55,45 +52,38 @@ tags:
 - tapOn:
     id: 'e2e_onboarding_lang_ja'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_lang_next'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Tut1-5 全 skip
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut1'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut2'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut3'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut4'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut5'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # 盆栽タブ Empty CTA visible 確認
 - extendedWaitUntil:
@@ -105,8 +95,7 @@ tags:
 - tapOn:
     id: 'e2e_tab_settings'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # DEV seed button scroll + tap
 - scrollUntilVisible:
@@ -118,23 +107,20 @@ tags:
 - tapOn:
     id: 'e2e_dev_seed_button'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # Alert dismiss (OS 標準 dialog、R-31 例外)
 - tapOn:
     text: 'OK'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # ふりかえりタブ tap (testID 経由、PR #462 で plan-tab の e2e_plan_open_wiring link 削除済、
 # 現経路は look-back hub の e2e_look_back_card_wiring 経由)
 - tapOn:
     id: 'e2e_tab_look_back'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # CareHub Hub 画面 visible
 - extendedWaitUntil:
@@ -146,8 +132,7 @@ tags:
 - tapOn:
     id: 'e2e_look_back_card_wiring'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # 針金がけ一覧画面表示確認
 - extendedWaitUntil:
@@ -155,5 +140,4 @@ tags:
       id: 'e2e_wiring_list_screen'
     timeout: 30000
 
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd

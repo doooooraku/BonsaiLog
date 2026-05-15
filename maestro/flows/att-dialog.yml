@@ -22,8 +22,7 @@ tags:
 # Maestro は OS dialog を直接 detect できないため、
 # 操作可能な「Allow / Don't Allow」ボタンが出るまで
 # 短めの sleep でタイミング確認。
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # OS 上の ATT ダイアログを「Allow Tracking」で許可
 - runFlow:
