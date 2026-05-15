@@ -26,19 +26,16 @@ appId: 'com.doooooraku.bonsailog'
     text: 'http://localhost:8081'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 15000
+- waitForAnimationToEnd
 
 # Expo Dev Client Continue dialog 自動 dismiss (text tap + pressKey 両方で確実)
 - tapOn:
     text: 'Continue'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - pressKey: 'Back'
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Welcome → 「はじめる」 tap
 - extendedWaitUntil:
@@ -48,8 +45,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_onboarding_welcome_cta'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Language → ja → next
 - extendedWaitUntil:
@@ -59,45 +55,38 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_onboarding_lang_ja'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_lang_next'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Tut1-5 全 skip
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut1'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut2'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut3'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut4'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut5'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # 盆栽タブ到達確認 (empty CTA 可視で判定)
 - extendedWaitUntil:
@@ -109,8 +98,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_tab_settings'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # seedTestData button は画面下にあるため scrollUntilVisible で確実に到達
 # visibilityPercentage: 50 で一部画面内なら OK (100% だと bottom safe area で届かず)
@@ -123,23 +111,20 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_dev_seed_button'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # Alert OK dismiss
 - tapOn:
     text: 'OK'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # 盆栽タブへ戻る (testID 経由)
 - tapOn:
     id: 'e2e_tab_bonsai'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # 1 件目の盆栽 (お師匠の真柏) が seedTestData の DB write + reload 後に visible になるまで待つ
 - extendedWaitUntil:
@@ -149,8 +134,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     text: 'お師匠の真柏'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # 詳細画面で作業履歴タブが default 表示、緑 FAB tap
 - extendedWaitUntil:
@@ -160,8 +144,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_history_fab'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # work-picker formSheet 表示確認
 - assertVisible:
@@ -173,8 +156,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_work_picker_watering'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # 詳細画面の履歴タブ FAB 再表示で動作確認 (work-picker → WorkLogConfirmSheet 自動展開予定だが本 flow では FAB 可視で OK)
 - assertVisible:

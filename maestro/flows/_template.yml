@@ -30,14 +30,12 @@ appId: 'com.doooooraku.bonsailog'
     text: 'http://localhost:8081'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 10000
+- waitForAnimationToEnd
 
 # Expo Dev Client Continue dialog 自動 dismiss (Back キー、毎回必須)
 # 注: tapOn: text: 'Continue' は Developer Menu を起動するため絶対 NG。
 - pressKey: 'Back'
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 
 # bundle load 完了待ち (起点画面の testID を assert)
 # 例: 盆栽タブ empty 状態なら 'e2e_home_empty_cta'、list 状態なら 'e2e_bonsai_home_list'

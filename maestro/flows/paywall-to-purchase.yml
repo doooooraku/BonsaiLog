@@ -88,8 +88,7 @@ tags:
 
 # OS Alert がモーダルで出る (文言は i18n 依存のため文字列マッチは省略)
 # Maestro の Alert 検出は PRD 別途
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 - back:
     label: 'Settings へ戻る'

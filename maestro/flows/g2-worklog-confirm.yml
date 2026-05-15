@@ -26,19 +26,16 @@ appId: 'com.doooooraku.bonsailog'
     text: 'http://localhost:8081'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 15000
+- waitForAnimationToEnd
 
 # Continue dialog dismiss (text tap + pressKey 両方で確実)
 - tapOn:
     text: 'Continue'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - pressKey: 'Back'
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Welcome → 「はじめる」 tap
 - extendedWaitUntil:
@@ -48,8 +45,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_onboarding_welcome_cta'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Language → ja → next
 - extendedWaitUntil:
@@ -59,45 +55,38 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_onboarding_lang_ja'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_lang_next'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Tut1-5 全 skip
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut1'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut2'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut3'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut4'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut5'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # 盆栽タブ到達確認
 - extendedWaitUntil:
@@ -109,8 +98,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_tab_settings'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 - scrollUntilVisible:
     element:
@@ -121,22 +109,19 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_dev_seed_button'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 - tapOn:
     text: 'OK'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # 盆栽タブへ戻る → お師匠の真柏 (created_at desc 順で top) tap → 詳細画面
 - tapOn:
     id: 'e2e_tab_bonsai'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 - extendedWaitUntil:
     visible:
@@ -145,8 +130,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     text: 'お師匠の真柏'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # 詳細画面 履歴 FAB tap → work-picker formSheet
 - extendedWaitUntil:
@@ -156,8 +140,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_history_fab'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 - assertVisible:
     id: 'e2e_work_picker_screen'
@@ -166,8 +149,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_work_picker_watering'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # work-log-confirm formSheet 表示確認
 - extendedWaitUntil:
@@ -181,8 +163,7 @@ appId: 'com.doooooraku.bonsailog'
 - tapOn:
     id: 'e2e_work_log_save'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # 詳細画面の履歴 FAB が再表示で動作確認 (work-log-confirm 閉じ + persistEventWithPayload 完了)
 - extendedWaitUntil:

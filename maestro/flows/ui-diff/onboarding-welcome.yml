@@ -30,13 +30,11 @@ tags:
     text: 'http://localhost:8081'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 15000
+- waitForAnimationToEnd
 
 # Expo Dev Client Continue dialog 自動 dismiss (back キー)
 - pressKey: 'Back'
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Welcome 画面到達 (clearState で onboarding.completed=false、Welcome 自動表示)
 - extendedWaitUntil:
@@ -45,5 +43,4 @@ tags:
     timeout: 60000
 
 # 価値訴求 3 件のアニメ / レイアウト確定を待つ
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd

@@ -29,13 +29,11 @@ tags:
     text: 'http://localhost:8081'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 15000
+- waitForAnimationToEnd
 
 # Continue dialog 自動 dismiss
 - pressKey: 'Back'
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Welcome → 「はじめる」
 - extendedWaitUntil:
@@ -45,8 +43,7 @@ tags:
 - tapOn:
     id: 'e2e_onboarding_welcome_cta'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Language → ja → next
 - extendedWaitUntil:
@@ -56,45 +53,38 @@ tags:
 - tapOn:
     id: 'e2e_onboarding_lang_ja'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_lang_next'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Onboarding Tut1-5 全 skip
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut1'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut2'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut3'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut4'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut5'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # 盆栽タブ Empty CTA visible 確認
 - extendedWaitUntil:
@@ -106,8 +96,7 @@ tags:
 - tapOn:
     id: 'e2e_tab_settings'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # 設定画面 visible
 - extendedWaitUntil:
@@ -125,8 +114,7 @@ tags:
 - tapOn:
     id: 'e2e_open_paywall'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 # Paywall 画面表示確認
 - extendedWaitUntil:
@@ -134,5 +122,4 @@ tags:
       id: 'e2e_paywall_screen'
     timeout: 30000
 
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd

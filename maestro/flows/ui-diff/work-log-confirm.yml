@@ -16,12 +16,10 @@ tags:
     text: 'http://localhost:8081'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 15000
+- waitForAnimationToEnd
 
 - pressKey: 'Back'
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 - extendedWaitUntil:
     visible:
@@ -30,8 +28,7 @@ tags:
 - tapOn:
     id: 'e2e_onboarding_welcome_cta'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 - extendedWaitUntil:
     visible:
@@ -40,44 +37,37 @@ tags:
 - tapOn:
     id: 'e2e_onboarding_lang_ja'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_lang_next'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut1'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut2'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut3'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut4'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 2000
+- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut5'
     retryTapIfNoChange: true
     optional: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 - extendedWaitUntil:
     visible:
@@ -87,8 +77,7 @@ tags:
 - tapOn:
     id: 'e2e_tab_settings'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 - scrollUntilVisible:
     element:
@@ -99,21 +88,18 @@ tags:
 - tapOn:
     id: 'e2e_dev_seed_button'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 - tapOn:
     text: 'OK'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 - tapOn:
     id: 'e2e_tab_bonsai'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 3000
+- waitForAnimationToEnd
 
 - extendedWaitUntil:
     visible:
@@ -122,8 +108,7 @@ tags:
 - tapOn:
     text: 'お師匠の真柏'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 - extendedWaitUntil:
     visible:
@@ -132,8 +117,7 @@ tags:
 - tapOn:
     id: 'e2e_history_fab'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # work-picker formSheet 表示確認 → 水やり tap → work-log-confirm formSheet
 - extendedWaitUntil:
@@ -143,8 +127,7 @@ tags:
 - tapOn:
     id: 'e2e_work_picker_watering'
     retryTapIfNoChange: true
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
 
 # work-log-confirm formSheet 表示確認 (capture 対象)
 - extendedWaitUntil:
@@ -152,5 +135,4 @@ tags:
       id: 'e2e_work_log_confirm_screen'
     timeout: 30000
 
-- waitForAnimationToEnd:
-    timeout: 5000
+- waitForAnimationToEnd
