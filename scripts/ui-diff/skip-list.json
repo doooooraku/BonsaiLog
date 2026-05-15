@@ -180,6 +180,21 @@
       "reevalRationale": "PR #442 構造系 4 項目チェックで再評価通過 (PR #426 通知マスタートグル 2 行構造反映後の再キャプチャ)。タブ構成 (4 タブ) ✅、セクション構成 (アカウント + 表示 言語/テーマ + 通知設定 [通知設定 Switch + 通知の時間帯 07:00 ›] **2 行** + アーカイブ + エクスポート) ✅、UI 種別 (リスト + white card + section header) ✅、スクロール範囲 (全画面スクロール可) ✅。残差は section header 文言差 (実機「アカウント」/mockup「アカウント・プラン」、「通知設定」/「通知」) と通知の時間帯動的計算値 (state 違い、機能 OK)。構造的整合性は完全一致。"
     },
     {
+      "flow": "work-picker",
+      "level": 2,
+      "rmse": 27500,
+      "achieved_at": "2026-05-15T21:11:00Z",
+      "rmseNormalized": 0.42,
+      "artifact": "scripts/ui-diff/out/20260515-2111/",
+      "rationale": "Sess 2 新規評価 (ADR-0024 g2 PoC flow 転用)。bonsai detail → 履歴タブ FAB → work-picker (formSheet、modal 親なし)。Issue #522 影響なし確認。",
+      "judgedBy": "Sess2-3 (2026-05-15)",
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-15T21:11:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260515-2111/",
+      "reevalRationale": "Sess 2 R-25 評価通過。タブ構成 (formSheet、タブなし) ✅、セクション構成 (Header「作業を選ぶ」 + title「作業を記録」 + 盆栽名 + 12 work grid) ✅、UI 種別 (formSheet 縦並び grid) ✅、スクロール範囲 (全画面 scroll) ✅。残差: 文言差 (mockup「防除/葉刈り/葉抜き/芽摘み」 vs 実機「消毒/葉の予防/害虫対策/全葉刈/芽かき」、盆栽業界用語同義で許容)。構造的整合性は完全一致。Issue #522 (modal→formSheet capture 制約) は本 flow 影響なし (modal 親なし)。",
+      "reevalIteration": "2/2"
+    },
+    {
       "flow": "home-bulk-sched-date",
       "level": 2,
       "rmse": 25500,

@@ -77,6 +77,17 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'Issue #510 Phase 2 (bonsai-detail 他タブ R-25 評価) / detail-screens.jsx BonsaiDetailScreen 作業予定タブ / app/(tabs)/bonsai/[id]/index.tsx の activeTab=timeline 状態 / mockups v1.0。前提: bonsai-detail.yml と同経路 + 末尾で e2e_detail_tab_timeline tap で切替、testID 経由で 2 回反復 2/2 PASS。',
   },
+  'work-picker': {
+    id: 'work-picker',
+    description:
+      '作業選択 formSheet (bonsai detail 履歴タブ FAB tap で表示、ADR-0024 g2 PoC flow 転用)',
+    appFlow: 'maestro/flows/ui-diff/work-picker.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="04 作業を選ぶ"]',
+    mockupFile: 'work-picker-01.png',
+    notes:
+      'ADR-0024 g2 / WorkPickerScreen / app/(modals)/work-picker.tsx (formSheet、modal 親なし、Issue #522 影響なし想定) / mockups v1.0。前提: bonsai detail → 履歴タブ FAB tap で formSheet 表示、testID e2e_work_picker_screen + e2e_work_picker_grid で可視待ち。',
+  },
   'plan-tab': {
     id: 'plan-tab',
     description:
