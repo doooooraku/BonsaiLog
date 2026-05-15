@@ -248,3 +248,80 @@
 - **根拠**: 2026-05-12 セッションで Phase G (@gorhom 全廃) 設計時、過去 PR #404/#415 で `waitForAnimationToEnd` 追加実装も `home-bulk-sched-date` の Maestro skip が解消せず永続化した経緯あり。実証なしに移行すると同じ失敗を繰り返すリスクが高い。
 - **自動化**: 本 ADR Phase G 完了後に lint rule 起票 (PR タイトルに `@gorhom`/`detox`/`maestro` 等 + `remove`/`replace` を含む場合、ADR 先行原則 + PoC 5/5 結果リンクを必須化)。
 ```
+
+## Notes Amended (2026-05-15): formSheet 全廃 → modal 化 (Decision 改訂、シンプル一本化)
+
+### 改訂内容
+
+2026-05-15 後半 ultrathink 議論セッションで Decision §3-§5 を改訂:
+
+- **Before** (旧 Decision): `(modals)` 配下を **`presentation: 'formSheet'` + sheetAllowedDetents [0.5, 1]** + `contentStyle: { height: '100%' }` 統一、bonsai-new のみ `presentation: 'modal'`
+- **After** (新 Decision): **`(modals)` 配下全 9 件 (8 formSheet + 1 modal) を `presentation: 'modal'` に統一**、formSheet 完全廃止
+
+### 改訂の決定的根拠 (1 次情報、Expo 公式 docs 2026-04-02 更新版)
+
+[Expo Router Modals docs](https://docs.expo.dev/router/advanced/modals/) で公式仕様判明:
+
+> **`presentation: 'modal'` is iOS-only**. On Android, it renders as a regular screen. Sheets (`formSheet`) work consistently across both platforms.
+
+- **Android**: `modal` = regular screen (Stack push と同じ全画面遷移)、`formSheet` = sheet (sheetAllowedDetents 依存)
+- **iOS**: `modal` = card-style modal (下から立ち上がる)、`formSheet` = sheet
+- → **本プロジェクトは Android 主開発**、modal と formSheet の Android UX 差は **極小** (内部 Window 管理だけ違う)
+
+### 旧 Decision Driver 2 (Apple Health 風 BottomSheet シニア UX) の前提誤認
+
+旧 Decision Driver 2 「シニア UX (Apple Health 風 BottomSheet) を維持」 は **iOS only の挙動を Android にも当てはまる前提で議論されていた**。実際:
+
+- Android の `formSheet` も `modal` も「全画面遷移風」 として動作 (内部実装違いだけ)
+- Apple Health 風 UI = iOS only 挙動 = 高橋ペルソナ (Android シニア) には **元から影響なし**
+- iOS ユーザー (Marcus / ライト) で sheet → modal の微変化はあるが **Apple HIG (Human Interface Guidelines) で fullScreen modal は許容**、業界標準で多数事例 (Twitter / Instagram の create post 等)
+
+### 副次効果 (formSheet 全廃のメリット)
+
+1. **Issue #522 完全解消** ── BonsaiCreate (modal) → species-picker (formSheet) の Android screencap 取得不能問題が消える (modal → modal で全件 capture OK)
+2. **expo-router formSheet 既知 bug 群 全回避** ── Issue #33092 / #42066 / #42904 / #3181 / #35616
+3. **設計シンプル化** ── modal 一本、開発者 onboarding 容易
+4. **Maestro 安定性向上** ── formSheet flaky 報告なくなる
+5. **ui-diff capture 全件 OK** ── 整合判定 41 件分母維持、永続 skip 不要
+
+### 4 ペルソナ評価 (本 Notes Amended)
+
+| 評価軸           | 高橋 62 (Android シニア) | Marcus 35 (iOS)                         | 盆栽園プロ (Android 業務) | ライト (両方) |
+| ---------------- | ------------------------ | --------------------------------------- | ------------------------- | ------------- |
+| 樹種選択 UX 変化 | ◎ 変化なし               | △ sheet → modal 微変化 (Apple HIG 許容) | ◎ 変化なし                | △             |
+| 操作速度         | ◎                        | ◎                                       | ◎                         | ◎             |
+| Issue #522 解消  | ◎                        | ◎                                       | ◎                         | ◎             |
+| 設計シンプル化   | ◎                        | ◎                                       | ◎                         | ◎             |
+| Maestro 安定性   | ◎                        | ◎                                       | ◎                         | ◎             |
+| **総合**         | **◎**                    | **○**                                   | **◎**                     | **○**         |
+
+→ 全項目 ○ 以上、✕ ゼロ (R-10 クリア)
+
+### 影響範囲 (本 Notes Amended で改訂)
+
+| 画面                | 改訂前    | 改訂後           |
+| ------------------- | --------- | ---------------- |
+| species-picker      | formSheet | **modal**        |
+| style-picker        | formSheet | **modal**        |
+| work-picker         | formSheet | **modal**        |
+| work-log-confirm    | formSheet | **modal**        |
+| bulk-work-picker    | formSheet | **modal**        |
+| bulk-log-confirm    | formSheet | **modal**        |
+| bulk-schedule-date  | formSheet | **modal**        |
+| watering-day-detail | formSheet | **modal**        |
+| bonsai-new          | modal     | modal (変化なし) |
+
+### 今後アプリ作る際の方針 (user 指示 2026-05-15)
+
+今後新規アプリ作る際も **modal 一本化** をデフォルト方針とする (シンプル イズ ベスト、コア価値機能でないところに工数かけない)。
+
+### functional_spec.md §6.2 / §7.2 整合
+
+functional_spec.md で formSheet 指定箇所 (§6.2 work-type / work-confirm、§7.2 等) も本 Notes Amended で modal に整合更新予定 (別 PR、Sess 5 候補)。
+
+### 関連
+
+- 2026-05-15 後半 ultrathink 議論セッション (Q1-Q5 a/a/a/a/a 採用)
+- Expo Router Modals docs (公式 1 次情報): https://docs.expo.dev/router/advanced/modals/
+- Issue #522 (本 Notes Amended で完全解消)
+- ADR-0024 旧 Decision §3-§5 (本 Notes Amended で改訂)
