@@ -33,6 +33,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/bonsai-tab.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="01 Home"]',
+    mockupFile: 'bonsai-tab.png',
     notes:
       'ADR-0020 §Decision §3 / home-screens.jsx HomeScreen / 4 タブ構成の起動時 redirect 先 (#249) / mockups v1.0 (PR #269、ADR-0021 Notes Amended で OpenDesign 出力を比較対象として参照)',
   },
@@ -43,6 +44,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/onboarding-welcome.yml',
     designHtml: '01-Onboarding.html',
     designSelector: '[data-screen-label="02 Welcome"]',
+    mockupFile: 'onboarding-welcome.png',
     notes:
       'ADR-0020 §Notes §画面マップ / ADR-0018 (オンボ統合フロー、Welcome 文言採用) / screens.jsx WelcomeScreen / app/onboarding/welcome.tsx / mockups v1.0 (PR #269、ADR-0021 Notes Amended で OpenDesign 出力を比較対象として参照)。前提: アプリ onboarding.completed=false 状態 (新規インストール / 「チュートリアルを再表示」reset 済)。',
   },
@@ -137,6 +139,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/plan-tab.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="10 ケア 作業予定カレンダー"]',
+    mockupFile: 'plan-tab-01.png',
     notes:
       'ADR-0020 §Notes §画面マップ row 14 / care-screens.jsx CalendarScreen / app/(tabs)/plan/index.tsx (Phase 5 整合実装済) / mockups v1.0 (PR #269、ADR-0021 Notes Amended で OpenDesign 出力を比較対象として参照)。前提: 盆栽タブ起動完了後 TabBar「予定」をタップして遷移、testID e2e_plan_screen で可視待ち。',
   },
@@ -147,6 +150,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/wiring-list.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="11 ケア 針金がけ一覧"]',
+    mockupFile: 'wiring-list.png',
     notes:
       'ADR-0020 §Notes §画面マップ row 15 (整合済) / care-screens.jsx WiringListScreen / app/(tabs)/plan/wiring.tsx / mockups v1.0 (PR #269)。前提: 盆栽タブ → 予定タブ → 針金がけ一覧リンクで遷移、testID e2e_wiring_list_screen で可視待ち。',
   },
@@ -157,6 +161,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/watering-heatmap.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="09 ケア 水やり履歴ヒートマップ"]',
+    mockupFile: 'watering-heatmap.png',
     notes:
       'ADR-0020 §Notes §画面マップ row 13 / care-screens-v2.jsx HeatmapScreen / app/(tabs)/bonsai/[id]/watering.tsx (Phase 3 SS 222921 整合実装済) / mockups v1.0 (PR #269)。前提: 盆栽タブ → 盆栽カードタップ → 詳細画面 → 水やり履歴リンク (testID e2e_open_watering_history) で遷移、testID e2e_bonsai_watering_screen で可視待ち。テスト盆栽 1 件以上必要。',
   },
@@ -167,6 +172,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/settings-tab.yml',
     designHtml: '05-Monetization.html',
     designSelector: '[data-screen-label="02 設定"]',
+    mockupFile: 'settings-tab-01.png',
     notes:
       'ADR-0020 §Notes §画面マップ row 18 / monetization-screens.jsx SettingsScreen / app/(tabs)/settings/index.tsx (Phase 7 部分整合済 PR #308/#329、本格 8 セクション分離は Issue #330) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「設定」をタップして遷移、testID e2e_settings_screen で可視待ち。データ依存なし。',
   },
@@ -177,6 +183,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/paywall.yml',
     designHtml: '05-Monetization.html',
     designSelector: '[data-screen-label="01 Paywall Modal"]',
+    mockupFile: 'paywall-01.png',
     notes:
       'ADR-0020 §Notes §画面マップ row 17 / monetization-screens.jsx PaywallScreen / src/features/pro/PaywallScreen.tsx + app/pro.tsx (薄ラッパー) / mockups v1.0 (PR #269)。前提: 盆栽タブ起動完了後 TabBar「設定」→「Proにアップグレード」(testID e2e_open_paywall) をタップして遷移、testID e2e_paywall_screen で可視待ち。R-28 ADR-0009 課金ロジック (RevenueCat 月額/年額/Lifetime) 維持厳守。',
   },
@@ -209,6 +216,7 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/home-bulk-sched-work.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="01c 一括予定・作業選択"]',
+    mockupFile: 'home-bulk-sched-work-01.png',
     notes:
       'ADR-0020 §Notes §画面マップ row 5 (HomeScreen) / care-screens-v2.jsx BulkWorkPickerSheet (mode=schedule) / src/features/event/BulkWorkPickerSheet.tsx (Phase 2 PR 実装) / mockups v1.0 (PR #269)。前提: テスト盆栽 1 件以上登録済 + 起動完了後に盆栽カード 1 件目を長押し → SelectionToolbar の「予定追加」をタップ、testID e2e_bulk_work_picker_sheet で可視待ち。',
   },
@@ -219,8 +227,21 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     appFlow: 'maestro/flows/ui-diff/home-bulk-sched-date.yml',
     designHtml: '02-Home.html',
     designSelector: '[data-screen-label="01d 一括予定・日付"]',
+    mockupFile: 'home-bulk-sched-date-01.png',
     notes:
       'ADR-0020 §Notes §画面マップ row 5 (HomeScreen) / care-screens-v2.jsx BulkScheduleDateSheet / src/features/event/BulkScheduleDateSheet.tsx (Phase 2 PR 実装) / mockups v1.0 (PR #269)。R-28 通知デフォルト OFF (principles.md v1.1 / ADR-0011 整合、mockup useState(true) は哲学逆走の残存と判断)。前提: 上記 home-bulk-sched-work から「肥料」(fertilizing) 等の作業を選択して遷移、testID e2e_bulk_schedule_date_sheet で可視待ち。calendar-grid-saturday-overflow.md (PR #318) の罠回避のため週行 + flex:1 採用。',
+  },
+  // Sess1 PR-3 (2026-05-16): 盆栽タブ長押し選択モード mockup 整合
+  'bonsai-select-mode': {
+    id: 'bonsai-select-mode',
+    description:
+      '盆栽タブ 長押し選択モード (盆栽カード長押し → ✓ チェックマーク + ヘッダ「N 件選択中 / キャンセル」 + SelectionToolbar「一括記録 / 予定追加」)',
+    appFlow: 'maestro/flows/ui-diff/bonsai-select-mode.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="01a Home 選択モード"]',
+    mockupFile: 'bonsai-select-mode.png',
+    notes:
+      'ADR-0020 §Notes §画面マップ row 5 (HomeScreen) / home-screens.jsx 選択モード相当 / app/(tabs)/bonsai/index.tsx の selectMode state + src/features/bonsai/SelectionToolbar.tsx / mockups v1.0 「01A HOME 選択モード」。前提: テスト盆栽 1 件以上 (seed 投入) + 盆栽タブで 1 件目盆栽カード長押し、testID e2e_home_selection_toolbar_schedule で可視待ち (long press は 500ms default)。',
   },
   // 本セッション Tier 2 / photo UX / 横断水やり 主要 3 flow (Phase 4)
   'bonsai-create-sheet': {
