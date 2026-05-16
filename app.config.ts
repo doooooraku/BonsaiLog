@@ -127,6 +127,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   plugins = ensurePlugin(plugins, 'expo-secure-store');
   plugins = ensurePlugin(plugins, 'expo-sqlite');
   plugins = ensurePlugin(plugins, 'expo-web-browser');
+  // expo-dev-client FAB (右上歯車 toggle) 非表示 (Sess1 PR-4、2026-05-17)
+  // ADR-0021 (ui-diff pipeline) Notes Amended: Maestro ui-diff 撮影時に dev menu overlay が
+  // 整合判定の客観性を下げるため、開発ビルドでも FAB を非表示化 (Expo 公式 GitHub Issue #44234 で導入された
+  // expo-dev-client plugin config option `showFloatingButton`)。
+  // - 3 本指タップ等の代替アクセス手段は維持 (Expo Dev Menu API、長押しでも開く)
+  // - リリースビルドでは元から FAB 非表示、本設定で開発ビルドとリリースビルドの撮影品質を一致
+  plugins = ensurePlugin(plugins, 'expo-dev-client', { showFloatingButton: false });
   // PR #186 で追加した Splash 制御プラグイン (Phase APK rebuild B-1d)
   // ADR-0020 §Notes §画面マップ row 1 整合 (B1 PR、mockup v1.0 screens.jsx SplashScreen):
   // backgroundColor=washi (#F7F3E8、BG_PRIMARY) で mockup の和紙背景に整合、

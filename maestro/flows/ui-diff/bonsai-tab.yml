@@ -1,36 +1,98 @@
 # UI diff: 盆栽タブ画面のスクリーンショット取得用
 # ADR-0021 / ADR-0020 §Decision §3 (盆栽タブ ⟷ home-screens.jsx HomeScreen)
-# 本 flow は scripts/ui-diff/capture-app.sh から呼ばれる。
-# スクショ取得自体は flow 完了後にシェル側で adb exec-out screencap で行う。
+# Sess1 PR-4 (2026-05-17): launchApp clearState + Onboarding 経由 + seed 投入 + 盆栽カード表示の新統一構造に追従
+#
+# 前提: Metro bundler 起動済 + adb reverse tcp:8081 tcp:8081
 
 appId: 'com.doooooraku.bonsailog'
 name: 'UI diff capture: bonsai-tab'
 tags:
   - ui-diff
 ---
-# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
-#    前提: 別途 Metro bundler (pnpm dev) を起動済み、`adb reverse tcp:8081 tcp:8081`
-#         で実機から WSL ポートに到達可能にしてある。
-#    NOTE: 'exp://' は実機にインストール済の Expo Go (古いバージョン) が拾ってしまうため、
-#          BonsaiLog 専用の 'bonsailog://expo-development-client/?url=...' で
-#          Dev Launcher を直接呼ぶ (Expo SDK 50+ の deep link ハンドリング)。
-- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+- launchApp:
+    clearState: true
 
-# 1.5. Expo Dev Client の初回起動 dialog を dismiss (capture-app.sh の force-stop で毎回復活)
-- runFlow:
-    when:
-      visible: 'Continue'
-    commands:
-      - tapOn: 'Continue'
-      - waitForAnimationToEnd
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
 
-# 2. ヘッダー「盆栽手帳」が表示されるまで待つ
-#    Metro 初回バンドルが 30-60 秒かかるため timeout を 60000ms に拡張。
+- pressKey: 'Back'
+- waitForAnimationToEnd
+
+# Welcome → 「はじめる」 → Language
 - extendedWaitUntil:
     visible:
-      text: '盆栽手帳'
-    timeout: 60000
-    label: 'Metro バンドル + アプリ起動完了 (初回 60s 許容)'
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 90000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
 
-# 3. リスト / フィルタ描画完了を待つ
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# tut5 (Notification) skip → ホーム
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_tut_skip_tut5'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# Home Empty 到達確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+# 設定タブ → seed 投入 (盆栽カードリスト表示のため)
+- tapOn:
+    id: 'e2e_tab_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+    visibilityPercentage: 50
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'OK'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# 盆栽タブに戻る (capture 対象画面)
+- tapOn:
+    id: 'e2e_tab_bonsai'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# 盆栽カード可視確認
+- extendedWaitUntil:
+    visible:
+      text: 'お師匠の真柏'
+    timeout: 30000
+
 - waitForAnimationToEnd

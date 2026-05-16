@@ -1,42 +1,69 @@
-# UI diff: ふりかえりタブ Hub (CareHub) のスクリーンショット取得用
-# ADR-0021 / ADR-0020 §Notes §画面マップ row 16 改訂 (CareHub Hub ⟷ care-screens.jsx CareHubScreen)
-# 対象実装: app/(tabs)/look-back/index.tsx (testID e2e_look_back_hub、T1-8c PR #362 で実装)
-# 対象モックアップ: docs/mockups/v1.0/wireframes/02-Home.html [data-screen-label="08 ふりかえり Hub"]
-#
-# ADR-0020 §Decision §7 (2026-05-10 改訂) で確定した 3 カード Hub:
-#   - 水やり履歴 (横断ヒートマップは Issue #361、現状暫定 Alert)
-#   - 針金がけ一覧 (/(tabs)/plan/wiring に遷移)
-#   - 盆栽を検索 (/(tabs)/look-back/search に遷移)
-#
-# 前提:
-#   - 別途 Metro bundler (pnpm dev) を WSL2 内で起動済み、`adb reverse tcp:8081 tcp:8081` で
-#     実機から WSL ポートに到達可能。
-#   - オンボ完了済 (起動直後に盆栽タブが表示される状態)。
-#   - データ依存なし (Hub 自体は静的 3 カード)。
+# UI diff: ふりかえりタブ Hub のスクリーンショット取得用
+# ADR-0021 / ADR-0020 §Notes §画面マップ row 16 (CareHub Hub)
+# Sess1 PR-4 (2026-05-17): Onboarding 経由 + e2e_tab_look_back tap で統一構造に追従
 
 appId: 'com.doooooraku.bonsailog'
 name: 'UI diff capture: look-back-tab'
 tags:
   - ui-diff
 ---
-# 1. Metro server (WSL の :8081) に接続したアプリ画面を直接開く
-- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+- launchApp:
+    clearState: true
 
-# 2. 起動完了 (盆栽タブの「盆栽手帳」ヘッダー) を待つ
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- pressKey: 'Back'
+- waitForAnimationToEnd
+
 - extendedWaitUntil:
     visible:
-      text: '盆栽手帳'
-    timeout: 60000
-
-# 3. TabBar の「ふりかえり」タブをタップ
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 90000
 - tapOn:
-    text: 'ふりかえり'
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
 
-# 4. CareHub Hub (testID e2e_look_back_hub) が表示されるまで待つ
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_tut_skip_tut5'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+# ふりかえりタブ tap (capture 対象)
+- tapOn:
+    id: 'e2e_tab_look_back'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
 - extendedWaitUntil:
     visible:
       id: 'e2e_look_back_hub'
     timeout: 30000
 
-# 5. 全要素描画完了を待つ
 - waitForAnimationToEnd
