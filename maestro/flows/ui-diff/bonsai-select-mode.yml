@@ -1,27 +1,28 @@
-# UI diff: 一括予定追加・作業選択 BottomSheet のスクリーンショット取得用
-# ADR-0020 §Notes §画面マップ row 5、mockup v1.0 02-Home.html `01c 一括予定・作業選択`
-# Sess1 PR-4 (2026-05-17): Onboarding 経由 + seed 投入 + 盆栽カード長押し → 予定追加
+## UI diff capture: bonsai-select-mode (Sess1 PR-3)
+##
+## ADR-0020 §Notes §画面マップ row 5 (HomeScreen) 選択モード
+## 盆栽カード長押し → 選択モード突入 + SelectionToolbar 表示 capture
+## mockup: bonsai-select-mode.png (「01A HOME 選択モード」)
+## testID: e2e_bonsai_card_{id} (動的) + e2e_home_selection_toolbar_schedule
 
 appId: 'com.doooooraku.bonsailog'
-name: 'UI diff capture: home-bulk-sched-work'
+name: 'UI diff capture: bonsai-select-mode'
 tags:
   - ui-diff
 ---
 - launchApp:
     clearState: true
 
-- runFlow:
-    when:
-      visible:
-        text: 'http://localhost:8081'
-    commands:
-      - tapOn:
-          text: 'http://localhost:8081'
-          retryTapIfNoChange: true
-      - waitForAnimationToEnd
-      - pressKey: 'Back'
-      - waitForAnimationToEnd
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
 
+- pressKey: 'Back'
+- waitForAnimationToEnd
+
+# Welcome → 「はじめる」 → Language
 - extendedWaitUntil:
     visible:
       id: 'e2e_onboarding_welcome_cta'
@@ -31,6 +32,7 @@ tags:
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
+# Language ja 選択 → Next → tut5
 - extendedWaitUntil:
     visible:
       id: 'e2e_onboarding_lang_ja'
@@ -44,6 +46,7 @@ tags:
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
+# tut5 (Notification) skip → ホーム
 - extendedWaitUntil:
     visible:
       id: 'e2e_onboarding_tut_skip_tut5'
@@ -53,12 +56,13 @@ tags:
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
+# 盆栽タブ Empty 状態到達確認
 - extendedWaitUntil:
     visible:
       id: 'e2e_home_empty_cta'
     timeout: 30000
 
-# 設定タブ → seed 投入 (盆栽カード必要)
+# 設定タブ → seed 投入
 - tapOn:
     id: 'e2e_tab_settings'
     retryTapIfNoChange: true
@@ -81,7 +85,7 @@ tags:
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
-# 盆栽タブ → 1 件目カード長押し → SelectionToolbar → 予定追加
+# 盆栽タブ → 盆栽カード長押し → 選択モード突入
 - tapOn:
     id: 'e2e_tab_bonsai'
     retryTapIfNoChange: true
@@ -96,15 +100,10 @@ tags:
 
 - waitForAnimationToEnd
 
-- tapOn:
-    id: 'e2e_home_selection_toolbar_schedule'
-    retryTapIfNoChange: true
-- waitForAnimationToEnd
-
-# BulkWorkPickerScreen 表示 (capture 対象、ADR-0024 Phase G で Sheet→Screen 化、Sess2 PR-4 で rename 漏れ修正)
+# SelectionToolbar 表示確認 (capture 対象、action なし)
 - extendedWaitUntil:
     visible:
-      id: 'e2e_bulk_work_picker_screen'
+      id: 'e2e_home_selection_toolbar_schedule'
     timeout: 10000
 
 - waitForAnimationToEnd

@@ -25,15 +25,17 @@ tags:
 - launchApp:
     clearState: true
 
-- tapOn:
-    text: 'http://localhost:8081'
-    optional: true
-    retryTapIfNoChange: true
-- waitForAnimationToEnd
-
-# Continue dialog 自動 dismiss
-- pressKey: 'Back'
-- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: 'http://localhost:8081'
+    commands:
+      - tapOn:
+          text: 'http://localhost:8081'
+          retryTapIfNoChange: true
+      - waitForAnimationToEnd
+      - pressKey: 'Back'
+      - waitForAnimationToEnd
 
 # Onboarding Welcome → 「はじめる」
 - extendedWaitUntil:

@@ -38,6 +38,9 @@
       "android": {
         "buildType": "apk",
         "withoutCredentials": true
+      },
+      "env": {
+        "EXPO_PUBLIC_SEED_FORCE": "1"
       }
     },
     "preview-cloud-apk": {

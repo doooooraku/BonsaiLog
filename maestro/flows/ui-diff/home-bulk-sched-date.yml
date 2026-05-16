@@ -20,14 +20,17 @@ tags:
 - launchApp:
     clearState: true
 
-- tapOn:
-    text: 'http://localhost:8081'
-    optional: true
-    retryTapIfNoChange: true
-- waitForAnimationToEnd
-
-- pressKey: 'Back'
-- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: 'http://localhost:8081'
+    commands:
+      - tapOn:
+          text: 'http://localhost:8081'
+          retryTapIfNoChange: true
+      - waitForAnimationToEnd
+      - pressKey: 'Back'
+      - waitForAnimationToEnd
 
 - extendedWaitUntil:
     visible:
