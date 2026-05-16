@@ -10,26 +10,6 @@
       "artifact": "scripts/ui-diff/out/20260510-2343/",
       "needsHumanReview": true,
       "trackingIssue": 502
-    },
-    {
-      "flow": "onboarding-tut1",
-      "reason": "mockup HTML 不在: 実機 tut1 (機能 1 = 盆栽追加チュート) は app/onboarding/tut/[step].tsx で動的表示済 (品質十分) だが、mockup screens.jsx に Tut1Screen wireframe が存在せず、docs/mockups/v1.0/screenshots/ にも onboarding-tut1.png なし。Issue #531 で mockup HTML 作成依頼追跡中、Claude 側は mockup 完成後に再評価予定。",
-      "added_at": "2026-05-16T01:50:00Z",
-      "fail_count": 0,
-      "permanent": true,
-      "artifact": null,
-      "needsHumanReview": true,
-      "trackingIssue": 531
-    },
-    {
-      "flow": "onboarding-tut2",
-      "reason": "mockup HTML 不在: 実機 tut2 (機能 2 = 樹種登録チュート) は app/onboarding/tut/[step].tsx で動的表示済 (品質十分) だが、mockup screens.jsx に Tut2Screen wireframe が存在せず、docs/mockups/v1.0/screenshots/ にも onboarding-tut2.png なし。Issue #531 で mockup HTML 作成依頼追跡中、Claude 側は mockup 完成後に再評価予定。",
-      "added_at": "2026-05-16T01:50:00Z",
-      "fail_count": 0,
-      "permanent": true,
-      "artifact": null,
-      "needsHumanReview": true,
-      "trackingIssue": 531
     }
   ],
   "achieved": [

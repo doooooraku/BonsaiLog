@@ -562,10 +562,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportStorageLowBody:
     'ストレージ容量が不足しています。100MB 以上の空き容量を確保してから再度お試しください。',
   exportStorageLowTitle: 'ストレージ容量不足',
-  onboardingTut1Title: '最初の盆栽を追加しましょう',
-  onboardingTut1Body: 'ホーム画面の「＋」から盆栽を追加できます。写真で成長を見守りましょう。',
-  onboardingTut2Title: '樹種を登録しましょう',
-  onboardingTut2Body: '樹種を選ぶと、検索やグループ化に役立ちます。あとから変更も可能です。',
   onboardingTut3Title: '水やりや作業を記録しましょう',
   onboardingTut3Body:
     '盆栽詳細画面から水やり・施肥・針金がけを記録できます。BonsaiLog は記録だけ、判定はしません。',

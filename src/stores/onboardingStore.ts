@@ -13,7 +13,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type OnboardingStep = 'welcome' | 'language' | 'tut1' | 'tut2' | 'tut3' | 'tut4' | 'tut5';
+// ADR-0020 v1.x-2 (2026-05-16): tut1/tut2/tut3/tut4 撤去、tut5 のみ残置 (機能チュート 0 ステップ化)。
+export type OnboardingStep = 'welcome' | 'language' | 'tut5';
 
 type OnboardingState = {
   /** 全フロー完了済みなら true (= 起動時にオンボ画面を出さない)。 */

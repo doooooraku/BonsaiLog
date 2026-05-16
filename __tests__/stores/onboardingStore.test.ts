@@ -41,25 +41,23 @@ describe('useOnboardingStore', () => {
   });
 
   test('markDismissed で各 Step を dismissed に追加', () => {
-    useOnboardingStore.getState().markDismissed('tut1');
+    useOnboardingStore.getState().markDismissed('welcome');
     useOnboardingStore.getState().markDismissed('tut5');
     const s = useOnboardingStore.getState();
-    expect(s.dismissed.tut1).toBe(true);
+    expect(s.dismissed.welcome).toBe(true);
     expect(s.dismissed.tut5).toBe(true);
-    expect(s.dismissed.tut2).toBeUndefined();
+    expect(s.dismissed.language).toBeUndefined();
   });
 
-  test('resetTutorial は tut1-5 をリセット、welcome / language は保持', () => {
+  test('resetTutorial は tut5 をリセット、welcome / language は保持 (ADR-0020 v1.x-2)', () => {
     const store = useOnboardingStore.getState();
     store.markDismissed('welcome');
     store.markDismissed('language');
-    store.markDismissed('tut1');
-    store.markDismissed('tut2');
+    store.markDismissed('tut5');
     store.resetTutorial();
     const after = useOnboardingStore.getState();
     expect(after.dismissed.welcome).toBe(true);
     expect(after.dismissed.language).toBe(true);
-    expect(after.dismissed.tut1).toBeUndefined();
-    expect(after.dismissed.tut2).toBeUndefined();
+    expect(after.dismissed.tut5).toBeUndefined();
   });
 });
