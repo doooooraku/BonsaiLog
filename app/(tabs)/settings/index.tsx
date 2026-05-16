@@ -554,9 +554,12 @@ export default function SettingsScreen() {
           </Pressable>
         </SettingsSection>
 
-        {/* __DEV__ 限定: 開発者セクション (T1-4 / Issue #355、ui-diff pipeline 用テストデータ投入)。
-            production build には含まれない (Babel が __DEV__ === false で枝刈り)。 */}
-        {__DEV__ && (
+        {/* __DEV__ 限定 + ui-diff pipeline preview build 用 unlock (Sess2 PR-4、2026-05-17):
+            preview-local-apk profile では `__DEV__=false` (Release config) のため seed button が消える。
+            EXPO_PUBLIC_SEED_FORCE=1 (eas.json で preview-local-apk のみ設定) で unlock し、
+            ui-diff Maestro flow が seed 投入を実行できるようにする。
+            production build (eas.json で env 未設定) では枝刈りされ含まれない。 */}
+        {(__DEV__ || process.env.EXPO_PUBLIC_SEED_FORCE === '1') && (
           <SettingsSection title="[DEV] テストデータ" titleType="subtitle">
             <Pressable
               accessibilityRole="button"

@@ -1,79 +1,128 @@
----
 # UI diff: 盆栽編集 BottomSheet (PR #378 編集モード対応)
-# ADR-0021 / mockups v1.0 「03 新規登録 / 編集」 (create-screens.jsx CreateBonsaiScreen prefill モード)
-#
-# 前提:
-#   - 別途 Metro bundler (pnpm dev) 起動済 + adb reverse tcp:8081 tcp:8081
-#   - テスト盆栽 1 件以上登録済 (盆栽カード長押し用)
-#
-# 流れ: 起動 → 盆栽タブ → カード tap → 詳細画面 → 基本情報タブ → 編集ボタン → BonsaiCreateSheet edit モード
+# ADR-0021 / mockups v1.0 「03 新規登録 / 編集」
+# Sess1 PR-4 (2026-05-17): Onboarding 経由 + seed 投入 + カード tap → 基本情報 → 編集ボタン
 
 appId: 'com.doooooraku.bonsailog'
 name: 'UI diff capture: bonsai-detail-edit-sheet'
 tags:
   - ui-diff
 ---
-- openLink: 'bonsailog://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081'
+- launchApp:
+    clearState: true
 
-# Expo Dev Client の初回起動 dialog を dismiss (capture-app.sh の force-stop で毎回復活)
 - runFlow:
     when:
-      visible: 'Continue'
+      visible:
+        text: 'http://localhost:8081'
     commands:
-      - tapOn: 'Continue'
+      - tapOn:
+          text: 'http://localhost:8081'
+          retryTapIfNoChange: true
+      - waitForAnimationToEnd
+      - pressKey: 'Back'
       - waitForAnimationToEnd
 
 - extendedWaitUntil:
     visible:
-      text: '盆栽手帳'
-    timeout: 60000
-    label: 'Metro バンドル + 盆栽タブ表示完了 (初回 60s 許容)'
-
-# BonsaiCard リスト loading 完了待ち (フィルタタブ「すべて」表示で判定)
-- extendedWaitUntil:
-    visible:
-      text: 'すべて'
-    timeout: 30000
-    label: 'BonsaiCard リスト loading 完了 (フィルタタブ表示)'
-
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 90000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
 - waitForAnimationToEnd
 
-# 最初の盆栽カード (1 件目、updated_at 降順) を tap
-# seed 投入後の 1 件目は「お師匠の真柏」だが、テストデータが変わっても座標 tap で対応
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 30000
 - tapOn:
-    point: 50%,40%
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_tut_skip_tut5'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+# 設定タブ → seed 投入 (盆栽カード必要)
+- tapOn:
+    id: 'e2e_tab_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+    visibilityPercentage: 50
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'OK'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# 盆栽タブ → 1 件目カード tap → 詳細画面
+- tapOn:
+    id: 'e2e_tab_bonsai'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      text: 'お師匠の真柏'
+    timeout: 30000
+- tapOn:
+    text: 'お師匠の真柏'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
 
 - extendedWaitUntil:
     visible:
       text: '基本情報'
     timeout: 30000
-    label: 'Detail 画面遷移完了 (Tabs 表示)'
 
-- waitForAnimationToEnd
-
-# 基本情報タブをタップ (現在 history タブ active)
+# 基本情報タブ tap
 - tapOn:
     text: '基本情報'
-
+    retryTapIfNoChange: true
 - waitForAnimationToEnd
 
-# 「編集」ボタンを tap (testID e2e_detail_basic_edit_button、PR #378 で配線済)
-# 基本情報タブ末尾 (画面下端) にあるため scrollUntilVisible で可視化してから tap
+# 編集ボタン (画面下端) を scrollUntilVisible で可視化してから tap
 - scrollUntilVisible:
     element:
       id: 'e2e_detail_basic_edit_button'
     direction: DOWN
     timeout: 10000
-    speed: 40
-
+    visibilityPercentage: 50
 - tapOn:
     id: 'e2e_detail_basic_edit_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
 
-# BottomSheet edit モード起動 → 名前フィールドが prefill 済で表示されるまで待つ
+# BonsaiCreateSheet edit モード起動 (capture 対象)
 - extendedWaitUntil:
     visible:
       text: '名前'
     timeout: 15000
-    label: 'BonsaiCreateSheet edit モード開く (prefill 済 名前フィールド表示)'
 
 - waitForAnimationToEnd

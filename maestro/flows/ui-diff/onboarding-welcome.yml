@@ -26,15 +26,19 @@ tags:
 - launchApp:
     clearState: true
 
-- tapOn:
-    text: 'http://localhost:8081'
-    optional: true
-    retryTapIfNoChange: true
-- waitForAnimationToEnd
-
-# Expo Dev Client Continue dialog 自動 dismiss (back キー)
-- pressKey: 'Back'
-- waitForAnimationToEnd
+# Dev Client URL prompt は dev build でのみ表示。preview build では存在しないので conditional。
+# Back キーは preview build では app exit を起こすため、必ず URL prompt visible 時だけ実行する。
+- runFlow:
+    when:
+      visible:
+        text: 'http://localhost:8081'
+    commands:
+      - tapOn:
+          text: 'http://localhost:8081'
+          retryTapIfNoChange: true
+      - waitForAnimationToEnd
+      - pressKey: 'Back'
+      - waitForAnimationToEnd
 
 # Welcome 画面到達 (clearState で onboarding.completed=false、Welcome 自動表示)
 - extendedWaitUntil:

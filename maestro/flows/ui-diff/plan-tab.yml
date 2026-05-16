@@ -23,14 +23,17 @@ tags:
 - launchApp:
     clearState: true
 
-- tapOn:
-    text: 'http://localhost:8081'
-    optional: true
-    retryTapIfNoChange: true
-- waitForAnimationToEnd
-
-- pressKey: 'Back'
-- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: 'http://localhost:8081'
+    commands:
+      - tapOn:
+          text: 'http://localhost:8081'
+          retryTapIfNoChange: true
+      - waitForAnimationToEnd
+      - pressKey: 'Back'
+      - waitForAnimationToEnd
 
 # Onboarding Welcome
 - extendedWaitUntil:
@@ -57,26 +60,6 @@ tags:
 - waitForAnimationToEnd
 
 # Tut1-5 skip
-- tapOn:
-    id: 'e2e_onboarding_tut_skip_tut1'
-    retryTapIfNoChange: true
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    id: 'e2e_onboarding_tut_skip_tut2'
-    retryTapIfNoChange: true
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    id: 'e2e_onboarding_tut_skip_tut3'
-    retryTapIfNoChange: true
-    optional: true
-- waitForAnimationToEnd
-- tapOn:
-    id: 'e2e_onboarding_tut_skip_tut4'
-    retryTapIfNoChange: true
-    optional: true
-- waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut5'
     retryTapIfNoChange: true
