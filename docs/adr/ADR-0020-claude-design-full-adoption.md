@@ -36,7 +36,7 @@
   7. **探すタブ = Claude Design `care-screens.jsx SearchScreen`** (検索履歴 + chip + マッチハイライト、既存 `app/search.tsx` 廃止統合)
   8. **設定タブ = 既存 `app/settings.tsx` を `app/(tabs)/settings/index.tsx` に移行**、Claude Design `monetization-screens.jsx Settings*` 整合
   9. **PaywallScreen = Claude Design `monetization-screens.jsx PaywallScreen`** (UI のみ、課金ロジック ADR-0009 維持)
-  10. **Onboarding 8 → 6 画面** (Claude Design `screens.jsx`: Splash + Welcome + LanguagePicker + Notification + 機能 2、ADR-0018 改訂)
+  10. **Onboarding 8 → 6 → 4 画面** (ADR-0020 v1.x-2 2026-05-16 で機能 2 撤去: Splash + Welcome + LanguagePicker + Notification (tut5) のみ、ADR-0018 改訂連動、詳細 §Notes Amended 2026-05-16)
   11. **AdBanner = Repolog 同等** (`INLINE_ADAPTIVE_BANNER` + `maxHeight={90}` + paddingV 8、盆栽タブ最下部のみ)
   12. **Issue #29 (F-04 統計タブ) close 解除** (集約モード廃止、個別ヒートマップに統合)
 - **適用範囲**: v1.0、Free / Pro 両方、iOS / Android / Web (Web は AdBanner 無し既存)
@@ -622,3 +622,70 @@ ui-diff flow から seed data 自動投入が可能になった (settings/index.
 
 - 2026-05-13 後半 ultrathink 議論セッション (Q1-Q6 採用)
 - WebSearch 結果 (Maestro 2026 best practice / Percy vs Chromatic / Expo + Maestro)
+
+### Notes Amended (2026-05-16): 機能チュート (tut1 / tut2) 全撤去 (ADR-0020 v1.x-2)
+
+#### 改訂内容
+
+2026-05-16 セッション議論 (ultrathink、案 A + 案 X + 案 Q + 案 γ+α 採用) で機能チュート全撤去確定:
+
+- **Before** (v1.x-1): Onboarding 6 画面 = Splash + Welcome + Language + Notification (tut5) + 機能 1 (tut1) + 機能 2 (tut2)
+- **After** (v1.x-2): Onboarding **4 画面** = Splash + Welcome + Language + Notification (tut5)
+
+#### 撤去理由
+
+1. **user 判断「不要なので削除」**: tut1/tut2 機能撤去で押し付けがましさゼロ (ADR-0011 記録のみ哲学整合性向上)
+2. **drift 解消**:
+   - ADR-0018 §16-21 改訂当初の「機能 2 = 盆栽追加 + 作業記録」想定と実装 (tut1 = 盆栽追加 + tut2 = 樹種登録) で drift
+   - mockup wireframe (screens.jsx) に tut1 / tut2 が無いまま実装独自で作成されていた経緯
+3. **ストア完走率最大化**: シンプルなアプリ (Calm / Headspace 等) はオンボ 3-4 画面が主流、多機能チュート不要
+
+#### 41 → 39 分母再定義 (MVP 達成基準)
+
+ADR-0020 §Decision §10 が 6 → 4 画面に変更されたため、41 画面 = 主要画面の定義から **tut1 / tut2 を撤去**:
+
+- **Before**: 41 画面 (整合済 + 永続 skip + 未測定 = MVP 25/41 = 61%)
+- **After**: **39 画面** (MVP **25/39 = 64%** に改訂)
+
+#### 影響範囲
+
+- **コード削除**:
+  - `src/features/onboarding/tutorialSteps.ts`: `TutorialStep` 型から tut1 / tut2 削除、`TUTORIAL_STEPS` 配列簡素化 (1 entry のみ)
+  - `src/features/onboarding/onboardingFlow.ts`: `ONBOARDING_STEP_ORDER` から tut1 / tut2 削除 (3 step に簡素化)
+  - `src/stores/onboardingStore.ts`: `OnboardingStep` 型から tut1 / tut2 / tut3 / tut4 削除 (廃止済整理)
+  - `app/onboarding/tut/[step].tsx`: tut5 専用簡素化 (dynamic route 維持)
+- **i18n 削除**:
+  - 19 言語 × 4 keys (`onboardingTut1Title` / `onboardingTut1Body` / `onboardingTut2Title` / `onboardingTut2Body`) = 112 行削除
+  - `pnpm i18n:check` 0 missing 維持
+- **テスト更新**:
+  - `__tests__/features/onboarding/tutorialSteps.test.ts`: tut1 / tut2 関連 test 削除、tut5 のみ test 化
+  - `__tests__/features/onboarding/onboardingFlow.test.ts`: `ONBOARDING_STEP_ORDER` 検証更新
+  - `__tests__/stores/onboardingStore.test.ts`: tut1 参照を tut5 に置換
+- **skip-list**:
+  - `scripts/ui-diff/skip-list.json` `skipped[]` から `onboarding-tut1` / `onboarding-tut2` 削除 (PR-2 永続 skip 撤回)
+- **Issue**:
+  - **Issue #531 close** (機能撤去で mockup HTML 作成不要)
+- **ADR**:
+  - ADR-0018 Notes Amended (2026-05-16) 追加 (本改訂連動)
+  - ADR-0020 §Decision §10 改訂 + 本 Notes Amended 追加
+
+#### 4 ペルソナ評価 (本 Notes Amended)
+
+| 評価軸              | 高橋 62 (シニア)       | Marcus 35    | 盆栽園プロ  | ライト                               |
+| ------------------- | ---------------------- | ------------ | ----------- | ------------------------------------ |
+| 機能チュート撤去    | ◎ 押し付けがましさゼロ | ◎ 完走率向上 | ◎ 業務速度  | ○ 機能発見性は Settings ヘルプで代替 |
+| Onboarding 4 画面化 | ◎ シンプル             | ◎ 30 秒完走  | ◎ 30 秒完走 | ◎                                    |
+| ADR-0011 整合       | ◎ 記録のみ哲学         | ◎            | ◎           | ◎                                    |
+| ストア出荷影響      | ◎ なし                 | ◎            | ◎           | ◎                                    |
+| **総合**            | **◎**                  | **◎**        | **◎**       | **○**                                |
+
+→ 全項目 ○ 以上、✕ ゼロ (R-10 クリア)
+
+#### 関連
+
+- 2026-05-16 セッション議論 (ultrathink、案 A + 案 X + 案 Q + 案 γ+α 採用)
+- ADR-0011 (記録のみ哲学、本改訂で整合性向上)
+- ADR-0018 (Onboarding 統合フロー、Notes Amended 2026-05-16 連動)
+- Issue #526 (PR #532 で close 済、tut5 経路特定)
+- Issue #531 (機能 1/2 mockup HTML 作成依頼、本 PR で close)
+- PR-2.5: refactor(onboarding): tut1/tut2 機能撤去 + ADR 改訂 (本 PR)

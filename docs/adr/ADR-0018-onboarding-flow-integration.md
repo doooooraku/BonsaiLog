@@ -19,6 +19,14 @@
 > 2. **機能チュート 5 ステップ → 2 ステップに圧縮** — 重要 2 機能 (盆栽追加 + 作業記録) のみ、詳細チュートは GuideModalScreen (新規盆栽 30 日ガイド) に分離
 > 3. **既存ユーザー migration**: `onboarding_v` キーで既存 v=1 完了ユーザーは再オンボなし
 > 削減画面の経緯と詳細は ADR-0020 Decision §10 + Phase 8 計画参照。
+>
+> **2026-05-16 追記 (ADR-0020 v1.x-2 連動、Amended)**:
+> 2026-05-16 セッション議論で機能チュート (tut1 / tut2) 全撤去確定:
+> 1. **オンボ 6 画面 → 4 画面に再削減** — Splash + Welcome + LanguagePicker + Notification (tut5) のみ
+> 2. **機能チュート 2 ステップ → 0 ステップに撤去** — ADR-0011 記録のみ哲学整合、user 判断「不要なので削除」
+> 3. **撤去理由**: tut1 (盆栽追加) / tut2 (樹種登録) 実機 UI は完成済だが、mockup wireframe との drift + 押し付けがましさゼロ哲学整合のため撤去
+> 4. **影響**: i18n 19 言語 × 4 keys = 112 行削除、Issue #531 (mockup HTML 作成依頼) close、skip-list 撤回、41 → 39 分母再定義
+> 詳細は ADR-0020 §Notes Amended (2026-05-16、v1.x-2) 参照。
 
 ---
 

@@ -14,17 +14,15 @@
 import type { OnboardingStep } from '@/src/stores/onboardingStore';
 
 /**
- * オンボステップの順序定義 (ADR-0020 v1.x-1 改訂、6 画面 = Splash + Welcome + Language + tut5 + tut1 + tut2)。
+ * オンボステップの順序定義 (ADR-0020 v1.x-2 改訂 2026-05-16、4 画面 = Splash + Welcome + Language + tut5)。
  *
  * Splash は Expo SplashScreen 連携で本フロー外 (= 1 画面分相当、画面数カウントに含む)。
- * 配列 index 順に進む。tut3 / tut4 は ADR-0020 で廃止。
+ * 配列 index 順に進む。tut1 / tut2 は v1.x-2 で撤去、tut3 / tut4 は v1.x-1 で廃止。
  */
 export const ONBOARDING_STEP_ORDER: readonly OnboardingStep[] = [
   'welcome',
   'language',
   'tut5', // Notification (Claude Design Notification 画面)
-  'tut1', // 機能 1: 盆栽追加
-  'tut2', // 機能 2: 作業記録
 ] as const;
 
 /**
@@ -64,8 +62,7 @@ export function isOnboardingFinished(
  * @example
  *   getNextOnboardingStep(false, {}) === 'welcome'
  *   getNextOnboardingStep(false, { welcome: true }) === 'language'
- *   getNextOnboardingStep(false, { welcome: true, language: true, tut1: true,
- *                                  tut2: true, tut3: true, tut4: true, tut5: true }) === null
+ *   getNextOnboardingStep(false, { welcome: true, language: true, tut5: true }) === null
  *   getNextOnboardingStep(true, {}) === null
  */
 export function getNextOnboardingStep(
@@ -96,13 +93,13 @@ export function getOnboardingProgress(
 }
 
 /**
- * チュート (tut1-5) のみで進捗率を返す純関数 (Settings → ヘルプ → 「チュートリアルを再表示」用)。
+ * チュート (tut5 のみ、ADR-0020 v1.x-2 改訂後) の進捗率を返す純関数 (Settings → ヘルプ → 「チュートリアルを再表示」用)。
  *
  * - welcome / language は対象外
- * - 全 tut1-5 完了で 1
+ * - tut5 完了で 1
  */
 export function getTutorialProgress(dismissed: Partial<Record<OnboardingStep, boolean>>): number {
-  const tut: OnboardingStep[] = ['tut1', 'tut2', 'tut5'];
+  const tut: OnboardingStep[] = ['tut5'];
   const done = tut.filter((s) => dismissed[s] === true).length;
   return done / tut.length;
 }

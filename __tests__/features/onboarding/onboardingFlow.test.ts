@@ -1,7 +1,7 @@
 /**
  * F-26 Phase D — オンボフロー進捗判定 純関数テスト (Issue #26 / ADR-0018 → ADR-0020 改訂)。
  *
- * ADR-0020 v1.x-1: tut3/tut4 廃止、順序 welcome → language → tut5 → tut1 → tut2 (5 step、6 画面相当)。
+ * ADR-0020 v1.x-2 (2026-05-16): tut1/tut2 撤去、順序 welcome → language → tut5 (3 step、4 画面相当)。
  */
 
 import {
@@ -18,20 +18,20 @@ const ALL_DISMISSED: Partial<Record<OnboardingStep, boolean>> = {
   welcome: true,
   language: true,
   tut5: true,
-  tut1: true,
-  tut2: true,
 };
 
-describe('ONBOARDING_STEP_ORDER (ADR-0020 v1.x-1)', () => {
-  test('順序は welcome → language → tut5 → tut1 → tut2 (5 step、Splash 含めて 6 画面)', () => {
-    expect(ONBOARDING_STEP_ORDER).toEqual(['welcome', 'language', 'tut5', 'tut1', 'tut2']);
+describe('ONBOARDING_STEP_ORDER (ADR-0020 v1.x-2)', () => {
+  test('順序は welcome → language → tut5 (3 step、Splash 含めて 4 画面)', () => {
+    expect(ONBOARDING_STEP_ORDER).toEqual(['welcome', 'language', 'tut5']);
   });
 
   test('Splash は本フロー外 (Expo SplashScreen 連携)', () => {
     expect(ONBOARDING_STEP_ORDER).not.toContain('splash');
   });
 
-  test('tut3 / tut4 は廃止', () => {
+  test('tut1 / tut2 / tut3 / tut4 は全て廃止', () => {
+    expect(ONBOARDING_STEP_ORDER).not.toContain('tut1');
+    expect(ONBOARDING_STEP_ORDER).not.toContain('tut2');
     expect(ONBOARDING_STEP_ORDER).not.toContain('tut3');
     expect(ONBOARDING_STEP_ORDER).not.toContain('tut4');
   });
@@ -55,8 +55,6 @@ describe('isAllStepsDismissed', () => {
       welcome: true,
       language: false,
       tut5: true,
-      tut1: true,
-      tut2: true,
     };
     expect(isAllStepsDismissed(partial)).toBe(false);
   });
@@ -99,25 +97,8 @@ describe('getNextOnboardingStep', () => {
     expect(getNextOnboardingStep(false, { welcome: true, language: true })).toBe('tut5');
   });
 
-  test('welcome + language + tut5 dismissed → tut1', () => {
-    expect(getNextOnboardingStep(false, { welcome: true, language: true, tut5: true })).toBe(
-      'tut1',
-    );
-  });
-
   test('全 dismissed → null (完了相当)', () => {
     expect(getNextOnboardingStep(false, ALL_DISMISSED)).toBeNull();
-  });
-
-  test('間に未 dismissed があれば最初の未 dismissed を返す (順序保持)', () => {
-    expect(
-      getNextOnboardingStep(false, {
-        welcome: true,
-        language: true,
-        tut1: true,
-        tut2: true,
-      }),
-    ).toBe('tut5');
   });
 });
 
@@ -130,8 +111,8 @@ describe('getOnboardingProgress (UI プログレスバー用)', () => {
     expect(getOnboardingProgress(false, {})).toBe(0);
   });
 
-  test('welcome のみ → 1/5', () => {
-    expect(getOnboardingProgress(false, { welcome: true })).toBeCloseTo(1 / 5);
+  test('welcome のみ → 1/3', () => {
+    expect(getOnboardingProgress(false, { welcome: true })).toBeCloseTo(1 / 3);
   });
 
   test('全 dismissed → 1', () => {
@@ -148,18 +129,8 @@ describe('getTutorialProgress (Settings 再表示画面用)', () => {
     expect(getTutorialProgress({ welcome: true, language: true })).toBe(0);
   });
 
-  test('tut1 のみ → 1/3', () => {
-    expect(getTutorialProgress({ tut1: true })).toBeCloseTo(1 / 3);
-  });
-
-  test('tut1 + tut2 + tut5 全完了 → 1', () => {
-    expect(
-      getTutorialProgress({
-        tut1: true,
-        tut2: true,
-        tut5: true,
-      }),
-    ).toBe(1);
+  test('tut5 完了 → 1', () => {
+    expect(getTutorialProgress({ tut5: true })).toBe(1);
   });
 });
 
