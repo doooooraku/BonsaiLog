@@ -2,6 +2,12 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 import 'dotenv/config';
 
+// Sess4 PR-6 Custom config plugin: Dev Build (Debug config) で NDK 27 LTO+gold linker bug 回避。
+// Release config (preview-local-apk) では本問題発生せず、本 plugin は全 profile で有効化しても無害。
+// 詳細: plugins/withCmakeArgs.js docstring 参照。
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const withCmakeArgs = require('./plugins/withCmakeArgs');
+
 // ---------------------------------------------------------------------------
 // Env helpers — fail fast on missing identity vars
 // ---------------------------------------------------------------------------
@@ -127,13 +133,20 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   plugins = ensurePlugin(plugins, 'expo-secure-store');
   plugins = ensurePlugin(plugins, 'expo-sqlite');
   plugins = ensurePlugin(plugins, 'expo-web-browser');
-  // expo-dev-client FAB (右上歯車 toggle) 非表示 (Sess1 PR-4、2026-05-17)
-  // ADR-0021 (ui-diff pipeline) Notes Amended: Maestro ui-diff 撮影時に dev menu overlay が
-  // 整合判定の客観性を下げるため、開発ビルドでも FAB を非表示化 (Expo 公式 GitHub Issue #44234 で導入された
-  // expo-dev-client plugin config option `showFloatingButton`)。
-  // - 3 本指タップ等の代替アクセス手段は維持 (Expo Dev Menu API、長押しでも開く)
-  // - リリースビルドでは元から FAB 非表示、本設定で開発ビルドとリリースビルドの撮影品質を一致
-  plugins = ensurePlugin(plugins, 'expo-dev-client', { showFloatingButton: false });
+  // expo-dev-client Tools button (右上歯車 FAB) 初期 OFF 化 (Sess4 PR-6 X1、2026-05-17)
+  // Expo PR #44251 (Issue #44234 解決、expo-dev-launcher 55.0.30+) で導入された
+  // `toolsButton: false` plugin config を使用 (Sess2 で showFloatingButton と誤記、Sess4 で修正)。
+  // 動作の流れ:
+  //   1. plugin config { toolsButton: false } → withDevLauncher.ts が
+  //      AndroidManifest.xml に <meta-data EXDevMenuShowFloatingActionButton="false"/> inject
+  //   2. Native (DevMenuDefaultPreferences.kt) が manifest meta-data 読み取り → fabDefault=false
+  //   3. SharedPreferences の showFab 初期値 false → 起動時に歯車 OFF
+  //   4. user runtime toggle は SharedPreferences で persist (uninstall で消える)
+  // 効果: Dev Build (開発時) で歯車が最初から OFF、user 手作業不要。
+  //       リリース版は dev-client 同梱しないため元から無関係。
+  //       Maestro ui-diff 撮影は Preview Build (dev-client なし) を使用 (Sess2 PR-4)。
+  // 関連: ADR-0021 / docs/handoff/sess3-progress-2026-05-17.md / PR #535 (Sess2 で revert された Edit を本 PR で再修正)
+  plugins = ensurePlugin(plugins, 'expo-dev-client', { toolsButton: false });
   // PR #186 で追加した Splash 制御プラグイン (Phase APK rebuild B-1d)
   // ADR-0020 §Notes §画面マップ row 1 整合 (B1 PR、mockup v1.0 screens.jsx SplashScreen):
   // backgroundColor=washi (#F7F3E8、BG_PRIMARY) で mockup の和紙背景に整合、
@@ -159,7 +172,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'This identifier will be used to deliver relevant ads to Free plan users.',
   });
 
-  return {
+  return withCmakeArgs({
     ...config,
     name: APP_NAME,
     slug: APP_SLUG,
@@ -239,5 +252,5 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     owner: EAS_OWNER || undefined,
     plugins,
-  };
+  });
 };

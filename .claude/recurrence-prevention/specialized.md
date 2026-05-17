@@ -150,11 +150,21 @@
 - **根拠**: 2026-05-12 セッションで testID 確認を後回しにし、6 段階の試行錯誤で 1 時間ロス (R-9 violation)。`text: '設定'` tap で Expo Dev Client Developer Menu が誤起動した事例あり。
 - **自動化**: `.claude/hooks/check-maestro-flow-creation.mjs` で PreToolUse Write at `maestro/flows/*.yml` を hook、禁止パターン (text tap / 誤 appId) 検出で exit 2 block。`scripts/lint-maestro.mjs` で CI 強制 (pnpm verify:maestro-lint)。
 
+### R-32. commit 直前の git diff --cached 目視 + 議論修正項目の inclusion verify
+
+- **ルール**: `git commit` 実行直前に必ず以下を実施:
+  1. `git diff --cached --stat` で staged ファイル一覧を確認
+  2. `git diff --cached <file>` で議論で修正したと記憶している箇所が **本当に staged に含まれているか**目視
+  3. 議論で「Edit した」 と認識している修正が staged に無い場合、`git restore` 等で revert された可能性 → 再 Edit してから commit
+  4. 修正規模が大きい時は `git diff --cached --stat` の inserts/deletes 数が議論内容と乖離してないか確認
+- **根拠**: 2026-05-17 Sess2 で `app.config.ts` の `showFloatingButton: false` → `toolsButton: false` 修正を実行 (Edit) したが、その後の議論段階で `git restore` で revert され、最終 commit には反映されず main に残った。Sess4 で実際に Dev Build install して初めて発覚、デバッグに数時間ロス。「Edit したと思い込んでいた」 が「commit には含まれてない」 という認知バイアスを構造的に防ぐ必要あり。
+- **自動化候補**: `.claude/hooks/pre-commit-staged-verify.mjs` で `pre-commit` git hook 経由 (`.githooks/`)、staged file list と commit message keyword の整合チェック (例: commit message に「toolsButton」 含まれるなら app.config.ts に該当 keyword の staged diff 必須)。Sess5+ で実装。
+
 ---
 
 ## 関連
 
-- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-31 索引 + 運用ルール)
+- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-32 索引 + 運用ルール)
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
