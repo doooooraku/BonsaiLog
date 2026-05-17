@@ -43,9 +43,10 @@
       "rationale": "レベル 2 必須項目 (写真サイズ/フォント/主要レイアウト/CTA 配置) 全て mockup と一致。残差は AdMob banner と status bar の環境差のみ。",
       "judgedBy": "auto-improve-loop cycle 1",
       "needsReeval": false,
-      "reevalPassedAt": "2026-05-11T11:32:00Z",
-      "reevalArtifact": "scripts/ui-diff/out/20260511-2032/",
-      "reevalRationale": "PR #442 構造系 4 項目チェックで再評価通過。タブ構成 (4 タブ 盆栽/予定/ふりかえり/設定) ✅、セクション構成 (Header + 複数選択 + 検索 + 設定 + フィルタ chip すべて/#要注意/@ベランダ/#展示会候補 + カードリスト) ✅、UI 種別 (カードリスト縦並び) ✅、スクロール範囲 (全画面スクロール可) ✅。残差は seed data 差 (note 内容 + SVG plain) と AdMob banner (永久 skip 候補)、構造的整合性は完全一致。reevalReason フィールドは削除済 (needsReeval=false で代替)。"
+      "reevalPassedAt": "2026-05-17T19:31:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260517-1930-sess6pr1/bonsai-tab/",
+      "reevalRationale": "Sess6 PR-1 R-25 評価通過 + UX 5 修正後の再キャプチャ。タブ構成 (4 タブ 盆栽/予定/ふりかえり/設定、 light 強制) ✅、セクション構成 (Header「盆栽手帳」 + 複数選択 + 検索 + 設定 + フィルタ chip 3 件 (seed 5 cap 内)、 「すべて」 chip 削除 + toggle 解除 + カードリスト + FAB + AdBanner) ✅、UI 種別 (縦並びカードリスト) ✅、スクロール範囲 (全画面スクロール可) ✅。改善: (1) A-1 TabBar 強制 light 固定 (useColorScheme 削除、 ADR-0015 TT2 パターン拡張)、 (2) A-2 AdBanner と TabBar の gap 解消 (paddingVertical 8 → paddingTop 8 + paddingBottom 0)、 (3) A-3 樹齢「樹齢: 45年」 ラベル化 + 19 言語ペルソナ翻訳 (英語 fallback 解消)、 (4) A-4 placeholder 灰色 #E0E0E0 単色化 (SVG シルエット + 5 色ローテ削除)、 (5) #2 タグ並び順 5 件 + 「すべて」 chip 削除 + toggle 解除。残差: (1) seed data 差 (盆栽カード内容、 許容)、 (2) AdMob テスト広告 (Free 仕様、 ADR-0010、 許容)、 (3) 歯車 ⚙ 右上 (Expo PR #44251 bug、 受容、 Sess4 確定)、 (4) Status bar 環境差 (許容)。構造的整合性 + UX 細部強化ともに達成。旧 path bug 副次解消 (20260511-2032 path 無効 → 20260517-1930-sess6pr1 path 有効)。",
+      "reevalIteration": "3/3 (Sess6 PR-1)"
     },
     {
       "flow": "bonsai-create-sheet",
