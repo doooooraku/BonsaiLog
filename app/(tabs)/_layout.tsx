@@ -11,7 +11,7 @@ import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/theme';
-import { CalendarIcon, CogIcon, LeafIcon, PencilNavIcon } from '@/src/components/icons';
+import { CalendarIcon, DropletIcon, LeafIcon, PencilNavIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 
 export default function TabLayout() {
@@ -48,19 +48,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="record"
+        options={{
+          title: t('tabRecord'),
+          tabBarIcon: ({ color }) => <DropletIcon size={28} color={color} />,
+          tabBarButtonTestID: 'e2e_tab_record',
+        }}
+      />
+      <Tabs.Screen
         name="look-back"
         options={{
           title: t('tabLookBack'),
           tabBarIcon: ({ color }) => <PencilNavIcon size={28} color={color} />,
           tabBarButtonTestID: 'e2e_tab_look_back',
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: t('tabSettings'),
-          tabBarIcon: ({ color }) => <CogIcon size={28} color={color} />,
-          tabBarButtonTestID: 'e2e_tab_settings',
         }}
       />
     </Tabs>

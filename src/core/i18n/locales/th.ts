@@ -677,5 +677,8 @@ const th: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfo: 'Pot info',
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Back',
+  tabRecord: 'บันทึก',
+  recordTabStubDesc:
+    'Record tab — Phase 2 will implement action start on tap (multi-select mode + Bulk Work Picker).',
 };
 export default th;

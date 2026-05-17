@@ -684,6 +684,9 @@ const baseEn = {
   timelineConsecutive: '{count} consecutive days',
   detailTimelinePastCollapsed: 'Past watering: collapsed',
   back: 'Back',
+  tabRecord: 'Record',
+  recordTabStubDesc:
+    'Record tab — Phase 2 will implement action start on tap (multi-select mode + Bulk Work Picker).',
 };
 
 export type TranslationKey = keyof typeof baseEn;

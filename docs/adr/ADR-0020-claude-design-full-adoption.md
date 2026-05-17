@@ -623,6 +623,18 @@ ui-diff flow から seed data 自動投入が可能になった (settings/index.
 - 2026-05-13 後半 ultrathink 議論セッション (Q1-Q6 採用)
 - WebSearch 結果 (Maestro 2026 best practice / Percy vs Chromatic / Expo + Maestro)
 
+### Notes Amended (2026-05-17、 Sess7 PR-1): §3 タブ構成 部分改訂 (ADR-0025 連動)
+
+- ADR-0025「4 タブ構成変更」 起票連動、 §Decision §3 マッピング row 18 設定タブ削除 + 新 record タブ追加:
+  - **row 18 設定タブ削除**: `app/(tabs)/settings/` → `app/settings/` に移動 (タブ外 Stack route)、 既存 SearchHeader.Cog (歯車 ⚙) icon から router.push('/settings') 経路で到達
+  - **新 row 18b 記録タブ追加**: `app/(tabs)/record/index.tsx` (Phase 1b stub、 Phase 2 で action 起動実装)
+  - **新 4 タブ構成**: 盆栽 / 予定 / **記録** / ふりかえり (設定タブ削除)
+- 動機: user 動線最短化 + 業界事例 (Strava Record tab pattern + Apple HIG Settings header) 整合
+- Phase 2 (Sess7 PR-2) で予定/記録タブ action 起動 + SelectionToolbar 動線変更 + 「複数選択」 button (Header) 削除を実装予定
+- 詳細は `docs/adr/ADR-0025-bottom-tab-restructure.md` 参照
+
+---
+
 ### Notes Amended (2026-05-16): 機能チュート (tut1 / tut2) 全撤去 (ADR-0020 v1.x-2)
 
 #### 改訂内容
