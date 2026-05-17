@@ -197,6 +197,17 @@ Bundled from official upstreams. These trigger automatically when the conversati
 
 **Supply-chain policy**: Only bundle third-party skills from **verified official publishers** (Anthropic, Callstack, Vercel, Cloudflare, Expo). Review each `SKILL.md` for hidden prompts before adding. Do not add skills based on popularity alone.
 
+### 4.4 UI 整合タスク時の必読 docs (Sess5 PR-3 で整備、 1 画面 = 1 ループ運用)
+
+mockup 整合 / 画面比較 / ui-diff 系のタスクで必須:
+
+- **手順書**: `docs/how-to/ui-diff/screen-integration-loop.md` (8 step ループ、 1 画面 20-30 分目標)
+- **multi-page 撮影**: `docs/how-to/ui-diff/multipage-capture-pattern.md` (mockup `-01.png`, `-02.png` 等の scrollable 画面用)
+- **prompt 雛形**: `docs/handoff/templates/screen-integration-prompt.md`
+- **学び集約**: `docs/reference/tasks/lessons/auto-improve-loop.md` (Sess5 4 知見含む)
+
+`.claude/hooks/session-start-design-reminder.mjs` で user prompt に「mockup 整合」 等のキーワードがあれば自動リマインド (R-1 / R-25 / R-29 強制適用)。
+
 ---
 
 ## 5. File Reference

@@ -228,6 +228,36 @@ cat scripts/ui-diff/out/<timestamp>/report.md
 - 内容は実装が進むに従って変える。固定化しない。
 - 大きな方針変更が起きたら ADR-0021 を Status: Superseded by ADR-XXXX に変更し、別 ADR を起票する (ADR-0019 → 0020 と同じ作法)。
 
+### Notes Amended (2026-05-17、 Sess5 PR-1 + PR-2 + PR-3)
+
+#### pairing-report v2 構造 bug 4 件修正 + multi-page 撮影方針確立
+
+- Sess1 PR-3 (2026-05-16) で導入した v2 (mockup 主導 pairing-report) で発見した構造 bug 4 件を Sess5 PR-1 (#538) で一括修正:
+  1. **`achieved.artifact` 固定参照 → `reevalArtifact \|\| artifact` 優先**: reeval 後の最新 SS が表示されない問題、 整合済 19 件全件影響を解消
+  2. **`<artifact>/app/<id>.png` subdir 探索**: capture-app.sh 新形式 (subdir 保存) 対応、 旧 batch (直下保存) との互換維持
+  3. **CSS `max-height: 600px` 撤廃**: 縦長合成画像 (720x3600) が横幅 120px に圧縮される bug 解消、 mockup と同列幅で比較可能化
+  4. **R-1 verification 漏れ防止 log**: 「整合済 row で artifact 設定済だが PNG 不在」 を生成時に警告、 Claude self-verification 強制
+- mockup multi-page (`<id>-01.png`, `<id>-02.png` ...) を実機で 1 枚連結表示する方針確立 (user 推奨案 b):
+  - adb swipe + screencap + ImageMagick crop 連結
+  - 720x1520 Android 環境の swipe 値 + crop パラメータは `docs/how-to/ui-diff/multipage-capture-pattern.md` 参照
+  - 将来汎用化 (`scripts/ui-diff/capture-multipage.sh` + mockup config の mode 連携) は Sess6+
+- Splash 画面 (Expo SplashScreen 採用、 ADR-0018 §② 独自描画なし) を `MOCKUP_ONLY_IDS` に追加、 ATT/UMP (ADR-0017) と同様 mockup-only 扱い
+
+#### 1 画面 UI 整合ループの標準手順書整備 (Sess5 PR-3)
+
+- 8 step ループ標準手順を `docs/how-to/ui-diff/screen-integration-loop.md` に集約 (1 画面 20-30 分、 user 確認 3 回以内目標)
+- 次セッション prompt 雛形: `docs/handoff/templates/screen-integration-prompt.md`
+- Sess5 学び 4 件 (pairing-report 構造 bug / multi-page 撮影 / ICON_FALLBACK 脱却 / 文言短縮) を `docs/reference/tasks/lessons/auto-improve-loop.md` に集約
+- `AGENTS.md` Session Start Checklist に UI 整合タスク時の必読 docs リンク追加、 `.claude/hooks/session-start-design-reminder.mjs` にキーワード検知拡張 (D ハイブリッド)
+
+#### 関連
+
+- PR #538 (Sess5 PR-1 onboarding-language + pairing-report v2 bug fix)
+- PR #539 (Sess5 PR-2 onboarding-notification N-1〜N-5)
+- PR #<TBD> (Sess5 PR-3 1 画面 UI 整合ループ手順書 + lessons + hook)
+
+---
+
 ### Notes Amended (2026-05-08)
 
 #### OpenDesign 出力を視覚比較入力に切替可能化
