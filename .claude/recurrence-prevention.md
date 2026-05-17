@@ -9,15 +9,18 @@
 
 ## 汎用ルール R-1 〜 R-12（過去セッションで再発した指示の構造化）
 
-### R-1. 一括処理後の目視確認
+### R-1. 一括処理後の目視確認 (+ レポート系生成後の Claude self-verification、 Sess5 拡張)
 
-- **ルール**: Python / sed / awk で複数行を一括置換した後は、必ず Read で目視確認 + grep で残存確認 + git diff 確認。
-- **根拠**: 過去 2 回、想定外の場所まで置換された事例あり。
-- **自動化**: `~/.claude/settings.json` Hooks で検知時に警告。
+- **ルール**:
+  1. Python / sed / awk で複数行を一括置換した後は、必ず Read で目視確認 + grep で残存確認 + git diff 確認
+  2. **(Sess5 拡張)** pairing-report.html 等のレポート系を生成した後は、 Claude 自身が Read or base64 chunk grep で新コンテンツが埋め込まれているか目視確認すること。 「✅ 生成完了」 ログだけで user 報告 NG (R-1 verification 漏れ)
+- **根拠**: 過去 2 回、想定外の場所まで置換された事例あり。 Sess5 で pairing-report 生成後に Read せずに user 報告 → 古い SS が表示されたまま、 user に二度手間を強いた。
+- **自動化**: `~/.claude/settings.json` Hooks で検知時に警告。 generate-pairing-report.mjs に「SS 反映確認 log」 を追加 (Sess5 PR-1 で実装、 整合済 row 全件 OK ログ確認)。
 - **検証手順**:
   1. Python で変更した範囲を Read で開いて Claude Code が直接目視確認
   2. grep で関連キーワードを検索し、想定外の置換が起きていないか確認
   3. 変更前後の git diff を確認
+  4. **(Sess5 拡張)** pairing-report 等のレポート生成時は base64 chunk grep で新コンテンツ反映を検証 (`base64 -w0 <new>.png | cut -c 500-700 | grep -f - report.html`)
 
 ### R-2. 履歴は ADR に集約、仕様書には現在の仕様のみ
 

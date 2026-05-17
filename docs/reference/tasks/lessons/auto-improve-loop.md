@@ -113,10 +113,41 @@ WARN (Retro-C で追加):
 
 ---
 
-## 5. 関連
+## 5. Sess5 学び 4 件 (2026-05-17、 PR #538 + #539)
 
-- ADR-0021 (UI 差分検出パイプライン、本ループの母体)
+### 5-1. pairing-report v2 構造 bug 4 件 (PR #538 で一括修正)
+
+1. **`achieved.artifact` 固定参照 bug**: reeval 後の最新 SS が表示されない、 整合済 19 件全件影響。修正: `reevalArtifact \|\| artifact` 優先順位
+2. **`<artifact>/app/<id>.png` subdir 探索不足**: `capture-app.sh` 新形式 (subdir 保存) 対応漏れ。修正: `app/` subdir も探索
+3. **CSS `max-height: 600px` 縦長画像圧縮 bug**: 720x3600 が横幅 120px に圧縮。修正: max-height 撤廃
+4. **R-1 verification 漏れ事故 2 回**: 「✅ 生成完了」 のみで Claude 自身が Read で目視せず、 user に二度手間。修正: SS 反映確認 log を生成 script に追加 (構造化防止)
+
+### 5-2. multi-page 撮影 + ImageMagick 連結パターン (PR #538)
+
+- 詳細: `docs/how-to/ui-diff/multipage-capture-pattern.md`
+- 720x1520 swipe 値: `360 1280 360 820 800` = 約 4 行 scroll が最適
+- ImageMagick crop: Header 350 px + CTA 上端 1280 px が安全 cut
+
+### 5-3. ICON_FALLBACK 脱却パターン (PR #539)
+
+- 🔔 emoji → outline SVG 置換は welcome.tsx LeafIcon パターン踏襲で簡単
+- viewBox 64x64 + stroke BRAND_GREEN + strokeWidth 2.5
+- meta.icon === 'bell' 分岐で他 icon は ICON_FALLBACK 維持
+
+### 5-4. 文言短縮で改行不自然問題を構造的解消 (PR #539)
+
+- paddingHorizontal / fontSize 調整より文字数調整が現実解 (画面サイズ依存問題回避)
+- 例: Title 18→16 文字、 Body 54→18 文字で 720x1520 不自然改行完全解消
+- R-3 品の良さ + 4 ペルソナ ✕ なし
+
+---
+
+## 6. 関連
+
+- ADR-0021 (UI 差分検出パイプライン、本ループの母体、 Sess5 Notes Amended あり)
 - ADR-0020 §画面マップ (整合判定の比較対象定義)
-- `.claude/recurrence-prevention.md` R-27 / R-29 (Explore + 写経駆動)
+- `.claude/recurrence-prevention.md` R-1 (Sess5 拡張: pairing-report 等のレポート系も適用) / R-25 / R-27 / R-29
 - `docs/reference/integration-criteria.md` (レベル 2 達成基準)
-- 関連 PR: #391 (Continue dismiss) / #409 (text マッチ tap) / #417 (Retro Group 1) / #418 (Retro Group 2) / #419 (Retro Group 3、予定)
+- `docs/how-to/ui-diff/screen-integration-loop.md` (8 step ループ標準手順、 Sess5 PR-3 で新規)
+- `docs/how-to/ui-diff/multipage-capture-pattern.md` (multi-page 撮影専用、 Sess5 PR-3 で新規)
+- 関連 PR: #391 / #409 / #417 / #418 / #538 (Sess5 PR-1) / #539 (Sess5 PR-2) / #<TBD> (Sess5 PR-3)
