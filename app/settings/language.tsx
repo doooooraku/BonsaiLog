@@ -50,7 +50,9 @@ export default function SettingsLanguageScreen() {
                 </ThemedText>
                 <ThemedText style={styles.latin}>{opt.latin}</ThemedText>
               </View>
-              {selected && <ThemedText style={styles.checkMark}>✓</ThemedText>}
+              <View style={[styles.radio, selected && styles.radioSelected]}>
+                {selected && <View style={styles.radioDot} />}
+              </View>
             </Pressable>
           );
         })}
@@ -76,5 +78,20 @@ const styles = StyleSheet.create({
   rowMain: { flex: 1, gap: 2 },
   native: { fontSize: 16 },
   latin: { fontSize: 12, opacity: 0.6, fontStyle: 'italic' },
-  checkMark: { color: BRAND_GREEN, fontSize: 20, fontWeight: '700' },
+  radio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: BORDER_DEFAULT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioSelected: { borderColor: BRAND_GREEN },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: BRAND_GREEN,
+  },
 });

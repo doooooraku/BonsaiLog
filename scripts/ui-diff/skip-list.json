@@ -222,10 +222,10 @@
       "rationale": "Sess 3 新規評価 (ADR-0018 Onboarding 6 画面の 1 つ)。Welcome → 「はじめる」 tap で言語選択画面到達。",
       "judgedBy": "Sess3-2 (2026-05-15)",
       "needsReeval": false,
-      "reevalPassedAt": "2026-05-15T21:19:00Z",
-      "reevalArtifact": "scripts/ui-diff/out/20260516-1139-batch/onboarding-language/",
-      "reevalRationale": "Sess 3 R-25 評価通過。タブ構成 (onboarding、タブなし) ✅、セクション構成 (Title「言語を選んでください」 + サブテキスト「タップでプレビューできます。あとで設定からも変更可」 + 19 言語リスト + CTA「選択して続ける」) ✅、UI 種別 (縦並びリスト + selectable rows + CTA) ✅、スクロール範囲 (全画面 scroll) ✅。残差: (1) mockup「言語を選択 / Select language」 vs 実機「言語を選んでください」 + サブテキスト (機能拡張 preview feature、許容)、(2) 言語順差 (mockup 日本語 top selected / 実機 English top selected、state 差で許容)。構造的整合性は完全一致。",
-      "reevalIteration": "2/2"
+      "reevalPassedAt": "2026-05-17T16:20:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260517-1619-sess5/onboarding-language/",
+      "reevalRationale": "Sess5 PR-1 R-25 評価通過 + M-A〜M-D 4 改善後の **multi-page 再キャプチャ** (mockup 2 ページ整合)。タブ構成 (onboarding、タブなし) ✅、セクション構成 (Back button ‹ + Title「言語を選んでください」 + Subtitle 2 行 (改行 \\n 挿入) + 19 言語リスト (端末言語 top に並べ替え) + CTA「選択して続ける」) ✅、UI 種別 (縦並びリスト + radio marker ◯/● + 下部 CTA) ✅、スクロール範囲 (page 01 上半分 + page 02 scroll 後下半分、Svenska 最下行まで確認) ✅。改善: (1) M-A ja.ts onboardingLanguageDesc に \\n 挿入で 2 行表示、(2) M-B Header に Back button (‹) 追加で ADR-0018 §⑥ §35 整合性回復、(3) M-C sortedOptions で端末言語 (ja) top に並べ替え mockup 整合、(4) M-D ✓ checkmark → radio ◯/● marker に変更 (settings/language.tsx も UI 統一)、(5) multi-page 撮影 (-01.png / -02.png) で mockup multi-page と並列比較可能化。残差: (1) mockup「言語を選択 / Select language」 (serif + Latin) vs 実機「言語を選んでください」 (R-3 品の良さ寄り、 user 決定で現状維持)、(2) Expo PR #44251 toolsButton bug で歯車 ⚙ FAB 右上 (Sess4 受容、 修正待ち)、(3) Status bar 環境差 (許容)、(4) Android vs iPhone 15 Pro mockup OS 差 (許容)。構造的整合性 + mockup 整合性ともに完全達成。",
+      "reevalIteration": "3/3 (Sess5 PR-1)"
     },
     {
       "flow": "work-log-confirm",
