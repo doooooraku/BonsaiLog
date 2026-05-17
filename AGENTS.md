@@ -197,10 +197,11 @@ Bundled from official upstreams. These trigger automatically when the conversati
 
 **Supply-chain policy**: Only bundle third-party skills from **verified official publishers** (Anthropic, Callstack, Vercel, Cloudflare, Expo). Review each `SKILL.md` for hidden prompts before adding. Do not add skills based on popularity alone.
 
-### 4.4 UI 整合タスク時の必読 docs (Sess5 PR-3 で整備、 1 画面 = 1 ループ運用)
+### 4.4 UI 整合タスク時の必読 docs (Sess5 PR-3 / PR-4 で整備、 1 画面 = 1 ループ運用)
 
 mockup 整合 / 画面比較 / ui-diff 系のタスクで必須:
 
+- **初心者向け全体像**: `docs/explanation/ui-diff-loop-for-beginners.md` (家リフォーム例え話 + 8 step + コマンド意味)
 - **手順書**: `docs/how-to/ui-diff/screen-integration-loop.md` (8 step ループ、 1 画面 20-30 分目標)
 - **multi-page 撮影**: `docs/how-to/ui-diff/multipage-capture-pattern.md` (mockup `-01.png`, `-02.png` 等の scrollable 画面用)
 - **prompt 雛形**: `docs/handoff/templates/screen-integration-prompt.md`
