@@ -683,6 +683,7 @@ const baseEn = {
   detailTimelineSectionTitle: 'Upcoming schedule',
   timelineConsecutive: '{count} consecutive days',
   detailTimelinePastCollapsed: 'Past watering: collapsed',
+  back: 'Back',
 };
 
 export type TranslationKey = keyof typeof baseEn;

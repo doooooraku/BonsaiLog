@@ -33,8 +33,10 @@ const OUTPUT_PATH = path.join(OUT_DIR, 'pairing-report.html');
 // HTML グループ順 (user 指定 2026-05-16): 01 → 02 → 04 → 05
 const HTML_ORDER = ['01-Onboarding.html', '02-Home.html', '04-Export.html', '05-Monetization.html'];
 
-// ADR-0017 で mockup-only と扱う画面 (OS 標準ダイアログのみ採用、実装側に画面なし)
-const MOCKUP_ONLY_IDS = new Set(['onboarding-att', 'onboarding-ump']);
+// mockup-only と扱う画面 (実機独自画面なし、撮影対象外):
+// - ADR-0017: ATT/UMP は OS 標準ダイアログのみ採用
+// - ADR-0018 §②: Splash は Expo SplashScreen 採用、独自描画なし、OS 起動と統合のため実機 SS 撮影不可
+const MOCKUP_ONLY_IDS = new Set(['onboarding-att', 'onboarding-ump', 'onboarding-splash']);
 
 // MOCKUP_SCREENSHOTS をパース (entry 41 件、id + html + selector + description + mode)
 function parseMockupScreenshots() {
@@ -111,18 +113,29 @@ function findMockupPages(id) {
 }
 
 // 実機 SS PNG を multi-page 対応で列挙 (artifact dir 内の PNG 全件)
+// capture-app.sh は <artifact>/app/<id>.png に保存する (新形式)、
+// 旧 batch script は <artifact>/<id>.png 直下保存 (互換)。両方対応する。
 function findAppShots(artifactPath, id) {
   if (!artifactPath) return [];
   const dir = path.join(REPO_ROOT, artifactPath);
   if (!existsSync(dir)) return [];
-  const files = readdirSync(dir).filter((f) => f.endsWith('.png'));
-  // 優先: <id>.png > <id>-XX.png 連番 > 全 PNG
-  const idPng = files.includes(`${id}.png`) ? [`${id}.png`] : [];
-  const idNumbered = files.filter((f) => new RegExp(`^${id}-\\d+\\.png$`).test(f)).sort();
-  if (idPng.length || idNumbered.length) {
-    return [...idPng, ...idNumbered].map((f) => path.join(dir, f));
+
+  const appDir = path.join(dir, 'app');
+  const searchDirs = existsSync(appDir) ? [appDir, dir] : [dir];
+
+  for (const searchDir of searchDirs) {
+    const files = readdirSync(searchDir).filter((f) => f.endsWith('.png'));
+    if (files.length === 0) continue;
+    // 優先: <id>.png > <id>-XX.png 連番
+    const idPng = files.includes(`${id}.png`) ? [`${id}.png`] : [];
+    const idNumbered = files.filter((f) => new RegExp(`^${id}-\\d+\\.png$`).test(f)).sort();
+    if (idPng.length || idNumbered.length) {
+      return [...idPng, ...idNumbered].map((f) => path.join(searchDir, f));
+    }
   }
-  // fallback: 全 PNG (順序保証なし)
+
+  // fallback: artifact 直下の全 PNG (順序保証なし、旧形式互換)
+  const files = readdirSync(dir).filter((f) => f.endsWith('.png'));
   return files.sort().map((f) => path.join(dir, f));
 }
 
@@ -147,6 +160,9 @@ function buildMockupToScreenPairMap(screenPairs) {
 
 function statusLabel(mockupId, achieved, skipped, isMockupOnly) {
   if (isMockupOnly) {
+    if (mockupId === 'onboarding-splash') {
+      return `<span style="color:#1976d2;">📋 mockup-only (ADR-0018 §② Expo SplashScreen 採用、独自描画なし、 OS 起動と統合のため実機 SS 撮影不可)</span>`;
+    }
     return `<span style="color:#1976d2;">📋 mockup-only (ADR-0017 OS 標準ダイアログ採用)</span>`;
   }
   if (achieved) {
@@ -192,7 +208,14 @@ function main() {
       }));
 
       let appShots = [];
-      const artifactPath = achieved?.artifact || skipped?.artifact || null;
+      // reevalArtifact (再評価時の最新撮影) を優先、 なければ初回 artifact にフォールバック。
+      // 既 achieved を Sess5 以降で再撮影しても表示が古いままになる bug の修正 (2026-05-17)。
+      const artifactPath =
+        achieved?.reevalArtifact ||
+        achieved?.artifact ||
+        skipped?.reevalArtifact ||
+        skipped?.artifact ||
+        null;
       if (!isMockupOnly && artifactPath) {
         const paths = findAppShots(artifactPath, spId || entry.id);
         appShots = paths.map((p) => ({
@@ -245,7 +268,7 @@ function main() {
               .join('\n')
           : `<div class="missing">mockup PNG 不在<br><small>${r.id}.png / ${r.id}-NN.png どちらもなし</small></div>`;
         const appImgs = r.isMockupOnly
-          ? `<div class="mockup-only">📋 mockup-only<br><small>ADR-0017 (ATT/UMP OS 標準ダイアログ採用)、実機画面なし</small></div>`
+          ? `<div class="mockup-only">📋 mockup-only<br><small>${r.id === 'onboarding-splash' ? 'ADR-0018 §② Expo SplashScreen (OS 起動と統合、JS bundle ロード完了で消える、 独自 React コンポーネント不要 = 却下済 Option III)、 実機 SS 撮影不可。 mockup PNG (BonsaiLog ロゴ + キャッチ) は assets/images/splash-icon.png に対応。' : 'ADR-0017 (ATT/UMP OS 標準ダイアログ採用)、 実機独自画面なし。'}</small></div>`
           : r.appShots.length
             ? r.appShots
                 .map(
@@ -303,7 +326,7 @@ function main() {
     .meta .artifact-path { margin-top: 4px; font-size: 10px; color: #999; word-break: break-all; }
     .image-col { display: flex; flex-direction: column; gap: 12px; align-items: center; font-size: 11px; }
     .image-col .col-label { display: block; color: #666; margin-bottom: 4px; font-weight: bold; }
-    .image-col .page img { max-width: 100%; max-height: 600px; border: 1px solid #ddd; border-radius: 4px; background: white; }
+    .image-col .page img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; background: white; }
     .image-col .page .page-name { color: #999; font-size: 10px; margin-top: 3px; }
     .missing { padding: 60px 20px; background: #ffebee; color: #c62828; border-radius: 4px; font-size: 13px; }
     .mockup-only { padding: 60px 20px; background: #e3f2fd; color: #1565c0; border-radius: 4px; font-size: 13px; }
@@ -332,6 +355,26 @@ ${groupBlocks.join('\n')}
   console.log(`   ✅ 整合済: ${achievedCount} | ⚠️ 要再評価: ${reevalCount}`);
   console.log(`   ⏸️ 永続 skip: ${skippedCount} | 📋 mockup-only: ${mockupOnlyCount}`);
   console.log(`   🟡 未測定: ${unmeasuredCount}`);
+
+  // R-1 再発防止: SS 反映確認 log (2026-05-17 Sess5、user 指摘で追加)
+  // achieved 状態で artifact 設定済なのに PNG が見つからない (path 構造変化や移動した artifact 等) row を警告。
+  // skipped row は撮影対象外で PNG 不在は正常、 mockup-only も対象外。
+  console.log('');
+  console.log('🔍 SS 反映確認:');
+  const expectedAppShots = allRows.filter(
+    (r) => !r.isMockupOnly && r.artifactPath && r.status.includes('整合済'),
+  );
+  const detected = expectedAppShots.filter((r) => r.appShots.length > 0);
+  const missing = expectedAppShots.filter((r) => r.appShots.length === 0);
+  console.log(`   ✓ ${detected.length} 件: artifact dir 内 SS 検出済 (整合済 row)`);
+  if (missing.length > 0) {
+    console.log(`   ⚠ ${missing.length} 件: 整合済だが PNG 不在 — 下記要 user 確認:`);
+    for (const r of missing) {
+      console.log(`      - ${r.id} (artifact: ${r.artifactPath})`);
+    }
+  } else {
+    console.log(`   ✓ 整合済 row 全件 SS 反映 OK`);
+  }
 }
 
 main();

@@ -676,5 +676,6 @@ const th: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldAcquiredFromPlaceholder: 'e.g., Inherited from father / Takasaki Bonsai Market',
   bonsaiFieldPotInfo: 'Pot info',
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
+  back: 'Back',
 };
 export default th;

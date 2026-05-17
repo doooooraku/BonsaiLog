@@ -44,6 +44,15 @@ export default function OnboardingLanguageScreen() {
     }
   }, []);
 
+  // 端末言語を先頭に並べ替え (mockup 整合、ADR-0018 §④ 21 端末言語 pre-select)。
+  const sortedOptions = React.useMemo(() => {
+    if (!osLangCode) return LANGUAGE_OPTIONS;
+    const top = LANGUAGE_OPTIONS.find((o) => o.code === osLangCode);
+    if (!top) return LANGUAGE_OPTIONS;
+    const rest = LANGUAGE_OPTIONS.filter((o) => o.code !== osLangCode);
+    return [top, ...rest];
+  }, [osLangCode]);
+
   const handlePick = React.useCallback((code: Lang) => {
     setLang(code);
   }, []);
@@ -70,13 +79,25 @@ export default function OnboardingLanguageScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']} testID="e2e_onboarding_language">
       <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('back')}
+            testID="e2e_onboarding_lang_back"
+            onPress={() => router.back()}
+            style={styles.backButton}
+            hitSlop={8}
+          >
+            <ThemedText style={styles.backIcon}>‹</ThemedText>
+          </Pressable>
+        </View>
         <ThemedText type="title" style={styles.title}>
           {t('onboardingLanguageTitle')}
         </ThemedText>
         <ThemedText style={styles.desc}>{t('onboardingLanguageDesc')}</ThemedText>
 
         <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
-          {LANGUAGE_OPTIONS.map((opt) => {
+          {sortedOptions.map((opt) => {
             const selected = lang === opt.code;
             const isOs = osLangCode === opt.code;
             return (
@@ -102,7 +123,9 @@ export default function OnboardingLanguageScreen() {
                     </ThemedText>
                   </View>
                 )}
-                {selected && <ThemedText style={styles.checkMark}>✓</ThemedText>}
+                <View style={[styles.radio, selected && styles.radioSelected]}>
+                  {selected && <View style={styles.radioDot} />}
+                </View>
               </Pressable>
             );
           })}
@@ -126,6 +149,14 @@ export default function OnboardingLanguageScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   container: { flex: 1, padding: 16, gap: 12 },
+  header: { flexDirection: 'row', alignItems: 'center', minHeight: 36 },
+  backButton: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backIcon: { fontSize: 28, lineHeight: 32, color: BRAND_GREEN, fontWeight: '500' },
   title: { fontSize: 22, lineHeight: 28 },
   desc: { fontSize: 14, opacity: 0.7, lineHeight: 20 },
   list: { flex: 1 },
@@ -150,7 +181,22 @@ const styles = StyleSheet.create({
     backgroundColor: BRAND_GREEN,
   },
   osBadgeText: { color: ON_BRAND, fontSize: 10, fontWeight: '700' },
-  checkMark: { color: BRAND_GREEN, fontSize: 20, fontWeight: '700' },
+  radio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: BORDER_DEFAULT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioSelected: { borderColor: BRAND_GREEN },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: BRAND_GREEN,
+  },
   cta: {
     paddingVertical: 16,
     borderRadius: 12,

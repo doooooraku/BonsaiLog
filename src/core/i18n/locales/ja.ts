@@ -337,7 +337,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeCta: 'はじめる',
   onboardingSkip: 'あとで',
   onboardingLanguageTitle: '言語を選んでください',
-  onboardingLanguageDesc: 'タップですぐにプレビューできます。あとで設定からも変更できます。',
+  onboardingLanguageDesc: 'タップですぐにプレビューできます。\nあとで設定からも変更できます。',
   onboardingLanguageOsBadge: '端末の言語',
   next: '次へ',
 
@@ -683,6 +683,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailTimelineSectionTitle: 'これからの予定',
   timelineConsecutive: '{count}日連続',
   detailTimelinePastCollapsed: '過去水やりは折りたたみ',
+  back: '戻る',
 };
 
 export default ja;
