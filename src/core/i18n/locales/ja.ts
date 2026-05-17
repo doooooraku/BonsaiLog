@@ -683,6 +683,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   timelineConsecutive: '{count}日連続',
   detailTimelinePastCollapsed: '過去水やりは折りたたみ',
   back: '戻る',
+  tabRecord: '記録',
+  recordTabStubDesc:
+    '記録タブ — Phase 2 で「タブ tap で複数選択モード + 一括記録」 動線を実装予定。 現状は盆栽詳細 → FAB → 作業選択から記録できます。',
 };
 
 export default ja;
