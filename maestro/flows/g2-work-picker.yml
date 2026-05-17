@@ -96,7 +96,7 @@ appId: 'com.doooooraku.bonsailog'
 
 # 設定タブ tap (testID 経由、「設定」 text tap だと Developer Menu 誤起動) → seedTestData
 - tapOn:
-    id: 'e2e_tab_settings'
+    id: 'e2e_bonsai_home_settings'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 

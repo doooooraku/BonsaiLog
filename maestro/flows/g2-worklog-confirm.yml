@@ -96,7 +96,7 @@ appId: 'com.doooooraku.bonsailog'
 
 # 設定タブ → seedTestData
 - tapOn:
-    id: 'e2e_tab_settings'
+    id: 'e2e_bonsai_home_settings'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 

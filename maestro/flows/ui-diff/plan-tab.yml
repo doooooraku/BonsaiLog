@@ -74,7 +74,7 @@ tags:
 
 # 設定タブ tap (seed 投入用)
 - tapOn:
-    id: 'e2e_tab_settings'
+    id: 'e2e_bonsai_home_settings'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 

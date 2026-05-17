@@ -8,7 +8,7 @@
 ## 3. Continue dismiss
 ## 4. Onboarding skip (Welcome → Language ja → Tut1-5)
 ## 5. 盆栽タブ Empty CTA visible (e2e_home_empty_cta)
-## 6. 設定タブ tap (e2e_tab_settings)
+## 6. 設定タブ tap (e2e_bonsai_home_settings)
 ## 7. DEV seed button scroll + tap (e2e_dev_seed_button、seed 3 盆栽 + 写真 + 記録 投入)
 ## 8. Alert dismiss (text: 'OK' tap、Alert は OS 標準 dialog で testID 不能のため R-31 例外)
 ## 9. 盆栽タブ tap (e2e_tab_bonsai)
@@ -80,7 +80,7 @@ tags:
 
 # 設定タブ tap
 - tapOn:
-    id: 'e2e_tab_settings'
+    id: 'e2e_bonsai_home_settings'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
