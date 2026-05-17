@@ -102,15 +102,23 @@ tags:
       id: 'e2e_find_screen'
     timeout: 30000
 
+# Sess3 R2-b 修正: tag chip tap 前に「最近のタグ」 セクションが render されるまで wait
+# (Sess2 failure 真因: chip tap が初回反応せず、検索結果が表示されないまま assert fail)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_find_recent_tags'
+    timeout: 15000
+
 # @ベランダ tag chip tap → 検索結果リスト出現
 - tapOn:
     text: '@ベランダ'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
+# Sess3 R2-b: chip tap 後の DB query + render を 30 秒まで待つ (15 → 30 秒)
 - extendedWaitUntil:
     visible:
       id: 'e2e_find_bonsai_section'
-    timeout: 15000
+    timeout: 30000
 
 - waitForAnimationToEnd

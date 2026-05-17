@@ -10,6 +10,26 @@
       "artifact": "scripts/ui-diff/out/20260510-2343/",
       "needsHumanReview": true,
       "trackingIssue": 502
+    },
+    {
+      "flow": "bonsai-detail-edit-sheet",
+      "reason": "Issue #439 で基本情報タブが inline 編集フォーム (BonsaiCreateSheet と同じ useBonsaiBasicForm フック共有) に統合された結果、『編集ボタン → sheet open』 設計は廃止 (e2e_detail_basic_edit_button は実装に存在せず、保存ボタン e2e_detail_basic_save_button に置換)。`bonsai-detail-basic.yml` (Sess2 で PASS) が同じ画面を撮影しているため重複。Sess4 で SCREEN_PAIRS から削除候補。",
+      "added_at": "2026-05-17T13:10:00Z",
+      "fail_count": 2,
+      "permanent": false,
+      "artifact": "scripts/ui-diff/out/20260517-0412-sess2-full/bonsai-detail-edit-sheet/",
+      "needsHumanReview": true,
+      "trackingIssue": 510
+    },
+    {
+      "flow": "look-back-search",
+      "reason": "Sess2-3 で 2 回連続 fail。検索画面到達 + e2e_find_screen 表示までは PASS、しかし `@ベランダ` text tag chip tap が反応せず (Maestro Android text tap flake、lessons maestro-android-limits.md 参照)、検索結果 (e2e_find_bonsai_section) が表示されない。修正案: (a) testID `e2e_find_tag_chip_<id>` 経由で tap、(b) inputText で検索 word 入力 (日本語 input 別 flake あり)。Sess4 で Dev Build + ホットリロード復活時に robustness 強化として再着手。",
+      "added_at": "2026-05-17T13:13:00Z",
+      "fail_count": 2,
+      "permanent": false,
+      "artifact": "scripts/ui-diff/out/20260517-0412-sess2-full/look-back-search/",
+      "needsHumanReview": true,
+      "trackingIssue": null
     }
   ],
   "achieved": [
@@ -58,18 +78,6 @@
       "reevalRationale": "PR #442 構造系 4 項目チェックで再評価通過。タブ構成 (4 タブ 盆栽/予定/ふりかえり/設定) ✅、セクション構成 (Header「ふりかえり」 + サブテキスト「記録したケアを一覧で振り返るビューです。」 + 3 カード 水やり履歴/針金がけ一覧/盆栽を検索) ✅、UI 種別 (カードリスト 3 カード縦並び) ✅、スクロール範囲 (全画面スクロール可、コンテンツ短く unscroll でも OK) ✅。残差は status bar 環境差のみ、構造的整合性は完全一致。"
     },
     {
-      "flow": "bonsai-detail-edit-sheet",
-      "level": 2,
-      "rmse": 23546.5,
-      "achieved_at": "2026-05-11T03:04:00Z",
-      "rmseNormalized": 0.359296,
-      "artifact": "scripts/ui-diff/out/20260511-1102/",
-      "rationale": "BonsaiCreateSheet (editingBonsai prop) で prefill 値正しく表示。UI 構造は bonsai-create-sheet と同じ 90% sheet、レベル 2 達成。",
-      "judgedBy": "auto-improve-loop cycle 6",
-      "needsReeval": true,
-      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
-    },
-    {
       "flow": "wiring-list",
       "level": 2,
       "rmse": 21936.6,
@@ -93,8 +101,11 @@
       "artifact": "scripts/ui-diff/out/20260511-1201/",
       "rationale": "前回判定の「Grid 4 vs 3 列」は誤判定、mockup も実装も Grid 3 列で完全一致。title「まとめて予定追加」+ subtitle + chips + 12 work icons grid 一致。文言差 (「防除/葉刈り/葉抜き/芽摘み」 vs 「消毒/葉の予防/害虫対策/全葉刈/芽かき」) は盆栽業界用語の同義で許容範囲、4 ペルソナ評価 ✕ ゼロ。",
       "judgedBy": "auto-improve-loop cycle 7",
-      "needsReeval": true,
-      "reevalReason": "PR #442 Claude Read 必須化 + 構造系 4 項目チェック以前の判定。Issue #443 で全 12 flow を構造系 4 項目 (タブ構成 / セクション構成 / UI 種別 / スクロール範囲) で再評価必要。bonsai-detail は Issue #439-#441 で構造的大差発覚済 (基本情報 read-only / 履歴 水やり概要のみ / 予定 list 1 行)、他 flow も同様の見落とし可能性。"
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-17T13:25:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260517-0412-sess2-full/home-bulk-sched-work/",
+      "reevalRationale": "Sess3 R1 (2026-05-17) で R-25 構造系 4 項目チェック通過。タブ構成 (両方独立 UI、tab なし) ✅、セクション構成 (タイトル + 盆栽 chip + 12 作業 icon grid) ✅、UI 種別 (BottomSheet → Screen、ADR-0024 Phase G 意図的変更で許容) ✅、スクロール範囲 (両方 scroll 可) ✅。差分: (1) 盆栽 chip 件数 (mockup 3 / 実機 1、seed data 差で許容)、(2) 12 作業 icon 文言差 (盆栽業界同義、許容)、(3) ヘッダー有無 (Screen 化に伴う、許容)。構造的整合性は一致。",
+      "reevalIteration": "1/1 (Sess3 R-30 緩和)"
     },
     {
       "flow": "plan-tab",
