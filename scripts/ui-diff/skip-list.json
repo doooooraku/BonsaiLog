@@ -283,10 +283,10 @@
       "rationale": "Sess1 PR-2 R-25 構造系 4 項目評価通過。Issue #526 真因確定 (ONBOARDING_STEP_ORDER で Language Next 後は tut5、tut1 ではない) 後の新規 ui-diff flow。Maestro 2/2 PASS (R-30 基準)。",
       "judgedBy": "Sess1 PR-2 (2026-05-16)",
       "needsReeval": false,
-      "reevalPassedAt": "2026-05-16T01:56:00Z",
-      "reevalArtifact": "scripts/ui-diff/out/20260516-1139-batch/onboarding-notification/",
-      "reevalRationale": "R-25 評価通過。タブ構成 (onboarding modal、タブなし) ✅、セクション構成 (Bell icon + Title「あなたが決めた予定だけお知らせ」 + 本文「あなたが決めた予定をお知らせします。通知はオフにもできます。いつでも設定から変更可能です。」 + 通知を有効にする CTA + あとで skip = 主要 5 要素完全一致) ✅、UI 種別 (縦並び center align) ✅、スクロール範囲 (1 画面内収まりスクロール無し) ✅。残差: (1) Bell icon 表現差 (mockup outline / 実機 🔔 emoji 黄色塗り、ICON_FALLBACK 仕様で許容)、(2) 右上 ⚙ 設定アイコン (実機のみ、Stack header 残骸、Issue #510 Phase 3 と同型 follow-up 候補)、(3) Header back button (mockup < あり / 実機 なし、onboarding 動線設計差で許容)、(4) Status bar 表示差 (mockup 9:41 / 実機 1:56、環境差で許容)。構造的整合性は完全一致。Issue #526 Closes、tut1/tut2 は mockup HTML 不在 (Issue #531) で永続 skip。",
-      "reevalIteration": "2/2"
+      "reevalPassedAt": "2026-05-17T17:40:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260517-1739-sess5pr2/onboarding-notification/",
+      "reevalRationale": "Sess5 PR-2 R-25 評価通過 + N-1〜N-5 改善後の再キャプチャ。タブ構成 (onboarding、タブなし) ✅、セクション構成 (Back ‹ + Bell outline SVG + Title「あなたが決めた予定をお知らせ」 (1 行、 16 文字) + Body「いつでも設定からオン/オフできます。」 (1 行、 18 文字) + 通知を有効にする CTA + あとで underline link = 主要 6 要素完全一致) ✅、UI 種別 (縦並び center align) ✅、スクロール範囲 (1 画面内収まりスクロール無し) ✅。改善: (1) N-1 Header に Back button ‹ 追加で ADR-0018 §⑥ §35 整合性回復、(2) N-2 Bell icon を 🔔 emoji → outline SVG (BRAND_GREEN stroke 2.5、 viewBox 64) に変更で mockup 完全整合、(3) N-3 Title 「だけ」 削除で 18→16 文字、 1 行表示で改行不自然解消、(4) N-4 Body 端的化 (54→18 文字、 「いつでも設定からオン/オフできます。」、 押し付けがましさゼロ + R-3 品の良さ + 4 ペルソナ ✕ ゼロ)、(5) N-5 styles.skipText に textDecorationLine: 'underline' 追加で mockup 整合。残差: (1) 歯車 ⚙ FAB 右上 (Expo PR #44251 Android Native bug 受容、 Sess4 確定、 修正待ち)、(2) Status bar 環境差 (許容、 mockup 9:41 / 実機実時刻)、(3) Android vs iPhone 15 Pro mockup OS 差 (許容)。構造的整合性 + mockup 整合性ともに完全達成。Title/Body 文字数削減で「内容多い」 user 指摘も解消。",
+      "reevalIteration": "3/3 (Sess5 PR-2)"
     },
     {
       "flow": "bonsai-select-mode",

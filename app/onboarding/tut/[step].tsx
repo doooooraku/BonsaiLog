@@ -16,6 +16,7 @@ import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
@@ -102,12 +103,28 @@ export default function OnboardingTutScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']} testID="e2e_onboarding_tut">
+      <View style={styles.header}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('back')}
+          testID="e2e_onboarding_tut_back"
+          onPress={() => router.back()}
+          style={styles.backButton}
+          hitSlop={8}
+        >
+          <ThemedText style={styles.backIcon}>‹</ThemedText>
+        </Pressable>
+      </View>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.iconRow}>
-          {/* Lucide icon は将来導入。現状は絵文字 fallback で a11y 維持。 */}
-          <ThemedText style={styles.iconText} accessibilityLabel={meta.icon}>
-            {ICON_FALLBACK[meta.icon] ?? '•'}
-          </ThemedText>
+          {/* Bell は outline SVG で mockup 整合 (Sess5 PR-2)、他 icon は将来 Lucide 導入まで絵文字 fallback で a11y 維持。 */}
+          {meta.icon === 'bell' ? (
+            <BellIcon size={64} color={BRAND_GREEN} />
+          ) : (
+            <ThemedText style={styles.iconText} accessibilityLabel={meta.icon}>
+              {ICON_FALLBACK[meta.icon] ?? '•'}
+            </ThemedText>
+          )}
         </View>
         <ThemedText style={styles.title}>{t(meta.titleKey as TranslationKey)}</ThemedText>
         <ThemedText style={styles.body}>{t(meta.bodyKey as TranslationKey)}</ThemedText>
@@ -146,8 +163,42 @@ const ICON_FALLBACK: Record<string, string> = {
   bell: '🔔',
 };
 
+/** Bell outline SVG (mockup 01-Onboarding.html NotificationScreen 整合、Sess5 PR-2)。 */
+function BellIcon({ size = 64, color = BRAND_GREEN }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+      <Path
+        d="M32 10 C22 10 18 18 18 28 C18 38 14 44 10 48 L54 48 C50 44 46 38 46 28 C46 18 42 10 32 10 Z"
+        stroke={color}
+        strokeWidth={2.5}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M27 48 C27 52 29 56 32 56 C35 56 37 52 37 48"
+        stroke={color}
+        strokeWidth={2.5}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG_PRIMARY },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    minHeight: 36,
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backIcon: { fontSize: 28, lineHeight: 32, color: BRAND_GREEN, fontWeight: '500' },
   scroll: { flexGrow: 1, padding: 24, justifyContent: 'center', gap: 16 },
   iconRow: { alignItems: 'center', marginBottom: 16 },
   iconText: { fontSize: 64, lineHeight: 72 },
@@ -171,5 +222,5 @@ const styles = StyleSheet.create({
   },
   ctaText: { color: ON_BRAND, fontWeight: '600', fontSize: 17, letterSpacing: 0.5 },
   skipBtn: { paddingVertical: 12, alignItems: 'center', minHeight: 48, justifyContent: 'center' },
-  skipText: { fontSize: 14, opacity: 0.7 },
+  skipText: { fontSize: 14, opacity: 0.7, textDecorationLine: 'underline' },
 });
