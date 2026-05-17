@@ -188,7 +188,7 @@ export default function BonsaiHomeScreen() {
       const tagIds = selectedFilter === ALL_FILTER_ID ? undefined : [selectedFilter];
       const [bonsai, recentTags] = await Promise.all([
         getAllActiveBonsaiWithSpecies(lang, tagIds ? { tagIds } : undefined),
-        getRecentTags(8),
+        getRecentTags(5),
       ]);
       setTags(recentTags);
       const cards = await Promise.all(
@@ -206,13 +206,16 @@ export default function BonsaiHomeScreen() {
     }, [reload]),
   );
 
+  // Sess6 PR-1: 「すべて」 chip 削除 + タグ 5 件のみ (user 要望、 直近作成順 = getRecentTags の created_at DESC)。
+  // フィルタ解除動線: 選択中 chip を再 tap で `ALL_FILTER_ID` (= 全件表示) に戻す (handleChipSelect で toggle)。
   const filterChips = useMemo<FilterChip[]>(
-    () => [
-      { id: ALL_FILTER_ID, label: t('homeFilterAll') },
-      ...tags.map((tg) => ({ id: tg.id, label: tg.name })),
-    ],
-    [tags, t],
+    () => tags.map((tg) => ({ id: tg.id, label: tg.name })),
+    [tags],
   );
+
+  const handleChipSelect = useCallback((id: string) => {
+    setSelectedFilter((prev) => (prev === id ? ALL_FILTER_ID : id));
+  }, []);
 
   // Issue #253: フィルタは bonsaiRepository.getAllActiveBonsaiWithSpecies(lang, { tagIds })
   // で SQL 側に委譲済 (M:N JOIN + AND セマンティクス)。クライアント側の追加フィルタは不要。
@@ -412,7 +415,7 @@ export default function BonsaiHomeScreen() {
       <HomeFilterTabs
         chips={filterChips}
         selectedId={selectedFilter}
-        onSelect={setSelectedFilter}
+        onSelect={handleChipSelect}
         testID="e2e_home_filter_tabs"
       />
       <FlatList

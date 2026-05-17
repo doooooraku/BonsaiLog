@@ -108,5 +108,5 @@ export function AdBanner() {
 
 const styles = StyleSheet.create({
   // ADR-0020 Phase 9: 上下 8dp (Repolog 同等、誤タップ防止しつつ占有最小化)
-  container: { paddingVertical: 8, alignItems: 'center' },
+  container: { paddingTop: 8, paddingBottom: 0, alignItems: 'center' },
 });

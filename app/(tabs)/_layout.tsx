@@ -11,15 +11,14 @@ import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { CalendarIcon, CogIcon, LeafIcon, PencilNavIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const { t } = useTranslation();
-  const scheme = colorScheme === 'dark' ? 'dark' : 'light';
-  const c = Colors[scheme];
+  // Sess6 PR-1: TabBar 強制 light 固定 (user 「ライトモード設定なのに dark」 bug 解消、
+  // dark mode 完全対応は Phase C 別 PR で扱う、 ADR-0015 TT2 パターン拡張)。
+  const c = Colors.light;
 
   return (
     <Tabs
