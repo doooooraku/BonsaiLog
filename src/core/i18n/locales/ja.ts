@@ -684,8 +684,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailTimelinePastCollapsed: '過去水やりは折りたたみ',
   back: '戻る',
   tabRecord: '記録',
-  recordTabStubDesc:
-    '記録タブ — Phase 2 で「タブ tap で複数選択モード + 一括記録」 動線を実装予定。 現状は盆栽詳細 → FAB → 作業選択から記録できます。',
+  planFabLabel: '一括予定追加',
+  recordFabLabel: '一括記録',
+  recordTabEmptyTitle: 'まとめて記録する',
+  recordTabEmptyDesc: '右下の + ボタンで複数の盆栽にまとめて記録できます。',
+  bulkSelectModalTitle: '盆栽を選ぶ',
+  bulkSelectModalNotice: '盆栽を選んでください ({count}件選択中)',
 };
 
 export default ja;

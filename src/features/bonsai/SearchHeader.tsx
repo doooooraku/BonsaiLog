@@ -37,8 +37,12 @@ type Props = {
   /** 複数選択モードの状態 (default false、selectMode 表示色と aria-state 用) */
   selectMode?: boolean;
   /**
-   * 複数選択モードトグル callback (undefined ならボタン非表示)。
-   * mockups v1.0 02-Home.html の HomeHeader 「複数選択」テキストボタン整合。
+   * 複数選択モード キャンセル callback (undefined ならボタン非表示)。
+   *
+   * ADR-0025 Phase 2 (Sess8 PR-2): 「複数選択」 text button (selectMode=false 時) を廃止、
+   * selectMode=true 時のみ「キャンセル」 text button として表示する。
+   * 長押し → selectMode 入り経路は維持 (盆栽タブ mockup v1.0 02-Home.html `onCardLongPress`)、
+   * cancel 経路として本 prop を残す。
    */
   onSelectPress?: () => void;
   /**
@@ -101,18 +105,18 @@ export function SearchHeader({
         {displayTitle}
       </ThemedText>
       <View style={styles.actions}>
-        {onSelectPress && (
+        {onSelectPress && selectMode && (
           <Pressable
             accessibilityRole="button"
-            accessibilityState={{ selected: selectMode }}
-            accessibilityLabel={selectMode ? t('selectModeCancel') : t('selectModeAction')}
+            accessibilityState={{ selected: true }}
+            accessibilityLabel={t('selectModeCancel')}
             testID={`e2e_${testIdSuffix}_select_toggle`}
             style={styles.selectBtn}
             hitSlop={8}
             onPress={onSelectPress}
           >
             <ThemedText style={[styles.selectText, { color: c.text }]} numberOfLines={1}>
-              {selectMode ? t('selectModeCancel') : t('selectModeAction')}
+              {t('selectModeCancel')}
             </ThemedText>
           </Pressable>
         )}

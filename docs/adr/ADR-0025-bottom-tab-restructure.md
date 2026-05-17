@@ -47,9 +47,9 @@
 
 ### ③ 「複数選択」 button (Header) 削除 + 長押し経路維持
 
-9. **SearchHeader の `onSelectPress` prop 廃止** = Header 「複数選択」 text button 削除 (盆栽タブのみ影響、 他タブは元々非表示)
-10. **盆栽タブの「カード長押し → selectMode 入り」 経路は維持** (mockup v1.0 02-Home.html `onCardLongPress` 整合、 user 真意「複数選択 button のみ削除」)
-11. SelectionToolbar は **Phase 2 で「予定/記録タブ FAB 経由」 + 「盆栽タブ長押し経由」 の 2 経路で表示**、 component 自体は再利用、 共通 hook `useBulkActionFlow` で経路集約
+9. **SearchHeader の「複数選択」 text button (selectMode=false 時) を非表示化** = Header の常時表示「複数選択」 ボタンは消える、 ただし `onSelectPress` prop は **keep** (selectMode=true 時の cancel button としてのみ機能、 Phase 2 実装で `selectMode && onSelectPress` 条件に変更)
+10. **盆栽タブの「カード長押し → selectMode 入り」 経路は維持** (mockup v1.0 02-Home.html `onCardLongPress` 整合、 user 真意「複数選択 button のみ削除」)、 長押し後の cancel 経路は SearchHeader の「キャンセル」 button (selectMode=true 時のみ表示) で確保
+11. SelectionToolbar は **Phase 2 で「予定/記録タブ FAB 経由 → bonsai-multi-select modal」 + 「盆栽タブ長押し経由」 の 2 経路で表示**、 component 自体は再利用、 共通 hook `useBulkActionFlow` で予定/記録タブ動線を集約
 
 ### ④ 設定 = Header 経由 (既実装の活用、 Phase 1c で hotfix 完了)
 

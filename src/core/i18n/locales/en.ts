@@ -685,8 +685,12 @@ const baseEn = {
   detailTimelinePastCollapsed: 'Past watering: collapsed',
   back: 'Back',
   tabRecord: 'Record',
-  recordTabStubDesc:
-    'Record tab — Phase 2 will implement action start on tap (multi-select mode + Bulk Work Picker).',
+  planFabLabel: 'Bulk schedule',
+  recordFabLabel: 'Bulk record',
+  recordTabEmptyTitle: 'Bulk record care',
+  recordTabEmptyDesc: 'Tap + to record care for multiple bonsai at once.',
+  bulkSelectModalTitle: 'Select bonsai',
+  bulkSelectModalNotice: 'Choose bonsai to record or schedule ({count} selected)',
 };
 
 export type TranslationKey = keyof typeof baseEn;

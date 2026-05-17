@@ -679,7 +679,11 @@ const nl: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Back',
   tabRecord: 'Opnemen',
-  recordTabStubDesc:
-    'Record tab — Phase 2 will implement action start on tap (multi-select mode + Bulk Work Picker).',
+  planFabLabel: 'Bulk schedule',
+  recordFabLabel: 'Bulk record',
+  recordTabEmptyTitle: 'Bulk record care',
+  recordTabEmptyDesc: 'Tap + to record care for multiple bonsai at once.',
+  bulkSelectModalTitle: 'Select bonsai',
+  bulkSelectModalNotice: 'Choose bonsai to record or schedule ({count} selected)',
 };
 export default nl;
