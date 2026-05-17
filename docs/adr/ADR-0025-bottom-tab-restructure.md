@@ -1,9 +1,9 @@
 # ADR-0025: 4 タブ構成変更 + 予定/記録タブ action 起動 + 設定 Header 移動 (BonsaiLog UX 動線最短化)
 
-- Status: Proposed (2026-05-17、 Sess7 PR-1 起票)
-- Date: 2026-05-17
+- Status: **Accepted (2026-05-17 Sess8 PR-1 で案 A → 案 B 切替決定、 Notes Amended 参照)**
+- Date: 2026-05-17 (Sess7 PR-1 起票) → 2026-05-17 (Sess8 PR-1 案 B 切替)
 - Deciders: @doooooraku
-- Supersedes (partial): [ADR-0020](./ADR-0020-claude-design-full-adoption.md) §3 タブ構成 (row 18 設定タブ削除 + row 5 タブ tap action 起動)
+- Supersedes (partial): [ADR-0020](./ADR-0020-claude-design-full-adoption.md) §3 タブ構成 (row 18 設定タブ削除、 タブは画面切替維持 = 業界慣用整合)
 - Related: ADR-0011 (記録のみ哲学) / ADR-0017 (ATT/UMP) / ADR-0018 (オンボ統合) / ADR-0024 (BottomSheet 全廃) / ADR-0015 (テーマ light 固定 Sess6 PR-1)
 
 ---
@@ -37,55 +37,61 @@
 2. **設定タブ削除**: app/(tabs)/settings/ → app/settings/ に移動 (タブ外 Stack route、 既存 SearchHeader.Cog button から router.push('/settings') で到達)
 3. **記録タブ新設**: app/(tabs)/record/\_layout.tsx + index.tsx 新規作成
 
-### ② 予定/記録タブ action 起動 (Phase 2 で実装、 本 ADR は意思決定のみ)
+### ② 予定/記録タブ FAB 起動 (Phase 2 で実装、 案 B 採用 2026-05-17 Sess8 PR-1)
 
-4. **予定タブ tap**: 盆栽選択モード自動入り → user 盆栽複数選択 → SelectionToolbar 「予定追加」 → BulkScheduleDateSheet 起動経路
-5. **記録タブ tap**: 盆栽選択モード自動入り → user 盆栽複数選択 → SelectionToolbar 「一括記録」 → BulkWorkPickerSheet 起動経路
-6. **盆栽 0 件**: 各タブ tap で empty state + 「盆栽を追加」 CTA (盆栽タブへ誘導)
-7. **盆栽 1 件のみ**: 自動 1 件選択固定 + 直接 BulkScheduleDateSheet / BulkWorkPickerSheet 起動 (selectMode 不要)
+4. **予定タブ tap**: 通常画面遷移 (月カレンダー画面表示) → 右下 FAB (+) tap → 盆栽選択モード入り → user 盆栽複数選択 → BulkScheduleDateSheet 起動経路
+5. **記録タブ tap**: 通常画面遷移 (記録一覧 or empty 画面表示) → 右下 FAB (+) tap → 盆栽選択モード入り → user 盆栽複数選択 → BulkWorkPickerSheet 起動経路
+6. **盆栽 0 件**: 各タブで FAB tap → empty state + 「盆栽を追加」 CTA (盆栽タブへ誘導)
+7. **盆栽 1 件のみ**: FAB tap → 自動 1 件選択固定 + 直接 BulkScheduleDateSheet / BulkWorkPickerSheet 起動 (selectMode 不要)、 キャンセル時は盆栽タブに戻す
+8. **盆栽 2+ 件**: 通常 selectMode + SelectionToolbar 既存パターン (盆栽タブ FAB 経由と同等)
 
-### ③ 「複数選択」 button (Header) 削除
+### ③ 「複数選択」 button (Header) 削除 + 長押し経路維持
 
-8. **SearchHeader の `onSelectPress` prop 廃止** = Header 「複数選択」 text button 削除 (盆栽タブのみ影響、 他タブは元々非表示)
-9. SelectionToolbar は **Phase 2 で「予定/記録タブ tap 経由のみ表示」 に動線変更**、 component 自体は再利用
+9. **SearchHeader の `onSelectPress` prop 廃止** = Header 「複数選択」 text button 削除 (盆栽タブのみ影響、 他タブは元々非表示)
+10. **盆栽タブの「カード長押し → selectMode 入り」 経路は維持** (mockup v1.0 02-Home.html `onCardLongPress` 整合、 user 真意「複数選択 button のみ削除」)
+11. SelectionToolbar は **Phase 2 で「予定/記録タブ FAB 経由」 + 「盆栽タブ長押し経由」 の 2 経路で表示**、 component 自体は再利用、 共通 hook `useBulkActionFlow` で経路集約
 
-### ④ 設定 = Header 経由 (既実装の活用)
+### ④ 設定 = Header 経由 (既実装の活用、 Phase 1c で hotfix 完了)
 
-10. SearchHeader.showSettings = default true 維持、 既存の Cog (歯車) icon → router.push('/settings') 経路を全タブで活用
-11. settings タブ削除後、 '/settings' route は app/settings/index.tsx (Stack route) として独立
+12. SearchHeader.showSettings = default true 維持、 既存の Cog (歯車) icon → router.push('/settings') 経路を全タブで活用
+13. settings タブ削除後、 '/settings' route は app/settings/index.tsx (Stack route) として独立
+14. **Phase 1c hotfix (2026-05-17 Sess8 PR-1)**: SearchHeader.tsx:138 path 修正 (`/(tabs)/settings` → `/settings`) + look-back/index.tsx:81 `showSettings={false}` 削除 + Maestro flow 19 個経路修正
 
 ### ⑤ ふりかえりタブは現状維持
 
-12. CareHub 3 カード (水やり履歴 / 針金がけ一覧 / 盆栽を検索) の動線 / 機能変更なし
+15. CareHub 3 カード (水やり履歴 / 針金がけ一覧 / 盆栽を検索) の動線 / 機能変更なし
 
 ---
 
 ## Decision Drivers（判断の軸：何を大事にした？）
 
-- **Driver 1: user 動線最短化** (UX 向上) = 「複数選択」 button + SelectionToolbar 経由 3-4 アクション → タブ tap 直接 1 アクション
-- **Driver 2: 未リリース段階の評価軸クリア化** = 慣用学習コストはリリース後評価、 リリース前は「目指す UX」 が優先
-- **Driver 3: 業界事例参考** = Strava Record タブ pattern (タブ = action 起動)、 Apple HIG Settings は Header (= secondary content)
+> **2026-05-17 Sess8 PR-1 Notes Amended**: 案 A (タブ tap intercept) → 案 B (FAB 起動) 切替に伴い Driver 再構成。
+> Strava 業界事例の誤引用判明 + Apple HIG iOS 26 「タブはコンテンツ表示、 action 起動 NG」 認識を反映。
+
+- **Driver 1: user 動線最短化** (UX 向上) = 「複数選択」 button + SelectionToolbar 経由 3-4 アクション → タブ tap → FAB tap 2 アクション (50% 削減)
+- **Driver 2: 業界慣用整合 (Apple HIG iOS 26)** = タブはコンテンツ表示、 action は FAB が業界 best practice ([Modern iOS Navigation Patterns](https://frankrausch.com/ios-navigation/) / [iOS 26 Tab Bar](https://ryanashcraft.com/ios-26-tab-bar-beef/))
+- **Driver 3: 業界事例参考 (訂正)** = **Strava Record タブは実は画面切替 + 画面内 Start ボタン** (案 C 系、 案 A ではない)、 Day One / Bear / Notion = タブ + FAB が標準、 Apple HIG Settings は Header
 - **Driver 4: ADR-0011 記録のみ哲学整合** = 動線最短化 + push 通知 / 推奨は出さない
-- **Driver 5: 既存 SearchHeader.showSettings 活用** = 「Header 歯車 ⚙」 既実装で Phase 1b 工数大幅削減
-- **Driver 6: 4 ペルソナ全 ✕ なし** (R-10 クリア)
+- **Driver 5: 既存 SearchHeader.showSettings + 盆栽タブ FAB パターン活用** = 「Header 歯車 ⚙」 + 「右下 FAB (+)」 既実装で Phase 2 工数大幅削減
+- **Driver 6: 4 ペルソナ全 ◎ or ○** (案 B 切替後の再評価で R-10 クリア、 案 A 時の △ 3 件 → 案 B で全 ◎ or ○ に改善)
 
 ---
 
 ## Alternatives considered（他の案と却下理由）
 
-### 案 A (採用): 4 タブ + 予定/記録 action 起動 + 設定 Header 移動
+### 案 A (却下、 2026-05-17 Sess8 PR-1 再評価): 4 タブ + 予定/記録タブ tap intercept
 
-- 概要: 上記 Decision §①〜⑤
-- 良い点: 動線最短化、 user 真意整合、 業界事例 (Strava) 参考、 ADR-0011 整合
-- 悪い点: タブ = action 起動は慣用と異なる、 シニア (高橋 62 歳) 一時的違和感の可能性 (リリース後評価)
-- → **採用** (動線最短化 + 4 ペルソナ ✕ なし)
+- 概要: 予定/記録タブ tap で `e.preventDefault()` → 画面遷移を block → sheet 直接起動
+- 良い点: 動線最短 1 tap、 (当初評価) Strava パターン整合
+- 悪い点: **Strava 業界事例の誤引用判明** (Strava は実は案 C 系、 タブ = 画面切替 + 画面内 Start ボタン)、 **Apple HIG iOS 26 anti-pattern** (タブはコンテンツ表示、 action 起動 NG)、 シニア (高橋 62 歳) + Marcus + ライト 全員 △ 評価、 expo-router lazy render 制約で `_layout.tsx` 集約必須、 Maestro flow 14+ 個全壊リスク
+- → **却下** (Sess8 PR-1 議論で再評価、 業界慣用整合と 4 ペルソナ評価で案 B が優位)
 
-### 案 B: 4 タブ + FAB (action は FAB 起動)
+### 案 B (採用、 2026-05-17 Sess8 PR-1 切替): 4 タブ + 各タブ FAB (action は FAB 起動)
 
-- 概要: 盆栽 / 予定 / 記録 / ふりかえり、 各画面右下 FAB (+) で予定追加 / 記録追加 起動
-- 良い点: 業界慣用 (タブ = 画面遷移)、 シニア混乱なし
-- 悪い点: FAB に複数 action (予定 / 記録 / 1 件 / 複数) を集約で UI 複雑、 動線案 A より + 1 tap
-- → **却下** (動線最短化原則違反)
+- 概要: 盆栽 / 予定 / 記録 / ふりかえり、 各タブは通常画面遷移、 予定/記録タブで右下 FAB (+) tap → 盆栽選択モード → BulkScheduleDateSheet / BulkWorkPickerSheet 起動
+- 良い点: 業界慣用 (Apple HIG / iOS 26 整合)、 シニア混乱なし、 4 ペルソナ全 ◎ or ○、 既存盆栽タブ FAB + SelectionToolbar 資産活用、 Maestro 既存パターン再利用可、 月カレンダー画面 (plan/index.tsx) 維持
+- 悪い点: 動線案 A より + 1 tap (タブ → FAB)、 ただし mockup v1.0 + 業務ペルソナで許容
+- → **採用** (Driver 1-6 全達成 + 4 ペルソナ R-10 クリア + 業界慣用整合)
 
 ### 案 C: 4 タブ現状維持 + 「複数選択」 button 改善のみ
 
@@ -130,15 +136,15 @@
 
 ### Subject to Revision（変更前提）
 
-- リリース後 user feedback で「タブ = action 起動」 違和感が顕著なら案 B (FAB) or 案 C (現状維持) へ revert
-- シニア混乱が tutorial で吸収できない場合、 ADR 改訂
+- 案 B 採用後 (2026-05-17 Sess8 PR-1)、 リリース後 user feedback で「FAB 不要 / 別 UI」 要望が顕著なら ADR 改訂
 
 ### Follow-ups（後でやる宿題）
 
-- [ ] **Phase 1b (Sess7 PR-1 本 PR)**: ADR-0025 起票 + TabBar 4 タブ構造変更 (settings 削除 + record 新設 stub) + ADR-0020 §3 Notes Amended
-- [ ] **Phase 2 (Sess7 PR-2 別 PR)**: 予定/記録タブ action 起動実装 + SelectionToolbar 動線変更 + 「複数選択」 button 削除
-- [ ] **Phase 3 (Sess7 PR-3 別 PR)**: Maestro flow 更新 (settings-tab.yml + 新 record-tab.yml + plan-tab.yml 更新) + skip-list 更新 + pairing-report 更新
-- [ ] **Phase 4 (Sess7+ 任意)**: tutorial 追加 (シニア向け「予定/記録タブ = action 起動」 説明)、 Phase 2 リリース後 user feedback 次第
+- [x] **Phase 1b (Sess7 PR-1 #543 merged)**: ADR-0025 起票 + TabBar 4 タブ構造変更 (settings 削除 + record 新設 stub) + ADR-0020 §3 Notes Amended
+- [ ] **Phase 1c (Sess8 PR-1 本 PR、 hotfix)**: 案 A → 案 B 切替 (本 ADR 改訂) + SearchHeader path hotfix + look-back showSettings hotfix + Maestro flow 19 個経路修正
+- [ ] **Phase 2 (Sess8 PR-2 別 PR)**: 予定/記録タブ FAB 実装 + 共通 hook useBulkActionFlow 抽出 + SearchHeader.onSelectPress 削除 + 盆栽 0/1/2+ 件 edge case
+- [ ] **Phase 3 (Sess8 PR-3 別 PR)**: Maestro flow 新規 (plan-tab-fab.yml + record-tab.yml) + bonsai-tab.yml 更新 + skip-list 更新 + pairing-report 更新
+- ~~Phase 4 (tutorial 追加)~~ **削除 (2026-05-17 Sess8 PR-1)**: 案 B 採用で業界慣用整合 = tutorial 不要
 
 ---
 
@@ -195,31 +201,33 @@
 
 ## Notes（メモ：任意）
 
-### 4 ペルソナ評価マトリクス (R-10 クリア、 学習コスト軸はリリース前無効)
+### 4 ペルソナ評価マトリクス (R-10 クリア、 2026-05-17 Sess8 PR-1 案 B 切替後の再評価)
 
-| 要素                                 | 高橋 62 歳         | Marcus 35 歳 | 盆栽園プロ | ライト           | 総合 |
-| ------------------------------------ | ------------------ | ------------ | ---------- | ---------------- | ---- |
-| 4 タブ (盆栽/予定/記録/ふりかえり)   | ◎ シンプル         | ◎ モダン     | ◎ 業務効率 | ◎ ガイド         | ◎    |
-| 設定 = Header 歯車 (既実装活用)      | ○ シニアは慣用通り | ◎ 業界標準   | ◎          | ◎                | ◎    |
-| 予定/記録 タブ action 起動 (Phase 2) | △ → tutorial で○   | ◎ 動線最短   | ◎ 業務効率 | ○ → tutorial で◎ | ◎    |
-| 「複数選択」 button (Header) 削除    | ◎ シンプル         | ◎ 不要       | ◎          | ◎                | ◎    |
+| 要素                                     | 高橋 62 歳         | Marcus 35 歳 | 盆栽園プロ | ライト     | 総合 |
+| ---------------------------------------- | ------------------ | ------------ | ---------- | ---------- | ---- |
+| 4 タブ (盆栽/予定/記録/ふりかえり)       | ◎ シンプル         | ◎ モダン     | ◎ 業務効率 | ◎ ガイド   | ◎    |
+| 設定 = Header 歯車 (既実装活用)          | ○ シニアは慣用通り | ◎ 業界標準   | ◎          | ◎          | ◎    |
+| 予定/記録 タブ FAB 起動 (案 B、 Phase 2) | ◎ 業界慣用         | ◎ 業界標準   | ○ 業務効率 | ◎ 業界慣用 | ◎    |
+| 「複数選択」 button (Header) 削除        | ◎ シンプル         | ◎ 不要       | ◎          | ◎          | ◎    |
+| カード長押し → selectMode 維持           | ○ 既存挙動         | ◎ 業界標準   | ◎ 業務効率 | ○ 既存挙動 | ◎    |
 
-→ **全要素で全ペルソナ ○ 以上、 ✕ ゼロ** (R-10 クリア)、 リリース後の慣用評価は別途。
+→ **全要素で全ペルソナ ○ 以上、 ✕ ゼロ** (R-10 クリア)、 案 A 当時の △ 3 件 (高橋 / Marcus / ライト の予定/記録タブ評価) が案 B 切替後に ◎ に改善。
 
 ### R-26 ブランド統一感評価 (5 軸目)
 
 - 4 タブ統一感: ◎ (盆栽/予定/記録/ふりかえり = 動詞 / 名詞混在 OK、 一貫した動線)
 - 業界事例整合: ◎ (Strava / Apple HIG)
 
-### Phase 分割計画詳細
+### Phase 分割計画詳細 (2026-05-17 Sess8 PR-1 改訂)
 
-| Phase        | 内容                                                                                                                       | PR                 | 工数      |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------- | ------------------ | --------- |
-| **1a**       | ADR-0025 起票 (本 doc)                                                                                                     | Sess7 PR-1         | 45 分     |
-| **1b**       | TabBar 4 タブ構造変更 (settings → app/settings/ 移動、 record タブ stub、 ADR-0020 §3 Notes Amended、 i18n tabRecord 追加) | Sess7 PR-1 (同 PR) | 60-90 分  |
-| **2**        | 予定/記録タブ action 起動実装 + SelectionToolbar 動線変更 + 「複数選択」 button 削除 + 盆栽 0/1 件 edge case               | Sess7 PR-2         | 90-120 分 |
-| **3**        | Maestro flow 更新 + skip-list 更新 + pairing-report 更新                                                                   | Sess7 PR-3         | 60-90 分  |
-| **4 (任意)** | tutorial 追加 (シニア向け action 起動説明)                                                                                 | Sess7+ PR-4        | 60-90 分  |
+| Phase  | 内容                                                                                                                              | PR                 | 工数       | Status    |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ---------- | --------- |
+| **1a** | ADR-0025 起票 (本 doc)                                                                                                            | Sess7 PR-1         | 45 分      | ✅ #543   |
+| **1b** | TabBar 4 タブ構造変更 (settings → app/settings/ 移動、 record タブ stub、 ADR-0020 §3 Notes Amended、 i18n tabRecord 追加)        | Sess7 PR-1 (同 PR) | 60-90 分   | ✅ #543   |
+| **1c** | **案 A → 案 B 切替 (本 ADR 改訂)** + Phase 1b hotfix (SearchHeader path / look-back showSettings / Maestro flow 19 個経路修正)    | Sess8 PR-1         | 90-120 分  | 🔧 進行中 |
+| **2**  | 予定/記録タブ **FAB** 実装 (案 B) + 共通 hook useBulkActionFlow 抽出 + SearchHeader.onSelectPress 削除 + 盆栽 0/1/2+ 件 edge case | Sess8 PR-2         | 150-180 分 | ⏳ 待機   |
+| **3**  | Maestro flow 新規 (plan-tab-fab.yml + record-tab.yml) + bonsai-tab.yml 更新 + skip-list 更新 + pairing-report 更新                | Sess8 PR-3         | 60-90 分   | ⏳ 待機   |
+| ~~4~~  | ~~tutorial 追加 (シニア向け action 起動説明)~~ **削除 (案 B 採用で業界慣用整合 = tutorial 不要)**                                 | -                  | -          | ❌ 削除   |
 
 ### 既存実装で活用済 (Phase 1b 工数削減)
 
@@ -231,6 +239,37 @@
 
 - 「未リリース段階で慣用学習コスト評価軸は無効、 リリース後 user feedback で必要に応じて改訂」 (Sess7 PR-1 で確立、 user フィードバック由来)
 - 「ADR 起票時の 5 軸評価 (4 ペルソナ + ブランド統一感) でリリース前は『学習コスト』 を別軸として扱う」
+- **「業界事例引用時は必ず 1 次情報で裏取り」 (Sess8 PR-1 で確立)**: ADR-0025 初版で「Strava Record タブ = action 起動」 と引用したが、 1 次情報確認で **実は案 C 系 (タブ = 画面切替 + 画面内 Start)** と判明、 ADR Decision Drivers の根拠が崩れた。 業界事例引用時の 1 次情報裏取り (Strava Support / Apple HIG / Frank Rausch iOS Navigation 等) を必須化。
+- **「Apple HIG iOS 26 anti-pattern 認識」 (Sess8 PR-1 で確立)**: 「タブ = action 起動」 は業界 UX 観点で anti-pattern として認識されている (iOS 26 で再強調)、 ADR 起票時に Apple HIG 整合性チェックを必須化。
+
+### Notes Amended 2026-05-17 Sess8 PR-1 (案 A → 案 B 切替議論)
+
+#### 議論経緯
+
+- **Sess7 PR-1 (#543)**: ADR-0025 起票 + Phase 1a/1b 完了、 Status: Proposed (案 A = タブ tap intercept)
+- **Sess8 PR-1 議論** (本 ADR 改訂)\*\*: user prompt「Phase 2 を進めてください」 → /discuss 起動 → 重大発見 3 件:
+  1. **Phase 1b 漏れ 3 件**: SearchHeader.tsx:138 path `/(tabs)/settings` (古い)、 look-back/index.tsx:81 `showSettings={false}` (歯車不表示)、 Maestro flow 19 個 `e2e_tab_settings` tap 経路 (testID 消失)
+  2. **業界事例の誤引用判明**: Strava Record タブは **実は画面切替 + 画面内 Start ボタン** (案 C 系)、 ADR-0025 初版「Strava = タブ action 起動」 は事実誤認
+  3. **Apple HIG iOS 26 anti-pattern 認識**: 「タブはコンテンツ表示、 action 起動 NG」 が業界 best practice、 案 A は anti-pattern
+- **4 ペルソナ再評価**: 案 A 採用時 △ 3 件 (高橋 / Marcus / ライト)、 案 B 切替後 全 ◎ or ○
+- **expo-router lazy render 制約**: タブ listener は `<Tabs.Screen listeners>` 経由で `_layout.tsx` に集約必須、 screen 内では遅延発火 (公式仕様)、 案 A 採用時の実装難度 + Maestro 14+ 個全壊リスク追加発覚
+
+#### 切替決定事項
+
+- 案 A → 案 B (FAB 起動) に切替、 ADR Decision §② 書き換え
+- Status: Proposed → **Accepted**
+- Phase 1c 新設 (本 PR): 案 B 切替 ADR 改訂 + Phase 1b hotfix
+- Phase 4 削除 (案 B = 業界慣用整合で tutorial 不要)
+- 共通 hook useBulkActionFlow 抽出を Phase 2 で明示 (user 真意「保守性優先」)
+- 盆栽タブ長押し → selectMode 経路維持 (mockup v1.0 由来、 user 真意「複数選択 button のみ削除」)
+
+#### Sources (1 次情報、 lessons 追記事項)
+
+- [Modern iOS Navigation Patterns · Frank Rausch](https://frankrausch.com/ios-navigation/)
+- [My Beef with the iOS 26 Tab Bar - Ryan Ashcraft](https://ryanashcraft.com/ios-26-tab-bar-beef/)
+- [Strava Recording an Activity (Support)](https://support.strava.com/hc/en-us/articles/216917397-Recording-an-Activity)
+- [Apple HIG Tab Bars](https://developer.apple.com/design/human-interface-guidelines/tab-bars)
+- [Navigation events | React Navigation v7](https://reactnavigation.org/docs/navigation-events/) (lazy render 制約)
 
 ### Repolog との差分
 

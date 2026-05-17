@@ -135,7 +135,7 @@ export function SearchHeader({
             testID={`e2e_${testIdSuffix}_settings`}
             style={styles.iconBtn}
             hitSlop={8}
-            onPress={() => router.push('/(tabs)/settings' as Href)}
+            onPress={() => router.push('/settings' as Href)}
           >
             <CogIcon size={24} color={c.text} />
           </Pressable>

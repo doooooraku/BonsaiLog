@@ -9,7 +9,7 @@
 ## 2. Dev Client menu + Continue dismiss
 ## 3. Onboarding skip (Welcome → Language ja → Tut1-5)
 ## 4. 盆栽タブ Empty CTA visible
-## 5. 設定タブ tap (e2e_tab_settings)
+## 5. 設定タブ tap (e2e_bonsai_home_settings)
 ## 6. e2e_settings_screen 待ち
 ## 7. e2e_open_paywall scroll + tap
 ## 8. e2e_paywall_screen 表示確認
@@ -76,7 +76,7 @@ tags:
 
 # 設定タブ tap (testID 経由、text マッチ「設定」 は Developer Menu 誤起動回避)
 - tapOn:
-    id: 'e2e_tab_settings'
+    id: 'e2e_bonsai_home_settings'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 

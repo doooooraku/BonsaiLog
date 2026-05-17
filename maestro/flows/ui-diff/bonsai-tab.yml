@@ -65,7 +65,7 @@ tags:
 
 # 設定タブ → seed 投入 (盆栽カードリスト表示のため)
 - tapOn:
-    id: 'e2e_tab_settings'
+    id: 'e2e_bonsai_home_settings'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 

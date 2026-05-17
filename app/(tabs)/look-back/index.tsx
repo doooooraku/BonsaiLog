@@ -74,12 +74,7 @@ export default function LookBackHubScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_look_back_hub"
     >
-      <SearchHeader
-        title={t('tabLookBack')}
-        testIdSuffix="look_back"
-        showSearch={false}
-        showSettings={false}
-      />
+      <SearchHeader title={t('tabLookBack')} testIdSuffix="look_back" showSearch={false} />
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <ThemedText style={styles.subtitle}>{t('lookBackHubSubtitle')}</ThemedText>
