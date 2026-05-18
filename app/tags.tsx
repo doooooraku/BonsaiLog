@@ -59,7 +59,11 @@ export default function TagsManagerScreen() {
   };
 
   /**
-   * Sess9 PR-7: row right value を「3 件 · 3 日前」 / 「未使用」 形式で組み立て。
+   * Sess9 PR-7: row right value を「N 件 · 3 日前に使用」 形式で組み立て。
+   *
+   * - 未使用 (count = 0 or lastUsed null): 「N 件 · 未使用」
+   * - 今日使用 (days = 0): 「N 件 · 今日使用」 (日本語文法「今日前に使用」 NG 回避)
+   * - 過去使用 (days > 0): 「N 件 · 3 日前に使用」
    */
   const buildStatsLabel = (tag: TagWithStats): string => {
     const countLabel = t('tagsUsageCountFormat').replace('{count}', String(tag.usageCount));
@@ -67,6 +71,9 @@ export default function TagsManagerScreen() {
       return `${countLabel} · ${t('tagsLastUsedNever')}`;
     }
     const days = elapsedDaysFromIsoUtc(tag.lastUsedAt);
+    if (days === 0) {
+      return `${countLabel} · ${t('tagsLastUsedToday')}`;
+    }
     const elapsed = formatElapsedDays(days, t) ?? '';
     return `${countLabel} · ${t('tagsLastUsedFormat').replace('{relative}', elapsed)}`;
   };

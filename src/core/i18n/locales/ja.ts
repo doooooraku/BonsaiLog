@@ -700,6 +700,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tagsUsageCountFormat: '{count} 件',
   tagsLastUsedFormat: '{relative}前に使用',
   tagsLastUsedNever: '未使用',
+  tagsLastUsedToday: '今日使用',
 };
 
 export default ja;

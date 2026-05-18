@@ -692,5 +692,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   tagsUsageCountFormat: '{count} bonsai',
   tagsLastUsedFormat: 'used {relative} ago',
   tagsLastUsedNever: 'unused',
+  tagsLastUsedToday: 'used today',
 };
 export default tr;
