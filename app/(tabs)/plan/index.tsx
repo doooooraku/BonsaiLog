@@ -14,13 +14,14 @@
  * - 「今日の作業を一括記録」FAB は v1.x (現状の bonsai 詳細画面の WorkPickerSheet 経路で代替)
  * - 針金がけ一覧 (WiringListScreen) は v1.x、本 PR には含めない (機能は wiring 既存実装で維持)
  */
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { DropletIcon, EventIcon } from '@/src/components/icons';
+import { DropletIcon, EventIcon, PlusIcon } from '@/src/components/icons';
 import { getTzOffsetMin } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
@@ -29,6 +30,7 @@ import {
   BORDER_DEFAULT,
   BRAND_GREEN,
   DANGER,
+  ON_BRAND,
   TEXT_MUTED,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
@@ -38,6 +40,7 @@ import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
 import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
 import type { Bonsai, Event, EventType } from '@/src/db/schema';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
+import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
 import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 
 function getMonthDays(year: number, month: number): number {
@@ -56,6 +59,8 @@ export default function PlanScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const c = useColors();
+  const tabBarHeight = useBottomTabBarHeight();
+  const { startBulkAction } = useBulkActionFlow('schedule');
 
   const today = new Date();
   const todayLocalKey = toLocalDateKey(today.toISOString(), getTzOffsetMin());
@@ -213,6 +218,16 @@ export default function PlanScreen() {
         ))}
       </View>
 
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('planFabLabel')}
+        style={[styles.fab, { backgroundColor: c.tint, bottom: tabBarHeight + 16 }]}
+        onPress={() => startBulkAction(bonsai.map((b) => ({ id: b.id, name: b.name })))}
+        testID="e2e_plan_fab_action"
+      >
+        <PlusIcon size={28} color={ON_BRAND} />
+      </Pressable>
+
       <ScrollView contentContainerStyle={styles.listContent}>
         <ThemedText style={styles.listLabel}>
           {selectedDateKey === todayLocalKey
@@ -359,5 +374,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(90,70,55,0.1)',
     borderRadius: 4,
     letterSpacing: 0.6,
+  },
+  fab: {
+    position: 'absolute',
+    right: 16,
+    zIndex: 10,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
 });

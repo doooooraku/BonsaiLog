@@ -24,7 +24,7 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { BackHandler, FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -204,6 +204,24 @@ export default function BonsaiHomeScreen() {
     useCallback(() => {
       void reload();
     }, [reload]),
+  );
+
+  // ADR-0025 Phase 2 Sess8 PR-2 追補 (user 真意「複数選択 button 不要」 反映):
+  // SearchHeader から cancel button を完全廃止したため、 selectMode 中の cancel 経路は
+  // Android back button のみ。 selectMode=true 時に back press → selectMode 解除 + event consume。
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (selectMode) {
+          setSelectMode(false);
+          setSelectedIds(new Set());
+          return true;
+        }
+        return false;
+      };
+      const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => sub.remove();
+    }, [selectMode]),
   );
 
   // Sess6 PR-1: 「すべて」 chip 削除 + タグ 5 件のみ (user 要望、 直近作成順 = getRecentTags の created_at DESC)。
@@ -405,13 +423,7 @@ export default function BonsaiHomeScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_bonsai_home_list"
     >
-      <SearchHeader
-        title={t('bonsaiBookTitle')}
-        testIdSuffix="bonsai_home"
-        selectMode={selectMode}
-        onSelectPress={toggleSelectMode}
-        selectedCount={selectMode ? selectedIds.size : undefined}
-      />
+      <SearchHeader title={t('bonsaiBookTitle')} testIdSuffix="bonsai_home" />
       <HomeFilterTabs
         chips={filterChips}
         selectedId={selectedFilter}

@@ -236,8 +236,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   // --- F-09 Search (Phase A、English fallback) ---
   settingsSearchSection: 'Search',
   searchAction: 'Search',
-  selectModeAction: 'Select multiple',
-  selectModeCancel: 'Cancel',
   bulkLog: 'Log all',
   bulkSchedule: 'Schedule all',
   bulkPickerSheetTitleSchedule: 'Schedule for all',
@@ -260,8 +258,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   bulkLogConfirmNotePlaceholder: 'Free note',
   bulkLogSaveCta: 'Log for {count} bonsai',
   bulkLogDoneToast: 'Logged actions for {count} bonsai',
-  bulkSelectedCount: '{count} selected',
-  bulkSelectPlaceholder: 'Select items',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Search...',
   searchEmpty: 'No results found.',
@@ -678,7 +674,11 @@ const vi: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Back',
   tabRecord: 'Ghi lại',
-  recordTabStubDesc:
-    'Record tab — Phase 2 will implement action start on tap (multi-select mode + Bulk Work Picker).',
+  planFabLabel: 'Bulk schedule',
+  recordFabLabel: 'Bulk record',
+  recordTabEmptyTitle: 'Bulk record care',
+  recordTabEmptyDesc: 'Tap + to record care for multiple bonsai at once.',
+  bulkSelectModalTitle: 'Select bonsai',
+  bulkSelectModalNotice: 'Choose bonsai to record or schedule ({count} selected)',
 };
 export default vi;

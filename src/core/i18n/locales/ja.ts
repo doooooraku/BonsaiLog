@@ -251,8 +251,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- F-09 検索 (Phase A、ADR-0008 改訂) ---
   settingsSearchSection: '検索',
   searchAction: '検索する',
-  selectModeAction: '複数選択',
-  selectModeCancel: 'キャンセル',
   bulkLog: '一括記録',
   bulkSchedule: '予定追加',
   bulkPickerSheetTitleSchedule: 'まとめて予定追加',
@@ -275,8 +273,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bulkLogConfirmNotePlaceholder: '自由メモ',
   bulkLogSaveCta: '{count}件にまとめて記録',
   bulkLogDoneToast: '{count}件の作業を記録しました',
-  bulkSelectedCount: '{count}件選択中',
-  bulkSelectPlaceholder: '項目を選択',
   searchDesc: '盆栽の名前と作業ログのメモを検索します。',
   searchPlaceholder: '検索...',
   searchEmpty: '見つかりませんでした。',
@@ -684,8 +680,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailTimelinePastCollapsed: '過去水やりは折りたたみ',
   back: '戻る',
   tabRecord: '記録',
-  recordTabStubDesc:
-    '記録タブ — Phase 2 で「タブ tap で複数選択モード + 一括記録」 動線を実装予定。 現状は盆栽詳細 → FAB → 作業選択から記録できます。',
+  planFabLabel: '一括予定追加',
+  recordFabLabel: '一括記録',
+  recordTabEmptyTitle: 'まとめて記録する',
+  recordTabEmptyDesc: '右下の + ボタンで複数の盆栽にまとめて記録できます。',
+  bulkSelectModalTitle: '盆栽を選ぶ',
+  bulkSelectModalNotice: '盆栽を選んでください ({count}件選択中)',
 };
 
 export default ja;
