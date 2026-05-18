@@ -679,5 +679,6 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   tagEditAddCta: 'Add',
   tagEditUpdateCta: 'Update',
   tagEditDeleteCta: 'Delete this tag',
+  settingsTagsCountValue: '{count} tags',
 };
 export default zhHant;

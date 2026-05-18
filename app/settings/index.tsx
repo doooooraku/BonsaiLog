@@ -24,6 +24,7 @@ import { findLanguageOption } from '@/src/core/i18n/languageOptions';
 import { ACCENT_GOLD, BG_SURFACE, BORDER_DEFAULT, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { countArchivedBonsai } from '@/src/db/bonsaiRepository';
+import { countAllTags } from '@/src/db/tagRepository';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { clearAllData, seedTestData } from '@/src/dev/seedTestData';
 import { showAdPrivacyOptionsForm } from '@/src/services/adService';
@@ -92,12 +93,17 @@ export default function SettingsScreen() {
   // Issue #457 Phase 5: アーカイブ済み盆栽 件数を画面表示時に取得 (mockup `settings-tab-01.png`
   // の row right value 整合「3 件」)。取得失敗時は 0 のままで UI 影響なし。
   const [archivedCount, setArchivedCount] = React.useState<number>(0);
+  // Sess9 PR-5: タグ件数を「タグを管理」 行 right value に表示 (アーカイブ盆栽と同パターン)
+  const [tagCount, setTagCount] = React.useState<number>(0);
   React.useEffect(() => {
     let mounted = true;
     void (async () => {
       try {
-        const count = await countArchivedBonsai();
-        if (mounted) setArchivedCount(count);
+        const [archived, tags] = await Promise.all([countArchivedBonsai(), countAllTags()]);
+        if (mounted) {
+          setArchivedCount(archived);
+          setTagCount(tags);
+        }
       } catch {
         // count 取得失敗は 0 のまま (UX 影響少)
       }
@@ -527,7 +533,12 @@ export default function SettingsScreen() {
           >
             <View style={styles.rowInner}>
               <ThemedText type="defaultSemiBold">{t('tagsManagerTitle')}</ThemedText>
-              <ThemedText style={styles.chevron}>›</ThemedText>
+              <View style={styles.rowRight}>
+                <ThemedText style={styles.rowValue} testID="e2e_tags_count_value">
+                  {t('settingsTagsCountValue').replace('{count}', String(tagCount))}
+                </ThemedText>
+                <ThemedText style={styles.chevron}>›</ThemedText>
+              </View>
             </View>
           </Pressable>
         </SettingsSection>

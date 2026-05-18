@@ -693,6 +693,7 @@ const baseEn = {
   tagEditAddCta: 'Add',
   tagEditUpdateCta: 'Update',
   tagEditDeleteCta: 'Delete this tag',
+  settingsTagsCountValue: '{count} tags',
 };
 
 export type TranslationKey = keyof typeof baseEn;
