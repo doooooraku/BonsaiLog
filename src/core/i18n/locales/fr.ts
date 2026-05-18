@@ -676,9 +676,6 @@ const fr: Partial<Record<TranslationKey, string>> = {
   back: 'Back',
   tabRecord: 'Suivi',
   planFabLabel: 'Bulk schedule',
-  recordFabLabel: 'Bulk record',
-  recordTabEmptyTitle: 'Bulk record care',
-  recordTabEmptyDesc: 'Tap + to record care for multiple bonsai at once.',
   bulkSelectModalTitle: 'Select bonsai',
   bulkSelectModalNotice: 'Choose bonsai to record or schedule ({count} selected)',
 };

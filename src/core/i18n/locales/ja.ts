@@ -681,9 +681,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   back: '戻る',
   tabRecord: '記録',
   planFabLabel: '一括予定追加',
-  recordFabLabel: '一括記録',
-  recordTabEmptyTitle: 'まとめて記録する',
-  recordTabEmptyDesc: '右下の + ボタンで複数の盆栽にまとめて記録できます。',
   bulkSelectModalTitle: '盆栽を選ぶ',
   bulkSelectModalNotice: '盆栽を選んでください ({count}件選択中)',
 };

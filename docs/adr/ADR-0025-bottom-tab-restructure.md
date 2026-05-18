@@ -37,13 +37,17 @@
 2. **設定タブ削除**: app/(tabs)/settings/ → app/settings/ に移動 (タブ外 Stack route、 既存 SearchHeader.Cog button から router.push('/settings') で到達)
 3. **記録タブ新設**: app/(tabs)/record/\_layout.tsx + index.tsx 新規作成
 
-### ② 予定/記録タブ FAB 起動 (Phase 2 で実装、 案 B 採用 2026-05-17 Sess8 PR-1)
+### ② 予定タブ FAB 起動 (案 B) + 記録タブ tap intercept (案 X、 非対称設計)
 
-4. **予定タブ tap**: 通常画面遷移 (月カレンダー画面表示) → 右下 FAB (+) tap → 盆栽選択モード入り → user 盆栽複数選択 → BulkScheduleDateSheet 起動経路
-5. **記録タブ tap**: 通常画面遷移 (記録一覧 or empty 画面表示) → 右下 FAB (+) tap → 盆栽選択モード入り → user 盆栽複数選択 → BulkWorkPickerSheet 起動経路
-6. **盆栽 0 件**: 各タブで FAB tap → empty state + 「盆栽を追加」 CTA (盆栽タブへ誘導)
-7. **盆栽 1 件のみ**: FAB tap → 自動 1 件選択固定 + 直接 BulkScheduleDateSheet / BulkWorkPickerSheet 起動 (selectMode 不要)、 キャンセル時は盆栽タブに戻す
-8. **盆栽 2+ 件**: 通常 selectMode + SelectionToolbar 既存パターン (盆栽タブ FAB 経由と同等)
+> **2026-05-18 Sess8 PR-3 Notes Amended (案 X 部分採用)**: user 真意「記録タブの empty hub は不要、 タブ tap で直接 modal が開けばいい」 を反映し、 **記録タブのみ案 A (タブ tap intercept) に部分回帰**、 予定タブは案 B (画面 + FAB) 維持の **非対称設計**を採用。
+
+4. **予定タブ tap**: 通常画面遷移 (月カレンダー画面表示) → 右下 FAB (+) tap → useBulkActionFlow('schedule') → 件数分岐 (0/1/2+ 件) → bonsai-multi-select modal or 直接 BulkScheduleDateSheet (案 B、 #546 で実装済)
+5. **記録タブ tap**: **`<Tabs.Screen listeners={{ tabPress }}>` で intercept** → `e.preventDefault()` で画面遷移阻止 → useBulkActionFlow('log') → 件数分岐 → 直接 bonsai-multi-select modal or BulkWorkPickerSheet (案 X、 #TBD で実装)
+6. **盆栽 0 件**: 予定タブ FAB / 記録タブ tap いずれも → 盆栽タブ (empty CTA) へ誘導
+7. **盆栽 1 件のみ**: 自動 1 件選択固定 + 直接 BulkScheduleDateSheet / BulkWorkPickerSheet 起動 (selectMode 不要)、 キャンセル時は盆栽タブに戻す
+8. **盆栽 2+ 件**: bonsai-multi-select modal で選択 → 確定 → BulkWorkPickerSheet
+9. **非対称設計の根拠**: 予定タブは月カレンダー画面が情報表示として意味あり / 記録タブは empty hub に意味薄く user 真意で削除、 case-by-case で UX 最適化
+10. **Subject to Revision**: 記録タブ案 X は user リリース後 feedback で「タブ tap で modal は混乱」 が顕著なら案 B (FAB 復活) に revert
 
 ### ③ SearchHeader 「複数選択 / キャンセル」 text button 完全廃止 + 長押し経路維持 + Android back cancel
 
