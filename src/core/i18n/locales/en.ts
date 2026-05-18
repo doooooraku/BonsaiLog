@@ -246,8 +246,6 @@ const baseEn = {
   // --- F-09 Search (Phase A: bonsai name LIKE + events FTS5, ADR-0008 改訂) ---
   settingsSearchSection: 'Search',
   searchAction: 'Search',
-  selectModeAction: 'Select multiple',
-  selectModeCancel: 'Cancel',
   bulkLog: 'Log all',
   bulkSchedule: 'Schedule all',
   bulkPickerSheetTitleSchedule: 'Schedule for all',
@@ -270,8 +268,6 @@ const baseEn = {
   bulkLogConfirmNotePlaceholder: 'Free note',
   bulkLogSaveCta: 'Log for {count} bonsai',
   bulkLogDoneToast: 'Logged actions for {count} bonsai',
-  bulkSelectedCount: '{count} selected',
-  bulkSelectPlaceholder: 'Select items',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Search...',
   searchEmpty: 'No results found.',

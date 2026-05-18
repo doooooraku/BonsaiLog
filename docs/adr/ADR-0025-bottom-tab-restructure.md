@@ -45,11 +45,12 @@
 7. **盆栽 1 件のみ**: FAB tap → 自動 1 件選択固定 + 直接 BulkScheduleDateSheet / BulkWorkPickerSheet 起動 (selectMode 不要)、 キャンセル時は盆栽タブに戻す
 8. **盆栽 2+ 件**: 通常 selectMode + SelectionToolbar 既存パターン (盆栽タブ FAB 経由と同等)
 
-### ③ 「複数選択」 button (Header) 削除 + 長押し経路維持
+### ③ SearchHeader 「複数選択 / キャンセル」 text button 完全廃止 + 長押し経路維持 + Android back cancel
 
-9. **SearchHeader の「複数選択」 text button (selectMode=false 時) を非表示化** = Header の常時表示「複数選択」 ボタンは消える、 ただし `onSelectPress` prop は **keep** (selectMode=true 時の cancel button としてのみ機能、 Phase 2 実装で `selectMode && onSelectPress` 条件に変更)
-10. **盆栽タブの「カード長押し → selectMode 入り」 経路は維持** (mockup v1.0 02-Home.html `onCardLongPress` 整合、 user 真意「複数選択 button のみ削除」)、 長押し後の cancel 経路は SearchHeader の「キャンセル」 button (selectMode=true 時のみ表示) で確保
-11. SelectionToolbar は **Phase 2 で「予定/記録タブ FAB 経由 → bonsai-multi-select modal」 + 「盆栽タブ長押し経由」 の 2 経路で表示**、 component 自体は再利用、 共通 hook `useBulkActionFlow` で予定/記録タブ動線を集約
+9. **SearchHeader の「複数選択」 text button (selectMode=false 時) + 「キャンセル」 text button (selectMode=true 時) を完全削除** (2026-05-18 Sess8 PR-2 追補、 user 真意「不要、 削除して」)、 `onSelectPress` / `selectMode` / `selectedCount` props 廃止、 関連 i18n 4 key (selectModeAction / selectModeCancel / bulkSelectPlaceholder / bulkSelectedCount) 19 言語から削除
+10. **盆栽タブの「カード長押し → selectMode 入り」 経路は維持** (mockup v1.0 02-Home.html `onCardLongPress` 整合、 user 真意「複数選択 button のみ削除」)
+11. **selectMode 解除経路 = Android back button のみ**: 盆栽タブ `bonsai/index.tsx` で `BackHandler.addEventListener('hardwareBackPress', ...)` を `useFocusEffect` 内で登録、 selectMode=true 時の back press で selectMode 解除 + selectedIds リセット + event consume
+12. SelectionToolbar は **Phase 2 で「予定/記録タブ FAB 経由 → bonsai-multi-select modal」 + 「盆栽タブ長押し経由」 の 2 経路で表示**、 component 自体は再利用、 共通 hook `useBulkActionFlow` で予定/記録タブ動線を集約
 
 ### ④ 設定 = Header 経由 (既実装の活用、 Phase 1c で hotfix 完了)
 
