@@ -680,5 +680,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   bulkSelectModalNotice: '기록하거나 예정할 분재를 선택하세요 ({count}개 선택됨)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
+  filterAll: 'All',
 };
 export default ko;

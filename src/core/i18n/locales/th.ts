@@ -679,5 +679,6 @@ const th: Partial<Record<TranslationKey, string>> = {
   bulkSelectModalNotice: 'เลือกบอนไซเพื่อบันทึกหรือกำหนดการ (เลือก {count})',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
+  filterAll: 'All',
 };
 export default th;
