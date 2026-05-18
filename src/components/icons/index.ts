@@ -33,4 +33,5 @@ export {
   PencilNavIcon,
   PlusIcon,
   SearchIcon,
+  TagIcon,
 } from './NavIcons';

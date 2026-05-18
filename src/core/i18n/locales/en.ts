@@ -600,7 +600,7 @@ const baseEn = {
   detailExportProDesc: 'PDF export is a Pro plan feature.',
   onboardingLanguageContinue: 'Continue with this language',
   // --- T1-8c CareHub Hub (ADR-0020 §Decision §7) ---
-  lookBackHubSubtitle: 'Browse your care records.',
+  lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',
   lookBackCardWateringDesc: 'Calendar & heatmap of past waterings',
   lookBackCardWiringTitle: 'Wiring list',
@@ -693,6 +693,8 @@ const baseEn = {
   tagEditUpdateCta: 'Update',
   tagEditDeleteCta: 'Delete this tag',
   settingsTagsCountValue: '{count} tags',
+  lookBackCardTagsTitle: 'Manage Tags',
+  lookBackCardTagsDesc: 'Add / rename tags · See usage counts',
 };
 
 export type TranslationKey = keyof typeof baseEn;
