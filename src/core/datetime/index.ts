@@ -6,5 +6,6 @@
  */
 export { isoUtcFrom, nowUtc } from './clock';
 export { formatLocal } from './format';
+export { elapsedDaysFromIsoUtc, formatElapsedDays } from './relativeElapsed';
 export { getTzIana, getTzOffsetMin } from './tz';
 export type { IsoUtc, TzIana, TzOffsetMin } from './types';

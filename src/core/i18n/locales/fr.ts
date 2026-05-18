@@ -689,5 +689,8 @@ const fr: Partial<Record<TranslationKey, string>> = {
   settingsTagsCountValue: '{count} tags',
   lookBackCardTagsTitle: 'Manage Tags',
   lookBackCardTagsDesc: 'Add / rename tags · See usage counts',
+  tagsUsageCountFormat: '{count} bonsai',
+  tagsLastUsedFormat: 'used {relative} ago',
+  tagsLastUsedNever: 'unused',
 };
 export default fr;

@@ -697,6 +697,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsTagsCountValue: '{count} 件',
   lookBackCardTagsTitle: 'タグを管理',
   lookBackCardTagsDesc: 'タグの追加・名前変更 / 各タグの使用数を確認',
+  tagsUsageCountFormat: '{count} 件',
+  tagsLastUsedFormat: '{relative}前に使用',
+  tagsLastUsedNever: '未使用',
 };
 
 export default ja;
