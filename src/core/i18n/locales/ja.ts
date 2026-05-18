@@ -695,6 +695,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tagEditAddCta: '追加',
   tagEditUpdateCta: '変更',
   tagEditDeleteCta: 'このタグを削除',
+  settingsTagsCountValue: '{count} 件',
 };
 
 export default ja;

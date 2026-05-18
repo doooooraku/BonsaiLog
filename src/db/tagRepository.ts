@@ -109,6 +109,18 @@ export async function getRecentTags(limit: number = 3): Promise<TagRecord[]> {
   );
 }
 
+/**
+ * 全タグの件数を返す (Sess9 PR-5、 設定画面 row right value 表示用)。
+ *
+ * - tags table 全行数
+ * - 取得失敗 / 未初期化時の fallback は呼び出し側で 0 にすること
+ */
+export async function countAllTags(): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM tags;');
+  return row?.count ?? 0;
+}
+
 // ---------------------------------------------------------------------------
 // Bonsai-Tag M:N (T2-6、schema v9)
 // ---------------------------------------------------------------------------
