@@ -667,8 +667,8 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Back',
   tabRecord: '記錄',
-  planFabLabel: 'Bulk schedule',
-  bulkSelectModalTitle: 'Select bonsai',
-  bulkSelectModalNotice: 'Choose bonsai to record or schedule ({count} selected)',
+  planFabLabel: '批量預定',
+  bulkSelectModalTitle: '選擇盆栽',
+  bulkSelectModalNotice: '選擇要記錄或預定的盆栽 (已選 {count})',
 };
 export default zhHant;
