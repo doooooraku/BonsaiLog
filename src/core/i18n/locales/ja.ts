@@ -701,6 +701,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tagsLastUsedFormat: '{relative}前に使用',
   tagsLastUsedNever: '未使用',
   tagsLastUsedToday: '今日使用',
+  tagRenameImpactTitle: 'タグの名前を変更しますか?',
+  tagRenameImpactBody:
+    'このタグは {count} 件の盆栽で使われています。 名前を「{newName}」 に変更しますか?',
+  tagDeleteImpactBody: 'タグ「{name}」 を削除します。 {count} 件の盆栽から外されます。',
 };
 
 export default ja;
