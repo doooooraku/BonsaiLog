@@ -142,10 +142,8 @@ export default function RootLayout() {
               presentation 未指定 = default 'card' = iOS/Android 共に push transition (案 A)。
               旧 app/tags.tsx の Alert.alert 素っ気ない popup を置換、 設定 → タグを管理 → row tap で起動。 */}
           <Stack.Screen name="tag-edit" options={{ title: '' }} />
-          {/* Sess9 PR-9 (user Q3 拡張 2、 Apple Notes パターン): タグ別盆栽一覧。
-              タグ管理画面 → row 長押しで起動、 該当タグが付いた盆栽カードを一覧表示。
-              dynamic title はスクリーン内 Stack.Screen options で 「タグ名 の盆栽 (N 件)」 設定。 */}
-          <Stack.Screen name="tag-bonsai-list" options={{ title: '' }} />
+          {/* Sess9 PR-10 (user 真意確認、 PR-9 置換): tag-bonsai-list 全画面廃止、
+              タグ管理画面で inline 展開 (▶/▼ 左端 toggle) に置換。 重複機能削除。 */}
         </Stack>
         <StatusBar style={effectiveScheme === 'dark' ? 'light' : 'dark'} />
       </ThemeProvider>

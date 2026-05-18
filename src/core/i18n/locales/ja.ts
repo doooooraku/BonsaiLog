@@ -705,9 +705,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tagRenameImpactBody:
     'このタグは {count} 件の盆栽で使われています。 名前を「{newName}」 に変更しますか?',
   tagDeleteImpactBody: 'タグ「{name}」 を削除します。 {count} 件の盆栽から外されます。',
-  tagBonsaiListTitle: '{tagName} の盆栽 ({count} 件)',
-  tagBonsaiListEmpty: 'このタグの盆栽はまだありません。',
-  tagsRowLongPressHint: '長押しでこのタグの盆栽一覧を開く',
+  tagsToggleExpand: '展開',
+  tagsToggleCollapse: '折りたたみ',
+  tagsMoreLink: 'もっと見る (残り {count} 件) ▼',
 };
 
 export default ja;
