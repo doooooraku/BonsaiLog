@@ -30,6 +30,26 @@
       "artifact": "scripts/ui-diff/out/20260517-0412-sess2-full/look-back-search/",
       "needsHumanReview": true,
       "trackingIssue": null
+    },
+    {
+      "flow": "plan-tab-fab",
+      "reason": "Sess8 PR-4 (Phase 3): ADR-0025 Phase 2 案 B FAB 起動の新 flow (予定タブ tap → FAB tap → bonsai-multi-select modal)。 Maestro 実機実行で Expo Developer Menu 誤起動 (Tools button toggle ON state persist、 Sess4 で Y2 受容運用確定の Expo SDK 55 PR #44251 Native bug 関連)、 e2e_dev_seed_button 探索失敗で fail。 機能動作は Phase 2 #546 マージ時の手動 SS (Phase 2 検証 SS 06) で完全実証済 (予定タブ FAB tap → bonsai-multi-select modal 起動 + CTA「予定追加」)。 Maestro 自動化は別 Issue で対応 (Tools button OFF persist + 再実行)、 本 PR は flow ファイル作成のみで完結。",
+      "added_at": "2026-05-18T14:46:00Z",
+      "fail_count": 1,
+      "permanent": false,
+      "artifact": "scripts/ui-diff/out/manual-ss-sess8-phase2/",
+      "needsHumanReview": true,
+      "trackingIssue": null
+    },
+    {
+      "flow": "record-tab-direct",
+      "reason": "Sess8 PR-4 (Phase 3): ADR-0025 案 X (記録タブ tap intercept で直接 modal 起動、 PR #547 マージ済)。 Maestro 実機実行は plan-tab-fab と同じ Tools button bug で fail。 機能動作は #547 マージ時の手動 SS 20/21 で完全実証済 (記録タブ tap → bonsai-multi-select modal 起動 mode='log' + CTA「一括記録」 + BulkWorkPickerSheet 遷移)。 Maestro 自動化は別 Issue で対応。",
+      "added_at": "2026-05-18T14:46:00Z",
+      "fail_count": 1,
+      "permanent": false,
+      "artifact": "scripts/ui-diff/out/manual-ss-sess8-record-x/",
+      "needsHumanReview": true,
+      "trackingIssue": null
     }
   ],
   "achieved": [

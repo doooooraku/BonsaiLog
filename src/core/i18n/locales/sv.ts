@@ -675,8 +675,8 @@ const sv: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Back',
   tabRecord: 'Logga',
-  planFabLabel: 'Bulk schedule',
-  bulkSelectModalTitle: 'Select bonsai',
-  bulkSelectModalNotice: 'Choose bonsai to record or schedule ({count} selected)',
+  planFabLabel: 'Schemalägg flera',
+  bulkSelectModalTitle: 'Välj bonsai',
+  bulkSelectModalNotice: 'Välj bonsai att registrera eller schemalägga ({count} valda)',
 };
 export default sv;

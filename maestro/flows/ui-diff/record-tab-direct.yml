@@ -1,0 +1,126 @@
+## UI diff capture: record-tab-direct (ADR-0025 案 X、 Sess8 PR-3 #547)
+##
+## 対象実装: app/(tabs)/_layout.tsx の記録タブ <Tabs.Screen listeners={{ tabPress }}>
+##           → 直接 app/(modals)/bonsai-multi-select.tsx (mode='log') 起動
+##
+## **案 X = 案 A 部分回帰**: 記録タブ tap で intercept (e.preventDefault) → 画面遷移阻止 →
+##  useBulkActionFlow('log').startBulkAction() で件数分岐 → bonsai-multi-select modal 起動。
+##  app/(tabs)/record/index.tsx は lazy render で実質非表示 (expo-router 規約のため stub keep)。
+##
+## 経路:
+## 1. launchApp (clearState: true)
+## 2. Dev Client menu + Continue dismiss
+## 3. Onboarding skip (Welcome → Language ja → Tut5)
+## 4. 盆栽タブ Empty CTA visible 確認
+## 5. 設定 (Header Cog) → seedTestData → 盆栽タブ
+## 6. 記録タブ tap (e2e_tab_record)
+## 7. e2e_bonsai_multi_select_screen 表示確認 (intercept で直接 modal、 mode='log')
+##
+## 2 回反復 2/2 PASS 基準 (R-30)。 user PoC 1/1 = 100% PASS 済 (実機 SS 20、 2026-05-18)。
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: record-tab-direct'
+tags:
+  - ui-diff
+---
+- launchApp:
+    clearState: true
+
+- runFlow:
+    when:
+      visible:
+        text: 'http://localhost:8081'
+    commands:
+      - tapOn:
+          text: 'http://localhost:8081'
+          retryTapIfNoChange: true
+      - waitForAnimationToEnd
+      - pressKey: 'Back'
+      - waitForAnimationToEnd
+
+# Onboarding Welcome
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 60000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# Language ja
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# Tut5 skip
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+
+# 盆栽タブ Empty CTA visible 確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+# 設定 (Header Cog 経由)
+- tapOn:
+    id: 'e2e_bonsai_home_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# DEV seed button scroll + tap
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+    speed: 40
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# Alert dismiss
+- tapOn:
+    text: 'OK'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# 盆栽タブに戻る
+- tapOn:
+    id: 'e2e_tab_bonsai'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      text: 'お師匠の真柏'
+    timeout: 30000
+
+# 記録タブ tap (案 X intercept で直接 modal 起動)
+- tapOn:
+    id: 'e2e_tab_record'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# bonsai-multi-select modal 表示確認 (capture 対象画面、 mode='log')
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_multi_select_screen'
+    timeout: 30000
+
+- waitForAnimationToEnd

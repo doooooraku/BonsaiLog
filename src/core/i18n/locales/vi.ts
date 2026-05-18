@@ -674,8 +674,8 @@ const vi: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Back',
   tabRecord: 'Ghi lại',
-  planFabLabel: 'Bulk schedule',
-  bulkSelectModalTitle: 'Select bonsai',
-  bulkSelectModalNotice: 'Choose bonsai to record or schedule ({count} selected)',
+  planFabLabel: 'Lên kế hoạch hàng loạt',
+  bulkSelectModalTitle: 'Chọn bonsai',
+  bulkSelectModalNotice: 'Chọn bonsai để ghi lại hoặc lên kế hoạch (đã chọn {count})',
 };
 export default vi;

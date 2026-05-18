@@ -675,8 +675,8 @@ const nl: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Back',
   tabRecord: 'Opnemen',
-  planFabLabel: 'Bulk schedule',
-  bulkSelectModalTitle: 'Select bonsai',
-  bulkSelectModalNotice: 'Choose bonsai to record or schedule ({count} selected)',
+  planFabLabel: 'Meerdere plannen',
+  bulkSelectModalTitle: 'Bonsai selecteren',
+  bulkSelectModalNotice: 'Kies bonsai om te registreren of plannen ({count} geselecteerd)',
 };
 export default nl;

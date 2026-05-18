@@ -675,8 +675,8 @@ const ko: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Back',
   tabRecord: '기록',
-  planFabLabel: 'Bulk schedule',
-  bulkSelectModalTitle: 'Select bonsai',
-  bulkSelectModalNotice: 'Choose bonsai to record or schedule ({count} selected)',
+  planFabLabel: '일괄 예정',
+  bulkSelectModalTitle: '분재 선택',
+  bulkSelectModalNotice: '기록하거나 예정할 분재를 선택하세요 ({count}개 선택됨)',
 };
 export default ko;

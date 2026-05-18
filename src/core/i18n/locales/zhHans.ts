@@ -667,8 +667,8 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Back',
   tabRecord: '记录',
-  planFabLabel: 'Bulk schedule',
-  bulkSelectModalTitle: 'Select bonsai',
-  bulkSelectModalNotice: 'Choose bonsai to record or schedule ({count} selected)',
+  planFabLabel: '批量预定',
+  bulkSelectModalTitle: '选择盆栽',
+  bulkSelectModalNotice: '选择要记录或预定的盆栽 (已选 {count})',
 };
 export default zhHans;
