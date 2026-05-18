@@ -678,5 +678,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   planFabLabel: 'Jadwal massal',
   bulkSelectModalTitle: 'Pilih bonsai',
   bulkSelectModalNotice: 'Pilih bonsai untuk dicatat atau dijadwalkan ({count} dipilih)',
+  homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
+  homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
 };
 export default id;

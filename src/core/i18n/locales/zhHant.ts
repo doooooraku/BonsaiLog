@@ -670,5 +670,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   planFabLabel: '批量預定',
   bulkSelectModalTitle: '選擇盆栽',
   bulkSelectModalNotice: '選擇要記錄或預定的盆栽 (已選 {count})',
+  homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
+  homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
 };
 export default zhHant;

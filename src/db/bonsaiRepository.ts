@@ -132,8 +132,11 @@ export async function getBonsaiWithSpecies(
  *
  * Issue #253 (ADR-0021 PoC follow-up): tagIds オプションで M:N フィルタを実現。
  * - tagIds 未指定 / 空配列 → 既存通り全 active 盆栽
- * - tagIds 指定あり → bonsai → events → event_tags JOIN で「全 tagIds を持つ events を持つ bonsai」
- *   を AND セマンティクスで返す (eventRepository.searchEventsByTags と同パターン)
+ * - tagIds 指定あり → bonsai_tags JOIN で「全 tagIds が付いている bonsai」 を AND セマンティクスで返す
+ *
+ * Sess9 PR-1 (ADR-0008 §Notes Amended 2026-05-18) で event_tags JOIN → bonsai_tags JOIN に修正。
+ * 旧実装は event_tags 経由だったが、 タグは BonsaiBasicForm 経由で bonsai_tags にしか attach
+ * されないため常に 0 件返却していた致命 BUG (ホーム filter chip tap で empty state に落ちる)。
  */
 export async function getAllActiveBonsai(options?: {
   tagIds?: readonly string[];
@@ -148,17 +151,15 @@ export async function getAllActiveBonsai(options?: {
     return snakeToCamelRows<Bonsai>(rows);
   }
 
-  // M:N filter: 全 tagIds を持つ events を持つ bonsai のみ
+  // M:N filter: 全 tagIds が付いている bonsai のみ (bonsai_tags 直接 JOIN、 v9 schema)
   const placeholders = tagIds.map(() => '?').join(',');
   const rows = await db.getAllAsync<Record<string, unknown>>(
     `SELECT b.* FROM bonsai b
-     INNER JOIN events e ON e.bonsai_id = b.id
-     INNER JOIN event_tags et ON et.event_id = e.id
+     INNER JOIN bonsai_tags bt ON bt.bonsai_id = b.id
      WHERE b.archived_at IS NULL
-           AND e.deleted_at IS NULL
-           AND et.tag_id IN (${placeholders})
+           AND bt.tag_id IN (${placeholders})
      GROUP BY b.id
-     HAVING COUNT(DISTINCT et.tag_id) = ?
+     HAVING COUNT(DISTINCT bt.tag_id) = ?
      ORDER BY b.updated_at DESC;`,
     [...tagIds, tagIds.length],
   );

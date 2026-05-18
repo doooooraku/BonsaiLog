@@ -684,6 +684,8 @@ const baseEn = {
   planFabLabel: 'Bulk schedule',
   bulkSelectModalTitle: 'Select bonsai',
   bulkSelectModalNotice: 'Choose bonsai to record or schedule ({count} selected)',
+  homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
+  homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
 };
 
 export type TranslationKey = keyof typeof baseEn;

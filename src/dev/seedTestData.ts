@@ -273,17 +273,17 @@ export async function seedTestData(): Promise<SeedResult> {
 /**
  * 全データを削除 (`__DEV__` 限定、テスト前のリセット用)。
  *
- * order: events → bonsai_tags → event_tags → photos → tags → bonsai
+ * order: events → bonsai_tags → photos → tags → bonsai
  * (FK 制約は ON DELETE CASCADE / SET NULL 設定済だが念のため明示順)。
  *
- * species / species_names は seed マスタなので残す (アプリ起動時の seed 側で再生成)。
+ * Sess9 PR-1 で event_tags を廃止 (ADR-0008 §Notes Amended 2026-05-18)、
+ * DELETE 文も除去。species / species_names は seed マスタなので残す。
  */
 export async function clearAllData(): Promise<void> {
   const db = await getDb();
   await db.execAsync(`
     DELETE FROM events;
     DELETE FROM bonsai_tags;
-    DELETE FROM event_tags;
     DELETE FROM photos;
     DELETE FROM tags;
     DELETE FROM bonsai;

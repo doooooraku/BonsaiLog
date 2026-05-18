@@ -677,5 +677,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   planFabLabel: 'Lên kế hoạch hàng loạt',
   bulkSelectModalTitle: 'Chọn bonsai',
   bulkSelectModalNotice: 'Chọn bonsai để ghi lại hoặc lên kế hoạch (đã chọn {count})',
+  homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
+  homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
 };
 export default vi;

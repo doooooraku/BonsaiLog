@@ -1,15 +1,14 @@
 /**
- * F-09 Phase C タグ管理画面 (Issue #31 / ADR-0008 改訂)。
+ * F-09 タグ管理画面 (Issue #31 / ADR-0008 + §Notes Amended 2026-05-18)。
  *
- * Phase C 範囲:
+ * 範囲:
  * - タグの作成 (createOrFindTag、case-insensitive UNIQUE)
  * - 既存タグ一覧 (createdAt DESC)
- * - タグ削除 (event_tags は CASCADE で自動削除)
+ * - タグ削除 (bonsai_tags は CASCADE で自動削除)
+ * - タグ rename (Issue #31 AC3 Y9)
  *
- * Phase D 以降:
- * - event 行に tag chips 表示 (long-press でタグ追加 / 削除)
- * - tag-based 検索フィルタ (events.id IN event_tags WHERE tag_id IN ...)
- * - tag rename / merge
+ * Sess9 PR-1 で event_tags 完全廃止 (dead code、 bonsai_tags 一本化)。
+ * 旧 Phase C/D 記述 (event タグ chips、 event_tags filter) は本 Amended で撤回。
  */
 import { useFocusEffect } from 'expo-router';
 import React from 'react';
@@ -119,7 +118,7 @@ export default function TagsManagerScreen() {
           style: 'destructive',
           onPress: async () => {
             const db = await getDb();
-            // event_tags は CASCADE で自動削除 (schema.ts §220 onDelete: 'cascade')
+            // bonsai_tags は schema.ts §schemaV9 で ON DELETE CASCADE 設定済、 自動削除される
             await db.runAsync('DELETE FROM tags WHERE id = ?', [tag.id]);
             await reload();
           },

@@ -678,5 +678,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   planFabLabel: 'Toplu planla',
   bulkSelectModalTitle: 'Bonsai seç',
   bulkSelectModalNotice: 'Kaydetmek veya planlamak için bonsaileri seçin ({count} seçili)',
+  homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
+  homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
 };
 export default tr;

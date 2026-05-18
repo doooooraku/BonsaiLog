@@ -678,5 +678,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   planFabLabel: 'Schemalägg flera',
   bulkSelectModalTitle: 'Välj bonsai',
   bulkSelectModalNotice: 'Välj bonsai att registrera eller schemalägga ({count} valda)',
+  homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
+  homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
 };
 export default sv;
