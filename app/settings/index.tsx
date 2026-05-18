@@ -26,7 +26,7 @@ import { useColors } from '@/src/core/theme/useColors';
 import { countArchivedBonsai } from '@/src/db/bonsaiRepository';
 import { countAllTags } from '@/src/db/tagRepository';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
-import { clearAllData, seedTestData } from '@/src/dev/seedTestData';
+import { clearAllData, seedTestData, seedTestDataEn } from '@/src/dev/seedTestData';
 import { showAdPrivacyOptionsForm } from '@/src/services/adService';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
 import { useProStore } from '@/src/stores/proStore';
@@ -574,7 +574,7 @@ export default function SettingsScreen() {
           <SettingsSection title="[DEV] テストデータ" titleType="subtitle">
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="seed test data"
+              accessibilityLabel="seed test data (Japanese)"
               testID="e2e_dev_seed_button"
               style={styles.entry}
               onPress={async () => {
@@ -583,12 +583,12 @@ export default function SettingsScreen() {
                   if (result.skipped === 'already_seeded') {
                     Alert.alert(
                       'テストデータ',
-                      `既に ${result.bonsaiCount} 件の盆栽があります。先に「全データ削除」してから再投入してください。`,
+                      `既に ${result.bonsaiCount} 件の盆栽があります。 先に「全データ削除」 してから再投入してください。`,
                     );
                   } else {
                     Alert.alert(
                       'テストデータ投入完了',
-                      `盆栽 ${result.bonsaiCount} 件 / 写真 ${result.photoCount} 枚 / 記録 ${result.eventCount} 件`,
+                      `盆栽 ${result.bonsaiCount} 件 (+ アーカイブ ${result.archivedCount}) / 写真 ${result.photoCount} 枚 / 記録 ${result.eventCount} 件 (+ ゴミ箱 ${result.trashedCount})`,
                     );
                   }
                 } catch (err) {
@@ -596,9 +596,42 @@ export default function SettingsScreen() {
                 }
               }}
             >
-              <ThemedText type="defaultSemiBold">テストデータを投入</ThemedText>
+              <ThemedText type="defaultSemiBold">テストデータを投入 (日本語)</ThemedText>
               <ThemedText style={styles.entryDesc}>
-                盆栽 3 件 + 写真 2 枚 + タグ 3 件 + 水やり記録 15 件
+                盆栽 11 件 (active 10 + archived 1) + 写真 9 枚 + タグ 8 件 + 全 13 種 events 約 80+
+                件
+              </ThemedText>
+            </Pressable>
+            {/* Sess10 PR-2: 英語版テストデータ (Marcus persona / Western 名前 / 英語 dialog)。
+                既存 Maestro flow は JA 名前依存のため、 EN 投入は demo / SS 撮影 / 英語 UX 確認用。 */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="seed test data (English)"
+              testID="e2e_dev_seed_en_button"
+              style={styles.entry}
+              onPress={async () => {
+                try {
+                  const result = await seedTestDataEn();
+                  if (result.skipped === 'already_seeded') {
+                    Alert.alert(
+                      'Test data',
+                      `${result.bonsaiCount} bonsai already exist. Please clear all data first.`,
+                    );
+                  } else {
+                    Alert.alert(
+                      'Test data inserted',
+                      `${result.bonsaiCount} bonsai (+ ${result.archivedCount} archived) / ${result.photoCount} photos / ${result.eventCount} records (+ ${result.trashedCount} trashed)`,
+                    );
+                  }
+                } catch (err) {
+                  Alert.alert('Seed error', String(err));
+                }
+              }}
+            >
+              <ThemedText type="defaultSemiBold">Insert test data (English)</ThemedText>
+              <ThemedText style={styles.entryDesc}>
+                11 bonsai (10 active + 1 archived) + 9 photos + 8 tags + ~80 records (all 13 event
+                types)
               </ThemedText>
             </Pressable>
             <Pressable

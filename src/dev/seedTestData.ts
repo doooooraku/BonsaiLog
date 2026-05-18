@@ -1,29 +1,29 @@
 /**
- * 開発用テストデータ投入 (Sess10 PR-1 拡充、 元 T1-4 案 1)。
+ * 開発用テストデータ投入 (Sess10 PR-1 拡充 + PR-2 EN 版追加、 元 T1-4 案 1)。
  *
- * `__DEV__` 限定。設定タブの開発者セクションから 1 タップで起動。
+ * `__DEV__` 限定。 設定タブの開発者セクションから 1 タップで起動。
  *
- * Sess10 拡充内容 (user 議論 Q1-Q4 で確定):
- * - **盆栽 11 件** (active 10 + archived 1): 既存 3 件 + 新規 7 active + 1 archived
- *   - 既存 3 件 (父の黒松 / 母の五葉松 / お師匠の真柏) は Maestro flow 5 個依存のため名前維持
- *   - 樹種拡張: 黒松 / 五葉松 / 真柏 / モミジ / ハナカイドウ / 杜松 / ツバキ / 梅
- *   - 樹形 6 種: 直幹 / 模様木 / 斜幹 / 懸崖 / 文人木 / 双幹
- *   - 樹齢: 5-150 年の幅
- * - **写真 7 枚配分** (提供 5 + 既存 2): 一部盆栽は複数枚 (Free 3 上限テスト)
- * - **タグ 8 件**: 既存 3 + 新規 5 (#古木 / #花あり / #紅葉 / @室内 / @師匠の家)
- * - **events 全 13 種カバー**: watering / pruning / wiring / unwiring / repotting /
- *   fertilizing / pest_control / leaf_trimming / defoliation / deshoot /
- *   candle_cut / moss_care / position_change
- * - **edge cases**: アーカイブ済 1 件 / ゴミ箱 events 2 件 / 期日超過 planned 2 件
+ * 2 言語サポート (Sess10 PR-2):
+ * - **seedTestData()** = 日本語版 (既存 3 件 父の黒松/母の五葉松/お師匠の真柏 維持、 Maestro 互換)
+ * - **seedTestDataEn()** = 英語版 (Western 名前 Steve / Mary / Mr. Wilson 等、 Marcus persona 向け)
  *
- * 設計方針:
- * - idempotent: 既に bonsai が 1 件以上ある場合は skip (no-op)
- * - 既存 3 件名前維持 = Maestro flow 5 個 (g2-worklog-confirm / g2-work-picker /
- *   g3b-bulk-schedule-date / ui-diff/wiring-list / ui-diff/record-tab-direct) 生存保証
- * - asset → expo-asset で localUri 解決、 失敗時は warn only (UX 配慮)
- * - 全 event_type を最低 1 件以上 → ストア SS で「豊富なキャリア」 表現
+ * 内容は両言語で同じ規模:
+ * - **盆栽 11 件** (active 10 + archived 1)
+ * - **写真 9 枚** (提供 5 + 既存 2 を共有、 銘品の真柏 / Heirloom Juniper が 3 枚で Free 上限テスト)
+ * - **タグ 8 件** (3 つの prefix + place、 言語別)
+ * - **events 全 13 種カバー** (watering / pruning / wiring / unwiring / repotting / fertilizing /
+ *   pest_control / leaf_trimming / defoliation / deshoot / candle_cut / moss_care / position_change)
+ * - **edge cases**: archived 1 / ゴミ箱 events 2 / 期日超過 planned 2
  *
- * Related: docs/how-to/development/test-data-seed.md (T1-4 ADR-equiv 方針)、 Issue #355
+ * 設計 (Sess10 PR-2 DRY refactor):
+ * - `SeedLangPack` 型で言語別データ (名前 / メモ / タグ / note) を 構造化
+ * - `SEED_PACK_JA` / `SEED_PACK_EN` でデータパック定義
+ * - 共通 logic は `seedTestDataInternal(pack)` で 1 箇所、 言語別 wrapper 関数で公開
+ * - 既存 Maestro flow 5 個 (g2-worklog-confirm / g2-work-picker / g3b-bulk-schedule-date /
+ *   ui-diff/wiring-list / ui-diff/record-tab-direct) は JA 名前 (父の黒松/母の五葉松/お師匠の真柏)
+ *   依存のため、 JA seed 時のみ flow 動作対象 (EN seed は demo / SS 用)
+ *
+ * Related: docs/how-to/development/test-data-seed.md、 Issue #355
  */
 import { Asset } from 'expo-asset';
 
@@ -44,6 +44,192 @@ export type SeedResult = {
   trashedCount: number;
   skipped?: 'already_seeded';
 };
+
+/**
+ * 言語別 seed データパック (名前 / メモ / タグ名 / event note を構造化)。
+ * 樹種 / 樹形 / 樹齢 / 写真配分 / event type / 日付 は言語非依存 (内部で hardcoded)。
+ */
+type SeedLangPack = {
+  /** タグ名 8 件 (順序固定: show, balcony, watch, old, flower, autumn, indoor, master) */
+  tagNames: {
+    show: string;
+    balcony: string;
+    watch: string;
+    old: string;
+    flower: string;
+    autumn: string;
+    indoor: string;
+    master: string;
+  };
+  /** 盆栽 11 件分の名前 (index 0-10、 idx 10 = archived) */
+  bonsaiNames: readonly string[];
+  /** 盆栽 11 件分のメモ */
+  bonsaiMemos: readonly string[];
+  /** 最初の watering 10 件の note (idx 0-9 = active 盆栽 10 件) */
+  wateringNotes: readonly string[];
+  /** OTHER_EVENTS 21 件の note (順序は OTHER_EVENT_DEFS に対応) */
+  otherEventNotes: readonly string[];
+  /** ゴミ箱 events 2 件の note */
+  trashNotes: readonly string[];
+};
+
+// ---------------------------------------------------------------------------
+// 言語別データパック
+// ---------------------------------------------------------------------------
+
+const SEED_PACK_JA: SeedLangPack = {
+  tagNames: {
+    show: '#展示会候補',
+    balcony: '@ベランダ',
+    watch: '#要注意',
+    old: '#古木',
+    flower: '#花あり',
+    autumn: '#紅葉',
+    indoor: '@室内',
+    master: '@師匠の家',
+  },
+  bonsaiNames: [
+    '父の黒松',
+    '母の五葉松',
+    'お師匠の真柏',
+    '春待ちのハナカイドウ',
+    '秋色のモミジ',
+    '銘品の真柏',
+    '鞍掛黒松',
+    '修行中の苗木',
+    '双幹の杜松',
+    '思い出のツバキ',
+    '老梅',
+  ],
+  bonsaiMemos: [
+    '父から譲り受けた一本。 樹冠の動きを大切にしたい。',
+    '母の手入れが行き届いていた銘品。 葉性の良さを保ちたい。',
+    '師匠から見せて頂いた古木。 じっくり付き合っていく。',
+    '毎年 4 月初旬に咲く花を楽しみに育てている。 室内棚で日当たりよく。',
+    '紅葉時期の色合いが見事。 葉刈りで小葉化を進めている。',
+    '師匠から託された 150 年の古木。 文人風の幹立ちが見事。 写真は年次タイムラインで管理。',
+    '懸崖樹形の代表作。 鉢からの落差が美しい。',
+    '実生からの苗。 これから樹形を作り込んでいく素材。',
+    '双幹のバランスを大切に。 通年で針金可能。',
+    '祖母から引き継いだ。 冬の花が見事。',
+    '長年育てた梅。 樹勢衰え、 archive 済。',
+  ],
+  wateringNotes: [
+    '葉色やや薄め、 潅水量を増やす',
+    '土の乾き早し、 朝夕 2 回',
+    '受け皿に水が残らない量で',
+    '蕾が膨らんできた、 春が近い',
+    '葉先がきれい、 秋の準備',
+    '銘品の風格、 ゆっくり',
+    '鉢の重み、 ずっしり',
+    '苗の成長を観察中',
+    '双幹のバランス OK',
+    '蕾を確認、 来月開花',
+  ],
+  otherEventNotes: [
+    '徒長枝の整理',
+    '内ふところの古葉整理',
+    '幹 2mm 線、 春外し予定',
+    '枝 1mm 線',
+    '食い込み防止で早めに外す',
+    '用土更新、 赤玉 + 桐生砂',
+    '鉢替え、 化粧鉢へ',
+    '油粕固形肥料',
+    '液肥薄め',
+    '春肥、 緩効性',
+    'ダコニール散布、 予防的',
+    'カイガラムシ確認、 マシン油',
+    '小葉化のため全葉刈り',
+    '内ふところ古葉を抜く',
+    '伸びた新芽を摘む',
+    '真柏の若芽整理',
+    '黒松芽切り、 2 番芽期待',
+    '鞍掛、 芽切り完了',
+    '苔の貼り直し、 化粧仕上げ',
+    '室内 → 屋外、 春到来',
+    '日向 → 半日陰',
+  ],
+  trashNotes: ['誤って 2 回入力、 1 件削除', '入力ミスで削除'],
+};
+
+const SEED_PACK_EN: SeedLangPack = {
+  tagNames: {
+    show: '#ShowReady',
+    balcony: '@Patio',
+    watch: '#WatchClose',
+    old: '#OldTree',
+    flower: '#InBloom',
+    autumn: '#FallColor',
+    indoor: '@Indoor',
+    master: '@MasterStudio',
+  },
+  bonsaiNames: [
+    "Steve's Black Pine",
+    "Mary's White Pine",
+    "Mr. Wilson's Shimpaku",
+    "Sarah's Spring Crabapple",
+    "Tom's Autumn Maple",
+    'The Heirloom Juniper',
+    'Cascade Black Pine',
+    "Beginner's Sapling",
+    'Twin-Trunk Juniper',
+    "Grandma's Camellia",
+    'The Old Plum',
+  ],
+  bonsaiMemos: [
+    'Inherited from Dad. Cherish the elegant crown movement.',
+    "From Mom's collection. Maintain the fine needle quality.",
+    'A gift from my mentor Mr. Wilson. Take time with this one.',
+    'Blooms every April. Kept indoors on a sunny windowsill.',
+    'Beautiful fall colors. Defoliating to reduce leaf size.',
+    'A 150-year heritage tree entrusted by my mentor. Literati-style trunk.',
+    'Masterpiece in cascade style. The drop from the pot is striking.',
+    'Seedling from seed. Material to develop the form over time.',
+    'Twin-trunk balance is key. Can wire year-round.',
+    'Inherited from Grandma. Winter blooms are spectacular.',
+    'Long-cared plum. Vigor declined, now archived.',
+  ],
+  wateringNotes: [
+    'Leaves slightly pale, increase watering',
+    'Soil drying fast, water morning and evening',
+    'Just enough so saucer stays empty',
+    'Buds swelling, spring approaches',
+    'Leaf tips look clean, autumn prep',
+    "Heirloom's dignity, take your time",
+    'Pot feels heavy, satisfying',
+    'Observing seedling growth',
+    'Twin-trunk balance OK',
+    'Buds confirmed, blooming next month',
+  ],
+  otherEventNotes: [
+    'Pruning long shoots',
+    'Removing inner old needles',
+    '2mm wire on trunk, plan to remove in spring',
+    '1mm wire on branches',
+    'Removed wire early to prevent biting',
+    'Repotting with akadama + kiryu blend',
+    'Pot upgrade, switching to display pot',
+    'Solid organic fertilizer (rapeseed oil cake)',
+    'Liquid fertilizer, diluted',
+    'Spring fertilizer, slow release',
+    'Daconil spray, preventive',
+    'Confirmed scale insects, machine oil',
+    'Full defoliation for leaf-size reduction',
+    'Removing inner old needles',
+    'Pinching new shoots',
+    'Trimming new shoots on shimpaku',
+    'Black pine candle cut, expecting second buds',
+    'Cascade pine, candle cut complete',
+    'Moss re-application, finishing touch',
+    'Moved indoors → outdoors, spring arrives',
+    'Sun → partial shade',
+  ],
+  trashNotes: ['Duplicate entry, deleted one', 'Wrong entry, deleted'],
+};
+
+// ---------------------------------------------------------------------------
+// 日付ヘルパー (言語非依存)
+// ---------------------------------------------------------------------------
 
 /**
  * 過去 N 日 m 時 0 分の ISO 8601 UTC を生成 (events.occurred_at_utc 用)。
@@ -71,10 +257,36 @@ function toIsoUtc(yyyymmdd: string): string {
   return `${yyyymmdd}T00:00:00.000Z`;
 }
 
-/**
- * Sess10 拡充版テストデータを投入。idempotent。
- */
-export async function seedTestData(): Promise<SeedResult> {
+// ---------------------------------------------------------------------------
+// 共通 seed logic (言語非依存部分 + SeedLangPack でテキスト受け取り)
+// ---------------------------------------------------------------------------
+
+/** OTHER_EVENTS 仕様 (idx 順序は SeedLangPack.otherEventNotes と対応)。 */
+const OTHER_EVENT_DEFS: readonly { bonsaiIdx: number; type: EventType; daysAgo: number }[] = [
+  { bonsaiIdx: 0, type: 'pruning', daysAgo: 30 },
+  { bonsaiIdx: 5, type: 'pruning', daysAgo: 45 },
+  { bonsaiIdx: 0, type: 'wiring', daysAgo: 98 },
+  { bonsaiIdx: 1, type: 'wiring', daysAgo: 70 },
+  { bonsaiIdx: 4, type: 'unwiring', daysAgo: 60 },
+  { bonsaiIdx: 1, type: 'repotting', daysAgo: 75 },
+  { bonsaiIdx: 3, type: 'repotting', daysAgo: 90 },
+  { bonsaiIdx: 0, type: 'fertilizing', daysAgo: 15 },
+  { bonsaiIdx: 2, type: 'fertilizing', daysAgo: 20 },
+  { bonsaiIdx: 4, type: 'fertilizing', daysAgo: 40 },
+  { bonsaiIdx: 0, type: 'pest_control', daysAgo: 25 },
+  { bonsaiIdx: 9, type: 'pest_control', daysAgo: 50 },
+  { bonsaiIdx: 4, type: 'leaf_trimming', daysAgo: 50 },
+  { bonsaiIdx: 1, type: 'defoliation', daysAgo: 100 },
+  { bonsaiIdx: 1, type: 'deshoot', daysAgo: 80 },
+  { bonsaiIdx: 2, type: 'deshoot', daysAgo: 65 },
+  { bonsaiIdx: 0, type: 'candle_cut', daysAgo: 55 },
+  { bonsaiIdx: 6, type: 'candle_cut', daysAgo: 60 },
+  { bonsaiIdx: 5, type: 'moss_care', daysAgo: 35 },
+  { bonsaiIdx: 3, type: 'position_change', daysAgo: 10 },
+  { bonsaiIdx: 9, type: 'position_change', daysAgo: 12 },
+];
+
+async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
   // 1. 既存データチェック (idempotent)
   const existing = await getAllActiveBonsai();
   if (existing.length > 0) {
@@ -88,7 +300,7 @@ export async function seedTestData(): Promise<SeedResult> {
     };
   }
 
-  // 2. species lookup (8 種、 SPECIES_SEED で必ず存在する想定)
+  // 2. species lookup (8 種、 言語非依存 = scientificName)
   const blackPine = await getSpeciesByScientificName('Pinus thunbergii', 'ja');
   const whitePine = await getSpeciesByScientificName('Pinus parviflora', 'ja');
   const juniper = await getSpeciesByScientificName('Juniperus chinensis', 'ja');
@@ -130,143 +342,119 @@ export async function seedTestData(): Promise<SeedResult> {
       .catch(() => null),
   };
 
-  // 4. tags 8 件作成 (既存 3 + 新規 5)
+  // 4. tags 8 件作成 (言語別名前)
   const [tagShow, tagBalcony, tagWatch, tagOld, tagFlower, tagAutumn, tagIndoor, tagMaster] =
     await Promise.all([
-      createOrFindTag('#展示会候補'),
-      createOrFindTag('@ベランダ'),
-      createOrFindTag('#要注意'),
-      createOrFindTag('#古木'),
-      createOrFindTag('#花あり'),
-      createOrFindTag('#紅葉'),
-      createOrFindTag('@室内'),
-      createOrFindTag('@師匠の家'),
+      createOrFindTag(pack.tagNames.show),
+      createOrFindTag(pack.tagNames.balcony),
+      createOrFindTag(pack.tagNames.watch),
+      createOrFindTag(pack.tagNames.old),
+      createOrFindTag(pack.tagNames.flower),
+      createOrFindTag(pack.tagNames.autumn),
+      createOrFindTag(pack.tagNames.indoor),
+      createOrFindTag(pack.tagNames.master),
     ]);
 
   // 5. 盆栽 spec (11 件: active 10 + archived 1)
-  //    既存 3 件 (idx 0-2) は Maestro flow 依存のため名前完全維持
+  //    樹種 / 樹形 / 樹齢 / 写真 / タグ配分は言語非依存、 name + memo のみ pack から取得
   type BonsaiSpec = {
-    name: string;
     speciesId: string | null;
     style: 'chokkan' | 'moyogi' | 'shakan' | 'kengai' | 'bunjingi' | 'sokan';
     acquiredAt: string;
     estimatedAge: number;
-    memo: string;
-    photoUris: (string | null)[]; // 0-3 枚 (Free 上限)
+    photoUris: (string | null)[];
     tagIds: string[];
     archived?: boolean;
   };
   const bonsaiSpec: BonsaiSpec[] = [
-    // 既存 3 件 (Maestro flow 依存、 名前維持)
+    // 既存 3 件 (JA Maestro flow 依存、 EN は demo / SS 用)
     {
-      name: '父の黒松',
       speciesId: blackPine?.id ?? null,
       style: 'chokkan',
       acquiredAt: toIsoUtc('2018-04-12'),
       estimatedAge: 35,
-      memo: '父から譲り受けた一本。 樹冠の動きを大切にしたい。',
       photoUris: [photoUris.sample1],
       tagIds: [tagShow.id, tagBalcony.id],
     },
     {
-      name: '母の五葉松',
       speciesId: whitePine?.id ?? null,
       style: 'moyogi',
       acquiredAt: toIsoUtc('2020-06-03'),
       estimatedAge: 18,
-      memo: '母の手入れが行き届いていた銘品。 葉性の良さを保ちたい。',
       photoUris: [photoUris.sample2],
       tagIds: [tagShow.id],
     },
     {
-      name: 'お師匠の真柏',
       speciesId: juniper?.id ?? null,
       style: 'shakan',
       acquiredAt: toIsoUtc('2022-09-21'),
       estimatedAge: 45,
-      memo: '師匠から見せて頂いた古木。 じっくり付き合っていく。',
       photoUris: [photoUris.balcony],
       tagIds: [tagWatch.id, tagBalcony.id, tagMaster.id],
     },
     // 新規 7 件 active
     {
-      name: '春待ちのハナカイドウ',
       speciesId: hanakaido?.id ?? null,
       style: 'moyogi',
       acquiredAt: toIsoUtc('2023-03-15'),
       estimatedAge: 12,
-      memo: '毎年 4 月初旬に咲く花を楽しみに育てている。 室内棚で日当たりよく。',
       photoUris: [photoUris.pear],
       tagIds: [tagFlower.id, tagIndoor.id],
     },
     {
-      name: '秋色のモミジ',
       speciesId: momiji?.id ?? null,
       style: 'chokkan',
       acquiredAt: toIsoUtc('2019-05-20'),
       estimatedAge: 25,
-      memo: '紅葉時期の色合いが見事。 葉刈りで小葉化を進めている。',
       photoUris: [photoUris.momiji],
       tagIds: [tagAutumn.id, tagBalcony.id],
     },
     {
-      name: '銘品の真柏',
       speciesId: juniper?.id ?? null,
       style: 'bunjingi',
       acquiredAt: toIsoUtc('2015-10-05'),
       estimatedAge: 150,
-      memo: '師匠から託された 150 年の古木。 文人風の幹立ちが見事。 写真は年次タイムラインで管理。',
-      photoUris: [photoUris.shimpaku, photoUris.balcony, photoUris.sample1], // 3 枚 = Free 上限テスト
+      photoUris: [photoUris.shimpaku, photoUris.balcony, photoUris.sample1], // 3 枚 = Free 上限
       tagIds: [tagOld.id, tagShow.id, tagMaster.id],
     },
     {
-      name: '鞍掛黒松',
       speciesId: blackPine?.id ?? null,
       style: 'kengai',
       acquiredAt: toIsoUtc('2017-08-10'),
       estimatedAge: 60,
-      memo: '懸崖樹形の代表作。 鉢からの落差が美しい。',
       photoUris: [photoUris.seedlings],
       tagIds: [tagOld.id],
     },
     {
-      name: '修行中の苗木',
       speciesId: blackPine?.id ?? null,
       style: 'chokkan',
       acquiredAt: toIsoUtc('2024-06-01'),
       estimatedAge: 5,
-      memo: '実生からの苗。 これから樹形を作り込んでいく素材。',
-      photoUris: [], // 写真なし (placeholder 表示テスト)
+      photoUris: [],
       tagIds: [tagWatch.id],
     },
     {
-      name: '双幹の杜松',
       speciesId: tomatsu?.id ?? null,
       style: 'sokan',
       acquiredAt: toIsoUtc('2021-11-12'),
       estimatedAge: 30,
-      memo: '双幹のバランスを大切に。 通年で針金可能。',
-      photoUris: [], // 写真なし
+      photoUris: [],
       tagIds: [tagShow.id],
     },
     {
-      name: '思い出のツバキ',
       speciesId: tsubaki?.id ?? null,
       style: 'moyogi',
       acquiredAt: toIsoUtc('2010-02-28'),
       estimatedAge: 80,
-      memo: '祖母から引き継いだ。 冬の花が見事。',
-      photoUris: [], // 写真なし
+      photoUris: [],
       tagIds: [tagFlower.id, tagOld.id],
     },
-    // アーカイブ済 1 件 (設定 right value 「N 件」 表示テスト)
+    // アーカイブ済 1 件
     {
-      name: '老梅',
       speciesId: ume?.id ?? null,
       style: 'chokkan',
       acquiredAt: toIsoUtc('2005-01-10'),
       estimatedAge: 90,
-      memo: '長年育てた梅。 樹勢衰え、 archive 済。',
       photoUris: [],
       tagIds: [],
       archived: true,
@@ -278,18 +466,17 @@ export async function seedTestData(): Promise<SeedResult> {
   const createdBonsaiIds: string[] = [];
   const archivedBonsaiIds: string[] = [];
 
-  for (const spec of bonsaiSpec) {
+  for (const [idx, spec] of bonsaiSpec.entries()) {
     const bonsai = await createBonsai({
-      name: spec.name,
+      name: pack.bonsaiNames[idx],
       speciesId: spec.speciesId,
       style: spec.style,
       acquiredAt: spec.acquiredAt,
       estimatedAge: spec.estimatedAge,
-      memo: spec.memo,
+      memo: pack.bonsaiMemos[idx],
     });
     createdBonsaiIds.push(bonsai.id);
 
-    // 写真添付 (複数枚可、 失敗時は warn only)
     for (const uri of spec.photoUris) {
       if (!uri) continue;
       try {
@@ -300,7 +487,6 @@ export async function seedTestData(): Promise<SeedResult> {
       }
     }
 
-    // タグ attach (M:N、 失敗時は warn only)
     for (const tagId of spec.tagIds) {
       try {
         await attachTagToBonsai(bonsai.id, tagId);
@@ -309,7 +495,6 @@ export async function seedTestData(): Promise<SeedResult> {
       }
     }
 
-    // archived 化 (idx 10 = 老梅)
     if (spec.archived) {
       try {
         await archiveBonsai(bonsai.id);
@@ -320,24 +505,8 @@ export async function seedTestData(): Promise<SeedResult> {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // 6. events 拡充: 全 13 event_type を最低 1 件以上カバー
-  // ---------------------------------------------------------------------------
-
-  // 6-1. watering: 各 active 盆栽 (idx 0-9) に過去 90 日分、 季節パターン (夏 週 2、 冬 週 1)
-  //      直近 watering に mockup 整合の note (Issue #460、 BonsaiCard fallback)
-  const FIRST_WATERING_NOTES: readonly string[] = [
-    '葉色やや薄め、 潅水量を増やす', // 父の黒松
-    '土の乾き早し、 朝夕 2 回', // 母の五葉松
-    '受け皿に水が残らない量で', // お師匠の真柏
-    '蕾が膨らんできた、 春が近い', // 春待ちのハナカイドウ
-    '葉先がきれい、 秋の準備', // 秋色のモミジ
-    '銘品の風格、 ゆっくり', // 銘品の真柏
-    '鉢の重み、 ずっしり', // 鞍掛黒松
-    '苗の成長を観察中', // 修行中の苗木
-    '双幹のバランス OK', // 双幹の杜松
-    '蕾を確認、 来月開花', // 思い出のツバキ
-  ];
+  // 6-1. watering: 各 active 盆栽 (idx 0-9) に過去 90 日分、 1 週間ごと
+  //      直近 watering に pack の note
   for (const [bonsaiIdx, bonsaiId] of createdBonsaiIds.slice(0, 10).entries()) {
     for (let i = 0; i < 5; i++) {
       try {
@@ -346,7 +515,7 @@ export async function seedTestData(): Promise<SeedResult> {
           type: 'watering',
           status: 'logged',
           occurredAtUtc: pastUtc(2 + i * 6, 7),
-          note: i === 0 ? FIRST_WATERING_NOTES[bonsaiIdx] : undefined,
+          note: i === 0 ? pack.wateringNotes[bonsaiIdx] : undefined,
         });
         eventCount += 1;
       } catch (err) {
@@ -355,51 +524,15 @@ export async function seedTestData(): Promise<SeedResult> {
     }
   }
 
-  // 6-2. その他の event_type (全 12 種、 each 1 件以上)
-  //      bonsaiIdx 0-9 から現実的に配分 (季節 + 樹種に合わせる)
-  const OTHER_EVENTS: { bonsaiIdx: number; type: EventType; daysAgo: number; note?: string }[] = [
-    // pruning (剪定) - 黒松/真柏で 5 月
-    { bonsaiIdx: 0, type: 'pruning', daysAgo: 30, note: '徒長枝の整理' },
-    { bonsaiIdx: 5, type: 'pruning', daysAgo: 45, note: '内ふところの古葉整理' },
-    // wiring (針金がけ) - 装着中 2 件、 unwiring 想定
-    { bonsaiIdx: 0, type: 'wiring', daysAgo: 98, note: '幹 2mm 線、 春外し予定' },
-    { bonsaiIdx: 1, type: 'wiring', daysAgo: 70, note: '枝 1mm 線' },
-    // unwiring (針金外し) - 春先
-    { bonsaiIdx: 4, type: 'unwiring', daysAgo: 60, note: '食い込み防止で早めに外す' },
-    // repotting (植替え) - 3 月
-    { bonsaiIdx: 1, type: 'repotting', daysAgo: 75, note: '用土更新、 赤玉 + 桐生砂' },
-    { bonsaiIdx: 3, type: 'repotting', daysAgo: 90, note: '鉢替え、 化粧鉢へ' },
-    // fertilizing (施肥) - 月 1-2 回
-    { bonsaiIdx: 0, type: 'fertilizing', daysAgo: 15, note: '油粕固形肥料' },
-    { bonsaiIdx: 2, type: 'fertilizing', daysAgo: 20, note: '液肥薄め' },
-    { bonsaiIdx: 4, type: 'fertilizing', daysAgo: 40, note: '春肥、 緩効性' },
-    // pest_control (防除・消毒) - 梅雨
-    { bonsaiIdx: 0, type: 'pest_control', daysAgo: 25, note: 'ダコニール散布、 予防的' },
-    { bonsaiIdx: 9, type: 'pest_control', daysAgo: 50, note: 'カイガラムシ確認、 マシン油' },
-    // leaf_trimming (葉刈り) - モミジ 6 月
-    { bonsaiIdx: 4, type: 'leaf_trimming', daysAgo: 50, note: '小葉化のため全葉刈り' },
-    // defoliation (葉抜き) - 五葉松 11 月
-    { bonsaiIdx: 1, type: 'defoliation', daysAgo: 100, note: '内ふところ古葉を抜く' },
-    // deshoot (芽摘み) - 五葉松/真柏 春
-    { bonsaiIdx: 1, type: 'deshoot', daysAgo: 80, note: '伸びた新芽を摘む' },
-    { bonsaiIdx: 2, type: 'deshoot', daysAgo: 65, note: '真柏の若芽整理' },
-    // candle_cut (芽切り、 松類) - 黒松 8 月
-    { bonsaiIdx: 0, type: 'candle_cut', daysAgo: 55, note: '黒松芽切り、 2 番芽期待' },
-    { bonsaiIdx: 6, type: 'candle_cut', daysAgo: 60, note: '鞍掛、 芽切り完了' },
-    // moss_care (苔の手入れ) - 春・秋
-    { bonsaiIdx: 5, type: 'moss_care', daysAgo: 35, note: '苔の貼り直し、 化粧仕上げ' },
-    // position_change (配置変更) - 季節変更
-    { bonsaiIdx: 3, type: 'position_change', daysAgo: 10, note: '室内 → 屋外、 春到来' },
-    { bonsaiIdx: 9, type: 'position_change', daysAgo: 12, note: '日向 → 半日陰' },
-  ];
-  for (const spec of OTHER_EVENTS) {
+  // 6-2. その他の event_type (全 12 種、 each 1+ 件)、 OTHER_EVENT_DEFS + pack.otherEventNotes
+  for (const [defIdx, def] of OTHER_EVENT_DEFS.entries()) {
     try {
       await createEvent({
-        bonsaiId: createdBonsaiIds[spec.bonsaiIdx],
-        type: spec.type,
+        bonsaiId: createdBonsaiIds[def.bonsaiIdx],
+        type: def.type,
         status: 'logged',
-        occurredAtUtc: pastUtc(spec.daysAgo, 9),
-        note: spec.note,
+        occurredAtUtc: pastUtc(def.daysAgo, 9),
+        note: pack.otherEventNotes[defIdx],
       });
       eventCount += 1;
     } catch (err) {
@@ -407,7 +540,7 @@ export async function seedTestData(): Promise<SeedResult> {
     }
   }
 
-  // 6-3. planned events (未来 3-30 日、 plan-tab Calendar 表示用)
+  // 6-3. planned events (未来 3-30 日、 plan-tab Calendar 表示用、 note なし)
   const planSpecs: { bonsaiIdx: number; type: EventType; daysAhead: number }[] = [
     { bonsaiIdx: 0, type: 'repotting', daysAhead: 3 },
     { bonsaiIdx: 1, type: 'pruning', daysAhead: 7 },
@@ -432,8 +565,8 @@ export async function seedTestData(): Promise<SeedResult> {
 
   // 6-4. 期日超過 planned events (過去日付で status='planned'、 「期日超過」 表示テスト)
   const overdueSpecs: { bonsaiIdx: number; type: EventType; daysAgo: number }[] = [
-    { bonsaiIdx: 7, type: 'watering', daysAgo: 7 }, // 修行中の苗木、 1 週前の予定忘れ
-    { bonsaiIdx: 8, type: 'fertilizing', daysAgo: 14 }, // 双幹の杜松、 2 週前の施肥忘れ
+    { bonsaiIdx: 7, type: 'watering', daysAgo: 7 },
+    { bonsaiIdx: 8, type: 'fertilizing', daysAgo: 14 },
   ];
   for (const spec of overdueSpecs) {
     try {
@@ -449,8 +582,7 @@ export async function seedTestData(): Promise<SeedResult> {
     }
   }
 
-  // 6-5. wiring events (装着中 = unwiring 未実施、 wiring-list 表示用)
-  //      mockup 02-Home.html 「11 ケア 針金がけ一覧」 整合
+  // 6-5. wiring events (装着中 = unwiring 未実施、 wiring-list 表示用、 note なし)
   const wiringSpecs: {
     bonsaiIdx: number;
     weeksAgo: number;
@@ -458,9 +590,7 @@ export async function seedTestData(): Promise<SeedResult> {
     wire_size_mm: number;
     body_part: string;
   }[] = [
-    // 父の黒松: 14 週前装着、 外し予定は -14 日 (2 週超過、 mockup「14週経過・外し時期を 2週超過」 整合)
     { bonsaiIdx: 0, weeksAgo: 14, scheduledUnwireDaysAhead: -14, wire_size_mm: 2, body_part: '幹' },
-    // 母の五葉松: 10 週前装着、 外し予定 +14 日 (2 週後、 mockup「10週経過・外し予定まで 2 週」)
     { bonsaiIdx: 1, weeksAgo: 10, scheduledUnwireDaysAhead: 14, wire_size_mm: 1, body_part: '枝' },
   ];
   for (const w of wiringSpecs) {
@@ -486,14 +616,11 @@ export async function seedTestData(): Promise<SeedResult> {
     }
   }
 
-  // ---------------------------------------------------------------------------
   // 7. ゴミ箱 events 2 件 (soft delete、 30 日ゴミ箱 UI テスト)
-  //    一度 logged で作成 → softDeleteEvent で deleted_at セット
-  // ---------------------------------------------------------------------------
   let trashedCount = 0;
-  const trashSpecs: { bonsaiIdx: number; type: EventType; daysAgo: number; note: string }[] = [
-    { bonsaiIdx: 0, type: 'watering', daysAgo: 5, note: '誤って 2 回入力、 1 件削除' },
-    { bonsaiIdx: 4, type: 'leaf_trimming', daysAgo: 8, note: '入力ミスで削除' },
+  const trashSpecs: { bonsaiIdx: number; type: EventType; daysAgo: number; noteIdx: number }[] = [
+    { bonsaiIdx: 0, type: 'watering', daysAgo: 5, noteIdx: 0 },
+    { bonsaiIdx: 4, type: 'leaf_trimming', daysAgo: 8, noteIdx: 1 },
   ];
   for (const spec of trashSpecs) {
     try {
@@ -502,7 +629,7 @@ export async function seedTestData(): Promise<SeedResult> {
         type: spec.type,
         status: 'logged',
         occurredAtUtc: pastUtc(spec.daysAgo, 7),
-        note: spec.note,
+        note: pack.trashNotes[spec.noteIdx],
       });
       eventCount += 1;
       await softDeleteEvent(event.id);
@@ -513,12 +640,37 @@ export async function seedTestData(): Promise<SeedResult> {
   }
 
   return {
-    bonsaiCount: bonsaiSpec.length - archivedBonsaiIds.length, // active count
+    bonsaiCount: bonsaiSpec.length - archivedBonsaiIds.length,
     photoCount,
     eventCount,
     archivedCount: archivedBonsaiIds.length,
     trashedCount,
   };
+}
+
+// ---------------------------------------------------------------------------
+// 公開関数 (言語別 wrapper)
+// ---------------------------------------------------------------------------
+
+/**
+ * 日本語版テストデータを投入。 idempotent。
+ *
+ * 既存 Maestro flow 5 個 (g2-worklog-confirm / g2-work-picker / g3b-bulk-schedule-date /
+ * ui-diff/wiring-list / ui-diff/record-tab-direct) が「父の黒松」 等 JA 名前依存のため、
+ * Maestro 動作対象は本関数の投入結果のみ。
+ */
+export async function seedTestData(): Promise<SeedResult> {
+  return seedTestDataInternal(SEED_PACK_JA);
+}
+
+/**
+ * 英語版テストデータを投入 (Sess10 PR-2 追加、 Marcus persona 向け)。 idempotent。
+ *
+ * Western 名前 (Steve / Mary / Mr. Wilson 等) + 英語メモ。 demo / SS 撮影 / Marcus persona
+ * 体感確認用。 既存 Maestro flow は JA 名前依存のため本投入結果は flow 対象外。
+ */
+export async function seedTestDataEn(): Promise<SeedResult> {
+  return seedTestDataInternal(SEED_PACK_EN);
 }
 
 /**
@@ -528,7 +680,7 @@ export async function seedTestData(): Promise<SeedResult> {
  * (FK 制約は ON DELETE CASCADE / SET NULL 設定済だが念のため明示順)。
  *
  * Sess9 PR-1 で event_tags を廃止 (ADR-0008 §Notes Amended 2026-05-18)、
- * DELETE 文も除去。species / species_names は seed マスタなので残す。
+ * DELETE 文も除去。 species / species_names は seed マスタなので残す。
  */
 export async function clearAllData(): Promise<void> {
   const db = await getDb();
