@@ -225,6 +225,32 @@ PR Template
 
 ---
 
+## 7.8. route / Phase 変更時の影響範囲 全網羅 grep (R-33、 Sess8 PR-5+1 で導入)
+
+> **背景**: 2026-05-17 Sess7 PR-1 で settings タブ → `app/settings/` 移動時、 (1) `SearchHeader.tsx:138` の `router.push('/(tabs)/settings')` 古い path 残存、 (2) `look-back/index.tsx:81` の `showSettings={false}` 残存、 (3) Maestro flow 14 個と計画したが実 grep で 19 個と判明 = 計 3 件の漏れ。 Sess8 PR-1 で hotfix。 同種の path 漏れを構造的に防ぐ。
+
+### 7.8.1. route / path / testID / Phase 変更時の必須チェック (REQUIRED if 構造変更)
+
+- [ ] **事前 grep 全網羅実行**: 廃止予定の path / testID / component 名で `grep -rn '<pattern>' --include="*.tsx" --include="*.ts" --include="*.yml" --include="*.json"` を全網羅
+  - 廃止 pattern: \_\_\_\_\_
+  - hit 数: \_\_\_\_\_ 件
+- [ ] **計画段階で「N 件」 と楽観計上禁止**: 実 grep を先に走らせて確定数を出す
+- [ ] **`scripts/obsolete-routes.json` に新 entry 追加** (廃止 route 一元管理、 `.claude/hooks/check-obsolete-routes.mjs` で Edit/Write 時 block)
+- [ ] **影響範囲の hit 一覧を以下に列挙** (修正済 / 修正不要 の判断を明記):
+  ```
+  例:
+  - SearchHeader.tsx:138 → router.push('/(tabs)/settings') → /settings に修正済 ✅
+  - look-back/index.tsx:81 → showSettings={false} → 削除済 (全タブで歯車表示) ✅
+  - maestro/flows/*.yml × 19 個 → e2e_tab_settings → e2e_bonsai_home_settings に sed 一括置換済 ✅
+  ```
+
+### 7.8.2. 適用対象外の場合
+
+- [ ] 本 PR は route / path / testID / Phase 変更を含まない
+  - 理由: \_\_\_\_\_
+
+---
+
 ## 8. Docs影響（docs-as-code / REQUIRED）
 
 > 仕様書を死なせないための “分岐チェック”。

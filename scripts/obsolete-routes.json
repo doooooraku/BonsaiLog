@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "description": "廃止 route の list (Sess8 Retro S-2 で導入)。 Edit/Write の new_string / content に hit すれば PreToolUse hook で block。 Phase 1b 漏れの再発防止。",
+  "routes": [
+    {
+      "pattern": "/(tabs)/settings",
+      "since": "2026-05-17 #543 (Sess7 PR-1、 settings タブ削除 + app/settings/ 移動)",
+      "use": "/settings",
+      "rationale": "Phase 1b で settings タブを削除、 app/settings/ に移動。 SearchHeader 経由の歯車 tap で /settings に遷移。"
+    }
+  ]
+}

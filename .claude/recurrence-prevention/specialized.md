@@ -1,8 +1,8 @@
-# 再発防止プロトコル — 専門ルール (R-13 〜 R-31)
+# 再発防止プロトコル — 専門ルール (R-13 〜 R-33)
 
 > 本ファイルは `.claude/recurrence-prevention.md` (親) の詳細部分。
-> 親ファイル = R-1 〜 R-12 全文 + R-13 〜 R-31 索引 + 運用ルール。
-> 本ファイル = R-13 〜 R-31 詳細記述。
+> 親ファイル = R-1 〜 R-12 全文 + R-13 〜 R-33 索引 + 運用ルール。
+> 本ファイル = R-13 〜 R-33 詳細記述。
 > 親ファイルの「専門ルール 索引」 から各 R-N に飛ぶ運用。
 
 ---
@@ -160,13 +160,28 @@
 - **根拠**: 2026-05-17 Sess2 で `app.config.ts` の `showFloatingButton: false` → `toolsButton: false` 修正を実行 (Edit) したが、その後の議論段階で `git restore` で revert され、最終 commit には反映されず main に残った。Sess4 で実際に Dev Build install して初めて発覚、デバッグに数時間ロス。「Edit したと思い込んでいた」 が「commit には含まれてない」 という認知バイアスを構造的に防ぐ必要あり。
 - **自動化候補**: `.claude/hooks/pre-commit-staged-verify.mjs` で `pre-commit` git hook 経由 (`.githooks/`)、staged file list と commit message keyword の整合チェック (例: commit message に「toolsButton」 含まれるなら app.config.ts に該当 keyword の staged diff 必須)。Sess5+ で実装。
 
+### R-33. route / Phase 変更時の影響範囲全網羅 grep (廃止 route 構造的検出)
+
+- **ルール**: route (e.g., `/(tabs)/<name>` / `/<route>`) や Phase / 構造を変更する PR では、 以下を必ず実施:
+  1. **事前 grep**: 廃止予定の path / testID / component 名で `grep -rn '<pattern>' --include="*.tsx" --include="*.ts" --include="*.yml" --include="*.json"` を全網羅実行
+  2. **影響範囲を PR 本文 §11「影響範囲全網羅 grep 結果」 に記載**: 全 hit を列挙、 修正済 / 修正不要 の判断を明記
+  3. **`scripts/obsolete-routes.json` に新 entry 追加**: 廃止 route を構造管理、 `.claude/hooks/check-obsolete-routes.mjs` (Sess8 Retro S-2) が Edit/Write 時に block
+  4. **計画段階で「N 件」 と楽観計上禁止**: 実 grep を先に走らせて確定数を出す
+- **根拠**: 2026-05-17 Sess7 PR-1 (#543) で settings タブ → `app/settings/` 移動時、 (1) `SearchHeader.tsx:138` の `router.push('/(tabs)/settings')` 古い path 残存、 (2) `look-back/index.tsx:81` の `showSettings={false}` (歯車不表示)、 (3) Maestro flow 14 個と計画したが実 grep で 19 個と判明 = 計 3 件の漏れ。 Sess8 PR-1 (#545) で hotfix。 同種の path 漏れは Phase 1b 系で多発リスク。
+- **自動化**:
+  - `.claude/hooks/check-obsolete-routes.mjs`: Edit/Write 前に対象 file 内の廃止 route hit で block (S-2)
+  - `scripts/obsolete-routes.json`: 廃止 route を一元管理 (新規 entry 追加 → 全ファイル grep 自動 block)
+  - `.github/pull_request_template.md` §11: route / Phase 変更時の全網羅 grep 結果記載を必須化 (S-3)
+
 ---
 
 ## 関連
 
-- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-32 索引 + 運用ルール)
+- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-33 索引 + 運用ルール)
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
-- `.claude/hooks/` — 構造的防止 Hook 群
+- `.claude/hooks/` — 構造的防止 Hook 群 (R-33 → `check-obsolete-routes.mjs`)
+- `scripts/obsolete-routes.json` — 廃止 route 一元管理 (Sess8 Retro S-2)
+- `scripts/check-adr-sources.mjs` — ADR 業界事例 sources URL チェック (Sess8 Retro S-1)
 - `docs/reference/tasks/lessons/` — 技術 lesson (領域別フォルダ)
