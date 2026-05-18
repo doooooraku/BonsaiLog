@@ -113,6 +113,8 @@
 | **R-29** | 写経駆動開発 5 段階 | mockup Read → mockup SS Read → RN Read → RN 撮影 → 並列比較 |
 | **R-30** | 外部 lib stability PoC | testing lib 変更時 2/2 = 100% 厳格基準で PoC、plan B 先確定 |
 | **R-31** | Maestro flow 作成時の事前確認 | testID grep + `_template.yml` 使用 + text tap 禁止 |
+| **R-32** | commit 直前の git diff --cached 目視 | staged 内容と議論修正項目の整合確認、git restore 罠回避 |
+| **R-33** | route / Phase 変更時の影響範囲全網羅 grep | 廃止 path 文字列を全 grep + PR 本文に grep 結果記載、 `scripts/obsolete-routes.json` + `.claude/hooks/check-obsolete-routes.mjs` で構造的検出 (Sess8 PR-5+1) |
 
 ---
 
@@ -123,7 +125,7 @@
 3. **R-N の番号は変更しない**（既存参照を破壊しない、削除する場合は「~~R-N: 削除~~」と注記）。
 4. **項目が増えたら別ファイル分割を検討**（**メイン 250 行以内** を維持）。`scripts/docs-lint.mjs` で自動検出。
 5. **R-13 以降は Hook で構造的に防止**（注意ではなく仕組み化、`.claude/hooks/` 参照）。
-6. **3 回再発で昇華必須**（CLAUDE.md §9 記憶の昇華ルール）: 同一テーマが lessons / recurrence-prevention に 3 件以上溜まったら、hook / ESLint / CI / 型システムで構造的に防ぐ仕組みに昇華し、下位記憶からは該当記述を削除する。
+6. **2 回再発で昇華必須 (本プロジェクト独自強化、 Sess8 Retro)**: CLAUDE.md §9 「3 回再発で昇華」 を本プロジェクトで **「2 回再発で hook 化検討、 3 回目で必須」** に強化。 同一テーマが lessons / recurrence-prevention に 2 件以上溜まったら、 hook / ESLint / CI / 型システムで構造的に防ぐ仕組み化を **検討**、 3 回目で **必須**。 user の「注意ではなく仕組み」 真意整合。 例: Sess8 Retro で「業界事例誤引用 (Sess7→Sess8 で 2 回目)」「Phase 1b 漏れ (R-9 違反 2 回目)」 を本ルールで hook 化 (R-33 / S-1 / S-2 新設)。
 
 ## 関連ファイル
 

@@ -16,6 +16,10 @@
           {
             "type": "command",
             "command": "node .claude/hooks/check-maestro-flow-creation.mjs"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/check-obsolete-routes.mjs"
           }
         ]
       },
