@@ -1,18 +1,18 @@
 /**
- * F-09 タグ管理画面 (Issue #31 / ADR-0008 + §Notes Amended 2026-05-18)。
+ * F-09 タグ管理画面 (Issue #31 / ADR-0008 + §Notes Amended 2026-05-18 + Sess9 PR-3)。
  *
  * 範囲:
- * - タグの作成 (createOrFindTag、case-insensitive UNIQUE)
  * - 既存タグ一覧 (createdAt DESC)
- * - タグ削除 (bonsai_tags は CASCADE で自動削除)
- * - タグ rename (Issue #31 AC3 Y9)
+ * - 「+ 新規タグを追加」 button → /tag-edit 全画面 (Sess9 PR-3)
+ * - 行 tap → /tag-edit?tagId=xxx&initialName=yyy 全画面 (旧 Alert.alert 置換)
  *
  * Sess9 PR-1 で event_tags 完全廃止 (dead code、 bonsai_tags 一本化)。
- * 旧 Phase C/D 記述 (event タグ chips、 event_tags filter) は本 Amended で撤回。
+ * Sess9 PR-3 で Alert.alert を自前 tag-edit 全画面に置換 (素っ気ない popup 解消、
+ * iOS/Android 共に push transition で統一、 ADR-0024 §Notes Amended 整合)。
  */
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -21,25 +21,18 @@ import {
   BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
-  DISABLED_BG,
   ON_BRAND,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getDb } from '@/src/db/db';
-import { createOrFindTag, renameTag, type TagRecord } from '@/src/db/tagRepository';
-
-/** Issue #31 AC4-2: タグ名 32 文字制限 (TL1)。 */
-const TAG_NAME_MAX_LENGTH = 32;
+import { type TagRecord } from '@/src/db/tagRepository';
 
 export default function TagsManagerScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const c = useColors();
   const [tags, setTags] = React.useState<TagRecord[]>([]);
-  const [input, setInput] = React.useState('');
-  const [busy, setBusy] = React.useState(false);
-  // Issue #31 AC3 Y9: rename UI 編集モード (null = 新規追加、TagRecord = rename 対象)
-  const [editingTag, setEditingTag] = React.useState<TagRecord | null>(null);
 
   const reload = React.useCallback(async () => {
     const db = await getDb();
@@ -49,81 +42,20 @@ export default function TagsManagerScreen() {
     setTags(rows);
   }, []);
 
+  // タグ編集画面から戻った時にも反映するため focus 毎に reload。
   useFocusEffect(
     React.useCallback(() => {
       reload().catch(() => setTags([]));
     }, [reload]),
   );
 
-  const handleAdd = async () => {
-    const trimmed = input.trim();
-    if (trimmed.length === 0 || busy) return;
-    setBusy(true);
-    try {
-      // Issue #31 AC3 Y9: 編集モード時は rename、それ以外は新規 createOrFindTag
-      if (editingTag) {
-        const result = await renameTag(editingTag.id, trimmed);
-        if (result === 'duplicate') {
-          Alert.alert(t('error'), t('tagsRenameDuplicateBody'));
-          return;
-        }
-        if (result === 'empty') {
-          Alert.alert(t('error'), t('tagsAddFailedBody'));
-          return;
-        }
-        setEditingTag(null);
-      } else {
-        await createOrFindTag(trimmed);
-      }
-      setInput('');
-      await reload();
-    } catch {
-      Alert.alert(t('error'), t('tagsAddFailedBody'));
-    } finally {
-      setBusy(false);
-    }
+  const openAdd = () => {
+    router.push('/tag-edit' as Href);
   };
 
-  const handleRowPress = (tag: TagRecord) => {
-    Alert.alert(tag.name, undefined, [
-      {
-        text: t('tagsRenameAction'),
-        onPress: () => {
-          setEditingTag(tag);
-          setInput(tag.name);
-        },
-      },
-      {
-        text: t('delete'),
-        style: 'destructive',
-        onPress: () => handleDelete(tag),
-      },
-      { text: t('cancel'), style: 'cancel' },
-    ]);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingTag(null);
-    setInput('');
-  };
-
-  const handleDelete = (tag: TagRecord) => {
-    Alert.alert(
-      t('tagsDeleteConfirmTitle'),
-      t('tagsDeleteConfirmBody').replace('{name}', tag.name),
-      [
-        { text: t('cancel'), style: 'cancel' },
-        {
-          text: t('delete'),
-          style: 'destructive',
-          onPress: async () => {
-            const db = await getDb();
-            // bonsai_tags は schema.ts §schemaV9 で ON DELETE CASCADE 設定済、 自動削除される
-            await db.runAsync('DELETE FROM tags WHERE id = ?', [tag.id]);
-            await reload();
-          },
-        },
-      ],
+  const openEdit = (tag: TagRecord) => {
+    router.push(
+      `/tag-edit?tagId=${encodeURIComponent(tag.id)}&initialName=${encodeURIComponent(tag.name)}` as Href,
     );
   };
 
@@ -138,43 +70,15 @@ export default function TagsManagerScreen() {
         </ThemedText>
         <ThemedText style={styles.desc}>{t('tagsManagerDesc')}</ThemedText>
 
-        <View style={styles.inputRow}>
-          <TextInput
-            accessibilityLabel={t('tagsAddPlaceholder')}
-            testID="e2e_tags_input"
-            style={styles.input}
-            value={input}
-            onChangeText={setInput}
-            onSubmitEditing={handleAdd}
-            placeholder={t('tagsAddPlaceholder')}
-            returnKeyType="done"
-            autoCorrect={false}
-            autoCapitalize="none"
-            maxLength={TAG_NAME_MAX_LENGTH}
-          />
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={editingTag ? t('tagsRenameAction') : t('tagsAddAction')}
-            testID="e2e_tags_add"
-            style={[styles.addBtn, (busy || input.trim().length === 0) && styles.addBtnDisabled]}
-            onPress={handleAdd}
-            disabled={busy || input.trim().length === 0}
-          >
-            <ThemedText style={styles.addBtnText}>
-              {editingTag ? t('tagsRenameAction') : t('tagsAddAction')}
-            </ThemedText>
-          </Pressable>
-        </View>
-        {editingTag && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('cancel')}
-            testID="e2e_tags_rename_cancel"
-            onPress={handleCancelEdit}
-          >
-            <ThemedText style={styles.cancelEditText}>{t('cancel')}</ThemedText>
-          </Pressable>
-        )}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('tagEditTitleAdd')}
+          testID="e2e_tags_add_open"
+          style={styles.addBtn}
+          onPress={openAdd}
+        >
+          <ThemedText style={styles.addBtnText}>+ {t('tagEditTitleAdd')}</ThemedText>
+        </Pressable>
 
         {tags.length === 0 && <ThemedText style={styles.empty}>{t('tagsEmpty')}</ThemedText>}
 
@@ -185,8 +89,7 @@ export default function TagsManagerScreen() {
             accessibilityLabel={tg.name}
             testID={`e2e_tags_row_${tg.id}`}
             style={styles.row}
-            onPress={() => handleRowPress(tg)}
-            onLongPress={() => handleDelete(tg)}
+            onPress={() => openEdit(tg)}
           >
             <ThemedText type="defaultSemiBold">{tg.name}</ThemedText>
             <ThemedText style={styles.rowDate}>
@@ -200,36 +103,20 @@ export default function TagsManagerScreen() {
 }
 
 const styles = StyleSheet.create({
-  // backgroundColor は useColors の c.background で動的指定
   container: { flex: 1 },
   scroll: { padding: 16, gap: 12 },
   title: { marginBottom: 4 },
   desc: { fontSize: 13, color: TEXT_SECONDARY, marginBottom: 12, lineHeight: 18 },
-  inputRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  // Issue #31 AC5 シニア UX: minHeight 48 + fontSize 17
-  input: {
-    flex: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 12,
-    backgroundColor: BG_SURFACE,
-    fontSize: 17,
-  },
   addBtn: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    minHeight: 48,
-    minWidth: 64,
-    borderRadius: 12,
+    paddingVertical: 14,
+    minHeight: 56,
+    borderRadius: 14,
     backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 8,
   },
-  addBtnDisabled: { backgroundColor: DISABLED_BG },
-  addBtnText: { color: ON_BRAND, fontSize: 17, fontWeight: '600' },
+  addBtnText: { color: ON_BRAND, fontSize: 17, fontWeight: '600', letterSpacing: 0.5 },
   empty: { textAlign: 'center', color: TEXT_SECONDARY, paddingVertical: 24 },
   row: {
     flexDirection: 'row',
@@ -243,10 +130,4 @@ const styles = StyleSheet.create({
     backgroundColor: BG_SURFACE,
   },
   rowDate: { fontSize: 12, color: TEXT_SECONDARY },
-  cancelEditText: {
-    color: TEXT_SECONDARY,
-    fontSize: 13,
-    paddingVertical: 8,
-    textAlign: 'center',
-  },
 });

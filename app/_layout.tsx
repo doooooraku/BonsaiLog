@@ -138,6 +138,10 @@ export default function RootLayout() {
               expo-router で group route が root Stack に未登録だと default header が「(modals)」 を表示する。
               (modals)/_layout.tsx の child Stack で各 modal の title 制御 (例: bonsai-new → 「盆栽を登録」)。 */}
           <Stack.Screen name="(modals)" options={{ headerShown: false }} />
+          {/* Sess9 PR-3 (ADR-0008 §Notes Amended 2026-05-18): タグ追加 / 編集の自前全画面。
+              presentation 未指定 = default 'card' = iOS/Android 共に push transition (案 A)。
+              旧 app/tags.tsx の Alert.alert 素っ気ない popup を置換、 設定 → タグを管理 → row tap で起動。 */}
+          <Stack.Screen name="tag-edit" options={{ title: '' }} />
         </Stack>
         <StatusBar style={effectiveScheme === 'dark' ? 'light' : 'dark'} />
       </ThemeProvider>

@@ -687,6 +687,12 @@ const baseEn = {
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
   filterAll: 'All',
+  tagEditTitleAdd: 'Add Tag',
+  tagEditTitleEdit: 'Edit Tag',
+  tagEditNameLabel: 'Tag Name',
+  tagEditAddCta: 'Add',
+  tagEditUpdateCta: 'Update',
+  tagEditDeleteCta: 'Delete this tag',
 };
 
 export type TranslationKey = keyof typeof baseEn;
