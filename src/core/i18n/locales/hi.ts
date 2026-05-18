@@ -680,7 +680,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   bulkSelectModalNotice: 'रिकॉर्ड या योजना के लिए बोनसाई चुनें ({count} चयनित)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
-  filterAll: 'All',
   tagEditTitleAdd: 'Add Tag',
   tagEditTitleEdit: 'Edit Tag',
   tagEditNameLabel: 'Tag Name',

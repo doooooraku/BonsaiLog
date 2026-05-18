@@ -680,7 +680,6 @@ const it: Partial<Record<TranslationKey, string>> = {
   bulkSelectModalNotice: 'Scegli i bonsai da registrare o programmare ({count} selezionati)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
-  filterAll: 'All',
   tagEditTitleAdd: 'Add Tag',
   tagEditTitleEdit: 'Edit Tag',
   tagEditNameLabel: 'Tag Name',
