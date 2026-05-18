@@ -689,6 +689,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bulkSelectModalTitle: '盆栽を選ぶ',
   bulkSelectModalNotice: '盆栽を選んでください ({count}件選択中)',
   filterAll: 'すべて',
+  tagEditTitleAdd: 'タグを追加',
+  tagEditTitleEdit: 'タグを編集',
+  tagEditNameLabel: 'タグ名',
+  tagEditAddCta: '追加',
+  tagEditUpdateCta: '変更',
+  tagEditDeleteCta: 'このタグを削除',
 };
 
 export default ja;
