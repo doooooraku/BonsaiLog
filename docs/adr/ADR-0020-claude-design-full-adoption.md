@@ -701,3 +701,45 @@ ADR-0020 §Decision §10 が 6 → 4 画面に変更されたため、41 画面 
 - Issue #526 (PR #532 で close 済、tut5 経路特定)
 - Issue #531 (機能 1/2 mockup HTML 作成依頼、本 PR で close)
 - PR-2.5: refactor(onboarding): tut1/tut2 機能撤去 + ADR 改訂 (本 PR)
+
+---
+
+### Notes Amended (2026-05-18、 Sess9 PR-6): ふりかえり Hub に「タグを管理」 4 カード目追加 + 意義拡張
+
+#### 改訂内容
+
+- mockup `care-screens.jsx CareHubScreen` (L1576-1719) は **3 カード Hub** (水やり履歴 / 針金がけ一覧 / 盆栽を検索) で確定だったが、 user 真意 (Sess9 議論 Q1 H1 二重動線) で **「タグを管理」 4 カード目を追加**
+- ふりかえり Hub の subtitle を意義拡張:
+  - **Before** (mockup 完全整合): 「記録したケアを一覧で振り返るビューです。」
+  - **After** (Sess9 PR-6): 「記録を振り返り、 整理するビューです。」
+  - 「整理」 ワードで **タグ管理 (CRUD)** を含む意味拡張
+- 既存「設定 → タグを管理」 row は **併存維持** (高橋ペルソナの既存習慣尊重 + discoverability 最大化)
+
+#### 理由 (議論経緯)
+
+1. **user 要望**: 「下のタブバーにある「ふりかえり」をタップすると「タグを管理」も作って遷移できるようにしてください」
+2. **業界事例**: Apple Notes / Things 3 / Notion / Bear いずれも tag management に 2 経路以上提供 (Hub + Settings、 sidebar + menu 等)
+3. **動線短縮**: 設定経由のみだと 3 タップ、 Hub 経由なら 2 タップで到達可
+4. **mockup 不在の理由**: care-screens.jsx は v1.0 初期 (タグ機能成熟前) に作成、 Sess9 PR-1 で event_tags 廃止 + bonsai_tags 一本化 + タグ管理画面刷新 (PR-3) を経て、 タグ機能が成熟したタイミングでの動線追加
+
+#### R-28 境界判定
+
+- **UI 表現** (カード追加 / icon / subtitle 改訂): R-16 では OpenDesign が SoT だが、 mockup `care-screens.jsx` が古い (タグ機能成熟前) ため、 ADR Amended で意義拡張 + mockup 上書きを明文化
+- **ビジネス仕様** (タグ管理機能本体): 既存 `app/tags.tsx` をそのまま利用、 変更なし
+- **動線整合** (設定 row 併存): 既存 user の habit migration リスクを回避
+
+#### 4 ペルソナ評価 (本 Notes Amended)
+
+| 評価軸            | 高橋 62 (シニア)   | Marcus 35 (海外) | プロ 50 (業務) | ライト 28 (新人) |
+| ----------------- | ------------------ | ---------------- | -------------- | ---------------- |
+| Hub 4 カード化    | ◎ 設定経由習慣維持 | ◎ 多経路         | ○              | ◎ 発見性         |
+| subtitle 意義拡張 | ◎ 意味通る         | ◎ シンプル       | ◎              | ◎                |
+| **総合**          | ◎                  | ◎                | ○              | ◎                |
+
+→ R-10 4 ペルソナ評価で △ ゼロ、 user 真意整合 (Q1 H1 8/8 点)
+
+#### 関連
+
+- Sess9 PR-6 (本 PR、 #TBD): app/(tabs)/look-back/index.tsx 4 カード化 + ja/en 19 言語 i18n
+- Sess9 議論: タグ機能 5 PR スコープ (Q1-Q4 で user 真意確定)
+- mockup care-screens.jsx CareHubScreen (L1576-1719、 historical reference 維持)

@@ -1,17 +1,20 @@
 /**
- * ふりかえりタブ index = CareHub Hub 画面 (3 カード)。
+ * ふりかえりタブ index = CareHub Hub 画面 (4 カード)。
  *
- * ADR-0020 §Decision §7 (2026-05-10 改訂、T1-8c) 整合実装。
- * mockup `docs/mockups/v1.0/wireframes/care-screens.jsx CareHubScreen` (L1576-1719) を移植。
+ * ADR-0020 §Decision §7 (2026-05-10 改訂、T1-8c) + §Notes Amended (2026-05-18、 Sess9 PR-6)。
+ * mockup `docs/mockups/v1.0/wireframes/care-screens.jsx CareHubScreen` (L1576-1719) を基に、
+ * 4 カード目「タグを管理」 を user 真意 (Q1 H1 二重動線) で追加、 subtitle を「整理」 意義拡張。
  *
- * 3 カード:
+ * 4 カード:
  * 1. 水やり履歴 → /(tabs)/look-back/watering-history (Issue #361 で本実装)
  * 2. 針金がけ一覧 → /(tabs)/plan/wiring (既存)
  * 3. 盆栽を検索 → /(tabs)/look-back/search (T1-8c で sub-route 化)
+ * 4. タグを管理 → /tags (Sess9 PR-6 新規追加、 設定 row も併存維持)
  *
  * 動線整合 (BonsaiLog-Flow.html v1.10):
  * - 経路 1 (高速): Home Header 検索 → /(tabs)/look-back/search (1 タップ)
  * - 経路 2 (Hub): TabBar ふりかえり → 本画面 → 盆栽を検索カード → search (3 タップ)
+ * - 経路 3 (Sess9 PR-6 新規): TabBar ふりかえり → 本画面 → タグを管理カード → tags (3 タップ)
  */
 import { useRouter, type Href } from 'expo-router';
 import React from 'react';
@@ -19,7 +22,13 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ChevronRightIcon, DropletIcon, SearchIcon, WireIcon } from '@/src/components/icons';
+import {
+  ChevronRightIcon,
+  DropletIcon,
+  SearchIcon,
+  TagIcon,
+  WireIcon,
+} from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
@@ -33,7 +42,7 @@ import { useColors } from '@/src/core/theme/useColors';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 
 type CardDef = {
-  key: 'watering' | 'wiring' | 'search';
+  key: 'watering' | 'wiring' | 'search' | 'tags';
   title: string;
   desc: string;
   Icon: typeof DropletIcon;
@@ -66,6 +75,16 @@ export default function LookBackHubScreen() {
       desc: t('lookBackCardSearchDesc'),
       Icon: SearchIcon,
       onPress: () => router.push('/(tabs)/look-back/search' as Href),
+    },
+    // Sess9 PR-6 (ADR-0020 §Notes Amended 2026-05-18、 user 真意 Q1 H1): 「タグを管理」 4 カード目。
+    // mockup CareHubScreen には未掲載だが「ふりかえり = 振り返り + 整理」 と意義拡張。
+    // 設定 row も併存維持 (高橋ペルソナの既存習慣尊重 + discoverability 最大化)。
+    {
+      key: 'tags',
+      title: t('lookBackCardTagsTitle'),
+      desc: t('lookBackCardTagsDesc'),
+      Icon: TagIcon,
+      onPress: () => router.push('/tags' as Href),
     },
   ];
 

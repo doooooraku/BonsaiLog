@@ -179,6 +179,27 @@ export function ChevronRightIcon({ size = 20, color = TEXT_PRIMARY }: IconProps)
   );
 }
 
+/**
+ * タグ (Tag、 Heroicons 風)。 CareHub「タグを管理」 カード icon 22-28px。
+ *
+ * Sess9 PR-6 (ADR-0020 §Notes Amended 2026-05-18) で新規追加。
+ * 「ふりかえり = 振り返り + 整理」 の「整理」 部分を担う。
+ */
+export function TagIcon({ size = 22, color = TEXT_PRIMARY }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.1 18.1 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.659A2.25 2.25 0 009.568 3z"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Circle cx="6" cy="6" r="1" fill={color} />
+    </Svg>
+  );
+}
+
 /** チェック (確定 / 完了)。FAB / Toast 18px、default color は washi。 */
 export function CheckIcon({ size = 18, color = BG_PRIMARY }: IconProps) {
   return (

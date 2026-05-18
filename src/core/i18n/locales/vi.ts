@@ -583,7 +583,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   detailExportProDesc: 'PDF export is a Pro plan feature.',
   onboardingLanguageContinue: 'Continue with this language',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
-  lookBackHubSubtitle: 'Browse your care records.',
+  lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',
   lookBackCardWateringDesc: 'Calendar & heatmap of past waterings',
   lookBackCardWiringTitle: 'Wiring list',
@@ -686,5 +686,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   tagEditUpdateCta: 'Update',
   tagEditDeleteCta: 'Delete this tag',
   settingsTagsCountValue: '{count} tags',
+  lookBackCardTagsTitle: 'Manage Tags',
+  lookBackCardTagsDesc: 'Add / rename tags · See usage counts',
 };
 export default vi;

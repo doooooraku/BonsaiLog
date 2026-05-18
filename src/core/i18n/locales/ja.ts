@@ -604,7 +604,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailExportProDesc: 'PDF 書き出しは Pro プランの機能です。',
   onboardingLanguageContinue: '選択して続ける',
   // --- T1-8c CareHub Hub (ADR-0020 §Decision §7) ---
-  lookBackHubSubtitle: '記録したケアを一覧で振り返るビューです。',
+  lookBackHubSubtitle: '記録を振り返り、 整理するビューです。',
   lookBackCardWateringTitle: '水やり履歴',
   lookBackCardWateringDesc: 'カレンダー・ヒートマップで過去の水やりを確認',
   lookBackCardWiringTitle: '針金がけ一覧',
@@ -695,6 +695,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tagEditUpdateCta: '変更',
   tagEditDeleteCta: 'このタグを削除',
   settingsTagsCountValue: '{count} 件',
+  lookBackCardTagsTitle: 'タグを管理',
+  lookBackCardTagsDesc: 'タグの追加・名前変更 / 各タグの使用数を確認',
 };
 
 export default ja;
