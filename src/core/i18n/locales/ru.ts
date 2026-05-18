@@ -693,5 +693,8 @@ const ru: Partial<Record<TranslationKey, string>> = {
   tagsLastUsedFormat: 'used {relative} ago',
   tagsLastUsedNever: 'unused',
   tagsLastUsedToday: 'used today',
+  tagRenameImpactTitle: 'Rename this tag?',
+  tagRenameImpactBody: 'This tag is used by {count} bonsai. Rename to "{newName}"?',
+  tagDeleteImpactBody: 'Delete tag "{name}". It will be removed from {count} bonsai.',
 };
 export default ru;

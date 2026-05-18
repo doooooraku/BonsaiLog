@@ -122,6 +122,22 @@ export async function countAllTags(): Promise<number> {
 }
 
 /**
+ * 指定タグが attach されている盆栽の件数を返す (Sess9 PR-8、 rename/削除影響範囲警告用)。
+ *
+ * 業界事例: Linear Label delete confirmation pattern。
+ * - 0 件 → 警告なし、 simple confirm
+ * - 1+ 件 → 「このタグは N 件の盆栽で使われています」 警告 + confirm
+ */
+export async function countBonsaiByTag(tagId: string): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM bonsai_tags WHERE tag_id = ?',
+    [tagId],
+  );
+  return row?.count ?? 0;
+}
+
+/**
  * タグの使用統計付き一覧を返す (Sess9 PR-7、 タグ管理画面 row 表示用)。
  *
  * 各タグについて:

@@ -27,7 +27,7 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getDb } from '@/src/db/db';
-import { createOrFindTag, renameTag } from '@/src/db/tagRepository';
+import { countBonsaiByTag, createOrFindTag, renameTag } from '@/src/db/tagRepository';
 
 const TAG_NAME_MAX_LENGTH = 32;
 
@@ -42,6 +42,40 @@ export default function TagEditScreen() {
 
   const [input, setInput] = React.useState(initialName);
   const [busy, setBusy] = React.useState(false);
+  // Sess9 PR-8: 影響範囲警告用、 編集モード時のみ fetch (新規追加時は count = 0 固定)
+  const [usageCount, setUsageCount] = React.useState<number>(0);
+
+  React.useEffect(() => {
+    if (!isEditMode || tagId == null) return;
+    let mounted = true;
+    void (async () => {
+      try {
+        const count = await countBonsaiByTag(tagId);
+        if (mounted) setUsageCount(count);
+      } catch {
+        // count 取得失敗時は 0 のまま (警告省略、 操作は許可)
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [isEditMode, tagId]);
+
+  /** Sess9 PR-8: rename 確定の中核ロジック (確認後 or 影響なし時に実行)。 */
+  const performRename = async (trimmed: string): Promise<void> => {
+    const result = await renameTag(tagId!, trimmed);
+    if (result === 'duplicate') {
+      Alert.alert(t('error'), t('tagsRenameDuplicateBody'));
+      setBusy(false);
+      return;
+    }
+    if (result === 'empty') {
+      Alert.alert(t('error'), t('tagsAddFailedBody'));
+      setBusy(false);
+      return;
+    }
+    router.back();
+  };
 
   const handleSubmit = async () => {
     const trimmed = input.trim();
@@ -49,21 +83,35 @@ export default function TagEditScreen() {
     setBusy(true);
     try {
       if (isEditMode) {
-        const result = await renameTag(tagId!, trimmed);
-        if (result === 'duplicate') {
-          Alert.alert(t('error'), t('tagsRenameDuplicateBody'));
-          setBusy(false);
+        // Sess9 PR-8: 名前が変わる + 使用中タグ → Linear パターン確認 Alert
+        const nameChanged = trimmed !== initialName.trim();
+        if (nameChanged && usageCount > 0) {
+          Alert.alert(
+            t('tagRenameImpactTitle'),
+            t('tagRenameImpactBody')
+              .replace('{count}', String(usageCount))
+              .replace('{newName}', trimmed),
+            [
+              {
+                text: t('cancel'),
+                style: 'cancel',
+                onPress: () => setBusy(false),
+              },
+              {
+                text: t('tagEditUpdateCta'),
+                onPress: () => {
+                  void performRename(trimmed);
+                },
+              },
+            ],
+          );
           return;
         }
-        if (result === 'empty') {
-          Alert.alert(t('error'), t('tagsAddFailedBody'));
-          setBusy(false);
-          return;
-        }
+        await performRename(trimmed);
       } else {
         await createOrFindTag(trimmed);
+        router.back();
       }
-      router.back();
     } catch {
       Alert.alert(t('error'), t('tagsAddFailedBody'));
       setBusy(false);
@@ -72,22 +120,25 @@ export default function TagEditScreen() {
 
   const handleDelete = () => {
     if (!isEditMode || tagId == null) return;
-    Alert.alert(
-      t('tagsDeleteConfirmTitle'),
-      t('tagsDeleteConfirmBody').replace('{name}', initialName),
-      [
-        { text: t('cancel'), style: 'cancel' },
-        {
-          text: t('delete'),
-          style: 'destructive',
-          onPress: async () => {
-            const db = await getDb();
-            await db.runAsync('DELETE FROM tags WHERE id = ?', [tagId]);
-            router.back();
-          },
+    // Sess9 PR-8: 使用中タグ削除は影響範囲明示 (Linear / Notion パターン)
+    const body =
+      usageCount > 0
+        ? t('tagDeleteImpactBody')
+            .replace('{name}', initialName)
+            .replace('{count}', String(usageCount))
+        : t('tagsDeleteConfirmBody').replace('{name}', initialName);
+    Alert.alert(t('tagsDeleteConfirmTitle'), body, [
+      { text: t('cancel'), style: 'cancel' },
+      {
+        text: t('delete'),
+        style: 'destructive',
+        onPress: async () => {
+          const db = await getDb();
+          await db.runAsync('DELETE FROM tags WHERE id = ?', [tagId]);
+          router.back();
         },
-      ],
-    );
+      },
+    ]);
   };
 
   const canSubmit = input.trim().length > 0 && !busy;
