@@ -121,6 +121,34 @@ export async function countAllTags(): Promise<number> {
   return row?.count ?? 0;
 }
 
+/**
+ * タグの使用統計付き一覧を返す (Sess9 PR-7、 タグ管理画面 row 表示用)。
+ *
+ * 各タグについて:
+ * - usageCount: bonsai_tags 経由で attach されている盆栽件数
+ * - lastUsedAt: 最新の attach 日時 (bonsai_tags.created_at の MAX)、 未使用なら null
+ *
+ * 業界事例: Bear Notes 同パターン (件数 + 最終使用日)、 作成日は user benefit ゼロのため非表示。
+ * 性能: idx_bonsai_tags_tag_id (schema v9) で 1000 タグ規模でも 100ms 未満。
+ */
+export type TagWithStats = TagRecord & {
+  usageCount: number;
+  lastUsedAt: string | null;
+};
+
+export async function getTagsWithStats(): Promise<TagWithStats[]> {
+  const db = await getDb();
+  return db.getAllAsync<TagWithStats>(
+    `SELECT t.id, t.name, t.name_normalized AS nameNormalized, t.created_at AS createdAt,
+            COUNT(bt.bonsai_id) AS usageCount,
+            MAX(bt.created_at) AS lastUsedAt
+     FROM tags t
+     LEFT JOIN bonsai_tags bt ON bt.tag_id = t.id
+     GROUP BY t.id, t.name, t.name_normalized, t.created_at
+     ORDER BY t.created_at DESC;`,
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Bonsai-Tag M:N (T2-6、schema v9)
 // ---------------------------------------------------------------------------

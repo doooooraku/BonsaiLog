@@ -689,5 +689,9 @@ const ko: Partial<Record<TranslationKey, string>> = {
   settingsTagsCountValue: '{count} tags',
   lookBackCardTagsTitle: 'Manage Tags',
   lookBackCardTagsDesc: 'Add / rename tags · See usage counts',
+  tagsUsageCountFormat: '{count} bonsai',
+  tagsLastUsedFormat: 'used {relative} ago',
+  tagsLastUsedNever: 'unused',
+  tagsLastUsedToday: 'used today',
 };
 export default ko;

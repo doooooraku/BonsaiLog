@@ -1,44 +1,43 @@
 /**
- * F-09 タグ管理画面 (Issue #31 / ADR-0008 + §Notes Amended 2026-05-18 + Sess9 PR-3)。
+ * F-09 タグ管理画面 (Issue #31 / ADR-0008 + §Notes Amended 2026-05-18)。
  *
  * 範囲:
- * - 既存タグ一覧 (createdAt DESC)
- * - 「+ 新規タグを追加」 button → /tag-edit 全画面 (Sess9 PR-3)
+ * - タグ一覧 (createdAt DESC) + 使用件数 + 最終使用日
+ * - 「+ タグを追加」 button → /tag-edit 全画面 (Sess9 PR-3)
  * - 行 tap → /tag-edit?tagId=xxx&initialName=yyy 全画面 (旧 Alert.alert 置換)
  *
- * Sess9 PR-1 で event_tags 完全廃止 (dead code、 bonsai_tags 一本化)。
- * Sess9 PR-3 で Alert.alert を自前 tag-edit 全画面に置換 (素っ気ない popup 解消、
- * iOS/Android 共に push transition で統一、 ADR-0024 §Notes Amended 整合)。
+ * Sess9 進化:
+ * - PR-1: event_tags 完全廃止 (dead code、 bonsai_tags 一本化)
+ * - PR-3: Alert.alert を自前 tag-edit 全画面に置換 (素っ気ない popup 解消)
+ * - PR-7: 情報設計刷新 — 作成日 → 使用件数 + 最終使用日 (Bear Notes パターン、 user benefit 最大化)
  */
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { elapsedDaysFromIsoUtc, formatElapsedDays } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
   ON_BRAND,
+  TEXT_MUTED,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
-import { getDb } from '@/src/db/db';
-import { type TagRecord } from '@/src/db/tagRepository';
+import { getTagsWithStats, type TagWithStats } from '@/src/db/tagRepository';
 
 export default function TagsManagerScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const c = useColors();
-  const [tags, setTags] = React.useState<TagRecord[]>([]);
+  const [tags, setTags] = React.useState<TagWithStats[]>([]);
 
   const reload = React.useCallback(async () => {
-    const db = await getDb();
-    const rows = await db.getAllAsync<TagRecord>(
-      'SELECT id, name, name_normalized as nameNormalized, created_at as createdAt FROM tags ORDER BY created_at DESC',
-    );
+    const rows = await getTagsWithStats();
     setTags(rows);
   }, []);
 
@@ -53,10 +52,30 @@ export default function TagsManagerScreen() {
     router.push('/tag-edit' as Href);
   };
 
-  const openEdit = (tag: TagRecord) => {
+  const openEdit = (tag: TagWithStats) => {
     router.push(
       `/tag-edit?tagId=${encodeURIComponent(tag.id)}&initialName=${encodeURIComponent(tag.name)}` as Href,
     );
+  };
+
+  /**
+   * Sess9 PR-7: row right value を「N 件 · 3 日前に使用」 形式で組み立て。
+   *
+   * - 未使用 (count = 0 or lastUsed null): 「N 件 · 未使用」
+   * - 今日使用 (days = 0): 「N 件 · 今日使用」 (日本語文法「今日前に使用」 NG 回避)
+   * - 過去使用 (days > 0): 「N 件 · 3 日前に使用」
+   */
+  const buildStatsLabel = (tag: TagWithStats): string => {
+    const countLabel = t('tagsUsageCountFormat').replace('{count}', String(tag.usageCount));
+    if (tag.usageCount === 0 || tag.lastUsedAt == null) {
+      return `${countLabel} · ${t('tagsLastUsedNever')}`;
+    }
+    const days = elapsedDaysFromIsoUtc(tag.lastUsedAt);
+    if (days === 0) {
+      return `${countLabel} · ${t('tagsLastUsedToday')}`;
+    }
+    const elapsed = formatElapsedDays(days, t) ?? '';
+    return `${countLabel} · ${t('tagsLastUsedFormat').replace('{relative}', elapsed)}`;
   };
 
   return (
@@ -86,14 +105,14 @@ export default function TagsManagerScreen() {
           <Pressable
             key={tg.id}
             accessibilityRole="button"
-            accessibilityLabel={tg.name}
+            accessibilityLabel={`${tg.name} ${tg.usageCount}件`}
             testID={`e2e_tags_row_${tg.id}`}
             style={styles.row}
             onPress={() => openEdit(tg)}
           >
             <ThemedText type="defaultSemiBold">{tg.name}</ThemedText>
-            <ThemedText style={styles.rowDate}>
-              {new Date(tg.createdAt).toLocaleDateString()}
+            <ThemedText style={[styles.rowStats, tg.usageCount === 0 && styles.rowStatsUnused]}>
+              {buildStatsLabel(tg)}
             </ThemedText>
           </Pressable>
         ))}
@@ -129,5 +148,6 @@ const styles = StyleSheet.create({
     borderColor: BORDER_DEFAULT,
     backgroundColor: BG_SURFACE,
   },
-  rowDate: { fontSize: 12, color: TEXT_SECONDARY },
+  rowStats: { fontSize: 12, color: TEXT_SECONDARY },
+  rowStatsUnused: { color: TEXT_MUTED, fontStyle: 'italic' },
 });
