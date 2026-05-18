@@ -310,21 +310,6 @@
       "reevalIteration": "3/3 (Sess5 PR-2)"
     },
     {
-      "flow": "bonsai-select-mode",
-      "level": 2,
-      "rmse": 28000,
-      "achieved_at": "2026-05-16T11:15:00Z",
-      "rmseNormalized": 0.42,
-      "artifact": "scripts/ui-diff/out/20260516-1139-batch/bonsai-select-mode/",
-      "rationale": "Sess1 PR-3 R-25 構造系 4 項目評価通過。盆栽タブ長押し選択モード mockup 整合 (mockup: bonsai-select-mode.png 「01A HOME 選択モード」)。Maestro 2/2 PASS (Run2+Run3 連続 PASS、Run1 は Metro 初回 bundle build 遅延の environmental issue)。",
-      "judgedBy": "Sess1 PR-3 (2026-05-16)",
-      "needsReeval": false,
-      "reevalPassedAt": "2026-05-16T11:15:00Z",
-      "reevalArtifact": "scripts/ui-diff/out/20260516-1139-batch/bonsai-select-mode/",
-      "reevalRationale": "R-25 評価通過。タブ構成 (4 タブ 盆栽/予定/ふりかえり/設定) ✅、セクション構成 (キャンセル + N 件選択中 + フィルタ chip + ✓ 付盆栽カード + SelectionToolbar 一括記録/予定追加 = 主要 5 要素完全一致) ✅、UI 種別 (縦並びカードリスト + 上部ヘッダ + 下部 toolbar) ✅、スクロール範囲 (全画面スクロール可) ✅。残差: (1) 選択件数差 (mockup 3 件 / 実機 1 件、seed data 配置差で許容)、(2) 盆栽名差 (mockup 父の黒松 / 実機 お師匠の真柏、seed 配置順)、(3) AdMob test ad banner (実機のみ、Free 環境差で許容)、(4) Status bar 環境差。構造的整合性は完全一致。",
-      "reevalIteration": "2/2 (Run2+Run3 連続 PASS)"
-    },
-    {
       "flow": "bonsai-detail-timeline",
       "level": 2,
       "rmse": 26800,
