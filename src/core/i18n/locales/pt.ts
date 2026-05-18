@@ -696,5 +696,8 @@ const pt: Partial<Record<TranslationKey, string>> = {
   tagRenameImpactTitle: 'Rename this tag?',
   tagRenameImpactBody: 'This tag is used by {count} bonsai. Rename to "{newName}"?',
   tagDeleteImpactBody: 'Delete tag "{name}". It will be removed from {count} bonsai.',
+  tagBonsaiListTitle: '{tagName} bonsai ({count})',
+  tagBonsaiListEmpty: 'No bonsai have this tag yet.',
+  tagsRowLongPressHint: 'Long press to see bonsai with this tag',
 };
 export default pt;

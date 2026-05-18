@@ -58,6 +58,14 @@ export default function TagsManagerScreen() {
     );
   };
 
+  /** Sess9 PR-9 (user Q3 拡張 2、 Apple Notes パターン): row 長押し → タグ別盆栽一覧へ。 */
+  const openBonsaiList = (tag: TagWithStats) => {
+    if (tag.usageCount === 0) return; // 0 件タグは長押し動作なし (Empty 画面回避)
+    router.push(
+      `/tag-bonsai-list?tagId=${encodeURIComponent(tag.id)}&tagName=${encodeURIComponent(tag.name)}` as Href,
+    );
+  };
+
   /**
    * Sess9 PR-7: row right value を「N 件 · 3 日前に使用」 形式で組み立て。
    *
@@ -106,9 +114,11 @@ export default function TagsManagerScreen() {
             key={tg.id}
             accessibilityRole="button"
             accessibilityLabel={`${tg.name} ${tg.usageCount}件`}
+            accessibilityHint={tg.usageCount > 0 ? t('tagsRowLongPressHint') : undefined}
             testID={`e2e_tags_row_${tg.id}`}
             style={styles.row}
             onPress={() => openEdit(tg)}
+            onLongPress={() => openBonsaiList(tg)}
           >
             <ThemedText type="defaultSemiBold">{tg.name}</ThemedText>
             <ThemedText style={[styles.rowStats, tg.usageCount === 0 && styles.rowStatsUnused]}>
