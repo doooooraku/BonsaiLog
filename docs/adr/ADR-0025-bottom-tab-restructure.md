@@ -49,12 +49,12 @@
 9. **非対称設計の根拠**: 予定タブは月カレンダー画面が情報表示として意味あり / 記録タブは empty hub に意味薄く user 真意で削除、 case-by-case で UX 最適化
 10. **Subject to Revision**: 記録タブ案 X は user リリース後 feedback で「タブ tap で modal は混乱」 が顕著なら案 B (FAB 復活) に revert
 
-### ③ SearchHeader 「複数選択 / キャンセル」 text button 完全廃止 + 長押し経路維持 + Android back cancel
+### ③ SearchHeader simplify + 盆栽タブ 長押し → selectMode 経路 完全廃止
 
-9. **SearchHeader の「複数選択」 text button (selectMode=false 時) + 「キャンセル」 text button (selectMode=true 時) を完全削除** (2026-05-18 Sess8 PR-2 追補、 user 真意「不要、 削除して」)、 `onSelectPress` / `selectMode` / `selectedCount` props 廃止、 関連 i18n 4 key (selectModeAction / selectModeCancel / bulkSelectPlaceholder / bulkSelectedCount) 19 言語から削除
-10. **盆栽タブの「カード長押し → selectMode 入り」 経路は維持** (mockup v1.0 02-Home.html `onCardLongPress` 整合、 user 真意「複数選択 button のみ削除」)
-11. **selectMode 解除経路 = Android back button のみ**: 盆栽タブ `bonsai/index.tsx` で `BackHandler.addEventListener('hardwareBackPress', ...)` を `useFocusEffect` 内で登録、 selectMode=true 時の back press で selectMode 解除 + selectedIds リセット + event consume
-12. SelectionToolbar は **Phase 2 で「予定/記録タブ FAB 経由 → bonsai-multi-select modal」 + 「盆栽タブ長押し経由」 の 2 経路で表示**、 component 自体は再利用、 共通 hook `useBulkActionFlow` で予定/記録タブ動線を集約
+9. **SearchHeader の「複数選択」 / 「キャンセル」 text button 完全削除** (Sess8 PR-2 追補)、 `onSelectPress` / `selectMode` / `selectedCount` props 廃止、 関連 i18n 4 key (selectModeAction / selectModeCancel / bulkSelectPlaceholder / bulkSelectedCount) 19 言語から削除
+10. **盆栽タブの「カード長押し → selectMode 入り」 経路 完全廃止** (2026-05-18 Sess8 PR-5、 user 真意「bonsai-select-mode 実機上不要」 反映、 mockup v1.0 02-Home.html `onCardLongPress` 経路撤回): bonsai/index.tsx の selectMode state + handleCardLongPress + handleBulkLog / handleBulkSchedule + BackHandler (selectMode 用) 全削除、 SelectionToolbar component 完全削除、 maestro/flows/ui-diff/bonsai-select-mode.yml 完全削除、 skip-list / SCREEN_PAIRS / mockup config から bonsai-select-mode entry 削除
+11. **一括予定追加 / 一括記録の唯一の起動経路 = 予定タブ FAB (案 B) + 記録タブ tap (案 X)**: 共通 hook `useBulkActionFlow` で動線集約、 bonsai-multi-select modal が共通の盆栽選択 UI として機能
+12. **盆栽タブの責務 simplify**: 一覧表示 + 新規登録 (FAB) のみ、 一括操作 UI は完全に予定/記録タブに移管
 
 ### ④ 設定 = Header 経由 (既実装の活用、 Phase 1c で hotfix 完了)
 

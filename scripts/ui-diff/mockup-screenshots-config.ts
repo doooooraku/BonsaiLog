@@ -51,12 +51,7 @@ export const MOCKUP_SCREENSHOTS: readonly MockupScreenshot[] = [
     selector: '[data-screen-label="01 Home"]',
     description: '盆栽タブ通常表示 (BonsaiCard リスト + フィルタタブ + FAB)',
   },
-  {
-    id: 'bonsai-select-mode',
-    html: '02-Home.html',
-    selector: '[data-screen-label="01a Home 選択モード"]',
-    description: '盆栽タブ複数選択モード (チェックマーク + SelectionToolbar)',
-  },
+  // ADR-0025 案 X 後 Sess8 PR-5 (2026-05-18): bonsai-select-mode 完全廃止 (user 真意「実機上不要」)
   {
     id: 'bonsai-tag-add',
     html: '02-Home.html',

@@ -231,18 +231,8 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §Notes §画面マップ row 5 (HomeScreen) / care-screens-v2.jsx BulkScheduleDateSheet / src/features/event/BulkScheduleDateSheet.tsx (Phase 2 PR 実装) / mockups v1.0 (PR #269)。R-28 通知デフォルト OFF (principles.md v1.1 / ADR-0011 整合、mockup useState(true) は哲学逆走の残存と判断)。前提: 上記 home-bulk-sched-work から「肥料」(fertilizing) 等の作業を選択して遷移、testID e2e_bulk_schedule_date_sheet で可視待ち。calendar-grid-saturday-overflow.md (PR #318) の罠回避のため週行 + flex:1 採用。',
   },
-  // Sess1 PR-3 (2026-05-16): 盆栽タブ長押し選択モード mockup 整合
-  'bonsai-select-mode': {
-    id: 'bonsai-select-mode',
-    description:
-      '盆栽タブ 長押し選択モード (盆栽カード長押し → ✓ チェックマーク + ヘッダ「N 件選択中 / キャンセル」 + SelectionToolbar「一括記録 / 予定追加」)',
-    appFlow: 'maestro/flows/ui-diff/bonsai-select-mode.yml',
-    designHtml: '02-Home.html',
-    designSelector: '[data-screen-label="01a Home 選択モード"]',
-    mockupFile: 'bonsai-select-mode.png',
-    notes:
-      'ADR-0020 §Notes §画面マップ row 5 (HomeScreen) / home-screens.jsx 選択モード相当 / app/(tabs)/bonsai/index.tsx の selectMode state + src/features/bonsai/SelectionToolbar.tsx / mockups v1.0 「01A HOME 選択モード」。前提: テスト盆栽 1 件以上 (seed 投入) + 盆栽タブで 1 件目盆栽カード長押し、testID e2e_home_selection_toolbar_schedule で可視待ち (long press は 500ms default)。',
-  },
+  // ADR-0025 案 X 後 Sess8 PR-5 (2026-05-18): bonsai-select-mode 完全廃止 (user 真意「実機上不要」)、
+  // 一括予定追加 / 一括記録は予定タブ FAB / 記録タブ tap → bonsai-multi-select modal に集約。
   // 本セッション Tier 2 / photo UX / 横断水やり 主要 3 flow (Phase 4)
   'bonsai-create-sheet': {
     id: 'bonsai-create-sheet',
