@@ -679,5 +679,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   bulkSelectModalNotice: 'Chọn bonsai để ghi lại hoặc lên kế hoạch (đã chọn {count})',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
+  filterAll: 'All',
 };
 export default vi;

@@ -688,6 +688,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   planFabLabel: '一括予定追加',
   bulkSelectModalTitle: '盆栽を選ぶ',
   bulkSelectModalNotice: '盆栽を選んでください ({count}件選択中)',
+  filterAll: 'すべて',
 };
 
 export default ja;

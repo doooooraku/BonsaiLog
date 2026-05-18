@@ -162,9 +162,15 @@ export default function BonsaiHomeScreen() {
     }, [reload]),
   );
 
+  // Sess9 PR-2: mockup 02-Home.html 整合のため「すべて」 chip を先頭に追加。
+  // ALL_FILTER_ID 選択時は新規 user empty / filter 中 empty の区別が起きないため、
+  // user が「絞り込みを外す」 動線を明示できる (Apple HIG / Material Filter Chips 推奨)。
   const filterChips = useMemo<FilterChip[]>(
-    () => tags.map((tg) => ({ id: tg.id, label: tg.name })),
-    [tags],
+    () => [
+      { id: ALL_FILTER_ID, label: t('filterAll') },
+      ...tags.map((tg) => ({ id: tg.id, label: tg.name })),
+    ],
+    [tags, t],
   );
 
   const handleChipSelect = useCallback((id: string) => {
