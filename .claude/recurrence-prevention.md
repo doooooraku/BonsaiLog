@@ -115,6 +115,8 @@
 | **R-31** | Maestro flow 作成時の事前確認 | testID grep + `_template.yml` 使用 + text tap 禁止 |
 | **R-32** | commit 直前の git diff --cached 目視 | staged 内容と議論修正項目の整合確認、git restore 罠回避 |
 | **R-33** | route / Phase 変更時の影響範囲全網羅 grep | 廃止 path 文字列を全 grep + PR 本文に grep 結果記載、 `scripts/obsolete-routes.json` + `.claude/hooks/check-obsolete-routes.mjs` で構造的検出 (Sess8 PR-5+1) |
+| **R-34** | 議論承認の整合性確認 (同類カテゴリ複数項目) | AskUserQuestion で同類カテゴリ (例: 「Home 要素」 D2/D3) 複数項目を 1 質問に詰め込まない。 個別質問に分離 OR 推薦案明示後に各項目について逐次確認。 Sess9 PR-2 (D2/D3 混同) で revert ロス。 詳細: `lessons/discuss.md` |
+| **R-35** | 議論時 alternative 必須提示 + 業界事例「現状最適解」 明示 | 議論 Round で初期案 1 つだけでなく alternative 2-3 案を必ず併記。 業界事例リサーチで「最新トレンド = 現状最適解」 を明示し、 古いパターン (Apple Notes long-press 等) を「業界 outdated」 と判定。 Sess9 PR-9 → PR-10 long-press → toggle 60 分ロスが根拠。 詳細: `lessons/discuss.md` |
 
 ---
 

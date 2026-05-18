@@ -15,6 +15,7 @@
 | [`store.md`](./store.md)     | App Store / Google Play 申請 / メタデータ / UX 文言 / 法的リンク                       | リリース作業時           |
 | [`billing.md`](./billing.md) | RevenueCat / Pro 状態管理 / Champion 方式 / 別アプリ踏襲時のペルソナ再評価             | 課金実装時               |
 | [`design.md`](./design.md)   | Claude Design 作成時の ADR 添付 / テンプレ残骸検査 / design_system.md 整合確認         | UI 改修・Design 作成時   |
+| [`discuss.md`](./discuss.md) | 議論プロセス (R-34 認識ギャップ防止 / R-35 alternative 提示 / 業界事例)                | /discuss 起動時          |
 
 ## 運用ルール
 
