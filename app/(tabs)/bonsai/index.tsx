@@ -29,12 +29,11 @@ import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
-import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/bonsaiRepository';
-import { getActiveEventsByBonsai } from '@/src/db/eventRepository';
-import { getCoverPhoto } from '@/src/db/photoRepository';
+import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
 import { AdBanner } from '@/src/features/ads/AdBanner';
 import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCard';
+import { buildBonsaiCardData } from '@/src/features/bonsai/cardDataBuilder';
 import { FilterEmptyState } from '@/src/features/bonsai/FilterEmptyState';
 import { HomeFilterTabs, type FilterChip } from '@/src/features/bonsai/HomeFilterTabs';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
@@ -46,81 +45,10 @@ const ALL_FILTER_ID = 'ALL';
 // Issue #256: AdBanner の概算高さ (INLINE_ADAPTIVE_BANNER + maxHeight=90、 Repolog 同等)。
 const AD_BANNER_HEIGHT_APPROX = 60;
 
-/**
- * 経過日数を「3日」 「2週間」 「5ヶ月」 など短い文字列にフォーマット。
- */
-function formatElapsed(
-  days: number | null,
-  t: ReturnType<typeof useTranslation>['t'],
-): string | null {
-  if (days == null) return null;
-  if (days === 0) return t('elapsedToday');
-  if (days < 7) return t('elapsedDays').replace('{days}', String(days));
-  if (days < 30) return t('elapsedWeeks').replace('{weeks}', String(Math.floor(days / 7)));
-  if (days < 365) return t('elapsedMonths').replace('{months}', String(Math.floor(days / 30)));
-  return t('elapsedYears').replace('{years}', String(Math.floor(days / 365)));
-}
-
-/**
- * Bonsai 1 件分の card data を構築 (T1-10 PR で BonsaiCard 縦型 220+3 段構造に整合)。
- */
-async function buildCardData(
-  b: BonsaiWithSpecies,
-  todayLocalKey: string,
-  tzOffsetMin: number,
-  t: ReturnType<typeof useTranslation>['t'],
-): Promise<BonsaiCardData> {
-  const [cover, events] = await Promise.all([getCoverPhoto(b.id), getActiveEventsByBonsai(b.id)]);
-
-  let lastWateringEv: { utc: string; note: string | null } | null = null;
-  let lastPruningEv: { utc: string; note: string | null } | null = null;
-  for (const e of events) {
-    if (e.status !== 'logged' || e.deletedAt != null) continue;
-    if (e.type === 'watering') {
-      if (lastWateringEv == null || e.occurredAtUtc > lastWateringEv.utc) {
-        lastWateringEv = { utc: e.occurredAtUtc, note: e.note ?? null };
-      }
-    } else if (e.type === 'pruning') {
-      if (lastPruningEv == null || e.occurredAtUtc > lastPruningEv.utc) {
-        lastPruningEv = { utc: e.occurredAtUtc, note: e.note ?? null };
-      }
-    }
-  }
-
-  let lastAction: BonsaiCardData['lastAction'] = null;
-  const winner =
-    lastWateringEv == null && lastPruningEv == null
-      ? null
-      : lastWateringEv == null
-        ? { kind: 'pruning' as const, ev: lastPruningEv! }
-        : lastPruningEv == null
-          ? { kind: 'watering' as const, ev: lastWateringEv }
-          : lastWateringEv.utc >= lastPruningEv.utc
-            ? { kind: 'watering' as const, ev: lastWateringEv }
-            : { kind: 'pruning' as const, ev: lastPruningEv };
-  if (winner != null) {
-    const lastKey = toLocalDateKey(winner.ev.utc, tzOffsetMin);
-    const todayMs = Date.parse(`${todayLocalKey}T00:00:00Z`);
-    const lastMs = Date.parse(`${lastKey}T00:00:00Z`);
-    const days = Math.max(0, Math.floor((todayMs - lastMs) / (24 * 60 * 60 * 1000)));
-    const elapsed = formatElapsed(days, t) ?? '';
-    lastAction = { kind: winner.kind, elapsed, note: winner.ev.note };
-  }
-
-  const ageText =
-    b.estimatedAge != null && b.estimatedAge > 0
-      ? t('ageEstimatedFormat').replace('{years}', String(b.estimatedAge))
-      : null;
-
-  return {
-    id: b.id,
-    name: b.name,
-    coverUri: cover?.absoluteUri ?? null,
-    speciesCommonName: b.species?.commonName ?? null,
-    lastAction,
-    ageText,
-  };
-}
+// 旧 inline formatElapsed + buildCardData (lines 49-123) は Sess9 PR-11 で共有 util へ extract 済:
+// - formatElapsed → src/core/datetime/relativeElapsed.ts formatElapsedDays
+// - buildCardData → src/features/bonsai/cardDataBuilder.ts buildBonsaiCardData
+// 重複削除により本ファイルは UI rendering に集中、 BonsaiCard data 構築ロジックは util 一元化。
 
 export default function BonsaiHomeScreen() {
   const { t, lang } = useTranslation();
@@ -148,7 +76,7 @@ export default function BonsaiHomeScreen() {
       ]);
       setTags(recentTags);
       const cards = await Promise.all(
-        bonsai.map((b) => buildCardData(b, todayLocalKey, tzOffsetMin, t)),
+        bonsai.map((b) => buildBonsaiCardData(b, todayLocalKey, tzOffsetMin, t)),
       );
       setItems(cards);
     } finally {
