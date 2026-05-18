@@ -20,13 +20,17 @@
  * - v1: template items/attachments (Issue #14 で削除、本番ユーザー 0)
  * - v2: bonsai + species + species_names (F-01 foundation、PR #46)
  * - v3: photos (F-08 foundation、PR #49)
- * - v4: events + tags + event_tags + events_fts (F-02 foundation)
+ * - v4: events + tags + events_fts (F-02 foundation、v11 で event_tags 廃止)
  * - v5: events_fts を `tokenize='trigram remove_diacritics 1' detail=column` に再構築 (Issue #31、ADR-0008 §4.3.4 整合)
+ * - v6-v8: bonsai に estimated_age / memo / purchase_date カラム追加 (T2-3 / T2-7 / T2-4)
+ * - v9: bonsai_tags M:N (T2-6、 盆栽自体への直接タグ付け基盤)
+ * - v10: bonsai に acquired_from カラム追加 (Issue #455 Phase 1)
+ * - v11: event_tags 完全廃止 (Sess9 PR-1、 ADR-0008 §Notes Amended 2026-05-18、 dead code cleanup + bonsai_tags 一本化)
  */
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 10;
+export const SCHEMA_VERSION = 11;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -221,49 +225,19 @@ export const tags = sqliteTable(
   }),
 );
 
-/**
- * events ⇄ tags 中間テーブル (M:N)。
- */
-export const eventTags = sqliteTable(
-  'event_tags',
-  {
-    eventId: text('event_id')
-      .notNull()
-      .references(() => events.id, { onDelete: 'cascade' }),
-    tagId: text('tag_id')
-      .notNull()
-      .references(() => tags.id, { onDelete: 'cascade' }),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.eventId, table.tagId] }),
-    tagIdIdx: index('idx_event_tags_tag_id').on(table.tagId),
-  }),
-);
-
 // ---------------------------------------------------------------------------
 // events relations
 // ---------------------------------------------------------------------------
+//
+// 注意: `event_tags` テーブルおよび `eventTags` Drizzle 定義は v11 で廃止
+// (ADR-0008 §Notes Amended 2026-05-18、Sess9 PR-1)。タグは `bonsai_tags`
+// 一本化、event 単位の M:N は dead code につき除去。`searchEventsByTags()`
+// は `searchEventsByBonsaiTags()` に置換済 (eventRepository.ts)。
 
-export const eventsRelations = relations(events, ({ one, many }) => ({
+export const eventsRelations = relations(events, ({ one }) => ({
   bonsai: one(bonsai, {
     fields: [events.bonsaiId],
     references: [bonsai.id],
-  }),
-  tags: many(eventTags),
-}));
-
-export const tagsRelations = relations(tags, ({ many }) => ({
-  events: many(eventTags),
-}));
-
-export const eventTagsRelations = relations(eventTags, ({ one }) => ({
-  event: one(events, {
-    fields: [eventTags.eventId],
-    references: [events.id],
-  }),
-  tag: one(tags, {
-    fields: [eventTags.tagId],
-    references: [tags.id],
   }),
 }));
 
@@ -362,12 +336,16 @@ CREATE INDEX IF NOT EXISTS idx_photos_taken_at ON photos(taken_at);
 `;
 
 /**
- * Migration v4: events + tags + event_tags + events_fts (F-02 foundation、ADR-0008 STI)。
+ * Migration v4: events + tags + events_fts (F-02 foundation、ADR-0008 STI)。
  *
  * - events: STI 16 種別、status (planned/logged/cancelled)、30 日ゴミ箱 (deleted_at)
  * - tags: M:N、name_normalized で case-insensitive 一意性
- * - event_tags: 中間テーブル (M:N)
  * - events_fts: FTS5 trigram、note + payload 検索 (PR-C で trigger 配線、本 PR では table のみ)
+ *
+ * 注意 (Sess9 PR-1、 ADR-0008 §Notes Amended 2026-05-18):
+ * - 旧 `event_tags` 中間テーブルは v11 で DROP、 本 schemaV4 文字列から CREATE TABLE 文も除去済
+ * - 既存ユーザー (v4-v10 を経由) は v11 migration で event_tags が DROP される
+ * - 新規ユーザー (v0 → v11 直行) は event_tags が最初から作られない
  *
  * CHECK 制約:
  * - status は (planned, logged, cancelled) のいずれか
@@ -417,18 +395,8 @@ CREATE TABLE IF NOT EXISTS tags (
 
 CREATE INDEX IF NOT EXISTS idx_tags_normalized ON tags(name_normalized);
 
--- ---------------------------------------------------------------------------
--- event_tags (events ⇄ tags の中間)
--- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS event_tags (
-  event_id TEXT NOT NULL,
-  tag_id TEXT NOT NULL,
-  PRIMARY KEY (event_id, tag_id),
-  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
-  FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_event_tags_tag_id ON event_tags(tag_id);
+-- event_tags は v11 で廃止 (ADR-0008 §Notes Amended 2026-05-18、 Sess9 PR-1)。
+-- 旧定義は historical 参照用に commit log を参照。bonsai_tags (v9) に一本化済。
 
 -- ---------------------------------------------------------------------------
 -- events_fts (FTS5 trigram、note + payload を検索対象)
@@ -531,6 +499,18 @@ CREATE TABLE IF NOT EXISTS bonsai_tags (
 CREATE INDEX IF NOT EXISTS idx_bonsai_tags_tag_id ON bonsai_tags(tag_id);
 `;
 
+/**
+ * Migration v11 (Sess9 PR-1、ADR-0008 §Notes Amended 2026-05-18): event_tags 完全廃止。
+ *
+ * - 廃止理由: dead code (UI から attach 呼ばれる箇所 0 件、 event_tags 永遠に空)
+ * - bonsai_tags (v9) に一本化
+ * - search 画面の event tag filter は searchEventsByBonsaiTags() に置換
+ * - DROP TABLE IF EXISTS で冪等 (v0 → v11 直行の fresh install では noop)
+ */
+export const schemaV11 = `
+DROP TABLE IF EXISTS event_tags;
+`;
+
 // ---------------------------------------------------------------------------
 // TypeScript types (Drizzle inferSelect / inferInsert は PR-C Repository で使用)
 // ---------------------------------------------------------------------------
@@ -547,7 +527,6 @@ export type Event = typeof events.$inferSelect;
 export type EventInsert = typeof events.$inferInsert;
 export type Tag = typeof tags.$inferSelect;
 export type TagInsert = typeof tags.$inferInsert;
-export type EventTag = typeof eventTags.$inferSelect;
 
 /**
  * 16 種別の作業イベント (constraints.md §8 + basic_spec.md §F-02、ADR-0011 で F-03 削除済)

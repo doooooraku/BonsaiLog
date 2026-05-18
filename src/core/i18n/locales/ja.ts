@@ -510,6 +510,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   homeEmptyBody: 'あなたの一生分の記録が、ここから始まります。',
   homeEmptyCta: '盆栽を追加',
 
+  // --- Home filter empty state (Sess9 PR-1, ADR-0008 §Notes Amended 2026-05-18) ---
+  homeTagFilterEmptyTitle: 'タグ「{tag}」 の盆栽はありません',
+  homeTagFilterEmptyBody:
+    'この絞り込みに該当する盆栽は登録されていません。 別のタグを選ぶか、 フィルタを解除してください。',
+
   // --- F-07 装着期間アプリ内表示 (Phase B、Issue #24、ADR-0014) ---
   wiringDurationWithinWeeks: '装着期間: {weeks} 週',
   wiringDurationOverdueLabel: '装着期間: {weeks} 週 (経過済)',

@@ -677,5 +677,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   planFabLabel: 'กำหนดการรวม',
   bulkSelectModalTitle: 'เลือกบอนไซ',
   bulkSelectModalNotice: 'เลือกบอนไซเพื่อบันทึกหรือกำหนดการ (เลือก {count})',
+  homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
+  homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
 };
 export default th;

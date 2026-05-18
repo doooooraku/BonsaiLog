@@ -35,6 +35,7 @@ import { getCoverPhoto } from '@/src/db/photoRepository';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
 import { AdBanner } from '@/src/features/ads/AdBanner';
 import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCard';
+import { FilterEmptyState } from '@/src/features/bonsai/FilterEmptyState';
 import { HomeFilterTabs, type FilterChip } from '@/src/features/bonsai/HomeFilterTabs';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
@@ -205,6 +206,30 @@ export default function BonsaiHomeScreen() {
   }
 
   if (items.length === 0) {
+    // Sess9 PR-1: フィルタ中 0 件 (タグ filter 適用済) と 新規 user 0 件 を別画面で扱う
+    if (selectedFilter !== ALL_FILTER_ID) {
+      const selectedTag = tags.find((tg) => tg.id === selectedFilter);
+      const tagName = selectedTag?.name ?? '';
+      return (
+        <ThemedView
+          style={[styles.container, { backgroundColor: c.background }]}
+          testID="e2e_bonsai_home_filter_empty_wrap"
+        >
+          <SearchHeader title={t('bonsaiBookTitle')} testIdSuffix="bonsai_home" />
+          <HomeFilterTabs
+            chips={filterChips}
+            selectedId={selectedFilter}
+            onSelect={handleChipSelect}
+            testID="e2e_home_filter_tabs"
+          />
+          <FilterEmptyState
+            tagName={tagName}
+            onClearFilter={() => setSelectedFilter(ALL_FILTER_ID)}
+          />
+        </ThemedView>
+      );
+    }
+
     return (
       <ThemedView
         style={[styles.container, { backgroundColor: c.background }]}

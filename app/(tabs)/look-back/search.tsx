@@ -7,7 +7,11 @@
  * - CareHub 「盆栽を検索」カード (3 タップ): /(tabs)/look-back/search に遷移
  *
  * F-09 既存ロジック (searchBonsaiByName / searchEventsWithSnippet / searchSpecies /
- * searchEventsByTags + useSearchHistoryStore) をそのまま再利用。
+ * searchEventsByBonsaiTags + useSearchHistoryStore) を再利用。
+ *
+ * Sess9 PR-1 (ADR-0008 §Notes Amended 2026-05-18): tag filter は bonsai_tags 経由に変更
+ * (旧 searchEventsByTags は event_tags 廃止に伴い削除、 searchEventsByBonsaiTags で
+ * 「タグ付き盆栽の events を検索」 セマンティクスに刷新)。
  */
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useState } from 'react';
@@ -30,7 +34,7 @@ import {
 import { useColors } from '@/src/core/theme/useColors';
 import { searchBonsaiByName } from '@/src/db/bonsaiRepository';
 import {
-  searchEventsByTags,
+  searchEventsByBonsaiTags,
   searchEventsWithSnippet,
   type EventWithSnippet,
 } from '@/src/db/eventRepository';
@@ -121,7 +125,9 @@ export default function LookBackSearchScreen() {
           hasText ? searchBonsaiByName(trimmed, 50) : Promise.resolve<Bonsai[]>([]),
           hasText ? searchSpecies(trimmed, lang) : Promise.resolve<SpeciesWithName[]>([]),
           hasText ? searchEventsWithSnippet(trimmed) : Promise.resolve<EventWithSnippet[]>([]),
-          hasTags ? searchEventsByTags(selectedTagIds) : Promise.resolve<EventWithSnippet[]>([]),
+          hasTags
+            ? searchEventsByBonsaiTags(selectedTagIds)
+            : Promise.resolve<EventWithSnippet[]>([]),
         ]);
         setBonsaiResults(bonsai);
         setSpeciesResults(species.slice(0, 50));

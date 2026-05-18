@@ -434,22 +434,31 @@ export async function searchEvents(query: string, bonsaiId?: string): Promise<Ev
 export type EventWithSnippet = Event & { snippet: string | null };
 
 /**
- * Issue #31 AC3 (Y7): event_tags M:N で AND フィルタした events を返す。
+ * Sess9 PR-1 (ADR-0008 §Notes Amended 2026-05-18): bonsai_tags 経路でタグ AND フィルタした events を返す。
  *
- * - tagIds 全てを持つ event のみ抽出 (COUNT(DISTINCT tag_id) = N)
- * - deleted_at IS NULL のみ
+ * セマンティクス: 「指定タグ全部が付いている **盆栽** の active events を返す」。
+ *
+ * 旧 searchEventsByTags() (event_tags JOIN) は dead code につき廃止。タグは
+ * BonsaiBasicForm 経由で bonsai_tags にしか attach されないため、本関数で
+ * 「タグ付き盆栽の events」 を返すのが探す画面 (look-back/search) の実用的セマンティクス。
+ *
+ * - tagIds 全てを持つ盆栽の event のみ抽出 (COUNT(DISTINCT bt.tag_id) = N)
+ * - e.deleted_at IS NULL かつ b.archived_at IS NULL
  * - tagIds が空の場合は [] を返す
  */
-export async function searchEventsByTags(tagIds: readonly string[]): Promise<Event[]> {
+export async function searchEventsByBonsaiTags(tagIds: readonly string[]): Promise<Event[]> {
   if (tagIds.length === 0) return [];
   const db = await getDb();
   const placeholders = tagIds.map(() => '?').join(',');
   const rows = await db.getAllAsync<Record<string, unknown>>(
     `SELECT e.* FROM events e
-     INNER JOIN event_tags et ON et.event_id = e.id
-     WHERE et.tag_id IN (${placeholders}) AND e.deleted_at IS NULL
+     INNER JOIN bonsai b ON b.id = e.bonsai_id
+     INNER JOIN bonsai_tags bt ON bt.bonsai_id = b.id
+     WHERE bt.tag_id IN (${placeholders})
+       AND e.deleted_at IS NULL
+       AND b.archived_at IS NULL
      GROUP BY e.id
-     HAVING COUNT(DISTINCT et.tag_id) = ?
+     HAVING COUNT(DISTINCT bt.tag_id) = ?
      ORDER BY e.occurred_at_utc DESC;`,
     [...tagIds, tagIds.length],
   );

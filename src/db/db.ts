@@ -32,6 +32,7 @@ import {
   schemaV8,
   schemaV9,
   schemaV10,
+  schemaV11,
 } from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
@@ -208,6 +209,19 @@ async function migrate(db: SQLite.SQLiteDatabase) {
       await db.execAsync(schemaV10);
     }
     version = 10;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v11 (Sess9 PR-1、 ADR-0008 §Notes Amended 2026-05-18): event_tags 廃止。
+  //
+  // - dead code (UI から attach 呼ばれる箇所 0 件、 event_tags は永遠に空)
+  // - bonsai_tags (v9) に一本化、 探す画面の tag filter は searchEventsByBonsaiTags() に置換
+  // - DROP TABLE IF EXISTS で冪等 (二重実行安全)
+  // - v0 → v11 直行の fresh install では event_tags が schemaV4 に存在しないので noop
+  // ---------------------------------------------------------------------------
+  if (version < 11) {
+    await db.execAsync(schemaV11);
+    version = 11;
   }
 
   // Always set version UNCONDITIONALLY (not inside an if-block).

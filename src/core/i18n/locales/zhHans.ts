@@ -670,5 +670,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   planFabLabel: '批量预定',
   bulkSelectModalTitle: '选择盆栽',
   bulkSelectModalNotice: '选择要记录或预定的盆栽 (已选 {count})',
+  homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
+  homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
 };
 export default zhHans;

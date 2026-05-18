@@ -678,5 +678,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   planFabLabel: 'Meerdere plannen',
   bulkSelectModalTitle: 'Bonsai selecteren',
   bulkSelectModalNotice: 'Kies bonsai om te registreren of plannen ({count} geselecteerd)',
+  homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
+  homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
 };
 export default nl;

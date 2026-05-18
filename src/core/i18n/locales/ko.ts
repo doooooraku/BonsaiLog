@@ -678,5 +678,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   planFabLabel: '일괄 예정',
   bulkSelectModalTitle: '분재 선택',
   bulkSelectModalNotice: '기록하거나 예정할 분재를 선택하세요 ({count}개 선택됨)',
+  homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
+  homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
 };
 export default ko;

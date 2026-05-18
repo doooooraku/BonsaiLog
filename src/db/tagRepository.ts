@@ -1,15 +1,13 @@
 /**
- * F-09 Phase B タグ Repository (Issue #31 / ADR-0008 改訂)。
+ * F-09 タグ Repository (Issue #31 / ADR-0008 + §Notes Amended 2026-05-18)。
  *
  * 役割:
- * - tags / event_tags M:N の CRUD (純関数 + DB アクセス)
+ * - tags / bonsai_tags M:N の CRUD (純関数 + DB アクセス)
  * - normalizeTagName で case-insensitive 一意性 (ADR-0008 §SQLite §4.3.4)
  * - getRecentTags で最近 N 件のユニークタグ取得 (検索画面の候補チップ用)
  *
- * Phase C スコープ (本 PR では未実装):
- * - event 入力フォームでタグ追加 UI
- * - tag-based 検索フィルタ (events.id IN event_tags WHERE tag_id IN ...)
- * - tag rename / merge 機能
+ * Sess9 PR-1 で event_tags 完全廃止 (dead code、 bonsai_tags 一本化)。
+ * event 単位タグ filter は eventRepository.searchEventsByBonsaiTags() を使用。
  */
 import { ulid } from 'ulid';
 
@@ -92,24 +90,10 @@ export async function renameTag(tagId: string, newRawName: string): Promise<Rena
   return 'ok';
 }
 
-/**
- * event に tag を関連付ける (event_tags M:N、PRIMARY KEY 衝突は INSERT OR IGNORE で無音)。
- */
-export async function attachTagToEvent(eventId: string, tagId: string): Promise<void> {
-  const db = await getDb();
-  await db.runAsync('INSERT OR IGNORE INTO event_tags (event_id, tag_id) VALUES (?, ?)', [
-    eventId,
-    tagId,
-  ]);
-}
-
-/**
- * event から tag の関連付けを外す。
- */
-export async function detachTagFromEvent(eventId: string, tagId: string): Promise<void> {
-  const db = await getDb();
-  await db.runAsync('DELETE FROM event_tags WHERE event_id = ? AND tag_id = ?', [eventId, tagId]);
-}
+// event 単位の M:N (attachTagToEvent / detachTagFromEvent / getTagsByEvent) は
+// Sess9 PR-1 (ADR-0008 §Notes Amended 2026-05-18) で完全廃止。
+// 理由: dead code (UI から呼ばれる箇所 0 件)、 bonsai_tags 一本化。
+// event 単位タグ filter は eventRepository.searchEventsByBonsaiTags() を使用。
 
 /**
  * 最近作成されたタグを N 件返す (検索画面の候補チップ用、ADR-0008 改訂)。
@@ -122,21 +106,6 @@ export async function getRecentTags(limit: number = 3): Promise<TagRecord[]> {
   return db.getAllAsync<TagRecord>(
     'SELECT id, name, name_normalized as nameNormalized, created_at as createdAt FROM tags ORDER BY created_at DESC LIMIT ?',
     [limit],
-  );
-}
-
-/**
- * event に紐づく tag 一覧を返す。
- */
-export async function getTagsByEvent(eventId: string): Promise<TagRecord[]> {
-  const db = await getDb();
-  return db.getAllAsync<TagRecord>(
-    `SELECT t.id, t.name, t.name_normalized as nameNormalized, t.created_at as createdAt
-     FROM tags t
-     INNER JOIN event_tags et ON et.tag_id = t.id
-     WHERE et.event_id = ?
-     ORDER BY t.name COLLATE NOCASE`,
-    [eventId],
   );
 }
 

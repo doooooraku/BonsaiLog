@@ -275,3 +275,53 @@ F-02 を以下の構成で実装する。
 - 予定の繰り返し（RRULE）— 現状は単発 plan のみ
 - ゴミ箱から「すべて空にする」ボタン
 - 写真の論理削除タイミング細分化（event 削除と独立させるか）
+
+---
+
+## Notes Amended (2026-05-18, Sess9 PR-1): event_tags 廃止 + bonsai_tags 一本化
+
+### 変更内容
+
+- **`event_tags` テーブル + 関連 Repository 関数 3 個を完全廃止** (DB migration v10 で `DROP TABLE event_tags;`)
+- `searchEventsByTags()` (event_tags 経路) を廃止し、 `searchEventsByBonsaiTags()` (bonsai_tags 経路) で置換
+- タグは **`bonsai_tags` のみ** で運用 (1 系統一本化)
+- 探す画面 (look-back/search) の tag filter セマンティクスを 「指定タグ全部が付いている **盆栽** の active events を返す」 に変更
+
+### 廃止対象 (Sess9 PR-1 grep 確認済)
+
+| 対象                            | 場所                                | 状況                                                                    |
+| ------------------------------- | ----------------------------------- | ----------------------------------------------------------------------- |
+| `event_tags` table + index 2 個 | `src/db/schema.ts:228-244, 421-431` | DROP                                                                    |
+| `attachTagToEvent()`            | `src/db/tagRepository.ts:96-103`    | UI から呼ばれていない (dead code)                                       |
+| `detachTagFromEvent()`          | `src/db/tagRepository.ts:109-113`   | UI から呼ばれていない (dead code)                                       |
+| `getTagsByEvent()`              | `src/db/tagRepository.ts:131-141`   | UI から呼ばれていない (dead code)                                       |
+| `searchEventsByTags()`          | `src/db/eventRepository.ts:437-460` | 探す画面で呼ばれるが event_tags が空のため常に 0 件 (silent regression) |
+| `DELETE FROM event_tags`        | `src/dev/seedTestData.ts:286`       | clearAllData クリア対象から除外                                         |
+
+### 理由 (証拠 3 件)
+
+1. **設計仕様との整合**: `docs/reference/basic_spec.md` F-09 セクション + 本 ADR §13 (junction 表 `bonsai_tags`) で `bonsai_tags` を「正」 と明記。 「1 盆栽あたり最大 10 タグ、 アプリ全体タグ数制限なし」 という記述も event 単位ではなく **盆栽単位**。 event タグはどの仕様書にも記述なし。
+2. **実装の実態 (dead code)**: `event_tags` への attach UI が **存在しない** (grep で `attachTagToEvent` を呼ぶ `.tsx` ファイル 0 件)。 結果として `event_tags` table は **永遠に空**。 探す画面の `searchEventsByTags()` も常に 0 件返却 (silent regression、 ユーザー誰も気付かず)。
+3. **業界事例**: Apple Notes / Things 3 / Bear Notes / Linear 全て **entity 単位タグ** (ノート / タスク / Issue にタグ)。 log 単位 (ノート内段落 / サブログ / コメント) にタグを付ける事例ゼロ。 BonsaiLog のシニア (62 歳) + ライト想定では event 単位の細かい分類は不要、 盆栽単位 + `event.type` (16 種固定) + `event.note` (自由記述) で十分。
+
+### 歴史的経緯
+
+- **2026-04** F-02 foundation 着工時、 タグ概念の最初の実装として `event_tags` を schema v4 で作成
+- **2026-05** T2-6 (schema v9) で「やっぱり盆栽自体にタグを付けたい」 と仕様変更、 `bonsai_tags` を新規追加。 `BonsaiBasicForm` + `seedTestData` は `bonsai_tags` 使用。 だが `event_tags` の cleanup は漏れた
+- **2026-05-06** Issue #253 (PR #250) でホーム filter chip 実装。 当時 `bonsai_tags` 整備直後 or 同時で、 既存 `searchEventsByTags` パターンを流用して **`event_tags` JOIN で書かれた**
+- **2026-05-18 Sess9** で user の 「そもそも event タグって何が嬉しい?」 質問から dead code 検出 → 本 Amended で廃止
+
+### Risk 評価
+
+| Risk                     | 評価    | 対策                                                                      |
+| ------------------------ | ------- | ------------------------------------------------------------------------- |
+| 既存ユーザーデータ破損   | 🟢 低   | v1.0 リリース前、 migration v10 で `DROP TABLE` のみ                      |
+| 探す画面 UX 退化         | 🟢 なし | 現状も常に 0 件返却、 `searchEventsByBonsaiTags()` 再実装でむしろ機能する |
+| 将来「event タグ欲しい」 | 🟢 極小 | 業界事例ゼロ、 仕様記述なし、 v1.x 後の判断で復活可                       |
+| ADR 改訂のコスト         | 🟢 低   | 本 Amended セクションで完結                                               |
+
+### 仕組み化 (再発防止)
+
+- `docs/reference/tasks/lessons/data-model.md` に 「**2 系統 dead code 検出パターン**」 を記録
+- PR template に 「廃止候補 schema/関数の grep 確認」 チェック追加検討 (R-9 強化)
+- T2-6 のような 「機能の中核を入れ替える」 PR は **既存 dead code の cleanup を同 PR で完遂** を ADR / lessons で原則化
