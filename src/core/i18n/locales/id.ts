@@ -702,5 +702,10 @@ const id: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: 'Pilih tanggal',
   clear: 'Hapus',
+  customInputAdd: 'Masukan kustom',
+  customStyleCreateTitle: 'Buat gaya kustom',
+  customStyleCreatePlaceholder: 'cth. Yose-ue',
+  customSpeciesCreateTitle: 'Buat spesies kustom',
+  customSpeciesCreatePlaceholder: 'cth. Pinus hitam',
 };
 export default id;

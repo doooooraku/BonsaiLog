@@ -701,5 +701,10 @@ const vi: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: 'Chọn ngày',
   clear: 'Xóa',
+  customInputAdd: 'Nhập tùy chỉnh',
+  customStyleCreateTitle: 'Tạo dáng cây tùy chỉnh',
+  customStyleCreatePlaceholder: 'vd. Yose-ue',
+  customSpeciesCreateTitle: 'Tạo loài tùy chỉnh',
+  customSpeciesCreatePlaceholder: 'vd. Thông đen',
 };
 export default vi;

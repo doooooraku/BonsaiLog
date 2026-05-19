@@ -701,5 +701,10 @@ const th: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: 'เลือกวันที่',
   clear: 'ล้าง',
+  customInputAdd: 'ใส่ข้อมูลเอง',
+  customStyleCreateTitle: 'สร้างทรงต้นที่กำหนดเอง',
+  customStyleCreatePlaceholder: 'เช่น Yose-ue',
+  customSpeciesCreateTitle: 'สร้างชนิดที่กำหนดเอง',
+  customSpeciesCreatePlaceholder: 'เช่น สนดำ',
 };
 export default th;

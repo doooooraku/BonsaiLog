@@ -702,5 +702,10 @@ const ru: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: 'Выбрать дату',
   clear: 'Очистить',
+  customInputAdd: 'Свой ввод',
+  customStyleCreateTitle: 'Создать свой стиль',
+  customStyleCreatePlaceholder: 'напр. Йосе-уэ',
+  customSpeciesCreateTitle: 'Создать свой вид',
+  customSpeciesCreatePlaceholder: 'напр. Чёрная сосна',
 };
 export default ru;

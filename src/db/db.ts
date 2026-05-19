@@ -34,6 +34,7 @@ import {
   schemaV10,
   schemaV11,
   schemaV12,
+  schemaV13,
 } from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
@@ -237,6 +238,17 @@ async function migrate(db: SQLite.SQLiteDatabase) {
       await db.execAsync(schemaV12);
     }
     version = 12;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v13 (Sess13 PR-G): bonsai_styles_custom テーブル新規 (カスタム樹形)。
+  //
+  // - β 別手帳方式 (Q-13 確定): master enum 10 種と分離管理
+  // - CREATE TABLE IF NOT EXISTS で冪等 (二重実行安全)
+  // ---------------------------------------------------------------------------
+  if (version < 13) {
+    await db.execAsync(schemaV13);
+    version = 13;
   }
 
   // Always set version UNCONDITIONALLY (not inside an if-block).

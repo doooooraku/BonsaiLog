@@ -702,5 +702,10 @@ const nl: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: 'Datum selecteren',
   clear: 'Wissen',
+  customInputAdd: 'Aangepaste invoer',
+  customStyleCreateTitle: 'Aangepaste stijl maken',
+  customStyleCreatePlaceholder: 'bv. Yose-ue',
+  customSpeciesCreateTitle: 'Aangepaste soort maken',
+  customSpeciesCreatePlaceholder: 'bv. Zwarte den',
 };
 export default nl;

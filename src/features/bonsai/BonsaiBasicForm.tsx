@@ -41,7 +41,7 @@ import {
 } from '@/src/core/theme/colors';
 import { createBonsai, updateBonsai } from '@/src/db/bonsaiRepository';
 import { addPhotoFromUri, FREE_PHOTO_LIMIT_PER_BONSAI } from '@/src/db/photoRepository';
-import { type Bonsai, type BonsaiStyle } from '@/src/db/schema';
+import { BONSAI_STYLES, type Bonsai, type BonsaiStyle } from '@/src/db/schema';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
 import {
   attachTagToBonsai,
@@ -577,7 +577,11 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
           testID="e2e_bonsai_create_style_pick"
         >
           <ThemedText style={style != null ? undefined : styles.pickerPlaceholder}>
-            {style != null ? t(`bonsaiStyle_${style}` as TranslationKey) : '―'}
+            {style != null
+              ? BONSAI_STYLES.includes(style as BonsaiStyle)
+                ? t(`bonsaiStyle_${style}` as TranslationKey)
+                : (style as string)
+              : '―'}
           </ThemedText>
           <ChevronRightIcon size={20} color={TEXT_MUTED} />
         </Pressable>

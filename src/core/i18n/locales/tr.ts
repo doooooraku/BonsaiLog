@@ -702,5 +702,10 @@ const tr: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: 'Tarih seç',
   clear: 'Temizle',
+  customInputAdd: 'Özel giriş',
+  customStyleCreateTitle: 'Özel stil oluştur',
+  customStyleCreatePlaceholder: 'örn. Yose-ue',
+  customSpeciesCreateTitle: 'Özel tür oluştur',
+  customSpeciesCreatePlaceholder: 'örn. Karaçam',
 };
 export default tr;

@@ -711,6 +711,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'もっと見る (残り {count} 件) ▼',
   datePickerPlaceholder: '日付を選択',
   clear: 'クリア',
+  customInputAdd: 'カスタム入力',
+  customStyleCreateTitle: 'カスタム樹形を作成',
+  customStyleCreatePlaceholder: '例: 寄せ植え',
+  customSpeciesCreateTitle: 'カスタム樹種を作成',
+  customSpeciesCreatePlaceholder: '例: 黒松',
 };
 
 export default ja;

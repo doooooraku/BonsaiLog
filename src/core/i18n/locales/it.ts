@@ -702,5 +702,10 @@ const it: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: 'Seleziona data',
   clear: 'Cancella',
+  customInputAdd: 'Inserimento personalizzato',
+  customStyleCreateTitle: 'Crea stile personalizzato',
+  customStyleCreatePlaceholder: 'es. Yose-ue',
+  customSpeciesCreateTitle: 'Crea specie personalizzata',
+  customSpeciesCreatePlaceholder: 'es. Pino nero',
 };
 export default it;

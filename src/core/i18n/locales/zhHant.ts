@@ -694,5 +694,10 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: '選擇日期',
   clear: '清除',
+  customInputAdd: '自訂輸入',
+  customStyleCreateTitle: '建立自訂樹形',
+  customStyleCreatePlaceholder: '例: 寄植',
+  customSpeciesCreateTitle: '建立自訂樹種',
+  customSpeciesCreatePlaceholder: '例: 黑松',
 };
 export default zhHant;
