@@ -44,6 +44,8 @@ export type CreateBonsaiInput = {
   acquiredFrom?: string | null;
   /** 樹齢「不明」 明示 (0/1、 Sess13 PR-D / schema v12 追加)。 true 時は estimatedAge null 推奨。 */
   estimatedAgeUnknown?: boolean;
+  /** カスタム樹種 FK (Sess13 PR-H / schema v14 追加)。 speciesId と排他、 どちらか一方 (or 両方 null)。 */
+  customSpeciesId?: string | null;
 };
 
 export type UpdateBonsaiInput = Partial<CreateBonsaiInput>;
@@ -66,8 +68,8 @@ export async function createBonsai(input: CreateBonsaiInput): Promise<Bonsai> {
 
   await db.runAsync(
     `INSERT INTO bonsai
-       (id, name, species_id, acquired_at, style, pot_info, estimated_age, memo, purchase_date, acquired_from, estimated_age_unknown, archived_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?);`,
+       (id, name, species_id, acquired_at, style, pot_info, estimated_age, memo, purchase_date, acquired_from, estimated_age_unknown, custom_species_id, archived_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?);`,
     [
       id,
       input.name,
@@ -80,6 +82,7 @@ export async function createBonsai(input: CreateBonsaiInput): Promise<Bonsai> {
       input.purchaseDate ?? null,
       input.acquiredFrom ?? null,
       ageUnknown,
+      input.customSpeciesId ?? null,
       now,
       now,
     ],
@@ -97,6 +100,7 @@ export async function createBonsai(input: CreateBonsaiInput): Promise<Bonsai> {
     purchaseDate: input.purchaseDate ?? null,
     acquiredFrom: input.acquiredFrom ?? null,
     estimatedAgeUnknown: ageUnknown,
+    customSpeciesId: input.customSpeciesId ?? null,
     archivedAt: null,
     createdAt: now,
     updatedAt: now,
@@ -264,6 +268,10 @@ export async function updateBonsai(id: string, updates: UpdateBonsaiInput): Prom
   if (updates.estimatedAgeUnknown !== undefined) {
     fields.push('estimated_age_unknown = ?');
     values.push(updates.estimatedAgeUnknown ? 1 : 0);
+  }
+  if (updates.customSpeciesId !== undefined) {
+    fields.push('custom_species_id = ?');
+    values.push(updates.customSpeciesId);
   }
 
   values.push(id);
