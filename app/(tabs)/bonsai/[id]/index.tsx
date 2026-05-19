@@ -1,3 +1,4 @@
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -91,6 +92,8 @@ export default function BonsaiDetailScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
   const c = useColors();
+  // Sess15 PR-RR: Tab bar の高さ取得 (sticky footer を Tab bar の上に固定するため)。
+  const tabBarHeight = useBottomTabBarHeight();
   const [item, setItem] = useState<BonsaiWithSpecies | null>(null);
   const [loading, setLoading] = useState(true);
   // Repolog 風 photoCard 縦リスト (orderIndex 順、年次グループ化は廃止)
@@ -597,7 +600,14 @@ export default function BonsaiDetailScreen() {
         })}
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          // Sess15 PR-RR: 基本情報タブ時は sticky footer (h ~84) + Tab bar + 余裕で隠れない
+          activeTab === 'basic' && { paddingBottom: tabBarHeight + 100 },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Issue #439: Hero を ScrollView 内に移動 (画像が見える範囲より下のみスクロールできる問題を解消、Hero 含めて全画面スクロール可能に) */}
         <BonsaiHero
           coverUri={coverUri}
@@ -610,16 +620,16 @@ export default function BonsaiDetailScreen() {
         {/* Issue #440 Phase 1: 旧 水やり概要セクション (LastWateredText + 水やり履歴を見るボタン)
             は削除。横断 watering 履歴は CareHub (ふりかえりタブ) 経由で到達可能。 */}
 
-        {/* Issue #440 Phase 2: 写真セクション (写真追加 + photoCard 縦リスト) を作業履歴タブ
-            → 基本情報タブ上部に移動 (BonsaiBasicSection form より前に配置、mockup PNG 01
-            の写真追加 placeholder 整合)。既存写真は photoCard 縦リスト + 並び替え + カバー設定
-            + 削除 + undo を維持。複数選択 (allowsMultipleSelection) + ↑↓ + caption + ★ + ×。 */}
+        {/* Issue #439: 基本情報タブ = BonsaiBasicFormFields (edit モード、BonsaiCreateSheet と共有)。
+            mockup v1.0 bonsai-detail-basic-01/02/03.png 整合の編集兼用フォーム。
+            Picker BottomSheet (樹種 / 樹形) は ScrollView 内 nest 不可のため、画面 root に別途
+            <BonsaiBasicFormPickerSheets> として配置している。 */}
+        {activeTab === 'basic' && <BonsaiBasicSection form={basicForm} />}
+
+        {/* Sess15 PR-RR: 写真セクションを form の **後** に移動 (新規 modal PR-CC 案 P と統一、
+            user 真意「タブ欄の下に form、 写真は最後」)。 既存写真の編集 (PhotoCard list) は維持。 */}
         {activeTab === 'basic' && (
           <View style={styles.section}>
-            {/* Sess15 PR-QQ: 新規 modal (BonsaiCreateScreen) と完全同 pattern に統一。
-                - ヘッダー: type="defaultSemiBold" + 枚数 + 「任意」 badge
-                - + 写真を追加 単独 button → カメラ / ライブラリ 2 button 並列
-                - 「(N / Infinity)」 表記は廃止、 純粋に枚数のみ */}
             <View style={styles.photoSectionLabelRow}>
               <ThemedText type="defaultSemiBold">
                 {t('bonsaiFieldPhotos')} ({photoCount})
@@ -680,13 +690,6 @@ export default function BonsaiDetailScreen() {
             )}
           </View>
         )}
-
-        {/* Issue #439: 基本情報タブ = BonsaiBasicFormFields (edit モード、BonsaiCreateSheet と共有)。
-            mockup v1.0 bonsai-detail-basic-01/02/03.png 整合の編集兼用フォーム。
-            Picker BottomSheet (樹種 / 樹形) は ScrollView 内 nest 不可のため、画面 root に別途
-            <BonsaiBasicFormPickerSheets> として配置している。
-            Issue #440 Phase 2: 写真セクションを上に移動したため form は写真の下。 */}
-        {activeTab === 'basic' && <BonsaiBasicSection form={basicForm} />}
 
         {/* Issue #440 Phase 1: 作業履歴 Tab — フィルタ chip + 連続日まとめ events 一覧。
             mockup `bonsai-detail-history-01/02/03.png` 整合。FAB は ScrollView の外 (root)
@@ -939,10 +942,11 @@ export default function BonsaiDetailScreen() {
       {/* Phase G2-G5 (ADR-0024 Accepted): 作業記録 / 樹種 / 樹形 picker は全 formSheet 化、
           BonsaiBasicFormPickerSheets (旧 @gorhom 空関数) は Phase G5 で削除済。 */}
 
-      {/* Sess15 PR-PP: 基本情報タブ アクティブ時の保存 sticky footer
-          (新規 modal BonsaiCreateScreen と同 pattern、 user 真意「画面下部固定」)。 */}
+      {/* Sess15 PR-PP + PR-RR: 基本情報タブ アクティブ時の保存 sticky footer
+          (新規 modal BonsaiCreateScreen と同 pattern、 user 真意「画面下部固定」)。
+          Sess15 PR-RR: bottom = Tab bar の上に固定 (Tab bar に被らない)。 */}
       {activeTab === 'basic' && (
-        <View style={styles.basicStickyFooter}>
+        <View style={[styles.basicStickyFooter, { bottom: tabBarHeight }]}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('save')}
@@ -1574,7 +1578,6 @@ const styles = StyleSheet.create({
   basicFormSection: {
     padding: 16,
     gap: 16,
-    paddingBottom: 100, // sticky footer (h ~84) に隠れないよう余裕
   },
 });
 
