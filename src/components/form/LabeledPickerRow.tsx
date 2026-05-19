@@ -14,7 +14,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { ChevronRightIcon } from '@/src/components/icons';
+import { ChevronRightIcon, CloseIcon } from '@/src/components/icons';
 import { BG_SURFACE, BORDER_DEFAULT, TEXT_MUTED } from '@/src/core/theme/colors';
 
 export type LabeledPickerRowProps = {
@@ -75,7 +75,8 @@ export function LabeledPickerRow({
             onPress={onClear}
             testID={testIDClear}
           >
-            <ThemedText style={styles.clearText}>×</ThemedText>
+            {/* Sess15 PR-Z: テキスト × → SVG CloseIcon (細線 stroke、 washi 雰囲気整合)。 */}
+            <CloseIcon size={18} color={TEXT_MUTED} />
           </Pressable>
         )}
       </View>

@@ -15,6 +15,7 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { CloseIcon } from '@/src/components/icons';
 import { nowUtc } from '@/src/core/datetime/clock';
 import {
   BG_PRIMARY,
@@ -89,7 +90,8 @@ export function LabeledDateRow({
             onPress={() => onChangeText('')}
             testID={testIDClear}
           >
-            <ThemedText style={styles.clearText}>×</ThemedText>
+            {/* Sess15 PR-Z: テキスト × → SVG CloseIcon (細線 stroke、 washi 雰囲気整合)。 */}
+            <CloseIcon size={18} color={TEXT_MUTED} />
           </Pressable>
         )}
       </View>
