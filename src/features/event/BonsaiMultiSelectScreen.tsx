@@ -7,8 +7,11 @@
  * - 盆栽カード一覧 (compact card: 写真 + 名前 + 樹種 + チェック)
  * - selectMode true 固定、 user が tap で選択 toggle
  * - 下部 sticky CTA: mode='log' なら 「一括記録」、 mode='schedule' なら 「予定追加」
- * - 確定 → setBulkContext + router.replace('/bulk-work-picker?mode=...') で次 modal stack 遷移
+ * - 確定 → setBulkContext + router.push('/bulk-work-picker?mode=...') で次画面 push
  * - キャンセル: Stack header 左 close (modal dismiss) → 元タブに復帰
+ *
+ * Sess12 PR-D 改善 D: router.replace → router.push に変更 (BulkWorkPicker から ← で
+ * 1 画面戻り = 本画面に戻れるように)。 戻り時の選択状態は bulkContext から自動 restore。
  */
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
@@ -48,7 +51,11 @@ export default function BonsaiMultiSelectScreen() {
   const scheduleDate = params.date ?? '';
 
   const [items, setItems] = useState<CardData[]>([]);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // Sess12 PR-D 改善 D: 戻り時の選択状態 restore (bulkContext.selectedBonsais から)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => {
+    const ctx = usePickerStore.getState().bulkContext;
+    return new Set(ctx?.selectedBonsais.map((b) => b.id) ?? []);
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -95,7 +102,8 @@ export default function BonsaiMultiSelectScreen() {
       .map((it) => ({ id: it.id, name: it.name }));
     usePickerStore.getState().setBulkContext({ selectedBonsais });
     const dateParam = scheduleDate ? `&date=${encodeURIComponent(scheduleDate)}` : '';
-    router.replace(`/bulk-work-picker?mode=${mode}${dateParam}` as Href);
+    // Sess12 PR-D 改善 D: replace → push (BulkWorkPicker ← で本画面に戻れる)
+    router.push(`/bulk-work-picker?mode=${mode}${dateParam}` as Href);
   }, [items, selectedIds, mode, scheduleDate, router]);
 
   const ctaLabel = useMemo(
