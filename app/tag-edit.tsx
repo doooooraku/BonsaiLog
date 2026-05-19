@@ -28,6 +28,7 @@ import {
 import { useColors } from '@/src/core/theme/useColors';
 import { getDb } from '@/src/db/db';
 import { countBonsaiByTag, createOrFindTag, renameTag } from '@/src/db/tagRepository';
+import { usePickerStore } from '@/src/stores/pickerStore';
 
 const TAG_NAME_MAX_LENGTH = 32;
 
@@ -35,9 +36,16 @@ export default function TagEditScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const c = useColors();
-  const params = useLocalSearchParams<{ tagId?: string; initialName?: string }>();
+  const params = useLocalSearchParams<{
+    tagId?: string;
+    initialName?: string;
+    returnTo?: string;
+  }>();
   const tagId = typeof params.tagId === 'string' ? params.tagId : null;
   const initialName = typeof params.initialName === 'string' ? params.initialName : '';
+  // Sess13 PR-C: returnTo=bonsai-create で呼ばれた場合、 createOrFindTag 後に
+  // usePickerStore.setTagAddResult で caller (BonsaiBasicForm) に新規 tagId を返却し auto-select。
+  const returnTo = typeof params.returnTo === 'string' ? params.returnTo : null;
   const isEditMode = tagId != null;
 
   const [input, setInput] = React.useState(initialName);
@@ -109,7 +117,12 @@ export default function TagEditScreen() {
         }
         await performRename(trimmed);
       } else {
-        await createOrFindTag(trimmed);
+        const created = await createOrFindTag(trimmed);
+        // Sess13 PR-C: returnTo=bonsai-create で呼ばれた場合は caller で auto-select するため
+        // tagAddResult に新規 tagId を入れる (caller の useFocusEffect で consume)。
+        if (returnTo === 'bonsai-create') {
+          usePickerStore.getState().setTagAddResult(created.id);
+        }
         router.back();
       }
     } catch {

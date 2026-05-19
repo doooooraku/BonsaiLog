@@ -108,6 +108,7 @@ export function useBonsaiBasicForm({
 
   // Phase G1 (ADR-0024 Provisionally Accepted): @gorhom Sheet を `(modals)/{species,style}-picker`
   // route に置換、戻り値は usePickerStore 経由で受け取る。
+  // Sess13 PR-C: tag-edit?returnTo=bonsai-create からの復帰時に新規 tagId を auto-select。
   useFocusEffect(
     useCallback(() => {
       const speciesResult = usePickerStore.getState().consumeSpeciesPickerResult();
@@ -117,6 +118,18 @@ export function useBonsaiBasicForm({
       const styleResult = usePickerStore.getState().consumeStylePickerResult();
       if (styleResult !== undefined) {
         setStyle(styleResult);
+      }
+      // Sess13 PR-C: tag-edit から復帰した場合の auto-select + recentTags 再読込
+      const tagAddResult = usePickerStore.getState().consumeTagAddResult();
+      if (tagAddResult !== undefined) {
+        setSelectedTagIds((prev) => {
+          const next = new Set(prev);
+          next.add(tagAddResult);
+          return next;
+        });
+        void getRecentTags(8).then((tags) => {
+          setRecentTags(tags);
+        });
       }
     }, []),
   );
@@ -661,7 +674,7 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
             accessibilityRole="button"
             accessibilityLabel={t('bonsaiTagsAddCta')}
             style={styles.tagAddChip}
-            onPress={() => router.push('/tags' as Href)}
+            onPress={() => router.push('/tag-edit?returnTo=bonsai-create' as Href)}
             testID="e2e_bonsai_tag_add"
           >
             <ThemedText style={styles.tagAddChipText}>+ {t('bonsaiTagsAddCta')}</ThemedText>
