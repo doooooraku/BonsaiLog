@@ -100,6 +100,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldSpeciesSearch: 'Search species…',
   bonsaiFieldSpeciesSearchPlaceholder: '依樹種名搜尋',
   bonsaiFieldStyle: 'Style',
+  bonsaiFieldStyleSearchPlaceholder: '依樣式名搜尋',
   bonsaiFieldAcquiredAt: 'Acquired on',
   bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Archive',
