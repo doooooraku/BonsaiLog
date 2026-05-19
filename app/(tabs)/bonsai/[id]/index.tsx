@@ -550,11 +550,7 @@ export default function BonsaiDetailScreen() {
                       }
                     },
                   },
-                  {
-                    text: t('bonsaiArchive'),
-                    onPress: handleArchive,
-                    style: 'destructive',
-                  },
+                  // Sess15 PR-SS: アーカイブを ⋮ メニューから削除 (BonsaiBasicSection 内 inline button に集約、 重複回避)。
                   { text: t('cancel'), style: 'cancel' },
                 ]);
               }}
@@ -603,8 +599,8 @@ export default function BonsaiDetailScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          // Sess15 PR-RR: 基本情報タブ時は sticky footer (h ~84) + Tab bar + 余裕で隠れない
-          activeTab === 'basic' && { paddingBottom: tabBarHeight + 100 },
+          // Sess15 PR-SS: sticky footer 廃止 (PR-RR revert)、 Tab bar + 余裕のみ。
+          { paddingBottom: tabBarHeight + 32 },
         ]}
         keyboardShouldPersistTaps="handled"
       >
@@ -620,75 +616,78 @@ export default function BonsaiDetailScreen() {
         {/* Issue #440 Phase 1: 旧 水やり概要セクション (LastWateredText + 水やり履歴を見るボタン)
             は削除。横断 watering 履歴は CareHub (ふりかえりタブ) 経由で到達可能。 */}
 
-        {/* Issue #439: 基本情報タブ = BonsaiBasicFormFields (edit モード、BonsaiCreateSheet と共有)。
-            mockup v1.0 bonsai-detail-basic-01/02/03.png 整合の編集兼用フォーム。
-            Picker BottomSheet (樹種 / 樹形) は ScrollView 内 nest 不可のため、画面 root に別途
-            <BonsaiBasicFormPickerSheets> として配置している。 */}
-        {activeTab === 'basic' && <BonsaiBasicSection form={basicForm} />}
-
-        {/* Sess15 PR-RR: 写真セクションを form の **後** に移動 (新規 modal PR-CC 案 P と統一、
-            user 真意「タブ欄の下に form、 写真は最後」)。 既存写真の編集 (PhotoCard list) は維持。 */}
+        {/* Sess15 PR-SS: 基本情報タブ = BonsaiBasicFormFields (edit モード)。
+            photoSection は customPhotoBlock prop 経由で BonsaiBasicFormFields の「タグ後・メモ前」 slot に挿入。
+            新規 modal (PR-CC 案 P) と field 順序を完全 1:1 一致。 */}
         {activeTab === 'basic' && (
-          <View style={styles.section}>
-            <View style={styles.photoSectionLabelRow}>
-              <ThemedText type="defaultSemiBold">
-                {t('bonsaiFieldPhotos')} ({photoCount})
-              </ThemedText>
-              <ThemedText style={styles.photoSectionOptionalLabel}>
-                {t('fieldOptionalLabel')}
-              </ThemedText>
-            </View>
-            <View style={styles.photoSourceRow}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('photoSourceCamera')}
-                style={styles.photoSourceButton}
-                onPress={() => void pickAndSavePhoto('camera')}
-                testID="e2e_detail_photo_camera"
-              >
-                <CameraIcon size={20} />
-                <ThemedText style={styles.photoSourceText}>{t('photoSourceCamera')}</ThemedText>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('photoSourceLibrary')}
-                style={styles.photoSourceButton}
-                onPress={() => void pickAndSavePhoto('library')}
-                testID="e2e_detail_photo_library"
-              >
-                <ThemedText style={styles.photoSourceText}>{t('photoSourceLibrary')}</ThemedText>
-              </Pressable>
-            </View>
+          <BonsaiBasicSection
+            form={basicForm}
+            onArchive={handleArchive}
+            customPhotoBlock={
+              <View style={styles.section}>
+                <View style={styles.photoSectionLabelRow}>
+                  <ThemedText type="defaultSemiBold">
+                    {t('bonsaiFieldPhotos')} ({photoCount})
+                  </ThemedText>
+                  <ThemedText style={styles.photoSectionOptionalLabel}>
+                    {t('fieldOptionalLabel')}
+                  </ThemedText>
+                </View>
+                <View style={styles.photoSourceRow}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('photoSourceCamera')}
+                    style={styles.photoSourceButton}
+                    onPress={() => void pickAndSavePhoto('camera')}
+                    testID="e2e_detail_photo_camera"
+                  >
+                    <CameraIcon size={20} />
+                    <ThemedText style={styles.photoSourceText}>{t('photoSourceCamera')}</ThemedText>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('photoSourceLibrary')}
+                    style={styles.photoSourceButton}
+                    onPress={() => void pickAndSavePhoto('library')}
+                    testID="e2e_detail_photo_library"
+                  >
+                    <ThemedText style={styles.photoSourceText}>
+                      {t('photoSourceLibrary')}
+                    </ThemedText>
+                  </Pressable>
+                </View>
 
-            {photos.length === 0 && (
-              <ThemedText style={styles.emptyPhotos}>{t('photoEmpty')}</ThemedText>
-            )}
+                {photos.length === 0 && (
+                  <ThemedText style={styles.emptyPhotos}>{t('photoEmpty')}</ThemedText>
+                )}
 
-            {photos.map((photo, idx) => (
-              <PhotoCard
-                key={photo.id}
-                photo={photo}
-                index={idx}
-                total={photos.length}
-                caption={captions[photo.id] ?? ''}
-                onCaptionChange={(text) => handleCaptionChange(photo.id, text)}
-                onCaptionBlur={() => void handleCaptionBlur(photo.id)}
-                onMoveUp={() => void handleMovePhoto(idx, idx - 1)}
-                onMoveDown={() => void handleMovePhoto(idx, idx + 1)}
-                onDelete={() => handleDeletePhoto(photo)}
-                onSetCover={() => void handleSetCover(photo.id)}
-              />
-            ))}
+                {photos.map((photo, idx) => (
+                  <PhotoCard
+                    key={photo.id}
+                    photo={photo}
+                    index={idx}
+                    total={photos.length}
+                    caption={captions[photo.id] ?? ''}
+                    onCaptionChange={(text) => handleCaptionChange(photo.id, text)}
+                    onCaptionBlur={() => void handleCaptionBlur(photo.id)}
+                    onMoveUp={() => void handleMovePhoto(idx, idx - 1)}
+                    onMoveDown={() => void handleMovePhoto(idx, idx + 1)}
+                    onDelete={() => handleDeletePhoto(photo)}
+                    onSetCover={() => void handleSetCover(photo.id)}
+                  />
+                ))}
 
-            {/* 削除 undo Banner (Repolog 流用、5 秒以内に「元に戻す」で復元)。 */}
-            {pendingDeletion != null && (
-              <PhotoUndoBanner
-                text={t('photoDeletedBanner')}
-                actionLabel={t('photoUndoLabel')}
-                onUndo={handleUndoDeletion}
-              />
-            )}
-          </View>
+                {/* 削除 undo Banner (Repolog 流用、5 秒以内に「元に戻す」で復元)。 */}
+                {pendingDeletion != null && (
+                  <PhotoUndoBanner
+                    text={t('photoDeletedBanner')}
+                    actionLabel={t('photoUndoLabel')}
+                    onUndo={handleUndoDeletion}
+                  />
+                )}
+              </View>
+            }
+          />
         )}
 
         {/* Issue #440 Phase 1: 作業履歴 Tab — フィルタ chip + 連続日まとめ events 一覧。
@@ -942,24 +941,8 @@ export default function BonsaiDetailScreen() {
       {/* Phase G2-G5 (ADR-0024 Accepted): 作業記録 / 樹種 / 樹形 picker は全 formSheet 化、
           BonsaiBasicFormPickerSheets (旧 @gorhom 空関数) は Phase G5 で削除済。 */}
 
-      {/* Sess15 PR-PP + PR-RR: 基本情報タブ アクティブ時の保存 sticky footer
-          (新規 modal BonsaiCreateScreen と同 pattern、 user 真意「画面下部固定」)。
-          Sess15 PR-RR: bottom = Tab bar の上に固定 (Tab bar に被らない)。 */}
-      {activeTab === 'basic' && (
-        <View style={[styles.basicStickyFooter, { bottom: tabBarHeight }]}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('save')}
-            accessibilityState={{ disabled: !basicForm.canSubmit }}
-            style={[styles.basicSaveButton, !basicForm.canSubmit && styles.basicSaveButtonDisabled]}
-            onPress={() => void basicForm.handleSubmit()}
-            disabled={!basicForm.canSubmit}
-            testID="e2e_detail_basic_save_button"
-          >
-            <ThemedText style={styles.basicSaveButtonText}>{t('save')}</ThemedText>
-          </Pressable>
-        </View>
-      )}
+      {/* Sess15 PR-SS: sticky footer 廃止 (PR-PP revert)、
+          アーカイブ + 保存 button は BonsaiBasicSection 内 inline に復活 (PR-NN 構造)。 */}
     </ThemedView>
   );
 
@@ -1545,7 +1528,7 @@ const styles = StyleSheet.create({
   },
   eventDate: { fontSize: 13, color: TEXT_SECONDARY, fontVariant: ['tabular-nums'] },
   entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
-  // Sess15 PR-PP: 基本情報タブ 保存 button (sticky footer 内、 新規 modal BonsaiCreateScreen と同 pattern)。
+  // Sess15 PR-SS: 基本情報タブ inline 保存 button (sticky footer 廃止 + PR-NN design 復活)。
   basicSaveButton: {
     height: 56,
     borderRadius: 12,
@@ -1562,18 +1545,22 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     letterSpacing: 0.5,
   },
-  // Sess15 PR-PP: 画面下部固定 sticky footer (アーカイブは ⋮ メニュー内に既存、 ここは保存のみ)。
-  basicStickyFooter: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 16,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
+  // Sess15 PR-SS: アーカイブ inline button 復活 (PR-NN design、 保存と同 height 56 + 同 borderRadius)。
+  basicArchiveButton: {
+    height: 56,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: DANGER,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 24,
+  },
+  basicArchiveButtonText: {
+    color: DANGER,
+    fontSize: 17,
+    fontWeight: '500',
+    letterSpacing: 0.5,
   },
   basicFormSection: {
     padding: 16,
@@ -1590,10 +1577,41 @@ const styles = StyleSheet.create({
  * Sess15 PR-PP: 保存 button + アーカイブ button を Section 外 (画面 root sticky footer + ⋮ メニュー)
  * に移動。 BonsaiBasicSection はフィールドのみに集中、 新規 modal と完全同 pattern。
  */
-function BonsaiBasicSection({ form }: { form: BonsaiBasicFormState }) {
+function BonsaiBasicSection({
+  form,
+  onArchive,
+  customPhotoBlock,
+}: {
+  form: BonsaiBasicFormState;
+  onArchive: () => void;
+  customPhotoBlock?: React.ReactNode;
+}) {
+  const { t } = useTranslation();
   return (
     <View style={styles.basicFormSection}>
-      <BonsaiBasicFormFields form={form} showPhotos={false} />
+      <BonsaiBasicFormFields form={form} showPhotos={false} customPhotoBlock={customPhotoBlock} />
+      {/* Sess15 PR-SS: アーカイブ (上) + 保存 (下) inline 復活、 高さ 56 統一 (PR-NN design)。
+          user 真意「アーカイブの下に保存ボタンがあるイメージ」 整合。 */}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('bonsaiArchive')}
+        style={styles.basicArchiveButton}
+        onPress={onArchive}
+        testID="e2e_detail_basic_archive_button"
+      >
+        <ThemedText style={styles.basicArchiveButtonText}>{t('bonsaiArchive')}</ThemedText>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('save')}
+        accessibilityState={{ disabled: !form.canSubmit }}
+        style={[styles.basicSaveButton, !form.canSubmit && styles.basicSaveButtonDisabled]}
+        onPress={() => void form.handleSubmit()}
+        disabled={!form.canSubmit}
+        testID="e2e_detail_basic_save_button"
+      >
+        <ThemedText style={styles.basicSaveButtonText}>{t('save')}</ThemedText>
+      </Pressable>
     </View>
   );
 }

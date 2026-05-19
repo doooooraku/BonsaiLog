@@ -587,13 +587,23 @@ export type BonsaiBasicFormFieldsProps = {
   form: BonsaiBasicFormState;
   /** 写真フィールドを表示するか (新規モードのみ true、編集モードは詳細画面の photoCard で別管理)。 */
   showPhotos?: boolean;
+  /**
+   * Sess15 PR-SS: 詳細画面 (showPhotos=false 時) で「タグ後・メモ前」 slot に挿入する写真セクション。
+   * 新規 modal の photoBlock (pendingPhotos) と排他、 showPhotoField が false の時のみ render される。
+   * 案 P (新規 modal の field 順序) と完全 1:1 一致を実現。
+   */
+  customPhotoBlock?: React.ReactNode;
 };
 
 /**
  * フィールド一覧 + Picker BottomSheet を render する。
  * ScrollView ラッパは呼び出し側が決める (BottomSheetScrollView or 親の通常 ScrollView 内 inline)。
  */
-export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFormFieldsProps) {
+export function BonsaiBasicFormFields({
+  form,
+  showPhotos = true,
+  customPhotoBlock,
+}: BonsaiBasicFormFieldsProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const {
@@ -1036,9 +1046,11 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         )}
       </View>
 
-      {/* Sess15 PR-CC: 写真フィールド (新規モードのみ表示) をタグの後 + メモの前に配置 (案 P)。
-          編集モード (showPhotoField=false) では別タブ (Photos) で扱うため、 ここでは何も render しない。 */}
-      {photoBlock}
+      {/* Sess15 PR-CC + PR-SS: 写真フィールドをタグ後・メモ前に配置 (案 P)。
+          新規 modal (showPhotoField=true) は内部 photoBlock (pendingPhotos)、
+          詳細画面 (showPhotoField=false) は customPhotoBlock (詳細画面の photoSection) を slot として挿入。
+          排他制御で 1 つだけ render。 */}
+      {showPhotoField ? photoBlock : customPhotoBlock}
 
       {/* Sess13 PR-K: メモを LabeledTextInput 共通化 (multiline + 文字数 + 上限赤字) */}
       <LabeledTextInput
