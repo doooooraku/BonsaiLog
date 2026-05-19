@@ -1,18 +1,17 @@
 /**
- * 一括記録 詳細 入力画面 (Phase G3a、ADR-0024 Accepted)。
- *
- * 旧 `BulkLogConfirmSheet.tsx` (`@gorhom/bottom-sheet` snap 78%) を画面化、
- * `(modals)/bulk-log-confirm` route で `presentation: 'formSheet'` 配下に配置。
- *
- * 共通 note のみ入力 (Phase 1 設計踏襲、個別除外 / 写真添付 / 種別固有 payload は別 Issue)。
+ * 一括記録 詳細 入力画面 (Phase G3a、 ADR-0024 / ADR-0025、 Sess12 PR-G 拡張)。
  *
  * Query params:
- * - type: 作業種別 (EventType、必須)
+ * - types: カンマ区切り EventType (例: 'watering' or 'watering,fertilizing')
+ *   - 旧 ?type=watering 単数 → 廃止 (BulkWorkPicker から ?types=... で push される)
  *
  * 選択盆栽は `usePickerStore.bulkContext.selectedBonsais` から取得。
  *
- * Sess12 PR-B+C で DB 書き込み配線 (旧 setBulkLogConfirmResult + router.back は consumer 0 件 dead code):
- * Save 時に bulkLogEvents 直接呼び出し → Toast → router.dismissAll で元タブに戻る。
+ * Sess12 PR-G 拡張:
+ * - 単一 types (length=1): 従来通り 1 note 入力
+ * - 複数 types (length>=2): タブ式 (上に作業タブ + 下に note input)、 作業ごと個別 note
+ * - Save 時に bulkLogEvents loop で書き込み (各 type に対応する note を渡す)
+ * - 完了: router.replace('/(tabs)/record') で記録タブに直接戻る (改善 I)
  */
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
@@ -25,6 +24,7 @@ import {
   BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
+  BRAND_GREEN,
   ON_BRAND,
   TEXT_MUTED,
   TEXT_PRIMARY,
@@ -32,48 +32,76 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { bulkLogEvents } from '@/src/db/eventRepository';
-import type { EventType } from '@/src/db/schema';
+import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { BonsaiPlaceholder, hashSeed } from '@/src/features/bonsai/BonsaiPlaceholder';
 import { usePickerStore } from '@/src/stores/pickerStore';
+
+function parseTypes(typesParam: string | undefined): EventType[] {
+  if (!typesParam) return [];
+  const validSet = new Set<EventType>(EVENT_TYPES);
+  return typesParam
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s): s is EventType => validSet.has(s as EventType));
+}
 
 export default function BulkLogConfirmScreen() {
   const { t } = useTranslation();
   const c = useColors();
-  const params = useLocalSearchParams<{ type?: EventType }>();
-  const type = (params.type ?? null) as EventType | null;
+  const params = useLocalSearchParams<{ types?: string }>();
+  const types = React.useMemo(() => parseTypes(params.types), [params.types]);
   const selectedBonsais = usePickerStore((s) => s.bulkContext?.selectedBonsais ?? []);
-  const [note, setNote] = React.useState('');
 
-  if (type == null) return null;
-  const workLabel = t(`eventType_${type}` as TranslationKey);
+  // 作業ごとの note state (Sess12 PR-G: 複数作業時に個別 note 入力)
+  const [notes, setNotes] = React.useState<Record<string, string>>({});
+  // 複数作業時の選択中タブ (default は最初の type)
+  const [activeType, setActiveType] = React.useState<EventType | null>(types[0] ?? null);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  React.useEffect(() => {
+    // types 変化時に activeType を最初の type に
+    if (types.length > 0 && (activeType == null || !types.includes(activeType))) {
+      setActiveType(types[0]);
+    }
+  }, [types, activeType]);
+
+  if (types.length === 0) return null;
+  const isMulti = types.length >= 2;
 
   const handleSave = async () => {
-    if (type == null) return;
-    const trimmed = note.trim();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    const bonsaiIds = selectedBonsais.map((b) => b.id);
     try {
-      const result = await bulkLogEvents({
-        bonsaiIds: selectedBonsais.map((b) => b.id),
-        type,
-        note: trimmed.length > 0 ? trimmed : null,
-      });
-      useToastStore
-        .getState()
-        .show(t('bulkLogDoneToast').replace('{count}', String(result.created.length)));
+      await Promise.all(
+        types.map((type) => {
+          const trimmed = (notes[type] ?? '').trim();
+          return bulkLogEvents({
+            bonsaiIds,
+            type,
+            note: trimmed.length > 0 ? trimmed : null,
+          });
+        }),
+      );
+      useToastStore.getState().show(t('bulkLogDoneToast').replace('{count}', String(types.length)));
     } catch (error) {
       console.warn('[bulk-log] failed:', error);
     }
-    // Sess12 PR-F revert: canDismiss loop は JS thread freeze (無限 loop 可能性) のため
-    // dismissAll に戻す。 後続 PR で modal stack 構造再検討予定。
-    router.dismissAll();
+    // Sess12 PR-G 改善 I: 記録タブに直接戻る (dismissAll の 1 階問題回避)
+    router.replace('/(tabs)/record');
   };
+
+  const singleTypeLabel = isMulti ? '' : t(`eventType_${types[0]}` as TranslationKey);
 
   return (
     <View style={styles.container} testID="e2e_bulk_log_confirm_screen">
       <View style={styles.header}>
         <ThemedText style={styles.title}>
-          {t('bulkLogConfirmTitle')
-            .replace('{label}', workLabel)
-            .replace('{count}', String(selectedBonsais.length))}
+          {isMulti
+            ? t('bulkLogConfirmTitleMulti').replace('{count}', String(types.length))
+            : t('bulkLogConfirmTitle')
+                .replace('{label}', singleTypeLabel)
+                .replace('{count}', String(selectedBonsais.length))}
         </ThemedText>
         <ThemedText style={styles.sub}>{t('bulkLogConfirmSub')}</ThemedText>
       </View>
@@ -93,6 +121,33 @@ export default function BulkLogConfirmScreen() {
         ))}
       </ScrollView>
 
+      {/* Sess12 PR-G 改善 H: 複数作業時の作業タブ切替 */}
+      {isMulti && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.typeTabRow}
+        >
+          {types.map((type) => {
+            const active = activeType === type;
+            return (
+              <Pressable
+                key={type}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                style={[styles.typeTab, active && styles.typeTabActive]}
+                onPress={() => setActiveType(type)}
+                testID={`e2e_bulk_log_confirm_tab_${type}`}
+              >
+                <ThemedText style={[styles.typeTabText, active && styles.typeTabTextActive]}>
+                  {t(`eventType_${type}` as TranslationKey)}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      )}
+
       <ScrollView contentContainerStyle={styles.body}>
         <View>
           <ThemedText style={styles.fieldLabel}>{t('bulkLogConfirmNoteLabel')}</ThemedText>
@@ -105,8 +160,12 @@ export default function BulkLogConfirmScreen() {
             numberOfLines={4}
             placeholder={t('bulkLogConfirmNotePlaceholder')}
             placeholderTextColor={TEXT_MUTED}
-            value={note}
-            onChangeText={setNote}
+            value={activeType ? (notes[activeType] ?? '') : ''}
+            onChangeText={(text) => {
+              if (activeType) {
+                setNotes((prev) => ({ ...prev, [activeType]: text }));
+              }
+            }}
             testID="e2e_bulk_log_confirm_note_input"
           />
         </View>
@@ -119,7 +178,9 @@ export default function BulkLogConfirmScreen() {
             '{count}',
             String(selectedBonsais.length),
           )}
-          style={[styles.cta, { backgroundColor: c.tint }]}
+          accessibilityState={{ disabled: isSubmitting }}
+          disabled={isSubmitting}
+          style={[styles.cta, { backgroundColor: c.tint }, isSubmitting && styles.ctaDisabled]}
           onPress={handleSave}
           testID="e2e_bulk_log_save_cta"
         >
@@ -164,6 +225,28 @@ const styles = StyleSheet.create({
     maxWidth: 140,
   },
   chipText: { fontSize: 12, fontWeight: '500', color: TEXT_PRIMARY, flexShrink: 1 },
+  // Sess12 PR-G: 作業タブ row (複数作業時のみ表示)
+  typeTabRow: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    gap: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER_DEFAULT,
+  },
+  typeTab: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+  },
+  typeTabActive: {
+    backgroundColor: BRAND_GREEN,
+    borderColor: BRAND_GREEN,
+  },
+  typeTabText: { fontSize: 13, color: TEXT_PRIMARY },
+  typeTabTextActive: { color: ON_BRAND, fontWeight: '600' },
   body: { padding: 16, gap: 12 },
   fieldLabel: {
     fontSize: 11,
@@ -188,5 +271,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  ctaDisabled: { opacity: 0.5 },
   ctaText: { fontSize: 17, fontWeight: '500', color: ON_BRAND, letterSpacing: 0.6 },
 });

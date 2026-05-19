@@ -301,6 +301,43 @@
 - `src/db/eventRepository.ts` の `bulkScheduleEvents` helper + `BulkScheduleInput` 型 — 次 PR (B+C) で新フロー (PlanScreen FAB → BonsaiMultiSelect → BulkWorkPicker → 本 helper) に配線予定
 - i18n `bulkScheduleDoneToast` (19 言語) — PR-B+C の完了 popup で再利用
 
+### Notes Amended 2026-05-19 Sess12 PR-G (BulkWorkPicker 複数選択 + navigation pattern 確定)
+
+#### 経緯
+
+- PR-D 改善 D で `BonsaiMultiSelect → BulkWorkPicker` を `router.replace` → `router.push` 化 (戻り保持目的)、 これにより modal stack が 2 階構造に
+- PR-F 改善 I で `while (router.canDismiss()) { router.dismiss(); }` loop を導入したが、 expo-router の `canDismiss()` が root stack 到達後も `true` を返し続け **無限 loop で JS thread freeze** → 実機 SS で確認、 PR-F revert
+- 実機検証で `router.dismissAll()` は **modal stack 1 階のみ閉じる** 仕様判明 (BonsaiMultiSelect 残存)
+- PR-G で改善 H (複数作業選択 + CTA) 実装時に navigation pattern を **`router.replace('/(tabs)/...)`** に確定 (改善 I 統合解決)
+
+#### Navigation pattern 確定 (bulk flow 完了時)
+
+```ts
+// BulkWorkPicker / BulkLogConfirm の handleConfirm / handleSave で:
+if (mode === 'schedule') router.replace('/(tabs)/plan' as Href);
+else router.replace('/(tabs)/record');
+```
+
+**理由**:
+
+- `dismissAll` は nested modal で 1 階のみ閉じる (expo-router 仕様)
+- `canDismiss + dismiss loop` は無限 loop リスク (Sess12 PR-F 実機 freeze 事例)
+- `router.replace` で目的タブを明示することで安全 + 直感的 (user 認知負荷低い)
+
+#### 改善 H 実装内容 (BulkWorkPicker 複数選択)
+
+- `selectedTypes: Set<EventType>` state でトグル選択
+- 選択中 cell: 背景 `BRAND_GREEN` + アイコン `ON_BRAND` + ラベル `ON_BRAND` (緑反転)
+- 下部固定 footer: 「予定を追加 (×{count})」 CTA + (log mode のみ) 「メモを追加する」 toggle
+- CTA tap → types loop で `bulkScheduleEvents` / `bulkLogEvents` を Promise.all 実行
+- mode='log' + 複数作業 + toggle ON → `BulkLogConfirm` に push (types[] 渡す、 タブ式 note 入力)
+- mode='log' + 複数作業 + toggle OFF → 即書き込み (note なし)、 単一作業は従来 BulkLogConfirm
+
+#### 仕組化
+
+- `.claude/recurrence-prevention.md` に R-36 (navigation API 1 次情報確認) + R-37 (仕様 TBD 明示) 追加
+- `docs/reference/tasks/lessons/navigation.md` 新規 (dismissAll の罠 + replace 推薦 pattern)
+
 ### Repolog との差分
 
 - Repolog (前作) は記録特化アプリ、 タブ構成は **記録 / カレンダー / 設定** 等 (要確認)
