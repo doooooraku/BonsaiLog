@@ -112,6 +112,12 @@ export function useBonsaiBasicForm({
   const [purchaseDate, setPurchaseDate] = useState('');
   // Issue #455 Phase 2: 鉢情報 (テキスト自由入力、既存 pot_info JSON に { description } で保存)。
   const [potInfoText, setPotInfoText] = useState('');
+  // Sess13 PR-I: 鉢情報構造化 (pot_info JSON に { width, depth, material } 保存、
+  // 内部統一 cm、 表示時に user 設定 potUnit へ変換)。
+  const [potWidth, setPotWidth] = useState(''); // user 入力単位
+  const [potDepth, setPotDepth] = useState(''); // user 入力単位
+  const [potMaterial, setPotMaterial] = useState('');
+  const [potExpanded, setPotExpanded] = useState(false);
   // Sess13 PR-B: 入手元 (free-form text、 schema v10 acquired_from column 直接保存)。
   const [acquiredFrom, setAcquiredFrom] = useState('');
   const [recentTags, setRecentTags] = useState<TagRecord[]>([]);
@@ -194,12 +200,26 @@ export function useBonsaiBasicForm({
     setAgeUnknown(editingBonsai.estimatedAgeUnknown === 1);
     setMemo(editingBonsai.memo ?? '');
     setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
-    // pot_info JSON から description を復元 (parse 失敗時は空文字 = legacy)
+    // pot_info JSON から復元 (Sess13 PR-I: 新形式 { width, depth, material } 優先、
+    // 旧 { description } も後方互換で保持表示)。
     try {
       const parsed = editingBonsai.potInfo ? JSON.parse(editingBonsai.potInfo) : null;
       setPotInfoText(typeof parsed?.description === 'string' ? parsed.description : '');
+      // 新構造 (width / depth / material) は cm 単位で保存されている前提、
+      // 表示は user 設定 potUnit で変換 (本実装は cm 固定表示で simplify、 単位切替は別 PR で表示変換追加)。
+      const widthCm = typeof parsed?.widthCm === 'number' ? parsed.widthCm : null;
+      const depthCm = typeof parsed?.depthCm === 'number' ? parsed.depthCm : null;
+      setPotWidth(widthCm != null ? String(widthCm) : '');
+      setPotDepth(depthCm != null ? String(depthCm) : '');
+      setPotMaterial(typeof parsed?.material === 'string' ? parsed.material : '');
+      // 値が入っていれば自動展開 (Q-17 a)
+      setPotExpanded(widthCm != null || depthCm != null || (parsed?.material?.length ?? 0) > 0);
     } catch {
       setPotInfoText('');
+      setPotWidth('');
+      setPotDepth('');
+      setPotMaterial('');
+      setPotExpanded(false);
     }
     setAcquiredFrom(editingBonsai.acquiredFrom ?? '');
     let cancelled = false;
@@ -238,8 +258,18 @@ export function useBonsaiBasicForm({
       try {
         const parsed = editingBonsai.potInfo ? JSON.parse(editingBonsai.potInfo) : null;
         setPotInfoText(typeof parsed?.description === 'string' ? parsed.description : '');
+        const widthCm = typeof parsed?.widthCm === 'number' ? parsed.widthCm : null;
+        const depthCm = typeof parsed?.depthCm === 'number' ? parsed.depthCm : null;
+        setPotWidth(widthCm != null ? String(widthCm) : '');
+        setPotDepth(depthCm != null ? String(depthCm) : '');
+        setPotMaterial(typeof parsed?.material === 'string' ? parsed.material : '');
+        setPotExpanded(widthCm != null || depthCm != null || (parsed?.material?.length ?? 0) > 0);
       } catch {
         setPotInfoText('');
+        setPotWidth('');
+        setPotDepth('');
+        setPotMaterial('');
+        setPotExpanded(false);
       }
       setAcquiredFrom(editingBonsai.acquiredFrom ?? '');
       setSelectedTagIds(new Set(originalTagIdsRef.current));
@@ -257,6 +287,10 @@ export function useBonsaiBasicForm({
       setMemo('');
       setPurchaseDate('');
       setPotInfoText('');
+      setPotWidth('');
+      setPotDepth('');
+      setPotMaterial('');
+      setPotExpanded(false);
       setAcquiredFrom('');
       setSelectedTagIds(new Set());
     }
@@ -339,9 +373,25 @@ export function useBonsaiBasicForm({
         estimatedAgeUnknown: ageUnknown,
         memo: memo.trim() ? memo.trim() : null,
         purchaseDate: purchaseDate.trim() ? toIsoUtc(purchaseDate.trim()) : null,
-        // Issue #455 Phase 2: 鉢情報を { description } JSON で pot_info column に保存
-        // (将来 size_cm / shape / material 等を増やすときも同 JSON 拡張で対応)。
-        potInfo: potInfoText.trim() ? { description: potInfoText.trim() } : null,
+        // Sess13 PR-I: 鉢情報構造化 { widthCm, depthCm, material } 保存、
+        // 旧 { description } も後方互換で保持。
+        potInfo: (() => {
+          const parsedWidth = potWidth.trim() ? parseFloat(potWidth.trim()) : null;
+          const parsedDepth = potDepth.trim() ? parseFloat(potDepth.trim()) : null;
+          const widthCm = Number.isFinite(parsedWidth) && parsedWidth! > 0 ? parsedWidth : null;
+          const depthCm = Number.isFinite(parsedDepth) && parsedDepth! > 0 ? parsedDepth : null;
+          const material = potMaterial.trim() || null;
+          const description = potInfoText.trim() || null;
+          if (widthCm == null && depthCm == null && material == null && description == null) {
+            return null;
+          }
+          return {
+            widthCm,
+            depthCm,
+            material,
+            description,
+          };
+        })(),
         // Sess13 PR-B: 入手元 (schema v10 acquired_from column 直接保存)。
         acquiredFrom: acquiredFrom.trim() ? acquiredFrom.trim() : null,
       };
@@ -399,6 +449,9 @@ export function useBonsaiBasicForm({
     memo,
     purchaseDate,
     potInfoText,
+    potWidth,
+    potDepth,
+    potMaterial,
     acquiredFrom,
     editingBonsai,
     selectedTagIds,
@@ -435,6 +488,14 @@ export function useBonsaiBasicForm({
     setPurchaseDate,
     potInfoText,
     setPotInfoText,
+    potWidth,
+    setPotWidth,
+    potDepth,
+    setPotDepth,
+    potMaterial,
+    setPotMaterial,
+    potExpanded,
+    setPotExpanded,
     acquiredFrom,
     setAcquiredFrom,
     recentTags,
@@ -488,6 +549,14 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     setPurchaseDate,
     potInfoText,
     setPotInfoText,
+    potWidth,
+    setPotWidth,
+    potDepth,
+    setPotDepth,
+    potMaterial,
+    setPotMaterial,
+    potExpanded,
+    setPotExpanded,
     acquiredFrom,
     setAcquiredFrom,
     recentTags,
@@ -775,21 +844,58 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         />
       </View>
 
-      {/* Issue #455 Phase 2: 鉢情報 (任意、mockup `bonsai-detail-basic-02.png` 整合)。
-          既存 pot_info JSON column 活用 (A 案、schema migration なし)、構造化は v2 以降。 */}
+      {/* Sess13 PR-I: 鉢情報構造化 (幅 / 深さ / 材質) + 折り畳み Expander。
+          値あれば自動展開 (Q-17 a)、 折り畳み default。 旧 description は保持。 */}
       <View style={styles.field}>
         <View style={styles.fieldLabelRow}>
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldPotInfo')}</ThemedText>
           <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
         </View>
-        <TextInput
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('bonsaiFieldPotInfoExpand')}
           style={styles.input}
-          value={potInfoText}
-          onChangeText={setPotInfoText}
-          placeholder={t('bonsaiFieldPotInfoPlaceholder')}
-          accessibilityLabel={t('bonsaiFieldPotInfo')}
-          maxLength={200}
-        />
+          onPress={() => setPotExpanded((p) => !p)}
+          testID="e2e_bonsai_create_pot_expander"
+        >
+          <ThemedText style={styles.pickerPlaceholder}>
+            {potExpanded ? '▲ ' : '▼ '}
+            {t('bonsaiFieldPotInfoExpand')}
+          </ThemedText>
+        </Pressable>
+        {potExpanded && (
+          <View style={styles.potExpanded}>
+            <TextInput
+              style={styles.input}
+              value={potWidth}
+              onChangeText={setPotWidth}
+              placeholder={t('bonsaiFieldPotWidthPlaceholder')}
+              accessibilityLabel={t('bonsaiFieldPotWidth')}
+              keyboardType="numeric"
+              maxLength={6}
+              testID="e2e_bonsai_create_pot_width"
+            />
+            <TextInput
+              style={styles.input}
+              value={potDepth}
+              onChangeText={setPotDepth}
+              placeholder={t('bonsaiFieldPotDepthPlaceholder')}
+              accessibilityLabel={t('bonsaiFieldPotDepth')}
+              keyboardType="numeric"
+              maxLength={6}
+              testID="e2e_bonsai_create_pot_depth"
+            />
+            <TextInput
+              style={styles.input}
+              value={potMaterial}
+              onChangeText={setPotMaterial}
+              placeholder={t('bonsaiFieldPotMaterialPlaceholder')}
+              accessibilityLabel={t('bonsaiFieldPotMaterial')}
+              maxLength={100}
+              testID="e2e_bonsai_create_pot_material"
+            />
+          </View>
+        )}
       </View>
 
       <View style={styles.field}>
@@ -987,6 +1093,7 @@ const styles = StyleSheet.create({
     backgroundColor: BG_SURFACE,
   },
   dateClearText: { fontSize: 22, color: TEXT_MUTED, lineHeight: 24 },
+  potExpanded: { gap: 10, marginTop: 8 },
   tagChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tagChip: {
     paddingHorizontal: 12,

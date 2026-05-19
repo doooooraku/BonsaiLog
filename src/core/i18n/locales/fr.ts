@@ -708,5 +708,16 @@ const fr: Partial<Record<TranslationKey, string>> = {
   customStyleCreatePlaceholder: 'ex: Yose-ue',
   customSpeciesCreateTitle: 'Créer une espèce personnalisée',
   customSpeciesCreatePlaceholder: 'ex: Pin noir',
+  bonsaiFieldPotInfoExpand: 'Add pot info',
+  bonsaiFieldPotWidth: 'Width',
+  bonsaiFieldPotWidthPlaceholder: 'Width (cm)',
+  bonsaiFieldPotDepth: 'Depth',
+  bonsaiFieldPotDepthPlaceholder: 'Depth (cm)',
+  bonsaiFieldPotMaterial: 'Material',
+  bonsaiFieldPotMaterialPlaceholder: 'Material (e.g. Tokoname, purple clay)',
+  settingsPotUnit: 'Pot size unit',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 export default fr;

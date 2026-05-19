@@ -708,5 +708,16 @@ const tr: Partial<Record<TranslationKey, string>> = {
   customStyleCreatePlaceholder: 'örn. Yose-ue',
   customSpeciesCreateTitle: 'Özel tür oluştur',
   customSpeciesCreatePlaceholder: 'örn. Karaçam',
+  bonsaiFieldPotInfoExpand: 'Add pot info',
+  bonsaiFieldPotWidth: 'Width',
+  bonsaiFieldPotWidthPlaceholder: 'Width (cm)',
+  bonsaiFieldPotDepth: 'Depth',
+  bonsaiFieldPotDepthPlaceholder: 'Depth (cm)',
+  bonsaiFieldPotMaterial: 'Material',
+  bonsaiFieldPotMaterialPlaceholder: 'Material (e.g. Tokoname, purple clay)',
+  settingsPotUnit: 'Pot size unit',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 export default tr;

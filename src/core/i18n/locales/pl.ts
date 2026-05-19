@@ -708,5 +708,16 @@ const pl: Partial<Record<TranslationKey, string>> = {
   customStyleCreatePlaceholder: 'np. Yose-ue',
   customSpeciesCreateTitle: 'Utwórz własny gatunek',
   customSpeciesCreatePlaceholder: 'np. Sosna czarna',
+  bonsaiFieldPotInfoExpand: 'Add pot info',
+  bonsaiFieldPotWidth: 'Width',
+  bonsaiFieldPotWidthPlaceholder: 'Width (cm)',
+  bonsaiFieldPotDepth: 'Depth',
+  bonsaiFieldPotDepthPlaceholder: 'Depth (cm)',
+  bonsaiFieldPotMaterial: 'Material',
+  bonsaiFieldPotMaterialPlaceholder: 'Material (e.g. Tokoname, purple clay)',
+  settingsPotUnit: 'Pot size unit',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 export default pl;

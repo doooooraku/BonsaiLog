@@ -707,5 +707,16 @@ const vi: Partial<Record<TranslationKey, string>> = {
   customStyleCreatePlaceholder: 'vd. Yose-ue',
   customSpeciesCreateTitle: 'Tạo loài tùy chỉnh',
   customSpeciesCreatePlaceholder: 'vd. Thông đen',
+  bonsaiFieldPotInfoExpand: 'Add pot info',
+  bonsaiFieldPotWidth: 'Width',
+  bonsaiFieldPotWidthPlaceholder: 'Width (cm)',
+  bonsaiFieldPotDepth: 'Depth',
+  bonsaiFieldPotDepthPlaceholder: 'Depth (cm)',
+  bonsaiFieldPotMaterial: 'Material',
+  bonsaiFieldPotMaterialPlaceholder: 'Material (e.g. Tokoname, purple clay)',
+  settingsPotUnit: 'Pot size unit',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 export default vi;

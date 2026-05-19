@@ -708,5 +708,16 @@ const sv: Partial<Record<TranslationKey, string>> = {
   customStyleCreatePlaceholder: 't.ex. Yose-ue',
   customSpeciesCreateTitle: 'Skapa anpassad art',
   customSpeciesCreatePlaceholder: 't.ex. Svartall',
+  bonsaiFieldPotInfoExpand: 'Add pot info',
+  bonsaiFieldPotWidth: 'Width',
+  bonsaiFieldPotWidthPlaceholder: 'Width (cm)',
+  bonsaiFieldPotDepth: 'Depth',
+  bonsaiFieldPotDepthPlaceholder: 'Depth (cm)',
+  bonsaiFieldPotMaterial: 'Material',
+  bonsaiFieldPotMaterialPlaceholder: 'Material (e.g. Tokoname, purple clay)',
+  settingsPotUnit: 'Pot size unit',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 export default sv;

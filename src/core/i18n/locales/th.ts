@@ -707,5 +707,16 @@ const th: Partial<Record<TranslationKey, string>> = {
   customStyleCreatePlaceholder: 'เช่น Yose-ue',
   customSpeciesCreateTitle: 'สร้างชนิดที่กำหนดเอง',
   customSpeciesCreatePlaceholder: 'เช่น สนดำ',
+  bonsaiFieldPotInfoExpand: 'Add pot info',
+  bonsaiFieldPotWidth: 'Width',
+  bonsaiFieldPotWidthPlaceholder: 'Width (cm)',
+  bonsaiFieldPotDepth: 'Depth',
+  bonsaiFieldPotDepthPlaceholder: 'Depth (cm)',
+  bonsaiFieldPotMaterial: 'Material',
+  bonsaiFieldPotMaterialPlaceholder: 'Material (e.g. Tokoname, purple clay)',
+  settingsPotUnit: 'Pot size unit',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 export default th;
