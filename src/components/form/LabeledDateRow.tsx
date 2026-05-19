@@ -16,7 +16,13 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { nowUtc } from '@/src/core/datetime/clock';
-import { BG_SURFACE, BORDER_DEFAULT, TEXT_MUTED } from '@/src/core/theme/colors';
+import {
+  BG_PRIMARY,
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  DANGER,
+  TEXT_MUTED,
+} from '@/src/core/theme/colors';
 
 export type LabeledDateRowProps = {
   label: string;
@@ -107,13 +113,14 @@ export function LabeledDateRow({
 const styles = StyleSheet.create({
   field: { gap: 6 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  // Sess14 PR-R: hardcoded color → DANGER / BG_PRIMARY 既存 theme constant 経由統合。
   requiredBadge: {
-    backgroundColor: '#8B2E2E',
+    backgroundColor: DANGER,
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { fontSize: 10, color: '#F7F3E8', letterSpacing: 0.8 },
+  requiredText: { fontSize: 10, color: BG_PRIMARY, letterSpacing: 0.8 },
   optionalText: { fontSize: 10, color: TEXT_MUTED, letterSpacing: 0.8 },
   rowWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   row: {

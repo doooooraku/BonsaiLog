@@ -60,6 +60,8 @@ export const ACCENT_GOLD = '#C69E48';
 export const DANGER = '#8B2E2E';
 /** 成功 (保存完了 toast 等)。 */
 export const SUCCESS = '#3E5C39';
+/** 文字数上限到達 inline 警告 (Sess14 PR-R、 form atom 共通化、 DANGER と微妙に異なる shade で意図分離)。 */
+export const OVERLIMIT = '#C62828';
 
 // =========================================================================
 // Border
