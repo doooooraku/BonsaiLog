@@ -38,12 +38,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bonsaiStyle_moyogi: '模様木',
   bonsaiStyle_shakan: '斜幹',
   bonsaiStyle_kengai: '懸崖',
-  bonsaiStyle_han_kengai: '半懸崖',
-  bonsaiStyle_bunjingi: '文人木',
-  bonsaiStyle_fukinagashi: '吹き流し',
-  bonsaiStyle_sokan: '双幹',
   bonsaiStyle_kabudachi: '株立ち',
-  bonsaiStyle_ishitsuki: '石付き',
 
   // --- F-08 Photos (P2-02 PR-C) ---
   bonsaiFieldPhotos: '写真',

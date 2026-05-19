@@ -113,12 +113,7 @@ const baseEn = {
   bonsaiStyle_moyogi: 'Informal upright (moyogi)',
   bonsaiStyle_shakan: 'Slanting (shakan)',
   bonsaiStyle_kengai: 'Cascade (kengai)',
-  bonsaiStyle_han_kengai: 'Semi-cascade (han-kengai)',
-  bonsaiStyle_bunjingi: 'Literati (bunjingi)',
-  bonsaiStyle_fukinagashi: 'Windswept (fukinagashi)',
-  bonsaiStyle_sokan: 'Twin-trunk (sokan)',
   bonsaiStyle_kabudachi: 'Multi-trunk (kabudachi)',
-  bonsaiStyle_ishitsuki: 'On rock (ishitsuki)',
 
   // --- F-08 Photos (P2-02 PR-C) ---
   bonsaiFieldPhotos: 'Photos',

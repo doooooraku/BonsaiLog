@@ -4,7 +4,7 @@
  * 実 DB 接続テストは PR-D の Maestro E2E でカバー (expo-sqlite は React Native 環境専用)。
  * 本テストは:
  * - parsePotInfo (JSON パース純関数)
- * - SPECIES_SEED の構造 (50 種以上、ja/en 通称完備、scientific_name 一意)
+ * - SPECIES_SEED の構造 (ADR-0026 で 5 種固定、ja/en 通称完備、scientific_name 一意)
  * - schema 型 export 存在
  */
 import * as fs from 'node:fs';
@@ -33,9 +33,9 @@ describe('parsePotInfo', () => {
   });
 });
 
-describe('SPECIES_SEED data integrity (Issue #14 AC2)', () => {
-  test('50 種以上が seed されている', () => {
-    expect(SPECIES_SEED_COUNT).toBeGreaterThanOrEqual(50);
+describe('SPECIES_SEED data integrity (ADR-0026 で Issue #14 AC2 を supersede)', () => {
+  test('ADR-0026 厳格: 5 種固定で seed されている', () => {
+    expect(SPECIES_SEED_COUNT).toBe(5);
     expect(SPECIES_SEED.length).toBe(SPECIES_SEED_COUNT);
   });
 
