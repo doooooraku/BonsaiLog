@@ -29,11 +29,12 @@
  * - v12: bonsai に estimated_age_unknown カラム追加 (Sess13 PR-D、 樹齢「不明」 明示)
  * - v13: bonsai_styles_custom テーブル新規 (Sess13 PR-G、 カスタム樹形 user-defined β table)
  * - v14: bonsai_species_custom テーブル + bonsai.custom_species_id (Sess13 PR-H、 カスタム樹種 β table)
+ * - v15: v14 修復 (Sess14 PR-P、 既存 DB で v14 が部分失敗していたユーザー向け idempotent re-run)
  */
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 14;
+export const SCHEMA_VERSION = 15;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)

@@ -274,6 +274,33 @@ async function migrate(db: SQLite.SQLiteDatabase) {
     version = 14;
   }
 
+  // ---------------------------------------------------------------------------
+  // Migration v15 (Sess14 PR-P): v14 修復 idempotent re-run。
+  //
+  // 背景: Sess13 PR-H 当時、 一部の DB で v14 migration が部分失敗 (user_version だけ
+  // 14 にバンプされ、 bonsai_species_custom テーブル / bonsai.custom_species_id カラム
+  // が作成されない不整合状態) が発生。 原因は ALTER TABLE ADD COLUMN with FOREIGN KEY
+  // REFERENCES が withTransactionAsync 内で foreign_keys=ON と相性悪く失敗した推測。
+  //
+  // 修正: v14 と同じ DDL を REFERENCES 句なしで再実行 (idempotent、 hasColumn / IF NOT
+  // EXISTS で safe)。 FK 制約は失われるが、 アプリ層で custom_species_id の整合性を
+  // 担保 (もともと外部 user に DB を直接いじられる前提なし)。
+  // ---------------------------------------------------------------------------
+  if (version < 15) {
+    await db.execAsync(
+      `CREATE TABLE IF NOT EXISTS bonsai_species_custom (
+        id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL UNIQUE,
+        created_at TEXT NOT NULL
+      );`,
+    );
+    if (!(await hasColumn(db, 'bonsai', 'custom_species_id'))) {
+      // REFERENCES 句なし版: FK 制約を外して ALTER TABLE 確実成功させる
+      await db.execAsync('ALTER TABLE bonsai ADD COLUMN custom_species_id TEXT;');
+    }
+    version = 15;
+  }
+
   // Always set version UNCONDITIONALLY (not inside an if-block).
   // This is the most important line in this file — see Repolog PR #213.
   await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION};`);
