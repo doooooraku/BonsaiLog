@@ -1,0 +1,155 @@
+# Sess12 PR-F Bug 1 検証 flow
+# 期待動作: 予定タブ → 5/28 (未来日 0 件) tap → FAB tap → 盆栽選択画面で 「0件選択中」
+# (前回の selection が残らない、 bulkContext clear 動作)
+#
+# 検証点:
+# 1. BonsaiMultiSelect 表示時に sub「盆栽を選んでください (0件選択中)」 (NOT 3件選択中)
+# 2. 盆栽カード tap → 1件選択中 → 「作業を選ぶ」 CTA active
+# 3. 「作業を選ぶ」 tap → BulkWorkPicker 表示
+# 4. 作業 (水やり) tap → Toast「1件の予定を追加しました」 + 元タブ復帰
+
+appId: 'com.doooooraku.bonsailog'
+name: 'Sess12 PR-F bug 1 verify (bulkContext clear on new FAB flow)'
+tags:
+  - sess12
+  - bug-verify
+---
+- launchApp:
+    clearState: true
+
+- runFlow:
+    when:
+      visible:
+        text: 'http://localhost:8081'
+    commands:
+      - tapOn:
+          text: 'http://localhost:8081'
+          retryTapIfNoChange: true
+      - waitForAnimationToEnd
+      - pressKey: 'Back'
+      - waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 60000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+# 設定タブ tap → DEV seed (盆栽 11 件投入)
+- tapOn:
+    id: 'e2e_bonsai_home_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+    speed: 40
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'OK'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# 予定タブ tap
+- tapOn:
+    id: 'e2e_tab_plan'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_plan_screen'
+    timeout: 15000
+
+# 未来日 (今日 = 5/19 想定なので 5/28 など) tap
+# 実機の本日に依存しないよう、 任意のセルを tap (default は今日 = predictable 未来日でない場合あり)
+# 今日 (5/19) は seed で 2 件 events あるので、 5/28 (空) を選ぶ
+- tapOn:
+    id: 'e2e_plan_cell_2026-05-28'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# FAB tap (5/28 は未来日、 FAB active のはず)
+- tapOn:
+    id: 'e2e_plan_fab_action'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# BonsaiMultiSelect 表示確認 (capture point 1: 0 件選択中であるはず)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_multi_select_screen'
+    timeout: 15000
+
+- waitForAnimationToEnd
+
+# capture point 1: BonsaiMultiSelect 初期状態 (期待: 「0件選択中」)
+# screen recording or screencap は capture-with-logs.sh が adb screencap で実施
+
+# 1 件目の盆栽カードを tap (selectedIds 0 → 1)
+- tapOn:
+    id: 'e2e_bonsai_multi_select_card_.*'
+    retryTapIfNoChange: true
+    index: 0
+- waitForAnimationToEnd
+
+# 確定 (作業を選ぶ) CTA tap
+- tapOn:
+    id: 'e2e_bonsai_multi_select_confirm'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# BulkWorkPicker 表示確認 (capture point 2: 作業 grid 表示)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_work_picker_screen'
+    timeout: 15000
+
+# 水やり tap (capture point 3: Toast 表示 + 戻る)
+- tapOn:
+    id: 'e2e_bulk_work_picker_watering'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# 戻り先確認: 予定タブ (PlanScreen) が表示されるはず (BonsaiMultiSelect で止まらない)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_plan_screen'
+    timeout: 15000
+
+- waitForAnimationToEnd

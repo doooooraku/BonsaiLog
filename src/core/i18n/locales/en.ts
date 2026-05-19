@@ -247,7 +247,7 @@ const baseEn = {
   settingsSearchSection: 'Search',
   searchAction: 'Search',
   bulkLog: 'Log all',
-  bulkSchedule: 'Schedule all',
+  bulkSchedule: 'Select task',
   bulkPickerSheetSub: 'Add the same schedule to {count} bonsai',
   bulkScheduleDoneToast: 'Schedule added to {count} bonsai',
   bulkPickerSheetSubLog: 'Log the same action to {count} bonsai',
