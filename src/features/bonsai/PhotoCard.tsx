@@ -25,7 +25,8 @@ import {
 } from '@/src/core/theme/colors';
 import type { PhotoRead } from '@/src/db/photoRepository';
 
-const MAX_CAPTION_CHARS = 100;
+// Sess14 PR-N: CreateMode (PR-J) と統一、 200 文字へ拡張 (旧 100 既存データは無変更で後方互換)。
+const MAX_CAPTION_CHARS = 200;
 
 type Props = {
   photo: PhotoRead;
@@ -215,7 +216,8 @@ const styles = StyleSheet.create({
     color: TEXT_PRIMARY,
     lineHeight: 20,
   },
-  thumb: { width: '100%', height: 200 },
+  // Sess14 PR-N: CreateMode (PR-J) と統一、 4:3 aspect (画面幅追従、 縦長盆栽写真に親和)。
+  thumb: { width: '100%', aspectRatio: 4 / 3 },
   captionArea: {
     paddingHorizontal: 12,
     paddingTop: 8,
