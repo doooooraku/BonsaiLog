@@ -261,6 +261,7 @@ const baseEn = {
   bulkLogConfirmCta: 'Log (×{count})',
   bulkLogAddNoteToggle: 'Add note',
   bulkLogConfirmTitleMulti: 'Log {count} actions',
+  detailTimelineToday: 'Today',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Search...',
   searchEmpty: 'No results found.',

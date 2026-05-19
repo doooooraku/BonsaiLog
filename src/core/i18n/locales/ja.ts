@@ -266,6 +266,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bulkLogConfirmCta: '記録する (×{count})',
   bulkLogAddNoteToggle: 'メモを追加する',
   bulkLogConfirmTitleMulti: '{count}件の作業を記録',
+  detailTimelineToday: '今日',
   searchDesc: '盆栽の名前と作業ログのメモを検索します。',
   searchPlaceholder: '検索...',
   searchEmpty: '見つかりませんでした。',

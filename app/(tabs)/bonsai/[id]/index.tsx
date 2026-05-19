@@ -814,24 +814,54 @@ export default function BonsaiDetailScreen() {
               const plannedEvents = events
                 .filter((e) => e.status === 'planned')
                 .sort((a, b) => a.occurredAtUtc.localeCompare(b.occurredAtUtc));
+              // Sess12 PR-J: 「今日」 緑大円 row を先頭に追加 (mockup bonsai-detail-timeline-01/02 整合)
+              // events 0 件でも「今日」 ヘッダー表示で「これからの予定の起点」 を明示
+              const todayLabel = t('detailTimelineToday');
+              const todayDate = formatDate(nowUtc() as string, lang);
+              const todayRow = (
+                <View key="__today__" style={styles.timelineRow} testID="e2e_timeline_today">
+                  <View style={styles.timelineLeft}>
+                    <View style={[styles.timelineLine, styles.timelineLineHidden]} />
+                    <View style={[styles.timelineDot, styles.timelineDotToday]} />
+                    <View
+                      style={[
+                        styles.timelineLine,
+                        plannedEvents.length === 0 && styles.timelineLineHidden,
+                      ]}
+                    />
+                  </View>
+                  <View style={styles.timelineContent}>
+                    <ThemedText style={styles.timelineTodayLabel}>{todayLabel}</ThemedText>
+                    <ThemedText style={styles.timelineTodayDate}>{todayDate}</ThemedText>
+                  </View>
+                </View>
+              );
               if (plannedEvents.length === 0) {
                 return (
-                  <ThemedText style={styles.emptyPhotos} testID="e2e_timeline_empty">
-                    {t('detailTimelineEmpty')}
-                  </ThemedText>
+                  <>
+                    {todayRow}
+                    <ThemedText style={styles.emptyPhotos} testID="e2e_timeline_empty">
+                      {t('detailTimelineEmpty')}
+                    </ThemedText>
+                  </>
                 );
               }
               const groups = groupContinuousEventsAsc(plannedEvents, getTzOffsetMin());
-              return groups.map((entry, idx) => (
-                <TimelineRow
-                  key={entry.kind === 'group' ? entry.events[0].id : entry.event.id}
-                  entry={entry}
-                  isFirst={idx === 0}
-                  isLast={idx === groups.length - 1}
-                  lang={lang}
-                  t={t}
-                />
-              ));
+              return (
+                <>
+                  {todayRow}
+                  {groups.map((entry, idx) => (
+                    <TimelineRow
+                      key={entry.kind === 'group' ? entry.events[0].id : entry.event.id}
+                      entry={entry}
+                      isFirst={false}
+                      isLast={idx === groups.length - 1}
+                      lang={lang}
+                      t={t}
+                    />
+                  ))}
+                </>
+              );
             })()}
           </View>
         )}
@@ -1299,6 +1329,25 @@ const styles = StyleSheet.create({
     borderColor: BRAND_GREEN,
     backgroundColor: '#FFFFFF',
     marginVertical: 2,
+  },
+  // Sess12 PR-J: 「今日」 大円マーカー (mockup bonsai-detail-timeline-01/02 整合)
+  // 通常の dot より大きく、 内側塗りつぶしで「現在地」 明示
+  timelineDotToday: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: BRAND_GREEN,
+  },
+  // 「今日」 ラベル + 日付 (mockup line 1 「今日 / 4月25日」 整合)
+  timelineTodayLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: BRAND_GREEN,
+  },
+  timelineTodayDate: {
+    fontSize: 12,
+    color: TEXT_SECONDARY,
+    marginTop: 2,
   },
   timelineContent: {
     flex: 1,
