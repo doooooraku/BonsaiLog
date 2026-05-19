@@ -110,6 +110,8 @@ const baseEn = {
   bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Archive',
   bonsaiTagsAddCta: 'Add tag',
+  tagShowMore: '+{count} more',
+  tagShowLess: 'Show less',
   bonsaiArchiveConfirmTitle: 'Archive this bonsai?',
   bonsaiArchiveConfirmDesc: 'You can restore it later from Settings.',
   bonsaiStyle_chokkan: 'Formal upright (chokkan)',

@@ -659,6 +659,8 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   // i18n fallback for PR #466-#471 new keys (R-1 pattern)
   settingsArchivedCountValue: '{count} items',
   bonsaiTagsAddCta: 'Add tag',
+  tagShowMore: '+{count} 个',
+  tagShowLess: '收起',
   settingsPlanLabel: 'Plan',
   settingsPlanUpgradeBadge: 'Upgrade',
   bonsaiFieldAcquiredFrom: 'Acquired from',

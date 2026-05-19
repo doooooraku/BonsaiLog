@@ -646,6 +646,16 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
 
   const showPhotoField = showPhotos && !isEdit;
 
+  // Sess15 PR-MM: タグ表示は「最近 3 件 + 「+N 件」 折りたたみ」 (案 A、 user 真意「画面埋め尽くし回避」)。
+  // tap で全展開 / 再 tap で折りたたみ。 既存 recentTags は最大 8 件 (BonsaiBasicForm getRecentTags(8))。
+  const TAG_COLLAPSED_COUNT = 3;
+  const [tagExpanded, setTagExpanded] = useState(false);
+  const visibleTags =
+    tagExpanded || recentTags.length <= TAG_COLLAPSED_COUNT
+      ? recentTags
+      : recentTags.slice(0, TAG_COLLAPSED_COUNT);
+  const hiddenTagCount = Math.max(0, recentTags.length - TAG_COLLAPSED_COUNT);
+
   // Sess15 PR-CC: 案 P 採用 — 写真は「タグ」 と「メモ」 の間 (新規モード時) に表示する。
   // 必須項目を先頭に、 重い任意処理 (写真撮影/選択) を後半に集約することで入力放棄リスクを軽減。
   const photoBlock = showPhotoField ? (
@@ -974,7 +984,7 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
           </View>
         ) : (
           <View style={styles.tagChipRow}>
-            {recentTags.map((tg) => {
+            {visibleTags.map((tg) => {
               const selected = selectedTagIds.has(tg.id);
               return (
                 <Pressable
@@ -992,6 +1002,26 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
                 </Pressable>
               );
             })}
+            {/* Sess15 PR-MM: 「+N 件」 / 「閉じる」 折りたたみ chip (案 A、 user 真意「画面埋め尽くし回避」)。 */}
+            {hiddenTagCount > 0 && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={
+                  tagExpanded
+                    ? t('tagShowLess')
+                    : t('tagShowMore').replace('{count}', String(hiddenTagCount))
+                }
+                style={styles.tagMoreChip}
+                onPress={() => setTagExpanded((p) => !p)}
+                testID="e2e_bonsai_create_tag_more"
+              >
+                <ThemedText style={styles.tagMoreChipText}>
+                  {tagExpanded
+                    ? t('tagShowLess')
+                    : t('tagShowMore').replace('{count}', String(hiddenTagCount))}
+                </ThemedText>
+              </Pressable>
+            )}
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('bonsaiTagsAddCta')}
@@ -1268,4 +1298,16 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   tagAddChipText: { fontSize: 13, color: BRAND_GREEN, fontWeight: '600' },
+  // Sess15 PR-MM: 「+N 件」 / 「閉じる」 折りたたみ chip。 tag chip と同じ size、 grey 系で secondary。
+  tagMoreChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+    minHeight: 36,
+    justifyContent: 'center',
+  },
+  tagMoreChipText: { fontSize: 13, color: TEXT_SECONDARY, fontWeight: '500' },
 });
