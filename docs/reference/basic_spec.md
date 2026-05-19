@@ -830,10 +830,12 @@ src/core/i18n/locales/
 
 ### 10.1 樹種マスタ
 
-- **件数**: 50 樹種以上を v1.0 で同梱
-- **代表樹種**: 黒松、五葉松、赤松、真柏、杜松、モミジ、カエデ、ケヤキ、ブナ、ニレ、皐月、石榴、Ficus retusa、Portulacaria afra、Chinese Elm、Juniperus procumbens nana、Olive、Chinese Sweet Plum、Fukien Tea、Japanese Quince 他
+- **件数**: **5 種**を v1.0 で同梱（ADR-0026 で 50 → 5 種に物理削減、 カスタム入力主軸へ転換）
+- **代表樹種 (5 種)**: 黒松 (Pinus thunbergii) / モミジ (Acer palmatum) / イチョウ (Ginkgo biloba) / 梅 (Prunus mume) / 真柏 (Juniperus chinensis)
 - **主キー**: 学名（`scientific_name`、例: `Pinus thunbergii`）
 - **通称 19 言語**: `species_names` テーブル、locale × species_id 複合主キー
+- **拡張**: ユーザーは `bonsai_species_custom` table 経由でカスタム樹種を追加可能 (Sess13 PR-H で実装済)。 マスタは「最頻出 5 種」 のみ、 残りはカスタム入力で個別性を表現する設計
+- **関連**: `docs/adr/ADR-0026-master-data-reduction-and-custom-first.md`
 
 ### 10.2 データ配布戦略
 
