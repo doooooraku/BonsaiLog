@@ -311,7 +311,12 @@ export default function PlanScreen() {
                             accessibilityRole="button"
                             accessibilityLabel={b?.name ?? ''}
                             style={styles.eventCard}
-                            onPress={() => router.push(`/(tabs)/bonsai/${e.bonsaiId}` as Href)}
+                            onPress={() => {
+                              // Sess12 PR-F 改善 F: status で初期タブ分岐
+                              // planned → 作業予定 (timeline)、 logged → 作業履歴 (history)
+                              const tab = e.status === 'planned' ? 'timeline' : 'history';
+                              router.push(`/(tabs)/bonsai/${e.bonsaiId}?tab=${tab}` as Href);
+                            }}
                             testID={`e2e_plan_event_${e.id}`}
                           >
                             <View style={styles.eventIconBox}>

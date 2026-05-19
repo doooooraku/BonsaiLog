@@ -252,7 +252,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsSearchSection: '検索',
   searchAction: '検索する',
   bulkLog: '一括記録',
-  bulkSchedule: '予定追加',
+  bulkSchedule: '作業を選ぶ',
   bulkPickerSheetSub: '{count}件の盆栽に同じ予定を追加',
   bulkScheduleDoneToast: '{count}件の予定を追加しました',
   bulkPickerSheetSubLog: '{count}件の盆栽に同じ作業を記録',

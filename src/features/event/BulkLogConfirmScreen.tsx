@@ -62,7 +62,11 @@ export default function BulkLogConfirmScreen() {
     } catch (error) {
       console.warn('[bulk-log] failed:', error);
     }
-    router.dismissAll();
+    // Sess12 PR-F 改善 I: dismissAll は nested modal で内側のみ閉じる bug あり、
+    // canDismiss loop で modal stack 全階層を確実に閉じて元タブに戻す
+    while (router.canDismiss()) {
+      router.dismiss();
+    }
   };
 
   return (

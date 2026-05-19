@@ -56,7 +56,7 @@ export default function BulkWorkPickerScreen() {
 
   const handleSelect = async (type: EventType) => {
     if (mode === 'schedule') {
-      // schedule: DB 直接書き込み + Toast + 元タブに戻る (router.dismissAll)
+      // schedule: DB 直接書き込み + Toast + 元タブに戻る
       // ADR-0008 §TZ 3 層防御: new Date() 引数なし禁止、 nowUtc() 経由
       const dateStr = scheduleDate || (nowUtc() as string).slice(0, 10);
       const occurredAtUtc = `${dateStr}T00:00:00.000Z`;
@@ -72,7 +72,11 @@ export default function BulkWorkPickerScreen() {
       } catch (error) {
         console.warn('[bulk-schedule] failed:', error);
       }
-      router.dismissAll();
+      // Sess12 PR-F 改善 I: dismissAll は nested modal で内側のみ閉じる bug あり、
+      // canDismiss loop で modal stack 全階層を確実に閉じて元タブに戻す
+      while (router.canDismiss()) {
+        router.dismiss();
+      }
       return;
     }
     // log: 次画面 (BulkLogConfirm) で note 入力 + 書き込み

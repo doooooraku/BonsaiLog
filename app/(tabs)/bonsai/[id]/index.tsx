@@ -85,7 +85,8 @@ import { useSettingsStore } from '@/src/stores/settingsStore';
  * - アーカイブ (Issue #14 AC4)
  */
 export default function BonsaiDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string; tab?: string }>();
+  const { id } = params;
   const { t, lang } = useTranslation();
   const router = useRouter();
   const c = useColors();
@@ -110,7 +111,11 @@ export default function BonsaiDetailScreen() {
   // 旧 timeline タブは廃止、予定機能は新 timeline タブで A7 で実装予定 (本 PR は placeholder)
   // 旧 timeline タブの「水やり概要 / 取得日 / 更新日 / アーカイブ」は basic タブに移動 (A5 で
   // CreateBonsaiScreen embed に正式化予定)
-  const [activeTab, setActiveTab] = useState<'history' | 'timeline' | 'basic'>('history');
+  // Sess12 PR-F 改善 F: URL param ?tab=timeline で初期タブ指定可能 (planned event tap 時)
+  const initialTabParam = (params.tab as string | undefined) ?? 'history';
+  const initialTab: 'history' | 'timeline' | 'basic' =
+    initialTabParam === 'timeline' || initialTabParam === 'basic' ? initialTabParam : 'history';
+  const [activeTab, setActiveTab] = useState<'history' | 'timeline' | 'basic'>(initialTab);
 
   // Phase G2 part 1-2 (ADR-0024 Accepted): 作業記録 BottomSheet を `(modals)/work-picker` +
   // `(modals)/work-log-confirm` (formSheet) に置換、ref 経由の Sheet 制御は全廃 (router.push +
