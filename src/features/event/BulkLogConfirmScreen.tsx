@@ -33,6 +33,7 @@ import {
 import { useColors } from '@/src/core/theme/useColors';
 import { bulkLogEvents } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
+import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { BonsaiPlaceholder, hashSeed } from '@/src/features/bonsai/BonsaiPlaceholder';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
@@ -87,6 +88,8 @@ export default function BulkLogConfirmScreen() {
     } catch (error) {
       console.warn('[bulk-log] failed:', error);
     }
+    // Sess12 PR-I: 通知 reschedule (planned → logged 状態変化、 当日通知更新)
+    void triggerSummaryReschedule(t);
     // Sess12 PR-G 改善 I: 記録タブに直接戻る (dismissAll の 1 階問題回避)
     router.replace('/(tabs)/record');
   };

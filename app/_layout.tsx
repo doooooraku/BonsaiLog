@@ -20,10 +20,12 @@ import 'react-native-reanimated';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Toast } from '@/src/components/Toast';
+import { useTranslation } from '@/src/core/i18n/i18n';
 import { buildNavigationTheme } from '@/src/core/theme/buildNavigationTheme';
 import { resolveEffectiveScheme } from '@/src/core/theme/themeResolver';
 import { isOnboardingFinished } from '@/src/features/onboarding/onboardingFlow';
 import { ensureNotificationChannels } from '@/src/features/notification/scheduler';
+import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { initializeAds } from '@/src/services/adService';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
 import { useProStore } from '@/src/stores/proStore';
@@ -82,12 +84,18 @@ export default function RootLayout() {
   }, [initPro]);
 
   // F-16 Phase A (Issue #30, ADR-0014): Android 通知チャネル (WATERING / DAILY_SUMMARY) を起動時に確保。
-  // permission リクエストと reschedule は Settings 操作時 (Phase B) に呼ぶ。
   useEffect(() => {
     ensureNotificationChannels().catch(() => {
       // チャネル作成失敗は致命的ではない (iOS は no-op)
     });
   }, []);
+
+  // Sess12 PR-I: 起動時に当日まとめ通知を reschedule (master/summary toggle 状態反映)。
+  // ADR-0011 維持: master OFF default、 user が設定 ON にした時のみ動作。
+  const { t } = useTranslation();
+  useEffect(() => {
+    void triggerSummaryReschedule(t);
+  }, [t]);
 
   useEffect(() => {
     if (!proInitialized) return;
