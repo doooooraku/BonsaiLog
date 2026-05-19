@@ -60,10 +60,13 @@ async function hasColumn(db: SQLite.SQLiteDatabase, table: string, column: strin
  * INSERT OR IGNORE で冪等性を担保 (再実行で既存データを上書きしない)。
  */
 async function seedSpeciesIfNeeded(db: SQLite.SQLiteDatabase) {
-  // Sess15 PR-GG: ADR-0026 で 5 種化、 旧 50 種 seed の残骸を起動時 cleanup。
-  // INSERT OR IGNORE は冪等だが、 過去 50 種が残ると picker で表示されるため物理削除。
-  const placeholders = SPECIES_SEED_IDS.map(() => '?').join(',');
-  await db.runAsync(`DELETE FROM species WHERE id NOT IN (${placeholders});`, SPECIES_SEED_IDS);
+  // Sess15 PR-GG + PR-OO hotfix: ADR-0026 で 5 種化、 旧 50 種 seed の残骸を起動時 cleanup。
+  // PR-GG で db.runAsync + bind 配列を使っていたが、 expo-sqlite の prepareAsync が
+  // 'Cannot use shared object that was already released' エラーを出すため、
+  // 固定値の SPECIES_SEED_IDS を SQL string literal で直接展開 + execAsync (bind 不要) に変更。
+  // SPECIES_SEED_IDS は code 固定の ULID 風 ID 配列で SQL injection リスクなし。
+  const idsLiteral = SPECIES_SEED_IDS.map((id) => `'${id}'`).join(',');
+  await db.execAsync(`DELETE FROM species WHERE id NOT IN (${idsLiteral});`);
 
   // cleanup 後の件数で早期リターン判定 (5 種全て揃っていれば skip)
   const countRow = await db.getFirstAsync<{ count: number }>(
