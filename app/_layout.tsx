@@ -21,6 +21,7 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Toast } from '@/src/components/Toast';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import { useSettingsBootstrap } from '@/src/stores/useSettingsBootstrap';
 import { buildNavigationTheme } from '@/src/core/theme/buildNavigationTheme';
 import { resolveEffectiveScheme } from '@/src/core/theme/themeResolver';
 import { isOnboardingFinished } from '@/src/features/onboarding/onboardingFlow';
@@ -96,6 +97,9 @@ export default function RootLayout() {
   useEffect(() => {
     void triggerSummaryReschedule(t);
   }, [t]);
+
+  // Sess15 PR-KK: 起動時に lang から鉢サイズ default 単位を設定 (ADR-0026 案 α)。
+  useSettingsBootstrap();
 
   useEffect(() => {
     if (!proInitialized) return;
