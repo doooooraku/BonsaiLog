@@ -100,6 +100,8 @@ export function useBonsaiBasicForm({
   const [purchaseDate, setPurchaseDate] = useState('');
   // Issue #455 Phase 2: 鉢情報 (テキスト自由入力、既存 pot_info JSON に { description } で保存)。
   const [potInfoText, setPotInfoText] = useState('');
+  // Sess13 PR-B: 入手元 (free-form text、 schema v10 acquired_from column 直接保存)。
+  const [acquiredFrom, setAcquiredFrom] = useState('');
   const [recentTags, setRecentTags] = useState<TagRecord[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const originalTagIdsRef = useRef<Set<string>>(new Set());
@@ -155,6 +157,7 @@ export function useBonsaiBasicForm({
     } catch {
       setPotInfoText('');
     }
+    setAcquiredFrom(editingBonsai.acquiredFrom ?? '');
     let cancelled = false;
     void getTagsByBonsai(editingBonsai.id).then((tags) => {
       if (cancelled) return;
@@ -192,6 +195,7 @@ export function useBonsaiBasicForm({
       } catch {
         setPotInfoText('');
       }
+      setAcquiredFrom(editingBonsai.acquiredFrom ?? '');
       setSelectedTagIds(new Set(originalTagIdsRef.current));
       setPendingPhotos([]);
     } else {
@@ -204,6 +208,7 @@ export function useBonsaiBasicForm({
       setMemo('');
       setPurchaseDate('');
       setPotInfoText('');
+      setAcquiredFrom('');
       setSelectedTagIds(new Set());
     }
   }, [editingBonsai]);
@@ -283,6 +288,8 @@ export function useBonsaiBasicForm({
         // Issue #455 Phase 2: 鉢情報を { description } JSON で pot_info column に保存
         // (将来 size_cm / shape / material 等を増やすときも同 JSON 拡張で対応)。
         potInfo: potInfoText.trim() ? { description: potInfoText.trim() } : null,
+        // Sess13 PR-B: 入手元 (schema v10 acquired_from column 直接保存)。
+        acquiredFrom: acquiredFrom.trim() ? acquiredFrom.trim() : null,
       };
 
       if (editingBonsai != null) {
@@ -336,6 +343,7 @@ export function useBonsaiBasicForm({
     memo,
     purchaseDate,
     potInfoText,
+    acquiredFrom,
     editingBonsai,
     selectedTagIds,
     pendingPhotos,
@@ -365,6 +373,8 @@ export function useBonsaiBasicForm({
     setPurchaseDate,
     potInfoText,
     setPotInfoText,
+    acquiredFrom,
+    setAcquiredFrom,
     recentTags,
     selectedTagIds,
     toggleTag,
@@ -410,6 +420,8 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     setPurchaseDate,
     potInfoText,
     setPotInfoText,
+    acquiredFrom,
+    setAcquiredFrom,
     recentTags,
     selectedTagIds,
     toggleTag,
@@ -577,6 +589,23 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
           accessibilityLabel={t('bonsaiFieldPurchaseDate')}
           maxLength={10}
           keyboardType="numbers-and-punctuation"
+        />
+      </View>
+
+      {/* Sess13 PR-B: 入手元 (任意、 schema v10 acquired_from column 配線、 i18n 既存 19 言語流用)。 */}
+      <View style={styles.field}>
+        <View style={styles.fieldLabelRow}>
+          <ThemedText type="defaultSemiBold">{t('bonsaiFieldAcquiredFrom')}</ThemedText>
+          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+        </View>
+        <TextInput
+          style={styles.input}
+          value={acquiredFrom}
+          onChangeText={setAcquiredFrom}
+          placeholder={t('bonsaiFieldAcquiredFromPlaceholder')}
+          accessibilityLabel={t('bonsaiFieldAcquiredFrom')}
+          maxLength={100}
+          testID="e2e_bonsai_create_acquired_from"
         />
       </View>
 
