@@ -915,8 +915,9 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
                   );
                 })}
               </View>
+              {/* Sess15 PR-JJ: label="" → 「幅」「深さ」「材質」 を明示 (user 真意「何の項目か分からない」 解消)。 */}
               <LabeledNumberInput
-                label=""
+                label={t('bonsaiFieldPotWidth')}
                 value={potWidth}
                 onChangeText={setPotWidth}
                 placeholder={t('bonsaiFieldPotWidthPlaceholder').replace(' ({unit})', '')}
@@ -926,7 +927,7 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
                 testID="e2e_bonsai_create_pot_width"
               />
               <LabeledNumberInput
-                label=""
+                label={t('bonsaiFieldPotDepth')}
                 value={potDepth}
                 onChangeText={setPotDepth}
                 placeholder={t('bonsaiFieldPotDepthPlaceholder').replace(' ({unit})', '')}
@@ -936,7 +937,7 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
                 testID="e2e_bonsai_create_pot_depth"
               />
               <LabeledTextInput
-                label=""
+                label={t('bonsaiFieldPotMaterial')}
                 value={potMaterial}
                 onChangeText={setPotMaterial}
                 placeholder={t('bonsaiFieldPotMaterialPlaceholder')}
