@@ -169,7 +169,52 @@ reminder（medical context） / tracker（health context） / alert（medical）
 - **最小幅**: iPhone SE 第1世代 320pt（レイアウト崩れなし必須）
 - **最大幅**: iPhone Pro Max 430pt
 
-## 12. アンチパターン（絶対にやらないこと）
+## 12. Form Atom Components (Sess14 PR-O 確立)
+
+`src/components/form/` 配下に form 入力用の atom component を整備。 BonsaiBasicForm
+など複数 form 画面で再利用し、 文字数表示 / 上限赤字 / 必須・任意 badge / 単位 suffix
+等の UX を一貫させる。
+
+### 12-1. `LabeledTextInput`
+
+- **用途**: 一般文字列入力 (名前 / 入手元 / メモ / 鉢材質)
+- **特徴**: 右上 N/MAX 表示、 上限到達 inline 赤字、 multiline 対応
+- **必須 props**: label / value / onChangeText
+- **任意 props**: required / optional / maxLength / showCounter / multiline / overlimitText / placeholder / testID
+
+### 12-2. `LabeledNumberInput`
+
+- **用途**: 数値入力 (樹齢 / 鉢幅 / 鉢深さ)
+- **特徴**: keyboardType="numeric" + 数字以外 silent reject (正規表現で除去)、 単位 suffix 右側表示
+- **必須 props**: label / value (string) / onChangeText
+- **任意 props**: suffix (例: 'cm' / '年') / maxLength / placeholder / editable / required / optional / testID
+- **注意**: parseFloat の責務は呼び出し側 (本 atom は文字列のまま渡す)、 NaN/負数防御は呼び出し側 (例: `unitToCm` で実施)
+
+### 12-3. `LabeledPickerRow`
+
+- **用途**: picker 画面遷移 row (樹種 / 樹形)
+- **特徴**: 選択中 → row 右に × clear button (排他、 ChevronRight 非表示)、 未選択 → ChevronRight
+- **必須 props**: label / onPress
+- **任意 props**: valueText (null = 未選択) / placeholder / onClear (未指定なら × 非表示) / optional / testID / testIDClear
+
+### 12-4. `LabeledDateRow`
+
+- **用途**: DatePicker row (取得日 / 購入日)
+- **特徴**: Native DatePickerDialog (Android) / UIDatePicker (iOS) modal、 row 右 × clear button、 maxToday=true で未来日選択禁止
+- **必須 props**: label / value ('YYYY-MM-DD') / onChangeText
+- **任意 props**: placeholder / maxToday / optional / required / testID / testIDClear
+
+### 12-5. 使用ルール
+
+1. ❌ `BonsaiBasicForm.tsx` 内で inline `<TextInput>` 直書き **禁止** (将来 ESLint custom rule で強制化検討)
+2. ✅ form atom が無い場合は **新規 atom を抽出** してから利用 (例: `LabeledSwitchRow` 等)
+3. ✅ atom の i18n key は呼び出し側が `t()` で解決して渡す (atom 内で `t()` 呼ばない、 純粋表示 component に保つ)
+4. ✅ accessibilityLabel は label と同じが default、 異なる場合は明示指定
+5. ✅ testID は呼び出し側で必ず指定 (Maestro flow 整合)
+
+---
+
+## 13. アンチパターン（絶対にやらないこと）
 
 1. ❌ 紫グラデーション背景
 2. ❌ White background + terracotta accent + italic（Claude デフォルト）
