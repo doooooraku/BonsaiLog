@@ -226,6 +226,64 @@ reminder（medical context） / tracker（health context） / alert（medical）
 8. ❌ アプリ内 SNS シェア直接投稿ボタン
 9. ❌ 「診断」「推奨」「病気」等の禁止語
 10. ❌ 樹種名の意訳（黒松 → "black pine" は許可、学名は維持）
+11. ❌ Form 入力欄を直接 `<TextInput>` で書く (Sess14 PR-K/O 確立、 §12 Form Atom を必須利用)
+12. ❌ Form atom 内に hardcoded color 直書き (Sess14 PR-R、 `src/core/theme/colors.ts` の constant 経由必須)
+13. ❌ `ALTER TABLE ... ADD COLUMN ... REFERENCES ...` を `db.withTransactionAsync` 内で実行 (Sess14 PR-P で確認した silent failure 罠、 schema v14 部分失敗事例)
+
+---
+
+## 14. DB Migration アンチパターン (Sess14 PR-P 教訓)
+
+### 14-1. `ALTER TABLE ADD COLUMN with REFERENCES` を transaction 内で禁止
+
+**事例**: Sess13 schema v14 で実施した以下の migration が一部の DB で silent failure:
+
+```sql
+-- ❌ 危険なパターン
+ALTER TABLE bonsai ADD COLUMN custom_species_id TEXT
+  REFERENCES bonsai_species_custom(id) ON DELETE SET NULL;
+```
+
+**症状**:
+
+- `PRAGMA user_version` だけバージョン bump される
+- 実際の DDL (テーブル / カラム作成) は反映されない
+- 結果: `if (version < N)` で migration は二度と走らず、 永続的にデッドロック状態に
+
+**原因**: SQLite では `ALTER TABLE ... REFERENCES ...` 内の外部キー制約検証が、 `db.withTransactionAsync()` + `PRAGMA foreign_keys = ON` 環境で意図せず失敗する (transaction 内 DDL の遅延 commit と FK 制約 check の競合)。
+
+### 14-2. 推奨パターン
+
+```sql
+-- ✅ 安全なパターン
+ALTER TABLE bonsai ADD COLUMN custom_species_id TEXT;
+-- FK 制約はアプリ層で担保 (DB column としては plain TEXT)
+```
+
+- 新規 FK 列追加は **REFERENCES 句を外して** ALTER TABLE
+- FK 整合性はアプリ層 (`bonsaiRepository.ts` の create/update 時にバリデーション) で担保
+- ON DELETE SET NULL 相当は呼び出し側で明示的に処理
+
+### 14-3. 修復方法 (既に部分失敗した DB がある場合)
+
+```typescript
+// SCHEMA_VERSION を 1 bump し、 idempotent re-run migration を追加
+if (version < N + 1) {
+  await db.execAsync('CREATE TABLE IF NOT EXISTS ...'); // 既に存在なら no-op
+  if (!(await hasColumn(db, 'bonsai', 'missing_column'))) {
+    await db.execAsync('ALTER TABLE bonsai ADD COLUMN missing_column TEXT;');
+    // REFERENCES 句を **外して** 再実行
+  }
+  version = N + 1;
+}
+```
+
+### 14-4. 検出と未然防止
+
+- 毎セッション migration 完了後に **schema verification step** 追加検討:
+  - `PRAGMA user_version == SCHEMA_VERSION` だけでなく、 期待する全テーブル / カラムの存在チェック
+  - 不一致なら警告 + 修復 migration 提案
+- CI / e2e test で `__tests__/db/migrate.test.ts` を新規追加 (v0 → 最新 まで全 step 実行 + テーブル / カラム検証)
 
 ---
 
