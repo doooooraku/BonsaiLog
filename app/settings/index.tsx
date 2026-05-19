@@ -174,6 +174,30 @@ export default function SettingsScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t, setThemeMode]);
 
+  // Sess14 PR-L: 鉢サイズ単位 (cm/mm/inch) row。 themeOptions と同 pattern (Alert + 3 choice)。
+  const potUnit = useSettingsStore((s) => s.potUnit);
+  const setPotUnit = useSettingsStore((s) => s.setPotUnit);
+  const potUnitOptions: { value: 'cm' | 'mm' | 'inch'; labelKey: string }[] = [
+    { value: 'cm', labelKey: 'settingsPotUnitCm' },
+    { value: 'mm', labelKey: 'settingsPotUnitMm' },
+    { value: 'inch', labelKey: 'settingsPotUnitInch' },
+  ];
+  const currentPotUnitLabel = React.useMemo(() => {
+    const opt = potUnitOptions.find((o) => o.value === potUnit);
+    return opt ? t(opt.labelKey as Parameters<typeof t>[0]) : potUnit;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [potUnit, t]);
+  const handlePotUnitPress = React.useCallback(() => {
+    Alert.alert(t('settingsPotUnit'), undefined, [
+      ...potUnitOptions.map((opt) => ({
+        text: t(opt.labelKey as Parameters<typeof t>[0]),
+        onPress: () => setPotUnit(opt.value),
+      })),
+      { text: t('cancel'), style: 'cancel' as const },
+    ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t, setPotUnit]);
+
   return (
     <ThemedView
       style={[styles.container, { backgroundColor: c.background }]}
@@ -284,6 +308,23 @@ export default function SettingsScreen() {
               <ThemedText type="defaultSemiBold">{t('settingsThemeRowLabel')}</ThemedText>
               <View style={styles.rowRight}>
                 <ThemedText style={styles.rowValue}>{currentThemeLabel}</ThemedText>
+                <ThemedText style={styles.chevron}>›</ThemedText>
+              </View>
+            </View>
+          </Pressable>
+          {/* Sess14 PR-L: 鉢サイズ単位 (cm/mm/inch) 3-segment row。 言語/テーマの下に配置。 */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('settingsPotUnit')}
+            accessibilityValue={{ text: potUnit }}
+            testID="e2e_pot_unit_row"
+            style={styles.entry}
+            onPress={handlePotUnitPress}
+          >
+            <View style={styles.rowInner}>
+              <ThemedText type="defaultSemiBold">{t('settingsPotUnit')}</ThemedText>
+              <View style={styles.rowRight}>
+                <ThemedText style={styles.rowValue}>{currentPotUnitLabel}</ThemedText>
                 <ThemedText style={styles.chevron}>›</ThemedText>
               </View>
             </View>
