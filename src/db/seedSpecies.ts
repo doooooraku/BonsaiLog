@@ -38,6 +38,7 @@ function seedId(prefix: string): string {
   return `species_${prefix}`;
 }
 
+// Sess15 PR-GG: 人気順 (案 A 確定、 盆栽教本 / Bonsai Empire の出現頻度順): 黒松 → モミジ → 真柏 → 梅 → イチョウ。
 export const SPECIES_SEED: SpeciesSeed[] = [
   {
     id: seedId('pinus_thunbergii'),
@@ -48,14 +49,6 @@ export const SPECIES_SEED: SpeciesSeed[] = [
     names: { ja: '黒松', en: 'Japanese Black Pine' },
   },
   {
-    id: seedId('juniperus_chinensis'),
-    scientificName: 'Juniperus chinensis',
-    family: 'Cupressaceae',
-    climateZoneMin: 4,
-    climateZoneMax: 9,
-    names: { ja: '真柏', en: 'Chinese Juniper' },
-  },
-  {
     id: seedId('acer_palmatum'),
     scientificName: 'Acer palmatum',
     family: 'Sapindaceae',
@@ -64,12 +57,12 @@ export const SPECIES_SEED: SpeciesSeed[] = [
     names: { ja: 'モミジ', en: 'Japanese Maple' },
   },
   {
-    id: seedId('ginkgo_biloba'),
-    scientificName: 'Ginkgo biloba',
-    family: 'Ginkgoaceae',
+    id: seedId('juniperus_chinensis'),
+    scientificName: 'Juniperus chinensis',
+    family: 'Cupressaceae',
     climateZoneMin: 4,
     climateZoneMax: 9,
-    names: { ja: 'イチョウ', en: 'Ginkgo' },
+    names: { ja: '真柏', en: 'Chinese Juniper' },
   },
   {
     id: seedId('prunus_mume'),
@@ -79,7 +72,20 @@ export const SPECIES_SEED: SpeciesSeed[] = [
     climateZoneMax: 9,
     names: { ja: '梅', en: 'Japanese Apricot' },
   },
+  {
+    id: seedId('ginkgo_biloba'),
+    scientificName: 'Ginkgo biloba',
+    family: 'Ginkgoaceae',
+    climateZoneMin: 4,
+    climateZoneMax: 9,
+    names: { ja: 'イチョウ', en: 'Ginkgo' },
+  },
 ];
+
+/**
+ * Seed ID のみの配列 (DB clean migration で 「seed 外 species を削除」 判定に使用)。
+ */
+export const SPECIES_SEED_IDS = SPECIES_SEED.map((s) => s.id);
 
 /**
  * Seed 件数の検証 (ADR-0026: 5 種厳格固定)。

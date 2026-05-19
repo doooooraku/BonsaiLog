@@ -1,19 +1,15 @@
 /**
  * 樹種 (species) ピッカー画面 (Phase G1、ADR-0024 Provisionally Accepted)。
  *
- * Sess13 PR-A1: rowMapper 適用 (50 種全件表示 bug 修正)。
- * Sess13 PR-H: mockup species-picker.png 整合 +
- *   - 「一」 None option 削除 (Q-9 a)
- *   - placeholder「樹種名で検索 (例: 黒松, pine)」 (mockup 整合)
- *   - 「+ カスタム入力」 modal + bonsai_species_custom β table (Q-13 β)
+ * Sess15 PR-GG: 樹形 picker と同じ仕組み統一 (DB query 廃止)。
+ * - SPECIES_SEED 静的配列を直接 render → 即時表示 (DB query の数秒遅延を解消)
+ * - 通称は lang 別に SPECIES_SEED.names から取得 (現状 ja/en、 他 17 言語は en fallback)
+ * - カスタム樹種のみ DB query (件数少なく遅延少ない)
  *
- * locale 別の通称 (commonName) + 学名 (scientificName) を表示、 search で絞り込み。
- * Master + custom を UNION 表示。 選択時に usePickerStore.setSpeciesPickerResult で返却:
- *   - master: id (raw ULID)
- *   - custom: 'custom:' + ULID prefix で区別
+ * Sess13 PR-H: 「+ カスタム入力」 modal + bonsai_species_custom β table。
  */
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -34,7 +30,7 @@ import {
   getAllCustomSpecies,
 } from '@/src/db/bonsaiSpeciesCustomRepository';
 import type { BonsaiSpeciesCustom } from '@/src/db/schema';
-import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
+import { SPECIES_SEED } from '@/src/db/seedSpecies';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
 const CUSTOM_SPECIES_MAX_LENGTH = 64;
@@ -44,24 +40,34 @@ export default function SpeciesPickerScreen() {
   const { t, lang } = useTranslation();
   const c = useColors();
   const params = useLocalSearchParams<{ initial?: string }>();
-  const [speciesList, setSpeciesList] = useState<SpeciesWithName[]>([]);
   const [customSpecies, setCustomSpecies] = useState<BonsaiSpeciesCustom[]>([]);
   const [query, setQuery] = useState('');
   const [current, setCurrent] = useState<string | null>(params.initial ?? null);
   const [showCustomModal, setShowCustomModal] = useState(false);
   const [customInput, setCustomInput] = useState('');
 
+  // Sess15 PR-GG: 静的 SPECIES_SEED から lang 別通称を生成 (ja/en のみ、 他 17 言語は en fallback)。
+  const speciesList = useMemo(
+    () =>
+      SPECIES_SEED.map((s) => ({
+        id: s.id,
+        scientificName: s.scientificName,
+        commonName: lang === 'ja' ? s.names.ja : s.names.en,
+      })),
+    [lang],
+  );
+
+  // カスタム樹種のみ DB query (件数少なく遅延少ない)。
   useEffect(() => {
     let cancelled = false;
-    void Promise.all([getAllSpecies(lang), getAllCustomSpecies()]).then(([list, customList]) => {
+    void getAllCustomSpecies().then((customList) => {
       if (cancelled) return;
-      setSpeciesList(list);
       setCustomSpecies(customList);
     });
     return () => {
       cancelled = true;
     };
-  }, [lang]);
+  }, []);
 
   const queryLower = query.trim().toLowerCase();
   const filteredMaster = queryLower
