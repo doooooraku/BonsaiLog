@@ -67,13 +67,6 @@ export const MOCKUP_SCREENSHOTS: readonly MockupScreenshot[] = [
     mode: 'scrollable',
   },
   {
-    id: 'home-bulk-sched-date',
-    html: '02-Home.html',
-    selector: '[data-screen-label="01d 一括予定・日付"]',
-    description: '一括予定追加 日付選択 BottomSheet',
-    mode: 'scrollable',
-  },
-  {
     id: 'bonsai-empty',
     html: '02-Home.html',
     selector: '[data-screen-label="02 Home Empty"]',

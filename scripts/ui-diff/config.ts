@@ -220,17 +220,6 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §Notes §画面マップ row 5 (HomeScreen) / care-screens-v2.jsx BulkWorkPickerSheet (mode=schedule) / src/features/event/BulkWorkPickerSheet.tsx (Phase 2 PR 実装) / mockups v1.0 (PR #269)。前提: テスト盆栽 1 件以上登録済 + 起動完了後に盆栽カード 1 件目を長押し → SelectionToolbar の「予定追加」をタップ、testID e2e_bulk_work_picker_sheet で可視待ち。',
   },
-  'home-bulk-sched-date': {
-    id: 'home-bulk-sched-date',
-    description:
-      '一括予定追加・日付選択 BottomSheet (BulkWorkPickerSheet で作業選択 → BulkScheduleDateSheet、カレンダー grid + 通知トグル + N件にまとめて予定追加 CTA)',
-    appFlow: 'maestro/flows/ui-diff/home-bulk-sched-date.yml',
-    designHtml: '02-Home.html',
-    designSelector: '[data-screen-label="01d 一括予定・日付"]',
-    mockupFile: 'home-bulk-sched-date-01.png',
-    notes:
-      'ADR-0020 §Notes §画面マップ row 5 (HomeScreen) / care-screens-v2.jsx BulkScheduleDateSheet / src/features/event/BulkScheduleDateSheet.tsx (Phase 2 PR 実装) / mockups v1.0 (PR #269)。R-28 通知デフォルト OFF (principles.md v1.1 / ADR-0011 整合、mockup useState(true) は哲学逆走の残存と判断)。前提: 上記 home-bulk-sched-work から「肥料」(fertilizing) 等の作業を選択して遷移、testID e2e_bulk_schedule_date_sheet で可視待ち。calendar-grid-saturday-overflow.md (PR #318) の罠回避のため週行 + flex:1 採用。',
-  },
   // ADR-0025 案 X 後 Sess8 PR-5 (2026-05-18): bonsai-select-mode 完全廃止 (user 真意「実機上不要」)、
   // 一括予定追加 / 一括記録は予定タブ FAB / 記録タブ tap → bonsai-multi-select modal に集約。
   // 本セッション Tier 2 / photo UX / 横断水やり 主要 3 flow (Phase 4)

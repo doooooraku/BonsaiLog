@@ -543,13 +543,15 @@ export type BulkScheduleResult = {
  * - payload は空 `{}` (Valibot 全 EventType で optional のみのため通る、payloadValidator.ts 参照)
  * - status='planned' で scheduled event として作成
  *
- * 注: 通知 (notify=true 時の scheduled notification) は本 helper のスコープ外。
- *     親 (HomeScreen) で notify state を保持し、別途 notification scheduler で実装予定 (Issue)。
+ * 注: 通知 (scheduled notification) は本 helper のスコープ外。 別途 notification scheduler で配線予定。
+ *
+ * Caller (Sess12 時点では未配線、 PR-B+C で予定タブ FAB flow に配線):
+ * - PlanScreen FAB → useBulkActionFlow → BonsaiMultiSelect → BulkWorkPicker → 本 helper
  *
  * Related:
- * - ADR-0020 §Notes §画面マップ row 5 (HomeScreen 一括予定追加)
- * - mockup v1.0 02-Home.html `01c 一括予定・作業選択` / `01d 一括予定・日付`
- * - ADR-0011 (記録のみ哲学整合、通知デフォルト OFF)
+ * - ADR-0025 §Notes Amended (案 B FAB flow、 BulkScheduleDate 廃止後の新経路)
+ * - ADR-0020 §Notes §画面マップ row 5
+ * - ADR-0011 (記録のみ哲学整合、 通知デフォルト OFF)
  */
 export async function bulkScheduleEvents(input: BulkScheduleInput): Promise<BulkScheduleResult> {
   const results = await Promise.allSettled(
