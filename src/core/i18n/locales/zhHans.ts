@@ -692,5 +692,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   tagsToggleExpand: 'Expand',
   tagsToggleCollapse: 'Collapse',
   tagsMoreLink: 'See {count} more ▼',
+  datePickerPlaceholder: '选择日期',
+  clear: '清除',
 };
 export default zhHans;

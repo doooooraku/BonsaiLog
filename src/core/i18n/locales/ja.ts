@@ -709,6 +709,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tagsToggleExpand: '展開',
   tagsToggleCollapse: '折りたたみ',
   tagsMoreLink: 'もっと見る (残り {count} 件) ▼',
+  datePickerPlaceholder: '日付を選択',
+  clear: 'クリア',
 };
 
 export default ja;

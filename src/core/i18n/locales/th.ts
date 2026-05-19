@@ -699,5 +699,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   tagsToggleExpand: 'Expand',
   tagsToggleCollapse: 'Collapse',
   tagsMoreLink: 'See {count} more ▼',
+  datePickerPlaceholder: 'เลือกวันที่',
+  clear: 'ล้าง',
 };
 export default th;

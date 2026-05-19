@@ -700,5 +700,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   tagsToggleExpand: 'Expand',
   tagsToggleCollapse: 'Collapse',
   tagsMoreLink: 'See {count} more ▼',
+  datePickerPlaceholder: 'दिनांक चुनें',
+  clear: 'साफ़ करें',
 };
 export default hi;

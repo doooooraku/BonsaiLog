@@ -700,5 +700,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   tagsToggleExpand: 'Expand',
   tagsToggleCollapse: 'Collapse',
   tagsMoreLink: 'See {count} more ▼',
+  datePickerPlaceholder: 'Välj datum',
+  clear: 'Rensa',
 };
 export default sv;

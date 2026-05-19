@@ -19,6 +19,7 @@
  *
  * Issue #439 で BonsaiCreateSheet から抽出。
  */
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
@@ -100,6 +101,8 @@ export function useBonsaiBasicForm({
   // checkbox tap で estimatedAgeText を空に + ageUnknown = true。
   // 数値入力時は ageUnknown 自動 false。
   const [ageUnknown, setAgeUnknown] = useState(false);
+  // Sess13 PR-E: DatePicker modal 表示状態 (null = 非表示、 'acquired' = 取得日、 'purchase' = 購入日)。
+  const [showDatePicker, setShowDatePicker] = useState<'acquired' | 'purchase' | null>(null);
   const [memo, setMemo] = useState('');
   const [purchaseDate, setPurchaseDate] = useState('');
   // Issue #455 Phase 2: 鉢情報 (テキスト自由入力、既存 pot_info JSON に { description } で保存)。
@@ -394,6 +397,8 @@ export function useBonsaiBasicForm({
     setEstimatedAgeText,
     ageUnknown,
     setAgeUnknown,
+    showDatePicker,
+    setShowDatePicker,
     memo,
     setMemo,
     purchaseDate,
@@ -443,6 +448,8 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     setEstimatedAgeText,
     ageUnknown,
     setAgeUnknown,
+    showDatePicker,
+    setShowDatePicker,
     memo,
     setMemo,
     purchaseDate,
@@ -576,17 +583,36 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         </Pressable>
       </View>
 
+      {/* Sess13 PR-E: 取得日 を DatePicker 化 + 任意化 + × clear button (Q-14 a)。 */}
       <View style={styles.field}>
-        <ThemedText type="defaultSemiBold">{t('bonsaiFieldAcquiredAt')}</ThemedText>
-        <TextInput
-          style={styles.input}
-          value={acquiredAt}
-          onChangeText={setAcquiredAt}
-          placeholder="YYYY-MM-DD"
-          accessibilityLabel={t('bonsaiFieldAcquiredAt')}
-          maxLength={10}
-          keyboardType="numbers-and-punctuation"
-        />
+        <View style={styles.fieldLabelRow}>
+          <ThemedText type="defaultSemiBold">{t('bonsaiFieldAcquiredAt')}</ThemedText>
+          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+        </View>
+        <View style={styles.dateRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('bonsaiFieldAcquiredAt')}
+            style={[styles.input, styles.dateInput]}
+            onPress={() => setShowDatePicker('acquired')}
+            testID="e2e_bonsai_create_acquired_at"
+          >
+            <ThemedText style={acquiredAt ? undefined : styles.pickerPlaceholder}>
+              {acquiredAt || t('datePickerPlaceholder')}
+            </ThemedText>
+          </Pressable>
+          {acquiredAt.length > 0 && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('clear')}
+              style={styles.dateClearButton}
+              onPress={() => setAcquiredAt('')}
+              testID="e2e_bonsai_create_acquired_at_clear"
+            >
+              <ThemedText style={styles.dateClearText}>×</ThemedText>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       <View style={styles.field}>
@@ -633,21 +659,59 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         </View>
       </View>
 
+      {/* Sess13 PR-E: 購入日 を DatePicker 化 + × clear button。 */}
       <View style={styles.field}>
         <View style={styles.fieldLabelRow}>
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldPurchaseDate')}</ThemedText>
           <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
         </View>
-        <TextInput
-          style={styles.input}
-          value={purchaseDate}
-          onChangeText={setPurchaseDate}
-          placeholder="YYYY-MM-DD"
-          accessibilityLabel={t('bonsaiFieldPurchaseDate')}
-          maxLength={10}
-          keyboardType="numbers-and-punctuation"
-        />
+        <View style={styles.dateRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('bonsaiFieldPurchaseDate')}
+            style={[styles.input, styles.dateInput]}
+            onPress={() => setShowDatePicker('purchase')}
+            testID="e2e_bonsai_create_purchase_date"
+          >
+            <ThemedText style={purchaseDate ? undefined : styles.pickerPlaceholder}>
+              {purchaseDate || t('datePickerPlaceholder')}
+            </ThemedText>
+          </Pressable>
+          {purchaseDate.length > 0 && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('clear')}
+              style={styles.dateClearButton}
+              onPress={() => setPurchaseDate('')}
+              testID="e2e_bonsai_create_purchase_date_clear"
+            >
+              <ThemedText style={styles.dateClearText}>×</ThemedText>
+            </Pressable>
+          )}
+        </View>
       </View>
+
+      {showDatePicker !== null && (
+        <DateTimePicker
+          testID="e2e_bonsai_create_date_picker"
+          value={
+            (showDatePicker === 'acquired' ? acquiredAt : purchaseDate)
+              ? new Date(showDatePicker === 'acquired' ? acquiredAt : purchaseDate)
+              : new Date(nowUtc() as string)
+          }
+          mode="date"
+          maximumDate={new Date(nowUtc() as string)}
+          onChange={(event: DateTimePickerEvent, date?: Date) => {
+            const which = showDatePicker;
+            setShowDatePicker(null);
+            if (event.type === 'set' && date) {
+              const ymd = date.toISOString().slice(0, 10);
+              if (which === 'acquired') setAcquiredAt(ymd);
+              else if (which === 'purchase') setPurchaseDate(ymd);
+            }
+          }}
+        />
+      )}
 
       {/* Sess13 PR-B: 入手元 (任意、 schema v10 acquired_from column 配線、 i18n 既存 19 言語流用)。 */}
       <View style={styles.field}>
@@ -866,6 +930,18 @@ const styles = StyleSheet.create({
   checkboxChecked: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
   checkboxMark: { color: ON_BRAND, fontSize: 14, fontWeight: '700', lineHeight: 16 },
   ageUnknownLabel: { fontSize: 14 },
+  // Sess13 PR-E: DatePicker row (input + × clear button 横並び)。
+  dateRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  dateInput: { flex: 1, justifyContent: 'center' },
+  dateClearButton: {
+    width: 36,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    backgroundColor: BG_SURFACE,
+  },
+  dateClearText: { fontSize: 22, color: TEXT_MUTED, lineHeight: 24 },
   tagChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tagChip: {
     paddingHorizontal: 12,

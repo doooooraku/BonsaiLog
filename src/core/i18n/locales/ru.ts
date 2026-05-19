@@ -700,5 +700,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   tagsToggleExpand: 'Expand',
   tagsToggleCollapse: 'Collapse',
   tagsMoreLink: 'See {count} more ▼',
+  datePickerPlaceholder: 'Выбрать дату',
+  clear: 'Очистить',
 };
 export default ru;
