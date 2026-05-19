@@ -233,8 +233,6 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   bulkSchedule: 'Schedule all',
   bulkPickerSheetTitleSchedule: 'Schedule for all',
   bulkPickerSheetSub: 'Add the same schedule to {count} bonsai',
-  bulkPickerSheetNote:
-    'Bulk scheduling shows only species-agnostic actions. Pine-only actions like candle cut must be added individually.',
   bulkScheduleDateTitle: 'Schedule date for {label}',
   bulkScheduleDateSub: 'Add the same date to {count} bonsai',
   bulkScheduleSaveCta: 'Schedule for {count} bonsai',
@@ -243,8 +241,6 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   bulkScheduleDoneToast: 'Schedule added to {count} bonsai',
   bulkPickerSheetTitleLog: 'Log for all',
   bulkPickerSheetSubLog: 'Log the same action to {count} bonsai',
-  bulkPickerSheetNoteLog:
-    'Bulk logging shows only species-agnostic actions. Pine-only actions like candle cut must be logged individually.',
   bulkLogConfirmTitle: 'Log {label} for {count} bonsai',
   bulkLogConfirmSub: 'Same content saved to each bonsai',
   bulkLogConfirmNoteLabel: 'Note (optional)',

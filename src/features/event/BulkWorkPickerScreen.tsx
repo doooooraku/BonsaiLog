@@ -20,34 +20,27 @@ import {
   BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
-  TEXT_MUTED,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import type { EventType } from '@/src/db/schema';
 import { BonsaiPlaceholder, hashSeed } from '@/src/features/bonsai/BonsaiPlaceholder';
+import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
-type WorkType = {
-  type: EventType;
-  emoji: string;
-  pineOnly?: boolean;
-};
-
-const WORK_TYPES: readonly WorkType[] = [
-  { type: 'watering', emoji: '💧' },
-  { type: 'pruning', emoji: '✂️' },
-  { type: 'wiring', emoji: '〰️' },
-  { type: 'unwiring', emoji: '✂︎' },
-  { type: 'repotting', emoji: '🪴' },
-  { type: 'fertilizing', emoji: '🌱' },
-  { type: 'pest_control', emoji: '🦋' },
-  { type: 'leaf_trimming', emoji: '🍃' },
-  { type: 'defoliation', emoji: '🍂' },
-  { type: 'deshoot', emoji: '🌿' },
-  { type: 'candle_cut', emoji: '🔥', pineOnly: true },
-  { type: 'moss_care', emoji: '🌾' },
-  { type: 'position_change', emoji: '📍' },
+const BULK_WORK_TYPES: readonly EventType[] = [
+  'watering',
+  'pruning',
+  'wiring',
+  'unwiring',
+  'repotting',
+  'fertilizing',
+  'pest_control',
+  'leaf_trimming',
+  'defoliation',
+  'deshoot',
+  'moss_care',
+  'position_change',
 ];
 
 export default function BulkWorkPickerScreen() {
@@ -56,12 +49,11 @@ export default function BulkWorkPickerScreen() {
   const mode: 'schedule' | 'log' = params.mode === 'log' ? 'log' : 'schedule';
 
   const selectedBonsais = usePickerStore((s) => s.bulkContext?.selectedBonsais ?? []);
-  const items = React.useMemo(() => WORK_TYPES.filter((w) => !w.pineOnly), []);
+  const items = BULK_WORK_TYPES;
 
   const titleKey: TranslationKey =
     mode === 'log' ? 'bulkPickerSheetTitleLog' : 'bulkPickerSheetTitleSchedule';
   const subKey: TranslationKey = mode === 'log' ? 'bulkPickerSheetSubLog' : 'bulkPickerSheetSub';
-  const noteKey: TranslationKey = mode === 'log' ? 'bulkPickerSheetNoteLog' : 'bulkPickerSheetNote';
 
   const handleSelect = (type: EventType) => {
     usePickerStore.getState().setBulkWorkPickerResult({ type, mode });
@@ -76,11 +68,7 @@ export default function BulkWorkPickerScreen() {
           {t(subKey).replace('{count}', String(selectedBonsais.length))}
         </ThemedText>
       </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chipsRow}
-      >
+      <View style={styles.chipsRow}>
         {selectedBonsais.map((b) => (
           <View key={b.id} style={styles.chip}>
             <BonsaiPlaceholder size={24} seed={hashSeed(b.id)} radius={12} />
@@ -89,28 +77,24 @@ export default function BulkWorkPickerScreen() {
             </ThemedText>
           </View>
         ))}
-      </ScrollView>
+      </View>
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.grid}>
-          {items.map((w) => (
+          {items.map((type) => (
             <Pressable
-              key={w.type}
+              key={type}
               accessibilityRole="button"
-              accessibilityLabel={t(`eventType_${w.type}` as TranslationKey)}
+              accessibilityLabel={t(`eventType_${type}` as TranslationKey)}
               style={styles.cell}
-              onPress={() => handleSelect(w.type)}
-              testID={`e2e_bulk_work_picker_${w.type}`}
+              onPress={() => handleSelect(type)}
+              testID={`e2e_bulk_work_picker_${type}`}
             >
-              <ThemedText style={styles.emoji}>{w.emoji}</ThemedText>
+              <WorkTypeIcon type={type} size={32} color={TEXT_PRIMARY} />
               <ThemedText style={styles.label}>
-                {t(`eventType_${w.type}` as TranslationKey)}
+                {t(`eventType_${type}` as TranslationKey)}
               </ThemedText>
             </Pressable>
           ))}
-        </View>
-        <View style={styles.noteBox}>
-          <ThemedText style={styles.noteLabel}>NOTE</ThemedText>
-          <ThemedText style={styles.noteText}>{t(noteKey)}</ThemedText>
         </View>
       </ScrollView>
     </View>
@@ -128,6 +112,8 @@ const styles = StyleSheet.create({
   },
   sub: { fontSize: 12, color: TEXT_SECONDARY },
   chipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: 16,
     paddingVertical: 8,
     gap: 6,
@@ -162,21 +148,5 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 8,
   },
-  emoji: { fontSize: 32, lineHeight: 36 },
   label: { fontSize: 13, color: TEXT_PRIMARY, textAlign: 'center' },
-  noteBox: {
-    padding: 12,
-    borderRadius: 10,
-    backgroundColor: BG_SURFACE,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-  },
-  noteLabel: {
-    fontSize: 10,
-    color: TEXT_MUTED,
-    letterSpacing: 1.2,
-    marginBottom: 6,
-    textTransform: 'uppercase',
-  },
-  noteText: { fontSize: 12, color: TEXT_SECONDARY, lineHeight: 19 },
 });

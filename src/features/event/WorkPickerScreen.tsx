@@ -28,30 +28,25 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import type { EventType } from '@/src/db/schema';
+import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore, type WorkPickerMode } from '@/src/stores/pickerStore';
 
-type WorkType = {
-  type: EventType;
-  emoji: string;
-  /** 松類限定 (例: candle_cut)。 */
-  pineOnly?: boolean;
-};
-
-const WORK_TYPES: readonly WorkType[] = [
-  { type: 'watering', emoji: '💧' },
-  { type: 'pruning', emoji: '✂️' },
-  { type: 'wiring', emoji: '〰️' },
-  { type: 'unwiring', emoji: '✂︎' },
-  { type: 'repotting', emoji: '🪴' },
-  { type: 'fertilizing', emoji: '🌱' },
-  { type: 'pest_control', emoji: '🦋' },
-  { type: 'leaf_trimming', emoji: '🍃' },
-  { type: 'defoliation', emoji: '🍂' },
-  { type: 'deshoot', emoji: '🌿' },
-  { type: 'candle_cut', emoji: '🔥', pineOnly: true },
-  { type: 'moss_care', emoji: '🌾' },
-  { type: 'position_change', emoji: '📍' },
+const ALL_WORK_TYPES: readonly EventType[] = [
+  'watering',
+  'pruning',
+  'wiring',
+  'unwiring',
+  'repotting',
+  'fertilizing',
+  'pest_control',
+  'leaf_trimming',
+  'defoliation',
+  'deshoot',
+  'candle_cut',
+  'moss_care',
+  'position_change',
 ];
+const PINE_ONLY: ReadonlySet<EventType> = new Set(['candle_cut']);
 
 export default function WorkPickerScreen() {
   const { t } = useTranslation();
@@ -64,7 +59,10 @@ export default function WorkPickerScreen() {
   const isPine = params.isPine === 'true';
   const mode: WorkPickerMode = params.mode === 'schedule' ? 'schedule' : 'log';
 
-  const items = React.useMemo(() => WORK_TYPES.filter((w) => !w.pineOnly || isPine), [isPine]);
+  const items = React.useMemo(
+    () => ALL_WORK_TYPES.filter((t) => !PINE_ONLY.has(t) || isPine),
+    [isPine],
+  );
   const titleKey = mode === 'schedule' ? 'addScheduleTitle' : 'workPickerTitle';
 
   const handleSelect = (type: EventType) => {
@@ -79,18 +77,18 @@ export default function WorkPickerScreen() {
         <ThemedText style={styles.subject}>{bonsaiName}</ThemedText>
       </View>
       <View style={styles.grid} testID="e2e_work_picker_grid">
-        {items.map((w) => (
+        {items.map((type) => (
           <Pressable
-            key={w.type}
+            key={type}
             accessibilityRole="button"
-            accessibilityLabel={t(`eventType_${w.type}` as Parameters<typeof t>[0])}
+            accessibilityLabel={t(`eventType_${type}` as Parameters<typeof t>[0])}
             style={styles.cell}
-            onPress={() => handleSelect(w.type)}
-            testID={`e2e_work_picker_${w.type}`}
+            onPress={() => handleSelect(type)}
+            testID={`e2e_work_picker_${type}`}
           >
-            <ThemedText style={styles.emoji}>{w.emoji}</ThemedText>
+            <WorkTypeIcon type={type} size={32} color={TEXT_PRIMARY} />
             <ThemedText style={styles.label}>
-              {t(`eventType_${w.type}` as Parameters<typeof t>[0])}
+              {t(`eventType_${type}` as Parameters<typeof t>[0])}
             </ThemedText>
           </Pressable>
         ))}
@@ -122,6 +120,5 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 8,
   },
-  emoji: { fontSize: 32, lineHeight: 36 },
   label: { fontSize: 13, color: TEXT_PRIMARY, textAlign: 'center' },
 });

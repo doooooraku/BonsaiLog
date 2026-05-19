@@ -255,8 +255,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bulkSchedule: '予定追加',
   bulkPickerSheetTitleSchedule: 'まとめて予定追加',
   bulkPickerSheetSub: '{count}件の盆栽に同じ予定を追加',
-  bulkPickerSheetNote:
-    '一括予定追加では樹種を問わない作業のみ表示。松類限定の「芽切り」は単独追加から。',
   bulkScheduleDateTitle: '{label}の予定日',
   bulkScheduleDateSub: '{count}件の盆栽に同じ日付で追加',
   bulkScheduleSaveCta: '{count}件にまとめて予定追加',
@@ -265,8 +263,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bulkScheduleDoneToast: '{count}件の予定を追加しました',
   bulkPickerSheetTitleLog: 'まとめて記録',
   bulkPickerSheetSubLog: '{count}件の盆栽に同じ作業を記録',
-  bulkPickerSheetNoteLog:
-    '一括記録では樹種を問わない作業のみ表示。松類限定の「芽切り」は単独記録から。',
   bulkLogConfirmTitle: '{label}を{count}件にまとめて記録',
   bulkLogConfirmSub: '同じ内容で各盆栽に保存します',
   bulkLogConfirmNoteLabel: 'メモ (任意)',
