@@ -301,13 +301,12 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
   }
 
   // 2. species lookup (8 種、 言語非依存 = scientificName)
+  // ADR-0026 でマスタ 5 種化 (黒松 / モミジ / イチョウ / 梅 / 真柏)、
+  // 旧 dev seed の whitePine / hanakaido / tomatsu / tsubaki は残存種で置換。
   const blackPine = await getSpeciesByScientificName('Pinus thunbergii', 'ja');
-  const whitePine = await getSpeciesByScientificName('Pinus parviflora', 'ja');
   const juniper = await getSpeciesByScientificName('Juniperus chinensis', 'ja');
   const momiji = await getSpeciesByScientificName('Acer palmatum', 'ja');
-  const hanakaido = await getSpeciesByScientificName('Malus halliana', 'ja');
-  const tomatsu = await getSpeciesByScientificName('Juniperus rigida', 'ja');
-  const tsubaki = await getSpeciesByScientificName('Camellia japonica', 'ja');
+  const ichou = await getSpeciesByScientificName('Ginkgo biloba', 'ja');
   const ume = await getSpeciesByScientificName('Prunus mume', 'ja');
 
   // 3. 写真 asset → localUri (失敗しても seed は継続) — 提供 5 + 既存 2 = 7 枚
@@ -359,7 +358,8 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
   //    樹種 / 樹形 / 樹齢 / 写真 / タグ配分は言語非依存、 name + memo のみ pack から取得
   type BonsaiSpec = {
     speciesId: string | null;
-    style: 'chokkan' | 'moyogi' | 'shakan' | 'kengai' | 'bunjingi' | 'sokan';
+    // ADR-0026 で 'bunjingi' / 'sokan' / 'han_kengai' / 'fukinagashi' / 'ishitsuki' を削減、 残 5 種のみ。
+    style: 'chokkan' | 'moyogi' | 'shakan' | 'kengai' | 'kabudachi';
     acquiredAt: string;
     estimatedAge: number;
     photoUris: (string | null)[];
@@ -377,7 +377,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       tagIds: [tagShow.id, tagBalcony.id],
     },
     {
-      speciesId: whitePine?.id ?? null,
+      speciesId: blackPine?.id ?? null,
       style: 'moyogi',
       acquiredAt: toIsoUtc('2020-06-03'),
       estimatedAge: 18,
@@ -394,7 +394,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
     },
     // 新規 7 件 active
     {
-      speciesId: hanakaido?.id ?? null,
+      speciesId: ichou?.id ?? null,
       style: 'moyogi',
       acquiredAt: toIsoUtc('2023-03-15'),
       estimatedAge: 12,
@@ -411,7 +411,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
     },
     {
       speciesId: juniper?.id ?? null,
-      style: 'bunjingi',
+      style: 'kabudachi',
       acquiredAt: toIsoUtc('2015-10-05'),
       estimatedAge: 150,
       photoUris: [photoUris.shimpaku, photoUris.balcony, photoUris.sample1], // 3 枚 = Free 上限
@@ -434,15 +434,15 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       tagIds: [tagWatch.id],
     },
     {
-      speciesId: tomatsu?.id ?? null,
-      style: 'sokan',
+      speciesId: juniper?.id ?? null,
+      style: 'kabudachi',
       acquiredAt: toIsoUtc('2021-11-12'),
       estimatedAge: 30,
       photoUris: [],
       tagIds: [tagShow.id],
     },
     {
-      speciesId: tsubaki?.id ?? null,
+      speciesId: ume?.id ?? null,
       style: 'moyogi',
       acquiredAt: toIsoUtc('2010-02-28'),
       estimatedAge: 80,

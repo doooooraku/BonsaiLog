@@ -120,7 +120,7 @@ export const bonsai = sqliteTable(
     name: text('name').notNull(),
     speciesId: text('species_id').references(() => species.id, { onDelete: 'set null' }),
     acquiredAt: text('acquired_at'), // ISO 8601 UTC TEXT
-    style: text('style'), // 樹形 (例: chokkan, moyogi, shakan, kengai, han-kengai, bunjingi)
+    style: text('style'), // 樹形 (ADR-0026: chokkan, moyogi, shakan, kengai, kabudachi の 5 種 + カスタム樹形)
     potInfo: text('pot_info'), // JSON 文字列 (鉢の形状/色/サイズ/メーカー等)
     estimatedAge: integer('estimated_age'), // v6 追加: 推定樹齢 (年、null 可)
     memo: text('memo'), // v7 追加: メモ (free-form text、null 可)
@@ -630,19 +630,16 @@ export const EVENT_STATUSES = ['planned', 'logged', 'cancelled'] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 
 /**
- * 樹形スタイル (Issue #14 で予定、UI 側で enum 化)
+ * 樹形スタイル (ADR-0026 で 10 → 5 種に物理削減、 カスタム入力主軸へ転換)。
+ * 削除した 5 種 (han_kengai / bunjingi / fukinagashi / sokan / ishitsuki) は
+ * `bonsai_styles_custom` table 経由でユーザーが自由に追加可能。
  */
 export const BONSAI_STYLES = [
   'chokkan', // 直幹
   'moyogi', // 模様木
   'shakan', // 斜幹
   'kengai', // 懸崖
-  'han_kengai', // 半懸崖
-  'bunjingi', // 文人木
-  'fukinagashi', // 吹き流し
-  'sokan', // 双幹
   'kabudachi', // 株立ち
-  'ishitsuki', // 石付き
 ] as const;
 
 export type BonsaiStyle = (typeof BONSAI_STYLES)[number];
