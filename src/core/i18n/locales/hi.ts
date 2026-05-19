@@ -702,5 +702,10 @@ const hi: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: 'दिनांक चुनें',
   clear: 'साफ़ करें',
+  customInputAdd: 'कस्टम इनपुट',
+  customStyleCreateTitle: 'कस्टम शैली बनाएं',
+  customStyleCreatePlaceholder: 'जैसे: Yose-ue',
+  customSpeciesCreateTitle: 'कस्टम प्रजाति बनाएं',
+  customSpeciesCreatePlaceholder: 'जैसे: काला पाइन',
 };
 export default hi;

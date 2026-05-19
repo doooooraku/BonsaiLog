@@ -27,11 +27,12 @@
  * - v10: bonsai に acquired_from カラム追加 (Issue #455 Phase 1)
  * - v11: event_tags 完全廃止 (Sess9 PR-1、 ADR-0008 §Notes Amended 2026-05-18、 dead code cleanup + bonsai_tags 一本化)
  * - v12: bonsai に estimated_age_unknown カラム追加 (Sess13 PR-D、 樹齢「不明」 明示)
+ * - v13: bonsai_styles_custom テーブル新規 (Sess13 PR-G、 カスタム樹形 user-defined β table)
  */
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 12;
+export const SCHEMA_VERSION = 13;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -524,6 +525,33 @@ DROP TABLE IF EXISTS event_tags;
 export const schemaV12 = `
 ALTER TABLE bonsai ADD COLUMN estimated_age_unknown INTEGER NOT NULL DEFAULT 0;
 `;
+
+/**
+ * Migration v13 (Sess13 PR-G): bonsai_styles_custom テーブル新規。
+ *
+ * - user 定義のカスタム樹形を保存 (β 別手帳方式、 Q-13 確定)
+ * - master BONSAI_STYLES (enum 10 種) と分離管理、 picker は UNION 表示
+ * - export/backup 対象 (Q-22 a)
+ * - name UNIQUE (case-sensitive、 同名は createOrFindStyle で再利用)
+ */
+export const schemaV13 = `
+CREATE TABLE IF NOT EXISTS bonsai_styles_custom (
+  id TEXT PRIMARY KEY NOT NULL,
+  name TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL
+);
+`;
+
+/**
+ * Drizzle table 定義 (bonsai_styles_custom)、 Sess13 PR-G。
+ */
+export const bonsaiStylesCustom = sqliteTable('bonsai_styles_custom', {
+  id: text('id').primaryKey().notNull(),
+  name: text('name').notNull().unique(),
+  createdAt: text('created_at').notNull(),
+});
+
+export type BonsaiStyleCustom = typeof bonsaiStylesCustom.$inferSelect;
 
 // ---------------------------------------------------------------------------
 // TypeScript types (Drizzle inferSelect / inferInsert は PR-C Repository で使用)

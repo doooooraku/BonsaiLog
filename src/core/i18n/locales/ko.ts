@@ -702,5 +702,10 @@ const ko: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: '날짜 선택',
   clear: '지우기',
+  customInputAdd: '사용자 정의 입력',
+  customStyleCreateTitle: '사용자 정의 수형 만들기',
+  customStyleCreatePlaceholder: '예: 묘우에',
+  customSpeciesCreateTitle: '사용자 정의 수종 만들기',
+  customSpeciesCreatePlaceholder: '예: 흑송',
 };
 export default ko;

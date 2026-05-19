@@ -708,6 +708,11 @@ const baseEn = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: 'Select a date',
   clear: 'Clear',
+  customInputAdd: 'Custom input',
+  customStyleCreateTitle: 'Create custom style',
+  customStyleCreatePlaceholder: 'e.g. yose-ue',
+  customSpeciesCreateTitle: 'Create custom species',
+  customSpeciesCreatePlaceholder: 'e.g. Kuromatsu',
 };
 
 export type TranslationKey = keyof typeof baseEn;

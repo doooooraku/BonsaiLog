@@ -702,5 +702,10 @@ const de: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: 'Datum auswählen',
   clear: 'Löschen',
+  customInputAdd: 'Benutzerdefinierte Eingabe',
+  customStyleCreateTitle: 'Eigenen Stil erstellen',
+  customStyleCreatePlaceholder: 'z.B. Yose-ue',
+  customSpeciesCreateTitle: 'Eigene Art erstellen',
+  customSpeciesCreatePlaceholder: 'z.B. Schwarzkiefer',
 };
 export default de;

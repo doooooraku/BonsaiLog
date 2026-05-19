@@ -702,5 +702,10 @@ const sv: Partial<Record<TranslationKey, string>> = {
   tagsMoreLink: 'See {count} more ▼',
   datePickerPlaceholder: 'Välj datum',
   clear: 'Rensa',
+  customInputAdd: 'Anpassad inmatning',
+  customStyleCreateTitle: 'Skapa anpassad stil',
+  customStyleCreatePlaceholder: 't.ex. Yose-ue',
+  customSpeciesCreateTitle: 'Skapa anpassad art',
+  customSpeciesCreatePlaceholder: 't.ex. Svartall',
 };
 export default sv;
