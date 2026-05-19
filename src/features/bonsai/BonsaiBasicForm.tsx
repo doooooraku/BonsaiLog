@@ -45,6 +45,8 @@ import { addPhotoFromUri, FREE_PHOTO_LIMIT_PER_BONSAI } from '@/src/db/photoRepo
 import { BONSAI_STYLES, type Bonsai, type BonsaiStyle } from '@/src/db/schema';
 import { getCustomSpeciesById } from '@/src/db/bonsaiSpeciesCustomRepository';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
+import { cmToUnit, unitToCm } from '@/src/core/util/potUnitConvert';
+import { useSettingsStore } from '@/src/stores/settingsStore';
 import {
   attachTagToBonsai,
   detachTagFromBonsai,
@@ -120,10 +122,12 @@ export function useBonsaiBasicForm({
   const [purchaseDate, setPurchaseDate] = useState('');
   // Issue #455 Phase 2: 鉢情報 (テキスト自由入力、既存 pot_info JSON に { description } で保存)。
   const [potInfoText, setPotInfoText] = useState('');
-  // Sess13 PR-I: 鉢情報構造化 (pot_info JSON に { width, depth, material } 保存、
-  // 内部統一 cm、 表示時に user 設定 potUnit へ変換)。
-  const [potWidth, setPotWidth] = useState(''); // user 入力単位
-  const [potDepth, setPotDepth] = useState(''); // user 入力単位
+  // Sess13 PR-I + Sess14 PR-L: 鉢情報構造化 (pot_info JSON に widthCm/depthCm cm 統一保存、
+  // 入力 / 表示は user 設定 potUnit へ動的変換)。
+  const potUnit = useSettingsStore((s) => s.potUnit);
+  const [potWidth, setPotWidth] = useState(''); // user 入力単位の文字列
+  const [potDepth, setPotDepth] = useState(''); // user 入力単位の文字列
+  const prevPotUnitRef = useRef<typeof potUnit>(potUnit);
   const [potMaterial, setPotMaterial] = useState('');
   const [potExpanded, setPotExpanded] = useState(false);
   // Sess13 PR-B: 入手元 (free-form text、 schema v10 acquired_from column 直接保存)。
@@ -183,6 +187,21 @@ export function useBonsaiBasicForm({
     };
   }, [lang]);
 
+  // Sess14 PR-L: potUnit 切替時に入力値を新単位へ再変換 (cm 内部値経由)。
+  useEffect(() => {
+    const prev = prevPotUnitRef.current;
+    if (prev === potUnit) return;
+    setPotWidth((current) => {
+      const cm = unitToCm(current, prev);
+      return cmToUnit(cm, potUnit) ?? '';
+    });
+    setPotDepth((current) => {
+      const cm = unitToCm(current, prev);
+      return cmToUnit(cm, potUnit) ?? '';
+    });
+    prevPotUnitRef.current = potUnit;
+  }, [potUnit]);
+
   // editingBonsai prefill (新規モードと編集モードを id で区別、id 変化時に再 prefill)。
   const editingId = editingBonsai?.id ?? null;
   useEffect(() => {
@@ -217,8 +236,9 @@ export function useBonsaiBasicForm({
       // 表示は user 設定 potUnit で変換 (本実装は cm 固定表示で simplify、 単位切替は別 PR で表示変換追加)。
       const widthCm = typeof parsed?.widthCm === 'number' ? parsed.widthCm : null;
       const depthCm = typeof parsed?.depthCm === 'number' ? parsed.depthCm : null;
-      setPotWidth(widthCm != null ? String(widthCm) : '');
-      setPotDepth(depthCm != null ? String(depthCm) : '');
+      // Sess14 PR-L: cm 保存値 → user 設定単位 へ変換して表示。
+      setPotWidth(cmToUnit(widthCm, potUnit) ?? '');
+      setPotDepth(cmToUnit(depthCm, potUnit) ?? '');
       setPotMaterial(typeof parsed?.material === 'string' ? parsed.material : '');
       // 値が入っていれば自動展開 (Q-17 a)
       setPotExpanded(widthCm != null || depthCm != null || (parsed?.material?.length ?? 0) > 0);
@@ -423,13 +443,11 @@ export function useBonsaiBasicForm({
         estimatedAgeUnknown: ageUnknown,
         memo: memo.trim() ? memo.trim() : null,
         purchaseDate: purchaseDate.trim() ? toIsoUtc(purchaseDate.trim()) : null,
-        // Sess13 PR-I: 鉢情報構造化 { widthCm, depthCm, material } 保存、
-        // 旧 { description } も後方互換で保持。
+        // Sess13 PR-I + Sess14 PR-L: 鉢情報構造化 { widthCm, depthCm, material } 保存、
+        // 旧 { description } も後方互換。 入力 user 単位 → cm 正規化 (unitToCm)。
         potInfo: (() => {
-          const parsedWidth = potWidth.trim() ? parseFloat(potWidth.trim()) : null;
-          const parsedDepth = potDepth.trim() ? parseFloat(potDepth.trim()) : null;
-          const widthCm = Number.isFinite(parsedWidth) && parsedWidth! > 0 ? parsedWidth : null;
-          const depthCm = Number.isFinite(parsedDepth) && parsedDepth! > 0 ? parsedDepth : null;
+          const widthCm = unitToCm(potWidth, potUnit);
+          const depthCm = unitToCm(potDepth, potUnit);
           const material = potMaterial.trim() || null;
           const description = potInfoText.trim() || null;
           if (widthCm == null && depthCm == null && material == null && description == null) {
@@ -550,6 +568,7 @@ export function useBonsaiBasicForm({
     setPotMaterial,
     potExpanded,
     setPotExpanded,
+    potUnit,
     acquiredFrom,
     setAcquiredFrom,
     recentTags,
@@ -614,6 +633,7 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     setPotMaterial,
     potExpanded,
     setPotExpanded,
+    potUnit,
     acquiredFrom,
     setAcquiredFrom,
     recentTags,
@@ -969,7 +989,7 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
               style={styles.input}
               value={potWidth}
               onChangeText={setPotWidth}
-              placeholder={t('bonsaiFieldPotWidthPlaceholder')}
+              placeholder={t('bonsaiFieldPotWidthPlaceholder').replace('{unit}', potUnit)}
               accessibilityLabel={t('bonsaiFieldPotWidth')}
               keyboardType="numeric"
               maxLength={6}
@@ -979,7 +999,7 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
               style={styles.input}
               value={potDepth}
               onChangeText={setPotDepth}
-              placeholder={t('bonsaiFieldPotDepthPlaceholder')}
+              placeholder={t('bonsaiFieldPotDepthPlaceholder').replace('{unit}', potUnit)}
               accessibilityLabel={t('bonsaiFieldPotDepth')}
               keyboardType="numeric"
               maxLength={6}
