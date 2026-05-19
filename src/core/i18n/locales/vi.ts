@@ -101,6 +101,8 @@ const vi: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldSpeciesSearchPlaceholder: 'Tìm theo tên loài',
   bonsaiFieldStyle: 'Style',
   bonsaiFieldStyleSearchPlaceholder: 'Tìm theo tên kiểu dáng',
+  bonsaiPlaceholderSpecies: 'Chọn loài',
+  bonsaiPlaceholderStyle: 'Chọn kiểu dáng',
   bonsaiFieldAcquiredAt: 'Acquired on',
   bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Archive',

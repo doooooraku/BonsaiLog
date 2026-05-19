@@ -102,6 +102,8 @@ const id: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldSpeciesSearchPlaceholder: 'Cari berdasarkan nama spesies',
   bonsaiFieldStyle: 'Style',
   bonsaiFieldStyleSearchPlaceholder: 'Cari berdasarkan nama gaya',
+  bonsaiPlaceholderSpecies: 'Pilih spesies',
+  bonsaiPlaceholderStyle: 'Pilih gaya',
   bonsaiFieldAcquiredAt: 'Acquired on',
   bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Archive',

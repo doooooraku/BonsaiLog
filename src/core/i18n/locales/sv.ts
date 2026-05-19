@@ -102,6 +102,8 @@ const sv: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldSpeciesSearchPlaceholder: 'Sök efter artnamn',
   bonsaiFieldStyle: 'Style',
   bonsaiFieldStyleSearchPlaceholder: 'Sök efter stilnamn',
+  bonsaiPlaceholderSpecies: 'Välj art',
+  bonsaiPlaceholderStyle: 'Välj stil',
   bonsaiFieldAcquiredAt: 'Acquired on',
   bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Archive',

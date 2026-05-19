@@ -101,6 +101,8 @@ const ko: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldSpeciesSearchPlaceholder: '수종 이름으로 검색',
   bonsaiFieldStyle: 'Style',
   bonsaiFieldStyleSearchPlaceholder: '스타일 이름으로 검색',
+  bonsaiPlaceholderSpecies: '수종 선택',
+  bonsaiPlaceholderStyle: '스타일 선택',
   bonsaiFieldAcquiredAt: 'Acquired on',
   bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Archive',
