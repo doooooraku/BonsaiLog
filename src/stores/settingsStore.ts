@@ -96,12 +96,27 @@ export const useSettingsStore = create<SettingsState>()(
       setNotificationWateringRepeatTimes: (times) =>
         set({ notificationWateringRepeatTimes: times }),
       // Sess13 PR-I: 鉢サイズ単位 default cm
+      // Sess15 PR-KK: 実際は起動時に lang-defaults.ts から lang 別 default で強制上書きされる
+      // (ADR-0026 案 α: 過去 user なし前提で AsyncStorage persist 値を reset、 src/core/i18n/lang-defaults.ts 参照)。
       potUnit: 'cm' as PotUnit,
       setPotUnit: (unit) => set({ potUnit: unit }),
     }),
     {
       name: 'myapp-settings',
       storage: createJSONStorage(() => AsyncStorage),
+      // Sess15 PR-KK: version 2 に bump + migrate で過去 persist 値を破棄。
+      // ADR-0026 案 α (過去 user なし前提) で inch 設定 user の potUnit を強制 reset、
+      // 起動時 useSettingsBootstrap hook で lang-default に再設定される。
+      version: 2,
+      migrate: (persistedState: unknown, fromVersion) => {
+        if (fromVersion < 2 && persistedState && typeof persistedState === 'object') {
+          // potUnit を一度削除 (rehydrate 後の useSettingsBootstrap hook で lang-default を設定)
+          const next = { ...(persistedState as Record<string, unknown>) };
+          delete next.potUnit;
+          return next as SettingsState;
+        }
+        return persistedState as SettingsState;
+      },
     },
   ),
 );
