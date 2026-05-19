@@ -67,25 +67,29 @@ export function LabeledTextInput({
   const overLimit = maxLength != null && length >= maxLength;
   const showCountText = showCounter && maxLength != null;
 
+  // Sess14 PR-Q: label="" の場合 labelRow skip (caller 側で外部ラベル提供時の余白問題回避)。
+  const hasLabel = label.length > 0;
   return (
     <View style={styles.field}>
-      <View style={styles.labelRow}>
-        <ThemedText type="defaultSemiBold">{label}</ThemedText>
-        {required && (
-          <View style={styles.requiredBadge}>
-            <ThemedText style={styles.requiredText}>{requiredText}</ThemedText>
-          </View>
-        )}
-        {optional && !required && (
-          <ThemedText style={styles.optionalText}>{optionalText}</ThemedText>
-        )}
-        <View style={{ flex: 1 }} />
-        {showCountText && (
-          <ThemedText style={[styles.counter, overLimit && styles.counterOver]}>
-            {length}/{maxLength}
-          </ThemedText>
-        )}
-      </View>
+      {hasLabel && (
+        <View style={styles.labelRow}>
+          <ThemedText type="defaultSemiBold">{label}</ThemedText>
+          {required && (
+            <View style={styles.requiredBadge}>
+              <ThemedText style={styles.requiredText}>{requiredText}</ThemedText>
+            </View>
+          )}
+          {optional && !required && (
+            <ThemedText style={styles.optionalText}>{optionalText}</ThemedText>
+          )}
+          <View style={{ flex: 1 }} />
+          {showCountText && (
+            <ThemedText style={[styles.counter, overLimit && styles.counterOver]}>
+              {length}/{maxLength}
+            </ThemedText>
+          )}
+        </View>
+      )}
       <TextInput
         style={[
           styles.input,

@@ -119,8 +119,7 @@ export function useBonsaiBasicForm({
   // checkbox tap で estimatedAgeText を空に + ageUnknown = true。
   // 数値入力時は ageUnknown 自動 false。
   const [ageUnknown, setAgeUnknown] = useState(false);
-  // Sess13 PR-E: DatePicker modal 表示状態 (null = 非表示、 'acquired' = 取得日、 'purchase' = 購入日)。
-  const [showDatePicker, setShowDatePicker] = useState<'acquired' | 'purchase' | null>(null);
+  // Sess14 PR-Q: showDatePicker state は PR-O で LabeledDateRow 内に移管済、 ここでは削除。
   const [memo, setMemo] = useState('');
   const [purchaseDate, setPurchaseDate] = useState('');
   // Issue #455 Phase 2: 鉢情報 (テキスト自由入力、既存 pot_info JSON に { description } で保存)。
@@ -557,8 +556,6 @@ export function useBonsaiBasicForm({
     setEstimatedAgeText,
     ageUnknown,
     setAgeUnknown,
-    showDatePicker,
-    setShowDatePicker,
     memo,
     setMemo,
     purchaseDate,
@@ -626,8 +623,6 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     setEstimatedAgeText,
     ageUnknown,
     setAgeUnknown,
-    showDatePicker,
-    setShowDatePicker,
     memo,
     setMemo,
     purchaseDate,
@@ -1141,18 +1136,8 @@ const styles = StyleSheet.create({
   checkboxChecked: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
   checkboxMark: { color: ON_BRAND, fontSize: 14, fontWeight: '700', lineHeight: 16 },
   ageUnknownLabel: { fontSize: 14 },
-  // Sess13 PR-E: DatePicker row (input + × clear button 横並び)。
-  dateRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dateInput: { flex: 1, justifyContent: 'center' },
-  dateClearButton: {
-    width: 36,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    backgroundColor: BG_SURFACE,
-  },
-  dateClearText: { fontSize: 22, color: TEXT_MUTED, lineHeight: 24 },
+  // Sess14 PR-Q: dateRow / dateInput / dateClearButton / dateClearText は PR-O で
+  // LabeledDateRow に移管済、 dead style として削除。
   potExpanded: { gap: 10, marginTop: 8 },
   // Sess13 PR-J: Repolog 流写真カード
   photoSourceRow: { flexDirection: 'row', gap: 10 },
