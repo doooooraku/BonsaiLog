@@ -12,6 +12,7 @@
  * - Drizzle 型推論で型安全 + raw SQL で expo-sqlite と直結
  */
 import { getDb } from './db';
+import { snakeToCamelRow, snakeToCamelRows } from './rowMapper';
 import type { Species, SpeciesName } from './schema';
 
 // ---------------------------------------------------------------------------
@@ -34,7 +35,11 @@ export type SpeciesWithName = Species & {
  */
 export async function getSpeciesById(id: string, locale: string): Promise<SpeciesWithName | null> {
   const db = await getDb();
-  const species = await db.getFirstAsync<Species>('SELECT * FROM species WHERE id = ?;', [id]);
+  const raw = await db.getFirstAsync<Record<string, unknown>>(
+    'SELECT * FROM species WHERE id = ?;',
+    [id],
+  );
+  const species = snakeToCamelRow<Species>(raw);
   if (!species) return null;
   return resolveCommonName(db, species, locale);
 }
@@ -47,10 +52,11 @@ export async function getSpeciesByScientificName(
   locale: string,
 ): Promise<SpeciesWithName | null> {
   const db = await getDb();
-  const species = await db.getFirstAsync<Species>(
+  const raw = await db.getFirstAsync<Record<string, unknown>>(
     'SELECT * FROM species WHERE scientific_name = ?;',
     [scientificName],
   );
+  const species = snakeToCamelRow<Species>(raw);
   if (!species) return null;
   return resolveCommonName(db, species, locale);
 }
@@ -60,9 +66,10 @@ export async function getSpeciesByScientificName(
  */
 export async function getAllSpecies(locale: string): Promise<SpeciesWithName[]> {
   const db = await getDb();
-  const species = await db.getAllAsync<Species>(
+  const rawRows = await db.getAllAsync<Record<string, unknown>>(
     'SELECT * FROM species ORDER BY scientific_name ASC;',
   );
+  const species = snakeToCamelRows<Species>(rawRows);
 
   const results: SpeciesWithName[] = [];
   for (const s of species) {
@@ -95,28 +102,32 @@ export async function searchSpecies(query: string, locale: string): Promise<Spec
   const pattern = `%${trimmed}%`;
 
   // 通称 (locale) で検索
-  const byNameLocale = await db.getAllAsync<Species>(
+  const byNameLocaleRaw = await db.getAllAsync<Record<string, unknown>>(
     `SELECT DISTINCT s.* FROM species s
      INNER JOIN species_names n ON s.id = n.species_id
      WHERE n.locale = ? AND n.common_name LIKE ?;`,
     [locale, pattern],
   );
+  const byNameLocale = snakeToCamelRows<Species>(byNameLocaleRaw);
 
   // 学名で検索
-  const byScientific = await db.getAllAsync<Species>(
+  const byScientificRaw = await db.getAllAsync<Record<string, unknown>>(
     'SELECT * FROM species WHERE scientific_name LIKE ?;',
     [pattern],
   );
+  const byScientific = snakeToCamelRows<Species>(byScientificRaw);
 
   // 通称 (en) で検索 (locale=en の場合は重複なのでスキップ)
   const byNameEn =
     locale === 'en'
       ? []
-      : await db.getAllAsync<Species>(
-          `SELECT DISTINCT s.* FROM species s
+      : snakeToCamelRows<Species>(
+          await db.getAllAsync<Record<string, unknown>>(
+            `SELECT DISTINCT s.* FROM species s
          INNER JOIN species_names n ON s.id = n.species_id
          WHERE n.locale = 'en' AND n.common_name LIKE ?;`,
-          [pattern],
+            [pattern],
+          ),
         );
 
   // 重複除外 (id ベース、検索順序を維持)
@@ -148,10 +159,11 @@ async function resolveCommonName(
   species: Species,
   locale: string,
 ): Promise<SpeciesWithName> {
-  const localeName = await db.getFirstAsync<SpeciesName>(
+  const rawLocale = await db.getFirstAsync<Record<string, unknown>>(
     'SELECT * FROM species_names WHERE species_id = ? AND locale = ?;',
     [species.id, locale],
   );
+  const localeName = snakeToCamelRow<SpeciesName>(rawLocale);
 
   if (localeName) {
     return { ...species, commonName: localeName.commonName, hasNameInLocale: true };
@@ -159,10 +171,11 @@ async function resolveCommonName(
 
   // フォールバック: en
   if (locale !== 'en') {
-    const enName = await db.getFirstAsync<SpeciesName>(
+    const rawEn = await db.getFirstAsync<Record<string, unknown>>(
       'SELECT * FROM species_names WHERE species_id = ? AND locale = ?;',
       [species.id, 'en'],
     );
+    const enName = snakeToCamelRow<SpeciesName>(rawEn);
     if (enName) {
       return { ...species, commonName: enName.commonName, hasNameInLocale: false };
     }
