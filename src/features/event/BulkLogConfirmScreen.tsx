@@ -10,13 +10,16 @@
  * - type: 作業種別 (EventType、必須)
  *
  * 選択盆栽は `usePickerStore.bulkContext.selectedBonsais` から取得。
- * Save 時に `store.setBulkLogConfirmResult({ note })` + `router.back()` で caller に返却。
+ *
+ * Sess12 PR-B+C で DB 書き込み配線 (旧 setBulkLogConfirmResult + router.back は consumer 0 件 dead code):
+ * Save 時に bulkLogEvents 直接呼び出し → Toast → router.dismissAll で元タブに戻る。
  */
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { useToastStore } from '@/src/components/Toast';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
@@ -28,6 +31,7 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
+import { bulkLogEvents } from '@/src/db/eventRepository';
 import type { EventType } from '@/src/db/schema';
 import { BonsaiPlaceholder, hashSeed } from '@/src/features/bonsai/BonsaiPlaceholder';
 import { usePickerStore } from '@/src/stores/pickerStore';
@@ -43,12 +47,22 @@ export default function BulkLogConfirmScreen() {
   if (type == null) return null;
   const workLabel = t(`eventType_${type}` as TranslationKey);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (type == null) return;
     const trimmed = note.trim();
-    usePickerStore
-      .getState()
-      .setBulkLogConfirmResult({ note: trimmed.length > 0 ? trimmed : null });
-    router.back();
+    try {
+      const result = await bulkLogEvents({
+        bonsaiIds: selectedBonsais.map((b) => b.id),
+        type,
+        note: trimmed.length > 0 ? trimmed : null,
+      });
+      useToastStore
+        .getState()
+        .show(t('bulkLogDoneToast').replace('{count}', String(result.created.length)));
+    } catch (error) {
+      console.warn('[bulk-log] failed:', error);
+    }
+    router.dismissAll();
   };
 
   return (

@@ -1,10 +1,9 @@
 /**
  * 一括記録 詳細 入力画面 (Phase G3a、ADR-0024 Accepted)。
  *
- * `presentation: 'formSheet'` + `sheetAllowedDetents: [0.5, 1]` (Stack 共通設定)。
+ * caller (BulkWorkPickerScreen mode='log') は `router.push('/bulk-log-confirm?type=...')` で起動。
  *
- * caller は `usePickerStore.setBulkContext({ selectedBonsais })` 後に
- * `router.push('/bulk-log-confirm?type=...')`、結果は
- * `usePickerStore.setBulkLogConfirmResult({ note })` + `router.back()` で返却。
+ * Sess12 PR-B+C で書き込み配線: BulkLogConfirmScreen 内で bulkLogEvents 直接呼び出し
+ * → Toast → router.dismissAll で元タブに復帰。
  */
 export { default } from '@/src/features/event/BulkLogConfirmScreen';
