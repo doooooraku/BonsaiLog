@@ -728,6 +728,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsPotUnitCm: 'cm',
   settingsPotUnitMm: 'mm',
   settingsPotUnitInch: 'inch',
+  photoSourceCamera: 'カメラ',
+  photoSourceLibrary: 'ライブラリ',
+  photoReorderHelp: '↑↓で並べ替え、 ×で削除できます。',
+  photoCaption: 'キャプション',
+  photoMoveUp: '上に移動',
+  photoMoveDown: '下に移動',
 };
 
 export default ja;
