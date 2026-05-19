@@ -502,6 +502,8 @@ const id: Partial<Record<TranslationKey, string>> = {
   planSelectedListLabel: '{date} · {count} task(s)',
   planSelectedEmpty: 'No tasks recorded.',
   planEventPlanned: 'Planned',
+  planGroupExpand: 'Show individually',
+  planGroupCollapse: 'Collapse',
   // --- ADR-0020 v1.x-5: Paywall Claude Design (English fallback) ---
   paywallHeroEyebrow: 'Unlock',
   paywallHeroTitle: 'One pot, a lifetime.',

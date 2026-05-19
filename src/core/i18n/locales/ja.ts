@@ -440,6 +440,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   planSelectedListLabel: '{date} · {count}件',
   planSelectedEmpty: '予定はありません。',
   planEventPlanned: '予定',
+  planGroupExpand: '個別に開く',
+  planGroupCollapse: 'まとめる',
   planWiringListLink: '針金がけ一覧',
 
   // --- ADR-0020 v1.x-4: WiringListScreen ---
