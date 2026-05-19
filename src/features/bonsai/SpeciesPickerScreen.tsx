@@ -26,7 +26,6 @@ import {
   DISABLED_BG,
   ON_BRAND,
   TEXT_PRIMARY,
-  TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
@@ -123,7 +122,6 @@ export default function SpeciesPickerScreen() {
               <ThemedText style={selected ? styles.rowTextSelected : undefined}>
                 {s.commonName}
               </ThemedText>
-              <ThemedText style={styles.rowSci}>{s.scientificName}</ThemedText>
             </Pressable>
           );
         })}
@@ -237,7 +235,6 @@ const styles = StyleSheet.create({
   },
   rowSelected: { backgroundColor: BRAND_GREEN_BG, borderBottomColor: BRAND_GREEN },
   rowTextSelected: { fontWeight: '600' },
-  rowSci: { fontSize: 12, color: TEXT_SECONDARY, fontStyle: 'italic', marginTop: 2 },
   footerWrap: {
     paddingHorizontal: 16,
     paddingVertical: 12,

@@ -97,7 +97,7 @@ const baseEn = {
   bonsaiFieldNamePlaceholder: 'Tree name (e.g., Black Pine in the corner)',
   bonsaiFieldSpecies: 'Species',
   bonsaiFieldSpeciesSearch: 'Search species…',
-  bonsaiFieldSpeciesSearchPlaceholder: 'Search by species name (e.g., Black pine, pine)',
+  bonsaiFieldSpeciesSearchPlaceholder: 'Search by species name',
   bonsaiFieldStyle: 'Style',
   bonsaiFieldAcquiredAt: 'Acquired on',
   bonsaiFieldAcquiredFrom: 'Acquired from',
