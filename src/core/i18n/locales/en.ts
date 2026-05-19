@@ -706,6 +706,8 @@ const baseEn = {
   tagsToggleExpand: 'Expand',
   tagsToggleCollapse: 'Collapse',
   tagsMoreLink: 'See {count} more ▼',
+  datePickerPlaceholder: 'Select a date',
+  clear: 'Clear',
 };
 
 export type TranslationKey = keyof typeof baseEn;

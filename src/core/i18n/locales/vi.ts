@@ -699,5 +699,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   tagsToggleExpand: 'Expand',
   tagsToggleCollapse: 'Collapse',
   tagsMoreLink: 'See {count} more ▼',
+  datePickerPlaceholder: 'Chọn ngày',
+  clear: 'Xóa',
 };
 export default vi;

@@ -700,5 +700,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   tagsToggleExpand: 'Expand',
   tagsToggleCollapse: 'Collapse',
   tagsMoreLink: 'See {count} more ▼',
+  datePickerPlaceholder: '날짜 선택',
+  clear: '지우기',
 };
 export default ko;

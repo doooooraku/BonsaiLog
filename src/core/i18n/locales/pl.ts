@@ -700,5 +700,7 @@ const pl: Partial<Record<TranslationKey, string>> = {
   tagsToggleExpand: 'Expand',
   tagsToggleCollapse: 'Collapse',
   tagsMoreLink: 'See {count} more ▼',
+  datePickerPlaceholder: 'Wybierz datę',
+  clear: 'Wyczyść',
 };
 export default pl;

@@ -700,5 +700,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   tagsToggleExpand: 'Expand',
   tagsToggleCollapse: 'Collapse',
   tagsMoreLink: 'See {count} more ▼',
+  datePickerPlaceholder: 'Pilih tanggal',
+  clear: 'Hapus',
 };
 export default id;
