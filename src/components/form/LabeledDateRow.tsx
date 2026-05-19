@@ -22,6 +22,7 @@ import {
   BG_SURFACE,
   BORDER_DEFAULT,
   DANGER,
+  ON_BRAND,
   TEXT_MUTED,
 } from '@/src/core/theme/colors';
 
@@ -87,11 +88,12 @@ export function LabeledDateRow({
             accessibilityRole="button"
             accessibilityLabel={`${label}: clear`}
             style={styles.clearButton}
+            hitSlop={6}
             onPress={() => onChangeText('')}
             testID={testIDClear}
           >
-            {/* Sess15 PR-Z: テキスト × → SVG CloseIcon (細線 stroke、 washi 雰囲気整合)。 */}
-            <CloseIcon size={18} color={TEXT_MUTED} />
+            {/* Sess15 PR-II: 案 a = 灰 circle 背景 + 白 X (Material chip remove 風、 tap target 明示)。 */}
+            <CloseIcon size={14} color={ON_BRAND} strokeWidth={2.5} />
           </Pressable>
         )}
       </View>
@@ -136,13 +138,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   placeholderText: { color: TEXT_MUTED },
+  // Sess15 PR-II: 案 a = 灰 circle 32x32 (hitSlop で 44pt 確保) + 白 X icon。
   clearButton: {
-    width: 36,
-    height: 44,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
-    backgroundColor: BG_SURFACE,
+    borderRadius: 16,
+    backgroundColor: TEXT_MUTED,
   },
-  clearText: { fontSize: 22, color: TEXT_MUTED, lineHeight: 24 },
 });

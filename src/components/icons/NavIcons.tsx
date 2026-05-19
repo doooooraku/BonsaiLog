@@ -109,11 +109,20 @@ export function BackIcon({ size = 20, color = TEXT_PRIMARY }: IconProps) {
   );
 }
 
-/** 閉じる (Close ×)。Modal / BottomSheet 閉じる 24px。 */
-export function CloseIcon({ size = 24, color = TEXT_PRIMARY }: IconProps) {
+/** 閉じる (Close ×)。 Sess15 PR-II: strokeWidth prop で太め化対応 (clear button 灰 circle 内で使用)。 */
+export function CloseIcon({
+  size = 24,
+  color = TEXT_PRIMARY,
+  strokeWidth = 1.75,
+}: IconProps & { strokeWidth?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M6 6l12 12M18 6L6 18" stroke={color} strokeWidth="1.75" strokeLinecap="round" />
+      <Path
+        d="M6 6l12 12M18 6L6 18"
+        stroke={color}
+        strokeWidth={String(strokeWidth)}
+        strokeLinecap="round"
+      />
     </Svg>
   );
 }
