@@ -28,6 +28,7 @@ import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { CameraIcon, ChevronRightIcon } from '@/src/components/icons';
+import { LabeledPickerRow } from '@/src/components/form/LabeledPickerRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { useTranslation } from '@/src/core/i18n/i18n';
@@ -541,7 +542,9 @@ export function useBonsaiBasicForm({
     speciesId,
     setSpeciesId,
     customSpeciesId,
+    setCustomSpeciesId,
     customSpeciesName,
+    setCustomSpeciesName,
     speciesList,
     selectedSpecies,
     style,
@@ -607,10 +610,14 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     name,
     setName,
     speciesId,
+    setSpeciesId,
     customSpeciesId,
+    setCustomSpeciesId,
     customSpeciesName,
+    setCustomSpeciesName,
     selectedSpecies,
     style,
+    setStyle,
     acquiredAt,
     setAcquiredAt,
     estimatedAgeText,
@@ -763,62 +770,50 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         testID="e2e_bonsai_create_name"
       />
 
-      <View style={styles.field}>
-        <ThemedText type="defaultSemiBold">{t('bonsaiFieldSpecies')}</ThemedText>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('bonsaiFieldSpecies')}
-          style={styles.pickerRow}
-          onPress={() => {
-            // Sess13 PR-H: custom 樹種選択中の場合は 'custom:<id>' を initial に渡す
-            const initial =
-              customSpeciesId != null ? `custom:${customSpeciesId}` : (speciesId ?? null);
-            router.push(
-              (initial != null
-                ? `/species-picker?initial=${encodeURIComponent(initial)}`
-                : '/species-picker') as Href,
-            );
-          }}
-          testID="e2e_bonsai_create_species_pick"
-        >
-          <ThemedText
-            style={
-              selectedSpecies != null || customSpeciesName != null
-                ? undefined
-                : styles.pickerPlaceholder
-            }
-          >
-            {selectedSpecies?.commonName ?? customSpeciesName ?? '―'}
-          </ThemedText>
-          <ChevronRightIcon size={20} color={TEXT_MUTED} />
-        </Pressable>
-      </View>
+      {/* Sess14 PR-M: 樹種 row を LabeledPickerRow へ移行 (× clear button 統合)。 */}
+      <LabeledPickerRow
+        label={t('bonsaiFieldSpecies')}
+        valueText={selectedSpecies?.commonName ?? customSpeciesName}
+        onPress={() => {
+          // Sess13 PR-H: custom 樹種選択中の場合は 'custom:<id>' を initial に渡す
+          const initial =
+            customSpeciesId != null ? `custom:${customSpeciesId}` : (speciesId ?? null);
+          router.push(
+            (initial != null
+              ? `/species-picker?initial=${encodeURIComponent(initial)}`
+              : '/species-picker') as Href,
+          );
+        }}
+        onClear={() => {
+          setSpeciesId(null);
+          setCustomSpeciesId(null);
+          setCustomSpeciesName(null);
+        }}
+        testID="e2e_bonsai_create_species_pick"
+        testIDClear="e2e_bonsai_create_species_clear"
+      />
 
-      <View style={styles.field}>
-        <ThemedText type="defaultSemiBold">{t('bonsaiFieldStyle')}</ThemedText>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('bonsaiFieldStyle')}
-          style={styles.pickerRow}
-          onPress={() =>
-            router.push(
-              (style != null
-                ? `/style-picker?initial=${encodeURIComponent(style)}`
-                : '/style-picker') as Href,
-            )
-          }
-          testID="e2e_bonsai_create_style_pick"
-        >
-          <ThemedText style={style != null ? undefined : styles.pickerPlaceholder}>
-            {style != null
-              ? BONSAI_STYLES.includes(style as BonsaiStyle)
-                ? t(`bonsaiStyle_${style}` as TranslationKey)
-                : (style as string)
-              : '―'}
-          </ThemedText>
-          <ChevronRightIcon size={20} color={TEXT_MUTED} />
-        </Pressable>
-      </View>
+      {/* Sess14 PR-M: 樹形 row を LabeledPickerRow へ移行 (× clear button 統合)。 */}
+      <LabeledPickerRow
+        label={t('bonsaiFieldStyle')}
+        valueText={
+          style != null
+            ? BONSAI_STYLES.includes(style as BonsaiStyle)
+              ? t(`bonsaiStyle_${style}` as TranslationKey)
+              : (style as string)
+            : null
+        }
+        onPress={() =>
+          router.push(
+            (style != null
+              ? `/style-picker?initial=${encodeURIComponent(style)}`
+              : '/style-picker') as Href,
+          )
+        }
+        onClear={() => setStyle(null)}
+        testID="e2e_bonsai_create_style_pick"
+        testIDClear="e2e_bonsai_create_style_clear"
+      />
 
       {/* Sess13 PR-E: 取得日 を DatePicker 化 + 任意化 + × clear button (Q-14 a)。 */}
       <View style={styles.field}>
