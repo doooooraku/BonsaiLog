@@ -708,5 +708,16 @@ const id: Partial<Record<TranslationKey, string>> = {
   customStyleCreatePlaceholder: 'cth. Yose-ue',
   customSpeciesCreateTitle: 'Buat spesies kustom',
   customSpeciesCreatePlaceholder: 'cth. Pinus hitam',
+  bonsaiFieldPotInfoExpand: 'Add pot info',
+  bonsaiFieldPotWidth: 'Width',
+  bonsaiFieldPotWidthPlaceholder: 'Width (cm)',
+  bonsaiFieldPotDepth: 'Depth',
+  bonsaiFieldPotDepthPlaceholder: 'Depth (cm)',
+  bonsaiFieldPotMaterial: 'Material',
+  bonsaiFieldPotMaterialPlaceholder: 'Material (e.g. Tokoname, purple clay)',
+  settingsPotUnit: 'Pot size unit',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 export default id;

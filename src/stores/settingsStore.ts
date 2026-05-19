@@ -13,6 +13,9 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
+/** Sess13 PR-I: 鉢サイズ単位 (cm / mm / inch、 user preference、 Q-7 b 採用)。 */
+export type PotUnit = 'cm' | 'mm' | 'inch';
+
 /** F-16 通知時刻の永続化フォーマット ("HH:MM" 24 時間制、Issue #30 / ADR-0014)。 */
 export type NotificationTimeString = string;
 
@@ -59,6 +62,13 @@ type SettingsState = {
    */
   notificationWateringRepeatTimes: NotificationTimeString[];
   setNotificationWateringRepeatTimes: (times: NotificationTimeString[]) => void;
+  /**
+   * Sess13 PR-I: 鉢サイズ単位 (cm / mm / inch、 user preference)。
+   * - 内部 DB 保存は常に cm 数値、 表示・入力時に単位変換
+   * - デフォルト 'cm' (日本人向け、 海外ユーザーは設定で inch に切替可能)
+   */
+  potUnit: PotUnit;
+  setPotUnit: (unit: PotUnit) => void;
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -85,6 +95,9 @@ export const useSettingsStore = create<SettingsState>()(
       notificationWateringRepeatTimes: ['07:00'],
       setNotificationWateringRepeatTimes: (times) =>
         set({ notificationWateringRepeatTimes: times }),
+      // Sess13 PR-I: 鉢サイズ単位 default cm
+      potUnit: 'cm' as PotUnit,
+      setPotUnit: (unit) => set({ potUnit: unit }),
     }),
     {
       name: 'myapp-settings',

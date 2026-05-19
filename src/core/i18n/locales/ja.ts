@@ -717,6 +717,17 @@ const ja: Partial<Record<TranslationKey, string>> = {
   customStyleCreatePlaceholder: '例: 寄せ植え',
   customSpeciesCreateTitle: 'カスタム樹種を作成',
   customSpeciesCreatePlaceholder: '例: 黒松',
+  bonsaiFieldPotInfoExpand: '鉢情報を追加',
+  bonsaiFieldPotWidth: '幅',
+  bonsaiFieldPotWidthPlaceholder: '幅 (cm)',
+  bonsaiFieldPotDepth: '深さ',
+  bonsaiFieldPotDepthPlaceholder: '深さ (cm)',
+  bonsaiFieldPotMaterial: '材質',
+  bonsaiFieldPotMaterialPlaceholder: '材質 (例: 常滑・紫泥)',
+  settingsPotUnit: '鉢サイズ単位',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 
 export default ja;

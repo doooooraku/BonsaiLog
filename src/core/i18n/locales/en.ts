@@ -714,6 +714,17 @@ const baseEn = {
   customStyleCreatePlaceholder: 'e.g. yose-ue',
   customSpeciesCreateTitle: 'Create custom species',
   customSpeciesCreatePlaceholder: 'e.g. Kuromatsu',
+  bonsaiFieldPotInfoExpand: 'Add pot info',
+  bonsaiFieldPotWidth: 'Width',
+  bonsaiFieldPotWidthPlaceholder: 'Width (cm)',
+  bonsaiFieldPotDepth: 'Depth',
+  bonsaiFieldPotDepthPlaceholder: 'Depth (cm)',
+  bonsaiFieldPotMaterial: 'Material',
+  bonsaiFieldPotMaterialPlaceholder: 'Material (e.g. Tokoname, purple clay)',
+  settingsPotUnit: 'Pot size unit',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 
 export type TranslationKey = keyof typeof baseEn;

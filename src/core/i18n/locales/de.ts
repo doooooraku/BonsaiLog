@@ -708,5 +708,16 @@ const de: Partial<Record<TranslationKey, string>> = {
   customStyleCreatePlaceholder: 'z.B. Yose-ue',
   customSpeciesCreateTitle: 'Eigene Art erstellen',
   customSpeciesCreatePlaceholder: 'z.B. Schwarzkiefer',
+  bonsaiFieldPotInfoExpand: 'Add pot info',
+  bonsaiFieldPotWidth: 'Width',
+  bonsaiFieldPotWidthPlaceholder: 'Width (cm)',
+  bonsaiFieldPotDepth: 'Depth',
+  bonsaiFieldPotDepthPlaceholder: 'Depth (cm)',
+  bonsaiFieldPotMaterial: 'Material',
+  bonsaiFieldPotMaterialPlaceholder: 'Material (e.g. Tokoname, purple clay)',
+  settingsPotUnit: 'Pot size unit',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 export default de;

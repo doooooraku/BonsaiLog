@@ -700,5 +700,16 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   customStyleCreatePlaceholder: '例: 寄植',
   customSpeciesCreateTitle: '创建自定义树种',
   customSpeciesCreatePlaceholder: '例: 黑松',
+  bonsaiFieldPotInfoExpand: 'Add pot info',
+  bonsaiFieldPotWidth: 'Width',
+  bonsaiFieldPotWidthPlaceholder: 'Width (cm)',
+  bonsaiFieldPotDepth: 'Depth',
+  bonsaiFieldPotDepthPlaceholder: 'Depth (cm)',
+  bonsaiFieldPotMaterial: 'Material',
+  bonsaiFieldPotMaterialPlaceholder: 'Material (e.g. Tokoname, purple clay)',
+  settingsPotUnit: 'Pot size unit',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 export default zhHans;

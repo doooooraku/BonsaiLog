@@ -708,5 +708,16 @@ const hi: Partial<Record<TranslationKey, string>> = {
   customStyleCreatePlaceholder: 'जैसे: Yose-ue',
   customSpeciesCreateTitle: 'कस्टम प्रजाति बनाएं',
   customSpeciesCreatePlaceholder: 'जैसे: काला पाइन',
+  bonsaiFieldPotInfoExpand: 'Add pot info',
+  bonsaiFieldPotWidth: 'Width',
+  bonsaiFieldPotWidthPlaceholder: 'Width (cm)',
+  bonsaiFieldPotDepth: 'Depth',
+  bonsaiFieldPotDepthPlaceholder: 'Depth (cm)',
+  bonsaiFieldPotMaterial: 'Material',
+  bonsaiFieldPotMaterialPlaceholder: 'Material (e.g. Tokoname, purple clay)',
+  settingsPotUnit: 'Pot size unit',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 export default hi;

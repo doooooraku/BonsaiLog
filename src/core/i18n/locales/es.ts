@@ -708,5 +708,16 @@ const es: Partial<Record<TranslationKey, string>> = {
   customStyleCreatePlaceholder: 'p.ej. Yose-ue',
   customSpeciesCreateTitle: 'Crear especie personalizada',
   customSpeciesCreatePlaceholder: 'p.ej. Pino negro',
+  bonsaiFieldPotInfoExpand: 'Add pot info',
+  bonsaiFieldPotWidth: 'Width',
+  bonsaiFieldPotWidthPlaceholder: 'Width (cm)',
+  bonsaiFieldPotDepth: 'Depth',
+  bonsaiFieldPotDepthPlaceholder: 'Depth (cm)',
+  bonsaiFieldPotMaterial: 'Material',
+  bonsaiFieldPotMaterialPlaceholder: 'Material (e.g. Tokoname, purple clay)',
+  settingsPotUnit: 'Pot size unit',
+  settingsPotUnitCm: 'cm',
+  settingsPotUnitMm: 'mm',
+  settingsPotUnitInch: 'inch',
 };
 export default es;
