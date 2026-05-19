@@ -35,6 +35,7 @@ import {
   schemaV11,
   schemaV12,
   schemaV13,
+  schemaV14,
 } from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
@@ -249,6 +250,28 @@ async function migrate(db: SQLite.SQLiteDatabase) {
   if (version < 13) {
     await db.execAsync(schemaV13);
     version = 13;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v14 (Sess13 PR-H): bonsai_species_custom テーブル + bonsai.custom_species_id。
+  //
+  // - β 別手帳方式 (Q-13 確定): master species と分離管理
+  // - bonsai.custom_species_id は hasColumn ガード、 table は CREATE IF NOT EXISTS で冪等
+  // ---------------------------------------------------------------------------
+  if (version < 14) {
+    await db.execAsync(
+      `CREATE TABLE IF NOT EXISTS bonsai_species_custom (
+        id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL UNIQUE,
+        created_at TEXT NOT NULL
+      );`,
+    );
+    if (!(await hasColumn(db, 'bonsai', 'custom_species_id'))) {
+      await db.execAsync(
+        'ALTER TABLE bonsai ADD COLUMN custom_species_id TEXT REFERENCES bonsai_species_custom(id) ON DELETE SET NULL;',
+      );
+    }
+    version = 14;
   }
 
   // Always set version UNCONDITIONALLY (not inside an if-block).

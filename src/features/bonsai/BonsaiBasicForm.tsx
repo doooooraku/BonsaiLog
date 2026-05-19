@@ -42,6 +42,7 @@ import {
 import { createBonsai, updateBonsai } from '@/src/db/bonsaiRepository';
 import { addPhotoFromUri, FREE_PHOTO_LIMIT_PER_BONSAI } from '@/src/db/photoRepository';
 import { BONSAI_STYLES, type Bonsai, type BonsaiStyle } from '@/src/db/schema';
+import { getCustomSpeciesById } from '@/src/db/bonsaiSpeciesCustomRepository';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
 import {
   attachTagToBonsai,
@@ -90,6 +91,10 @@ export function useBonsaiBasicForm({
 
   const [name, setName] = useState('');
   const [speciesId, setSpeciesId] = useState<string | null>(null);
+  // Sess13 PR-H: カスタム樹種 FK (schema v14)。 speciesId と排他、 picker 結果は
+  // 'custom:<id>' prefix で区別して setCustomSpeciesId に分岐保存。
+  const [customSpeciesId, setCustomSpeciesId] = useState<string | null>(null);
+  const [customSpeciesName, setCustomSpeciesName] = useState<string | null>(null);
   const [speciesList, setSpeciesList] = useState<SpeciesWithName[]>([]);
   const [style, setStyle] = useState<BonsaiStyle | null>(null);
   const [acquiredAt, setAcquiredAt] = useState('');
@@ -120,7 +125,17 @@ export function useBonsaiBasicForm({
     useCallback(() => {
       const speciesResult = usePickerStore.getState().consumeSpeciesPickerResult();
       if (speciesResult !== undefined) {
-        setSpeciesId(speciesResult);
+        // Sess13 PR-H: 'custom:<id>' prefix → custom 樹種 FK 分岐保存
+        if (typeof speciesResult === 'string' && speciesResult.startsWith('custom:')) {
+          const cid = speciesResult.slice(7);
+          setSpeciesId(null);
+          setCustomSpeciesId(cid);
+          void getCustomSpeciesById(cid).then((cs) => setCustomSpeciesName(cs?.name ?? null));
+        } else {
+          setSpeciesId(speciesResult);
+          setCustomSpeciesId(null);
+          setCustomSpeciesName(null);
+        }
       }
       const styleResult = usePickerStore.getState().consumeStylePickerResult();
       if (styleResult !== undefined) {
@@ -163,6 +178,14 @@ export function useBonsaiBasicForm({
     }
     setName(editingBonsai.name);
     setSpeciesId(editingBonsai.speciesId);
+    setCustomSpeciesId(editingBonsai.customSpeciesId);
+    if (editingBonsai.customSpeciesId) {
+      void getCustomSpeciesById(editingBonsai.customSpeciesId).then((cs) =>
+        setCustomSpeciesName(cs?.name ?? null),
+      );
+    } else {
+      setCustomSpeciesName(null);
+    }
     setStyle(editingBonsai.style as BonsaiStyle | null);
     setAcquiredAt(isoToYmd(editingBonsai.acquiredAt));
     setEstimatedAgeText(
@@ -203,6 +226,7 @@ export function useBonsaiBasicForm({
     if (editingBonsai != null) {
       setName(editingBonsai.name);
       setSpeciesId(editingBonsai.speciesId);
+      setCustomSpeciesId(editingBonsai.customSpeciesId);
       setStyle(editingBonsai.style as BonsaiStyle | null);
       setAcquiredAt(isoToYmd(editingBonsai.acquiredAt));
       setEstimatedAgeText(
@@ -223,6 +247,8 @@ export function useBonsaiBasicForm({
     } else {
       setName('');
       setSpeciesId(null);
+      setCustomSpeciesId(null);
+      setCustomSpeciesName(null);
       setStyle(null);
       setAcquiredAt('');
       setPendingPhotos([]);
@@ -306,6 +332,7 @@ export function useBonsaiBasicForm({
       const fields = {
         name: name.trim(),
         speciesId,
+        customSpeciesId,
         style,
         acquiredAt: acquiredAt.trim() ? toIsoUtc(acquiredAt.trim()) : null,
         estimatedAge,
@@ -366,6 +393,7 @@ export function useBonsaiBasicForm({
     ageUnknown,
     name,
     speciesId,
+    customSpeciesId,
     style,
     acquiredAt,
     memo,
@@ -387,6 +415,8 @@ export function useBonsaiBasicForm({
     setName,
     speciesId,
     setSpeciesId,
+    customSpeciesId,
+    customSpeciesName,
     speciesList,
     selectedSpecies,
     style,
@@ -440,6 +470,8 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     name,
     setName,
     speciesId,
+    customSpeciesId,
+    customSpeciesName,
     selectedSpecies,
     style,
     acquiredAt,
@@ -545,17 +577,26 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
           accessibilityRole="button"
           accessibilityLabel={t('bonsaiFieldSpecies')}
           style={styles.pickerRow}
-          onPress={() =>
+          onPress={() => {
+            // Sess13 PR-H: custom 樹種選択中の場合は 'custom:<id>' を initial に渡す
+            const initial =
+              customSpeciesId != null ? `custom:${customSpeciesId}` : (speciesId ?? null);
             router.push(
-              (speciesId != null
-                ? `/species-picker?initial=${encodeURIComponent(speciesId)}`
+              (initial != null
+                ? `/species-picker?initial=${encodeURIComponent(initial)}`
                 : '/species-picker') as Href,
-            )
-          }
+            );
+          }}
           testID="e2e_bonsai_create_species_pick"
         >
-          <ThemedText style={selectedSpecies != null ? undefined : styles.pickerPlaceholder}>
-            {selectedSpecies?.commonName ?? '―'}
+          <ThemedText
+            style={
+              selectedSpecies != null || customSpeciesName != null
+                ? undefined
+                : styles.pickerPlaceholder
+            }
+          >
+            {selectedSpecies?.commonName ?? customSpeciesName ?? '―'}
           </ThemedText>
           <ChevronRightIcon size={20} color={TEXT_MUTED} />
         </Pressable>

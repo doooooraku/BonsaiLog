@@ -99,6 +99,7 @@ const it: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldNamePlaceholder: 'Tree name (e.g., Black Pine in the corner)',
   bonsaiFieldSpecies: 'Species',
   bonsaiFieldSpeciesSearch: 'Search species…',
+  bonsaiFieldSpeciesSearchPlaceholder: 'Cerca per nome della specie (es: Pino nero, pine)',
   bonsaiFieldStyle: 'Style',
   bonsaiFieldAcquiredAt: 'Acquired on',
   bonsaiFieldUpdatedAt: 'Last updated',

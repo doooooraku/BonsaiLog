@@ -28,11 +28,12 @@
  * - v11: event_tags 完全廃止 (Sess9 PR-1、 ADR-0008 §Notes Amended 2026-05-18、 dead code cleanup + bonsai_tags 一本化)
  * - v12: bonsai に estimated_age_unknown カラム追加 (Sess13 PR-D、 樹齢「不明」 明示)
  * - v13: bonsai_styles_custom テーブル新規 (Sess13 PR-G、 カスタム樹形 user-defined β table)
+ * - v14: bonsai_species_custom テーブル + bonsai.custom_species_id (Sess13 PR-H、 カスタム樹種 β table)
  */
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 13;
+export const SCHEMA_VERSION = 14;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -125,6 +126,7 @@ export const bonsai = sqliteTable(
     purchaseDate: text('purchase_date'), // v8 追加: 購入日 (ISO 8601 UTC TEXT、acquiredAt とは別、null 可)
     acquiredFrom: text('acquired_from'), // v10 追加: 入手元メモ (free-form text、null 可、Issue #455 Phase 1)
     estimatedAgeUnknown: integer('estimated_age_unknown').notNull().default(0), // v12 追加: 樹齢「不明」 明示 (0/1、 Sess13 PR-D)
+    customSpeciesId: text('custom_species_id'), // v14 追加: カスタム樹種 FK (Sess13 PR-H、 β table)
     archivedAt: text('archived_at'), // ISO 8601 UTC TEXT (NULL ならアクティブ)
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
@@ -552,6 +554,35 @@ export const bonsaiStylesCustom = sqliteTable('bonsai_styles_custom', {
 });
 
 export type BonsaiStyleCustom = typeof bonsaiStylesCustom.$inferSelect;
+
+/**
+ * Migration v14 (Sess13 PR-H): bonsai_species_custom テーブル新規 +
+ * bonsai に custom_species_id カラム追加。
+ *
+ * - user 定義のカスタム樹種を保存 (β 別手帳方式、 Q-13 確定)
+ * - master species (50 種) と分離管理、 picker は UNION 表示
+ * - bonsai.species_id (master FK) or bonsai.custom_species_id (custom FK) どちらか一方
+ * - export/backup 対象 (Q-22 a)
+ */
+export const schemaV14 = `
+CREATE TABLE IF NOT EXISTS bonsai_species_custom (
+  id TEXT PRIMARY KEY NOT NULL,
+  name TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL
+);
+ALTER TABLE bonsai ADD COLUMN custom_species_id TEXT REFERENCES bonsai_species_custom(id) ON DELETE SET NULL;
+`;
+
+/**
+ * Drizzle table 定義 (bonsai_species_custom)、 Sess13 PR-H。
+ */
+export const bonsaiSpeciesCustom = sqliteTable('bonsai_species_custom', {
+  id: text('id').primaryKey().notNull(),
+  name: text('name').notNull().unique(),
+  createdAt: text('created_at').notNull(),
+});
+
+export type BonsaiSpeciesCustom = typeof bonsaiSpeciesCustom.$inferSelect;
 
 // ---------------------------------------------------------------------------
 // TypeScript types (Drizzle inferSelect / inferInsert は PR-C Repository で使用)
