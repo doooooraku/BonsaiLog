@@ -117,6 +117,8 @@
 | **R-33** | route / Phase 変更時の影響範囲全網羅 grep | 廃止 path 文字列を全 grep + PR 本文に grep 結果記載、 `scripts/obsolete-routes.json` + `.claude/hooks/check-obsolete-routes.mjs` で構造的検出 (Sess8 PR-5+1) |
 | **R-34** | 議論承認の整合性確認 (同類カテゴリ複数項目) | AskUserQuestion で同類カテゴリ (例: 「Home 要素」 D2/D3) 複数項目を 1 質問に詰め込まない。 個別質問に分離 OR 推薦案明示後に各項目について逐次確認。 Sess9 PR-2 (D2/D3 混同) で revert ロス。 詳細: `lessons/discuss.md` |
 | **R-35** | 議論時 alternative 必須提示 + 業界事例「現状最適解」 明示 | 議論 Round で初期案 1 つだけでなく alternative 2-3 案を必ず併記。 業界事例リサーチで「最新トレンド = 現状最適解」 を明示し、 古いパターン (Apple Notes long-press 等) を「業界 outdated」 と判定。 Sess9 PR-9 → PR-10 long-press → toggle 60 分ロスが根拠。 詳細: `lessons/discuss.md` |
+| **R-36** | navigation API 使用時 1 次情報確認 + 実機検証必須 | `router.dismissAll` / `router.canDismiss` 等 expo-router API の挙動を **docs/source で確認 + 実機で挙動検証** してから採用。 `while (canX) { doX() }` パターンは無限 loop リスクで禁止 (max iteration limit or 別 API)。 Sess12 PR-F で canDismiss loop → JS thread freeze 事例。 詳細: `lessons/navigation.md` |
+| **R-37** | 仕様 TBD (未確定) は ADR §TBD として明示残し | 議論で「あとで決める」 で先送りした仕様は ADR / Issue に `§TBD` として明文化、 実装時に user 承認で確定。 Sess12 PR-G で log mode の note 仕様 (a/b/c) を未確定で進めかけた事例。 |
 
 ---
 
