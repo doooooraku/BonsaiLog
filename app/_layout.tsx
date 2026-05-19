@@ -19,6 +19,7 @@ import 'react-native-reanimated';
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Toast } from '@/src/components/Toast';
 import { buildNavigationTheme } from '@/src/core/theme/buildNavigationTheme';
 import { resolveEffectiveScheme } from '@/src/core/theme/themeResolver';
 import { isOnboardingFinished } from '@/src/features/onboarding/onboardingFlow';
@@ -146,6 +147,8 @@ export default function RootLayout() {
               タグ管理画面で inline 展開 (▶/▼ 左端 toggle) に置換。 重複機能削除。 */}
         </Stack>
         <StatusBar style={effectiveScheme === 'dark' ? 'light' : 'dark'} />
+        {/* Sess12 PR-B+C: 一括予定/記録追加完了の Toast (root mount で全画面に表示可) */}
+        <Toast />
       </ThemeProvider>
     </GestureHandlerRootView>
   );

@@ -37,12 +37,6 @@ type WorkLogConfirmResult = WorkLogPayload | 'CONSUMED';
 export type BulkBonsaiRef = { id: string; name: string };
 export type BulkContext = { selectedBonsais: readonly BulkBonsaiRef[] };
 
-type BulkWorkPickerValue = { type: EventType; mode: 'log' | 'schedule' };
-type BulkWorkPickerResult = BulkWorkPickerValue | 'CONSUMED';
-
-export type BulkLogConfirmInput = { note: string | null };
-type BulkLogConfirmResult = BulkLogConfirmInput | 'CONSUMED';
-
 /** 横断水やり日付詳細 (Phase G4 part 1) — caller から Screen への重 data 受け渡し。 */
 export type WateringDayDetailContext = {
   dateKey: string;
@@ -76,18 +70,10 @@ type PickerStore = {
   consumeWorkLogConfirmResult: () => WorkLogPayload | undefined;
 
   // 一括操作 context (selectedBonsais を Screen 間共有、Phase G3a)
+  // Sess12 PR-B+C 後: bulkWorkPickerResult / bulkLogConfirmResult は dead code 化により削除済
+  // (BulkWorkPickerScreen / BulkLogConfirmScreen が直接 DB 書き込み + Toast + dismissAll に統一)
   bulkContext: BulkContext | null;
   setBulkContext: (ctx: BulkContext | null) => void;
-
-  // 一括作業選択 (bulk-work-picker、Phase G3a)
-  bulkWorkPickerResult: BulkWorkPickerResult;
-  setBulkWorkPickerResult: (result: BulkWorkPickerValue) => void;
-  consumeBulkWorkPickerResult: () => BulkWorkPickerValue | undefined;
-
-  // 一括記録 詳細 (bulk-log-confirm、Phase G3a)
-  bulkLogConfirmResult: BulkLogConfirmResult;
-  setBulkLogConfirmResult: (input: BulkLogConfirmInput) => void;
-  consumeBulkLogConfirmResult: () => BulkLogConfirmInput | undefined;
 
   // 横断水やり日付詳細 (watering-day-detail、Phase G4 part 1)
   wateringDayDetailContext: WateringDayDetailContext | null;
@@ -141,24 +127,6 @@ export const usePickerStore = create<PickerStore>((set, get) => ({
 
   bulkContext: null,
   setBulkContext: (ctx) => set({ bulkContext: ctx }),
-
-  bulkWorkPickerResult: 'CONSUMED',
-  setBulkWorkPickerResult: (result) => set({ bulkWorkPickerResult: result }),
-  consumeBulkWorkPickerResult: () => {
-    const result = get().bulkWorkPickerResult;
-    if (result === 'CONSUMED') return undefined;
-    set({ bulkWorkPickerResult: 'CONSUMED' });
-    return result;
-  },
-
-  bulkLogConfirmResult: 'CONSUMED',
-  setBulkLogConfirmResult: (input) => set({ bulkLogConfirmResult: input }),
-  consumeBulkLogConfirmResult: () => {
-    const result = get().bulkLogConfirmResult;
-    if (result === 'CONSUMED') return undefined;
-    set({ bulkLogConfirmResult: 'CONSUMED' });
-    return result;
-  },
 
   wateringDayDetailContext: null,
   setWateringDayDetailContext: (ctx) => set({ wateringDayDetailContext: ctx }),

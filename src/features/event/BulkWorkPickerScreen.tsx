@@ -6,17 +6,24 @@
  *
  * Query params:
  * - mode: 'schedule' | 'log' (i18n + 後続 step 分岐)
+ * - date: YYYY-MM-DD (schedule mode のみ、 PlanScreen 選択日)
  *
  * 選択盆栽は `usePickerStore.bulkContext.selectedBonsais` から取得 (URL params 過大化回避)。
- * 選択時に `store.setBulkWorkPickerResult({ type, mode })` + `router.back()` で caller に返却。
+ *
+ * Sess12 PR-B+C で DB 書き込み配線 (旧 setBulkWorkPickerResult + router.back は consumer 0 件 dead code):
+ * - schedule: bulkScheduleEvents 直接呼び出し → Toast → router.dismissAll
+ * - log: router.push('/bulk-log-confirm?type=...') で次の note 入力画面に遷移
  */
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { useToastStore } from '@/src/components/Toast';
+import { nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
+import { bulkScheduleEvents } from '@/src/db/eventRepository';
 import type { EventType } from '@/src/db/schema';
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore } from '@/src/stores/pickerStore';
@@ -38,17 +45,38 @@ const BULK_WORK_TYPES: readonly EventType[] = [
 
 export default function BulkWorkPickerScreen() {
   const { t } = useTranslation();
-  const params = useLocalSearchParams<{ mode?: 'schedule' | 'log' }>();
+  const params = useLocalSearchParams<{ mode?: 'schedule' | 'log'; date?: string }>();
   const mode: 'schedule' | 'log' = params.mode === 'log' ? 'log' : 'schedule';
+  const scheduleDate = params.date ?? '';
 
   const selectedBonsais = usePickerStore((s) => s.bulkContext?.selectedBonsais ?? []);
   const items = BULK_WORK_TYPES;
 
   const subKey: TranslationKey = mode === 'log' ? 'bulkPickerSheetSubLog' : 'bulkPickerSheetSub';
 
-  const handleSelect = (type: EventType) => {
-    usePickerStore.getState().setBulkWorkPickerResult({ type, mode });
-    router.back();
+  const handleSelect = async (type: EventType) => {
+    if (mode === 'schedule') {
+      // schedule: DB 直接書き込み + Toast + 元タブに戻る (router.dismissAll)
+      // ADR-0008 §TZ 3 層防御: new Date() 引数なし禁止、 nowUtc() 経由
+      const dateStr = scheduleDate || (nowUtc() as string).slice(0, 10);
+      const occurredAtUtc = `${dateStr}T00:00:00.000Z`;
+      try {
+        const result = await bulkScheduleEvents({
+          bonsaiIds: selectedBonsais.map((b) => b.id),
+          type,
+          occurredAtUtc,
+        });
+        useToastStore
+          .getState()
+          .show(t('bulkScheduleDoneToast').replace('{count}', String(result.created.length)));
+      } catch (error) {
+        console.warn('[bulk-schedule] failed:', error);
+      }
+      router.dismissAll();
+      return;
+    }
+    // log: 次画面 (BulkLogConfirm) で note 入力 + 書き込み
+    router.push(`/bulk-log-confirm?type=${type}` as Href);
   };
 
   return (

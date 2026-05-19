@@ -222,7 +222,12 @@ export default function PlanScreen() {
         accessibilityRole="button"
         accessibilityLabel={t('planFabLabel')}
         style={[styles.fab, { backgroundColor: c.tint, bottom: tabBarHeight + 16 }]}
-        onPress={() => startBulkAction(bonsai.map((b) => ({ id: b.id, name: b.name })))}
+        onPress={() =>
+          startBulkAction(
+            bonsai.map((b) => ({ id: b.id, name: b.name })),
+            selectedDateKey,
+          )
+        }
         testID="e2e_plan_fab_action"
       >
         <PlusIcon size={28} color={ON_BRAND} />

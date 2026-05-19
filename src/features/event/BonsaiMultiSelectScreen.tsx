@@ -43,8 +43,9 @@ export default function BonsaiMultiSelectScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
   const c = useColors();
-  const params = useLocalSearchParams<{ mode?: 'schedule' | 'log' }>();
+  const params = useLocalSearchParams<{ mode?: 'schedule' | 'log'; date?: string }>();
   const mode: 'schedule' | 'log' = params.mode === 'log' ? 'log' : 'schedule';
+  const scheduleDate = params.date ?? '';
 
   const [items, setItems] = useState<CardData[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -93,8 +94,9 @@ export default function BonsaiMultiSelectScreen() {
       .filter((it) => selectedIds.has(it.id))
       .map((it) => ({ id: it.id, name: it.name }));
     usePickerStore.getState().setBulkContext({ selectedBonsais });
-    router.replace(`/bulk-work-picker?mode=${mode}` as Href);
-  }, [items, selectedIds, mode, router]);
+    const dateParam = scheduleDate ? `&date=${encodeURIComponent(scheduleDate)}` : '';
+    router.replace(`/bulk-work-picker?mode=${mode}${dateParam}` as Href);
+  }, [items, selectedIds, mode, scheduleDate, router]);
 
   const ctaLabel = useMemo(
     () => (mode === 'schedule' ? t('bulkSchedule') : t('bulkLog')),
