@@ -6,7 +6,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
+import { CameraIcon, EventIcon, MoreVerticalIcon } from '@/src/components/icons';
 import {
   BonsaiBasicFormFields,
   type BonsaiBasicFormState,
@@ -27,6 +27,7 @@ import {
   BORDER_DEFAULT,
   BRAND_GREEN,
   DANGER,
+  TEXT_MUTED,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
@@ -615,18 +616,39 @@ export default function BonsaiDetailScreen() {
             + 削除 + undo を維持。複数選択 (allowsMultipleSelection) + ↑↓ + caption + ★ + ×。 */}
         {activeTab === 'basic' && (
           <View style={styles.section}>
-            <ThemedText type="subtitle">
-              {t('bonsaiFieldPhotos')}
-              {remainingFreeSlots !== null && ` (${photoCount} / ${FREE_PHOTO_LIMIT_PER_BONSAI})`}
-            </ThemedText>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('photoAddCta')}
-              style={styles.photoAddBtn}
-              onPress={showAddPhotoMenu}
-            >
-              <ThemedText style={styles.photoAddText}>+ {t('photoAddCta')}</ThemedText>
-            </Pressable>
+            {/* Sess15 PR-QQ: 新規 modal (BonsaiCreateScreen) と完全同 pattern に統一。
+                - ヘッダー: type="defaultSemiBold" + 枚数 + 「任意」 badge
+                - + 写真を追加 単独 button → カメラ / ライブラリ 2 button 並列
+                - 「(N / Infinity)」 表記は廃止、 純粋に枚数のみ */}
+            <View style={styles.photoSectionLabelRow}>
+              <ThemedText type="defaultSemiBold">
+                {t('bonsaiFieldPhotos')} ({photoCount})
+              </ThemedText>
+              <ThemedText style={styles.photoSectionOptionalLabel}>
+                {t('fieldOptionalLabel')}
+              </ThemedText>
+            </View>
+            <View style={styles.photoSourceRow}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('photoSourceCamera')}
+                style={styles.photoSourceButton}
+                onPress={() => void pickAndSavePhoto('camera')}
+                testID="e2e_detail_photo_camera"
+              >
+                <CameraIcon size={20} />
+                <ThemedText style={styles.photoSourceText}>{t('photoSourceCamera')}</ThemedText>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('photoSourceLibrary')}
+                style={styles.photoSourceButton}
+                onPress={() => void pickAndSavePhoto('library')}
+                testID="e2e_detail_photo_library"
+              >
+                <ThemedText style={styles.photoSourceText}>{t('photoSourceLibrary')}</ThemedText>
+              </Pressable>
+            </View>
 
             {photos.length === 0 && (
               <ThemedText style={styles.emptyPhotos}>{t('photoEmpty')}</ThemedText>
@@ -1404,16 +1426,28 @@ const styles = StyleSheet.create({
   },
   wateringHistoryLinkText: { fontSize: 15, fontWeight: '500', color: BRAND_GREEN },
   wateringHistoryLinkArrow: { fontSize: 20, color: TEXT_SECONDARY },
-  photoAddBtn: {
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BRAND_GREEN,
-    alignItems: 'center',
-    minHeight: 44,
-    justifyContent: 'center',
+  // Sess15 PR-QQ: 新規 modal BonsaiBasicForm.photoSourceButton と完全同 pattern。
+  photoSectionLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  photoSectionOptionalLabel: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    color: TEXT_MUTED,
+    letterSpacing: 0.8,
   },
-  photoAddText: { color: BRAND_GREEN, fontSize: 15, fontWeight: '500' },
+  photoSourceRow: { flexDirection: 'row', gap: 10 },
+  photoSourceButton: {
+    flex: 1,
+    height: 44,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: BG_SURFACE,
+  },
+  photoSourceText: { fontSize: 14, fontWeight: '500' },
   emptyPhotos: { opacity: 0.6, textAlign: 'center', paddingVertical: 12 },
   yearBlock: { gap: 8 },
   yearLabel: { fontSize: 13, opacity: 0.7 },
