@@ -3,11 +3,19 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { CameraIcon, EventIcon, MoreVerticalIcon } from '@/src/components/icons';
+import { CameraIcon, EventIcon } from '@/src/components/icons';
 import {
   BonsaiBasicFormFields,
   type BonsaiBasicFormState,
@@ -525,43 +533,8 @@ export default function BonsaiDetailScreen() {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: c.background }]}>
-      {/* mockup v1.0 detail-screens.jsx DetailHeader 整合: Header 右 ⋮ メニュー (A8 で簡易 Alert ベース実装、A9 で ProLockModal、本格 overlay panel は別 Issue 予定) */}
-      <Stack.Screen
-        options={{
-          headerRight: () => (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('detailMoreMenu')}
-              testID="e2e_detail_more_menu_button"
-              onPress={() => {
-                Alert.alert(t('detailMoreMenu'), undefined, [
-                  {
-                    text: t('detailBasicEdit'),
-                    onPress: () => setActiveTab('basic'),
-                  },
-                  {
-                    text: t('detailMenuExportPdf'),
-                    onPress: () => {
-                      // A9 PR: ProLockModal 整合 = Free なら useGoToPaywall で Paywall 画面に遷移、Pro は PDF 出力 (実装は Issue 起票予定)
-                      if (isPro) {
-                        Alert.alert(t('detailMenuExportPdf'), undefined, [{ text: t('ok') }]);
-                      } else {
-                        goToPaywall(t('detailExportProTitle'), t('detailExportProDesc'));
-                      }
-                    },
-                  },
-                  // Sess15 PR-SS: アーカイブを ⋮ メニューから削除 (BonsaiBasicSection 内 inline button に集約、 重複回避)。
-                  { text: t('cancel'), style: 'cancel' },
-                ]);
-              }}
-              style={styles.headerMenuButton}
-              hitSlop={8}
-            >
-              <MoreVerticalIcon size={22} color={c.text} />
-            </Pressable>
-          ),
-        }}
-      />
+      {/* Sess15 PR-TT (Q19 D1): ⋮ menu 完全削除。
+          残機能 (基本情報編集 = タブ重複、 PDF 出力 = 未実装) は user 真意により全廃。 */}
       {/* ADR-0020 §Notes Amended (2026-05-09): DetailTabs 順序 = 作業履歴 / 予定 / 基本情報 (mockup v1.0 整合) */}
       {/* Issue #439: タブバーは sticky (画面上部固定)、Hero は ScrollView 内に移動して全画面スクロールできるようにする */}
       <View style={styles.detailTabs}>
@@ -596,288 +569,298 @@ export default function BonsaiDetailScreen() {
         })}
       </View>
 
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          // Sess15 PR-SS: sticky footer 廃止 (PR-RR revert)、 Tab bar + 余裕のみ。
-          { paddingBottom: tabBarHeight + 32 },
-        ]}
-        keyboardShouldPersistTaps="handled"
+      {/* Sess15 PR-TT: KeyboardAvoidingView で TextInput focus 時にキーボードが入力欄を隠さないよう調整。
+          iOS は 'padding'、 Android は 'height' (windowSoftInputMode=adjustResize と協調)。 */}
+      <KeyboardAvoidingView
+        style={styles.flexOne}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
       >
-        {/* Issue #439: Hero を ScrollView 内に移動 (画像が見える範囲より下のみスクロールできる問題を解消、Hero 含めて全画面スクロール可能に) */}
-        <BonsaiHero
-          coverUri={coverUri}
-          bonsaiName={item.name}
-          speciesCommonName={item.species?.commonName ?? null}
-          speciesScientificName={item.species?.scientificName ?? null}
-          styleLabel={item.style ? t(`bonsaiStyle_${item.style}` as TranslationKey) : null}
-        />
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContent,
+            // Sess15 PR-SS: sticky footer 廃止 (PR-RR revert)、 Tab bar + 余裕のみ。
+            { paddingBottom: tabBarHeight + 32 },
+          ]}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Issue #439: Hero を ScrollView 内に移動 (画像が見える範囲より下のみスクロールできる問題を解消、Hero 含めて全画面スクロール可能に) */}
+          <BonsaiHero
+            coverUri={coverUri}
+            bonsaiName={item.name}
+            speciesCommonName={item.species?.commonName ?? null}
+            speciesScientificName={item.species?.scientificName ?? null}
+            styleLabel={item.style ? t(`bonsaiStyle_${item.style}` as TranslationKey) : null}
+          />
 
-        {/* Issue #440 Phase 1: 旧 水やり概要セクション (LastWateredText + 水やり履歴を見るボタン)
+          {/* Issue #440 Phase 1: 旧 水やり概要セクション (LastWateredText + 水やり履歴を見るボタン)
             は削除。横断 watering 履歴は CareHub (ふりかえりタブ) 経由で到達可能。 */}
 
-        {/* Sess15 PR-SS: 基本情報タブ = BonsaiBasicFormFields (edit モード)。
+          {/* Sess15 PR-SS: 基本情報タブ = BonsaiBasicFormFields (edit モード)。
             photoSection は customPhotoBlock prop 経由で BonsaiBasicFormFields の「タグ後・メモ前」 slot に挿入。
             新規 modal (PR-CC 案 P) と field 順序を完全 1:1 一致。 */}
-        {activeTab === 'basic' && (
-          <BonsaiBasicSection
-            form={basicForm}
-            onArchive={handleArchive}
-            customPhotoBlock={
-              <View style={styles.section}>
-                <View style={styles.photoSectionLabelRow}>
-                  <ThemedText type="defaultSemiBold">
-                    {t('bonsaiFieldPhotos')} ({photoCount})
-                  </ThemedText>
-                  <ThemedText style={styles.photoSectionOptionalLabel}>
-                    {t('fieldOptionalLabel')}
-                  </ThemedText>
-                </View>
-                <View style={styles.photoSourceRow}>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={t('photoSourceCamera')}
-                    style={styles.photoSourceButton}
-                    onPress={() => void pickAndSavePhoto('camera')}
-                    testID="e2e_detail_photo_camera"
-                  >
-                    <CameraIcon size={20} />
-                    <ThemedText style={styles.photoSourceText}>{t('photoSourceCamera')}</ThemedText>
-                  </Pressable>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={t('photoSourceLibrary')}
-                    style={styles.photoSourceButton}
-                    onPress={() => void pickAndSavePhoto('library')}
-                    testID="e2e_detail_photo_library"
-                  >
-                    <ThemedText style={styles.photoSourceText}>
-                      {t('photoSourceLibrary')}
+          {activeTab === 'basic' && (
+            <BonsaiBasicSection
+              form={basicForm}
+              onArchive={handleArchive}
+              customPhotoBlock={
+                <View style={styles.section}>
+                  <View style={styles.photoSectionLabelRow}>
+                    <ThemedText type="defaultSemiBold">
+                      {t('bonsaiFieldPhotos')} ({photoCount})
                     </ThemedText>
-                  </Pressable>
+                    <ThemedText style={styles.photoSectionOptionalLabel}>
+                      {t('fieldOptionalLabel')}
+                    </ThemedText>
+                  </View>
+                  <View style={styles.photoSourceRow}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={t('photoSourceCamera')}
+                      style={styles.photoSourceButton}
+                      onPress={() => void pickAndSavePhoto('camera')}
+                      testID="e2e_detail_photo_camera"
+                    >
+                      <CameraIcon size={20} />
+                      <ThemedText style={styles.photoSourceText}>
+                        {t('photoSourceCamera')}
+                      </ThemedText>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={t('photoSourceLibrary')}
+                      style={styles.photoSourceButton}
+                      onPress={() => void pickAndSavePhoto('library')}
+                      testID="e2e_detail_photo_library"
+                    >
+                      <ThemedText style={styles.photoSourceText}>
+                        {t('photoSourceLibrary')}
+                      </ThemedText>
+                    </Pressable>
+                  </View>
+
+                  {photos.length === 0 && (
+                    <ThemedText style={styles.emptyPhotos}>{t('photoEmpty')}</ThemedText>
+                  )}
+
+                  {photos.map((photo, idx) => (
+                    <PhotoCard
+                      key={photo.id}
+                      photo={photo}
+                      index={idx}
+                      total={photos.length}
+                      caption={captions[photo.id] ?? ''}
+                      onCaptionChange={(text) => handleCaptionChange(photo.id, text)}
+                      onCaptionBlur={() => void handleCaptionBlur(photo.id)}
+                      onMoveUp={() => void handleMovePhoto(idx, idx - 1)}
+                      onMoveDown={() => void handleMovePhoto(idx, idx + 1)}
+                      onDelete={() => handleDeletePhoto(photo)}
+                      onSetCover={() => void handleSetCover(photo.id)}
+                    />
+                  ))}
+
+                  {/* 削除 undo Banner (Repolog 流用、5 秒以内に「元に戻す」で復元)。 */}
+                  {pendingDeletion != null && (
+                    <PhotoUndoBanner
+                      text={t('photoDeletedBanner')}
+                      actionLabel={t('photoUndoLabel')}
+                      onUndo={handleUndoDeletion}
+                    />
+                  )}
                 </View>
+              }
+            />
+          )}
 
-                {photos.length === 0 && (
-                  <ThemedText style={styles.emptyPhotos}>{t('photoEmpty')}</ThemedText>
-                )}
-
-                {photos.map((photo, idx) => (
-                  <PhotoCard
-                    key={photo.id}
-                    photo={photo}
-                    index={idx}
-                    total={photos.length}
-                    caption={captions[photo.id] ?? ''}
-                    onCaptionChange={(text) => handleCaptionChange(photo.id, text)}
-                    onCaptionBlur={() => void handleCaptionBlur(photo.id)}
-                    onMoveUp={() => void handleMovePhoto(idx, idx - 1)}
-                    onMoveDown={() => void handleMovePhoto(idx, idx + 1)}
-                    onDelete={() => handleDeletePhoto(photo)}
-                    onSetCover={() => void handleSetCover(photo.id)}
-                  />
-                ))}
-
-                {/* 削除 undo Banner (Repolog 流用、5 秒以内に「元に戻す」で復元)。 */}
-                {pendingDeletion != null && (
-                  <PhotoUndoBanner
-                    text={t('photoDeletedBanner')}
-                    actionLabel={t('photoUndoLabel')}
-                    onUndo={handleUndoDeletion}
-                  />
-                )}
-              </View>
-            }
-          />
-        )}
-
-        {/* Issue #440 Phase 1: 作業履歴 Tab — フィルタ chip + 連続日まとめ events 一覧。
+          {/* Issue #440 Phase 1: 作業履歴 Tab — フィルタ chip + 連続日まとめ events 一覧。
             mockup `bonsai-detail-history-01/02/03.png` 整合。FAB は ScrollView の外 (root)
             に absolute 配置 (画面右下、tab bar の上)。 */}
-        {activeTab === 'history' && (
-          <View style={styles.section}>
-            {/* フィルタ chip 行 (横並び、すべて / 水やり / 剪定 / 針金 / 植替え) */}
-            <View style={styles.historyFilterRow}>
-              {(['all', 'watering', 'pruning', 'wiring', 'repotting'] as const).map((f) => {
-                const on = historyFilter === f;
-                const labelKey: TranslationKey =
-                  f === 'all'
-                    ? 'historyFilterAll'
-                    : f === 'watering'
-                      ? 'eventType_watering'
-                      : f === 'pruning'
-                        ? 'eventType_pruning'
-                        : f === 'wiring'
-                          ? 'eventType_wiring'
-                          : 'eventType_repotting';
-                return (
-                  <Pressable
-                    key={f}
-                    accessibilityRole="tab"
-                    accessibilityState={{ selected: on }}
-                    accessibilityLabel={t(labelKey)}
-                    style={[styles.historyFilterChip, on && styles.historyFilterChipOn]}
-                    onPress={() => setHistoryFilter(f)}
-                    testID={`e2e_history_filter_${f}`}
-                  >
-                    <ThemedText
-                      style={[styles.historyFilterChipText, on && styles.historyFilterChipTextOn]}
+          {activeTab === 'history' && (
+            <View style={styles.section}>
+              {/* フィルタ chip 行 (横並び、すべて / 水やり / 剪定 / 針金 / 植替え) */}
+              <View style={styles.historyFilterRow}>
+                {(['all', 'watering', 'pruning', 'wiring', 'repotting'] as const).map((f) => {
+                  const on = historyFilter === f;
+                  const labelKey: TranslationKey =
+                    f === 'all'
+                      ? 'historyFilterAll'
+                      : f === 'watering'
+                        ? 'eventType_watering'
+                        : f === 'pruning'
+                          ? 'eventType_pruning'
+                          : f === 'wiring'
+                            ? 'eventType_wiring'
+                            : 'eventType_repotting';
+                  return (
+                    <Pressable
+                      key={f}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: on }}
+                      accessibilityLabel={t(labelKey)}
+                      style={[styles.historyFilterChip, on && styles.historyFilterChipOn]}
+                      onPress={() => setHistoryFilter(f)}
+                      testID={`e2e_history_filter_${f}`}
                     >
-                      {t(labelKey)}
-                    </ThemedText>
-                  </Pressable>
+                      <ThemedText
+                        style={[styles.historyFilterChipText, on && styles.historyFilterChipTextOn]}
+                      >
+                        {t(labelKey)}
+                      </ThemedText>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {historyGroups.length === 0 && (
+                <ThemedText style={styles.emptyPhotos}>{t('eventEmpty')}</ThemedText>
+              )}
+
+              {historyGroups.map((entry) => {
+                // 連続日 group: 「水やり ×3  4月20日 ～ 4月22日  3回まとめて表示 個別に開く ▼」
+                if (entry.kind === 'group') {
+                  const key = entry.events[0].id;
+                  const expanded = expandedGroupIds.has(key);
+                  const startLabel = formatDate(`${entry.startDate}T00:00:00.000Z`, lang);
+                  const endLabel = formatDate(`${entry.endDate}T00:00:00.000Z`, lang);
+                  return (
+                    <View key={key}>
+                      <Pressable
+                        style={styles.eventRow}
+                        accessibilityRole="button"
+                        accessibilityLabel={t(`eventType_${entry.type}` as TranslationKey)}
+                        onPress={() => toggleGroupExpand(key)}
+                        testID={`e2e_history_group_toggle_${key}`}
+                      >
+                        <View style={styles.eventIconBox}>
+                          <EventIcon type={entry.type} size={20} />
+                        </View>
+                        <View style={styles.eventContent}>
+                          <View style={styles.eventRowMain}>
+                            <View style={styles.eventLabelWithCount}>
+                              <ThemedText style={styles.eventLabel}>
+                                {t(`eventType_${entry.type}` as TranslationKey)}
+                              </ThemedText>
+                              <View style={styles.eventCountBadge}>
+                                <ThemedText style={styles.eventCountBadgeText}>
+                                  ×{entry.events.length}
+                                </ThemedText>
+                              </View>
+                            </View>
+                            <ThemedText style={styles.eventRowDate}>
+                              {startLabel} ～ {endLabel}
+                            </ThemedText>
+                          </View>
+                          <ThemedText style={styles.eventGroupToggle}>
+                            {t('historyGroupToggle')
+                              .replace('{count}', String(entry.events.length))
+                              .replace('{caret}', expanded ? '▲' : '▼')}
+                          </ThemedText>
+                        </View>
+                      </Pressable>
+                      {expanded &&
+                        entry.events.map((ev) => (
+                          <EventSingleRow
+                            key={ev.id}
+                            ev={ev}
+                            events={events}
+                            lang={lang}
+                            t={t}
+                            confirmDeleteEvent={confirmDeleteEvent}
+                            indent
+                          />
+                        ))}
+                    </View>
+                  );
+                }
+                return (
+                  <EventSingleRow
+                    key={entry.event.id}
+                    ev={entry.event}
+                    events={events}
+                    lang={lang}
+                    t={t}
+                    confirmDeleteEvent={confirmDeleteEvent}
+                  />
                 );
               })}
             </View>
+          )}
 
-            {historyGroups.length === 0 && (
-              <ThemedText style={styles.emptyPhotos}>{t('eventEmpty')}</ThemedText>
-            )}
+          {/* Sess15 PR-NN: 旧 basic Tab 末尾アーカイブボタンを BonsaiBasicSection 内に移動 (保存 / アーカイブ同 height 56 統一)。 */}
 
-            {historyGroups.map((entry) => {
-              // 連続日 group: 「水やり ×3  4月20日 ～ 4月22日  3回まとめて表示 個別に開く ▼」
-              if (entry.kind === 'group') {
-                const key = entry.events[0].id;
-                const expanded = expandedGroupIds.has(key);
-                const startLabel = formatDate(`${entry.startDate}T00:00:00.000Z`, lang);
-                const endLabel = formatDate(`${entry.endDate}T00:00:00.000Z`, lang);
-                return (
-                  <View key={key}>
-                    <Pressable
-                      style={styles.eventRow}
-                      accessibilityRole="button"
-                      accessibilityLabel={t(`eventType_${entry.type}` as TranslationKey)}
-                      onPress={() => toggleGroupExpand(key)}
-                      testID={`e2e_history_group_toggle_${key}`}
-                    >
-                      <View style={styles.eventIconBox}>
-                        <EventIcon type={entry.type} size={20} />
-                      </View>
-                      <View style={styles.eventContent}>
-                        <View style={styles.eventRowMain}>
-                          <View style={styles.eventLabelWithCount}>
-                            <ThemedText style={styles.eventLabel}>
-                              {t(`eventType_${entry.type}` as TranslationKey)}
-                            </ThemedText>
-                            <View style={styles.eventCountBadge}>
-                              <ThemedText style={styles.eventCountBadgeText}>
-                                ×{entry.events.length}
-                              </ThemedText>
-                            </View>
-                          </View>
-                          <ThemedText style={styles.eventRowDate}>
-                            {startLabel} ～ {endLabel}
-                          </ThemedText>
-                        </View>
-                        <ThemedText style={styles.eventGroupToggle}>
-                          {t('historyGroupToggle')
-                            .replace('{count}', String(entry.events.length))
-                            .replace('{caret}', expanded ? '▲' : '▼')}
-                        </ThemedText>
-                      </View>
-                    </Pressable>
-                    {expanded &&
-                      entry.events.map((ev) => (
-                        <EventSingleRow
-                          key={ev.id}
-                          ev={ev}
-                          events={events}
-                          lang={lang}
-                          t={t}
-                          confirmDeleteEvent={confirmDeleteEvent}
-                          indent
-                        />
-                      ))}
-                  </View>
-                );
-              }
-              return (
-                <EventSingleRow
-                  key={entry.event.id}
-                  ev={entry.event}
-                  events={events}
-                  lang={lang}
-                  t={t}
-                  confirmDeleteEvent={confirmDeleteEvent}
-                />
-              );
-            })}
-          </View>
-        )}
-
-        {/* Sess15 PR-NN: 旧 basic Tab 末尾アーカイブボタンを BonsaiBasicSection 内に移動 (保存 / アーカイブ同 height 56 統一)。 */}
-
-        {/*
-         * Issue #441 Phase 1: 予定タブを timeline 縦線 + 連続日 mark + 詳細メモに改修。
-         * mockup `bonsai-detail-timeline-01/02.png` 整合。FAB は ScrollView の外 (root)
-         * に absolute 配置。
-         */}
-        {activeTab === 'timeline' && (
-          <View style={styles.section}>
-            {/* Issue #441 Phase 2: 「これからの予定」 + 右側 secondary label
+          {/*
+           * Issue #441 Phase 1: 予定タブを timeline 縦線 + 連続日 mark + 詳細メモに改修。
+           * mockup `bonsai-detail-timeline-01/02.png` 整合。FAB は ScrollView の外 (root)
+           * に absolute 配置。
+           */}
+          {activeTab === 'timeline' && (
+            <View style={styles.section}>
+              {/* Issue #441 Phase 2: 「これからの予定」 + 右側 secondary label
                 「過去水やりは折りたたみ」 (mockup `bonsai-detail-timeline-01/02.png` 整合)。
                 過去水やりは作業履歴タブ + ふりかえりタブ CrossWateringHistory で参照可能。 */}
-            <View style={styles.timelineHeader}>
-              <ThemedText type="subtitle">{t('detailTimelineSectionTitle')}</ThemedText>
-              <ThemedText style={styles.timelineHeaderSecondary}>
-                {t('detailTimelinePastCollapsed')}
-              </ThemedText>
-            </View>
-            {(() => {
-              const plannedEvents = events
-                .filter((e) => e.status === 'planned')
-                .sort((a, b) => a.occurredAtUtc.localeCompare(b.occurredAtUtc));
-              // Sess12 PR-J: 「今日」 緑大円 row を先頭に追加 (mockup bonsai-detail-timeline-01/02 整合)
-              // events 0 件でも「今日」 ヘッダー表示で「これからの予定の起点」 を明示
-              const todayLabel = t('detailTimelineToday');
-              const todayDate = formatDate(nowUtc() as string, lang);
-              const todayRow = (
-                <View key="__today__" style={styles.timelineRow} testID="e2e_timeline_today">
-                  <View style={styles.timelineLeft}>
-                    <View style={[styles.timelineLine, styles.timelineLineHidden]} />
-                    <View style={[styles.timelineDot, styles.timelineDotToday]} />
-                    <View
-                      style={[
-                        styles.timelineLine,
-                        plannedEvents.length === 0 && styles.timelineLineHidden,
-                      ]}
-                    />
+              <View style={styles.timelineHeader}>
+                <ThemedText type="subtitle">{t('detailTimelineSectionTitle')}</ThemedText>
+                <ThemedText style={styles.timelineHeaderSecondary}>
+                  {t('detailTimelinePastCollapsed')}
+                </ThemedText>
+              </View>
+              {(() => {
+                const plannedEvents = events
+                  .filter((e) => e.status === 'planned')
+                  .sort((a, b) => a.occurredAtUtc.localeCompare(b.occurredAtUtc));
+                // Sess12 PR-J: 「今日」 緑大円 row を先頭に追加 (mockup bonsai-detail-timeline-01/02 整合)
+                // events 0 件でも「今日」 ヘッダー表示で「これからの予定の起点」 を明示
+                const todayLabel = t('detailTimelineToday');
+                const todayDate = formatDate(nowUtc() as string, lang);
+                const todayRow = (
+                  <View key="__today__" style={styles.timelineRow} testID="e2e_timeline_today">
+                    <View style={styles.timelineLeft}>
+                      <View style={[styles.timelineLine, styles.timelineLineHidden]} />
+                      <View style={[styles.timelineDot, styles.timelineDotToday]} />
+                      <View
+                        style={[
+                          styles.timelineLine,
+                          plannedEvents.length === 0 && styles.timelineLineHidden,
+                        ]}
+                      />
+                    </View>
+                    <View style={styles.timelineContent}>
+                      <ThemedText style={styles.timelineTodayLabel}>{todayLabel}</ThemedText>
+                      <ThemedText style={styles.timelineTodayDate}>{todayDate}</ThemedText>
+                    </View>
                   </View>
-                  <View style={styles.timelineContent}>
-                    <ThemedText style={styles.timelineTodayLabel}>{todayLabel}</ThemedText>
-                    <ThemedText style={styles.timelineTodayDate}>{todayDate}</ThemedText>
-                  </View>
-                </View>
-              );
-              if (plannedEvents.length === 0) {
+                );
+                if (plannedEvents.length === 0) {
+                  return (
+                    <>
+                      {todayRow}
+                      <ThemedText style={styles.emptyPhotos} testID="e2e_timeline_empty">
+                        {t('detailTimelineEmpty')}
+                      </ThemedText>
+                    </>
+                  );
+                }
+                const groups = groupContinuousEventsAsc(plannedEvents, getTzOffsetMin());
                 return (
                   <>
                     {todayRow}
-                    <ThemedText style={styles.emptyPhotos} testID="e2e_timeline_empty">
-                      {t('detailTimelineEmpty')}
-                    </ThemedText>
+                    {groups.map((entry, idx) => (
+                      <TimelineRow
+                        key={entry.kind === 'group' ? entry.events[0].id : entry.event.id}
+                        entry={entry}
+                        isFirst={false}
+                        isLast={idx === groups.length - 1}
+                        lang={lang}
+                        t={t}
+                      />
+                    ))}
                   </>
                 );
-              }
-              const groups = groupContinuousEventsAsc(plannedEvents, getTzOffsetMin());
-              return (
-                <>
-                  {todayRow}
-                  {groups.map((entry, idx) => (
-                    <TimelineRow
-                      key={entry.kind === 'group' ? entry.events[0].id : entry.event.id}
-                      entry={entry}
-                      isFirst={false}
-                      isLast={idx === groups.length - 1}
-                      lang={lang}
-                      t={t}
-                    />
-                  ))}
-                </>
-              );
-            })()}
-          </View>
-        )}
-      </ScrollView>
+              })()}
+            </View>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Issue #440 Phase 1: 緑 FAB (画面右下、tab bar の上)。作業履歴タブ表示中のみ可視、
           tap で WorkPickerSheet を開く (mockup `bonsai-detail-history-01.png` の緑「+」FAB 整合)。 */}
@@ -1235,6 +1218,8 @@ function EventSingleRow({
 const styles = StyleSheet.create({
   // backgroundColor は useColors の c.background で動的指定 (light/dark 両対応)
   container: { flex: 1 },
+  // Sess15 PR-TT: KeyboardAvoidingView 内部 ScrollView の親 wrapper。
+  flexOne: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   scrollContent: { padding: 16, gap: 16 },
   section: { gap: 8 },
@@ -1562,9 +1547,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     letterSpacing: 0.5,
   },
+  // Sess15 PR-TT: gap 16 → 24 (メモ欄と アーカイブ button の overlap 解消)。
   basicFormSection: {
     padding: 16,
-    gap: 16,
+    gap: 24,
   },
 });
 

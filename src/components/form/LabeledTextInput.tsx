@@ -10,8 +10,15 @@
  *
  * 用途: BonsaiBasicForm の名前 / 入手元 / 鉢材質 / メモ / 鉢幅 / 鉢深さ など。
  */
-import React from 'react';
-import { StyleSheet, TextInput, View, type KeyboardTypeOptions } from 'react-native';
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  TextInput,
+  View,
+  type KeyboardTypeOptions,
+  type NativeSyntheticEvent,
+  type TextInputContentSizeChangeEventData,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import {
@@ -75,6 +82,22 @@ export function LabeledTextInput({
 
   // Sess14 PR-Q: label="" の場合 labelRow skip (caller 側で外部ラベル提供時の余白問題回避)。
   const hasLabel = label.length > 0;
+
+  // Sess15 PR-TT: multiline auto-grow (Q18 H1 採用)。
+  // minHeight = 96 (4 行)、 maxHeight = 380 (約 16 行) で上限制御、 超過は内部 scroll。
+  const MULTILINE_MIN_HEIGHT = 96;
+  const MULTILINE_MAX_HEIGHT = 380;
+  const [contentHeight, setContentHeight] = useState<number>(MULTILINE_MIN_HEIGHT);
+  const handleContentSizeChange = (
+    e: NativeSyntheticEvent<TextInputContentSizeChangeEventData>,
+  ) => {
+    if (!multiline) return;
+    const next = Math.min(
+      MULTILINE_MAX_HEIGHT,
+      Math.max(MULTILINE_MIN_HEIGHT, e.nativeEvent.contentSize.height + 16),
+    );
+    setContentHeight(next);
+  };
   return (
     <View style={styles.field}>
       {hasLabel && (
@@ -100,6 +123,8 @@ export function LabeledTextInput({
         style={[
           styles.input,
           multiline && styles.inputMultiline,
+          // Sess15 PR-TT: multiline auto-grow (動的高さ)。
+          multiline && { height: contentHeight },
           overLimit && styles.inputOverLimit,
           !editable && styles.inputDisabled,
         ]}
@@ -114,6 +139,7 @@ export function LabeledTextInput({
         editable={editable}
         accessibilityLabel={accessibilityLabel ?? label}
         testID={testID}
+        onContentSizeChange={handleContentSizeChange}
       />
       {overLimit && (
         <ThemedText style={styles.overlimitText}>
