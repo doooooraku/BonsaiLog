@@ -734,6 +734,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   photoCaption: 'キャプション',
   photoMoveUp: '上に移動',
   photoMoveDown: '下に移動',
+  inputOverLimit: '上限に達しました',
 };
 
 export default ja;
