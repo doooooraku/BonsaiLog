@@ -48,6 +48,9 @@ type WateringDayDetailEntry = string | 'CONSUMED';
 /** 盆栽 新規登録結果 (bonsai-new modal、Phase G4 part 2) — 作成された bonsaiId を返却。 */
 type BonsaiCreateResult = string | 'CONSUMED';
 
+/** Sess13 PR-C: タグ追加結果 (tag-edit から caller 復帰時に新規 tagId を返却し caller で auto-select)。 */
+type TagAddResult = string | 'CONSUMED';
+
 type PickerStore = {
   // 樹種 (species)
   speciesPickerResult: SpeciesResult;
@@ -91,6 +94,11 @@ type PickerStore = {
   bonsaiCreateResult: BonsaiCreateResult;
   setBonsaiCreateResult: (bonsaiId: string) => void;
   consumeBonsaiCreateResult: () => string | undefined;
+
+  // Sess13 PR-C: タグ追加結果 (tag-edit returnTo=bonsai-create 時に caller で auto-select)
+  tagAddResult: TagAddResult;
+  setTagAddResult: (tagId: string) => void;
+  consumeTagAddResult: () => string | undefined;
 };
 
 export const usePickerStore = create<PickerStore>((set, get) => ({
@@ -154,6 +162,16 @@ export const usePickerStore = create<PickerStore>((set, get) => ({
     const result = get().bonsaiCreateResult;
     if (result === 'CONSUMED') return undefined;
     set({ bonsaiCreateResult: 'CONSUMED' });
+    return result;
+  },
+
+  // Sess13 PR-C: タグ追加結果
+  tagAddResult: 'CONSUMED',
+  setTagAddResult: (tagId) => set({ tagAddResult: tagId }),
+  consumeTagAddResult: () => {
+    const result = get().tagAddResult;
+    if (result === 'CONSUMED') return undefined;
+    set({ tagAddResult: 'CONSUMED' });
     return result;
   },
 }));
