@@ -96,6 +96,10 @@ export function useBonsaiBasicForm({
   const [pendingPhotos, setPendingPhotos] = useState<PendingPhoto[]>([]);
   const isPro = useProStore((s) => s.isPro);
   const [estimatedAgeText, setEstimatedAgeText] = useState('');
+  // Sess13 PR-D: 樹齢「不明」 明示 (schema v12 estimated_age_unknown column)。
+  // checkbox tap で estimatedAgeText を空に + ageUnknown = true。
+  // 数値入力時は ageUnknown 自動 false。
+  const [ageUnknown, setAgeUnknown] = useState(false);
   const [memo, setMemo] = useState('');
   const [purchaseDate, setPurchaseDate] = useState('');
   // Issue #455 Phase 2: 鉢情報 (テキスト自由入力、既存 pot_info JSON に { description } で保存)。
@@ -161,6 +165,7 @@ export function useBonsaiBasicForm({
     setEstimatedAgeText(
       editingBonsai.estimatedAge != null ? String(editingBonsai.estimatedAge) : '',
     );
+    setAgeUnknown(editingBonsai.estimatedAgeUnknown === 1);
     setMemo(editingBonsai.memo ?? '');
     setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
     // pot_info JSON から description を復元 (parse 失敗時は空文字 = legacy)
@@ -200,6 +205,7 @@ export function useBonsaiBasicForm({
       setEstimatedAgeText(
         editingBonsai.estimatedAge != null ? String(editingBonsai.estimatedAge) : '',
       );
+      setAgeUnknown(editingBonsai.estimatedAgeUnknown === 1);
       setMemo(editingBonsai.memo ?? '');
       setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
       try {
@@ -218,6 +224,7 @@ export function useBonsaiBasicForm({
       setAcquiredAt('');
       setPendingPhotos([]);
       setEstimatedAgeText('');
+      setAgeUnknown(false);
       setMemo('');
       setPurchaseDate('');
       setPotInfoText('');
@@ -287,15 +294,19 @@ export function useBonsaiBasicForm({
     if (!canSubmit) return;
     setSubmitting(true);
     try {
+      // Sess13 PR-D: ageUnknown=true なら estimatedAge は null 強制 (「不明」 明示)。
       const parsedAge = estimatedAgeText.trim() ? parseInt(estimatedAgeText.trim(), 10) : NaN;
       const estimatedAge =
-        Number.isFinite(parsedAge) && parsedAge > 0 && parsedAge < 10000 ? parsedAge : null;
+        !ageUnknown && Number.isFinite(parsedAge) && parsedAge > 0 && parsedAge < 10000
+          ? parsedAge
+          : null;
       const fields = {
         name: name.trim(),
         speciesId,
         style,
         acquiredAt: acquiredAt.trim() ? toIsoUtc(acquiredAt.trim()) : null,
         estimatedAge,
+        estimatedAgeUnknown: ageUnknown,
         memo: memo.trim() ? memo.trim() : null,
         purchaseDate: purchaseDate.trim() ? toIsoUtc(purchaseDate.trim()) : null,
         // Issue #455 Phase 2: 鉢情報を { description } JSON で pot_info column に保存
@@ -349,6 +360,7 @@ export function useBonsaiBasicForm({
   }, [
     canSubmit,
     estimatedAgeText,
+    ageUnknown,
     name,
     speciesId,
     style,
@@ -380,6 +392,8 @@ export function useBonsaiBasicForm({
     setAcquiredAt,
     estimatedAgeText,
     setEstimatedAgeText,
+    ageUnknown,
+    setAgeUnknown,
     memo,
     setMemo,
     purchaseDate,
@@ -427,6 +441,8 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     setAcquiredAt,
     estimatedAgeText,
     setEstimatedAgeText,
+    ageUnknown,
+    setAgeUnknown,
     memo,
     setMemo,
     purchaseDate,
@@ -578,15 +594,43 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldEstimatedAge')}</ThemedText>
           <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
         </View>
-        <TextInput
-          style={styles.input}
-          value={estimatedAgeText}
-          onChangeText={setEstimatedAgeText}
-          placeholder={t('bonsaiFieldEstimatedAgePlaceholder')}
-          accessibilityLabel={t('bonsaiFieldEstimatedAge')}
-          maxLength={4}
-          keyboardType="number-pad"
-        />
+        {/* Sess13 PR-D: 数値 input + 「不明」 checkbox の横並び。
+            「不明」 tap で input 値クリア + ageUnknown true、
+            数値入力時は ageUnknown 自動 false。 */}
+        <View style={styles.ageRow}>
+          <TextInput
+            style={[styles.input, styles.ageInput, ageUnknown && styles.inputDisabled]}
+            value={estimatedAgeText}
+            onChangeText={(text) => {
+              setEstimatedAgeText(text);
+              if (text.length > 0 && ageUnknown) setAgeUnknown(false);
+            }}
+            placeholder={t('bonsaiFieldEstimatedAgePlaceholder')}
+            accessibilityLabel={t('bonsaiFieldEstimatedAge')}
+            maxLength={4}
+            keyboardType="number-pad"
+            editable={!ageUnknown}
+          />
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: ageUnknown }}
+            accessibilityLabel={t('bonsaiFieldEstimatedAgeUnknown')}
+            style={styles.ageUnknownToggle}
+            onPress={() => {
+              const next = !ageUnknown;
+              setAgeUnknown(next);
+              if (next) setEstimatedAgeText('');
+            }}
+            testID="e2e_bonsai_create_age_unknown"
+          >
+            <View style={[styles.checkbox, ageUnknown && styles.checkboxChecked]}>
+              {ageUnknown && <ThemedText style={styles.checkboxMark}>✓</ThemedText>}
+            </View>
+            <ThemedText style={styles.ageUnknownLabel}>
+              {t('bonsaiFieldEstimatedAgeUnknown')}
+            </ThemedText>
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.field}>
@@ -804,6 +848,24 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   inputMultiline: { minHeight: 96, paddingVertical: 12 },
+  // Sess13 PR-D: 樹齢「不明」 checkbox 横並び。
+  ageRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  ageInput: { flex: 1 },
+  inputDisabled: { backgroundColor: BG_SURFACE, opacity: 0.5 },
+  ageUnknownToggle: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
+  checkboxMark: { color: ON_BRAND, fontSize: 14, fontWeight: '700', lineHeight: 16 },
+  ageUnknownLabel: { fontSize: 14 },
   tagChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tagChip: {
     paddingHorizontal: 12,

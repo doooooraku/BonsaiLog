@@ -602,6 +602,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   // --- T2-3 estimated age (schema v6) ---
   bonsaiFieldEstimatedAge: 'Estimated age',
   bonsaiFieldEstimatedAgePlaceholder: 'e.g. 35',
+  bonsaiFieldEstimatedAgeUnknown: 'Onbekend',
   ageEstimatedFormat: 'Leeftijd: {years} jaar',
   // --- T2-7 memo + required/optional labels (schema v7) ---
   bonsaiFieldMemo: 'Memo',

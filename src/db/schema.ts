@@ -26,11 +26,12 @@
  * - v9: bonsai_tags M:N (T2-6、 盆栽自体への直接タグ付け基盤)
  * - v10: bonsai に acquired_from カラム追加 (Issue #455 Phase 1)
  * - v11: event_tags 完全廃止 (Sess9 PR-1、 ADR-0008 §Notes Amended 2026-05-18、 dead code cleanup + bonsai_tags 一本化)
+ * - v12: bonsai に estimated_age_unknown カラム追加 (Sess13 PR-D、 樹齢「不明」 明示)
  */
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 11;
+export const SCHEMA_VERSION = 12;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -122,6 +123,7 @@ export const bonsai = sqliteTable(
     memo: text('memo'), // v7 追加: メモ (free-form text、null 可)
     purchaseDate: text('purchase_date'), // v8 追加: 購入日 (ISO 8601 UTC TEXT、acquiredAt とは別、null 可)
     acquiredFrom: text('acquired_from'), // v10 追加: 入手元メモ (free-form text、null 可、Issue #455 Phase 1)
+    estimatedAgeUnknown: integer('estimated_age_unknown').notNull().default(0), // v12 追加: 樹齢「不明」 明示 (0/1、 Sess13 PR-D)
     archivedAt: text('archived_at'), // ISO 8601 UTC TEXT (NULL ならアクティブ)
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
@@ -509,6 +511,18 @@ CREATE INDEX IF NOT EXISTS idx_bonsai_tags_tag_id ON bonsai_tags(tag_id);
  */
 export const schemaV11 = `
 DROP TABLE IF EXISTS event_tags;
+`;
+
+/**
+ * Migration v12 (Sess13 PR-D): bonsai に estimated_age_unknown カラム追加。
+ *
+ * - 樹齢「不明」 を明示的に保存 (0/1 boolean)
+ * - estimated_age が null + estimated_age_unknown = 0 → 未入力
+ * - estimated_age が null + estimated_age_unknown = 1 → 不明 (明示)
+ * - default 0 で既存 row は「未入力」 扱い (後方互換)
+ */
+export const schemaV12 = `
+ALTER TABLE bonsai ADD COLUMN estimated_age_unknown INTEGER NOT NULL DEFAULT 0;
 `;
 
 // ---------------------------------------------------------------------------

@@ -33,6 +33,7 @@ import {
   schemaV9,
   schemaV10,
   schemaV11,
+  schemaV12,
 } from './schema';
 import { SPECIES_SEED } from './seedSpecies';
 
@@ -222,6 +223,20 @@ async function migrate(db: SQLite.SQLiteDatabase) {
   if (version < 11) {
     await db.execAsync(schemaV11);
     version = 11;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v12 (Sess13 PR-D): bonsai に estimated_age_unknown カラム追加。
+  //
+  // - 樹齢「不明」 を明示保存 (0/1)
+  // - 既存 row は default 0 (= 未入力扱い)、 estimated_age と独立
+  // - hasColumn ガードで二重実行回避
+  // ---------------------------------------------------------------------------
+  if (version < 12) {
+    if (!(await hasColumn(db, 'bonsai', 'estimated_age_unknown'))) {
+      await db.execAsync(schemaV12);
+    }
+    version = 12;
   }
 
   // Always set version UNCONDITIONALLY (not inside an if-block).

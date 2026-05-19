@@ -602,6 +602,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   // --- T2-3 estimated age (schema v6) ---
   bonsaiFieldEstimatedAge: 'Estimated age',
   bonsaiFieldEstimatedAgePlaceholder: 'e.g. 35',
+  bonsaiFieldEstimatedAgeUnknown: '불명',
   ageEstimatedFormat: '수령: {years}년',
   // --- T2-7 memo + required/optional labels (schema v7) ---
   bonsaiFieldMemo: 'Memo',

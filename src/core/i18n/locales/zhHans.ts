@@ -594,6 +594,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   // --- T2-3 estimated age (schema v6) ---
   bonsaiFieldEstimatedAge: 'Estimated age',
   bonsaiFieldEstimatedAgePlaceholder: 'e.g. 35',
+  bonsaiFieldEstimatedAgeUnknown: '未知',
   ageEstimatedFormat: '树龄: {years}年',
   // --- T2-7 memo + required/optional labels (schema v7) ---
   bonsaiFieldMemo: 'Memo',
