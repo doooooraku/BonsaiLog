@@ -104,6 +104,13 @@ export default function PlanScreen() {
 
   const bonsaiMap = useMemo(() => new Map(bonsai.map((b) => [b.id, b])), [bonsai]);
 
+  // Sess12 PR-D 改善 C: 過去日選択時は FAB disable (予定追加禁止、 履歴閲覧は可)
+  // ISO 'YYYY-MM-DD' 形式で字列比較 OK (日付順 = 字列辞書順)
+  const isSelectedPastDate = useMemo(
+    () => selectedDateKey < todayLocalKey,
+    [selectedDateKey, todayLocalKey],
+  );
+
   const daysInMonth = getMonthDays(year, month);
   const firstDow = getFirstDow(year, month);
   const cells: (number | null)[] = [];
@@ -147,81 +154,139 @@ export default function PlanScreen() {
           動線は CareHub (ふりかえりタブ) → 針金がけ一覧 カード経由が単一情報源。
           principles.md v1.3 動線整合性ルール参照。 */}
 
-      <View style={styles.monthRow}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('planPrevMonth')}
-          onPress={goPrevMonth}
-          style={styles.monthArrow}
-          testID="e2e_plan_prev_month"
-        >
-          <ThemedText style={styles.monthArrowText}>{'‹'}</ThemedText>
-        </Pressable>
-        <ThemedText style={[styles.monthLabel, { color: c.text }]}>{monthLabel}</ThemedText>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('planNextMonth')}
-          onPress={goNextMonth}
-          style={styles.monthArrow}
-          testID="e2e_plan_next_month"
-        >
-          <ThemedText style={styles.monthArrowText}>{'›'}</ThemedText>
-        </Pressable>
-      </View>
+      {/* Sess12 PR-D 改善 A: 全体スクロール (カレンダー + listing 一緒に流れる)。
+          SearchHeader と FAB のみ固定、 他は ScrollView 内に配置。 */}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.monthRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('planPrevMonth')}
+            onPress={goPrevMonth}
+            style={styles.monthArrow}
+            testID="e2e_plan_prev_month"
+          >
+            <ThemedText style={styles.monthArrowText}>{'‹'}</ThemedText>
+          </Pressable>
+          <ThemedText style={[styles.monthLabel, { color: c.text }]}>{monthLabel}</ThemedText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('planNextMonth')}
+            onPress={goNextMonth}
+            style={styles.monthArrow}
+            testID="e2e_plan_next_month"
+          >
+            <ThemedText style={styles.monthArrowText}>{'›'}</ThemedText>
+          </Pressable>
+        </View>
 
-      <View style={styles.dowRow}>
-        {dowLabels.map((d, i) => (
-          <ThemedText key={i} style={[styles.dowText, { color: d.color }]}>
-            {d.label}
+        <View style={styles.dowRow}>
+          {dowLabels.map((d, i) => (
+            <ThemedText key={i} style={[styles.dowText, { color: d.color }]}>
+              {d.label}
+            </ThemedText>
+          ))}
+        </View>
+
+        <View style={styles.grid}>
+          {Array.from({ length: Math.ceil(cells.length / 7) }).map((_, w) => (
+            <View key={w} style={styles.weekRow}>
+              {cells.slice(w * 7, w * 7 + 7).map((d, i) => {
+                if (d == null) return <View key={i} style={styles.cell} />;
+                const dateKey = `${year}-${pad(month + 1)}-${pad(d)}`;
+                const dots = dotsByDay.get(dateKey) ?? 0;
+                const isSel = dateKey === selectedDateKey;
+                const isToday = dateKey === todayLocalKey;
+                return (
+                  <Pressable
+                    key={i}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${d}`}
+                    style={[styles.cell, isSel && styles.cellSel]}
+                    onPress={() => setSelectedDateKey(dateKey)}
+                    testID={`e2e_plan_cell_${dateKey}`}
+                  >
+                    <ThemedText
+                      style={[
+                        styles.cellText,
+                        { color: isToday ? BRAND_GREEN : c.text },
+                        isToday && styles.cellTextToday,
+                      ]}
+                    >
+                      {d}
+                    </ThemedText>
+                    <View style={styles.dotRow}>
+                      {Array.from({ length: Math.min(dots, 3) }).map((_, k) => (
+                        <View key={k} style={styles.dot} />
+                      ))}
+                      {/* Issue #321: mockup v1.0 「●●●+」 整合、4+ で「+」 インジケーター */}
+                      {dots > 3 && <ThemedText style={styles.dotPlus}>+</ThemedText>}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.listSection}>
+          <ThemedText style={styles.listLabel}>
+            {selectedDateKey === todayLocalKey
+              ? t('planSelectedListTodayLabel').replace('{count}', String(selectedDayEvents.length))
+              : t('planSelectedListLabel')
+                  .replace('{date}', selectedDateKey)
+                  .replace('{count}', String(selectedDayEvents.length))}
           </ThemedText>
-        ))}
-      </View>
-
-      <View style={styles.grid}>
-        {Array.from({ length: Math.ceil(cells.length / 7) }).map((_, w) => (
-          <View key={w} style={styles.weekRow}>
-            {cells.slice(w * 7, w * 7 + 7).map((d, i) => {
-              if (d == null) return <View key={i} style={styles.cell} />;
-              const dateKey = `${year}-${pad(month + 1)}-${pad(d)}`;
-              const dots = dotsByDay.get(dateKey) ?? 0;
-              const isSel = dateKey === selectedDateKey;
-              const isToday = dateKey === todayLocalKey;
+          {selectedDayEvents.length === 0 ? (
+            <ThemedText style={styles.emptyText}>{t('planSelectedEmpty')}</ThemedText>
+          ) : (
+            selectedDayEvents.map((e) => {
+              const b = bonsaiMap.get(e.bonsaiId);
               return (
                 <Pressable
-                  key={i}
+                  key={e.id}
                   accessibilityRole="button"
-                  accessibilityLabel={`${d}`}
-                  style={[styles.cell, isSel && styles.cellSel]}
-                  onPress={() => setSelectedDateKey(dateKey)}
-                  testID={`e2e_plan_cell_${dateKey}`}
+                  accessibilityLabel={b?.name ?? ''}
+                  style={styles.eventCard}
+                  onPress={() => router.push(`/(tabs)/bonsai/${e.bonsaiId}` as Href)}
+                  testID={`e2e_plan_event_${e.id}`}
                 >
-                  <ThemedText
-                    style={[
-                      styles.cellText,
-                      { color: isToday ? BRAND_GREEN : c.text },
-                      isToday && styles.cellTextToday,
-                    ]}
-                  >
-                    {d}
-                  </ThemedText>
-                  <View style={styles.dotRow}>
-                    {Array.from({ length: Math.min(dots, 3) }).map((_, k) => (
-                      <View key={k} style={styles.dot} />
-                    ))}
-                    {/* Issue #321: mockup v1.0 「●●●+」 整合、4+ で「+」 インジケーター */}
-                    {dots > 3 && <ThemedText style={styles.dotPlus}>+</ThemedText>}
+                  <View style={styles.eventIconBox}>
+                    {e.type === 'watering' ? (
+                      <DropletIcon size={18} />
+                    ) : (
+                      <EventIcon type={e.type as EventType} size={18} />
+                    )}
                   </View>
+                  <View style={styles.eventBody}>
+                    <ThemedText style={styles.eventBonsai} numberOfLines={1}>
+                      {b?.name ?? ''}
+                    </ThemedText>
+                    <ThemedText style={styles.eventLabel}>
+                      {t(`eventType_${e.type}` as Parameters<typeof t>[0])}
+                    </ThemedText>
+                  </View>
+                  {e.status === 'planned' && (
+                    <ThemedText style={styles.plannedLabel}>{t('planEventPlanned')}</ThemedText>
+                  )}
                 </Pressable>
               );
-            })}
-          </View>
-        ))}
-      </View>
+            })
+          )}
+        </View>
+      </ScrollView>
 
+      {/* Sess12 PR-D 改善 C: 過去日選択時は FAB disable (灰 + 押せない)。
+          履歴閲覧は selectedDateKey による listing 表示で引き続き可能。 */}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('planFabLabel')}
-        style={[styles.fab, { backgroundColor: c.tint, bottom: tabBarHeight + 16 }]}
+        accessibilityState={{ disabled: isSelectedPastDate }}
+        disabled={isSelectedPastDate}
+        style={[
+          styles.fab,
+          { backgroundColor: isSelectedPastDate ? TEXT_MUTED : c.tint, bottom: tabBarHeight + 16 },
+          isSelectedPastDate && styles.fabDisabled,
+        ]}
         onPress={() =>
           startBulkAction(
             bonsai.map((b) => ({ id: b.id, name: b.name })),
@@ -232,58 +297,16 @@ export default function PlanScreen() {
       >
         <PlusIcon size={28} color={ON_BRAND} />
       </Pressable>
-
-      <ScrollView contentContainerStyle={styles.listContent}>
-        <ThemedText style={styles.listLabel}>
-          {selectedDateKey === todayLocalKey
-            ? t('planSelectedListTodayLabel').replace('{count}', String(selectedDayEvents.length))
-            : t('planSelectedListLabel')
-                .replace('{date}', selectedDateKey)
-                .replace('{count}', String(selectedDayEvents.length))}
-        </ThemedText>
-        {selectedDayEvents.length === 0 ? (
-          <ThemedText style={styles.emptyText}>{t('planSelectedEmpty')}</ThemedText>
-        ) : (
-          selectedDayEvents.map((e) => {
-            const b = bonsaiMap.get(e.bonsaiId);
-            return (
-              <Pressable
-                key={e.id}
-                accessibilityRole="button"
-                accessibilityLabel={b?.name ?? ''}
-                style={styles.eventCard}
-                onPress={() => router.push(`/(tabs)/bonsai/${e.bonsaiId}` as Href)}
-                testID={`e2e_plan_event_${e.id}`}
-              >
-                <View style={styles.eventIconBox}>
-                  {e.type === 'watering' ? (
-                    <DropletIcon size={18} />
-                  ) : (
-                    <EventIcon type={e.type as EventType} size={18} />
-                  )}
-                </View>
-                <View style={styles.eventBody}>
-                  <ThemedText style={styles.eventBonsai} numberOfLines={1}>
-                    {b?.name ?? ''}
-                  </ThemedText>
-                  <ThemedText style={styles.eventLabel}>
-                    {t(`eventType_${e.type}` as Parameters<typeof t>[0])}
-                  </ThemedText>
-                </View>
-                {e.status === 'planned' && (
-                  <ThemedText style={styles.plannedLabel}>{t('planEventPlanned')}</ThemedText>
-                )}
-              </Pressable>
-            );
-          })
-        )}
-      </ScrollView>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  // Sess12 PR-D 改善 A: 全体 ScrollView の contentContainerStyle
+  // paddingBottom 96 で FAB と被らない (tabBarHeight + 16 + 56 余裕含む)
+  scrollContent: { paddingBottom: 96 },
+  listSection: { padding: 16, gap: 8 },
   monthRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -337,7 +360,6 @@ const styles = StyleSheet.create({
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: BRAND_GREEN },
   // Issue #321: 4+ events で「+」インジケーター (mockup v1.0「●●●+」整合)
   dotPlus: { fontSize: 10, lineHeight: 10, color: BRAND_GREEN, fontWeight: '700' },
-  listContent: { padding: 16, gap: 8, paddingBottom: 96 },
   listLabel: {
     fontFamily: 'Inter_400Regular',
     fontSize: 11,
@@ -395,4 +417,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
   },
+  // Sess12 PR-D 改善 C: 過去日選択時の FAB disable スタイル
+  fabDisabled: { opacity: 0.5, elevation: 0, shadowOpacity: 0 },
 });
