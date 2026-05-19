@@ -37,7 +37,7 @@ import {
   schemaV13,
   schemaV14,
 } from './schema';
-import { SPECIES_SEED } from './seedSpecies';
+import { SPECIES_SEED, SPECIES_SEED_IDS } from './seedSpecies';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
@@ -60,7 +60,12 @@ async function hasColumn(db: SQLite.SQLiteDatabase, table: string, column: strin
  * INSERT OR IGNORE で冪等性を担保 (再実行で既存データを上書きしない)。
  */
 async function seedSpeciesIfNeeded(db: SQLite.SQLiteDatabase) {
-  // 既に seed 済みなら早期リターン (パフォーマンス最適化)
+  // Sess15 PR-GG: ADR-0026 で 5 種化、 旧 50 種 seed の残骸を起動時 cleanup。
+  // INSERT OR IGNORE は冪等だが、 過去 50 種が残ると picker で表示されるため物理削除。
+  const placeholders = SPECIES_SEED_IDS.map(() => '?').join(',');
+  await db.runAsync(`DELETE FROM species WHERE id NOT IN (${placeholders});`, SPECIES_SEED_IDS);
+
+  // cleanup 後の件数で早期リターン判定 (5 種全て揃っていれば skip)
   const countRow = await db.getFirstAsync<{ count: number }>(
     'SELECT COUNT(*) AS count FROM species;',
   );

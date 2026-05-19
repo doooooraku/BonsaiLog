@@ -14,6 +14,7 @@
 import { getDb } from './db';
 import { snakeToCamelRow, snakeToCamelRows } from './rowMapper';
 import type { Species, SpeciesName } from './schema';
+import { SPECIES_SEED_IDS } from './seedSpecies';
 
 // ---------------------------------------------------------------------------
 // 型定義 (UI 用、species + 通称をフラットに合成)
@@ -148,6 +149,25 @@ export async function searchSpecies(query: string, locale: string): Promise<Spec
     results.push(await resolveCommonName(db, s, locale));
   }
   return results;
+}
+
+/**
+ * ADR-0026 / Sess15 PR-GG: SPECIES_SEED 5 種以外を DB から削除 (起動時 clean migration)。
+ *
+ * 過去 user なし前提 (案 α 採用) でも、 dev 環境では旧 50 種 seed の残骸が DB に残るため、
+ * 起動時に 5 種以外を物理削除する。
+ *
+ * - bonsai.species_id が削除対象を参照していた場合は NULL に reset (FK ON DELETE SET NULL)。
+ * - INSERT OR IGNORE の冪等性は SPECIES_SEED 側で保証されているので、 削除後の再 seed は不要。
+ */
+export async function cleanupObsoleteSpecies(): Promise<{ deleted: number }> {
+  const db = await getDb();
+  const placeholders = SPECIES_SEED_IDS.map(() => '?').join(',');
+  const result = await db.runAsync(
+    `DELETE FROM species WHERE id NOT IN (${placeholders});`,
+    SPECIES_SEED_IDS,
+  );
+  return { deleted: result.changes ?? 0 };
 }
 
 // ---------------------------------------------------------------------------
