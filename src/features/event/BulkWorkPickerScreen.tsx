@@ -35,6 +35,7 @@ import {
 } from '@/src/core/theme/colors';
 import { bulkLogEvents, bulkScheduleEvents } from '@/src/db/eventRepository';
 import type { EventType } from '@/src/db/schema';
+import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
@@ -99,6 +100,8 @@ export default function BulkWorkPickerScreen() {
       } catch (error) {
         console.warn('[bulk-schedule] failed:', error);
       }
+      // Sess12 PR-I: 通知 reschedule (planned events 変化 → 当日まとめ通知再予約)
+      void triggerSummaryReschedule(t);
       // Sess12 PR-G 改善 I: dismissAll は 1 階のみ閉じる仕様、 router.replace で予定タブに直接遷移
       router.replace('/(tabs)/plan' as Href);
       return;
