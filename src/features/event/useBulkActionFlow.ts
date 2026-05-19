@@ -41,6 +41,11 @@ export function useBulkActionFlow(mode: BulkActionMode) {
         return;
       }
       // 2+ 件: bonsai-multi-select modal を起動
+      // Sess12 PR-F bug fix: 新規 flow 起動時は bulkContext を clear (前回の selection が
+      // BonsaiMultiSelect の mount 時 restore で復元されないように)。
+      // BulkWorkPicker から ← で戻る場合は BonsaiMultiSelect が unmount しないので
+      // useState の selectedIds は React Navigation の screen alive 機構で維持される。
+      usePickerStore.getState().setBulkContext(null);
       router.push(`/bonsai-multi-select?mode=${mode}${dateParam}` as Href);
     },
     [mode, router],
