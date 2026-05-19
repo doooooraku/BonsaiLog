@@ -646,91 +646,90 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
 
   const showPhotoField = showPhotos && !isEdit;
 
+  // Sess15 PR-CC: 案 P 採用 — 写真は「タグ」 と「メモ」 の間 (新規モード時) に表示する。
+  // 必須項目を先頭に、 重い任意処理 (写真撮影/選択) を後半に集約することで入力放棄リスクを軽減。
+  const photoBlock = showPhotoField ? (
+    <View style={styles.field}>
+      <View style={styles.fieldLabelRow}>
+        <ThemedText type="defaultSemiBold">
+          {t('bonsaiFieldPhotos')} ({pendingPhotos.length})
+        </ThemedText>
+        <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+      </View>
+      {/* Sess13 PR-J: Repolog 流 2 button (カメラ / ライブラリ) 並列。 */}
+      <View style={styles.photoSourceRow}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('photoSourceCamera')}
+          style={styles.photoSourceButton}
+          onPress={handleTakePhotoCamera}
+          testID="e2e_bonsai_create_photo_camera"
+        >
+          <CameraIcon size={20} />
+          <ThemedText style={styles.photoSourceText}>{t('photoSourceCamera')}</ThemedText>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('photoSourceLibrary')}
+          style={styles.photoSourceButton}
+          onPress={handlePickPhoto}
+          testID="e2e_bonsai_create_photo_library"
+        >
+          <ThemedText style={styles.photoSourceText}>{t('photoSourceLibrary')}</ThemedText>
+        </Pressable>
+      </View>
+      {pendingPhotos.length > 0 && (
+        <ThemedText style={styles.photoHelpText}>{t('photoReorderHelp')}</ThemedText>
+      )}
+      {pendingPhotos.map((p, idx) => {
+        const isFirst = idx === 0;
+        const isLast = idx === pendingPhotos.length - 1;
+        return (
+          <View key={`${p.uri}-${idx}`} style={styles.photoCard}>
+            <View style={styles.photoCardToolbar}>
+              <ThemedText style={styles.photoCardIndex}>{idx + 1}</ThemedText>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('photoMoveUp')}
+                accessibilityState={{ disabled: isFirst }}
+                disabled={isFirst}
+                style={[styles.photoMoveButton, isFirst && styles.photoMoveButtonDisabled]}
+                onPress={() => handleMovePendingPhoto(idx, idx - 1)}
+                testID={`e2e_bonsai_create_photo_move_up_${idx}`}
+              >
+                <ThemedText style={styles.photoMoveText}>↑</ThemedText>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('photoMoveDown')}
+                accessibilityState={{ disabled: isLast }}
+                disabled={isLast}
+                style={[styles.photoMoveButton, isLast && styles.photoMoveButtonDisabled]}
+                onPress={() => handleMovePendingPhoto(idx, idx + 1)}
+                testID={`e2e_bonsai_create_photo_move_down_${idx}`}
+              >
+                <ThemedText style={styles.photoMoveText}>↓</ThemedText>
+              </Pressable>
+              <View style={{ flex: 1 }} />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('delete')}
+                style={styles.photoCardDeleteButton}
+                onPress={() => handleRemovePendingPhoto(idx)}
+                testID={`e2e_bonsai_create_photo_remove_${idx}`}
+              >
+                <ThemedText style={styles.photoCardDeleteText}>×</ThemedText>
+              </Pressable>
+            </View>
+            <Image source={{ uri: p.uri }} style={styles.photoCardImage} contentFit="cover" />
+          </View>
+        );
+      })}
+    </View>
+  ) : null;
+
   return (
     <>
-      {showPhotoField && (
-        <View style={styles.field}>
-          <View style={styles.fieldLabelRow}>
-            <ThemedText type="defaultSemiBold">
-              {t('bonsaiFieldPhotos')} ({pendingPhotos.length})
-            </ThemedText>
-            <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-          </View>
-          {/* Sess13 PR-J: Repolog 流 2 button (カメラ / ライブラリ) 並列。 */}
-          <View style={styles.photoSourceRow}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('photoSourceCamera')}
-              style={styles.photoSourceButton}
-              onPress={handleTakePhotoCamera}
-              testID="e2e_bonsai_create_photo_camera"
-            >
-              <CameraIcon size={20} />
-              <ThemedText style={styles.photoSourceText}>{t('photoSourceCamera')}</ThemedText>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('photoSourceLibrary')}
-              style={styles.photoSourceButton}
-              onPress={handlePickPhoto}
-              testID="e2e_bonsai_create_photo_library"
-            >
-              <ThemedText style={styles.photoSourceText}>{t('photoSourceLibrary')}</ThemedText>
-            </Pressable>
-          </View>
-          {pendingPhotos.length > 0 && (
-            <ThemedText style={styles.photoHelpText}>{t('photoReorderHelp')}</ThemedText>
-          )}
-          {/* Sess13 PR-J: 各写真を Repolog 流カードに */}
-          {/* Sess14 PR-T: 写真ごとのキャプション (200 文字メモ) 削除。 user 真意「冗長」、
-              主メモ欄 (bonsai.memo 500 文字) で十分。 photo card は toolbar + 画像のみ。 */}
-          {pendingPhotos.map((p, idx) => {
-            const isFirst = idx === 0;
-            const isLast = idx === pendingPhotos.length - 1;
-            return (
-              <View key={`${p.uri}-${idx}`} style={styles.photoCard}>
-                <View style={styles.photoCardToolbar}>
-                  <ThemedText style={styles.photoCardIndex}>{idx + 1}</ThemedText>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={t('photoMoveUp')}
-                    accessibilityState={{ disabled: isFirst }}
-                    disabled={isFirst}
-                    style={[styles.photoMoveButton, isFirst && styles.photoMoveButtonDisabled]}
-                    onPress={() => handleMovePendingPhoto(idx, idx - 1)}
-                    testID={`e2e_bonsai_create_photo_move_up_${idx}`}
-                  >
-                    <ThemedText style={styles.photoMoveText}>↑</ThemedText>
-                  </Pressable>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={t('photoMoveDown')}
-                    accessibilityState={{ disabled: isLast }}
-                    disabled={isLast}
-                    style={[styles.photoMoveButton, isLast && styles.photoMoveButtonDisabled]}
-                    onPress={() => handleMovePendingPhoto(idx, idx + 1)}
-                    testID={`e2e_bonsai_create_photo_move_down_${idx}`}
-                  >
-                    <ThemedText style={styles.photoMoveText}>↓</ThemedText>
-                  </Pressable>
-                  <View style={{ flex: 1 }} />
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={t('delete')}
-                    style={styles.photoCardDeleteButton}
-                    onPress={() => handleRemovePendingPhoto(idx)}
-                    testID={`e2e_bonsai_create_photo_remove_${idx}`}
-                  >
-                    <ThemedText style={styles.photoCardDeleteText}>×</ThemedText>
-                  </Pressable>
-                </View>
-                <Image source={{ uri: p.uri }} style={styles.photoCardImage} contentFit="cover" />
-              </View>
-            );
-          })}
-        </View>
-      )}
-
       {/* Sess13 PR-K: LabeledTextInput 共通化 (右上文字数 + 上限到達赤字) */}
       <LabeledTextInput
         label={t('bonsaiFieldName')}
@@ -1005,6 +1004,10 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
           </View>
         )}
       </View>
+
+      {/* Sess15 PR-CC: 写真フィールド (新規モードのみ表示) をタグの後 + メモの前に配置 (案 P)。
+          編集モード (showPhotoField=false) では別タブ (Photos) で扱うため、 ここでは何も render しない。 */}
+      {photoBlock}
 
       {/* Sess13 PR-K: メモを LabeledTextInput 共通化 (multiline + 文字数 + 上限赤字) */}
       <LabeledTextInput
