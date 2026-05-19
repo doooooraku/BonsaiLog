@@ -24,7 +24,6 @@ import {
   BORDER_DEFAULT,
   BRAND_GREEN,
   ON_BRAND,
-  TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
@@ -110,9 +109,6 @@ export default function BonsaiMultiSelectScreen() {
       testID="e2e_bonsai_multi_select_screen"
     >
       <View style={styles.header}>
-        <ThemedText style={[styles.title, { color: c.text }]}>
-          {t('bulkSelectModalTitle')}
-        </ThemedText>
         <ThemedText style={[styles.sub, { color: c.textSecondary }]}>
           {t('bulkSelectModalNotice').replace('{count}', String(selectedIds.size))}
         </ThemedText>
@@ -207,12 +203,6 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
     gap: 4,
-  },
-  title: {
-    fontFamily: 'NotoSerifJP_500Medium',
-    fontSize: 20,
-    letterSpacing: 0.5,
-    color: TEXT_PRIMARY,
   },
   sub: {
     fontSize: 13,

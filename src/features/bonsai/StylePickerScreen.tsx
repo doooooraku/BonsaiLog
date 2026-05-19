@@ -37,11 +37,6 @@ export default function StylePickerScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_style_picker_screen"
     >
-      <View style={styles.header}>
-        <ThemedText type="defaultSemiBold" style={styles.title}>
-          {t('bonsaiFieldStyle')}
-        </ThemedText>
-      </View>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Pressable
           testID="e2e_style_option_none"
@@ -79,8 +74,6 @@ export default function StylePickerScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
-  title: { fontSize: 18 },
   scroll: {
     paddingHorizontal: 16,
     paddingBottom: 32,

@@ -22,7 +22,7 @@ export default function ModalsLayout() {
       <Stack.Screen name="work-picker" options={{ title: '作業を選ぶ' }} />
       <Stack.Screen name="work-log-confirm" options={{ title: '作業を記録' }} />
       <Stack.Screen name="bonsai-multi-select" options={{ title: '盆栽を選ぶ' }} />
-      <Stack.Screen name="bulk-work-picker" options={{ title: 'まとめて作業を選ぶ' }} />
+      <Stack.Screen name="bulk-work-picker" options={{ title: '作業を選ぶ' }} />
       <Stack.Screen name="bulk-log-confirm" options={{ title: 'まとめて記録' }} />
       <Stack.Screen name="bulk-schedule-date" options={{ title: '予定日を選ぶ' }} />
       <Stack.Screen name="watering-day-detail" options={{ title: 'この日の水やり' }} />
