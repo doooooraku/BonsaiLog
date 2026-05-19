@@ -664,7 +664,7 @@ export default function BonsaiDetailScreen() {
             Picker BottomSheet (樹種 / 樹形) は ScrollView 内 nest 不可のため、画面 root に別途
             <BonsaiBasicFormPickerSheets> として配置している。
             Issue #440 Phase 2: 写真セクションを上に移動したため form は写真の下。 */}
-        {activeTab === 'basic' && <BonsaiBasicSection form={basicForm} onArchive={handleArchive} />}
+        {activeTab === 'basic' && <BonsaiBasicSection form={basicForm} />}
 
         {/* Issue #440 Phase 1: 作業履歴 Tab — フィルタ chip + 連続日まとめ events 一覧。
             mockup `bonsai-detail-history-01/02/03.png` 整合。FAB は ScrollView の外 (root)
@@ -916,6 +916,24 @@ export default function BonsaiDetailScreen() {
 
       {/* Phase G2-G5 (ADR-0024 Accepted): 作業記録 / 樹種 / 樹形 picker は全 formSheet 化、
           BonsaiBasicFormPickerSheets (旧 @gorhom 空関数) は Phase G5 で削除済。 */}
+
+      {/* Sess15 PR-PP: 基本情報タブ アクティブ時の保存 sticky footer
+          (新規 modal BonsaiCreateScreen と同 pattern、 user 真意「画面下部固定」)。 */}
+      {activeTab === 'basic' && (
+        <View style={styles.basicStickyFooter}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('save')}
+            accessibilityState={{ disabled: !basicForm.canSubmit }}
+            style={[styles.basicSaveButton, !basicForm.canSubmit && styles.basicSaveButtonDisabled]}
+            onPress={() => void basicForm.handleSubmit()}
+            disabled={!basicForm.canSubmit}
+            testID="e2e_detail_basic_save_button"
+          >
+            <ThemedText style={styles.basicSaveButtonText}>{t('save')}</ThemedText>
+          </Pressable>
+        </View>
+      )}
     </ThemedView>
   );
 
@@ -1489,14 +1507,13 @@ const styles = StyleSheet.create({
   },
   eventDate: { fontSize: 13, color: TEXT_SECONDARY, fontVariant: ['tabular-nums'] },
   entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
-  // Issue #439 + Sess15 PR-NN: 基本情報タブ inline form の保存 / アーカイブボタン (高さ 56 統一)。
+  // Sess15 PR-PP: 基本情報タブ 保存 button (sticky footer 内、 新規 modal BonsaiCreateScreen と同 pattern)。
   basicSaveButton: {
     height: 56,
     borderRadius: 12,
     backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 24,
   },
   basicSaveButtonDisabled: {
     backgroundColor: BORDER_DEFAULT,
@@ -1507,26 +1524,23 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     letterSpacing: 0.5,
   },
-  // Sess15 PR-NN: アーカイブを保存と同 height + 同 borderRadius、 outline red 維持。
-  basicArchiveButton: {
-    height: 56,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: DANGER,
-    backgroundColor: 'transparent',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 12,
-  },
-  basicArchiveButtonText: {
-    color: DANGER,
-    fontSize: 17,
-    fontWeight: '500',
-    letterSpacing: 0.5,
+  // Sess15 PR-PP: 画面下部固定 sticky footer (アーカイブは ⋮ メニュー内に既存、 ここは保存のみ)。
+  basicStickyFooter: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
   },
   basicFormSection: {
     padding: 16,
     gap: 16,
+    paddingBottom: 100, // sticky footer (h ~84) に隠れないよう余裕
   },
 });
 
@@ -1536,41 +1550,13 @@ const styles = StyleSheet.create({
  * mockup `bonsai-detail-basic-01/02/03.png` 整合の編集兼用フォームを実現する。
  * Picker BottomSheet は親側で画面 root に配置 (ScrollView 内 nest 禁止)。
  *
- * Sess15 PR-NN: アーカイブボタンを Section 内に統合 (保存と同 height 56 / 統一 spacing)、
- * user 真意「メモと保存くっつき + 保存/アーカイブのサイズ違い」 解消。
+ * Sess15 PR-PP: 保存 button + アーカイブ button を Section 外 (画面 root sticky footer + ⋮ メニュー)
+ * に移動。 BonsaiBasicSection はフィールドのみに集中、 新規 modal と完全同 pattern。
  */
-function BonsaiBasicSection({
-  form,
-  onArchive,
-}: {
-  form: BonsaiBasicFormState;
-  onArchive: () => void;
-}) {
-  const { t } = useTranslation();
+function BonsaiBasicSection({ form }: { form: BonsaiBasicFormState }) {
   return (
     <View style={styles.basicFormSection}>
       <BonsaiBasicFormFields form={form} showPhotos={false} />
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('save')}
-        accessibilityState={{ disabled: !form.canSubmit }}
-        style={[styles.basicSaveButton, !form.canSubmit && styles.basicSaveButtonDisabled]}
-        onPress={() => void form.handleSubmit()}
-        disabled={!form.canSubmit}
-        testID="e2e_detail_basic_save_button"
-      >
-        <ThemedText style={styles.basicSaveButtonText}>{t('save')}</ThemedText>
-      </Pressable>
-      {/* Sess15 PR-NN: アーカイブを保存と同 height 56 + 同 borderRadius、 outline red 維持。 */}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('bonsaiArchive')}
-        style={styles.basicArchiveButton}
-        onPress={onArchive}
-        testID="e2e_detail_basic_archive_button"
-      >
-        <ThemedText style={styles.basicArchiveButtonText}>{t('bonsaiArchive')}</ThemedText>
-      </Pressable>
     </View>
   );
 }
