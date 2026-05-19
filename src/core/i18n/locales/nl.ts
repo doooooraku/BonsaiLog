@@ -667,6 +667,8 @@ const nl: Partial<Record<TranslationKey, string>> = {
   // i18n fallback for PR #466-#471 new keys (R-1 pattern)
   settingsArchivedCountValue: '{count} items',
   bonsaiTagsAddCta: 'Add tag',
+  tagShowMore: '+{count} meer',
+  tagShowLess: 'Minder tonen',
   settingsPlanLabel: 'Plan',
   settingsPlanUpgradeBadge: 'Upgrade',
   bonsaiFieldAcquiredFrom: 'Acquired from',
