@@ -98,7 +98,7 @@ const baseEn = {
   bonsaiFieldSpecies: 'Species',
   bonsaiFieldSpeciesSearch: 'Search species…',
   bonsaiFieldStyle: 'Style',
-  bonsaiFieldAcquiredAt: 'Purchase date',
+  bonsaiFieldAcquiredAt: 'Acquired on',
   bonsaiFieldAcquiredFrom: 'Acquired from',
   bonsaiFieldAcquiredFromPlaceholder: 'e.g., Inherited from father / Takasaki Bonsai Market',
   bonsaiFieldPotInfo: 'Pot info',
