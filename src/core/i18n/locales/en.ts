@@ -100,6 +100,8 @@ const baseEn = {
   bonsaiFieldSpeciesSearchPlaceholder: 'Search by species name',
   bonsaiFieldStyle: 'Style',
   bonsaiFieldStyleSearchPlaceholder: 'Search by style name',
+  bonsaiPlaceholderSpecies: 'Select species',
+  bonsaiPlaceholderStyle: 'Select style',
   bonsaiFieldAcquiredAt: 'Acquired on',
   bonsaiFieldAcquiredFrom: 'Acquired from',
   bonsaiFieldAcquiredFromPlaceholder: 'e.g., Inherited from father / Takasaki Bonsai Market',

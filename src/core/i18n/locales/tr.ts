@@ -102,6 +102,8 @@ const tr: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldSpeciesSearchPlaceholder: 'Tür adına göre ara',
   bonsaiFieldStyle: 'Style',
   bonsaiFieldStyleSearchPlaceholder: 'Stil adına göre ara',
+  bonsaiPlaceholderSpecies: 'Tür seç',
+  bonsaiPlaceholderStyle: 'Stil seç',
   bonsaiFieldAcquiredAt: 'Acquired on',
   bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Archive',

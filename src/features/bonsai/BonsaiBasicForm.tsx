@@ -742,9 +742,12 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         testID="e2e_bonsai_create_name"
       />
 
-      {/* Sess14 PR-M: 樹種 row を LabeledPickerRow へ移行 (× clear button 統合)。 */}
+      {/* Sess14 PR-M + Sess15 PR-Y: LabeledPickerRow + 任意 badge + placeholder「樹種を選択」 (取得日と統一)。 */}
       <LabeledPickerRow
         label={t('bonsaiFieldSpecies')}
+        optional
+        optionalText={t('fieldOptionalLabel')}
+        placeholder={t('bonsaiPlaceholderSpecies')}
         valueText={selectedSpecies?.commonName ?? customSpeciesName}
         onPress={() => {
           // Sess13 PR-H: custom 樹種選択中の場合は 'custom:<id>' を initial に渡す
@@ -765,9 +768,12 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         testIDClear="e2e_bonsai_create_species_clear"
       />
 
-      {/* Sess14 PR-M: 樹形 row を LabeledPickerRow へ移行 (× clear button 統合)。 */}
+      {/* Sess14 PR-M + Sess15 PR-Y: LabeledPickerRow + 任意 badge + placeholder「樹形を選択」 (取得日と統一)。 */}
       <LabeledPickerRow
         label={t('bonsaiFieldStyle')}
+        optional
+        optionalText={t('fieldOptionalLabel')}
+        placeholder={t('bonsaiPlaceholderStyle')}
         valueText={
           style != null
             ? BONSAI_STYLES.includes(style as BonsaiStyle)

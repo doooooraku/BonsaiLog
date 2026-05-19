@@ -25,6 +25,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldSpeciesSearchPlaceholder: '樹種名で検索',
   bonsaiFieldStyle: '樹形',
   bonsaiFieldStyleSearchPlaceholder: '樹形名で検索',
+  bonsaiPlaceholderSpecies: '樹種を選択',
+  bonsaiPlaceholderStyle: '樹形を選択',
   bonsaiFieldAcquiredAt: '取得日',
   bonsaiFieldAcquiredFrom: '入手元メモ',
   bonsaiFieldAcquiredFromPlaceholder: '例: 父から継承 / 高崎盆栽市',
