@@ -724,5 +724,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   photoCaption: 'Caption',
   photoMoveUp: 'Move up',
   photoMoveDown: 'Move down',
+  inputOverLimit: 'Character limit reached',
 };
 export default vi;

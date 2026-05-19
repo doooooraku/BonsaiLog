@@ -28,6 +28,7 @@ import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { CameraIcon, ChevronRightIcon } from '@/src/components/icons';
+import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
@@ -728,22 +729,19 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         </View>
       )}
 
-      <View style={styles.field}>
-        <View style={styles.fieldLabelRow}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldName')}</ThemedText>
-          <View style={styles.requiredBadge}>
-            <ThemedText style={styles.requiredBadgeText}>{t('fieldRequiredLabel')}</ThemedText>
-          </View>
-        </View>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder={t('bonsaiFieldNamePlaceholder')}
-          accessibilityLabel={t('bonsaiFieldName')}
-          maxLength={64}
-        />
-      </View>
+      {/* Sess13 PR-K: LabeledTextInput 共通化 (右上文字数 + 上限到達赤字) */}
+      <LabeledTextInput
+        label={t('bonsaiFieldName')}
+        required
+        requiredText={t('fieldRequiredLabel')}
+        overlimitText={t('inputOverLimit')}
+        value={name}
+        onChangeText={setName}
+        placeholder={t('bonsaiFieldNamePlaceholder')}
+        maxLength={64}
+        showCounter
+        testID="e2e_bonsai_create_name"
+      />
 
       <View style={styles.field}>
         <ThemedText type="defaultSemiBold">{t('bonsaiFieldSpecies')}</ThemedText>
@@ -932,22 +930,19 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         />
       )}
 
-      {/* Sess13 PR-B: 入手元 (任意、 schema v10 acquired_from column 配線、 i18n 既存 19 言語流用)。 */}
-      <View style={styles.field}>
-        <View style={styles.fieldLabelRow}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldAcquiredFrom')}</ThemedText>
-          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-        </View>
-        <TextInput
-          style={styles.input}
-          value={acquiredFrom}
-          onChangeText={setAcquiredFrom}
-          placeholder={t('bonsaiFieldAcquiredFromPlaceholder')}
-          accessibilityLabel={t('bonsaiFieldAcquiredFrom')}
-          maxLength={100}
-          testID="e2e_bonsai_create_acquired_from"
-        />
-      </View>
+      {/* Sess13 PR-B + PR-K: 入手元 (任意、 schema v10 acquired_from + LabeledTextInput 共通化)。 */}
+      <LabeledTextInput
+        label={t('bonsaiFieldAcquiredFrom')}
+        optional
+        optionalText={t('fieldOptionalLabel')}
+        overlimitText={t('inputOverLimit')}
+        value={acquiredFrom}
+        onChangeText={setAcquiredFrom}
+        placeholder={t('bonsaiFieldAcquiredFromPlaceholder')}
+        maxLength={100}
+        showCounter
+        testID="e2e_bonsai_create_acquired_from"
+      />
 
       {/* Sess13 PR-I: 鉢情報構造化 (幅 / 深さ / 材質) + 折り畳み Expander。
           値あれば自動展開 (Q-17 a)、 折り畳み default。 旧 description は保持。 */}
@@ -1046,23 +1041,21 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         </View>
       </View>
 
-      <View style={styles.field}>
-        <View style={styles.fieldLabelRow}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldMemo')}</ThemedText>
-          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-        </View>
-        <TextInput
-          style={[styles.input, styles.inputMultiline]}
-          value={memo}
-          onChangeText={setMemo}
-          placeholder={t('bonsaiFieldMemoPlaceholder')}
-          accessibilityLabel={t('bonsaiFieldMemo')}
-          multiline
-          numberOfLines={4}
-          maxLength={500}
-          textAlignVertical="top"
-        />
-      </View>
+      {/* Sess13 PR-K: メモを LabeledTextInput 共通化 (multiline + 文字数 + 上限赤字) */}
+      <LabeledTextInput
+        label={t('bonsaiFieldMemo')}
+        optional
+        optionalText={t('fieldOptionalLabel')}
+        overlimitText={t('inputOverLimit')}
+        value={memo}
+        onChangeText={setMemo}
+        placeholder={t('bonsaiFieldMemoPlaceholder')}
+        maxLength={500}
+        showCounter
+        multiline
+        numberOfLines={4}
+        testID="e2e_bonsai_create_memo"
+      />
     </>
   );
 }

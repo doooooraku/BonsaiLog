@@ -731,6 +731,7 @@ const baseEn = {
   photoCaption: 'Caption',
   photoMoveUp: 'Move up',
   photoMoveDown: 'Move down',
+  inputOverLimit: 'Character limit reached',
 };
 
 export type TranslationKey = keyof typeof baseEn;
