@@ -122,12 +122,13 @@ export function useBonsaiBasicForm({
   const [purchaseDate, setPurchaseDate] = useState('');
   // Issue #455 Phase 2: 鉢情報 (テキスト自由入力、既存 pot_info JSON に { description } で保存)。
   const [potInfoText, setPotInfoText] = useState('');
-  // Sess13 PR-I + Sess14 PR-L: 鉢情報構造化 (pot_info JSON に widthCm/depthCm cm 統一保存、
-  // 入力 / 表示は user 設定 potUnit へ動的変換)。
-  const potUnit = useSettingsStore((s) => s.potUnit);
+  // Sess13 PR-I + Sess14 PR-L + Sess15 PR-BB: 鉢情報構造化 (pot_info JSON に widthCm/depthCm cm 統一保存、
+  // 入力 / 表示は user 設定 potUnit の初期値 + 編集画面 segmented control の一時切替で動的変換)。
+  const settingsPotUnit = useSettingsStore((s) => s.potUnit);
+  const [displayPotUnit, setDisplayPotUnit] = useState<typeof settingsPotUnit>(settingsPotUnit);
   const [potWidth, setPotWidth] = useState(''); // user 入力単位の文字列
   const [potDepth, setPotDepth] = useState(''); // user 入力単位の文字列
-  const prevPotUnitRef = useRef<typeof potUnit>(potUnit);
+  const prevPotUnitRef = useRef<typeof settingsPotUnit>(displayPotUnit);
   const [potMaterial, setPotMaterial] = useState('');
   const [potExpanded, setPotExpanded] = useState(false);
   // Sess13 PR-B: 入手元 (free-form text、 schema v10 acquired_from column 直接保存)。
@@ -187,20 +188,20 @@ export function useBonsaiBasicForm({
     };
   }, [lang]);
 
-  // Sess14 PR-L: potUnit 切替時に入力値を新単位へ再変換 (cm 内部値経由)。
+  // Sess14 PR-L + Sess15 PR-BB: displayPotUnit 切替時に入力値を新単位へ再変換 (cm 内部値経由)。
   useEffect(() => {
     const prev = prevPotUnitRef.current;
-    if (prev === potUnit) return;
+    if (prev === displayPotUnit) return;
     setPotWidth((current) => {
       const cm = unitToCm(current, prev);
-      return cmToUnit(cm, potUnit) ?? '';
+      return cmToUnit(cm, displayPotUnit) ?? '';
     });
     setPotDepth((current) => {
       const cm = unitToCm(current, prev);
-      return cmToUnit(cm, potUnit) ?? '';
+      return cmToUnit(cm, displayPotUnit) ?? '';
     });
-    prevPotUnitRef.current = potUnit;
-  }, [potUnit]);
+    prevPotUnitRef.current = displayPotUnit;
+  }, [displayPotUnit]);
 
   // editingBonsai prefill (新規モードと編集モードを id で区別、id 変化時に再 prefill)。
   const editingId = editingBonsai?.id ?? null;
@@ -236,9 +237,9 @@ export function useBonsaiBasicForm({
       // 表示は user 設定 potUnit で変換 (本実装は cm 固定表示で simplify、 単位切替は別 PR で表示変換追加)。
       const widthCm = typeof parsed?.widthCm === 'number' ? parsed.widthCm : null;
       const depthCm = typeof parsed?.depthCm === 'number' ? parsed.depthCm : null;
-      // Sess14 PR-L: cm 保存値 → user 設定単位 へ変換して表示。
-      setPotWidth(cmToUnit(widthCm, potUnit) ?? '');
-      setPotDepth(cmToUnit(depthCm, potUnit) ?? '');
+      // Sess14 PR-L + Sess15 PR-BB: cm 保存値 → displayPotUnit (一時切替対応) へ変換。
+      setPotWidth(cmToUnit(widthCm, displayPotUnit) ?? '');
+      setPotDepth(cmToUnit(depthCm, displayPotUnit) ?? '');
       setPotMaterial(typeof parsed?.material === 'string' ? parsed.material : '');
       // 値が入っていれば自動展開 (Q-17 a)
       setPotExpanded(widthCm != null || depthCm != null || (parsed?.material?.length ?? 0) > 0);
@@ -442,8 +443,8 @@ export function useBonsaiBasicForm({
         // Sess13 PR-I + Sess14 PR-L: 鉢情報構造化 { widthCm, depthCm, material } 保存、
         // 旧 { description } も後方互換。 入力 user 単位 → cm 正規化 (unitToCm)。
         potInfo: (() => {
-          const widthCm = unitToCm(potWidth, potUnit);
-          const depthCm = unitToCm(potDepth, potUnit);
+          const widthCm = unitToCm(potWidth, displayPotUnit);
+          const depthCm = unitToCm(potDepth, displayPotUnit);
           const material = potMaterial.trim() || null;
           const description = potInfoText.trim() || null;
           if (widthCm == null && depthCm == null && material == null && description == null) {
@@ -561,7 +562,8 @@ export function useBonsaiBasicForm({
     setPotMaterial,
     potExpanded,
     setPotExpanded,
-    potUnit,
+    displayPotUnit,
+    setDisplayPotUnit,
     acquiredFrom,
     setAcquiredFrom,
     recentTags,
@@ -627,7 +629,8 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     setPotMaterial,
     potExpanded,
     setPotExpanded,
-    potUnit,
+    displayPotUnit,
+    setDisplayPotUnit,
     acquiredFrom,
     setAcquiredFrom,
     recentTags,
@@ -867,62 +870,86 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         testID="e2e_bonsai_create_acquired_from"
       />
 
-      {/* Sess13 PR-I: 鉢情報構造化 (幅 / 深さ / 材質) + 折り畳み Expander。
-          値あれば自動展開 (Q-17 a)、 折り畳み default。 旧 description は保持。 */}
+      {/* Sess15 PR-BB: mockup 174029.png 整合の card group 化 + 単位 segmented control。
+          - 1 つの bordered card 内に expander + 3 input + 単位 segmented を集約 (まとまり感)
+          - 単位 segmented は一時切替 (settingsStore は touch しない、 display 単位のみ反映)。 */}
       <View style={styles.field}>
         <View style={styles.fieldLabelRow}>
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldPotInfo')}</ThemedText>
           <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
         </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('bonsaiFieldPotInfoExpand')}
-          style={styles.input}
-          onPress={() => setPotExpanded((p) => !p)}
-          testID="e2e_bonsai_create_pot_expander"
-        >
-          <ThemedText style={styles.pickerPlaceholder}>
-            {potExpanded ? '▲ ' : '▼ '}
-            {t('bonsaiFieldPotInfoExpand')}
-          </ThemedText>
-        </Pressable>
-        {potExpanded && (
-          <View style={styles.potExpanded}>
-            {/* Sess14 PR-O: 鉢幅 / 深さ を LabeledNumberInput へ移行 (suffix で単位表示) */}
-            <LabeledNumberInput
-              label=""
-              value={potWidth}
-              onChangeText={setPotWidth}
-              placeholder={t('bonsaiFieldPotWidthPlaceholder').replace(' ({unit})', '')}
-              suffix={potUnit}
-              maxLength={6}
-              accessibilityLabel={t('bonsaiFieldPotWidth')}
-              testID="e2e_bonsai_create_pot_width"
-            />
-            <LabeledNumberInput
-              label=""
-              value={potDepth}
-              onChangeText={setPotDepth}
-              placeholder={t('bonsaiFieldPotDepthPlaceholder').replace(' ({unit})', '')}
-              suffix={potUnit}
-              maxLength={6}
-              accessibilityLabel={t('bonsaiFieldPotDepth')}
-              testID="e2e_bonsai_create_pot_depth"
-            />
-            {/* Sess14 PR-O: 鉢材質 を LabeledTextInput へ移行 (文字数 + 上限赤字) */}
-            <LabeledTextInput
-              label=""
-              value={potMaterial}
-              onChangeText={setPotMaterial}
-              placeholder={t('bonsaiFieldPotMaterialPlaceholder')}
-              maxLength={100}
-              showCounter
-              overlimitText={t('inputOverLimit')}
-              accessibilityLabel={t('bonsaiFieldPotMaterial')}
-              testID="e2e_bonsai_create_pot_material"
-            />
-          </View>
-        )}
+        <View style={styles.potCard}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('bonsaiFieldPotInfoExpand')}
+            style={styles.potExpander}
+            onPress={() => setPotExpanded((p) => !p)}
+            testID="e2e_bonsai_create_pot_expander"
+          >
+            <ThemedText style={styles.pickerPlaceholder}>
+              {potExpanded ? '▲ ' : '▼ '}
+              {t('bonsaiFieldPotInfoExpand')}
+            </ThemedText>
+          </Pressable>
+          {potExpanded && (
+            <View style={styles.potExpanded}>
+              {/* Sess15 PR-BB: 単位 segmented control (一時切替、 settingsStore は touch しない)。 */}
+              <View style={styles.potUnitSegmented}>
+                {(['cm', 'mm', 'inch'] as const).map((u) => {
+                  const active = displayPotUnit === u;
+                  return (
+                    <Pressable
+                      key={u}
+                      accessibilityRole="button"
+                      accessibilityLabel={`unit ${u}`}
+                      accessibilityState={{ selected: active }}
+                      style={[styles.potUnitSegment, active && styles.potUnitSegmentActive]}
+                      onPress={() => setDisplayPotUnit(u)}
+                      testID={`e2e_bonsai_create_pot_unit_${u}`}
+                    >
+                      <ThemedText
+                        style={active ? styles.potUnitSegmentTextActive : styles.potUnitSegmentText}
+                      >
+                        {u}
+                      </ThemedText>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <LabeledNumberInput
+                label=""
+                value={potWidth}
+                onChangeText={setPotWidth}
+                placeholder={t('bonsaiFieldPotWidthPlaceholder').replace(' ({unit})', '')}
+                suffix={displayPotUnit}
+                maxLength={6}
+                accessibilityLabel={t('bonsaiFieldPotWidth')}
+                testID="e2e_bonsai_create_pot_width"
+              />
+              <LabeledNumberInput
+                label=""
+                value={potDepth}
+                onChangeText={setPotDepth}
+                placeholder={t('bonsaiFieldPotDepthPlaceholder').replace(' ({unit})', '')}
+                suffix={displayPotUnit}
+                maxLength={6}
+                accessibilityLabel={t('bonsaiFieldPotDepth')}
+                testID="e2e_bonsai_create_pot_depth"
+              />
+              <LabeledTextInput
+                label=""
+                value={potMaterial}
+                onChangeText={setPotMaterial}
+                placeholder={t('bonsaiFieldPotMaterialPlaceholder')}
+                maxLength={100}
+                showCounter
+                overlimitText={t('inputOverLimit')}
+                accessibilityLabel={t('bonsaiFieldPotMaterial')}
+                testID="e2e_bonsai_create_pot_material"
+              />
+            </View>
+          )}
+        </View>
       </View>
 
       <View style={styles.field}>
@@ -1109,6 +1136,37 @@ const styles = StyleSheet.create({
   // Sess14 PR-Q: dateRow / dateInput / dateClearButton / dateClearText は PR-O で
   // LabeledDateRow に移管済、 dead style として削除。
   potExpanded: { gap: 10, marginTop: 8 },
+  // Sess15 PR-BB: mockup 174029.png 整合の card group (border 内に expander + 3 input + segmented を集約)。
+  potCard: {
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    borderRadius: 12,
+    backgroundColor: BG_SURFACE,
+    padding: 12,
+    gap: 8,
+  },
+  potExpander: {
+    minHeight: 40,
+    justifyContent: 'center',
+  },
+  potUnitSegmented: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    borderRadius: 8,
+    overflow: 'hidden',
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+  },
+  potUnitSegment: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    minWidth: 48,
+    alignItems: 'center',
+  },
+  potUnitSegmentActive: { backgroundColor: BRAND_GREEN },
+  potUnitSegmentText: { fontSize: 13, color: TEXT_SECONDARY },
+  potUnitSegmentTextActive: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
   // Sess13 PR-J: Repolog 流写真カード
   photoSourceRow: { flexDirection: 'row', gap: 10 },
   photoSourceButton: {
