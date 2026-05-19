@@ -10,7 +10,7 @@
  */
 import { Image } from 'expo-image';
 import React from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
@@ -25,8 +25,7 @@ import {
 } from '@/src/core/theme/colors';
 import type { PhotoRead } from '@/src/db/photoRepository';
 
-// Sess14 PR-N: CreateMode (PR-J) と統一、 200 文字へ拡張 (旧 100 既存データは無変更で後方互換)。
-const MAX_CAPTION_CHARS = 200;
+// Sess14 PR-T: MAX_CAPTION_CHARS 削除 (caption UI 廃止)。
 
 type Props = {
   photo: PhotoRead;
@@ -122,26 +121,11 @@ export function PhotoCard({
         </Pressable>
       </View>
 
-      {/* サムネ (200px 縦) */}
+      {/* サムネ (4:3 aspect、 Sess14 PR-N 統一) */}
       <Image source={{ uri: photo.absoluteUri }} style={styles.thumb} contentFit="cover" />
-
-      {/* 下部 caption 入力 */}
-      <View style={styles.captionArea}>
-        <TextInput
-          style={styles.captionInput}
-          value={caption}
-          onChangeText={(text) => onCaptionChange(text.slice(0, MAX_CAPTION_CHARS))}
-          onBlur={onCaptionBlur}
-          placeholder={t('photoCaptionPlaceholder')}
-          placeholderTextColor={TEXT_SECONDARY}
-          multiline
-          maxLength={MAX_CAPTION_CHARS}
-          testID={`e2e_photo_card_caption_${photo.id}`}
-        />
-        <ThemedText style={styles.captionCounter}>
-          {caption.length} / {MAX_CAPTION_CHARS}
-        </ThemedText>
-      </View>
+      {/* Sess14 PR-T: caption (写真メモ) UI 削除。 user 真意「冗長」、 主メモ欄で十分。
+          caption 引数は後方互換で受け取るが render しない (caller の useEffect/blur 配線も
+          実害なし、 削除は段階的)。 */}
     </View>
   );
 }
@@ -218,26 +202,5 @@ const styles = StyleSheet.create({
   },
   // Sess14 PR-N: CreateMode (PR-J) と統一、 4:3 aspect (画面幅追従、 縦長盆栽写真に親和)。
   thumb: { width: '100%', aspectRatio: 4 / 3 },
-  captionArea: {
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 8,
-  },
-  captionInput: {
-    minHeight: 36,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    fontSize: 13,
-    color: TEXT_PRIMARY,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_PRIMARY,
-  },
-  captionCounter: {
-    fontSize: 11,
-    textAlign: 'right',
-    marginTop: 2,
-    color: TEXT_SECONDARY,
-  },
+  // Sess14 PR-T: captionArea / captionInput / captionCounter styles 削除 (caption UI 廃止)。
 });
