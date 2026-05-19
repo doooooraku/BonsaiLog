@@ -78,10 +78,8 @@ export type PendingPhoto = {
   uri: string;
   width: number | null;
   height: number | null;
-  caption?: string;
+  // Sess14 PR-T: caption field 削除 (user 真意「冗長」)。 既存 type 残り field なし。
 };
-
-const PHOTO_CAPTION_MAX_LENGTH = 200;
 
 export type UseBonsaiBasicFormProps = {
   editingBonsai?: Bonsai | null;
@@ -365,7 +363,6 @@ export function useBonsaiBasicForm({
       uri: a.uri,
       width: a.width ?? null,
       height: a.height ?? null,
-      caption: '',
     }));
     const skipped = result.assets.length - accepted.length;
     setPendingPhotos((prev) => [...prev, ...accepted]);
@@ -384,10 +381,7 @@ export function useBonsaiBasicForm({
     setPendingPhotos((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  // Sess13 PR-J: Repolog 流カードの ↑↓ + キャプション update + camera/library 経路。
-  const handleUpdatePendingPhotoCaption = useCallback((index: number, caption: string) => {
-    setPendingPhotos((prev) => prev.map((p, i) => (i === index ? { ...p, caption } : p)));
-  }, []);
+  // Sess14 PR-T: handleUpdatePendingPhotoCaption 削除 (caption field 廃止)。
 
   const handleMovePendingPhoto = useCallback((from: number, to: number) => {
     setPendingPhotos((prev) => {
@@ -421,7 +415,7 @@ export function useBonsaiBasicForm({
     const a = result.assets[0];
     setPendingPhotos((prev) => [
       ...prev,
-      { uri: a.uri, width: a.width ?? null, height: a.height ?? null, caption: '' },
+      { uri: a.uri, width: a.width ?? null, height: a.height ?? null },
     ]);
   }, [isPro, pendingPhotos.length, t]);
 
@@ -487,11 +481,8 @@ export function useBonsaiBasicForm({
         const bonsai = await createBonsai(fields);
         for (const p of pendingPhotos) {
           try {
-            await addPhotoFromUri({
-              bonsaiId: bonsai.id,
-              sourceUri: p.uri,
-              caption: p.caption?.trim() ? p.caption.trim() : null,
-            });
+            // Sess14 PR-T: caption (写真メモ) 削除、 null 固定。
+            await addPhotoFromUri({ bonsaiId: bonsai.id, sourceUri: p.uri });
           } catch (err) {
             console.warn('[BonsaiBasicForm] photo persist failed (continuing):', err);
           }
@@ -579,7 +570,6 @@ export function useBonsaiBasicForm({
     pendingPhotos,
     handlePickPhoto,
     handleRemovePendingPhoto,
-    handleUpdatePendingPhotoCaption,
     handleMovePendingPhoto,
     handleTakePhotoCamera,
     isPro,
@@ -646,7 +636,6 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     pendingPhotos,
     handlePickPhoto,
     handleRemovePendingPhoto,
-    handleUpdatePendingPhotoCaption,
     handleMovePendingPhoto,
     handleTakePhotoCamera,
     isPro,
@@ -690,10 +679,11 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
             <ThemedText style={styles.photoHelpText}>{t('photoReorderHelp')}</ThemedText>
           )}
           {/* Sess13 PR-J: 各写真を Repolog 流カードに */}
+          {/* Sess14 PR-T: 写真ごとのキャプション (200 文字メモ) 削除。 user 真意「冗長」、
+              主メモ欄 (bonsai.memo 500 文字) で十分。 photo card は toolbar + 画像のみ。 */}
           {pendingPhotos.map((p, idx) => {
             const isFirst = idx === 0;
             const isLast = idx === pendingPhotos.length - 1;
-            const captionLen = (p.caption ?? '').length;
             return (
               <View key={`${p.uri}-${idx}`} style={styles.photoCard}>
                 <View style={styles.photoCardToolbar}>
@@ -732,21 +722,6 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
                   </Pressable>
                 </View>
                 <Image source={{ uri: p.uri }} style={styles.photoCardImage} contentFit="cover" />
-                <View style={styles.photoCardCaptionWrap}>
-                  <TextInput
-                    style={[styles.input, styles.photoCardCaptionInput]}
-                    value={p.caption ?? ''}
-                    onChangeText={(text) => handleUpdatePendingPhotoCaption(idx, text)}
-                    placeholder={t('photoCaptionPlaceholder')}
-                    accessibilityLabel={t('photoCaption')}
-                    maxLength={PHOTO_CAPTION_MAX_LENGTH}
-                    multiline
-                    testID={`e2e_bonsai_create_photo_caption_${idx}`}
-                  />
-                  <ThemedText style={styles.photoCardCounter}>
-                    {captionLen}/{PHOTO_CAPTION_MAX_LENGTH}
-                  </ThemedText>
-                </View>
               </View>
             );
           })}
@@ -869,19 +844,8 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         </View>
       </View>
 
-      {/* Sess14 PR-O: 購入日 を LabeledDateRow へ移行 */}
-      <LabeledDateRow
-        label={t('bonsaiFieldPurchaseDate')}
-        optional
-        optionalText={t('fieldOptionalLabel')}
-        value={purchaseDate}
-        onChangeText={setPurchaseDate}
-        placeholder={t('datePickerPlaceholder')}
-        testID="e2e_bonsai_create_purchase_date"
-        testIDClear="e2e_bonsai_create_purchase_date_clear"
-      />
-
-      {/* Sess14 PR-O: 旧 共通 DateTimePicker 削除 (LabeledDateRow が各 row 内で個別に持つ) */}
+      {/* Sess14 PR-T: 購入日欄削除 (取得日と意味が重複、 user 真意「取得日があれば十分」)。
+          purchaseDate state は後方互換で残す (既存 DB data 表示用、 form 上で編集不可)。 */}
 
       {/* Sess13 PR-B + PR-K: 入手元 (任意、 schema v10 acquired_from + LabeledTextInput 共通化)。 */}
       <LabeledTextInput
@@ -1192,9 +1156,7 @@ const styles = StyleSheet.create({
   photoCardDeleteText: { fontSize: 20, lineHeight: 22, color: TEXT_SECONDARY },
   // 4:3 横長 (Q-10 b 採用)
   photoCardImage: { width: '100%', aspectRatio: 4 / 3 },
-  photoCardCaptionWrap: { padding: 12, gap: 4 },
-  photoCardCaptionInput: { minHeight: 44 },
-  photoCardCounter: { fontSize: 12, color: TEXT_MUTED, textAlign: 'right' },
+  // Sess14 PR-T: photoCardCaption* styles 削除 (caption UI 廃止)。
   tagChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tagChip: {
     paddingHorizontal: 12,
