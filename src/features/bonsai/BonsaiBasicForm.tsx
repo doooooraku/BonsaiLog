@@ -27,7 +27,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { CameraIcon, ChevronRightIcon } from '@/src/components/icons';
+import { CameraIcon, ChevronRightIcon, PlusIcon } from '@/src/components/icons';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
 import { LabeledPickerRow } from '@/src/components/form/LabeledPickerRow';
@@ -930,9 +930,24 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldTags')}</ThemedText>
           <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
         </View>
-        <View style={styles.tagChipRow}>
-          {recentTags.length > 0 ? (
-            recentTags.map((tg) => {
+        {/* Sess15 PR-DD: empty 時は文言上 + button 下 (縦配置)、 chip 1+ 件時は wrap row (横並び)。 */}
+        {recentTags.length === 0 ? (
+          <View style={styles.tagEmptyColumn}>
+            <ThemedText style={styles.tagsEmpty}>{t('bonsaiTagsEmpty')}</ThemedText>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('bonsaiTagsAddCta')}
+              style={styles.tagAddChip}
+              onPress={() => router.push('/tag-edit?returnTo=bonsai-create' as Href)}
+              testID="e2e_bonsai_tag_add"
+            >
+              <PlusIcon size={16} color={BRAND_GREEN} />
+              <ThemedText style={styles.tagAddChipText}>{t('bonsaiTagsAddCta')}</ThemedText>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.tagChipRow}>
+            {recentTags.map((tg) => {
               const selected = selectedTagIds.has(tg.id);
               return (
                 <Pressable
@@ -949,23 +964,19 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
                   </ThemedText>
                 </Pressable>
               );
-            })
-          ) : (
-            <ThemedText style={styles.tagsEmpty}>{t('bonsaiTagsEmpty')}</ThemedText>
-          )}
-          {/* Issue #455 Phase 3: mockup `bonsai-detail-basic-02.png` 整合の
-              「+ タグ追加」 dashed border button (tag chip 列末尾、常時表示)。
-              tap で /tags に遷移し新規タグを追加可能。 */}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('bonsaiTagsAddCta')}
-            style={styles.tagAddChip}
-            onPress={() => router.push('/tag-edit?returnTo=bonsai-create' as Href)}
-            testID="e2e_bonsai_tag_add"
-          >
-            <ThemedText style={styles.tagAddChipText}>+ {t('bonsaiTagsAddCta')}</ThemedText>
-          </Pressable>
-        </View>
+            })}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('bonsaiTagsAddCta')}
+              style={styles.tagAddChip}
+              onPress={() => router.push('/tag-edit?returnTo=bonsai-create' as Href)}
+              testID="e2e_bonsai_tag_add"
+            >
+              <PlusIcon size={16} color={BRAND_GREEN} />
+              <ThemedText style={styles.tagAddChipText}>{t('bonsaiTagsAddCta')}</ThemedText>
+            </Pressable>
+          </View>
+        )}
       </View>
 
       {/* Sess13 PR-K: メモを LabeledTextInput 共通化 (multiline + 文字数 + 上限赤字) */}
@@ -1178,16 +1189,21 @@ const styles = StyleSheet.create({
   tagChipText: { fontSize: 13 },
   tagChipTextSelected: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
   tagsEmpty: { fontSize: 13, color: TEXT_MUTED },
-  // Issue #455 Phase 3: mockup `bonsai-detail-basic-02.png` 整合の dashed border button
+  // Sess15 PR-DD: empty 時の縦並び container (alignSelf で button を左寄せ)。
+  tagEmptyColumn: { gap: 8 },
+  // Sess15 PR-EE: 案 D2 統一 (dashed gray → solid 1.5px BRAND_GREEN + BRAND_GREEN テキスト + PlusIcon)。
   tagAddChip: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: BORDER_DEFAULT,
+    borderWidth: 1.5,
+    borderColor: BRAND_GREEN,
     minHeight: 36,
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
   },
-  tagAddChipText: { fontSize: 13, color: TEXT_SECONDARY },
+  tagAddChipText: { fontSize: 13, color: BRAND_GREEN, fontWeight: '600' },
 });
