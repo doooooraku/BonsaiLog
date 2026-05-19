@@ -111,15 +111,15 @@ export default function BonsaiHomeScreen() {
     [router],
   );
 
-  // bonsai-new modal から戻った時に新規盆栽 ID を消費 → reload + 詳細画面遷移。
+  // Sess15 PR-LL: bonsai-new modal から戻った時、 reload のみで Home に留まる
+  // (user 真意「保存後は Home 画面に戻ってほしい」、 旧 router.push で詳細画面遷移は廃止)。
   useFocusEffect(
     useCallback(() => {
       const newBonsaiId = usePickerStore.getState().consumeBonsaiCreateResult();
       if (newBonsaiId != null) {
         void reload();
-        router.push(`/(tabs)/bonsai/${newBonsaiId}` as Href);
       }
-    }, [router, reload]),
+    }, [reload]),
   );
 
   if (loading) {
