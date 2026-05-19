@@ -28,6 +28,8 @@ import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { CameraIcon, ChevronRightIcon } from '@/src/components/icons';
+import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
+import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
 import { LabeledPickerRow } from '@/src/components/form/LabeledPickerRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { nowUtc } from '@/src/core/datetime/clock';
@@ -815,60 +817,41 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         testIDClear="e2e_bonsai_create_style_clear"
       />
 
-      {/* Sess13 PR-E: 取得日 を DatePicker 化 + 任意化 + × clear button (Q-14 a)。 */}
-      <View style={styles.field}>
-        <View style={styles.fieldLabelRow}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldAcquiredAt')}</ThemedText>
-          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-        </View>
-        <View style={styles.dateRow}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('bonsaiFieldAcquiredAt')}
-            style={[styles.input, styles.dateInput]}
-            onPress={() => setShowDatePicker('acquired')}
-            testID="e2e_bonsai_create_acquired_at"
-          >
-            <ThemedText style={acquiredAt ? undefined : styles.pickerPlaceholder}>
-              {acquiredAt || t('datePickerPlaceholder')}
-            </ThemedText>
-          </Pressable>
-          {acquiredAt.length > 0 && (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('clear')}
-              style={styles.dateClearButton}
-              onPress={() => setAcquiredAt('')}
-              testID="e2e_bonsai_create_acquired_at_clear"
-            >
-              <ThemedText style={styles.dateClearText}>×</ThemedText>
-            </Pressable>
-          )}
-        </View>
-      </View>
+      {/* Sess14 PR-O: 取得日 を LabeledDateRow へ移行 (PR-E DatePicker 実装を component 化) */}
+      <LabeledDateRow
+        label={t('bonsaiFieldAcquiredAt')}
+        optional
+        optionalText={t('fieldOptionalLabel')}
+        value={acquiredAt}
+        onChangeText={setAcquiredAt}
+        placeholder={t('datePickerPlaceholder')}
+        testID="e2e_bonsai_create_acquired_at"
+        testIDClear="e2e_bonsai_create_acquired_at_clear"
+      />
 
       <View style={styles.field}>
         <View style={styles.fieldLabelRow}>
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldEstimatedAge')}</ThemedText>
           <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
         </View>
-        {/* Sess13 PR-D: 数値 input + 「不明」 checkbox の横並び。
-            「不明」 tap で input 値クリア + ageUnknown true、
-            数値入力時は ageUnknown 自動 false。 */}
+        {/* Sess14 PR-O: 樹齢 を LabeledNumberInput へ移行 + 「不明」 checkbox 横並び維持 */}
         <View style={styles.ageRow}>
-          <TextInput
-            style={[styles.input, styles.ageInput, ageUnknown && styles.inputDisabled]}
-            value={estimatedAgeText}
-            onChangeText={(text) => {
-              setEstimatedAgeText(text);
-              if (text.length > 0 && ageUnknown) setAgeUnknown(false);
-            }}
-            placeholder={t('bonsaiFieldEstimatedAgePlaceholder')}
-            accessibilityLabel={t('bonsaiFieldEstimatedAge')}
-            maxLength={4}
-            keyboardType="number-pad"
-            editable={!ageUnknown}
-          />
+          <View style={{ flex: 1 }}>
+            <LabeledNumberInput
+              label=""
+              value={estimatedAgeText}
+              onChangeText={(text) => {
+                setEstimatedAgeText(text);
+                if (text.length > 0 && ageUnknown) setAgeUnknown(false);
+              }}
+              placeholder={t('bonsaiFieldEstimatedAgePlaceholder')}
+              suffix="年"
+              maxLength={4}
+              editable={!ageUnknown}
+              accessibilityLabel={t('bonsaiFieldEstimatedAge')}
+              testID="e2e_bonsai_create_age_input"
+            />
+          </View>
           <Pressable
             accessibilityRole="checkbox"
             accessibilityState={{ checked: ageUnknown }}
@@ -891,59 +874,19 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         </View>
       </View>
 
-      {/* Sess13 PR-E: 購入日 を DatePicker 化 + × clear button。 */}
-      <View style={styles.field}>
-        <View style={styles.fieldLabelRow}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldPurchaseDate')}</ThemedText>
-          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-        </View>
-        <View style={styles.dateRow}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('bonsaiFieldPurchaseDate')}
-            style={[styles.input, styles.dateInput]}
-            onPress={() => setShowDatePicker('purchase')}
-            testID="e2e_bonsai_create_purchase_date"
-          >
-            <ThemedText style={purchaseDate ? undefined : styles.pickerPlaceholder}>
-              {purchaseDate || t('datePickerPlaceholder')}
-            </ThemedText>
-          </Pressable>
-          {purchaseDate.length > 0 && (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('clear')}
-              style={styles.dateClearButton}
-              onPress={() => setPurchaseDate('')}
-              testID="e2e_bonsai_create_purchase_date_clear"
-            >
-              <ThemedText style={styles.dateClearText}>×</ThemedText>
-            </Pressable>
-          )}
-        </View>
-      </View>
+      {/* Sess14 PR-O: 購入日 を LabeledDateRow へ移行 */}
+      <LabeledDateRow
+        label={t('bonsaiFieldPurchaseDate')}
+        optional
+        optionalText={t('fieldOptionalLabel')}
+        value={purchaseDate}
+        onChangeText={setPurchaseDate}
+        placeholder={t('datePickerPlaceholder')}
+        testID="e2e_bonsai_create_purchase_date"
+        testIDClear="e2e_bonsai_create_purchase_date_clear"
+      />
 
-      {showDatePicker !== null && (
-        <DateTimePicker
-          testID="e2e_bonsai_create_date_picker"
-          value={
-            (showDatePicker === 'acquired' ? acquiredAt : purchaseDate)
-              ? new Date(showDatePicker === 'acquired' ? acquiredAt : purchaseDate)
-              : new Date(nowUtc() as string)
-          }
-          mode="date"
-          maximumDate={new Date(nowUtc() as string)}
-          onChange={(event: DateTimePickerEvent, date?: Date) => {
-            const which = showDatePicker;
-            setShowDatePicker(null);
-            if (event.type === 'set' && date) {
-              const ymd = date.toISOString().slice(0, 10);
-              if (which === 'acquired') setAcquiredAt(ymd);
-              else if (which === 'purchase') setPurchaseDate(ymd);
-            }
-          }}
-        />
-      )}
+      {/* Sess14 PR-O: 旧 共通 DateTimePicker 削除 (LabeledDateRow が各 row 内で個別に持つ) */}
 
       {/* Sess13 PR-B + PR-K: 入手元 (任意、 schema v10 acquired_from + LabeledTextInput 共通化)。 */}
       <LabeledTextInput
@@ -980,33 +923,37 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         </Pressable>
         {potExpanded && (
           <View style={styles.potExpanded}>
-            <TextInput
-              style={styles.input}
+            {/* Sess14 PR-O: 鉢幅 / 深さ を LabeledNumberInput へ移行 (suffix で単位表示) */}
+            <LabeledNumberInput
+              label=""
               value={potWidth}
               onChangeText={setPotWidth}
-              placeholder={t('bonsaiFieldPotWidthPlaceholder').replace('{unit}', potUnit)}
-              accessibilityLabel={t('bonsaiFieldPotWidth')}
-              keyboardType="numeric"
+              placeholder={t('bonsaiFieldPotWidthPlaceholder').replace(' ({unit})', '')}
+              suffix={potUnit}
               maxLength={6}
+              accessibilityLabel={t('bonsaiFieldPotWidth')}
               testID="e2e_bonsai_create_pot_width"
             />
-            <TextInput
-              style={styles.input}
+            <LabeledNumberInput
+              label=""
               value={potDepth}
               onChangeText={setPotDepth}
-              placeholder={t('bonsaiFieldPotDepthPlaceholder').replace('{unit}', potUnit)}
-              accessibilityLabel={t('bonsaiFieldPotDepth')}
-              keyboardType="numeric"
+              placeholder={t('bonsaiFieldPotDepthPlaceholder').replace(' ({unit})', '')}
+              suffix={potUnit}
               maxLength={6}
+              accessibilityLabel={t('bonsaiFieldPotDepth')}
               testID="e2e_bonsai_create_pot_depth"
             />
-            <TextInput
-              style={styles.input}
+            {/* Sess14 PR-O: 鉢材質 を LabeledTextInput へ移行 (文字数 + 上限赤字) */}
+            <LabeledTextInput
+              label=""
               value={potMaterial}
               onChangeText={setPotMaterial}
               placeholder={t('bonsaiFieldPotMaterialPlaceholder')}
-              accessibilityLabel={t('bonsaiFieldPotMaterial')}
               maxLength={100}
+              showCounter
+              overlimitText={t('inputOverLimit')}
+              accessibilityLabel={t('bonsaiFieldPotMaterial')}
               testID="e2e_bonsai_create_pot_material"
             />
           </View>
