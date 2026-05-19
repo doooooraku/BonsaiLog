@@ -37,6 +37,17 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §Decision §3 / home-screens.jsx HomeScreen / 4 タブ構成の起動時 redirect 先 (#249) / mockups v1.0 (PR #269、ADR-0021 Notes Amended で OpenDesign 出力を比較対象として参照)',
   },
+  'bonsai-empty': {
+    id: 'bonsai-empty',
+    description:
+      '盆栽タブ Empty State (盆栽 0 件、 PotIcon + タイトル「最初の盆栽を追加しよう」 + ボディ + 全幅 CTA「+ 盆栽を登録」 + AdBanner + TabBar)',
+    appFlow: 'maestro/flows/ui-diff/bonsai-empty.yml',
+    designHtml: '02-Home.html',
+    designSelector: '[data-screen-label="02 Home Empty"]',
+    mockupFile: 'bonsai-empty.png',
+    notes:
+      'ADR-0020 §画面マップ / home-screens.jsx HomeEmptyScreen / app/(tabs)/bonsai/index.tsx items.length === 0 + selectedFilter === ALL の分岐 / mockups v1.0。前提: 「全データ削除」 で盆栽 0 件にした状態、 ADR-0010 Free 仕様で AdBanner 表示。',
+  },
   'onboarding-welcome': {
     id: 'onboarding-welcome',
     description:
