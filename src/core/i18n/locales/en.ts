@@ -438,6 +438,8 @@ const baseEn = {
   planSelectedListLabel: '{date} · {count} task(s)',
   planSelectedEmpty: 'No tasks recorded.',
   planEventPlanned: 'Planned',
+  planGroupExpand: 'Show individually',
+  planGroupCollapse: 'Collapse',
   planWiringListLink: 'Wiring list',
 
   // --- ADR-0020 v1.x-4: WiringListScreen ---

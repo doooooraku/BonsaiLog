@@ -38,7 +38,7 @@ import {
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
 import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
-import type { Bonsai, Event, EventType } from '@/src/db/schema';
+import { EVENT_TYPES, type Bonsai, type Event, type EventType } from '@/src/db/schema';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
 import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
@@ -110,6 +110,35 @@ export default function PlanScreen() {
     () => selectedDateKey < todayLocalKey,
     [selectedDateKey, todayLocalKey],
   );
+
+  // Sess12 PR-E 改善 B: 作業種別ごとに events をグループ化 (EVENT_TYPES schema 順固定)
+  // ぎっしり 22 件 listing を 「水やり ×20 / 施肥 ×2」 等の集約 row に置換、
+  // 「個別に開く ▼」 で inline 展開 (Sess9 PR-10 タグ管理同パターン)
+  const groupedEvents = useMemo<readonly (readonly [EventType, readonly Event[]])[]>(() => {
+    const groups = new Map<EventType, Event[]>();
+    for (const e of selectedDayEvents) {
+      const t = e.type as EventType;
+      if (!groups.has(t)) groups.set(t, []);
+      groups.get(t)!.push(e);
+    }
+    // 固定順 (EVENT_TYPES schema の順) でソート
+    return Array.from(groups.entries()).sort((a, b) => {
+      const oa = EVENT_TYPES.indexOf(a[0]);
+      const ob = EVENT_TYPES.indexOf(b[0]);
+      return (oa === -1 ? 999 : oa) - (ob === -1 ? 999 : ob);
+    });
+  }, [selectedDayEvents]);
+
+  const [expandedTypes, setExpandedTypes] = useState<Set<EventType>>(new Set());
+
+  const toggleExpand = useCallback((type: EventType) => {
+    setExpandedTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(type)) next.delete(type);
+      else next.add(type);
+      return next;
+    });
+  }, []);
 
   const daysInMonth = getMonthDays(year, month);
   const firstDow = getFirstDow(year, month);
@@ -239,36 +268,78 @@ export default function PlanScreen() {
           {selectedDayEvents.length === 0 ? (
             <ThemedText style={styles.emptyText}>{t('planSelectedEmpty')}</ThemedText>
           ) : (
-            selectedDayEvents.map((e) => {
-              const b = bonsaiMap.get(e.bonsaiId);
+            // Sess12 PR-E 改善 B: 作業種別 ×件数 row + 「個別に開く ▼」 inline 展開
+            groupedEvents.map(([type, events]) => {
+              const isExpanded = expandedTypes.has(type);
+              const groupLabel = t(`eventType_${type}` as Parameters<typeof t>[0]);
+              const toggleText = isExpanded ? t('planGroupCollapse') : t('planGroupExpand');
               return (
-                <Pressable
-                  key={e.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={b?.name ?? ''}
-                  style={styles.eventCard}
-                  onPress={() => router.push(`/(tabs)/bonsai/${e.bonsaiId}` as Href)}
-                  testID={`e2e_plan_event_${e.id}`}
-                >
-                  <View style={styles.eventIconBox}>
-                    {e.type === 'watering' ? (
-                      <DropletIcon size={18} />
-                    ) : (
-                      <EventIcon type={e.type as EventType} size={18} />
-                    )}
-                  </View>
-                  <View style={styles.eventBody}>
-                    <ThemedText style={styles.eventBonsai} numberOfLines={1}>
-                      {b?.name ?? ''}
+                <View key={type}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${groupLabel} ×${events.length}, ${toggleText}`}
+                    accessibilityState={{ expanded: isExpanded }}
+                    style={styles.groupRow}
+                    onPress={() => toggleExpand(type)}
+                    testID={`e2e_plan_group_${type}`}
+                  >
+                    <View style={styles.groupIconBox}>
+                      {type === 'watering' ? (
+                        <DropletIcon size={18} />
+                      ) : (
+                        <EventIcon type={type} size={18} />
+                      )}
+                    </View>
+                    <ThemedText style={styles.groupLabel} numberOfLines={1}>
+                      {groupLabel}
                     </ThemedText>
-                    <ThemedText style={styles.eventLabel}>
-                      {t(`eventType_${e.type}` as Parameters<typeof t>[0])}
+                    <View style={styles.groupCountBadge}>
+                      <ThemedText style={styles.groupCountBadgeText}>×{events.length}</ThemedText>
+                    </View>
+                    <View style={styles.groupSpacer} />
+                    <ThemedText style={styles.groupToggleText}>
+                      {toggleText} {isExpanded ? '▲' : '▼'}
                     </ThemedText>
-                  </View>
-                  {e.status === 'planned' && (
-                    <ThemedText style={styles.plannedLabel}>{t('planEventPlanned')}</ThemedText>
+                  </Pressable>
+                  {isExpanded && (
+                    <View style={styles.expandedContainer}>
+                      {events.map((e) => {
+                        const b = bonsaiMap.get(e.bonsaiId);
+                        return (
+                          <Pressable
+                            key={e.id}
+                            accessibilityRole="button"
+                            accessibilityLabel={b?.name ?? ''}
+                            style={styles.eventCard}
+                            onPress={() => router.push(`/(tabs)/bonsai/${e.bonsaiId}` as Href)}
+                            testID={`e2e_plan_event_${e.id}`}
+                          >
+                            <View style={styles.eventIconBox}>
+                              {e.type === 'watering' ? (
+                                <DropletIcon size={18} />
+                              ) : (
+                                <EventIcon type={e.type as EventType} size={18} />
+                              )}
+                            </View>
+                            <View style={styles.eventBody}>
+                              <ThemedText style={styles.eventBonsai} numberOfLines={1}>
+                                {b?.name ?? ''}
+                              </ThemedText>
+                              <ThemedText style={styles.eventLabel}>
+                                {t(`eventType_${e.type}` as Parameters<typeof t>[0])}
+                              </ThemedText>
+                            </View>
+                            {e.status === 'planned' && (
+                              <ThemedText style={styles.plannedLabel}>
+                                {t('planEventPlanned')}
+                              </ThemedText>
+                            )}
+                          </Pressable>
+                        );
+                      })}
+                    </View>
                   )}
-                </Pressable>
+                </View>
               );
             })
           )}
@@ -369,6 +440,49 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptyText: { fontSize: 14, color: TEXT_SECONDARY, textAlign: 'center', paddingVertical: 24 },
+  // Sess12 PR-E 改善 B: 作業種別グループ row + 件数バッジ + toggle text
+  groupRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 14,
+    backgroundColor: BG_SURFACE,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    borderRadius: 12,
+  },
+  groupIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 9,
+    backgroundColor: BG_SURFACE,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  groupLabel: { fontSize: 15, fontWeight: '500', color: TEXT_PRIMARY },
+  groupCountBadge: {
+    backgroundColor: BRAND_GREEN,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    minWidth: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  groupCountBadgeText: { color: ON_BRAND, fontSize: 12, fontWeight: '600' },
+  groupSpacer: { flex: 1 },
+  groupToggleText: { fontSize: 12, color: TEXT_SECONDARY },
+  // 展開コンテナ: 左 indent + 縦 border-left で 「まとまり感」 (Notion / Apple Notes パターン)
+  expandedContainer: {
+    marginTop: 8,
+    marginLeft: 16,
+    borderLeftWidth: 2,
+    borderLeftColor: BRAND_GREEN,
+    paddingLeft: 12,
+    gap: 6,
+  },
   eventCard: {
     flexDirection: 'row',
     alignItems: 'center',
