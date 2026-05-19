@@ -22,7 +22,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldNamePlaceholder: '木の名前 (例: 玄関の黒松)',
   bonsaiFieldSpecies: '樹種',
   bonsaiFieldSpeciesSearch: '樹種を検索…',
-  bonsaiFieldSpeciesSearchPlaceholder: '樹種名で検索 (例: 黒松, pine)',
+  bonsaiFieldSpeciesSearchPlaceholder: '樹種名で検索',
   bonsaiFieldStyle: '樹形',
   bonsaiFieldAcquiredAt: '取得日',
   bonsaiFieldAcquiredFrom: '入手元メモ',
