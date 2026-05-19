@@ -124,9 +124,9 @@
       "judgedBy": "auto-improve-loop cycle 7",
       "needsReeval": false,
       "reevalPassedAt": "2026-05-17T13:25:00Z",
-      "reevalArtifact": "scripts/ui-diff/out/20260517-0412-sess2-full/home-bulk-sched-work/",
-      "reevalRationale": "Sess3 R1 (2026-05-17) で R-25 構造系 4 項目チェック通過。タブ構成 (両方独立 UI、tab なし) ✅、セクション構成 (タイトル + 盆栽 chip + 12 作業 icon grid) ✅、UI 種別 (BottomSheet → Screen、ADR-0024 Phase G 意図的変更で許容) ✅、スクロール範囲 (両方 scroll 可) ✅。差分: (1) 盆栽 chip 件数 (mockup 3 / 実機 1、seed data 差で許容)、(2) 12 作業 icon 文言差 (盆栽業界同義、許容)、(3) ヘッダー有無 (Screen 化に伴う、許容)。構造的整合性は一致。",
-      "reevalIteration": "1/1 (Sess3 R-30 緩和)"
+      "reevalArtifact": "scripts/ui-diff/out/20260519-sess11-title-cleanup/",
+      "reevalRationale": "Sess11 (2026-05-19): emoji → SVG outline icon (WorkTypeIcon.tsx) + chip flexWrap + NOTE 削除 + BonsaiPlaceholder 灰丸削除 (名前のみ chip)。R-25 構造系 4 項目チェック継続通過。タブ構成 ✅、セクション構成 (タイトル + 盆栽 chip wrap + 12 SVG icon grid) ✅、UI 種別 ✅、スクロール範囲 ✅。",
+      "reevalIteration": "3/1 (Sess11 chip no-placeholder)"
     },
     {
       "flow": "plan-tab",

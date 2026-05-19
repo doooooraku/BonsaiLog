@@ -20,13 +20,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
 import type { EventType } from '@/src/db/schema';
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore, type WorkPickerMode } from '@/src/stores/pickerStore';
@@ -63,8 +57,6 @@ export default function WorkPickerScreen() {
     () => ALL_WORK_TYPES.filter((t) => !PINE_ONLY.has(t) || isPine),
     [isPine],
   );
-  const titleKey = mode === 'schedule' ? 'addScheduleTitle' : 'workPickerTitle';
-
   const handleSelect = (type: EventType) => {
     usePickerStore.getState().setWorkPickerResult({ type, mode });
     router.back();
@@ -73,7 +65,6 @@ export default function WorkPickerScreen() {
   return (
     <View style={styles.container} testID="e2e_work_picker_screen">
       <View style={styles.header}>
-        <ThemedText style={styles.title}>{t(titleKey)}</ThemedText>
         <ThemedText style={styles.subject}>{bonsaiName}</ThemedText>
       </View>
       <View style={styles.grid} testID="e2e_work_picker_grid">
@@ -99,14 +90,8 @@ export default function WorkPickerScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG_PRIMARY, paddingHorizontal: 16, paddingTop: 16 },
-  header: { paddingTop: 8, paddingBottom: 12, alignItems: 'center', gap: 4 },
-  title: {
-    fontFamily: 'NotoSerifJP_500Medium',
-    fontSize: 20,
-    color: TEXT_PRIMARY,
-    letterSpacing: 0.4,
-  },
-  subject: { fontSize: 13, color: TEXT_SECONDARY },
+  header: { paddingTop: 8, paddingBottom: 12, alignItems: 'center' },
+  subject: { fontSize: 14, color: TEXT_PRIMARY },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   cell: {
     width: '31.5%',

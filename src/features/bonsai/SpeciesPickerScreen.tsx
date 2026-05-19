@@ -59,11 +59,6 @@ export default function SpeciesPickerScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_species_picker_screen"
     >
-      <View style={styles.header}>
-        <ThemedText type="defaultSemiBold" style={styles.title}>
-          {t('bonsaiFieldSpecies')}
-        </ThemedText>
-      </View>
       <View style={styles.searchWrap}>
         <TextInput
           testID="e2e_species_picker_search"
@@ -109,9 +104,7 @@ export default function SpeciesPickerScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
-  title: { fontSize: 18 },
-  searchWrap: { paddingHorizontal: 16, paddingBottom: 10 },
+  searchWrap: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10 },
   input: {
     height: 44,
     paddingHorizontal: 14,
