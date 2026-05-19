@@ -14,11 +14,17 @@ import React from 'react';
 import { StyleSheet, TextInput, View, type KeyboardTypeOptions } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BG_SURFACE, BORDER_DEFAULT, TEXT_MUTED } from '@/src/core/theme/colors';
+import {
+  BG_PRIMARY,
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  DANGER,
+  OVERLIMIT,
+  TEXT_MUTED,
+} from '@/src/core/theme/colors';
 
-const OVERLIMIT_COLOR = '#C62828';
-const REQUIRED_BG_LOCAL = '#8B2E2E';
-const REQUIRED_TEXT_LOCAL = '#F7F3E8';
+// Sess14 PR-R: hardcoded color → 既存 theme constant 経由に統合。
+// DANGER / BG_PRIMARY / OVERLIMIT は colors.ts で集中管理。
 
 export type LabeledTextInputProps = {
   label: string;
@@ -122,15 +128,15 @@ const styles = StyleSheet.create({
   field: { gap: 6 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   requiredBadge: {
-    backgroundColor: REQUIRED_BG_LOCAL,
+    backgroundColor: DANGER,
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { fontSize: 10, color: REQUIRED_TEXT_LOCAL, letterSpacing: 0.8 },
+  requiredText: { fontSize: 10, color: BG_PRIMARY, letterSpacing: 0.8 },
   optionalText: { fontSize: 10, color: TEXT_MUTED, letterSpacing: 0.8 },
   counter: { fontSize: 12, color: TEXT_MUTED },
-  counterOver: { color: OVERLIMIT_COLOR, fontWeight: '600' },
+  counterOver: { color: OVERLIMIT, fontWeight: '600' },
   input: {
     height: 44,
     paddingHorizontal: 14,
@@ -141,7 +147,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   inputMultiline: { minHeight: 96, paddingVertical: 12 },
-  inputOverLimit: { borderColor: OVERLIMIT_COLOR },
+  inputOverLimit: { borderColor: OVERLIMIT },
   inputDisabled: { opacity: 0.5 },
-  overlimitText: { fontSize: 12, color: OVERLIMIT_COLOR },
+  overlimitText: { fontSize: 12, color: OVERLIMIT },
 });

@@ -15,9 +15,16 @@ import React from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BG_SURFACE, BORDER_DEFAULT, TEXT_MUTED } from '@/src/core/theme/colors';
+import {
+  BG_PRIMARY,
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  DANGER,
+  OVERLIMIT,
+  TEXT_MUTED,
+} from '@/src/core/theme/colors';
 
-const OVERLIMIT_COLOR = '#C62828';
+// Sess14 PR-R: hardcoded color → 既存 theme constant 経由統合。
 
 export type LabeledNumberInputProps = {
   label: string;
@@ -108,15 +115,15 @@ const styles = StyleSheet.create({
   field: { gap: 6 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   requiredBadge: {
-    backgroundColor: '#8B2E2E',
+    backgroundColor: DANGER,
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { fontSize: 10, color: '#F7F3E8', letterSpacing: 0.8 },
+  requiredText: { fontSize: 10, color: BG_PRIMARY, letterSpacing: 0.8 },
   optionalText: { fontSize: 10, color: TEXT_MUTED, letterSpacing: 0.8 },
   counter: { fontSize: 12, color: TEXT_MUTED },
-  counterOver: { color: OVERLIMIT_COLOR, fontWeight: '600' },
+  counterOver: { color: OVERLIMIT, fontWeight: '600' },
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
