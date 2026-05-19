@@ -2,9 +2,14 @@
  * 樹形 (BonsaiStyle) ピッカー画面 (Phase G1、ADR-0024 Provisionally Accepted)。
  *
  * 旧 `StylePickerSheet.tsx` (`@gorhom/bottom-sheet` snap 60%) を画面化、
- * `(modals)/style-picker` route で `presentation: 'formSheet'` 配下に配置。
+ * `(modals)/style-picker` route で `presentation: 'modal'` 配下に配置。
  *
- * BONSAI_STYLES (10 種) を chip grid 表示、選択時に `usePickerStore.setStylePickerResult` +
+ * Sess13 PR-F (2026-05-19): chip grid → 縦並び list 化 (mockup style-picker-01.png 整合)。
+ * - 「一」 None option 削除 (mockup にない、 Q-9 a で user 確認済)
+ * - 英語ルビ + 説明文は不要 (Q-2 a、 mockup にあるが user 不要判断)
+ * - 「+ カスタム入力」 footer は PR-G で追加 (本 PR は UI 形式変更のみ)
+ *
+ * BONSAI_STYLES (10 種) を縦並び list 表示、選択時に `usePickerStore.setStylePickerResult` +
  * `router.back()` で caller に返却。
  */
 import { router, useLocalSearchParams } from 'expo-router';
@@ -14,7 +19,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-import { BG_SURFACE, BORDER_DEFAULT, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { BORDER_DEFAULT, BRAND_GREEN, BRAND_GREEN_BG } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { BONSAI_STYLES, type BonsaiStyle } from '@/src/db/schema';
 import { usePickerStore } from '@/src/stores/pickerStore';
@@ -26,7 +31,7 @@ export default function StylePickerScreen() {
   const initial = params.initial as BonsaiStyle | undefined;
   const [current, setCurrent] = useState<BonsaiStyle | null>(initial ?? null);
 
-  const handleSelect = (s: BonsaiStyle | null) => {
+  const handleSelect = (s: BonsaiStyle) => {
     setCurrent(s);
     usePickerStore.getState().setStylePickerResult(s);
     router.back();
@@ -38,17 +43,6 @@ export default function StylePickerScreen() {
       testID="e2e_style_picker_screen"
     >
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Pressable
-          testID="e2e_style_option_none"
-          accessibilityRole="button"
-          accessibilityLabel="未選択"
-          style={[styles.chip, current == null && styles.chipSelected]}
-          onPress={() => handleSelect(null)}
-        >
-          <ThemedText style={current == null ? styles.chipTextSelected : styles.chipText}>
-            ―
-          </ThemedText>
-        </Pressable>
         {BONSAI_STYLES.map((s) => {
           const selected = s === current;
           const labelKey = `bonsaiStyle_${s}` as TranslationKey;
@@ -58,10 +52,10 @@ export default function StylePickerScreen() {
               testID={`e2e_style_option_${s}`}
               accessibilityRole="button"
               accessibilityLabel={t(labelKey)}
-              style={[styles.chip, selected && styles.chipSelected]}
+              style={[styles.row, selected && styles.rowSelected]}
               onPress={() => handleSelect(s)}
             >
-              <ThemedText style={selected ? styles.chipTextSelected : styles.chipText}>
+              <ThemedText style={selected ? styles.rowTextSelected : styles.rowText}>
                 {t(labelKey)}
               </ThemedText>
             </Pressable>
@@ -74,24 +68,16 @@ export default function StylePickerScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scroll: {
+  scroll: { paddingBottom: 32 },
+  row: {
     paddingHorizontal: 16,
-    paddingBottom: 32,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
-    minHeight: 40,
+    paddingVertical: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: BORDER_DEFAULT,
+    minHeight: 56,
     justifyContent: 'center',
   },
-  chipSelected: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
-  chipText: { fontSize: 14 },
-  chipTextSelected: { fontSize: 14, color: ON_BRAND, fontWeight: '600' },
+  rowSelected: { backgroundColor: BRAND_GREEN_BG, borderBottomColor: BRAND_GREEN },
+  rowText: { fontSize: 16 },
+  rowTextSelected: { fontSize: 16, fontWeight: '600' },
 });
