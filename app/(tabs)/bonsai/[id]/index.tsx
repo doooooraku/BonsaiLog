@@ -664,7 +664,7 @@ export default function BonsaiDetailScreen() {
             Picker BottomSheet (樹種 / 樹形) は ScrollView 内 nest 不可のため、画面 root に別途
             <BonsaiBasicFormPickerSheets> として配置している。
             Issue #440 Phase 2: 写真セクションを上に移動したため form は写真の下。 */}
-        {activeTab === 'basic' && <BonsaiBasicSection form={basicForm} />}
+        {activeTab === 'basic' && <BonsaiBasicSection form={basicForm} onArchive={handleArchive} />}
 
         {/* Issue #440 Phase 1: 作業履歴 Tab — フィルタ chip + 連続日まとめ events 一覧。
             mockup `bonsai-detail-history-01/02/03.png` 整合。FAB は ScrollView の外 (root)
@@ -780,19 +780,7 @@ export default function BonsaiDetailScreen() {
           </View>
         )}
 
-        {/* basic Tab 末尾: アーカイブボタン (mockup `この盆栽をアーカイブ` 整合)。
-            Issue #439: 編集ボタン + 別 BottomSheet は廃止 (BonsaiBasicSection に inline 化)。
-            「保存」ボタンは BonsaiBasicSection の末尾に inline 配置。 */}
-        {activeTab === 'basic' && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('bonsaiArchive')}
-            style={styles.archiveBtn}
-            onPress={handleArchive}
-          >
-            <ThemedText style={styles.archiveText}>{t('bonsaiArchive')}</ThemedText>
-          </Pressable>
-        )}
+        {/* Sess15 PR-NN: 旧 basic Tab 末尾アーカイブボタンを BonsaiBasicSection 内に移動 (保存 / アーカイブ同 height 56 統一)。 */}
 
         {/*
          * Issue #441 Phase 1: 予定タブを timeline 縦線 + 連続日 mark + 詳細メモに改修。
@@ -1501,20 +1489,37 @@ const styles = StyleSheet.create({
   },
   eventDate: { fontSize: 13, color: TEXT_SECONDARY, fontVariant: ['tabular-nums'] },
   entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
-  // Issue #439: 基本情報タブ inline form の保存ボタン (mockup `保存` 整合)。
+  // Issue #439 + Sess15 PR-NN: 基本情報タブ inline form の保存 / アーカイブボタン (高さ 56 統一)。
   basicSaveButton: {
     height: 56,
     borderRadius: 12,
     backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: 24,
   },
   basicSaveButtonDisabled: {
     backgroundColor: BORDER_DEFAULT,
   },
   basicSaveButtonText: {
     color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '500',
+    letterSpacing: 0.5,
+  },
+  // Sess15 PR-NN: アーカイブを保存と同 height + 同 borderRadius、 outline red 維持。
+  basicArchiveButton: {
+    height: 56,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: DANGER,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+  },
+  basicArchiveButtonText: {
+    color: DANGER,
     fontSize: 17,
     fontWeight: '500',
     letterSpacing: 0.5,
@@ -1530,8 +1535,17 @@ const styles = StyleSheet.create({
  * BonsaiCreateSheet と同じ `useBonsaiBasicForm` フックを親で呼んで state を共有し、
  * mockup `bonsai-detail-basic-01/02/03.png` 整合の編集兼用フォームを実現する。
  * Picker BottomSheet は親側で画面 root に配置 (ScrollView 内 nest 禁止)。
+ *
+ * Sess15 PR-NN: アーカイブボタンを Section 内に統合 (保存と同 height 56 / 統一 spacing)、
+ * user 真意「メモと保存くっつき + 保存/アーカイブのサイズ違い」 解消。
  */
-function BonsaiBasicSection({ form }: { form: BonsaiBasicFormState }) {
+function BonsaiBasicSection({
+  form,
+  onArchive,
+}: {
+  form: BonsaiBasicFormState;
+  onArchive: () => void;
+}) {
   const { t } = useTranslation();
   return (
     <View style={styles.basicFormSection}>
@@ -1546,6 +1560,16 @@ function BonsaiBasicSection({ form }: { form: BonsaiBasicFormState }) {
         testID="e2e_detail_basic_save_button"
       >
         <ThemedText style={styles.basicSaveButtonText}>{t('save')}</ThemedText>
+      </Pressable>
+      {/* Sess15 PR-NN: アーカイブを保存と同 height 56 + 同 borderRadius、 outline red 維持。 */}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('bonsaiArchive')}
+        style={styles.basicArchiveButton}
+        onPress={onArchive}
+        testID="e2e_detail_basic_archive_button"
+      >
+        <ThemedText style={styles.basicArchiveButtonText}>{t('bonsaiArchive')}</ThemedText>
       </Pressable>
     </View>
   );
