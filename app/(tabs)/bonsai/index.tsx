@@ -190,6 +190,7 @@ export default function BonsaiHomeScreen() {
             </ThemedText>
           </Pressable>
         </View>
+        <AdBanner />
       </ThemedView>
     );
   }
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   emptyBody: { fontSize: 16, lineHeight: 26, textAlign: 'center', maxWidth: 300 },
-  emptyCtaWrap: { paddingHorizontal: 16, paddingBottom: 24 },
+  emptyCtaWrap: { paddingHorizontal: 16, paddingBottom: 16 },
   emptyCta: {
     height: 72,
     borderRadius: 14,

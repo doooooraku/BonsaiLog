@@ -54,6 +54,19 @@
   ],
   "achieved": [
     {
+      "flow": "bonsai-empty",
+      "level": 2,
+      "achieved_at": "2026-05-19T17:18:00Z",
+      "artifact": "scripts/ui-diff/out/20260519-1713-bonsai-empty/bonsai-empty/",
+      "rationale": "Sess13 PR-A 新規追加。 ClaudeCode adb 直接撮影 (Sess12 確立 user preference) で R-25 構造系 4 項目評価通過。 タブ構成 (4 タブ 盆栽/予定/記録/ふりかえり、 ADR-0025 案 X 既受容) ✅、 セクション構成 (Header「盆栽手帳」 + 🔍 + ⚙ + 中央 PotIcon size 200 + Title「最初の盆栽を追加しよう」 24px serif + Body「あなたの一生分の記録が、ここから始まります。」 + 全幅 CTA「+ 盆栽を登録」 72h BRAND_GREEN + AdBanner + TabBar) ✅、 UI 種別 (vertical flex center + bottom CTA + AdBanner) ✅、 スクロール範囲 (静的、 unscroll) ✅。 修正: (1) i18n homeEmptyCta ja 「盆栽を追加」 → 「盆栽を登録」 (mockup HomeEmptyScreen 整合 + Title/CTA 動詞分け文体)、 (2) Empty 状態に AdBanner 追加 (ADR-0010 Free 仕様、 list 状態と整合)、 (3) emptyCtaWrap paddingBottom 24 → 16 (AdBanner との gap 調整)。 残差: (1) 「複数選択」 button (ADR-0025 Phase 2 削除済、 許容)、 (2) AdBanner (mockup には無し、 ADR-0010 で実装側に存在、 許容)、 (3) Status bar 環境差 (許容)、 (4) TabBar 順序 (記録 vs 設定、 ADR-0025 案 X bonsai-tab 既受容と同様)。",
+      "judgedBy": "Sess13 PR-A Claude Read 主導 + R-25 4 項目評価",
+      "needsReeval": false,
+      "reevalPassedAt": "2026-05-19T17:18:00Z",
+      "reevalArtifact": "scripts/ui-diff/out/20260519-1713-bonsai-empty/bonsai-empty/",
+      "reevalRationale": "初回 achieved と同じ artifact (新規追加のため re-eval 不要)。 R-25 4 項目 ✅ 全通過、 mockup HomeEmptyScreen と構造的整合 + CTA 文言整合 + AdBanner 復活 (重なりなし、 paddingBottom 16 で gap 調整) を実機確認。",
+      "reevalIteration": "1/1 (Sess13 PR-A 新規)"
+    },
+    {
       "flow": "bonsai-tab",
       "level": 2,
       "rmse": 26859.7,

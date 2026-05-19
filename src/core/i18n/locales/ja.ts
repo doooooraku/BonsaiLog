@@ -508,7 +508,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- Home empty state (Phase 1b, Issue #29, ADR-0019) ---
   homeEmptyTitle: '最初の盆栽を追加しよう',
   homeEmptyBody: 'あなたの一生分の記録が、ここから始まります。',
-  homeEmptyCta: '盆栽を追加',
+  homeEmptyCta: '盆栽を登録',
 
   // --- Home filter empty state (Sess9 PR-1, ADR-0008 §Notes Amended 2026-05-18) ---
   homeTagFilterEmptyTitle: 'タグ「{tag}」 の盆栽はありません',
