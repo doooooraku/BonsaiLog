@@ -718,5 +718,11 @@ const th: Partial<Record<TranslationKey, string>> = {
   settingsPotUnitCm: 'cm',
   settingsPotUnitMm: 'mm',
   settingsPotUnitInch: 'inch',
+  photoSourceCamera: 'Camera',
+  photoSourceLibrary: 'Library',
+  photoReorderHelp: 'Use ↑↓ to reorder, × to remove.',
+  photoCaption: 'Caption',
+  photoMoveUp: 'Move up',
+  photoMoveDown: 'Move down',
 };
 export default th;

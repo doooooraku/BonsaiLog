@@ -68,7 +68,14 @@ function isoToYmd(iso: string | null | undefined): string {
   return iso.slice(0, 10);
 }
 
-export type PendingPhoto = { uri: string; width: number | null; height: number | null };
+export type PendingPhoto = {
+  uri: string;
+  width: number | null;
+  height: number | null;
+  caption?: string;
+};
+
+const PHOTO_CAPTION_MAX_LENGTH = 200;
 
 export type UseBonsaiBasicFormProps = {
   editingBonsai?: Bonsai | null;
@@ -335,6 +342,7 @@ export function useBonsaiBasicForm({
       uri: a.uri,
       width: a.width ?? null,
       height: a.height ?? null,
+      caption: '',
     }));
     const skipped = result.assets.length - accepted.length;
     setPendingPhotos((prev) => [...prev, ...accepted]);
@@ -352,6 +360,47 @@ export function useBonsaiBasicForm({
   const handleRemovePendingPhoto = useCallback((index: number) => {
     setPendingPhotos((prev) => prev.filter((_, i) => i !== index));
   }, []);
+
+  // Sess13 PR-J: Repolog 流カードの ↑↓ + キャプション update + camera/library 経路。
+  const handleUpdatePendingPhotoCaption = useCallback((index: number, caption: string) => {
+    setPendingPhotos((prev) => prev.map((p, i) => (i === index ? { ...p, caption } : p)));
+  }, []);
+
+  const handleMovePendingPhoto = useCallback((from: number, to: number) => {
+    setPendingPhotos((prev) => {
+      if (to < 0 || to >= prev.length) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }, []);
+
+  const handleTakePhotoCamera = useCallback(async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
+      return;
+    }
+    const remaining = isPro
+      ? Number.POSITIVE_INFINITY
+      : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - pendingPhotos.length);
+    if (remaining === 0) {
+      Alert.alert(
+        t('photoLimitTitle'),
+        t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_BONSAI)),
+        [{ text: t('ok') }],
+      );
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.85 });
+    if (result.canceled || !result.assets || result.assets.length === 0) return;
+    const a = result.assets[0];
+    setPendingPhotos((prev) => [
+      ...prev,
+      { uri: a.uri, width: a.width ?? null, height: a.height ?? null, caption: '' },
+    ]);
+  }, [isPro, pendingPhotos.length, t]);
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;
@@ -417,7 +466,11 @@ export function useBonsaiBasicForm({
         const bonsai = await createBonsai(fields);
         for (const p of pendingPhotos) {
           try {
-            await addPhotoFromUri({ bonsaiId: bonsai.id, sourceUri: p.uri });
+            await addPhotoFromUri({
+              bonsaiId: bonsai.id,
+              sourceUri: p.uri,
+              caption: p.caption?.trim() ? p.caption.trim() : null,
+            });
           } catch (err) {
             console.warn('[BonsaiBasicForm] photo persist failed (continuing):', err);
           }
@@ -504,6 +557,9 @@ export function useBonsaiBasicForm({
     pendingPhotos,
     handlePickPhoto,
     handleRemovePendingPhoto,
+    handleUpdatePendingPhotoCaption,
+    handleMovePendingPhoto,
+    handleTakePhotoCamera,
     isPro,
     canSubmit,
     submitting,
@@ -565,6 +621,9 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
     pendingPhotos,
     handlePickPhoto,
     handleRemovePendingPhoto,
+    handleUpdatePendingPhotoCaption,
+    handleMovePendingPhoto,
+    handleTakePhotoCamera,
     isPro,
   } = form;
 
@@ -575,51 +634,97 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
       {showPhotoField && (
         <View style={styles.field}>
           <View style={styles.fieldLabelRow}>
-            <ThemedText type="defaultSemiBold">{t('bonsaiFieldPhotos')}</ThemedText>
+            <ThemedText type="defaultSemiBold">
+              {t('bonsaiFieldPhotos')} ({pendingPhotos.length})
+            </ThemedText>
             <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-            {!isPro && (
-              <ThemedText style={styles.photoCount}>
-                {pendingPhotos.length} / {FREE_PHOTO_LIMIT_PER_BONSAI}
-              </ThemedText>
-            )}
           </View>
-          <View style={styles.photoStrip}>
-            {pendingPhotos.map((p, idx) => (
-              <View key={`${p.uri}-${idx}`} style={styles.photoStripCell}>
-                <Image source={{ uri: p.uri }} style={styles.photoStripImage} contentFit="cover" />
-                {idx === 0 && (
-                  <View style={styles.photoStripCoverBadge}>
-                    <ThemedText style={styles.photoStripCoverBadgeText}>
-                      {t('photoCoverBadge')}
-                    </ThemedText>
-                  </View>
-                )}
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t('delete')}
-                  style={styles.photoStripDeleteButton}
-                  onPress={() => handleRemovePendingPhoto(idx)}
-                  testID={`e2e_bonsai_create_photo_remove_${idx}`}
-                >
-                  <ThemedText style={styles.photoStripDeleteText}>×</ThemedText>
-                </Pressable>
-              </View>
-            ))}
-            {(isPro || pendingPhotos.length < FREE_PHOTO_LIMIT_PER_BONSAI) && (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('photoAddCta')}
-                style={styles.photoBox}
-                onPress={handlePickPhoto}
-                testID="e2e_bonsai_create_photo_pick"
-              >
-                <View style={styles.photoEmpty}>
-                  <CameraIcon size={28} />
-                  <ThemedText style={styles.photoCta}>+ {t('photoAddCta')}</ThemedText>
+          {/* Sess13 PR-J: Repolog 流 2 button (カメラ / ライブラリ) 並列。 */}
+          <View style={styles.photoSourceRow}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('photoSourceCamera')}
+              style={styles.photoSourceButton}
+              onPress={handleTakePhotoCamera}
+              testID="e2e_bonsai_create_photo_camera"
+            >
+              <CameraIcon size={20} />
+              <ThemedText style={styles.photoSourceText}>{t('photoSourceCamera')}</ThemedText>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('photoSourceLibrary')}
+              style={styles.photoSourceButton}
+              onPress={handlePickPhoto}
+              testID="e2e_bonsai_create_photo_library"
+            >
+              <ThemedText style={styles.photoSourceText}>{t('photoSourceLibrary')}</ThemedText>
+            </Pressable>
+          </View>
+          {pendingPhotos.length > 0 && (
+            <ThemedText style={styles.photoHelpText}>{t('photoReorderHelp')}</ThemedText>
+          )}
+          {/* Sess13 PR-J: 各写真を Repolog 流カードに */}
+          {pendingPhotos.map((p, idx) => {
+            const isFirst = idx === 0;
+            const isLast = idx === pendingPhotos.length - 1;
+            const captionLen = (p.caption ?? '').length;
+            return (
+              <View key={`${p.uri}-${idx}`} style={styles.photoCard}>
+                <View style={styles.photoCardToolbar}>
+                  <ThemedText style={styles.photoCardIndex}>{idx + 1}</ThemedText>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('photoMoveUp')}
+                    accessibilityState={{ disabled: isFirst }}
+                    disabled={isFirst}
+                    style={[styles.photoMoveButton, isFirst && styles.photoMoveButtonDisabled]}
+                    onPress={() => handleMovePendingPhoto(idx, idx - 1)}
+                    testID={`e2e_bonsai_create_photo_move_up_${idx}`}
+                  >
+                    <ThemedText style={styles.photoMoveText}>↑</ThemedText>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('photoMoveDown')}
+                    accessibilityState={{ disabled: isLast }}
+                    disabled={isLast}
+                    style={[styles.photoMoveButton, isLast && styles.photoMoveButtonDisabled]}
+                    onPress={() => handleMovePendingPhoto(idx, idx + 1)}
+                    testID={`e2e_bonsai_create_photo_move_down_${idx}`}
+                  >
+                    <ThemedText style={styles.photoMoveText}>↓</ThemedText>
+                  </Pressable>
+                  <View style={{ flex: 1 }} />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('delete')}
+                    style={styles.photoCardDeleteButton}
+                    onPress={() => handleRemovePendingPhoto(idx)}
+                    testID={`e2e_bonsai_create_photo_remove_${idx}`}
+                  >
+                    <ThemedText style={styles.photoCardDeleteText}>×</ThemedText>
+                  </Pressable>
                 </View>
-              </Pressable>
-            )}
-          </View>
+                <Image source={{ uri: p.uri }} style={styles.photoCardImage} contentFit="cover" />
+                <View style={styles.photoCardCaptionWrap}>
+                  <TextInput
+                    style={[styles.input, styles.photoCardCaptionInput]}
+                    value={p.caption ?? ''}
+                    onChangeText={(text) => handleUpdatePendingPhotoCaption(idx, text)}
+                    placeholder={t('photoCaptionPlaceholder')}
+                    accessibilityLabel={t('photoCaption')}
+                    maxLength={PHOTO_CAPTION_MAX_LENGTH}
+                    multiline
+                    testID={`e2e_bonsai_create_photo_caption_${idx}`}
+                  />
+                  <ThemedText style={styles.photoCardCounter}>
+                    {captionLen}/{PHOTO_CAPTION_MAX_LENGTH}
+                  </ThemedText>
+                </View>
+              </View>
+            );
+          })}
         </View>
       )}
 
@@ -1094,6 +1199,62 @@ const styles = StyleSheet.create({
   },
   dateClearText: { fontSize: 22, color: TEXT_MUTED, lineHeight: 24 },
   potExpanded: { gap: 10, marginTop: 8 },
+  // Sess13 PR-J: Repolog 流写真カード
+  photoSourceRow: { flexDirection: 'row', gap: 10 },
+  photoSourceButton: {
+    flex: 1,
+    height: 44,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: BG_SURFACE,
+  },
+  photoSourceText: { fontSize: 14, fontWeight: '500' },
+  photoHelpText: { fontSize: 12, color: TEXT_MUTED, marginTop: 4 },
+  photoCard: {
+    marginTop: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    overflow: 'hidden',
+    backgroundColor: BG_SURFACE,
+  },
+  photoCardToolbar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 8,
+  },
+  photoCardIndex: { fontSize: 14, color: TEXT_SECONDARY, minWidth: 16 },
+  photoMoveButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: BG_SURFACE,
+  },
+  photoMoveButtonDisabled: { opacity: 0.3 },
+  photoMoveText: { fontSize: 18 },
+  photoCardDeleteButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: BG_SURFACE,
+  },
+  photoCardDeleteText: { fontSize: 20, lineHeight: 22, color: TEXT_SECONDARY },
+  // 4:3 横長 (Q-10 b 採用)
+  photoCardImage: { width: '100%', aspectRatio: 4 / 3 },
+  photoCardCaptionWrap: { padding: 12, gap: 4 },
+  photoCardCaptionInput: { minHeight: 44 },
+  photoCardCounter: { fontSize: 12, color: TEXT_MUTED, textAlign: 'right' },
   tagChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tagChip: {
     paddingHorizontal: 12,
