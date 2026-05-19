@@ -739,7 +739,7 @@ export function BonsaiBasicFormFields({ form, showPhotos = true }: BonsaiBasicFo
         value={name}
         onChangeText={setName}
         placeholder={t('bonsaiFieldNamePlaceholder')}
-        maxLength={64}
+        maxLength={100}
         showCounter
         testID="e2e_bonsai_create_name"
       />
