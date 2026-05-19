@@ -17,6 +17,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { PlusIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   BG_SURFACE,
@@ -145,7 +146,7 @@ export default function SpeciesPickerScreen() {
           );
         })}
       </ScrollView>
-      {/* Sess13 PR-H: 下部固定 dashed footer 「+ カスタム入力」。 */}
+      {/* Sess15 PR-AA: 案 D2 = solid outline + BRAND_GREEN テキスト/icon (Home Empty CTA と color family 統一、 secondary action 階層保持)。 */}
       <View style={styles.footerWrap}>
         <Pressable
           accessibilityRole="button"
@@ -154,7 +155,8 @@ export default function SpeciesPickerScreen() {
           onPress={() => setShowCustomModal(true)}
           testID="e2e_species_picker_custom_add"
         >
-          <ThemedText style={styles.customAddText}>+ {t('customInputAdd')}</ThemedText>
+          <PlusIcon size={18} color={BRAND_GREEN} />
+          <ThemedText style={styles.customAddText}>{t('customInputAdd')}</ThemedText>
         </Pressable>
       </View>
       <Modal
@@ -242,15 +244,18 @@ const styles = StyleSheet.create({
     borderTopColor: BORDER_DEFAULT,
     backgroundColor: BG_SURFACE,
   },
+  // Sess15 PR-AA: dashed gray → solid BRAND_GREEN (案 D2、 Home Empty CTA と統一 color family)。
   customAddButton: {
     paddingVertical: 14,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: BORDER_DEFAULT,
+    borderColor: BRAND_GREEN,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
-  customAddText: { fontSize: 14, color: TEXT_PRIMARY, fontWeight: '500' },
+  customAddText: { fontSize: 14, color: BRAND_GREEN, fontWeight: '600' },
   // Modal
   modalBackdrop: {
     flex: 1,
