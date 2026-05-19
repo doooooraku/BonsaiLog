@@ -264,21 +264,6 @@
       "reevalIteration": "2/2"
     },
     {
-      "flow": "home-bulk-sched-date",
-      "level": 2,
-      "rmse": 25500,
-      "achieved_at": "2026-05-15T20:43:00Z",
-      "rmseNormalized": 0.39,
-      "artifact": "scripts/ui-diff/out/20260516-1139-batch/home-bulk-sched-date/",
-      "rationale": "Sess 2 新規評価 (ADR-0024 g3b PoC flow 転用)。ui-diff/home-bulk-sched-date.yml を g3b-bulk-schedule-date.yml ベースに書き直し (clearState + Onboarding skip + seed + 長押し + SelectionToolbar 予定追加 + fertilizing tap + bulk-schedule-date formSheet 表示 capture)。",
-      "judgedBy": "Sess2 (2026-05-15)",
-      "needsReeval": false,
-      "reevalPassedAt": "2026-05-15T20:43:00Z",
-      "reevalArtifact": "scripts/ui-diff/out/20260516-1139-batch/home-bulk-sched-date/",
-      "reevalRationale": "Sess 2 R-25 評価通過。タブ構成 (formSheet、タブなし) ✅、セクション構成 (Header「予定日を選ぶ」 + title「施肥の予定日」 + subtitle + 選択盆栽 chip + 月選択 + DOW header + Calendar grid + 通知 toggle + CTA「N 件にまとめて予定追加」) ✅、UI 種別 (formSheet 縦並び) ✅、スクロール範囲 (全画面 scroll) ✅。Issue #507 修正で Header text「予定日を選ぶ」 が formSheet 系でも正しく表示 (副次確認)。残差: (1) 選択件数差 (mockup 3 件 / 実機 1 件、操作差で許容)、(2) 選択盆栽差 (mockup 3 種 / 実機 お師匠の真柏 のみ、seed data 差)、(3) header text「キャンセル」 (mockup) vs 「←」 (実機、modal 慣行)。構造的整合性は完全一致。",
-      "reevalIteration": "2/2"
-    },
-    {
       "flow": "bonsai-detail-basic",
       "level": 2,
       "rmse": 29172,

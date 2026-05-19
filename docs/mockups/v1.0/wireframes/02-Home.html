@@ -88,7 +88,6 @@ const FLOW = [
   { key: 'select',        label: '01a Home 選択モード',           accessPath: 'Home > 複数選択' },
   { key: 'tagAdd',        label: '01b タグ追加モーダル',          accessPath: 'Home > タグ + 追加' },
   { key: 'bulkSchedWork', label: '01c 一括予定・作業選択',        accessPath: 'Home > 選択 > 予定' },
-  { key: 'bulkSchedDate', label: '01d 一括予定・日付',            accessPath: 'Home > 選択 > 予定 > 作業' },
   { key: 'empty',         label: '02 Home Empty',                 accessPath: '初回起動 (盆栽 0 件)' },
   { key: 'create',        label: '03 新規登録 / 編集',            accessPath: 'Home > FAB' },
   { key: 'species',       label: '04 樹種ピッカー',               accessPath: '03 > 樹種' },
@@ -121,7 +120,6 @@ function renderScreen(key, handlers = {}, state = {}) {
     case 'select':   return <HomeScreen key="select" onOpenBonsai={h.openDetail || noop} onOpenCreate={h.openCreate || noop} onTabChange={h.tabChange || noop} onOpenSearch={h.openSearch || noop} onOpenSettings={h.openSettings || noop} initialSelectMode />;
     case 'tagAdd':   return <HomeScreen key="tagAdd" onOpenBonsai={h.openDetail || noop} onOpenCreate={h.openCreate || noop} onTabChange={h.tabChange || noop} onOpenSearch={h.openSearch || noop} onOpenSettings={h.openSettings || noop} initialTagModal />;
     case 'bulkSchedWork': return <HomeScreen key="bulkSchedWork" onOpenBonsai={h.openDetail || noop} onOpenCreate={h.openCreate || noop} onTabChange={h.tabChange || noop} onOpenSearch={h.openSearch || noop} onOpenSettings={h.openSettings || noop} initialBulkSchedStep="pickWork" />;
-    case 'bulkSchedDate': return <HomeScreen key="bulkSchedDate" onOpenBonsai={h.openDetail || noop} onOpenCreate={h.openCreate || noop} onTabChange={h.tabChange || noop} onOpenSearch={h.openSearch || noop} onOpenSettings={h.openSettings || noop} initialBulkSchedStep="pickDate" initialBulkSchedType="fert" />;
     case 'empty':    return <HomeEmptyScreen onOpenCreate={h.openCreate || noop} onTabChange={h.tabChange || noop} />;
     case 'create':   return (
       <React.Fragment>

@@ -6,9 +6,10 @@
  * - **1 件**: 自動選択 + 直接 bulk-work-picker (mode) 起動
  * - **2+ 件**: bonsai-multi-select modal を起動 (盆栽選択画面)
  *
- * 後続 flow (BulkWorkPickerScreen → BulkLogConfirm / BulkScheduleDate) は
+ * 後続 flow (BulkWorkPickerScreen → BulkLogConfirm) は
  * 既存 pickerStore 経路 (setBulkContext + consumeBulkWorkPickerResult 等) を再利用。
  * Phase 2 (#545 後) で導入、 Sess8 PR-2 で 予定/記録タブから利用。
+ * (Sess12: BulkScheduleDate は ADR-0025 案 B FAB flow 移行後 dead code として廃止)
  */
 import { useRouter, type Href } from 'expo-router';
 import { useCallback } from 'react';

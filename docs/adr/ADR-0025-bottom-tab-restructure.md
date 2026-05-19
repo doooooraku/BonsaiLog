@@ -276,6 +276,31 @@
 - [Apple HIG Tab Bars](https://developer.apple.com/design/human-interface-guidelines/tab-bars)
 - [Navigation events | React Navigation v7](https://reactnavigation.org/docs/navigation-events/) (lazy render 制約)
 
+### Notes Amended 2026-05-19 Sess12 PR-A (BulkScheduleDate 廃止)
+
+#### 経緯
+
+- 案 B FAB flow + Sess8 PR-5 (bonsai-select-mode 完全廃止) 後、 旧 `BulkScheduleDate` 画面 (旧経路 Home 長押し → SelectionToolbar → BulkWorkPicker → **BulkScheduleDate** → 完了) は **producer/consumer caller 共に 0 件** の dead code 化
+- `grep router.push('/bulk-schedule-date')` = **0 件** (producer なし)
+- `grep consumeBulkScheduleDateResult` = **0 件** (consumer なし、 Screen 自身が set するだけ)
+- ADR 本文 line 44 / 47 / 96 の「BulkScheduleDateSheet」 言及は本 ADR 起票時の設計案であり、 実装時に **BulkWorkPicker 完了 trigger に集約** された (現状は配線未完、 PR-B+C で完成予定)
+
+#### 削除内容 (Sess12 PR-A)
+
+- 画面本体: `src/features/event/BulkScheduleDateScreen.tsx` (308 行)、 `app/(modals)/bulk-schedule-date.tsx` (10 行)
+- store fields: `pickerStore.ts` の `BulkScheduleDateInput` / `BulkScheduleDateResult` 型 + `bulkScheduleDateResult` field + setter + consumer
+- i18n: 5 キー (`bulkScheduleDateTitle` / `bulkScheduleDateSub` / `bulkScheduleSaveCta` / `bulkScheduleMonthLabel` / `bulkScheduleDowLabels`) × 19 言語 = 95 行
+- Stack.Screen 登録: `app/(modals)/_layout.tsx` 1 行
+- Maestro flows: `ui-diff/home-bulk-sched-date.yml` + `g3b-bulk-schedule-date.yml` 計 2 files
+- ui-diff 登録: `scripts/ui-diff/config.ts` + `mockup-screenshots-config.ts` + `skip-list.json` の `home-bulk-sched-date` 関連 entry
+- mockup HTML: `docs/mockups/v1.0/wireframes/02-Home.html` の `bulkSchedDate` accessPath + case 分岐 (2 行)
+- mockup PNG: `docs/mockups/v1.0/screenshots/home-bulk-sched-date-0{1,2,3}.png` 計 3 枚
+
+#### 保持物
+
+- `src/db/eventRepository.ts` の `bulkScheduleEvents` helper + `BulkScheduleInput` 型 — 次 PR (B+C) で新フロー (PlanScreen FAB → BonsaiMultiSelect → BulkWorkPicker → 本 helper) に配線予定
+- i18n `bulkScheduleDoneToast` (19 言語) — PR-B+C の完了 popup で再利用
+
 ### Repolog との差分
 
 - Repolog (前作) は記録特化アプリ、 タブ構成は **記録 / カレンダー / 設定** 等 (要確認)

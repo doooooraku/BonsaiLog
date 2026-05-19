@@ -19,7 +19,7 @@
  * - `SeedLangPack` 型で言語別データ (名前 / メモ / タグ / note) を 構造化
  * - `SEED_PACK_JA` / `SEED_PACK_EN` でデータパック定義
  * - 共通 logic は `seedTestDataInternal(pack)` で 1 箇所、 言語別 wrapper 関数で公開
- * - 既存 Maestro flow 5 個 (g2-worklog-confirm / g2-work-picker / g3b-bulk-schedule-date /
+ * - 既存 Maestro flow 4 個 (g2-worklog-confirm / g2-work-picker /
  *   ui-diff/wiring-list / ui-diff/record-tab-direct) は JA 名前 (父の黒松/母の五葉松/お師匠の真柏)
  *   依存のため、 JA seed 時のみ flow 動作対象 (EN seed は demo / SS 用)
  *
@@ -655,7 +655,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
 /**
  * 日本語版テストデータを投入。 idempotent。
  *
- * 既存 Maestro flow 5 個 (g2-worklog-confirm / g2-work-picker / g3b-bulk-schedule-date /
+ * 既存 Maestro flow 4 個 (g2-worklog-confirm / g2-work-picker /
  * ui-diff/wiring-list / ui-diff/record-tab-direct) が「父の黒松」 等 JA 名前依存のため、
  * Maestro 動作対象は本関数の投入結果のみ。
  */

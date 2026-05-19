@@ -43,9 +43,6 @@ type BulkWorkPickerResult = BulkWorkPickerValue | 'CONSUMED';
 export type BulkLogConfirmInput = { note: string | null };
 type BulkLogConfirmResult = BulkLogConfirmInput | 'CONSUMED';
 
-export type BulkScheduleDateInput = { occurredAtUtc: string };
-type BulkScheduleDateResult = BulkScheduleDateInput | 'CONSUMED';
-
 /** 横断水やり日付詳細 (Phase G4 part 1) — caller から Screen への重 data 受け渡し。 */
 export type WateringDayDetailContext = {
   dateKey: string;
@@ -91,11 +88,6 @@ type PickerStore = {
   bulkLogConfirmResult: BulkLogConfirmResult;
   setBulkLogConfirmResult: (input: BulkLogConfirmInput) => void;
   consumeBulkLogConfirmResult: () => BulkLogConfirmInput | undefined;
-
-  // 一括予定追加 日付選択 (bulk-schedule-date、Phase G3b)
-  bulkScheduleDateResult: BulkScheduleDateResult;
-  setBulkScheduleDateResult: (input: BulkScheduleDateInput) => void;
-  consumeBulkScheduleDateResult: () => BulkScheduleDateInput | undefined;
 
   // 横断水やり日付詳細 (watering-day-detail、Phase G4 part 1)
   wateringDayDetailContext: WateringDayDetailContext | null;
@@ -165,15 +157,6 @@ export const usePickerStore = create<PickerStore>((set, get) => ({
     const result = get().bulkLogConfirmResult;
     if (result === 'CONSUMED') return undefined;
     set({ bulkLogConfirmResult: 'CONSUMED' });
-    return result;
-  },
-
-  bulkScheduleDateResult: 'CONSUMED',
-  setBulkScheduleDateResult: (input) => set({ bulkScheduleDateResult: input }),
-  consumeBulkScheduleDateResult: () => {
-    const result = get().bulkScheduleDateResult;
-    if (result === 'CONSUMED') return undefined;
-    set({ bulkScheduleDateResult: 'CONSUMED' });
     return result;
   },
 
