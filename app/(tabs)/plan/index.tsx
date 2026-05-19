@@ -42,6 +42,7 @@ import { EVENT_TYPES, type Bonsai, type Event, type EventType } from '@/src/db/s
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
 import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { usePickerStore } from '@/src/stores/pickerStore';
 
 function getMonthDays(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate();
@@ -65,11 +66,24 @@ export default function PlanScreen() {
   const today = new Date();
   const todayLocalKey = toLocalDateKey(today.toISOString(), getTzOffsetMin());
 
-  const [year, setYear] = useState<number>(today.getFullYear());
-  const [month, setMonth] = useState<number>(today.getMonth());
-  const [selectedDateKey, setSelectedDateKey] = useState<string>(todayLocalKey);
+  // Sess12 PR-H: PlanScreen 再 mount 時に pickerStore から 前回の selectedDateKey を restore
+  // (PR-G router.replace で PlanScreen 再 mount され selectedDateKey が today reset される副作用 fix)
+  const storedDateKey = usePickerStore.getState().planSelectedDateKey;
+  const initialDateKey = storedDateKey ?? todayLocalKey;
+  const initialYear = storedDateKey ? Number(storedDateKey.slice(0, 4)) : today.getFullYear();
+  const initialMonth = storedDateKey ? Number(storedDateKey.slice(5, 7)) - 1 : today.getMonth();
+
+  const [year, setYear] = useState<number>(initialYear);
+  const [month, setMonth] = useState<number>(initialMonth);
+  const [selectedDateKey, setSelectedDateKeyState] = useState<string>(initialDateKey);
   const [events, setEvents] = useState<Event[]>([]);
   const [bonsai, setBonsai] = useState<Bonsai[]>([]);
+
+  // Sess12 PR-H: selectedDateKey 変更時に pickerStore にも sync
+  const setSelectedDateKey = useCallback((dateKey: string) => {
+    setSelectedDateKeyState(dateKey);
+    usePickerStore.getState().setPlanSelectedDateKey(dateKey);
+  }, []);
 
   const reload = useCallback(async () => {
     const [evs, bs] = await Promise.all([

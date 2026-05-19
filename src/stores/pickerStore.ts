@@ -75,6 +75,11 @@ type PickerStore = {
   bulkContext: BulkContext | null;
   setBulkContext: (ctx: BulkContext | null) => void;
 
+  // Sess12 PR-H: PlanScreen selectedDateKey 保持 (router.replace で PlanScreen 再 mount 時に
+  // user が選択していた日付を restore、 today reset を回避)
+  planSelectedDateKey: string | null;
+  setPlanSelectedDateKey: (dateKey: string) => void;
+
   // 横断水やり日付詳細 (watering-day-detail、Phase G4 part 1)
   wateringDayDetailContext: WateringDayDetailContext | null;
   setWateringDayDetailContext: (ctx: WateringDayDetailContext | null) => void;
@@ -127,6 +132,10 @@ export const usePickerStore = create<PickerStore>((set, get) => ({
 
   bulkContext: null,
   setBulkContext: (ctx) => set({ bulkContext: ctx }),
+
+  // Sess12 PR-H: PlanScreen selectedDateKey 永続化
+  planSelectedDateKey: null,
+  setPlanSelectedDateKey: (dateKey) => set({ planSelectedDateKey: dateKey }),
 
   wateringDayDetailContext: null,
   setWateringDayDetailContext: (ctx) => set({ wateringDayDetailContext: ctx }),
