@@ -262,13 +262,14 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   customAddText: { fontSize: 14, color: BRAND_GREEN, fontWeight: '600' },
-  // Modal
+  // Sess15 PR-HH: キーボード表示時に modal とキーボードが重ならないよう画面上部 (paddingTop) に配置。
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
+    justifyContent: 'flex-start',
+    paddingTop: 80,
+    paddingHorizontal: 24,
   },
   modalCard: { width: '100%', maxWidth: 360, borderRadius: 14, padding: 20, gap: 14 },
   modalTitle: { fontSize: 16 },
