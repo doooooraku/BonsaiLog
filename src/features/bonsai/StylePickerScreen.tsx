@@ -11,6 +11,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+// Sess15 PR-X: TextInput は既に modal 用に import 済、 search bar 追加で再利用。
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
@@ -38,6 +39,7 @@ export default function StylePickerScreen() {
   const initial = params.initial;
   const [current, setCurrent] = useState<string | null>(initial ?? null);
   const [customStyles, setCustomStyles] = useState<BonsaiStyleCustom[]>([]);
+  const [query, setQuery] = useState('');
   const [showCustomModal, setShowCustomModal] = useState(false);
   const [customInput, setCustomInput] = useState('');
 
@@ -74,13 +76,36 @@ export default function StylePickerScreen() {
     }
   };
 
+  // Sess15 PR-X: 樹形 picker に検索バー追加 (SpeciesPicker と pattern 統一)。
+  const queryLower = query.trim().toLowerCase();
+  const filteredMaster = queryLower
+    ? BONSAI_STYLES.filter((s) =>
+        t(`bonsaiStyle_${s}` as TranslationKey)
+          .toLowerCase()
+          .includes(queryLower),
+      )
+    : BONSAI_STYLES;
+  const filteredCustom = queryLower
+    ? customStyles.filter((cs) => cs.name.toLowerCase().includes(queryLower))
+    : customStyles;
+
   return (
     <View
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_style_picker_screen"
     >
+      <View style={styles.searchWrap}>
+        <TextInput
+          testID="e2e_style_picker_search"
+          style={[styles.input, { color: c.text, borderColor: c.border }]}
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t('bonsaiFieldStyleSearchPlaceholder')}
+          placeholderTextColor={c.textSecondary}
+        />
+      </View>
       <ScrollView contentContainerStyle={styles.scroll}>
-        {BONSAI_STYLES.map((s) => {
+        {filteredMaster.map((s) => {
           const selected = s === current;
           const labelKey = `bonsaiStyle_${s}` as TranslationKey;
           return (
@@ -99,7 +124,7 @@ export default function StylePickerScreen() {
           );
         })}
         {/* Sess13 PR-G: カスタム樹形 (bonsai_styles_custom) を master の下に UNION 表示。 */}
-        {customStyles.map((cs) => {
+        {filteredCustom.map((cs) => {
           const selected = cs.name === current;
           return (
             <Pressable
@@ -186,6 +211,17 @@ export default function StylePickerScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  // Sess15 PR-X: SpeciesPicker と pattern 統一 (searchWrap + input)。
+  searchWrap: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10 },
+  input: {
+    height: 44,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    borderRadius: 12,
+    backgroundColor: BG_SURFACE,
+    fontSize: 16,
+  },
   scroll: { paddingBottom: 16 },
   row: {
     paddingHorizontal: 16,
