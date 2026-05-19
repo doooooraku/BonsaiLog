@@ -12,7 +12,14 @@
  */
 import { router } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
@@ -39,29 +46,39 @@ export default function BonsaiCreateScreen() {
 
   return (
     <View style={styles.container} testID="e2e_bonsai_create_screen">
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <BonsaiBasicFormFields form={form} showPhotos />
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('save')}
-          accessibilityState={{ disabled: !form.canSubmit }}
-          style={[styles.footerButton, !form.canSubmit && styles.footerButtonDisabled]}
-          onPress={() => void form.handleSubmit()}
-          disabled={!form.canSubmit}
-          testID="e2e_bonsai_create_submit"
+      {/* Sess15 PR-TT: KeyboardAvoidingView でキーボード表示時に入力欄が隠れないよう調整。 */}
+      <KeyboardAvoidingView
+        style={styles.flexOne}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          <ThemedText style={styles.footerButtonText}>{t('save')}</ThemedText>
-        </Pressable>
-      </View>
+          <BonsaiBasicFormFields form={form} showPhotos />
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('save')}
+            accessibilityState={{ disabled: !form.canSubmit }}
+            style={[styles.footerButton, !form.canSubmit && styles.footerButtonDisabled]}
+            onPress={() => void form.handleSubmit()}
+            disabled={!form.canSubmit}
+            testID="e2e_bonsai_create_submit"
+          >
+            <ThemedText style={styles.footerButtonText}>{t('save')}</ThemedText>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  flexOne: { flex: 1 },
   scrollContent: { padding: 16, gap: 16, paddingBottom: 96 },
   footer: {
     paddingHorizontal: 16,
