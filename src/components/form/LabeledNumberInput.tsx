@@ -22,6 +22,7 @@ import {
   DANGER,
   OVERLIMIT,
   TEXT_MUTED,
+  TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 
 // Sess14 PR-R: hardcoded color → 既存 theme constant 経由統合。
@@ -99,6 +100,7 @@ export function LabeledNumberInput({
           value={value}
           onChangeText={handleChange}
           placeholder={placeholder}
+          placeholderTextColor={TEXT_SECONDARY}
           keyboardType="numeric"
           maxLength={maxLength}
           editable={editable}
