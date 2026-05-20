@@ -933,12 +933,17 @@ export default function BonsaiDetailScreen() {
   async function persistEventWithPayload(payload: WorkLogPayload) {
     if (!item) return;
     try {
+      // Sess16 PR-A2: occurredAtDate (YYYY-MM-DD) → ISO UTC、 未指定なら createEvent default (now)。
+      const occurredAtUtc = payload.occurredAtDate
+        ? `${payload.occurredAtDate}T00:00:00.000Z`
+        : undefined;
       await createEvent({
         bonsaiId: item.id,
         type: payload.type,
         status: 'logged',
         note: payload.note.length > 0 ? payload.note : undefined,
         payload: payload.payload,
+        ...(occurredAtUtc ? { occurredAtUtc } : {}),
       });
       await reload();
     } catch (err) {
