@@ -22,6 +22,7 @@ import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { CameraIcon } from '@/src/components/icons';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
+import { formOptional } from '@/src/core/theme/typography';
 import {
   BG_PRIMARY,
   BG_SURFACE,
@@ -216,7 +217,7 @@ export function PhotoField({
 const styles = StyleSheet.create({
   field: { gap: 8 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  optionalText: { fontSize: 10, color: TEXT_MUTED, letterSpacing: 0.8 },
+  optionalText: formOptional,
   // Sess16 PR-H: BonsaiBasicForm photoSourceRow pattern (Sess13 PR-J 確立、 Camera + Library)
   sourceRow: { flexDirection: 'row', gap: 10 },
   sourceButton: {

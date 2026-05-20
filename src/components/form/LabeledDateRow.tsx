@@ -26,6 +26,9 @@ import {
   TEXT_MUTED,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { formOptional, formRequired } from '@/src/core/theme/typography';
+
+// Sess17 PR-C1: hardcoded fontSize/fontWeight → typography.ts token 経由化 (ADR-0029 D1)。
 
 export type LabeledDateRowProps = {
   label: string;
@@ -125,8 +128,8 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { fontSize: 10, color: BG_PRIMARY, letterSpacing: 0.8 },
-  optionalText: { fontSize: 10, color: TEXT_MUTED, letterSpacing: 0.8 },
+  requiredText: { ...formRequired, color: BG_PRIMARY },
+  optionalText: formOptional,
   rowWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   row: {
     flex: 1,

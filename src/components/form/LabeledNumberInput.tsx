@@ -15,17 +15,19 @@ import React from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, DANGER, OVERLIMIT } from '@/src/core/theme/colors';
 import {
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  DANGER,
-  OVERLIMIT,
-  TEXT_MUTED,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+  FORM_PLACEHOLDER_COLOR,
+  formCounter,
+  formCounterOver,
+  formInput,
+  formOptional,
+  formRequired,
+  formSuffix,
+} from '@/src/core/theme/typography';
 
 // Sess14 PR-R: hardcoded color → 既存 theme constant 経由統合。
+// Sess17 PR-C1: hardcoded fontSize/fontWeight → typography.ts token 経由化 (ADR-0029 D1)。
 
 export type LabeledNumberInputProps = {
   label: string;
@@ -100,7 +102,7 @@ export function LabeledNumberInput({
           value={value}
           onChangeText={handleChange}
           placeholder={placeholder}
-          placeholderTextColor={TEXT_SECONDARY}
+          placeholderTextColor={FORM_PLACEHOLDER_COLOR}
           keyboardType="numeric"
           maxLength={maxLength}
           editable={editable}
@@ -122,10 +124,10 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { fontSize: 10, color: BG_PRIMARY, letterSpacing: 0.8 },
-  optionalText: { fontSize: 10, color: TEXT_MUTED, letterSpacing: 0.8 },
-  counter: { fontSize: 12, color: TEXT_MUTED },
-  counterOver: { color: OVERLIMIT, fontWeight: '600' },
+  requiredText: { ...formRequired, color: BG_PRIMARY },
+  optionalText: formOptional,
+  counter: formCounter,
+  counterOver: formCounterOver,
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -136,7 +138,7 @@ const styles = StyleSheet.create({
     backgroundColor: BG_SURFACE,
     paddingHorizontal: 14,
   },
-  input: { flex: 1, fontSize: 16 },
-  suffix: { fontSize: 14, color: TEXT_MUTED, marginLeft: 6 },
+  input: { flex: 1, ...formInput },
+  suffix: { ...formSuffix, marginLeft: 6 },
   inputDisabled: { opacity: 0.5 },
 });
