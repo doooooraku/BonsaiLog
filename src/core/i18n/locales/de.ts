@@ -755,5 +755,14 @@ const de: Partial<Record<TranslationKey, string>> = {
   workLogFertKind_other: 'Other',
   workLogFertProduct: 'Brand / blend',
   workLogFertProductPlaceholder: 'e.g. Biogold',
+  workLogPestPurpose: 'Purpose',
+  workLogPestPurpose_prevention: 'Prevention',
+  workLogPestPurpose_treatment: 'Treatment',
+  workLogPestPurpose_both: 'Both',
+  workLogPestAgent: 'Agent',
+  workLogPestAgentPlaceholder: 'e.g. Sumithion',
+  workLogPestDilution: 'Dilution ratio',
+  workLogPestDilutionUnit: 'x',
+  workLogPestDilutionPlaceholder: 'e.g. 1000',
 };
 export default de;

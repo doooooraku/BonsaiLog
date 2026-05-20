@@ -764,6 +764,15 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogFertKind_other: 'その他',
   workLogFertProduct: '銘柄・配合',
   workLogFertProductPlaceholder: '例: バイオゴールド',
+  workLogPestPurpose: '目的',
+  workLogPestPurpose_prevention: '予防',
+  workLogPestPurpose_treatment: '治療',
+  workLogPestPurpose_both: '両方',
+  workLogPestAgent: '薬剤名',
+  workLogPestAgentPlaceholder: '例: スミチオン',
+  workLogPestDilution: '希釈倍率',
+  workLogPestDilutionUnit: '倍',
+  workLogPestDilutionPlaceholder: '例: 1000',
 };
 
 export default ja;
