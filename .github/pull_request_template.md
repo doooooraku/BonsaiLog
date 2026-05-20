@@ -200,6 +200,18 @@ PR Template
 ### 7.6.3. 適用対象外の場合
 
 - [ ] 本 PR は ui-diff / 達成判定と無関係 (機能追加 / 内部 refactor / docs only 等)
+
+### 7.6.4. Navigation 変更 PR の実機検証 (REQUIRED if navigation 変更を含む、 Sess18 R-36.5)
+
+> **背景**: Sess17 違和感 ④ (戻る 2 画面飛び) は Case C (store-callback + 次画面遷移) の use case が不明確で発生。 ADR-0030 §17 で Case A/B/C 分類を明文化、 navigation 変更時の実機検証義務化。
+
+- [ ] navigation 変更内容を ADR-0030 §17 の Case A/B/C で分類して PR description に記載:
+  - **Case A**: picker → 即時 dialog (DatePicker / Alert.alert 等)、 store-callback 許容
+  - **Case B**: picker → caller state 更新のみ、 次画面遷移なし、 store-callback 許容
+  - **Case C**: 次画面遷移を伴う store-callback → 禁止、 直接 `router.push` 必須
+- [ ] **← back button** + **画面端 swipe gesture (Android predictive back)** の両方で 1 画面 = 1 step 動作確認
+- [ ] 実機 SS を PR に添付 (戻る挙動を撮影) — Sess18 R-36.5 整合
+- [ ] `pnpm navigation:check` で AP-1/AP-2 を確認、 検出時は ADR-0030 §17 で再分類
   - 理由: \_\_\_\_\_
 
 ---
