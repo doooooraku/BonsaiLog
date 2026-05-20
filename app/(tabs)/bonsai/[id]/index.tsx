@@ -173,7 +173,28 @@ export default function BonsaiDetailScreen() {
       }
       const logResult = usePickerStore.getState().consumeWorkLogConfirmResult();
       if (logResult) {
-        void persistEventWithPayload(logResult);
+        // Sess16 PR-L (T-3): F-05「気遣い型」 popup 復活 (PR-C 動線統一で deadcode 化していた logic)。
+        // user が WorkLogConfirm で「記録する」 tap 後、 同日 6 件目以降の event なら popup 表示。
+        const enabled = useSettingsStore.getState().eventOverloadEnabled;
+        if (enabled) {
+          const occurredAtUtc = logResult.occurredAtDate
+            ? `${logResult.occurredAtDate}T00:00:00.000Z`
+            : (nowUtc() as string);
+          void countSameDayPlannedOrLoggedEvents(occurredAtUtc)
+            .then((count) => {
+              if (count >= EVENT_OVERLOAD_THRESHOLD) {
+                showEventOverloadPopupForPayload(logResult);
+              } else {
+                void persistEventWithPayload(logResult);
+              }
+            })
+            .catch(() => {
+              // 件数取得失敗時は popup 出さず即書込 (記録のみ哲学、 ADR-0011)
+              void persistEventWithPayload(logResult);
+            });
+        } else {
+          void persistEventWithPayload(logResult);
+        }
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [handleWorkPickerSelect, handleSchedulePickerSelect]),
@@ -969,42 +990,22 @@ export default function BonsaiDetailScreen() {
   }
 
   /**
-   * 作業を記録する。
-   *
-   * F-05 気遣い型ポップアップ (Issue #25、ADR-0011):
-   * - 同じローカル日に planned + logged が既に 5 件以上ある場合 (= 6 件目)、
-   *   登録前にソフトな声かけ Alert を表示。3 ボタンで:
-   *   1. そのまま登録 (default): 普通に作成
+   * F-05 気遣い型ポップアップ (Issue #25、ADR-0011、 Sess16 PR-L で WorkLogConfirm 動線に移植):
+   * - 同じローカル日に planned + logged が既に 5 件以上ある場合 (= 6 件目)、 WorkLogConfirm
+   *   で「記録する」 tap 後の useFocusEffect 内で本関数を呼び出して Alert 表示。 3 ボタン:
+   *   1. そのまま登録 (default): persistEventWithPayload 実行
    *   2. 一覧を見る: 登録せずに dismiss (詳細画面で既に履歴が見える)
-   *   3. 今後表示しない: ポップアップを永続 OFF にしてから作成
-   * - 設定 OFF (eventOverloadEnabled=false) なら閾値判定をスキップして即作成
+   *   3. 今後表示しない: ポップアップを永続 OFF にしてから登録
+   * - 設定 OFF (eventOverloadEnabled=false) なら useFocusEffect 内で本関数を呼ばず即書込。
    */
-  async function logEvent(type: EventType) {
-    if (!item) return;
-    const overloadEnabled = useSettingsStore.getState().eventOverloadEnabled;
-    if (overloadEnabled) {
-      try {
-        const occurredAtUtc = nowUtc() as string;
-        const sameDayCount = await countSameDayPlannedOrLoggedEvents(occurredAtUtc);
-        if (sameDayCount >= EVENT_OVERLOAD_THRESHOLD) {
-          showEventOverloadPopup(type);
-          return;
-        }
-      } catch {
-        // 件数取得が失敗しても登録は止めない (記録のみ哲学、ADR-0011)
-      }
-    }
-    await persistEvent(type);
-  }
-
-  function showEventOverloadPopup(type: EventType) {
+  function showEventOverloadPopupForPayload(payload: WorkLogPayload) {
     Alert.alert(
       t('eventOverloadTitle'),
       t('eventOverloadBody').replace('{count}', String(EVENT_OVERLOAD_THRESHOLD)),
       [
         {
           text: t('eventOverloadActionConfirm'),
-          onPress: () => void persistEvent(type),
+          onPress: () => void persistEventWithPayload(payload),
         },
         {
           text: t('eventOverloadActionViewList'),
@@ -1016,22 +1017,12 @@ export default function BonsaiDetailScreen() {
           text: t('eventOverloadActionNeverShow'),
           onPress: () => {
             useSettingsStore.getState().setEventOverloadEnabled(false);
-            void persistEvent(type);
+            void persistEventWithPayload(payload);
           },
         },
       ],
       { cancelable: true },
     );
-  }
-
-  async function persistEvent(type: EventType) {
-    if (!item) return;
-    try {
-      await createEvent({ bonsaiId: item.id, type, status: 'logged' });
-      await reload();
-    } catch (err) {
-      Alert.alert(t('error'), String(err));
-    }
   }
 
   function confirmDeleteEvent(ev: Event) {
