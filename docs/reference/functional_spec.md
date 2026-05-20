@@ -479,6 +479,41 @@ stateDiagram-v2
 
 **Candle cut（芽切り）は松類（species.scientific_name が `Pinus` 属）のみ選択肢表示**。
 
+> **Note (Sess16 update、 2026-05-20)**: 実装 EVENT_TYPES は **14 種別** (`watering` / `pruning` / `wiring` / `unwiring` / `repotting` / `fertilizing` / `pest_control` / `leaf_trimming` / `defoliation` / `deshoot` / `candle_cut` / `moss_care` / `position_change` / `leaf_first_aid`)。 上記 16 種テーブルの `disease_treatment` / `observation` / `other` は v1.0 で未実装、 v1.x 拡張候補。 `leaf_first_aid` (葉の手当、 Sess16 PR-E 追加) は ADR-0028 で定義。
+
+#### §7.3.2.1 作業種別別 payload スキーマ（Sess16 PR-A5〜E 整合、 ADR-0027 + ADR-0028）
+
+mockup user 提供 SS 10 枚 + Sess16 議論 (Q1-Q8) で確定した **14 種別固有 form** の正規仕様。 各種別 form は **共通 field** (日付 + メモ + 写真) に加えて **種別固有 field** を持つ。
+
+**共通 field (全 14 種別)**:
+
+| field | UI                                                     | i18n key                                                         | payload mapping                    | 備考                                                       |
+| ----- | ------------------------------------------------------ | ---------------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------- |
+| 日付  | `LabeledDateRow` (DatePicker、 maxToday=true)          | `workLogDateField` / `workLogDatePlaceholderToday`               | `events.occurred_at_utc` (ISO UTC) | Sess16 PR-H で default = 今日 ISO (Repolog pattern 整合)   |
+| メモ  | `TextInput` multiline 2000 字                          | `workLogNote` / `workLogNotePlaceholder`                         | `events.note`                      | 任意                                                       |
+| 写真  | `PhotoField` (Camera + Library 2 buttons、 最大 10 枚) | `workLogPhotoField` / `photoSourceCamera` / `photoSourceLibrary` | `photos` table (`event_id` FK)     | Sess16 PR-H で BonsaiBasicForm pattern 整合 (caption なし) |
+
+**種別固有 field**:
+
+| EventType         | mockup ラベル    | 固有 field (form UI)                                          | i18n keys                                                                                      | payload field (Valibot)                                                   |
+| ----------------- | ---------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `watering`        | 水やりを記録     | 水量 segment                                                  | `workLogWaterAmount_normal/plenty/light`                                                       | `amount: string`                                                          |
+| `pruning`         | 剪定を記録       | 剪定タイプ multi + 切り落とした量 segment                     | `workLogPruneParts` + `workLogPruneAmount_few/some/lot` (枝先のみ/そこそこ/思い切り)           | `parts: string[]` + `amount: string`                                      |
+| `wiring`          | 針金がけを記録   | 番手 5 段階 + 巻く部位 single + 外し予定日 date               | `workLogWireGauge_1mm-3mm` + `workLogWirePart_all/miki/eda` + `workLogWireUnwireDate`          | `wire_size_mm: number` + `body_part: string` + `scheduled_unwire_at: ISO` |
+| `unwiring`        | 針金外しを記録   | 外した部位 single                                             | `workLogUnwirePart_miki/eda/all`                                                               | `body_part: string`                                                       |
+| `repotting`       | 植替えを記録     | 鉢サイズ (cm) + 用土レシピ (text) + 根の整理 segment          | `workLogRepotPotSize` + `workLogRepotSoilMix` + `workLogRepotRootAmount_none/light/third/half` | `pot_size_cm: number` + `soil_mix: string` + `root_pruning: string`       |
+| `fertilizing`     | 施肥を記録       | 肥料の種類 segment + 銘柄・配合 (text)                        | `workLogFertKind_solid/liquid/slow_release/other` + `workLogFertProduct`                       | `kind: string` + `amount: string`                                         |
+| `pest_control`    | 防除・消毒を記録 | 目的 segment + 薬剤名 (text) + 希釈倍率 (倍)                  | `workLogPestPurpose_prevention/treatment/both` + `workLogPestAgent` + `workLogPestDilution`    | `target: string` + `agent: string` + `dilution_ratio: number`             |
+| `leaf_trimming`   | 葉刈りを記録     | 範囲 segment                                                  | `workLogTrimRange_tips_only/moderate/heavy`                                                    | `body_part: string`                                                       |
+| `defoliation`     | 全葉刈を記録     | 範囲 segment (= leaf_trimming と同 UI、 機能差で別 EventType) | 同上                                                                                           | `body_part: string`                                                       |
+| `deshoot`         | 芽かきを記録     | 範囲 segment                                                  | 同上                                                                                           | `body_part: string`                                                       |
+| `candle_cut`      | 芽切りを記録     | 範囲 segment + 本数 (任意)                                    | 同上 + `workLogCandleCount`                                                                    | `body_part: string` + `count: number`                                     |
+| `moss_care`       | 苔手入れを記録   | 作業内容 segment                                              | `workLogMossAction_attach/remove/moisten` (貼り直し/剥がす/湿らす)                             | `action: string`                                                          |
+| `position_change` | 置き場変更を記録 | 移動先 (text)                                                 | `workLogPositionTo` / `workLogPositionToPlaceholder`                                           | `to: string`                                                              |
+| `leaf_first_aid`  | 葉の手当を記録   | 症状 segment + 処置 (text)                                    | `workLogLeafAidSymptom_burn/wither/pest/mold/other` + `workLogLeafAidTreatment`                | `symptom: string` + `treatment: string`                                   |
+
+**Note**: Valibot `v.object` は strict ではないため、 追加 prop は warning なく通過 (型保証は手動)。 旧 logged events の payload (例: Sess16 PR-A5 以前の wiring `gauge`/`parts`/`duration`) は DB 上に残存、 表示時に backward-compat 計算 fallback で吸収 (`wiringDuration.ts`、 ADR-0028 §Follow-up T-6)。
+
 #### §7.3.3 記録擬似コード（optimistic update 付き）
 
 ```typescript
