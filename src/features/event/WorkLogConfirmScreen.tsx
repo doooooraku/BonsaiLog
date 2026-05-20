@@ -24,6 +24,8 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 
 import { ThemedText } from '@/components/themed-text';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
+import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
+import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
@@ -50,6 +52,8 @@ const WIRE_GAUGES = ['1mm', '1.5mm', '2mm', '2.5mm', '3mm'] as const;
 const WIRE_PARTS = ['all', 'miki', 'eda'] as const;
 // Sess16 PR-D1: unwiring 外した部位 (single segment、 mockup 135200.png)。
 const UNWIRE_PARTS = ['miki', 'eda', 'all'] as const;
+// Sess16 PR-D2: repotting 根の整理 (single segment、 mockup 134811.png 左)。
+const REPOT_ROOT_AMOUNTS = ['none', 'light', 'third', 'half'] as const;
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
@@ -74,6 +78,11 @@ export default function WorkLogConfirmScreen() {
   const [wireUnwireDate, setWireUnwireDate] = React.useState('');
   // Sess16 PR-D1: unwiring 外した部位 (default 'all'、 single)。
   const [unwireParts, setUnwireParts] = React.useState<(typeof UNWIRE_PARTS)[number]>('all');
+  // Sess16 PR-D2: repotting (鉢サイズ + 用土レシピ + 根の整理)。
+  const [repotPotSize, setRepotPotSize] = React.useState('');
+  const [repotSoilMix, setRepotSoilMix] = React.useState('');
+  const [repotRootAmount, setRepotRootAmount] =
+    React.useState<(typeof REPOT_ROOT_AMOUNTS)[number]>('light');
 
   const togglePart = <T extends string>(
     current: readonly T[],
@@ -101,6 +110,13 @@ export default function WorkLogConfirmScreen() {
     } else if (selectedType === 'unwiring') {
       // Sess16 PR-D1: UnwiringPayload.body_part (mockup 外した部位 整合)。
       payload.body_part = unwireParts;
+    } else if (selectedType === 'repotting') {
+      // Sess16 PR-D2: RepottingPayload (pot_id / soil_mix + 拡張 pot_size_cm / root_pruning)。
+      const sizeNum = parseFloat(repotPotSize);
+      if (!Number.isNaN(sizeNum)) payload.pot_size_cm = sizeNum;
+      const soilTrimmed = repotSoilMix.trim();
+      if (soilTrimmed.length > 0) payload.soil_mix = soilTrimmed;
+      payload.root_pruning = repotRootAmount;
     }
     usePickerStore.getState().setWorkLogConfirmResult({
       type: selectedType,
@@ -178,6 +194,45 @@ export default function WorkLogConfirmScreen() {
                 }))}
                 value={pruneAmount}
                 onChange={(v) => setPruneAmount(v as (typeof PRUNE_AMOUNTS)[number])}
+              />
+            </Field>
+          </>
+        )}
+
+        {selectedType === 'repotting' && (
+          <>
+            <View style={styles.field}>
+              <LabeledNumberInput
+                label={t('workLogRepotPotSize')}
+                optional
+                optionalText={t('workLogOptional')}
+                value={repotPotSize}
+                onChangeText={setRepotPotSize}
+                placeholder={t('workLogRepotPotSizePlaceholder')}
+                suffix={t('workLogRepotPotSizeUnit')}
+                testID="e2e_work_log_repot_pot_size"
+              />
+            </View>
+            <View style={styles.field}>
+              <LabeledTextInput
+                label={t('workLogRepotSoilMix')}
+                optional
+                optionalText={t('workLogOptional')}
+                value={repotSoilMix}
+                onChangeText={setRepotSoilMix}
+                placeholder={t('workLogRepotSoilMixPlaceholder')}
+                maxLength={200}
+                testID="e2e_work_log_repot_soil_mix"
+              />
+            </View>
+            <Field label={t('workLogRepotRootAmount')}>
+              <Segmented
+                items={REPOT_ROOT_AMOUNTS.map((v) => ({
+                  v,
+                  l: t(`workLogRepotRootAmount_${v}` as TranslationKey),
+                }))}
+                value={repotRootAmount}
+                onChange={(v) => setRepotRootAmount(v as (typeof REPOT_ROOT_AMOUNTS)[number])}
               />
             </Field>
           </>

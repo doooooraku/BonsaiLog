@@ -747,6 +747,16 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogUnwirePart_miki: '幹',
   workLogUnwirePart_eda: '枝',
   workLogUnwirePart_all: 'すべて',
+  workLogRepotPotSize: '鉢サイズ',
+  workLogRepotPotSizeUnit: 'cm',
+  workLogRepotPotSizePlaceholder: '例: 18',
+  workLogRepotSoilMix: '用土レシピ',
+  workLogRepotSoilMixPlaceholder: '例: 赤玉土:桐生砂 = 7:3',
+  workLogRepotRootAmount: '根の整理',
+  workLogRepotRootAmount_none: 'なし',
+  workLogRepotRootAmount_light: '軽く',
+  workLogRepotRootAmount_third: '1/3',
+  workLogRepotRootAmount_half: '1/2',
 };
 
 export default ja;

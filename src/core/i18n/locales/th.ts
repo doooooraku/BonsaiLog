@@ -737,5 +737,15 @@ const th: Partial<Record<TranslationKey, string>> = {
   workLogUnwirePart_miki: 'Trunk',
   workLogUnwirePart_eda: 'Branch',
   workLogUnwirePart_all: 'All',
+  workLogRepotPotSize: 'Pot size',
+  workLogRepotPotSizeUnit: 'cm',
+  workLogRepotPotSizePlaceholder: 'e.g. 18',
+  workLogRepotSoilMix: 'Soil mix',
+  workLogRepotSoilMixPlaceholder: 'e.g. Akadama:Kiryu=7:3',
+  workLogRepotRootAmount: 'Root pruning',
+  workLogRepotRootAmount_none: 'None',
+  workLogRepotRootAmount_light: 'Light',
+  workLogRepotRootAmount_third: '1/3',
+  workLogRepotRootAmount_half: '1/2',
 };
 export default th;
