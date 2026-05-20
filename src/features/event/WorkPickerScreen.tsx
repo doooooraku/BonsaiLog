@@ -42,6 +42,7 @@ const ALL_WORK_TYPES: readonly EventType[] = [
   'candle_cut',
   'moss_care',
   'position_change',
+  'leaf_first_aid', // Sess16 PR-G: 葉の手当 (Phase γ で EVENT_TYPES に追加した 14 種別目)
 ];
 const PINE_ONLY: ReadonlySet<EventType> = new Set(['candle_cut']);
 
