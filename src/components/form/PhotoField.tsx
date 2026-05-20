@@ -1,13 +1,15 @@
 /**
- * PhotoField — 作業記録 form 用 写真添付 atom (Sess16 PR-A3)。
+ * PhotoField — 作業記録 form 用 写真添付 atom (Sess16 PR-A3 → PR-H refactor)。
  *
- * controlled pattern (親が photos state を持つ)。 PhotoCard (Sess14、 DB photo 表示用) と
- * 違い、 PhotoField は **新規写真 (DB 未保存)** を仮 state で管理し、 form 保存時に
- * caller が addPhotoFromUri loop で永続化する。
+ * controlled pattern (親が photos state を持つ)。 BonsaiBasicForm の写真セクション
+ * (Sess13 PR-J + Sess14 PR-T) を **UI + 機能ともそのまま踏襲**:
+ * - Camera + Library の 2 buttons 横並び
+ * - 各 photo: ↑↓ 並び替え + 番号 (1/N、 PR #625 良点維持) + × 削除 + サムネ (4:3)
+ * - **caption UI なし** (Sess14 PR-T「冗長」 判断整合)
  *
- * mockup 整合 (user 提供 SS 10 枚):
- * - 各 photo: ↑↓ 並び替え + 番号 (1/N) + × 削除 + サムネ (4:3) + キャプション (任意 100 文字)
- * - 下部「+ 追加」 button (最大 10 枚到達で disable)
+ * PR #625 から維持した「良点」:
+ * - index 表示「1 / N」 format (BonsaiBasicForm「1」 のみより分かりやすい)
+ * - ImagePicker `selectionLimit: remaining` 動的設定 (picker レベル enforce)
  *
  * F-08 仕様 (functional_spec.md §13 line 564-567): 作業記録の写真は Free でも無制限
  * (盆栽単位 3 枚制限とは別集計)、 ただし 1 作業あたり最大 10 枚。
@@ -15,29 +17,26 @@
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import React from 'react';
-import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { CameraIcon } from '@/src/components/icons';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
   TEXT_MUTED,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 
 export const MAX_PHOTOS_PER_EVENT = 10;
-const MAX_CAPTION_CHARS = 100;
 
 export type PhotoFieldItem = {
   uri: string;
   width: number | null;
   height: number | null;
-  caption: string;
 };
 
 export type PhotoFieldProps = {
@@ -60,7 +59,7 @@ export function PhotoField({
   const { t } = useTranslation();
   const canAdd = photos.length < MAX_PHOTOS_PER_EVENT;
 
-  const handleAdd = React.useCallback(async () => {
+  const handlePickFromLibrary = React.useCallback(async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
       Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
@@ -80,9 +79,31 @@ export function PhotoField({
       uri: a.uri,
       width: a.width ?? null,
       height: a.height ?? null,
-      caption: '',
     }));
     onChange([...photos, ...accepted]);
+  }, [photos, onChange, t]);
+
+  const handleTakePhotoCamera = React.useCallback(async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
+      return;
+    }
+    if (photos.length >= MAX_PHOTOS_PER_EVENT) return;
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.85,
+    });
+    if (result.canceled || !result.assets || result.assets.length === 0) return;
+    const a = result.assets[0];
+    onChange([
+      ...photos,
+      {
+        uri: a.uri,
+        width: a.width ?? null,
+        height: a.height ?? null,
+      },
+    ]);
   }, [photos, onChange, t]);
 
   const handleRemove = React.useCallback(
@@ -103,27 +124,55 @@ export function PhotoField({
     [photos, onChange],
   );
 
-  const handleCaptionChange = React.useCallback(
-    (index: number, caption: string) => {
-      const next = photos.map((p, i) =>
-        i === index ? { ...p, caption: caption.slice(0, MAX_CAPTION_CHARS) } : p,
-      );
-      onChange(next);
-    },
-    [photos, onChange],
-  );
-
   return (
     <View style={styles.field} testID={testID}>
       <View style={styles.labelRow}>
-        <ThemedText type="defaultSemiBold">{label}</ThemedText>
+        <ThemedText type="defaultSemiBold">
+          {label} ({photos.length})
+        </ThemedText>
         {optional && optionalText && (
           <ThemedText style={styles.optionalText}>{optionalText}</ThemedText>
         )}
       </View>
+      {/* Sess16 PR-H: BonsaiBasicForm 整合 — Camera + Library 2 buttons 横並び */}
+      <View style={styles.sourceRow}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('photoSourceCamera' as TranslationKey)}
+          accessibilityState={{ disabled: !canAdd }}
+          disabled={!canAdd}
+          style={[styles.sourceButton, !canAdd && styles.sourceButtonDisabled]}
+          onPress={handleTakePhotoCamera}
+          testID="e2e_photo_field_camera"
+        >
+          <CameraIcon size={20} />
+          <ThemedText style={styles.sourceText}>
+            {t('photoSourceCamera' as TranslationKey)}
+          </ThemedText>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('photoSourceLibrary' as TranslationKey)}
+          accessibilityState={{ disabled: !canAdd }}
+          disabled={!canAdd}
+          style={[styles.sourceButton, !canAdd && styles.sourceButtonDisabled]}
+          onPress={handlePickFromLibrary}
+          testID="e2e_photo_field_library"
+        >
+          <ThemedText style={styles.sourceText}>
+            {t('photoSourceLibrary' as TranslationKey)}
+          </ThemedText>
+        </Pressable>
+      </View>
+      {photos.length > 0 && (
+        <ThemedText style={styles.helpText}>{t('photoReorderHelp' as TranslationKey)}</ThemedText>
+      )}
       {photos.map((photo, index) => (
         <View key={`${photo.uri}-${index}`} style={styles.card} testID={`e2e_photo_field_${index}`}>
           <View style={styles.toolbar}>
+            <ThemedText style={styles.indexLabel}>
+              {index + 1} / {photos.length}
+            </ThemedText>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('photoMoveUpLabel' as TranslationKey)}
@@ -146,9 +195,6 @@ export function PhotoField({
             >
               <ThemedText style={styles.moveText}>↓</ThemedText>
             </Pressable>
-            <ThemedText style={styles.indexLabel}>
-              {index + 1} / {photos.length}
-            </ThemedText>
             <View style={styles.spacer} />
             <Pressable
               accessibilityRole="button"
@@ -161,35 +207,8 @@ export function PhotoField({
             </Pressable>
           </View>
           <Image source={{ uri: photo.uri }} style={styles.thumb} contentFit="cover" />
-          <View style={styles.captionArea}>
-            <TextInput
-              value={photo.caption}
-              onChangeText={(v) => handleCaptionChange(index, v)}
-              placeholder={t('workLogPhotoCaptionPlaceholder' as TranslationKey)}
-              placeholderTextColor={TEXT_MUTED}
-              multiline
-              style={styles.captionInput}
-              testID={`e2e_photo_field_caption_${index}`}
-            />
-            <ThemedText style={styles.captionCounter}>
-              {photo.caption.length} / {MAX_CAPTION_CHARS}
-            </ThemedText>
-          </View>
         </View>
       ))}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('workLogPhotoAdd' as TranslationKey)}
-        accessibilityState={{ disabled: !canAdd }}
-        style={[styles.addButton, !canAdd && styles.addButtonDisabled]}
-        onPress={handleAdd}
-        disabled={!canAdd}
-        testID="e2e_photo_field_add"
-      >
-        <ThemedText style={[styles.addText, !canAdd && styles.addTextDisabled]}>
-          + {t('workLogPhotoAdd' as TranslationKey)}
-        </ThemedText>
-      </Pressable>
     </View>
   );
 }
@@ -198,9 +217,26 @@ const styles = StyleSheet.create({
   field: { gap: 8 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   optionalText: { fontSize: 10, color: TEXT_MUTED, letterSpacing: 0.8 },
+  // Sess16 PR-H: BonsaiBasicForm photoSourceRow pattern (Sess13 PR-J 確立、 Camera + Library)
+  sourceRow: { flexDirection: 'row', gap: 10 },
+  sourceButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+  },
+  sourceButtonDisabled: { opacity: 0.4 },
+  sourceText: { fontSize: 14, color: TEXT_PRIMARY, fontWeight: '500' },
+  helpText: { fontSize: 12, color: TEXT_SECONDARY },
   card: {
     flexDirection: 'column',
-    borderRadius: 10,
+    borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: BG_SURFACE,
     borderWidth: 1,
@@ -216,6 +252,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: BORDER_DEFAULT,
   },
+  indexLabel: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY, marginRight: 4 },
   moveButton: {
     width: 32,
     height: 32,
@@ -225,7 +262,6 @@ const styles = StyleSheet.create({
   },
   moveButtonDisabled: { opacity: 0.3 },
   moveText: { fontSize: 18, color: TEXT_PRIMARY },
-  indexLabel: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY, marginLeft: 4 },
   spacer: { flex: 1 },
   deleteButton: {
     width: 28,
@@ -237,30 +273,4 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: { fontSize: 18, fontWeight: '700', color: TEXT_PRIMARY, lineHeight: 20 },
   thumb: { width: '100%', aspectRatio: 4 / 3 },
-  captionArea: { padding: 10, gap: 4 },
-  captionInput: {
-    minHeight: 40,
-    fontSize: 14,
-    color: TEXT_PRIMARY,
-    textAlignVertical: 'top',
-  },
-  captionCounter: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: TEXT_MUTED,
-    textAlign: 'right',
-  },
-  addButton: {
-    height: 48,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButtonDisabled: { opacity: 0.4 },
-  addText: { fontSize: 14, color: BRAND_GREEN, fontWeight: '500' },
-  addTextDisabled: { color: TEXT_MUTED },
 });
