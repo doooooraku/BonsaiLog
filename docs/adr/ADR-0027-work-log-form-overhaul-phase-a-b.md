@@ -131,3 +131,21 @@
 ### 2026-05-20 Phase β 完遂時 update
 
 Sess16 で Phase α + α' + α'' + β を 14 PR (#623-#636) で全 main merge 完遂。 残: Phase γ (PR-E1〜E4) + 実機 SS R-25 評価 + 文書化追加。
+
+### 2026-05-21 Phase γ (Sess17) スコープ訂正 — Bulk 14 種別 form 展開
+
+**経緯**: 本 ADR §Decision 5「複数作業機能を全廃」 (Sess16 PR-B1 で BulkLogConfirm を「単一 type + 日付 + 写真 + メモのみ」 に簡素化) は、 「同一作業を複数盆栽にまとめて記録する Bulk 動線」 を維持しつつ「14 種別固有 form」 を Bulk 側でも展開する形に **訂正**。 user 真意「Bulk に 14 種別 form 全展開、 内容全部一緒で OK」 整合。
+
+**Sess17 で新規追加するもの** (ADR-0029 D5 整合):
+
+- `src/features/event/WorkLogTypeFormFields.tsx` 新規 — 14 種別 form の入力 fields を controlled component に切り出し、 WorkLogConfirm (Single) と BulkLogConfirm (Bulk) が両方この component を呼ぶ、 1:1 UI 整合
+- `src/db/eventRepository.ts` の `bulkLogEvents()` signature 拡張 — `payload?: Record<string, unknown>` 引数追加、 全選択盆栽に同 payload を適用 (events.payload は JSON、 schema 変更不要)
+- `docs/reference/functional_spec.md` §7.3.2 改訂 — Bulk 動線にも 14 種別 form 適用される旨追記、 §7 アンチパターン「Bulk は単純化のみ」 を撤廃
+
+**業務プロペルソナ評価転換**: 100 本/日 詳細記録が現実化、 ✕ → ◎ 転換 (本 ADR §Alternatives Option C 却下理由「業務プロ ✕ で却下」 を覆す)。
+
+**Phase γ 詳細**: `docs/adr/ADR-0029-form-ux-permanent-phase-gamma.md` §Decision D5 + §Implementation Phase 構成 参照。
+
+### 2026-05-21 Form UX 恒久化 (ADR-0029) との接続
+
+本 ADR で「Phase α-β で 14 種別固有 form を実装」 する Decision を行ったが、 実装後に user 実機操作で「typography 不統一 / placeholder 冗長 / 単位切替なし / 番手 5 段階固定」 等の **UX 違和感 5 件**判明。 ADR-0029 で構造的恒久対策 (Form atom contract / placeholder 規約 / 数値+単位 atom / hybrid input / Single-Bulk 動線整合) として対応。 本 ADR の Decision §1-5 は引き続き有効、 ADR-0029 はその「実装の質」 を仕組み化で担保する関係性。
