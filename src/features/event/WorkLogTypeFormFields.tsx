@@ -418,6 +418,30 @@ export function WorkLogTypeFormFields({ type, state, onChange }: WorkLogTypeForm
 }
 
 /**
+ * type に対応する note placeholder の i18n key を返す純関数 (Sess18 PR-10、 ADR-0029 D2 拡張)。
+ *
+ * 14 種別の type-specific note placeholder key (`workLogNotePlaceholder_${type}`) を返却。
+ * caller (WorkLogConfirm / BulkLogConfirm) でメモ field の placeholder を type-aware に解決。
+ *
+ * 設計方針:
+ * - 14 種別すべて `workLogNotePlaceholder_${type}` で完備 (Sess18 PR-5 で 18 言語追加済)
+ * - 未対応 type への defensive fallback として共通 `workLogNotePlaceholder` を許容 (将来の type 追加時の安全網)
+ *
+ * @example
+ *   const placeholderKey = getWorkLogNotePlaceholderKey('watering');
+ *   // → 'workLogNotePlaceholder_watering'
+ *   t(placeholderKey)  // → '例: 朝8時、たっぷり' (ja)
+ *
+ * @param type EventType
+ * @returns TranslationKey (type-specific or fallback)
+ */
+export function getWorkLogNotePlaceholderKey(
+  type: EventType,
+): `workLogNotePlaceholder_${EventType}` | 'workLogNotePlaceholder' {
+  return `workLogNotePlaceholder_${type}` as `workLogNotePlaceholder_${EventType}`;
+}
+
+/**
  * type と state から payload (events.payload_json に保存する) を生成する純関数。
  * caller (WorkLogConfirm / BulkLogConfirm) が保存時に呼び出す。
  *

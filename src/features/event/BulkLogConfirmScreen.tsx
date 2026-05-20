@@ -48,6 +48,7 @@ import {
   WorkLogTypeFormFields,
   buildWorkLogPayload,
   createWorkLogTypeFormInitialState,
+  getWorkLogNotePlaceholderKey,
   type WorkLogTypeFormState,
 } from './WorkLogTypeFormFields';
 
@@ -172,7 +173,8 @@ export default function BulkLogConfirmScreen() {
             WorkLogConfirm (Single) と 1:1 同じ UI 表示。 */}
         <WorkLogTypeFormFields type={selectedType} state={formState} onChange={setFormState} />
 
-        {/* Sess17 PR-H2: メモ入力 (atom 統一、 typography 整合)。 */}
+        {/* Sess17 PR-H2: メモ入力 (atom 統一、 typography 整合)。
+            Sess18 PR-10: placeholder を type-aware に (getWorkLogNotePlaceholderKey)。 */}
         <View style={styles.field}>
           <LabeledTextInput
             label={t('workLogNote')}
@@ -180,7 +182,7 @@ export default function BulkLogConfirmScreen() {
             optionalText={t('workLogOptional')}
             value={note}
             onChangeText={(v) => setNote(v.slice(0, 2000))}
-            placeholder={t('workLogNotePlaceholder')}
+            placeholder={t(getWorkLogNotePlaceholderKey(selectedType) as TranslationKey)}
             maxLength={2000}
             showCounter
             multiline
