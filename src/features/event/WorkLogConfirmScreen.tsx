@@ -43,6 +43,7 @@ import {
   WorkLogTypeFormFields,
   buildWorkLogPayload,
   createWorkLogTypeFormInitialState,
+  getWorkLogNotePlaceholderKey,
   type WorkLogTypeFormState,
 } from './WorkLogTypeFormFields';
 
@@ -137,7 +138,8 @@ export default function WorkLogConfirmScreen() {
           </View>
         )}
 
-        {/* Sess17 PR-F3: メモ TextInput → LabeledTextInput atom 移行 (typography 統一)。 */}
+        {/* Sess17 PR-F3: メモ TextInput → LabeledTextInput atom 移行 (typography 統一)。
+            Sess18 PR-10: placeholder を type-aware に (getWorkLogNotePlaceholderKey)。 */}
         <View style={styles.field}>
           <LabeledTextInput
             label={t('workLogNote')}
@@ -145,7 +147,7 @@ export default function WorkLogConfirmScreen() {
             optionalText={t('workLogOptional')}
             value={note}
             onChangeText={(v) => setNote(v.slice(0, 2000))}
-            placeholder={t('workLogNotePlaceholder')}
+            placeholder={t(getWorkLogNotePlaceholderKey(selectedType) as TranslationKey)}
             maxLength={2000}
             showCounter
             multiline

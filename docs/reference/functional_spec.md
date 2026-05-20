@@ -487,11 +487,11 @@ mockup user 提供 SS 10 枚 + Sess16 議論 (Q1-Q8) で確定した **14 種別
 
 **共通 field (全 14 種別)**:
 
-| field | UI                                                     | i18n key                                                         | payload mapping                    | 備考                                                       |
-| ----- | ------------------------------------------------------ | ---------------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------- |
-| 日付  | `LabeledDateRow` (DatePicker、 maxToday=true)          | `workLogDateField` / `workLogDatePlaceholderToday`               | `events.occurred_at_utc` (ISO UTC) | Sess16 PR-H で default = 今日 ISO (Repolog pattern 整合)   |
-| メモ  | `TextInput` multiline 2000 字                          | `workLogNote` / `workLogNotePlaceholder`                         | `events.note`                      | 任意                                                       |
-| 写真  | `PhotoField` (Camera + Library 2 buttons、 最大 10 枚) | `workLogPhotoField` / `photoSourceCamera` / `photoSourceLibrary` | `photos` table (`event_id` FK)     | Sess16 PR-H で BonsaiBasicForm pattern 整合 (caption なし) |
+| field | UI                                                             | i18n key                                                                                                                                                | payload mapping                    | 備考                                                                                                                                        |
+| ----- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 日付  | `LabeledDateRow` (DatePicker、 maxToday=true)                  | `workLogDateField` / `workLogDatePlaceholderToday`                                                                                                      | `events.occurred_at_utc` (ISO UTC) | Sess16 PR-H で default = 今日 ISO (Repolog pattern 整合)                                                                                    |
+| メモ  | `LabeledTextInput` multiline 2000 字 (Sess17 PR-F3 で atom 化) | `workLogNote` / **`workLogNotePlaceholder_${type}` (Sess18 PR-10 で type-aware 化、 14 種別固有 placeholder)** + 共通 fallback `workLogNotePlaceholder` | `events.note`                      | 任意。 14 種別ごとに異なる placeholder hint (例: watering「例: 朝8時、たっぷり」、 wiring「例: 主幹を緩やかに矯正」、 ...)。 全 18 言語対応 |
+| 写真  | `PhotoField` (Camera + Library 2 buttons、 最大 10 枚)         | `workLogPhotoField` / `photoSourceCamera` / `photoSourceLibrary`                                                                                        | `photos` table (`event_id` FK)     | Sess16 PR-H で BonsaiBasicForm pattern 整合 (caption なし)                                                                                  |
 
 **種別固有 field**:
 
