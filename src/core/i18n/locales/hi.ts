@@ -771,5 +771,11 @@ const hi: Partial<Record<TranslationKey, string>> = {
   workLogCandleCount: 'Count',
   workLogCandleCountUnit: 'count',
   workLogCandleCountPlaceholder: 'e.g. 5',
+  workLogMossAction: 'Action',
+  workLogMossAction_attach: 'Re-attach',
+  workLogMossAction_remove: 'Remove',
+  workLogMossAction_moisten: 'Moisten',
+  workLogPositionTo: 'New location',
+  workLogPositionToPlaceholder: 'Please select',
 };
 export default hi;
