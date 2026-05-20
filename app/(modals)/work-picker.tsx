@@ -1,8 +1,9 @@
 /**
- * 作業選択画面 (Phase G2 part 1、ADR-0024 Provisionally Accepted)。
+ * 作業選択画面 (Phase G2 part 1、ADR-0024 Accepted)。
  *
- * `presentation: 'formSheet'` + `sheetAllowedDetents: [0.5, 1]` +
- * `contentStyle: { height: '100%' }` (Expo v54 既知バグ予防)。
+ * `presentation: 'modal'` (ADR-0024 Notes Amended 2026-05-15 で formSheet → modal 一本化、
+ * `(modals)/_layout.tsx` の screenOptions で適用)。Sess16 PR-A1 で nav title を mode URL param
+ * で動的化 (log → 「作業を記録」 / schedule → 「予定を追加」)。
  *
  * caller は `router.push('/work-picker?bonsaiName=...&isPine=...&mode=log|schedule')`、
  * 結果は `usePickerStore.setWorkPickerResult({ type, mode })` + `router.back()` で返却。

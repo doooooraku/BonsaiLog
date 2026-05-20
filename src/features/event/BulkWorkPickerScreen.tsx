@@ -1,8 +1,11 @@
 /**
  * 一括 (予定追加 / 記録) 作業選択 画面 (Phase G3a、 ADR-0024 / ADR-0025、 Sess12 PR-G 大改修)。
  *
+ * `presentation: 'modal'` (ADR-0024 Notes Amended 2026-05-15、`(modals)/_layout.tsx` で適用)。
+ * Sess16 PR-A1: nav title を mode URL param で動的化 (log/schedule で切替)。
+ *
  * Query params:
- * - mode: 'schedule' | 'log' (i18n + 後続 step 分岐)
+ * - mode: 'schedule' | 'log' (nav title + 後続 step 分岐)
  * - date: YYYY-MM-DD (schedule mode のみ、 PlanScreen 選択日)
  *
  * 選択盆栽は `usePickerStore.bulkContext.selectedBonsais` から取得 (URL params 過大化回避)。
