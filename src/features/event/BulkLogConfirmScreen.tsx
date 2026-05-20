@@ -244,17 +244,20 @@ const styles = StyleSheet.create({
     borderBottomColor: BORDER_DEFAULT,
   },
   chip: {
+    // Sess18 PR-11: design_system §4 (spacing 4/8/12/16) + §5 (borderRadius 16 カード相当) 整合。
+    // user 要求「chips の枠を統一」 反映 (Sess17 SS 13-18 で観察された幅バラつき解消)。
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     paddingVertical: 4,
-    paddingLeft: 4,
-    paddingRight: 10,
-    borderRadius: 18,
+    paddingLeft: 8, // 旧 4 → 8 (左右対称、 spacing token 整合)
+    paddingRight: 12, // 旧 10 → 12 (spacing token 整合)
+    borderRadius: 16, // 旧 18 → 16 (design_system §5 カード用途、 Q2 user 確認)
     backgroundColor: BG_SURFACE,
     borderWidth: 1,
     borderColor: BORDER_DEFAULT,
-    maxWidth: 140,
+    minWidth: 80, // 短い盆栽名 (例: 「松」) でも視覚的に揃う最低幅
+    maxWidth: 140, // 長い名前は ellipsis (flexShrink: 1 + numberOfLines: 1 で吸収)
   },
   chipText: { fontSize: 12, fontWeight: '500', color: TEXT_PRIMARY, flexShrink: 1 },
   body: { padding: 16, gap: 12 },
