@@ -394,6 +394,23 @@ const baseEn = {
   workLogTitle: 'Log {type}',
   workLogNote: 'Note',
   workLogNotePlaceholder: 'e.g. morning 8am, plenty',
+  // Sess18 PR-5 (ADR-0029 D2 後継): 14 種別 type-specific note placeholder。
+  // user は WorkLogConfirm / BulkLogConfirm のメモ field で getWorkLogNotePlaceholderKey(type)
+  // 経由で対応 placeholder を取得。 未対応 type は workLogNotePlaceholder (共通) で fallback。
+  workLogNotePlaceholder_watering: 'e.g. morning 8am, plenty',
+  workLogNotePlaceholder_pruning: 'e.g. trim crossing branches',
+  workLogNotePlaceholder_wiring: 'e.g. shape main trunk gently',
+  workLogNotePlaceholder_unwiring: 'e.g. remove before wire bites into bark',
+  workLogNotePlaceholder_repotting: 'e.g. removed old soil, replaced drainage layer',
+  workLogNotePlaceholder_fertilizing: 'e.g. spring feeding round',
+  workLogNotePlaceholder_pest_control: 'e.g. preventive spray for aphids',
+  workLogNotePlaceholder_leaf_trimming: 'e.g. thin out inner foliage',
+  workLogNotePlaceholder_defoliation: 'e.g. full defoliation for finer leaves',
+  workLogNotePlaceholder_deshoot: 'e.g. pinch unwanted buds early',
+  workLogNotePlaceholder_candle_cut: 'e.g. mid-May, strongest candles first',
+  workLogNotePlaceholder_moss_care: 'e.g. re-attach moss carpet',
+  workLogNotePlaceholder_position_change: 'e.g. moved to partial shade before rainy season',
+  workLogNotePlaceholder_leaf_first_aid: 'e.g. cut infected area, applied paste',
   workLogOptional: 'Optional',
   workLogSaveCta: 'Save',
   workLogWaterAmount: 'Amount',
