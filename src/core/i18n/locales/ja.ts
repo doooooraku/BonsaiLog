@@ -780,6 +780,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogCandleCount: '本数',
   workLogCandleCountUnit: '本',
   workLogCandleCountPlaceholder: '例: 5',
+  workLogMossAction: '作業内容',
+  workLogMossAction_attach: '貼り直し',
+  workLogMossAction_remove: '剥がす',
+  workLogMossAction_moisten: '湿らす',
+  workLogPositionTo: '移動先',
+  workLogPositionToPlaceholder: '選択してください',
 };
 
 export default ja;

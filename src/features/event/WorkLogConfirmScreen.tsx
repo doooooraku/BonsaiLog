@@ -61,6 +61,8 @@ const PEST_PURPOSES = ['prevention', 'treatment', 'both'] as const;
 // Sess16 PR-D5: leaf_trimming / defoliation / deshoot / candle_cut 共通の「範囲」 segment
 // (mockup 135027.png / 135123.png 整合: 枝先のみ/そこそこ/思い切り)。
 const TRIM_RANGES = ['tips_only', 'moderate', 'heavy'] as const;
+// Sess16 PR-D6: moss_care 作業内容 (single segment、 mockup 135100.png 左)。
+const MOSS_ACTIONS = ['attach', 'remove', 'moisten'] as const;
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
@@ -102,6 +104,9 @@ export default function WorkLogConfirmScreen() {
   const [trimRange, setTrimRange] = React.useState<(typeof TRIM_RANGES)[number]>('moderate');
   // Sess16 PR-D5: candle_cut のみ「本数」 (任意)。
   const [candleCount, setCandleCount] = React.useState('');
+  // Sess16 PR-D6: moss_care 作業内容 + position_change 移動先。
+  const [mossAction, setMossAction] = React.useState<(typeof MOSS_ACTIONS)[number]>('attach');
+  const [positionTo, setPositionTo] = React.useState('');
 
   const togglePart = <T extends string>(
     current: readonly T[],
@@ -161,6 +166,13 @@ export default function WorkLogConfirmScreen() {
         const countNum = parseInt(candleCount, 10);
         if (!Number.isNaN(countNum) && countNum > 0) payload.count = countNum;
       }
+    } else if (selectedType === 'moss_care') {
+      // Sess16 PR-D6: MossCarePayload.action (mockup 貼り直し/剥がす/湿らす 整合)。
+      payload.action = mossAction;
+    } else if (selectedType === 'position_change') {
+      // Sess16 PR-D6: PositionChangePayload.to (mockup 移動先 整合、 from は現状未取得)。
+      const toTrimmed = positionTo.trim();
+      if (toTrimmed.length > 0) payload.to = toTrimmed;
     }
     usePickerStore.getState().setWorkLogConfirmResult({
       type: selectedType,
@@ -241,6 +253,34 @@ export default function WorkLogConfirmScreen() {
               />
             </Field>
           </>
+        )}
+
+        {selectedType === 'moss_care' && (
+          <Field label={t('workLogMossAction')}>
+            <Segmented
+              items={MOSS_ACTIONS.map((v) => ({
+                v,
+                l: t(`workLogMossAction_${v}` as TranslationKey),
+              }))}
+              value={mossAction}
+              onChange={(v) => setMossAction(v as (typeof MOSS_ACTIONS)[number])}
+            />
+          </Field>
+        )}
+
+        {selectedType === 'position_change' && (
+          <View style={styles.field}>
+            <LabeledTextInput
+              label={t('workLogPositionTo')}
+              optional
+              optionalText={t('workLogOptional')}
+              value={positionTo}
+              onChangeText={setPositionTo}
+              placeholder={t('workLogPositionToPlaceholder')}
+              maxLength={100}
+              testID="e2e_work_log_position_to"
+            />
+          </View>
         )}
 
         {(selectedType === 'leaf_trimming' ||
