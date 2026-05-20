@@ -58,6 +58,9 @@ const REPOT_ROOT_AMOUNTS = ['none', 'light', 'third', 'half'] as const;
 const FERT_KINDS = ['solid', 'liquid', 'slow_release', 'other'] as const;
 // Sess16 PR-D4: pest_control 目的 (single segment、 mockup 134811.png 右)。
 const PEST_PURPOSES = ['prevention', 'treatment', 'both'] as const;
+// Sess16 PR-D5: leaf_trimming / defoliation / deshoot / candle_cut 共通の「範囲」 segment
+// (mockup 135027.png / 135123.png 整合: 枝先のみ/そこそこ/思い切り)。
+const TRIM_RANGES = ['tips_only', 'moderate', 'heavy'] as const;
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
@@ -95,6 +98,10 @@ export default function WorkLogConfirmScreen() {
     React.useState<(typeof PEST_PURPOSES)[number]>('prevention');
   const [pestAgent, setPestAgent] = React.useState('');
   const [pestDilution, setPestDilution] = React.useState('');
+  // Sess16 PR-D5: leaf_trimming / defoliation / deshoot / candle_cut 共通の「範囲」 segment。
+  const [trimRange, setTrimRange] = React.useState<(typeof TRIM_RANGES)[number]>('moderate');
+  // Sess16 PR-D5: candle_cut のみ「本数」 (任意)。
+  const [candleCount, setCandleCount] = React.useState('');
 
   const togglePart = <T extends string>(
     current: readonly T[],
@@ -141,6 +148,19 @@ export default function WorkLogConfirmScreen() {
       if (agentTrimmed.length > 0) payload.agent = agentTrimmed;
       const dilutionNum = parseFloat(pestDilution);
       if (!Number.isNaN(dilutionNum)) payload.dilution_ratio = dilutionNum;
+    } else if (
+      selectedType === 'leaf_trimming' ||
+      selectedType === 'defoliation' ||
+      selectedType === 'deshoot' ||
+      selectedType === 'candle_cut'
+    ) {
+      // Sess16 PR-D5: 4 種別共通の「範囲」 segment を body_part に格納 (schema 整合 fallback)。
+      payload.body_part = trimRange;
+      if (selectedType === 'candle_cut') {
+        // Sess16 PR-D5: candle_cut のみ「本数」 (任意) を拡張 field に格納。
+        const countNum = parseInt(candleCount, 10);
+        if (!Number.isNaN(countNum) && countNum > 0) payload.count = countNum;
+      }
     }
     usePickerStore.getState().setWorkLogConfirmResult({
       type: selectedType,
@@ -220,6 +240,38 @@ export default function WorkLogConfirmScreen() {
                 onChange={(v) => setPruneAmount(v as (typeof PRUNE_AMOUNTS)[number])}
               />
             </Field>
+          </>
+        )}
+
+        {(selectedType === 'leaf_trimming' ||
+          selectedType === 'defoliation' ||
+          selectedType === 'deshoot' ||
+          selectedType === 'candle_cut') && (
+          <>
+            <Field label={t('workLogTrimRange')}>
+              <Segmented
+                items={TRIM_RANGES.map((v) => ({
+                  v,
+                  l: t(`workLogTrimRange_${v}` as TranslationKey),
+                }))}
+                value={trimRange}
+                onChange={(v) => setTrimRange(v as (typeof TRIM_RANGES)[number])}
+              />
+            </Field>
+            {selectedType === 'candle_cut' && (
+              <View style={styles.field}>
+                <LabeledNumberInput
+                  label={t('workLogCandleCount')}
+                  optional
+                  optionalText={t('workLogOptional')}
+                  value={candleCount}
+                  onChangeText={setCandleCount}
+                  placeholder={t('workLogCandleCountPlaceholder')}
+                  suffix={t('workLogCandleCountUnit')}
+                  testID="e2e_work_log_candle_count"
+                />
+              </View>
+            )}
           </>
         )}
 

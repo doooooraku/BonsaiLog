@@ -764,5 +764,12 @@ const pl: Partial<Record<TranslationKey, string>> = {
   workLogPestDilution: 'Dilution ratio',
   workLogPestDilutionUnit: 'x',
   workLogPestDilutionPlaceholder: 'e.g. 1000',
+  workLogTrimRange: 'Range',
+  workLogTrimRange_tips_only: 'Tips only',
+  workLogTrimRange_moderate: 'Moderate',
+  workLogTrimRange_heavy: 'Heavy',
+  workLogCandleCount: 'Count',
+  workLogCandleCountUnit: 'count',
+  workLogCandleCountPlaceholder: 'e.g. 5',
 };
 export default pl;

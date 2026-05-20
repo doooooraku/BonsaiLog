@@ -99,11 +99,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   eventType_fertilizing: '施肥',
   eventType_pest_control: '防除・消毒',
   eventType_leaf_trimming: '葉刈り',
-  eventType_defoliation: '葉抜き',
-  eventType_deshoot: '芽摘み',
+  eventType_defoliation: '全葉刈',
+  eventType_deshoot: '芽かき',
   eventType_candle_cut: '芽切り',
-  eventType_moss_care: '苔の手入れ',
-  eventType_position_change: '配置変更',
+  eventType_moss_care: '苔手入れ',
+  eventType_position_change: '置き場変更',
 
   // --- Settings ---
   settings: '設定',
@@ -773,6 +773,13 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogPestDilution: '希釈倍率',
   workLogPestDilutionUnit: '倍',
   workLogPestDilutionPlaceholder: '例: 1000',
+  workLogTrimRange: '範囲',
+  workLogTrimRange_tips_only: '枝先のみ',
+  workLogTrimRange_moderate: 'そこそこ',
+  workLogTrimRange_heavy: '思い切り',
+  workLogCandleCount: '本数',
+  workLogCandleCountUnit: '本',
+  workLogCandleCountPlaceholder: '例: 5',
 };
 
 export default ja;
