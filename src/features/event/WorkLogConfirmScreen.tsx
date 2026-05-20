@@ -63,6 +63,8 @@ const PEST_PURPOSES = ['prevention', 'treatment', 'both'] as const;
 const TRIM_RANGES = ['tips_only', 'moderate', 'heavy'] as const;
 // Sess16 PR-D6: moss_care 作業内容 (single segment、 mockup 135100.png 左)。
 const MOSS_ACTIONS = ['attach', 'remove', 'moisten'] as const;
+// Sess16 PR-E: leaf_first_aid 症状 (single segment、 mockup 135145.png)。
+const LEAF_AID_SYMPTOMS = ['burn', 'wither', 'pest', 'mold', 'other'] as const;
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
@@ -107,6 +109,10 @@ export default function WorkLogConfirmScreen() {
   // Sess16 PR-D6: moss_care 作業内容 + position_change 移動先。
   const [mossAction, setMossAction] = React.useState<(typeof MOSS_ACTIONS)[number]>('attach');
   const [positionTo, setPositionTo] = React.useState('');
+  // Sess16 PR-E: leaf_first_aid (症状 + 処置)。
+  const [leafAidSymptom, setLeafAidSymptom] =
+    React.useState<(typeof LEAF_AID_SYMPTOMS)[number]>('burn');
+  const [leafAidTreatment, setLeafAidTreatment] = React.useState('');
 
   const togglePart = <T extends string>(
     current: readonly T[],
@@ -173,6 +179,11 @@ export default function WorkLogConfirmScreen() {
       // Sess16 PR-D6: PositionChangePayload.to (mockup 移動先 整合、 from は現状未取得)。
       const toTrimmed = positionTo.trim();
       if (toTrimmed.length > 0) payload.to = toTrimmed;
+    } else if (selectedType === 'leaf_first_aid') {
+      // Sess16 PR-E: LeafFirstAidPayload (mockup 症状 + 処置 整合)。
+      payload.symptom = leafAidSymptom;
+      const treatmentTrimmed = leafAidTreatment.trim();
+      if (treatmentTrimmed.length > 0) payload.treatment = treatmentTrimmed;
     }
     usePickerStore.getState().setWorkLogConfirmResult({
       type: selectedType,
@@ -252,6 +263,33 @@ export default function WorkLogConfirmScreen() {
                 onChange={(v) => setPruneAmount(v as (typeof PRUNE_AMOUNTS)[number])}
               />
             </Field>
+          </>
+        )}
+
+        {selectedType === 'leaf_first_aid' && (
+          <>
+            <Field label={t('workLogLeafAidSymptom')}>
+              <Segmented
+                items={LEAF_AID_SYMPTOMS.map((v) => ({
+                  v,
+                  l: t(`workLogLeafAidSymptom_${v}` as TranslationKey),
+                }))}
+                value={leafAidSymptom}
+                onChange={(v) => setLeafAidSymptom(v as (typeof LEAF_AID_SYMPTOMS)[number])}
+              />
+            </Field>
+            <View style={styles.field}>
+              <LabeledTextInput
+                label={t('workLogLeafAidTreatment')}
+                optional
+                optionalText={t('workLogOptional')}
+                value={leafAidTreatment}
+                onChangeText={setLeafAidTreatment}
+                placeholder={t('workLogLeafAidTreatmentPlaceholder')}
+                maxLength={200}
+                testID="e2e_work_log_leaf_aid_treatment"
+              />
+            </View>
           </>
         )}
 

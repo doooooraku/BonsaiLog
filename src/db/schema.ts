@@ -603,7 +603,11 @@ export type Tag = typeof tags.$inferSelect;
 export type TagInsert = typeof tags.$inferInsert;
 
 /**
- * 16 種別の作業イベント (constraints.md §8 + basic_spec.md §F-02、ADR-0011 で F-03 削除済)
+ * 14 種別の作業イベント (constraints.md §8 + basic_spec.md §F-02、ADR-0011 で F-03 削除済、
+ * Sess16 PR-E (ADR-0028) で leaf_first_aid (葉の手当) 追加 = 13 → 14 種別)。
+ *
+ * events table の type column は CHECK 制約なし (text) のため schema migration 不要、
+ * EVENT_TYPES 配列に追加するだけで Valibot DU + UI が対応。
  */
 export const EVENT_TYPES = [
   'watering', // 水やり
@@ -614,11 +618,12 @@ export const EVENT_TYPES = [
   'fertilizing', // 施肥
   'pest_control', // 防除・消毒
   'leaf_trimming', // 葉刈り
-  'defoliation', // 葉抜き
-  'deshoot', // 芽摘み
+  'defoliation', // 全葉刈 (Sess16 PR-D5 で「葉抜き」 → 「全葉刈」 リネーム)
+  'deshoot', // 芽かき (Sess16 PR-D5 で「芽摘み」 → 「芽かき」 リネーム)
   'candle_cut', // 芽切り (松類)
-  'moss_care', // 苔の手入れ
-  'position_change', // 配置変更
+  'moss_care', // 苔手入れ
+  'position_change', // 置き場変更
+  'leaf_first_aid', // 葉の手当 (Sess16 PR-E、 mockup 135145.png 整合)
 ] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];
