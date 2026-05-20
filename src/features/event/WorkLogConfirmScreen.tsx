@@ -27,6 +27,7 @@ import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
+import { nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
@@ -73,9 +74,12 @@ export default function WorkLogConfirmScreen() {
   const selectedType = (params.type ?? null) as EventType | null;
 
   const [note, setNote] = React.useState('');
-  // Sess16 PR-A2: 日付選択 (空 = 今日 default、 maxToday=true で未来日防止)。
-  const [occurredAtDate, setOccurredAtDate] = React.useState('');
-  // Sess16 PR-A3: 写真添付 (form 内 仮 state、 保存時に caller が addPhotoFromUri で永続化)。
+  // Sess16 PR-A2 → PR-H: 日付選択 default = 今日 (Repolog pattern 整合)、 maxToday=true で未来日防止。
+  // ADR-0008 §TZ 3 層防御: new Date() 引数なし禁止、 nowUtc() 経由。
+  const [occurredAtDate, setOccurredAtDate] = React.useState(() =>
+    (nowUtc() as string).slice(0, 10),
+  );
+  // Sess16 PR-A3 → PR-H: 写真添付 (caption 削除、 BonsaiBasicForm PendingPhoto 整合)。
   const [photos, setPhotos] = React.useState<readonly PhotoFieldItem[]>([]);
   const [waterAmount, setWaterAmount] = React.useState<(typeof WATER_AMOUNTS)[number]>('normal');
   const [pruneParts, setPruneParts] = React.useState<readonly (typeof PRUNE_PARTS)[number][]>([

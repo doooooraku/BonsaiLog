@@ -941,14 +941,13 @@ export default function BonsaiDetailScreen() {
         payload: payload.payload,
         ...(occurredAtUtc ? { occurredAtUtc } : {}),
       });
-      // Sess16 PR-A3: pending photos を作成された event に紐付けて永続化。
+      // Sess16 PR-A3 → PR-H: pending photos を作成された event に紐付けて永続化 (caption 削除済)。
       if (payload.photos && payload.photos.length > 0) {
         for (const p of payload.photos) {
           await addPhotoFromUri({
             bonsaiId: item.id,
             sourceUri: p.uri,
             eventId: created.id,
-            caption: p.caption.trim().length > 0 ? p.caption.trim() : null,
           });
         }
       }

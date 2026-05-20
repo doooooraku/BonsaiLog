@@ -26,12 +26,12 @@ type WorkPickerResult = WorkPickerValue | 'CONSUMED';
  * 作業記録 詳細 入力の戻り値 (Phase G2 part 2、ADR-0024 Accepted)。
  * 循環依存回避のため WorkLogConfirmScreen ではなく本 store 側で型定義し、Screen 側 import する。
  */
-/** Sess16 PR-A3: form 添付の pending photo (DB 未保存、 caller が addPhotoFromUri で永続化)。 */
+/** Sess16 PR-A3 → PR-H: form 添付の pending photo (DB 未保存、 caller が addPhotoFromUri で永続化)。
+ * BonsaiBasicForm の PendingPhoto と整合 (Sess14 PR-T で caption 削除済)。 */
 export type PendingPhoto = {
   uri: string;
   width: number | null;
   height: number | null;
-  caption: string;
 };
 
 export type WorkLogPayload = {
