@@ -39,7 +39,7 @@ import {
   classifyWiringDuration,
   getBodyPart,
   getDaysSinceWired,
-  getScheduledUnwireAt,
+  getScheduledUnwireAtWithFallback,
   getWeeksSinceWired,
   getWireSize,
 } from '@/src/features/wiring/wiringDuration';
@@ -190,7 +190,7 @@ export default function WiringListScreen() {
       }
       const days = getDaysSinceWired(latestWiring, today);
       const weeks = getWeeksSinceWired(days);
-      const scheduledUnwireAt = getScheduledUnwireAt(latestWiring);
+      const scheduledUnwireAt = getScheduledUnwireAtWithFallback(latestWiring);
       let weeksUntilUnwire: number | null = null;
       if (scheduledUnwireAt) {
         const diffMs = new Date(scheduledUnwireAt).getTime() - today.getTime();
