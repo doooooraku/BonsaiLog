@@ -743,6 +743,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogWirePart_all: 'すべて',
   workLogWireUnwireDate: '外し予定日',
   workLogWireUnwireDatePlaceholder: '年 / 月 / 日',
+  workLogUnwireParts: '外した部位',
+  workLogUnwirePart_miki: '幹',
+  workLogUnwirePart_eda: '枝',
+  workLogUnwirePart_all: 'すべて',
 };
 
 export default ja;
