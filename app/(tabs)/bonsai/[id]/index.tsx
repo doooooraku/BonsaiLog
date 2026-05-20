@@ -80,7 +80,7 @@ import { WiringPeriodDisplay } from '@/src/features/wiring/WiringPeriodDisplay';
 import {
   classifyWiringDuration,
   getDaysSinceWired,
-  getScheduledUnwireAt,
+  getScheduledUnwireAtWithFallback,
   getWeeksSinceWired,
 } from '@/src/features/wiring/wiringDuration';
 import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
@@ -1176,7 +1176,7 @@ function EventSingleRow({
         other.occurredAtUtc >= ev.occurredAtUtc,
     );
     wiringDuration = { weeks, kind, isUnwired };
-    const scheduled = getScheduledUnwireAt(ev);
+    const scheduled = getScheduledUnwireAtWithFallback(ev);
     if (scheduled) {
       scheduledUnwireLabel = t('wiringScheduledUnwireSet').replace(
         '{date}',

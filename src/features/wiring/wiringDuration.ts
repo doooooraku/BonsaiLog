@@ -46,6 +46,44 @@ export function getScheduledUnwireAt(wiringEvent: Event): string | null {
   }
 }
 
+/**
+ * Sess16 PR-M (T-6、 ADR-0028 §Follow-up): wiring 旧 logged events backward-compat。
+ *
+ * Sess16 PR-A5 (#627) で wiring payload schema を `gauge`/`parts`/`duration` (旧) →
+ * `wire_size_mm`/`body_part`/`scheduled_unwire_at` (新、 ADR-0008 整合) に変更。 旧 logged
+ * events は DB 上に `payload.duration` ('8w' / '12w' 等) を持つため、 表示時に「外し予定日」
+ * を導出するため `occurredAtUtc + duration weeks` で計算 fallback。
+ *
+ * 動作:
+ * - 新 schema (`scheduled_unwire_at`) 優先、 あればそれを返却
+ * - 旧 schema (`duration` 文字列、 例 '8w') あれば `occurredAtUtc + N weeks` で ISO 計算
+ * - 両方なし or parse 失敗 → null
+ */
+export function getScheduledUnwireAtWithFallback(wiringEvent: Event): string | null {
+  // 新 schema 優先
+  const newField = getScheduledUnwireAt(wiringEvent);
+  if (newField) return newField;
+
+  // 旧 schema fallback (Sess16 PR-A5 以前の logged events)
+  if (wiringEvent.payloadJson == null) return null;
+  try {
+    const payload = JSON.parse(wiringEvent.payloadJson) as Record<string, unknown>;
+    const duration = payload.duration;
+    if (typeof duration !== 'string') return null;
+    const match = duration.match(/^(\d+)w$/);
+    if (!match) return null;
+    const weeks = parseInt(match[1] as string, 10);
+    if (!Number.isFinite(weeks) || weeks < 0) return null;
+    const days = weeks * 7;
+    const wiredMs = new Date(wiringEvent.occurredAtUtc).getTime();
+    if (!Number.isFinite(wiredMs)) return null;
+    const unwireMs = wiredMs + days * 86_400_000;
+    return new Date(unwireMs).toISOString();
+  } catch {
+    return null;
+  }
+}
+
 /** payload_json から `wire_size_mm` を「Nmm」形式で取り出す純関数 (parse 失敗 / 未指定は null)。 */
 export function getWireSize(wiringEvent: Event): string | null {
   if (wiringEvent.payloadJson == null) return null;
