@@ -44,9 +44,10 @@ export type { WorkLogPayload };
 const WATER_AMOUNTS = ['normal', 'plenty', 'light'] as const;
 const PRUNE_PARTS = ['eda', 'ha', 'shinme', 'ne'] as const;
 const PRUNE_AMOUNTS = ['few', 'some', 'lot'] as const;
-const WIRE_GAUGES = ['1mm', '1.5mm', '2mm', '2.5mm', '3mm', '3.5mm'] as const;
-const WIRE_PARTS = ['miki', 'eda'] as const;
-const WIRE_DURATIONS = ['4w', '8w', '12w', '16w', '20w'] as const;
+// Sess16 PR-A5: mockup 整合 — 3.5mm 削除 (5 段階)、 巻く部位 multi → single + 'all' 追加、
+// 期間 segment → 外し予定日 date 化 (LabeledDateRow、 payload.scheduled_unwire_at 整合)。
+const WIRE_GAUGES = ['1mm', '1.5mm', '2mm', '2.5mm', '3mm'] as const;
+const WIRE_PARTS = ['all', 'miki', 'eda'] as const;
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
@@ -65,8 +66,10 @@ export default function WorkLogConfirmScreen() {
   ]);
   const [pruneAmount, setPruneAmount] = React.useState<(typeof PRUNE_AMOUNTS)[number]>('some');
   const [wireGauge, setWireGauge] = React.useState<(typeof WIRE_GAUGES)[number]>('1mm');
-  const [wireParts, setWireParts] = React.useState<readonly (typeof WIRE_PARTS)[number][]>(['eda']);
-  const [wireDuration, setWireDuration] = React.useState<(typeof WIRE_DURATIONS)[number]>('8w');
+  // Sess16 PR-A5: multi → single + 'all' default
+  const [wireParts, setWireParts] = React.useState<(typeof WIRE_PARTS)[number]>('all');
+  // Sess16 PR-A5: 期間 segment → 外し予定日 date (LabeledDateRow、 mockup「年/月/日」 整合)。
+  const [wireUnwireDate, setWireUnwireDate] = React.useState('');
 
   const togglePart = <T extends string>(
     current: readonly T[],
@@ -86,9 +89,11 @@ export default function WorkLogConfirmScreen() {
       payload.parts = [...pruneParts];
       payload.amount = pruneAmount;
     } else if (selectedType === 'wiring') {
-      payload.gauge = wireGauge;
-      payload.parts = [...wireParts];
-      payload.duration = wireDuration;
+      // Sess16 PR-A5: payload schema 整合 (WiringPayload: wire_size_mm / body_part / scheduled_unwire_at)。
+      const gaugeNum = parseFloat(wireGauge.replace('mm', ''));
+      if (!Number.isNaN(gaugeNum)) payload.wire_size_mm = gaugeNum;
+      payload.body_part = wireParts;
+      if (wireUnwireDate) payload.scheduled_unwire_at = `${wireUnwireDate}T00:00:00.000Z`;
     }
     usePickerStore.getState().setWorkLogConfirmResult({
       type: selectedType,
@@ -187,19 +192,24 @@ export default function WorkLogConfirmScreen() {
                   l: t(`workLogWirePart_${v}` as TranslationKey),
                 }))}
                 value={wireParts}
-                onChange={(v) =>
-                  togglePart(wireParts, v as (typeof WIRE_PARTS)[number], setWireParts)
-                }
-                multi
+                onChange={(v) => setWireParts(v as (typeof WIRE_PARTS)[number])}
               />
             </Field>
-            <Field label={t('workLogWireDuration')} hint={t('workLogWireDurationHint')}>
-              <Segmented
-                items={WIRE_DURATIONS.map((v) => ({ v, l: v }))}
-                value={wireDuration}
-                onChange={(v) => setWireDuration(v as (typeof WIRE_DURATIONS)[number])}
+            {/* Sess16 PR-A5: 期間 segment → 外し予定日 date (LabeledDateRow、 mockup 整合)。
+                maxToday=false で未来日 OK (外し予定なので)、 payload.scheduled_unwire_at に格納。 */}
+            <View style={styles.field}>
+              <LabeledDateRow
+                label={t('workLogWireUnwireDate')}
+                optional
+                optionalText={t('workLogOptional')}
+                value={wireUnwireDate}
+                onChangeText={setWireUnwireDate}
+                placeholder={t('workLogWireUnwireDatePlaceholder')}
+                maxToday={false}
+                testID="e2e_work_log_wire_unwire_date"
+                testIDClear="e2e_work_log_wire_unwire_date_clear"
               />
-            </Field>
+            </View>
           </>
         )}
 
