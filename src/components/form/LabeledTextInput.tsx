@@ -21,18 +21,18 @@ import {
 } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, DANGER, OVERLIMIT } from '@/src/core/theme/colors';
 import {
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  DANGER,
-  OVERLIMIT,
-  TEXT_MUTED,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+  FORM_PLACEHOLDER_COLOR,
+  formCounter,
+  formCounterOver,
+  formInput,
+  formOptional,
+  formRequired,
+} from '@/src/core/theme/typography';
 
 // Sess14 PR-R: hardcoded color → 既存 theme constant 経由に統合。
-// DANGER / BG_PRIMARY / OVERLIMIT は colors.ts で集中管理。
+// Sess17 PR-C1: hardcoded fontSize/fontWeight → typography.ts token 経由化 (ADR-0029 D1)。
 
 export type LabeledTextInputProps = {
   label: string;
@@ -132,7 +132,7 @@ export function LabeledTextInput({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={TEXT_SECONDARY}
+        placeholderTextColor={FORM_PLACEHOLDER_COLOR}
         maxLength={maxLength}
         keyboardType={keyboardType}
         multiline={multiline}
@@ -161,10 +161,10 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { fontSize: 10, color: BG_PRIMARY, letterSpacing: 0.8 },
-  optionalText: { fontSize: 10, color: TEXT_MUTED, letterSpacing: 0.8 },
-  counter: { fontSize: 12, color: TEXT_MUTED },
-  counterOver: { color: OVERLIMIT, fontWeight: '600' },
+  requiredText: { ...formRequired, color: BG_PRIMARY },
+  optionalText: formOptional,
+  counter: formCounter,
+  counterOver: formCounterOver,
   input: {
     height: 44,
     paddingHorizontal: 14,
@@ -172,10 +172,10 @@ const styles = StyleSheet.create({
     borderColor: BORDER_DEFAULT,
     borderRadius: 12,
     backgroundColor: BG_SURFACE,
-    fontSize: 16,
+    ...formInput,
   },
   inputMultiline: { minHeight: 96, paddingVertical: 12 },
   inputOverLimit: { borderColor: OVERLIMIT },
   inputDisabled: { opacity: 0.5 },
-  overlimitText: { fontSize: 12, color: OVERLIMIT },
+  overlimitText: { ...formCounter, color: OVERLIMIT },
 });

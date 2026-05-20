@@ -16,6 +16,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ChevronRightIcon, CloseIcon } from '@/src/components/icons';
 import { BG_SURFACE, BORDER_DEFAULT, ON_BRAND, TEXT_MUTED } from '@/src/core/theme/colors';
+import { formOptional } from '@/src/core/theme/typography';
+
+// Sess17 PR-C1: hardcoded fontSize/fontWeight → typography.ts token 経由化 (ADR-0029 D1)。
 
 export type LabeledPickerRowProps = {
   label: string;
@@ -88,7 +91,7 @@ export function LabeledPickerRow({
 const styles = StyleSheet.create({
   field: { gap: 6 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  optionalText: { fontSize: 10, color: TEXT_MUTED, letterSpacing: 0.8 },
+  optionalText: formOptional,
   rowWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   row: {
     flex: 1,
