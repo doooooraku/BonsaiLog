@@ -17,6 +17,8 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
+import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
 import { useToastStore } from '@/src/components/Toast';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
@@ -30,6 +32,7 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { bulkLogEvents } from '@/src/db/eventRepository';
+import { addPhotoFromUri } from '@/src/db/photoRepository';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { BonsaiPlaceholder, hashSeed } from '@/src/features/bonsai/BonsaiPlaceholder';
@@ -50,6 +53,10 @@ export default function BulkLogConfirmScreen() {
   const selectedBonsais = usePickerStore((s) => s.bulkContext?.selectedBonsais ?? []);
 
   const [note, setNote] = React.useState('');
+  // Sess16 PR-B2: 日付選択 (空 = 今日 default、 maxToday=true で未来日防止)
+  const [occurredAtDate, setOccurredAtDate] = React.useState('');
+  // Sess16 PR-B2: 写真添付 (form 内 仮 state、 保存時に caller が addPhotoFromUri loop で永続化)
+  const [photos, setPhotos] = React.useState<readonly PhotoFieldItem[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   if (selectedType == null) return null;
@@ -59,12 +66,28 @@ export default function BulkLogConfirmScreen() {
     setIsSubmitting(true);
     const bonsaiIds = selectedBonsais.map((b) => b.id);
     const trimmed = note.trim();
+    // Sess16 PR-B2: occurredAtDate (YYYY-MM-DD) → ISO UTC、 未指定なら bulkLogEvents default
+    const occurredAtUtc = occurredAtDate ? `${occurredAtDate}T00:00:00.000Z` : undefined;
     try {
-      await bulkLogEvents({
+      const result = await bulkLogEvents({
         bonsaiIds,
         type: selectedType,
         note: trimmed.length > 0 ? trimmed : null,
+        ...(occurredAtUtc ? { occurredAtUtc } : {}),
       });
+      // Sess16 PR-B2: 全 bonsai に同じ photos 紐付け (各 created event の id に対して addPhotoFromUri loop)
+      if (photos.length > 0 && result.created.length > 0) {
+        for (const event of result.created) {
+          for (const p of photos) {
+            await addPhotoFromUri({
+              bonsaiId: event.bonsaiId,
+              sourceUri: p.uri,
+              eventId: event.id,
+              caption: p.caption.trim().length > 0 ? p.caption.trim() : null,
+            });
+          }
+        }
+      }
       useToastStore.getState().show(t('bulkLogDoneToast').replace('{count}', '1'));
     } catch (error) {
       console.warn('[bulk-log] failed:', error);
@@ -104,6 +127,18 @@ export default function BulkLogConfirmScreen() {
       </ScrollView>
 
       <ScrollView contentContainerStyle={styles.body}>
+        {/* Sess16 PR-B2: 日付選択 (mockup 14 種別共通、 chips の後・note の前)。 */}
+        <LabeledDateRow
+          label={t('workLogDateField')}
+          optional
+          optionalText={t('workLogOptional')}
+          value={occurredAtDate}
+          onChangeText={setOccurredAtDate}
+          placeholder={t('workLogDatePlaceholderToday')}
+          maxToday
+          testID="e2e_bulk_log_date"
+          testIDClear="e2e_bulk_log_date_clear"
+        />
         <View>
           <ThemedText style={styles.fieldLabel}>{t('bulkLogConfirmNoteLabel')}</ThemedText>
           <TextInput
@@ -120,6 +155,15 @@ export default function BulkLogConfirmScreen() {
             testID="e2e_bulk_log_confirm_note_input"
           />
         </View>
+        {/* Sess16 PR-B2: 写真添付 (mockup 14 種別共通、 最大 10 枚、 全 bonsai に同 photos 紐付け)。 */}
+        <PhotoField
+          label={t('workLogPhotoField')}
+          optional
+          optionalText={t('workLogOptional')}
+          photos={photos}
+          onChange={setPhotos}
+          testID="e2e_bulk_log_photo_field"
+        />
       </ScrollView>
 
       <View style={[styles.footer, { borderTopColor: c.border, backgroundColor: c.background }]}>

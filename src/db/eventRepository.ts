@@ -585,6 +585,8 @@ export type BulkLogInput = {
   type: EventType;
   /** 全盆栽に共通の自由メモ (任意、null なら未記入)。 */
   note: string | null;
+  /** Sess16 PR-B2: user 入力の日付 (ISO UTC、 任意)。 未指定なら createEvent default = nowUtc。 */
+  occurredAtUtc?: string;
 };
 
 export type BulkLogResult = {
@@ -620,6 +622,8 @@ export async function bulkLogEvents(input: BulkLogInput): Promise<BulkLogResult>
         status: 'logged',
         payload: {},
         note: input.note,
+        // Sess16 PR-B2: user 入力日付を伝搬 (未指定なら createEvent default = nowUtc)
+        ...(input.occurredAtUtc ? { occurredAtUtc: input.occurredAtUtc } : {}),
       }),
     ),
   );
