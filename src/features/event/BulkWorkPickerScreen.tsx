@@ -43,6 +43,7 @@ const BULK_WORK_TYPES: readonly EventType[] = [
   'deshoot',
   'moss_care',
   'position_change',
+  'leaf_first_aid', // Sess16 PR-G: 葉の手当 (Phase γ で EVENT_TYPES に追加した 14 種別目)
 ];
 
 export default function BulkWorkPickerScreen() {
