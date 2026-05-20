@@ -130,13 +130,18 @@ const styles = StyleSheet.create({
     borderBottomColor: BORDER_DEFAULT,
   },
   chip: {
+    // Sess18 PR-11: design_system §4 (spacing 8/12) + §5 (borderRadius 16) 整合。
+    // BulkLogConfirm の chip と完全 1:1 統一 (両画面で同じデータの 2 つ画面表示の整合)。
     paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 18,
+    paddingHorizontal: 12, // 旧 10 → 12 (spacing token 整合)
+    borderRadius: 16, // 旧 18 → 16 (design_system §5 カード用途)
     backgroundColor: BG_SURFACE,
     borderWidth: 1,
     borderColor: BORDER_DEFAULT,
+    minWidth: 80, // BulkLogConfirm と統一
     maxWidth: 140,
+    alignItems: 'center', // text 中央揃え
+    justifyContent: 'center',
   },
   chipText: { fontSize: 12, fontWeight: '500', color: TEXT_PRIMARY, flexShrink: 1 },
   body: { padding: 16, paddingBottom: 16, gap: 16 },
