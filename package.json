@@ -23,6 +23,7 @@
     "theme:check": "node scripts/theme-legacy-check.mjs",
     "theme:tokens": "node scripts/theme-token-check.mjs",
     "theme:sot": "node scripts/theme-source-of-truth.mjs",
+    "theme:form-typography": "node scripts/check-form-typography.mjs",
     "a11y:contrast": "node scripts/a11y-contrast-check.mjs",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
