@@ -757,6 +757,13 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogRepotRootAmount_light: '軽く',
   workLogRepotRootAmount_third: '1/3',
   workLogRepotRootAmount_half: '1/2',
+  workLogFertKind: '肥料の種類',
+  workLogFertKind_solid: '置肥(玉肥)',
+  workLogFertKind_liquid: '液肥',
+  workLogFertKind_slow_release: '緩効性',
+  workLogFertKind_other: 'その他',
+  workLogFertProduct: '銘柄・配合',
+  workLogFertProductPlaceholder: '例: バイオゴールド',
 };
 
 export default ja;

@@ -754,6 +754,13 @@ const baseEn = {
   workLogRepotRootAmount_light: 'Light',
   workLogRepotRootAmount_third: '1/3',
   workLogRepotRootAmount_half: '1/2',
+  workLogFertKind: 'Fertilizer type',
+  workLogFertKind_solid: 'Solid',
+  workLogFertKind_liquid: 'Liquid',
+  workLogFertKind_slow_release: 'Slow-release',
+  workLogFertKind_other: 'Other',
+  workLogFertProduct: 'Brand / blend',
+  workLogFertProductPlaceholder: 'e.g. Biogold',
 };
 
 export type TranslationKey = keyof typeof baseEn;
