@@ -740,6 +740,10 @@ const baseEn = {
   workLogWirePart_all: 'All',
   workLogWireUnwireDate: 'Unwire date',
   workLogWireUnwireDatePlaceholder: 'YYYY/MM/DD',
+  workLogUnwireParts: 'Unwired parts',
+  workLogUnwirePart_miki: 'Trunk',
+  workLogUnwirePart_eda: 'Branch',
+  workLogUnwirePart_all: 'All',
 };
 
 export type TranslationKey = keyof typeof baseEn;

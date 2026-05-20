@@ -48,6 +48,8 @@ const PRUNE_AMOUNTS = ['few', 'some', 'lot'] as const;
 // 期間 segment → 外し予定日 date 化 (LabeledDateRow、 payload.scheduled_unwire_at 整合)。
 const WIRE_GAUGES = ['1mm', '1.5mm', '2mm', '2.5mm', '3mm'] as const;
 const WIRE_PARTS = ['all', 'miki', 'eda'] as const;
+// Sess16 PR-D1: unwiring 外した部位 (single segment、 mockup 135200.png)。
+const UNWIRE_PARTS = ['miki', 'eda', 'all'] as const;
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
@@ -70,6 +72,8 @@ export default function WorkLogConfirmScreen() {
   const [wireParts, setWireParts] = React.useState<(typeof WIRE_PARTS)[number]>('all');
   // Sess16 PR-A5: 期間 segment → 外し予定日 date (LabeledDateRow、 mockup「年/月/日」 整合)。
   const [wireUnwireDate, setWireUnwireDate] = React.useState('');
+  // Sess16 PR-D1: unwiring 外した部位 (default 'all'、 single)。
+  const [unwireParts, setUnwireParts] = React.useState<(typeof UNWIRE_PARTS)[number]>('all');
 
   const togglePart = <T extends string>(
     current: readonly T[],
@@ -94,6 +98,9 @@ export default function WorkLogConfirmScreen() {
       if (!Number.isNaN(gaugeNum)) payload.wire_size_mm = gaugeNum;
       payload.body_part = wireParts;
       if (wireUnwireDate) payload.scheduled_unwire_at = `${wireUnwireDate}T00:00:00.000Z`;
+    } else if (selectedType === 'unwiring') {
+      // Sess16 PR-D1: UnwiringPayload.body_part (mockup 外した部位 整合)。
+      payload.body_part = unwireParts;
     }
     usePickerStore.getState().setWorkLogConfirmResult({
       type: selectedType,
@@ -174,6 +181,19 @@ export default function WorkLogConfirmScreen() {
               />
             </Field>
           </>
+        )}
+
+        {selectedType === 'unwiring' && (
+          <Field label={t('workLogUnwireParts')}>
+            <Segmented
+              items={UNWIRE_PARTS.map((v) => ({
+                v,
+                l: t(`workLogUnwirePart_${v}` as TranslationKey),
+              }))}
+              value={unwireParts}
+              onChange={(v) => setUnwireParts(v as (typeof UNWIRE_PARTS)[number])}
+            />
+          </Field>
         )}
 
         {selectedType === 'wiring' && (
