@@ -514,6 +514,41 @@ mockup user 提供 SS 10 枚 + Sess16 議論 (Q1-Q8) で確定した **14 種別
 
 **Note**: Valibot `v.object` は strict ではないため、 追加 prop は warning なく通過 (型保証は手動)。 旧 logged events の payload (例: Sess16 PR-A5 以前の wiring `gauge`/`parts`/`duration`) は DB 上に残存、 表示時に backward-compat 計算 fallback で吸収 (`wiringDuration.ts`、 ADR-0028 §Follow-up T-6)。
 
+#### §7.3.2.2 Single / Bulk 動線の UI 整合 (Sess17 PR-G1/H2、 ADR-0029 D5、 design_system.md §16)
+
+**設計原則**: 同じ EventType の入力 UI は **Single (`WorkLogConfirm`) と Bulk (`BulkLogConfirm`) で 1:1 一致**。 差分は「対象盆栽数」 表示のみ。
+
+**共通 component**:
+
+- `src/features/event/WorkLogTypeFormFields.tsx` (Sess17 PR-G1 新規) — 14 種別固有 form の入力 fields を担当する **controlled component**。 props で state を受け取り (state hoisting)、 ref / forwardRef は使用禁止。
+- `buildWorkLogPayload(type, state)` pure function — state → payload 変換、 caller (Single / Bulk) の save 時に呼出。
+- `createWorkLogTypeFormInitialState(defaultUnit: LengthUnit)` factory — 初期 state 生成 (`settingsStore.potUnit` を渡す)。
+
+**動線別の責務**:
+
+- **Single (`WorkLogConfirm`)**: payload state を local hoisting、 「記録する」 で `usePickerStore.setWorkLogConfirmResult({ type, note, payload, occurredAtDate, photos })` → caller (bonsai-detail) が `createEvent` 呼出し。
+- **Bulk (`BulkLogConfirm`)**: payload state を local hoisting、 「記録する」 で `bulkLogEvents({ bonsaiIds, type, note, occurredAtUtc, payload })` → **全選択盆栽に同 payload を適用** (user 真意「内容全部一緒で OK」)。
+
+**Bulk 専用方針 (Single との差分)**:
+
+- `wiring` 外し予定日 (`scheduled_unwire_at`) は Bulk では UI 非表示。 各盆栽で個別日付は意味的に不整合 (全 N 本に同じ外し予定日を強制するか個別管理するかの判断が user 体感とずれる)。 必要なら Single で個別記録。
+
+**bulkLogEvents() signature (Sess17 PR-H1 拡張)**:
+
+```ts
+type BulkLogInput = {
+  bonsaiIds: readonly string[];
+  type: EventType;
+  note: string | null;
+  occurredAtUtc?: string;
+  payload?: Record<string, unknown>; // ★Sess17 PR-H1 で追加
+};
+```
+
+schema 変更不要 (events.payload は JSON、 CHECK 制約なし、 ADR-0028 整合)。 既存 caller は payload 省略で backward-compat。
+
+**業務プロペルソナ評価転換**: Sess12 PR-G で導入された「Bulk は単純化のみ」 方針 (✕ 業務プロ ✕ 不採用、 100 本/日 詳細記録不可) を **撤回**、 Sess17 PR-H2 で 14 種別固有 form 展開により業務プロ ✕ → ◎ 転換。 ADR-0027 §Alternatives §Option C 却下理由「業務プロ ✕」 を覆す重要改善。
+
 #### §7.3.3 記録擬似コード（optimistic update 付き）
 
 ```typescript
