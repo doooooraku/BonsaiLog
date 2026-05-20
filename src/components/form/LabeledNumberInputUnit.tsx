@@ -27,15 +27,13 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { BG_PRIMARY, BORDER_DEFAULT, BRAND_GREEN, DANGER, ON_BRAND } from '@/src/core/theme/colors';
 import {
-  BG_PRIMARY,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  DANGER,
-  ON_BRAND,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
-import { formOptional, formRequired } from '@/src/core/theme/typography';
+  formOptional,
+  formRequired,
+  formSegmentText,
+  formSegmentTextOn,
+} from '@/src/core/theme/typography';
 import type { LengthUnit } from '@/src/core/util/unitConvert';
 
 import { LabeledNumberInput } from './LabeledNumberInput';
@@ -162,6 +160,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   unitSegmentActive: { backgroundColor: BRAND_GREEN },
-  unitSegmentText: { fontSize: 13, color: TEXT_SECONDARY },
-  unitSegmentTextActive: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
+  unitSegmentText: formSegmentText,
+  unitSegmentTextActive: { ...formSegmentTextOn, color: ON_BRAND, fontWeight: '600' },
 });

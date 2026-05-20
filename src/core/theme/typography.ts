@@ -85,3 +85,21 @@ export const formInput: TextStyle = {
   fontSize: 16,
   color: TEXT_PRIMARY,
 };
+
+/**
+ * segment ボタン label (LabeledSegmented / LabeledNumberSegmentOrFree /
+ * LabeledNumberInputUnit の単位切替 segmented)。
+ * fontSize 13 / color TEXT_SECONDARY (非選択時)。
+ */
+export const formSegmentText: TextStyle = {
+  fontSize: 13,
+  color: TEXT_SECONDARY,
+};
+
+/**
+ * segment ボタン選択時の追加 weight (color は caller 側で ON_BRAND を上書き)。
+ */
+export const formSegmentTextOn: TextStyle = {
+  fontSize: 13,
+  fontWeight: '500',
+};
