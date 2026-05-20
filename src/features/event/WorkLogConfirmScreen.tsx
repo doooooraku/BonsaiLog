@@ -24,6 +24,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 
 import { ThemedText } from '@/components/themed-text';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
+import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
@@ -56,6 +57,8 @@ export default function WorkLogConfirmScreen() {
   const [note, setNote] = React.useState('');
   // Sess16 PR-A2: 日付選択 (空 = 今日 default、 maxToday=true で未来日防止)。
   const [occurredAtDate, setOccurredAtDate] = React.useState('');
+  // Sess16 PR-A3: 写真添付 (form 内 仮 state、 保存時に caller が addPhotoFromUri で永続化)。
+  const [photos, setPhotos] = React.useState<readonly PhotoFieldItem[]>([]);
   const [waterAmount, setWaterAmount] = React.useState<(typeof WATER_AMOUNTS)[number]>('normal');
   const [pruneParts, setPruneParts] = React.useState<readonly (typeof PRUNE_PARTS)[number][]>([
     'eda',
@@ -93,6 +96,8 @@ export default function WorkLogConfirmScreen() {
       payload,
       // Sess16 PR-A2: occurredAtDate を caller へ (未指定なら caller で nowUtc default)。
       ...(occurredAtDate ? { occurredAtDate } : {}),
+      // Sess16 PR-A3: photos を caller へ (caller が addPhotoFromUri で永続化)。
+      ...(photos.length > 0 ? { photos } : {}),
     });
     router.back();
   };
@@ -209,6 +214,18 @@ export default function WorkLogConfirmScreen() {
           />
           <ThemedText style={styles.charCount}>{note.length} / 2000</ThemedText>
         </Field>
+
+        {/* Sess16 PR-A3: 写真添付 (mockup 14 種別共通、 最大 10 枚)。 */}
+        <View style={styles.field}>
+          <PhotoField
+            label={t('workLogPhotoField')}
+            optional
+            optionalText={t('workLogOptional')}
+            photos={photos}
+            onChange={setPhotos}
+            testID="e2e_work_log_photo_field"
+          />
+        </View>
       </ScrollView>
 
       <View style={styles.footer}>

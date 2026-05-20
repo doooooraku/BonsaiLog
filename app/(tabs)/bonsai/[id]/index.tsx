@@ -47,6 +47,7 @@ import {
   type BonsaiWithSpecies,
 } from '@/src/db/bonsaiRepository';
 import {
+  addPhotoFromUri,
   deletePhoto,
   FREE_PHOTO_LIMIT_PER_BONSAI,
   getPhotoCountByBonsai,
@@ -937,7 +938,7 @@ export default function BonsaiDetailScreen() {
       const occurredAtUtc = payload.occurredAtDate
         ? `${payload.occurredAtDate}T00:00:00.000Z`
         : undefined;
-      await createEvent({
+      const created = await createEvent({
         bonsaiId: item.id,
         type: payload.type,
         status: 'logged',
@@ -945,6 +946,17 @@ export default function BonsaiDetailScreen() {
         payload: payload.payload,
         ...(occurredAtUtc ? { occurredAtUtc } : {}),
       });
+      // Sess16 PR-A3: pending photos を作成された event に紐付けて永続化。
+      if (payload.photos && payload.photos.length > 0) {
+        for (const p of payload.photos) {
+          await addPhotoFromUri({
+            bonsaiId: item.id,
+            sourceUri: p.uri,
+            eventId: created.id,
+            caption: p.caption.trim().length > 0 ? p.caption.trim() : null,
+          });
+        }
+      }
       await reload();
     } catch (err) {
       Alert.alert(t('error'), String(err));
