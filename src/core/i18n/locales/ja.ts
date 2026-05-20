@@ -737,6 +737,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   inputOverLimit: '上限に達しました',
   workLogDateField: '日付',
   workLogDatePlaceholderToday: '今日',
+  workLogPhotoField: '写真',
+  workLogPhotoAdd: '追加',
+  workLogPhotoCaptionPlaceholder: 'キャプション (任意・100文字まで)',
 };
 
 export default ja;

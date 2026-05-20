@@ -727,5 +727,8 @@ const vi: Partial<Record<TranslationKey, string>> = {
   inputOverLimit: 'Character limit reached',
   workLogDateField: 'Date',
   workLogDatePlaceholderToday: 'Today',
+  workLogPhotoField: 'Photos',
+  workLogPhotoAdd: 'Add',
+  workLogPhotoCaptionPlaceholder: 'Caption (optional, up to 100 chars)',
 };
 export default vi;
