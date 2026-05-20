@@ -31,3 +31,20 @@
   - PR template の 「関連 SQL / 関数の影響範囲確認」 チェックを強化 (R-9 強化候補)
   - dead code が確定したら **同 PR で廃止** (DB migration + 関数削除 + ADR Amended)
 - **修正 (Sess9 PR-1)**: `event_tags` を v11 で完全廃止、 `bonsai_tags` 一本化、 ADR-0008 §Notes Amended 2026-05-18 で意思決定を明文化。 `searchEventsByTags` → `searchEventsByBonsaiTags` (bonsai 経由) に置換。
+
+### enum 列に CHECK 制約がない場合 schema migration 不要 (Sess16 PR-E + ADR-0028)
+
+- **ルール**: `EVENT_TYPES` のような enum 列 (text、 CHECK 制約なし) に **新しい値を追加する時**、 schema migration / `SCHEMA_VERSION` bump は **不要**。 `EVENT_TYPES` 配列 + Valibot `PAYLOAD_SCHEMAS` map に追加するだけで完結する。
+- **根本原因**: events.type column は `text NOT NULL` (CHECK 制約なし) で定義済。 enum 値の追加は column 型を変えるものではない、 アプリ層で扱う値の domain が広がるだけ。 Valibot `v.object` は strict ではないので、 追加 prop は warning なく通過 (型保証は手動担保)。
+- **検出方法**:
+  - 新規 EventType 追加時、 まず `src/db/schema.ts` の events table 定義 を Read して CHECK 制約有無を確認
+  - 「ない」 なら EVENT_TYPES 配列追加 + payloadValidator.ts の PAYLOAD_SCHEMAS map 追加だけで終わる
+  - 「ある」 なら CHECK 制約の更新 migration が必要 (Sess14 PR-P trauma 参考、 idempotent 設計)
+- **実例 (Sess16 PR-E #638)**: 当初 v15 → v16 schema bump を計画 (Plan v1) → 実装着手時に CHECK 制約なし発見 → migration 不要 → 計画撤回、 PR-E 1 PR で完遂。 ADR-0028 で文書化。
+
+### 手動 list 同期忘れ bug → enum 派生は動的生成へ (Sess16 PR-G + PR-J)
+
+- **ルール**: enum (EVENT_TYPES 等) を一部だけ使う list (例: `ALL_WORK_TYPES` from WorkPickerScreen、 `BULK_WORK_TYPES` from BulkWorkPickerScreen) は **手動コピペで作らず、 `EVENT_TYPES.filter(...)` で動的生成**。
+- **根本原因 (実例 Sess16 PR-G #639)**: Phase γ (PR-E #638) で EVENT_TYPES に `leaf_first_aid` 追加した時、 ALL_WORK_TYPES / BULK_WORK_TYPES (手動 list) には **追加し忘れ** → 実機 SS 検証で「葉の手当」 が work-picker grid に表示されない bug 発覚。 緊急 fix で 1 行追加。
+- **恒久対応 (Sess16 PR-J #642)**: 両 list を `EVENT_TYPES.filter(...)` で動的生成に refactor。 将来 EventType 追加時に schema.ts の EVENT_TYPES に追加するだけで自動的に grid 反映。
+- **一般化**: enum の派生 list (subset / 除外 / フィルタ) は手動コピペ禁止、 enum 原典を source of truth とする動的生成を default。 例外は「順序を変えたい」 等の理由がある時のみ (その場合も map による mapping 経由)。

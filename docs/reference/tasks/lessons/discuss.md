@@ -57,3 +57,30 @@
 - **R-34 個別質問パターンの徹底**: 同類項目は 1 質問に詰めず分離
 - **R-35 alternative 必須**: 議論 Round 2 で 2-3 案併記、 「現状最適解」 明示
 - 議論 Round 4 質問提示前の **整合性 walkthrough** step 追加
+
+---
+
+## user 追加注文反映時の PR 分割 vs 一括 (Sess16 PR-H 教訓)
+
+### 状況
+
+- Sess16 後半で user が追加注文を投下: 「PR #625 で作った PhotoField を BonsaiBasicForm pattern に書き換え」 + 「日付欄を Repolog 参考に今日 default」
+- 変更対象: PhotoField + WorkLogConfirm + BulkLogConfirm + pickerStore + bonsai-detail = 5 files、 型 (`PhotoFieldItem` / `PendingPhoto` の `caption: string` 削除) が **連鎖**
+
+### Keep (うまくいったこと)
+
+- **1 PR 一括 (PR-H、 #640) で実装**: type 変更が連鎖するため、 分割すると中間 commit で build 失敗 (CI fail) リスク高 → atomicity 重視で 1 commit に集約
+- AskUserQuestion で 3 件 (caption 削除? / 日付 default 形式? / PR 分割?) 事前確認 → user 推奨同意 → 安心して着手
+- PR template + commit message で「PR #625 から良点抽出 (index 1/N、 selectionLimit 動的)、 BonsaiBasicForm pattern 踏襲 (caption 削除、 Camera + Library 2 buttons)」 を明記 → 後で「なぜこうした?」 が分かる
+
+### Problem (発生した課題)
+
+- ESLint rule (ADR-0008 §TZ 3 層防御「`new Date()` 引数なし禁止」) を最初の commit で違反 → pre-commit hook で block → `nowUtc()` 経由に修正して再 commit
+  - **lesson**: 既存 lint rule の存在は `.eslintrc` + ADR で確認、 「日付取得」 系コードを書く時は `nowUtc()` を必ず想起
+- 1 PR で 5 files 変更は review コスト高 → PR description で「変更内容」 「再利用」 「不要だが削除しない key」 を明記、 future-self への手紙にする
+
+### Try (恒久ルール化)
+
+- **型連鎖を伴う refactor は 1 PR で atomic に**: 分割 PR で中間状態 (型 mismatch) を作らない。 例外は「型は維持しつつロジックだけ変える」 ような独立性のある変更。
+- **ESLint rule の事前確認**: 新規コード書く前に `grep -rn "no-restricted-syntax" .eslintrc*` 等で禁止 pattern を把握。 特に「ADR-0008 §TZ」 「日付」 「タイムゾーン」 関連は要注意。
+- **AskUserQuestion で「分割 vs 一括」 を user 確認**: scope が中規模以上 (3+ files、 型変更含む) の追加注文では分割方針を user 確認 → 安全に着手
