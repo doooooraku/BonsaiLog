@@ -221,4 +221,30 @@ useFocusEffect(
 
 ## Notes Amended (随時更新)
 
-(初版 2026-05-21、 Sess18 実装時に更新予定)
+(初版 2026-05-21)
+
+### 2026-05-21 Sess18 PR-1〜3 で D2-D4 実装完了
+
+Sess18 で本 ADR の D2-D4 実装完了 (Sess17 PR-A2 起票後、 同日中に実装):
+
+- **D1 (docs)**: ADR-0029 PR-B1 (#652) で design_system.md §17 新設完了済
+- **D2 (実装)**: Sess18 PR-1 (#668) で実装
+  - `src/features/event/WorkPickerScreen.tsx` の `handleSelect` で mode 分岐
+  - log mode: 直接 `router.push('/work-log-confirm?...')` (Case C 解消)
+  - schedule mode: `setWorkPickerResult + router.back()` 維持 (Case A、 DatePicker dialog)
+  - `app/(tabs)/bonsai/[id]/index.tsx` の useFocusEffect から log mode case 削除
+  - `handleWorkPickerSelect` 関数廃止 (caller 0)
+- **D3 (自動検出)**: Sess18 PR-2 (#669) で実装
+  - `scripts/check-navigation-patterns.mjs` (~130 行) grep-based、 warning 出力
+  - AP-1 (3 set chain) + AP-2 (router.replace 用途違反) 検出
+  - `package.json` scripts: `navigation:check`
+  - Sess18 では warning のみ (Sess17 PR-C2 と同方針)、 ESLint AST rule 化は将来
+- **D4 (R-rule 強化)**: Sess18 PR-3 (#670) で実装
+  - R-36 強化 (R-36.4 UX 評価必須 + R-36.5 実機検証義務)
+  - PR テンプレ §7.6.4 新設 (navigation 変更 PR の Case 分類 + ← + swipe gesture SS 添付)
+
+### Sess17 違和感 ④ 解消の証明
+
+- **Before (Sess17 まで)**: WorkLogConfirm ← back → bonsai-detail (2 画面飛び、 WorkPicker skip)
+- **After (Sess18 PR-1 以降)**: WorkLogConfirm ← back → WorkPicker (1 画面分) → ← back → bonsai-detail (1 画面分)
+- user 体感「← 1 回で 1 画面ずつ戻る」 達成、 Material Design Up navigation + iOS HIG Back navigation 整合
