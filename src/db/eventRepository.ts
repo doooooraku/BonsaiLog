@@ -587,6 +587,13 @@ export type BulkLogInput = {
   note: string | null;
   /** Sess16 PR-B2: user 入力の日付 (ISO UTC、 任意)。 未指定なら createEvent default = nowUtc。 */
   occurredAtUtc?: string;
+  /**
+   * Sess17 PR-H1 (ADR-0029 D5): 全盆栽に共通適用する 14 種別固有 payload (任意)。
+   * 未指定 (default {}) なら旧 Bulk 動線 (note のみ) 互換維持。
+   * Valibot strict ではないため追加 prop は warning なく通過 (ADR-0028)。
+   * events.payload は JSON、 schema 変更不要 (events.type CHECK 制約なし)。
+   */
+  payload?: Record<string, unknown>;
 };
 
 export type BulkLogResult = {
@@ -614,13 +621,16 @@ export type BulkLogResult = {
  * - Issue #343 (G9 サイクル PR 1)
  */
 export async function bulkLogEvents(input: BulkLogInput): Promise<BulkLogResult> {
+  // Sess17 PR-H1 (ADR-0029 D5): payload 未指定なら旧 Bulk 動線 (note のみ) 互換、
+  // 指定時は 14 種別固有 payload を全選択盆栽に同じ内容で適用。
+  const payload = input.payload ?? {};
   const results = await Promise.allSettled(
     input.bonsaiIds.map((bonsaiId) =>
       createEvent({
         bonsaiId,
         type: input.type,
         status: 'logged',
-        payload: {},
+        payload,
         note: input.note,
         // Sess16 PR-B2: user 入力日付を伝搬 (未指定なら createEvent default = nowUtc)
         ...(input.occurredAtUtc ? { occurredAtUtc: input.occurredAtUtc } : {}),
