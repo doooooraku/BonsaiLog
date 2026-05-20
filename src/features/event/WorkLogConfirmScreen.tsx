@@ -54,6 +54,8 @@ const WIRE_PARTS = ['all', 'miki', 'eda'] as const;
 const UNWIRE_PARTS = ['miki', 'eda', 'all'] as const;
 // Sess16 PR-D2: repotting 根の整理 (single segment、 mockup 134811.png 左)。
 const REPOT_ROOT_AMOUNTS = ['none', 'light', 'third', 'half'] as const;
+// Sess16 PR-D3: fertilizing 肥料の種類 (single segment、 mockup 134811.png 中央)。
+const FERT_KINDS = ['solid', 'liquid', 'slow_release', 'other'] as const;
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
@@ -83,6 +85,9 @@ export default function WorkLogConfirmScreen() {
   const [repotSoilMix, setRepotSoilMix] = React.useState('');
   const [repotRootAmount, setRepotRootAmount] =
     React.useState<(typeof REPOT_ROOT_AMOUNTS)[number]>('light');
+  // Sess16 PR-D3: fertilizing (肥料の種類 + 銘柄・配合)。
+  const [fertKind, setFertKind] = React.useState<(typeof FERT_KINDS)[number]>('solid');
+  const [fertProduct, setFertProduct] = React.useState('');
 
   const togglePart = <T extends string>(
     current: readonly T[],
@@ -117,6 +122,11 @@ export default function WorkLogConfirmScreen() {
       const soilTrimmed = repotSoilMix.trim();
       if (soilTrimmed.length > 0) payload.soil_mix = soilTrimmed;
       payload.root_pruning = repotRootAmount;
+    } else if (selectedType === 'fertilizing') {
+      // Sess16 PR-D3: FertilizingPayload (kind / amount = 銘柄・配合 として使用)。
+      payload.kind = fertKind;
+      const productTrimmed = fertProduct.trim();
+      if (productTrimmed.length > 0) payload.amount = productTrimmed;
     }
     usePickerStore.getState().setWorkLogConfirmResult({
       type: selectedType,
@@ -196,6 +206,33 @@ export default function WorkLogConfirmScreen() {
                 onChange={(v) => setPruneAmount(v as (typeof PRUNE_AMOUNTS)[number])}
               />
             </Field>
+          </>
+        )}
+
+        {selectedType === 'fertilizing' && (
+          <>
+            <Field label={t('workLogFertKind')}>
+              <Segmented
+                items={FERT_KINDS.map((v) => ({
+                  v,
+                  l: t(`workLogFertKind_${v}` as TranslationKey),
+                }))}
+                value={fertKind}
+                onChange={(v) => setFertKind(v as (typeof FERT_KINDS)[number])}
+              />
+            </Field>
+            <View style={styles.field}>
+              <LabeledTextInput
+                label={t('workLogFertProduct')}
+                optional
+                optionalText={t('workLogOptional')}
+                value={fertProduct}
+                onChangeText={setFertProduct}
+                placeholder={t('workLogFertProductPlaceholder')}
+                maxLength={100}
+                testID="e2e_work_log_fert_product"
+              />
+            </View>
           </>
         )}
 
