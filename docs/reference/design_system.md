@@ -212,9 +212,228 @@ reminder（medical context） / tracker（health context） / alert（medical）
 4. ✅ accessibilityLabel は label と同じが default、 異なる場合は明示指定
 5. ✅ testID は呼び出し側で必ず指定 (Maestro flow 整合)
 
+### 12-6. Form atom typography contract (ADR-0029 D1)
+
+Form 系で使用する typography は `src/core/theme/typography.ts` の constants 経由で統一。 atom 内 hardcoded `fontSize` / `fontWeight` 直書き禁止。
+
+| 用途        | constant          | fontSize | fontWeight | color                    | 備考                                       |
+| ----------- | ----------------- | -------- | ---------- | ------------------------ | ------------------------------------------ |
+| label       | `formLabel`       | 14       | '600'      | TEXT_PRIMARY             | atom の左上、 type="defaultSemiBold" 相当  |
+| 任意 badge  | `formOptional`    | 10       | normal     | TEXT_MUTED               | letterSpacing: 0.8                         |
+| 必須 badge  | `formRequired`    | 10       | normal     | BG_PRIMARY (背景 DANGER) | atom 内に `requiredBadge` で表示           |
+| placeholder | `formPlaceholder` | (継承)   | (継承)     | TEXT_SECONDARY           | RN default 信頼しない (Sess16 PR-P 教訓)   |
+| suffix      | `formSuffix`      | 14       | normal     | TEXT_MUTED               | input 右内側に灰色で表示                   |
+| counter     | `formCounter`     | 12       | normal     | TEXT_MUTED               | 上限到達時 OVERLIMIT 色 + fontWeight '600' |
+| input       | `formInput`       | 16       | normal     | TEXT_PRIMARY             | TextInput 本体                             |
+
+**自動検出**: `scripts/check-form-typography.mjs` (grep-based、 warning 出力) — `src/components/form/**` と `src/features/**/[Ww]ork*Screen.tsx` で hardcoded `fontSize:` / `fontWeight:` を検出。 Sess17 では warning のみ、 ESLint AST rule 化は Sess18 以降。
+
 ---
 
-## 13. アンチパターン（絶対にやらないこと）
+## 13. Placeholder text 規約 (ADR-0029 D2、 Material Design 3 整合)
+
+### 13-1. OK / NG パターン
+
+**OK** (形式の見本):
+
+- `例: 18` (数値の単位例)
+- `例: 赤玉土:桐生砂 = 7:3` (構造例)
+- `2026-05-20` (日付形式)
+- `年 / 月 / 日` (日付形式の placeholder)
+
+**NG** (label 再掲・命令形・汎用文言):
+
+- `自由メモ (例: 朝8時、たっぷり)` → label「メモ」 を再掲 → **修正後**: `例: 朝8時、たっぷり`
+- `選択してください` (命令形 + 抽象的) → **修正後**: 具体的な位置例 `南窓辺` 等
+- `キャプション (任意・100文字まで)` → label 再掲 → **修正後**: 具体的キャプション例
+- `○○を入力` / `○○を選んでください` (汎用命令形)
+
+### 13-2. 根拠
+
+Material Design 3「Text fields」 ガイドライン: 「Placeholder text should not repeat the label」 (label との情報重複は冗長、 ユーザー認知負荷を増やす)。 シニアペルソナ (高橋 62 歳) は老眼で文字密度が増えると読みにくい、 ライトユーザーは「形式の見本」 だけで何を入れればよいか理解可能。
+
+### 13-3. 自動検出
+
+`scripts/i18n-placeholder-audit.mjs` (新規) — i18n locales 全 19 言語を walk:
+
+- AP-1: 同 file 内に同名 label key が存在し、 placeholder text に label 単語が含まれる場合 → 警告
+- AP-2: placeholder text が `を入力` / `を選んで` / `してください` 等命令形を含む場合 → 警告
+
+CI 統合: `pnpm i18n:check` の延長で実行、 NG keys 0 を CI 緑条件に追加。
+
+### 13-4. 修正対象 (Sess17 Phase 3a で実施)
+
+| key                              | 修正前                             | 修正後 (案)           |
+| -------------------------------- | ---------------------------------- | --------------------- |
+| `workLogNotePlaceholder`         | `自由メモ (例: 朝8時、たっぷり)`   | `例: 朝8時、たっぷり` |
+| `workLogPositionToPlaceholder`   | `選択してください`                 | `例: 南窓辺`          |
+| `workLogPhotoCaptionPlaceholder` | `キャプション (任意・100文字まで)` | `例: 春の新芽展開`    |
+
+---
+
+## 14. 数値 + 単位 field の規約 (ADR-0029 D3)
+
+### 14-1. 統一 atom
+
+`src/components/form/LabeledNumberInputUnit.tsx` を使用。 内部で `LabeledNumberInput` + 単位 segmented control + util (`unitToCanonical` / `canonicalToUnit`) を組み合わせ。
+
+**props**:
+
+```ts
+type LabeledNumberInputUnitProps<U extends string> = {
+  label: string;
+  value: string; // user 入力単位の文字列
+  unit: U; // 現在表示中の単位
+  units: readonly U[]; // 切替可能な単位リスト (例: ['cm', 'mm', 'inch'])
+  onChangeValue: (v: string) => void;
+  onChangeUnit: (u: U) => void;
+  defaultUnit: U; // 初期 unit (settings 値を渡す)
+  settingsStorePath?: string; // 省略時は一時切替、 明示時は永続化
+  suffix?: string; // unit 以外の固定 suffix (例: '年' for 樹齢)
+  optional?: boolean;
+  required?: boolean;
+  testID?: string;
+};
+```
+
+### 14-2. 動作モード
+
+- **一時切替モード** (`settingsStorePath` 省略): segmented control で unit を切替えても `settingsStore` には保存しない (この form 内のみ)。 BonsaiBasicForm の鉢サイズ (Sess15 PR-BB) 採用。
+- **永続化モード** (`settingsStorePath` 明示): segmented control で切替えると `settingsStore[path]` に保存。 user 設定として恒久反映。
+
+### 14-3. canonical 単位の選択
+
+DB 保存は **canonical 単位** (cm 系なら cm、 mm 系なら mm) で統一。 `src/core/util/unitConvert.ts` (potUnitConvert.ts を generic 化) で domain 別の conversion を提供。
+
+### 14-4. 流用範囲
+
+- BonsaiBasicForm 鉢情報 (Sess18 で移行)
+- WorkLog repotting 鉢サイズ (Sess17 Phase 4 PR-F2 で移行)
+- WorkLog wiring 番手 (Sess17 Phase 4 PR-F2 で hybrid input と組み合わせ)
+- 将来の数値+単位 field
+
+---
+
+## 15. Hybrid input pattern (ADR-0029 D4)
+
+### 15-1. 用途
+
+pre-defined 選択肢 + その他 free input が必要な field。 シニアペルソナは pre-defined のみで完結、 業務プロは「その他」 で自由入力、 4 ペルソナすべて満足する pattern。
+
+### 15-2. 統一 atom
+
+`src/components/form/LabeledNumberSegmentOrFree.tsx`:
+
+**props**:
+
+```ts
+type LabeledNumberSegmentOrFreeProps = {
+  label: string;
+  segments: readonly { value: string; label: string }[];
+  value: string; // 「その他」 選択時は segments 外の string
+  onChangeValue: (v: string) => void;
+  freeLabel: string; // 「その他」 segment の label (例: 'その他')
+  freeUnit?: string; // free input の単位 suffix (例: 'mm')
+  freeMin?: number;
+  freeMax?: number;
+  optional?: boolean;
+  required?: boolean;
+  testID?: string;
+};
+```
+
+### 15-3. 動作
+
+- segments 内の値が選択中: segmented control の 1 つが highlighted
+- 「その他」 選択中: 末尾 segment が highlighted、 直下に `LabeledNumberInput` (`freeUnit` あれば `LabeledNumberInputUnit`) が出現
+
+### 15-4. 判断基準 (segment-only vs hybrid)
+
+- user の選択肢が **enum で固定** (例: 剪定タイプ 枝/葉/新芽/根): segment-only で OK
+- 数値で **連続値 / 異常値の可能性**: hybrid 必須 (例: 番手 1mm-3mm + プロが 3.5mm 要求)
+
+### 15-5. 流用範囲
+
+- WorkLog wiring 番手 (Sess17 Phase 4 PR-F2)
+- 将来の数値選択 field (例: 樹齢 segment + その他)
+
+---
+
+## 16. Single / Bulk 動線整合 (ADR-0029 D5)
+
+### 16-1. 原則
+
+同じ EventType の入力 UI は **Single (WorkLogConfirm) と Bulk (BulkLogConfirm) で 1:1 一致**。 差分は「対象盆栽数」 表示のみ (例: 「全 N 本に同じ内容で記録」)。
+
+### 16-2. 共通 component
+
+`src/features/event/WorkLogTypeFormFields.tsx` (Sess17 Phase 5 で新設) — 14 種別 form の入力 fields のみを担当する **controlled component**。 props で state を受け取り (state hoisting)、 ref / forwardRef は使用禁止。
+
+**props**:
+
+```ts
+type WorkLogTypeFormFieldsProps = {
+  type: EventType;
+  payload: WorkLogPayloadState; // 14 種別の union state
+  onChange: (next: WorkLogPayloadState) => void;
+};
+```
+
+### 16-3. caller (Single と Bulk) の責務
+
+- WorkLogConfirmScreen (Single): payload state を local hoisting、 「記録する」 で `setWorkLogConfirmResult({ type, note, payload, occurredAtDate, photos })` → caller (bonsai-detail) が `createEvent` 呼出し
+- BulkLogConfirmScreen (Bulk): payload state を local hoisting、 「記録する」 で `bulkLogEvents({ bonsaiIds, type, note, occurredAtUtc, payload })` → 全選択盆栽に同 payload 適用
+
+### 16-4. bulkLogEvents の signature 拡張
+
+`src/db/eventRepository.ts`:
+
+```ts
+type BulkLogInput = {
+  bonsaiIds: readonly string[];
+  type: EventType;
+  note: string | null;
+  occurredAtUtc?: string;
+  payload?: Record<string, unknown>; // ★Sess17 Phase 6 PR-H1 で追加
+};
+```
+
+schema 変更不要 (events.payload は JSON、 CHECK 制約なし)。 既存 caller は payload 省略で backward-compat。
+
+---
+
+## 17. Navigation patterns (ADR-0030 D1)
+
+### 17-1. 原則 P1 — Up navigation
+
+user 体感の戻る挙動は **1 画面 = 1 step** (Material Design Up navigation + iOS HIG Back navigation 整合)。 ← back button / 画面端 swipe gesture の両方が同じ挙動。
+
+### 17-2. 原則 P2 — store-callback 使用条件限定
+
+store-callback pattern (`router.back() + setX + caller の useFocusEffect で consume`) は以下のいずれかの場合のみ許容:
+
+- **Case A (許容)**: picker → 結果が即時 dialog (DatePicker / Alert.alert 等) を呼び出す場合 (例: WorkPicker schedule mode → showDatePicker dialog)
+- **Case B (許容)**: picker → 結果で caller の state のみ更新、 次の画面遷移を伴わない場合 (例: species-picker → caller の speciesId state 更新)
+- **Case C (禁止)**: 上記以外で「次の画面に進む」 用途 → store-callback 禁止、 直接 `router.push` 必須
+
+### 17-3. 原則 P3 — router.replace 使用条件
+
+`router.replace` は「modal 系 stack を tab に switch する時のみ」 (Sess12 PR-G で確立、 `router.replace('/(tabs)/plan')` 等)。 同 stack 内の screen 置換用途では使用しない (back stack が壊れる)。
+
+### 17-4. 自動検出
+
+`scripts/check-navigation-patterns.mjs` (Sess18 で新設):
+
+- AP-1: 同一 file 内に `router.back()` + `setX(...)` + `useFocusEffect` の 3 セット (= store-callback pattern + 次画面遷移の疑い) → Case A/B/C のいずれかを ADR-0030 §17 で判断する警告
+- AP-2: `router.replace` 使用箇所 → 原則 P3 整合性確認の警告
+
+### 17-5. WorkPicker → WorkLogConfirm 直接 push (Sess18 実装)
+
+現状の store-callback chain (WorkPicker → router.back + setWorkPickerResult → bonsai-detail useFocusEffect で router.push) を、 log mode のみ WorkPicker から直接 `router.push('/work-log-confirm')` に変更。 schedule mode は Case A (DatePicker dialog) で store-callback 維持。
+
+---
+
+## 18. アンチパターン（絶対にやらないこと）
 
 1. ❌ 紫グラデーション背景
 2. ❌ White background + terracotta accent + italic（Claude デフォルト）
@@ -232,9 +451,9 @@ reminder（medical context） / tracker（health context） / alert（medical）
 
 ---
 
-## 14. DB Migration アンチパターン (Sess14 PR-P 教訓)
+## 19. DB Migration アンチパターン (Sess14 PR-P 教訓)
 
-### 14-1. `ALTER TABLE ADD COLUMN with REFERENCES` を transaction 内で禁止
+### 19-1. `ALTER TABLE ADD COLUMN with REFERENCES` を transaction 内で禁止
 
 **事例**: Sess13 schema v14 で実施した以下の migration が一部の DB で silent failure:
 
@@ -252,7 +471,7 @@ ALTER TABLE bonsai ADD COLUMN custom_species_id TEXT
 
 **原因**: SQLite では `ALTER TABLE ... REFERENCES ...` 内の外部キー制約検証が、 `db.withTransactionAsync()` + `PRAGMA foreign_keys = ON` 環境で意図せず失敗する (transaction 内 DDL の遅延 commit と FK 制約 check の競合)。
 
-### 14-2. 推奨パターン
+### 19-2. 推奨パターン
 
 ```sql
 -- ✅ 安全なパターン
@@ -264,7 +483,7 @@ ALTER TABLE bonsai ADD COLUMN custom_species_id TEXT;
 - FK 整合性はアプリ層 (`bonsaiRepository.ts` の create/update 時にバリデーション) で担保
 - ON DELETE SET NULL 相当は呼び出し側で明示的に処理
 
-### 14-3. 修復方法 (既に部分失敗した DB がある場合)
+### 19-3. 修復方法 (既に部分失敗した DB がある場合)
 
 ```typescript
 // SCHEMA_VERSION を 1 bump し、 idempotent re-run migration を追加
@@ -278,7 +497,7 @@ if (version < N + 1) {
 }
 ```
 
-### 14-4. 検出と未然防止
+### 19-4. 検出と未然防止
 
 - 毎セッション migration 完了後に **schema verification step** 追加検討:
   - `PRAGMA user_version == SCHEMA_VERSION` だけでなく、 期待する全テーブル / カラムの存在チェック
