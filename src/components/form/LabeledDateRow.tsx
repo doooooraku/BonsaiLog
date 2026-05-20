@@ -24,6 +24,7 @@ import {
   DANGER,
   ON_BRAND,
   TEXT_MUTED,
+  TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 
 export type LabeledDateRowProps = {
@@ -137,7 +138,8 @@ const styles = StyleSheet.create({
     backgroundColor: BG_SURFACE,
     justifyContent: 'center',
   },
-  placeholderText: { color: TEXT_MUTED },
+  // Sess16 PR-P: placeholder の色を TEXT_MUTED (薄グレー) → TEXT_SECONDARY (中濃) に変更、 視認性改善。
+  placeholderText: { color: TEXT_SECONDARY },
   // Sess15 PR-II: 案 a = 灰 circle 32x32 (hitSlop で 44pt 確保) + 白 X icon。
   clearButton: {
     width: 32,

@@ -28,6 +28,7 @@ import {
   DANGER,
   OVERLIMIT,
   TEXT_MUTED,
+  TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 
 // Sess14 PR-R: hardcoded color → 既存 theme constant 経由に統合。
@@ -131,6 +132,7 @@ export function LabeledTextInput({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
+        placeholderTextColor={TEXT_SECONDARY}
         maxLength={maxLength}
         keyboardType={keyboardType}
         multiline={multiline}
