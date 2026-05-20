@@ -25,6 +25,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 import { ThemedText } from '@/components/themed-text';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
+import { LabeledSegmented } from '@/src/components/form/LabeledSegmented';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
 import { nowUtc } from '@/src/core/datetime';
@@ -229,44 +230,45 @@ export default function WorkLogConfirmScreen() {
           />
         </View>
 
+        {/* Sess17 PR-F1: 内部 Field + Segmented → LabeledSegmented atom 移行 (ADR-0029 D3)。 */}
         {selectedType === 'watering' && (
-          <Field label={t('workLogWaterAmount')}>
-            <Segmented
-              items={WATER_AMOUNTS.map((v) => ({
-                v,
-                l: t(`workLogWaterAmount_${v}` as TranslationKey),
-              }))}
-              value={waterAmount}
-              onChange={(v) => setWaterAmount(v as (typeof WATER_AMOUNTS)[number])}
-            />
-          </Field>
+          <LabeledSegmented
+            label={t('workLogWaterAmount')}
+            items={WATER_AMOUNTS.map((v) => ({
+              v,
+              l: t(`workLogWaterAmount_${v}` as TranslationKey),
+            }))}
+            value={waterAmount}
+            onChange={(v) => setWaterAmount(v as (typeof WATER_AMOUNTS)[number])}
+            testID="e2e_work_log_water_amount"
+          />
         )}
 
         {selectedType === 'pruning' && (
           <>
-            <Field label={t('workLogPruneParts')}>
-              <Segmented
-                items={PRUNE_PARTS.map((v) => ({
-                  v,
-                  l: t(`workLogPrunePart_${v}` as TranslationKey),
-                }))}
-                value={pruneParts}
-                onChange={(v) =>
-                  togglePart(pruneParts, v as (typeof PRUNE_PARTS)[number], setPruneParts)
-                }
-                multi
-              />
-            </Field>
-            <Field label={t('workLogPruneAmount')}>
-              <Segmented
-                items={PRUNE_AMOUNTS.map((v) => ({
-                  v,
-                  l: t(`workLogPruneAmount_${v}` as TranslationKey),
-                }))}
-                value={pruneAmount}
-                onChange={(v) => setPruneAmount(v as (typeof PRUNE_AMOUNTS)[number])}
-              />
-            </Field>
+            <LabeledSegmented
+              label={t('workLogPruneParts')}
+              items={PRUNE_PARTS.map((v) => ({
+                v,
+                l: t(`workLogPrunePart_${v}` as TranslationKey),
+              }))}
+              value={pruneParts}
+              onChange={(v) =>
+                togglePart(pruneParts, v as (typeof PRUNE_PARTS)[number], setPruneParts)
+              }
+              multi
+              testID="e2e_work_log_prune_parts"
+            />
+            <LabeledSegmented
+              label={t('workLogPruneAmount')}
+              items={PRUNE_AMOUNTS.map((v) => ({
+                v,
+                l: t(`workLogPruneAmount_${v}` as TranslationKey),
+              }))}
+              value={pruneAmount}
+              onChange={(v) => setPruneAmount(v as (typeof PRUNE_AMOUNTS)[number])}
+              testID="e2e_work_log_prune_amount"
+            />
           </>
         )}
 
@@ -359,16 +361,16 @@ export default function WorkLogConfirmScreen() {
 
         {selectedType === 'pest_control' && (
           <>
-            <Field label={t('workLogPestPurpose')}>
-              <Segmented
-                items={PEST_PURPOSES.map((v) => ({
-                  v,
-                  l: t(`workLogPestPurpose_${v}` as TranslationKey),
-                }))}
-                value={pestPurpose}
-                onChange={(v) => setPestPurpose(v as (typeof PEST_PURPOSES)[number])}
-              />
-            </Field>
+            <LabeledSegmented
+              label={t('workLogPestPurpose')}
+              items={PEST_PURPOSES.map((v) => ({
+                v,
+                l: t(`workLogPestPurpose_${v}` as TranslationKey),
+              }))}
+              value={pestPurpose}
+              onChange={(v) => setPestPurpose(v as (typeof PEST_PURPOSES)[number])}
+              testID="e2e_work_log_pest_purpose"
+            />
             <View style={styles.field}>
               <LabeledTextInput
                 label={t('workLogPestAgent')}
@@ -398,16 +400,16 @@ export default function WorkLogConfirmScreen() {
 
         {selectedType === 'fertilizing' && (
           <>
-            <Field label={t('workLogFertKind')}>
-              <Segmented
-                items={FERT_KINDS.map((v) => ({
-                  v,
-                  l: t(`workLogFertKind_${v}` as TranslationKey),
-                }))}
-                value={fertKind}
-                onChange={(v) => setFertKind(v as (typeof FERT_KINDS)[number])}
-              />
-            </Field>
+            <LabeledSegmented
+              label={t('workLogFertKind')}
+              items={FERT_KINDS.map((v) => ({
+                v,
+                l: t(`workLogFertKind_${v}` as TranslationKey),
+              }))}
+              value={fertKind}
+              onChange={(v) => setFertKind(v as (typeof FERT_KINDS)[number])}
+              testID="e2e_work_log_fert_kind"
+            />
             <View style={styles.field}>
               <LabeledTextInput
                 label={t('workLogFertProduct')}
