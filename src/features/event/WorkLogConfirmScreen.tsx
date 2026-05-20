@@ -25,6 +25,8 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 import { ThemedText } from '@/components/themed-text';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
+import { LabeledNumberInputUnit } from '@/src/components/form/LabeledNumberInputUnit';
+import { LabeledNumberSegmentOrFree } from '@/src/components/form/LabeledNumberSegmentOrFree';
 import { LabeledSegmented } from '@/src/components/form/LabeledSegmented';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
@@ -40,7 +42,10 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import type { LengthUnit } from '@/src/core/util/unitConvert';
+import { lengthToCanonical } from '@/src/core/util/unitConvert';
 import type { EventType } from '@/src/db/schema';
+import { useSettingsStore } from '@/src/stores/settingsStore';
 import { usePickerStore, type WorkLogPayload } from '@/src/stores/pickerStore';
 
 export type { WorkLogPayload };
@@ -87,7 +92,10 @@ export default function WorkLogConfirmScreen() {
     'eda',
   ]);
   const [pruneAmount, setPruneAmount] = React.useState<(typeof PRUNE_AMOUNTS)[number]>('some');
-  const [wireGauge, setWireGauge] = React.useState<(typeof WIRE_GAUGES)[number]>('1mm');
+  // Sess17 PR-F2: WIRE_GAUGES 5 段階 + その他 hybrid (LabeledNumberSegmentOrFree)。
+  // value 形式: segment 内なら '1mm' / '1.5mm' / ... / '3mm'、 その他なら数値文字列 ('3.5' 等)。
+  // payload では wire_size_mm = parseFloat(value.replace('mm','')) で統一。
+  const [wireGauge, setWireGauge] = React.useState<string>('1mm');
   // Sess16 PR-A5: multi → single + 'all' default
   const [wireParts, setWireParts] = React.useState<(typeof WIRE_PARTS)[number]>('all');
   // Sess16 PR-A5: 期間 segment → 外し予定日 date (LabeledDateRow、 mockup「年/月/日」 整合)。
@@ -95,7 +103,11 @@ export default function WorkLogConfirmScreen() {
   // Sess16 PR-D1: unwiring 外した部位 (default 'all'、 single)。
   const [unwireParts, setUnwireParts] = React.useState<(typeof UNWIRE_PARTS)[number]>('all');
   // Sess16 PR-D2: repotting (鉢サイズ + 用土レシピ + 根の整理)。
+  // Sess17 PR-F2: 鉢サイズに単位切替 (cm/mm/inch) 追加 (ADR-0029 D3 LabeledNumberInputUnit)。
+  // user 入力単位の文字列、 unit と組み合わせて lengthToCanonical で cm 正規化して payload に保存。
+  const settingsPotUnit = useSettingsStore((s) => s.potUnit);
   const [repotPotSize, setRepotPotSize] = React.useState('');
+  const [repotPotSizeUnit, setRepotPotSizeUnit] = React.useState<LengthUnit>(settingsPotUnit);
   const [repotSoilMix, setRepotSoilMix] = React.useState('');
   const [repotRootAmount, setRepotRootAmount] =
     React.useState<(typeof REPOT_ROOT_AMOUNTS)[number]>('light');
@@ -137,18 +149,21 @@ export default function WorkLogConfirmScreen() {
       payload.parts = [...pruneParts];
       payload.amount = pruneAmount;
     } else if (selectedType === 'wiring') {
-      // Sess16 PR-A5: payload schema 整合 (WiringPayload: wire_size_mm / body_part / scheduled_unwire_at)。
-      const gaugeNum = parseFloat(wireGauge.replace('mm', ''));
-      if (!Number.isNaN(gaugeNum)) payload.wire_size_mm = gaugeNum;
+      // Sess16 PR-A5 + Sess17 PR-F2 (hybrid): payload schema 整合 (WiringPayload: wire_size_mm / body_part / scheduled_unwire_at)。
+      // wireGauge は '1mm' 等の segment 値 or 「その他」 時の数値文字列 ('3.5' 等)。
+      const numericPart = wireGauge.replace('mm', '').trim();
+      const gaugeNum = parseFloat(numericPart);
+      if (!Number.isNaN(gaugeNum) && gaugeNum > 0) payload.wire_size_mm = gaugeNum;
       payload.body_part = wireParts;
       if (wireUnwireDate) payload.scheduled_unwire_at = `${wireUnwireDate}T00:00:00.000Z`;
     } else if (selectedType === 'unwiring') {
       // Sess16 PR-D1: UnwiringPayload.body_part (mockup 外した部位 整合)。
       payload.body_part = unwireParts;
     } else if (selectedType === 'repotting') {
-      // Sess16 PR-D2: RepottingPayload (pot_id / soil_mix + 拡張 pot_size_cm / root_pruning)。
-      const sizeNum = parseFloat(repotPotSize);
-      if (!Number.isNaN(sizeNum)) payload.pot_size_cm = sizeNum;
+      // Sess16 PR-D2 + Sess17 PR-F2 (単位切替): RepottingPayload (pot_size_cm canonical / soil_mix / root_pruning)。
+      // repotPotSize は user 入力単位 (cm/mm/inch)、 cm に正規化して payload 保存。
+      const sizeCm = lengthToCanonical(repotPotSize, repotPotSizeUnit);
+      if (sizeCm != null) payload.pot_size_cm = sizeCm;
       const soilTrimmed = repotSoilMix.trim();
       if (soilTrimmed.length > 0) payload.soil_mix = soilTrimmed;
       payload.root_pruning = repotRootAmount;
@@ -425,20 +440,21 @@ export default function WorkLogConfirmScreen() {
           </>
         )}
 
+        {/* Sess17 PR-F2: repotting 鉢サイズに単位切替 (LabeledNumberInputUnit) + 根の整理 (LabeledSegmented)。 */}
         {selectedType === 'repotting' && (
           <>
-            <View style={styles.field}>
-              <LabeledNumberInput
-                label={t('workLogRepotPotSize')}
-                optional
-                optionalText={t('workLogOptional')}
-                value={repotPotSize}
-                onChangeText={setRepotPotSize}
-                placeholder={t('workLogRepotPotSizePlaceholder')}
-                suffix={t('workLogRepotPotSizeUnit')}
-                testID="e2e_work_log_repot_pot_size"
-              />
-            </View>
+            <LabeledNumberInputUnit
+              label={t('workLogRepotPotSize')}
+              value={repotPotSize}
+              unit={repotPotSizeUnit}
+              onChangeValue={setRepotPotSize}
+              onChangeUnit={setRepotPotSizeUnit}
+              placeholder={t('workLogRepotPotSizePlaceholder')}
+              optional
+              optionalText={t('workLogOptional')}
+              testID="e2e_work_log_repot_pot_size"
+              testIDUnit="e2e_work_log_repot_pot_unit"
+            />
             <View style={styles.field}>
               <LabeledTextInput
                 label={t('workLogRepotSoilMix')}
@@ -451,51 +467,55 @@ export default function WorkLogConfirmScreen() {
                 testID="e2e_work_log_repot_soil_mix"
               />
             </View>
-            <Field label={t('workLogRepotRootAmount')}>
-              <Segmented
-                items={REPOT_ROOT_AMOUNTS.map((v) => ({
-                  v,
-                  l: t(`workLogRepotRootAmount_${v}` as TranslationKey),
-                }))}
-                value={repotRootAmount}
-                onChange={(v) => setRepotRootAmount(v as (typeof REPOT_ROOT_AMOUNTS)[number])}
-              />
-            </Field>
+            <LabeledSegmented
+              label={t('workLogRepotRootAmount')}
+              items={REPOT_ROOT_AMOUNTS.map((v) => ({
+                v,
+                l: t(`workLogRepotRootAmount_${v}` as TranslationKey),
+              }))}
+              value={repotRootAmount}
+              onChange={(v) => setRepotRootAmount(v as (typeof REPOT_ROOT_AMOUNTS)[number])}
+              testID="e2e_work_log_repot_root_amount"
+            />
           </>
         )}
 
+        {/* Sess17 PR-F2: unwiring → LabeledSegmented (内部 Field/Segmented 廃止)。 */}
         {selectedType === 'unwiring' && (
-          <Field label={t('workLogUnwireParts')}>
-            <Segmented
-              items={UNWIRE_PARTS.map((v) => ({
-                v,
-                l: t(`workLogUnwirePart_${v}` as TranslationKey),
-              }))}
-              value={unwireParts}
-              onChange={(v) => setUnwireParts(v as (typeof UNWIRE_PARTS)[number])}
-            />
-          </Field>
+          <LabeledSegmented
+            label={t('workLogUnwireParts')}
+            items={UNWIRE_PARTS.map((v) => ({
+              v,
+              l: t(`workLogUnwirePart_${v}` as TranslationKey),
+            }))}
+            value={unwireParts}
+            onChange={(v) => setUnwireParts(v as (typeof UNWIRE_PARTS)[number])}
+            testID="e2e_work_log_unwire_parts"
+          />
         )}
 
+        {/* Sess17 PR-F2: wiring 番手を LabeledNumberSegmentOrFree (hybrid) で free input 対応。 */}
         {selectedType === 'wiring' && (
           <>
-            <Field label={t('workLogWireGauge')}>
-              <Segmented
-                items={WIRE_GAUGES.map((v) => ({ v, l: v }))}
-                value={wireGauge}
-                onChange={(v) => setWireGauge(v as (typeof WIRE_GAUGES)[number])}
-              />
-            </Field>
-            <Field label={t('workLogWireParts')}>
-              <Segmented
-                items={WIRE_PARTS.map((v) => ({
-                  v,
-                  l: t(`workLogWirePart_${v}` as TranslationKey),
-                }))}
-                value={wireParts}
-                onChange={(v) => setWireParts(v as (typeof WIRE_PARTS)[number])}
-              />
-            </Field>
+            <LabeledNumberSegmentOrFree
+              label={t('workLogWireGauge')}
+              segments={WIRE_GAUGES.map((v) => ({ value: v, label: v }))}
+              value={wireGauge}
+              onChangeValue={setWireGauge}
+              freeUnit="mm"
+              testID="e2e_work_log_wire_gauge"
+            />
+            <LabeledSegmented
+              label={t('workLogWireParts')}
+              items={WIRE_PARTS.map((v) => ({
+                v,
+                l: t(`workLogWirePart_${v}` as TranslationKey),
+              }))}
+              value={wireParts}
+              onChange={(v) => setWireParts(v as (typeof WIRE_PARTS)[number])}
+              testID="e2e_work_log_wire_parts"
+            />
+            {/* 期間 segment → 外し予定日 date (Sess16 PR-A5 維持)。 */}
             {/* Sess16 PR-A5: 期間 segment → 外し予定日 date (LabeledDateRow、 mockup 整合)。
                 maxToday=false で未来日 OK (外し予定なので)、 payload.scheduled_unwire_at に格納。 */}
             <View style={styles.field}>

@@ -28,15 +28,13 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { BG_PRIMARY, BORDER_DEFAULT, BRAND_GREEN, DANGER, ON_BRAND } from '@/src/core/theme/colors';
 import {
-  BG_PRIMARY,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  DANGER,
-  ON_BRAND,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
-import { formOptional, formRequired } from '@/src/core/theme/typography';
+  formOptional,
+  formRequired,
+  formSegmentText,
+  formSegmentTextOn,
+} from '@/src/core/theme/typography';
 
 // Sess17 PR-E1: typography.ts token 経由 (ADR-0029 D1)。
 
@@ -138,8 +136,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   segmentOn: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN },
-  // segment text は formInput より小さい 13pt が伝統 (mockup 整合)、 ただし
-  // typography.ts には segment 用 token がないので formInput と分離して定義。
-  segmentText: { fontSize: 13, color: TEXT_SECONDARY },
-  segmentTextOn: { color: ON_BRAND, fontWeight: '500' },
+  segmentText: formSegmentText,
+  segmentTextOn: { ...formSegmentTextOn, color: ON_BRAND },
 });

@@ -29,15 +29,13 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { BG_PRIMARY, BORDER_DEFAULT, BRAND_GREEN, DANGER, ON_BRAND } from '@/src/core/theme/colors';
 import {
-  BG_PRIMARY,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  DANGER,
-  ON_BRAND,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
-import { formOptional, formRequired } from '@/src/core/theme/typography';
+  formOptional,
+  formRequired,
+  formSegmentText,
+  formSegmentTextOn,
+} from '@/src/core/theme/typography';
 
 import { LabeledNumberInput } from './LabeledNumberInput';
 
@@ -178,7 +176,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   segmentOn: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN },
-  segmentText: { fontSize: 13, color: TEXT_SECONDARY },
-  segmentTextOn: { color: ON_BRAND, fontWeight: '500' },
+  segmentText: formSegmentText,
+  segmentTextOn: { ...formSegmentTextOn, color: ON_BRAND },
   freeInputWrap: { marginTop: 4 },
 });
