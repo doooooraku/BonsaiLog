@@ -732,6 +732,8 @@ const baseEn = {
   photoMoveUp: 'Move up',
   photoMoveDown: 'Move down',
   inputOverLimit: 'Character limit reached',
+  workLogDateField: 'Date',
+  workLogDatePlaceholderToday: 'Today',
 };
 
 export type TranslationKey = keyof typeof baseEn;

@@ -725,5 +725,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   photoMoveUp: 'Move up',
   photoMoveDown: 'Move down',
   inputOverLimit: 'Character limit reached',
+  workLogDateField: 'Date',
+  workLogDatePlaceholderToday: 'Today',
 };
 export default th;

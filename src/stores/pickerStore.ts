@@ -30,6 +30,8 @@ export type WorkLogPayload = {
   type: EventType;
   note: string;
   payload: Record<string, unknown>;
+  /** Sess16 PR-A2: user 入力の日付 (YYYY-MM-DD)。 未指定 = caller 側で nowUtc default。 */
+  occurredAtDate?: string;
 };
 type WorkLogConfirmResult = WorkLogPayload | 'CONSUMED';
 

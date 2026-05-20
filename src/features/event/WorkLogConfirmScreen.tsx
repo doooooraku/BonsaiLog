@@ -23,6 +23,7 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
@@ -53,6 +54,8 @@ export default function WorkLogConfirmScreen() {
   const selectedType = (params.type ?? null) as EventType | null;
 
   const [note, setNote] = React.useState('');
+  // Sess16 PR-A2: 日付選択 (空 = 今日 default、 maxToday=true で未来日防止)。
+  const [occurredAtDate, setOccurredAtDate] = React.useState('');
   const [waterAmount, setWaterAmount] = React.useState<(typeof WATER_AMOUNTS)[number]>('normal');
   const [pruneParts, setPruneParts] = React.useState<readonly (typeof PRUNE_PARTS)[number][]>([
     'eda',
@@ -84,9 +87,13 @@ export default function WorkLogConfirmScreen() {
       payload.parts = [...wireParts];
       payload.duration = wireDuration;
     }
-    usePickerStore
-      .getState()
-      .setWorkLogConfirmResult({ type: selectedType, note: note.trim(), payload });
+    usePickerStore.getState().setWorkLogConfirmResult({
+      type: selectedType,
+      note: note.trim(),
+      payload,
+      // Sess16 PR-A2: occurredAtDate を caller へ (未指定なら caller で nowUtc default)。
+      ...(occurredAtDate ? { occurredAtDate } : {}),
+    });
     router.back();
   };
 
@@ -101,6 +108,21 @@ export default function WorkLogConfirmScreen() {
             {t('workLogTitle').replace('{type}', titleLabel)}
           </ThemedText>
           <ThemedText style={styles.subject}>{bonsaiName}</ThemedText>
+        </View>
+
+        {/* Sess16 PR-A2: 日付選択 (mockup 14 種別共通 field、 全 form の先頭に配置)。 */}
+        <View style={styles.field}>
+          <LabeledDateRow
+            label={t('workLogDateField')}
+            optional
+            optionalText={t('workLogOptional')}
+            value={occurredAtDate}
+            onChangeText={setOccurredAtDate}
+            placeholder={t('workLogDatePlaceholderToday')}
+            maxToday
+            testID="e2e_work_log_date"
+            testIDClear="e2e_work_log_date_clear"
+          />
         </View>
 
         {selectedType === 'watering' && (

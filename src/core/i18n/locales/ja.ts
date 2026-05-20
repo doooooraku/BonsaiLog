@@ -735,6 +735,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   photoMoveUp: '上に移動',
   photoMoveDown: '下に移動',
   inputOverLimit: '上限に達しました',
+  workLogDateField: '日付',
+  workLogDatePlaceholderToday: '今日',
 };
 
 export default ja;
