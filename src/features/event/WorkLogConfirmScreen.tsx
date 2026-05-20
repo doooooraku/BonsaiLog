@@ -56,6 +56,8 @@ const UNWIRE_PARTS = ['miki', 'eda', 'all'] as const;
 const REPOT_ROOT_AMOUNTS = ['none', 'light', 'third', 'half'] as const;
 // Sess16 PR-D3: fertilizing 肥料の種類 (single segment、 mockup 134811.png 中央)。
 const FERT_KINDS = ['solid', 'liquid', 'slow_release', 'other'] as const;
+// Sess16 PR-D4: pest_control 目的 (single segment、 mockup 134811.png 右)。
+const PEST_PURPOSES = ['prevention', 'treatment', 'both'] as const;
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
@@ -88,6 +90,11 @@ export default function WorkLogConfirmScreen() {
   // Sess16 PR-D3: fertilizing (肥料の種類 + 銘柄・配合)。
   const [fertKind, setFertKind] = React.useState<(typeof FERT_KINDS)[number]>('solid');
   const [fertProduct, setFertProduct] = React.useState('');
+  // Sess16 PR-D4: pest_control (目的 + 薬剤名 + 希釈倍率)。
+  const [pestPurpose, setPestPurpose] =
+    React.useState<(typeof PEST_PURPOSES)[number]>('prevention');
+  const [pestAgent, setPestAgent] = React.useState('');
+  const [pestDilution, setPestDilution] = React.useState('');
 
   const togglePart = <T extends string>(
     current: readonly T[],
@@ -127,6 +134,13 @@ export default function WorkLogConfirmScreen() {
       payload.kind = fertKind;
       const productTrimmed = fertProduct.trim();
       if (productTrimmed.length > 0) payload.amount = productTrimmed;
+    } else if (selectedType === 'pest_control') {
+      // Sess16 PR-D4: PestControlPayload (agent = 薬剤名 / target = 目的) + 拡張 dilution_ratio。
+      payload.target = pestPurpose;
+      const agentTrimmed = pestAgent.trim();
+      if (agentTrimmed.length > 0) payload.agent = agentTrimmed;
+      const dilutionNum = parseFloat(pestDilution);
+      if (!Number.isNaN(dilutionNum)) payload.dilution_ratio = dilutionNum;
     }
     usePickerStore.getState().setWorkLogConfirmResult({
       type: selectedType,
@@ -206,6 +220,45 @@ export default function WorkLogConfirmScreen() {
                 onChange={(v) => setPruneAmount(v as (typeof PRUNE_AMOUNTS)[number])}
               />
             </Field>
+          </>
+        )}
+
+        {selectedType === 'pest_control' && (
+          <>
+            <Field label={t('workLogPestPurpose')}>
+              <Segmented
+                items={PEST_PURPOSES.map((v) => ({
+                  v,
+                  l: t(`workLogPestPurpose_${v}` as TranslationKey),
+                }))}
+                value={pestPurpose}
+                onChange={(v) => setPestPurpose(v as (typeof PEST_PURPOSES)[number])}
+              />
+            </Field>
+            <View style={styles.field}>
+              <LabeledTextInput
+                label={t('workLogPestAgent')}
+                optional
+                optionalText={t('workLogOptional')}
+                value={pestAgent}
+                onChangeText={setPestAgent}
+                placeholder={t('workLogPestAgentPlaceholder')}
+                maxLength={100}
+                testID="e2e_work_log_pest_agent"
+              />
+            </View>
+            <View style={styles.field}>
+              <LabeledNumberInput
+                label={t('workLogPestDilution')}
+                optional
+                optionalText={t('workLogOptional')}
+                value={pestDilution}
+                onChangeText={setPestDilution}
+                placeholder={t('workLogPestDilutionPlaceholder')}
+                suffix={t('workLogPestDilutionUnit')}
+                testID="e2e_work_log_pest_dilution"
+              />
+            </View>
           </>
         )}
 
