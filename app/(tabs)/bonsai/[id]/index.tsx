@@ -133,23 +133,18 @@ export default function BonsaiDetailScreen() {
   // Phase G2 part 1-2 (ADR-0024 Accepted): 作業記録 BottomSheet を `(modals)/work-picker` +
   // `(modals)/work-log-confirm` (formSheet) に置換、ref 経由の Sheet 制御は全廃 (router.push +
   // usePickerStore で代替)。
+  // Sess16 PR-C: FORM_TYPES を全 14 種別に拡張、 全種別 form 経由化 (即書込 path 廃止)。
+  // 旧即書込 path (logEvent + showEventOverloadPopup) は deadcode、 削除は別 PR で。
   const [pendingScheduleType, setPendingScheduleType] = useState<EventType | null>(null);
   const [showSchedulePicker, setShowSchedulePicker] = useState(false);
-  const FORM_TYPES: readonly EventType[] = ['watering', 'pruning', 'wiring'];
   const handleWorkPickerSelect = React.useCallback(
     (type: EventType) => {
-      // 詳細 form 対応 type (watering / pruning / wiring) は (modals)/work-log-confirm へ
-      // formSheet 遷移、それ以外は即時記録。
+      // Sess16 PR-C: 全 14 種別を (modals)/work-log-confirm へ遷移 (mockup 整合)。
       if (!item) return;
-      if (FORM_TYPES.includes(type)) {
-        router.push(
-          `/work-log-confirm?bonsaiName=${encodeURIComponent(item.name)}&type=${type}` as Href,
-        );
-      } else {
-        void logEvent(type);
-      }
+      router.push(
+        `/work-log-confirm?bonsaiName=${encodeURIComponent(item.name)}&type=${type}` as Href,
+      );
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [item],
   );
 
