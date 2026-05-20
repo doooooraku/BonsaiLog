@@ -903,12 +903,9 @@ export default function BonsaiDetailScreen() {
           style={styles.historyFab}
           onPress={() => {
             if (!item) return;
-            const isPineFlag =
-              (item.species?.commonName ?? '').toLowerCase().includes('pine') ||
-              (item.species?.scientificName ?? '').toLowerCase().includes('pinus') ||
-              (item.species?.commonName ?? '').includes('松');
+            // Sess16 PR-Q: isPine URL param 撤廃 (松類限定 candle_cut 表示廃止、 全種別常時表示)
             router.push(
-              `/work-picker?bonsaiName=${encodeURIComponent(item.name)}&isPine=${isPineFlag}&mode=schedule` as Href,
+              `/work-picker?bonsaiName=${encodeURIComponent(item.name)}&mode=schedule` as Href,
             );
           }}
           testID="e2e_timeline_fab"
@@ -980,13 +977,8 @@ export default function BonsaiDetailScreen() {
 
   function showEventTypePicker() {
     if (!item) return;
-    const isPineFlag =
-      (item.species?.commonName ?? '').toLowerCase().includes('pine') ||
-      (item.species?.scientificName ?? '').toLowerCase().includes('pinus') ||
-      (item.species?.commonName ?? '').includes('松');
-    router.push(
-      `/work-picker?bonsaiName=${encodeURIComponent(item.name)}&isPine=${isPineFlag}&mode=log` as Href,
-    );
+    // Sess16 PR-Q: isPine URL param 撤廃 (松類限定 candle_cut 表示廃止、 全種別常時表示)
+    router.push(`/work-picker?bonsaiName=${encodeURIComponent(item.name)}&mode=log` as Href);
   }
 
   /**

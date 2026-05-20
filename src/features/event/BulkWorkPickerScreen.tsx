@@ -30,11 +30,9 @@ import { triggerSummaryReschedule } from '@/src/features/notification/triggerRes
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
-// Sess16 PR-J (T-5): EVENT_TYPES から動的生成 (旧 BULK_WORK_TYPES 手動 list 廃止)。
-// bulk path では bonsai が松か否か事前判定不能のため candle_cut を除外
-// (mockup mockup v1.0 02-Home.html の bulk picker 描画と整合)。
-const BULK_EXCLUDED: ReadonlySet<EventType> = new Set(['candle_cut']);
-const BULK_WORK_TYPES: readonly EventType[] = EVENT_TYPES.filter((t) => !BULK_EXCLUDED.has(t));
+// Sess16 PR-J (T-5) + PR-Q: EVENT_TYPES 全 14 種別を直接使用 (filter なし)。
+// user 真意「どんな盆栽でも全種別表示」 シンプル化 (Sess16 PR-Q、 2026-05-20)。
+const BULK_WORK_TYPES: readonly EventType[] = EVENT_TYPES;
 
 export default function BulkWorkPickerScreen() {
   const { t } = useTranslation();
