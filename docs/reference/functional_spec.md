@@ -458,26 +458,26 @@ stateDiagram-v2
 
 #### §7.3.2 作業種別 16 種
 
-| type              | 名称           | icon | 既定値                                        |
-| ----------------- | -------------- | ---- | --------------------------------------------- |
-| watering          | 水やり         | 💧   | duration=null, amount=null                    |
-| pruning           | 剪定           | ✂️   | duration=null                                 |
-| wiring            | 針金がけ       | 〰️   | payload={wire_size_mm: 2, body_part: 'trunk'} |
-| unwiring          | 針金外し       | ✂️〰️ | payload={linked_wiring_event_id: null}        |
-| repotting         | 植替え         | 🪴   | payload={soil_type: null, pot_changed: true}  |
-| fertilizing       | 施肥           | 🌱   | payload={fertilizer_type: 'solid'}            |
-| pest_control      | 消毒           | 🦋   | payload={chemical: null}                      |
-| disease_treatment | 病気治療       | 🩹   | 任意                                          |
-| leaf_trimming     | 葉刈り         | 🍃   | 任意                                          |
-| defoliation       | 全葉刈         | 🍂   | 任意                                          |
-| deshoot           | 芽かき         | 🌿   | 任意                                          |
-| candle_cut        | 芽切り（松類） | 🔥   | 樹種が松類時のみ表示                          |
-| moss_care         | 苔手入れ       | 🌾   | 任意                                          |
-| position_change   | 置き場変更     | 📍   | payload={new_location: null}                  |
-| observation       | 観察メモ       | 👁   | 写真推奨                                      |
-| other             | その他         | ❓   | 自由記述必須                                  |
+| type              | 名称       | icon | 既定値                                        |
+| ----------------- | ---------- | ---- | --------------------------------------------- |
+| watering          | 水やり     | 💧   | duration=null, amount=null                    |
+| pruning           | 剪定       | ✂️   | duration=null                                 |
+| wiring            | 針金がけ   | 〰️   | payload={wire_size_mm: 2, body_part: 'trunk'} |
+| unwiring          | 針金外し   | ✂️〰️ | payload={linked_wiring_event_id: null}        |
+| repotting         | 植替え     | 🪴   | payload={soil_type: null, pot_changed: true}  |
+| fertilizing       | 施肥       | 🌱   | payload={fertilizer_type: 'solid'}            |
+| pest_control      | 消毒       | 🦋   | payload={chemical: null}                      |
+| disease_treatment | 病気治療   | 🩹   | 任意                                          |
+| leaf_trimming     | 葉刈り     | 🍃   | 任意                                          |
+| defoliation       | 全葉刈     | 🍂   | 任意                                          |
+| deshoot           | 芽かき     | 🌿   | 任意                                          |
+| candle_cut        | 芽切り     | 🔥   | 任意 (Sess16 PR-Q で全盆栽表示)               |
+| moss_care         | 苔手入れ   | 🌾   | 任意                                          |
+| position_change   | 置き場変更 | 📍   | payload={new_location: null}                  |
+| observation       | 観察メモ   | 👁   | 写真推奨                                      |
+| other             | その他     | ❓   | 自由記述必須                                  |
 
-**Candle cut（芽切り）は松類（species.scientific_name が `Pinus` 属）のみ選択肢表示**。
+**Sess16 PR-Q (2026-05-20)**: 旧仕様「Candle cut は松類のみ表示」 は user 真意「シンプル化」 反映で撤廃。 全盆栽で全種別表示。 `isPine` URL param + WorkPickerScreen の `PINE_ONLY` filter も削除。
 
 > **Note (Sess16 update、 2026-05-20)**: 実装 EVENT_TYPES は **14 種別** (`watering` / `pruning` / `wiring` / `unwiring` / `repotting` / `fertilizing` / `pest_control` / `leaf_trimming` / `defoliation` / `deshoot` / `candle_cut` / `moss_care` / `position_change` / `leaf_first_aid`)。 上記 16 種テーブルの `disease_treatment` / `observation` / `other` は v1.0 で未実装、 v1.x 拡張候補。 `leaf_first_aid` (葉の手当、 Sess16 PR-E 追加) は ADR-0028 で定義。
 
@@ -623,12 +623,11 @@ const handleSave = async (input: CreateEventInput) => {
 
 ### §7.5 エラーフロー
 
-| エラー                      | 表示                       | 対応                     |
-| --------------------------- | -------------------------- | ------------------------ |
-| SQLite 書き込み失敗         | エラートースト             | 再試行ボタン、下書き保持 |
-| 未来日時                    | インラインエラー           | 現在時刻にリセット       |
-| Candle cut を松類以外で記録 | UI で選択肢非表示          | –                        |
-| 写真添付中にメモリ不足      | トースト「画像処理に失敗」 | 写真を減らす             |
+| エラー                 | 表示                       | 対応                     |
+| ---------------------- | -------------------------- | ------------------------ |
+| SQLite 書き込み失敗    | エラートースト             | 再試行ボタン、下書き保持 |
+| 未来日時               | インラインエラー           | 現在時刻にリセット       |
+| 写真添付中にメモリ不足 | トースト「画像処理に失敗」 | 写真を減らす             |
 
 ### §7.6 受け入れ条件
 
@@ -637,7 +636,7 @@ const handleSave = async (input: CreateEventInput) => {
 - [ ] 5 秒経過後に通知再スケジュール発火
 - [ ] 水やり記録時、盆栽詳細の「最後の水やりから X 日」が 0 日にリセット（optimistic update）
 - [ ] DB 書き込み失敗時、optimistic update は元に戻る
-- [ ] 松類以外で candle_cut が選択肢に出ない
+- [ ] **(Sess16 PR-Q で撤廃)** ~~松類以外で candle_cut が選択肢に出ない~~ → 全盆栽で全 14 種別表示
 
 ### §7.7 対応テスト
 
