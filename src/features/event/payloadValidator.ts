@@ -95,6 +95,12 @@ const PositionChangePayload = v.object({
   to: v.optional(v.string()),
 });
 
+// Sess16 PR-E: 葉の手当 (mockup 135145.png 整合、 症状 + 処置)。
+const LeafFirstAidPayload = v.object({
+  symptom: v.optional(v.string()),
+  treatment: v.optional(v.string()),
+});
+
 // ---------------------------------------------------------------------------
 // 種別 → schema マッピング
 // ---------------------------------------------------------------------------
@@ -113,6 +119,7 @@ const PAYLOAD_SCHEMAS: Record<EventType, v.GenericSchema> = {
   candle_cut: CandleCutPayload,
   moss_care: MossCarePayload,
   position_change: PositionChangePayload,
+  leaf_first_aid: LeafFirstAidPayload,
 };
 
 // ---------------------------------------------------------------------------

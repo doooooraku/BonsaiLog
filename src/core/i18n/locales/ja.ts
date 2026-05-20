@@ -786,6 +786,15 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogMossAction_moisten: '湿らす',
   workLogPositionTo: '移動先',
   workLogPositionToPlaceholder: '選択してください',
+  eventType_leaf_first_aid: '葉の手当',
+  workLogLeafAidSymptom: '症状',
+  workLogLeafAidSymptom_burn: '葉焼け',
+  workLogLeafAidSymptom_wither: '枝枯れ',
+  workLogLeafAidSymptom_pest: '虫',
+  workLogLeafAidSymptom_mold: 'カビ',
+  workLogLeafAidSymptom_other: 'その他',
+  workLogLeafAidTreatment: '処置',
+  workLogLeafAidTreatmentPlaceholder: '例: 患部除去・癒合剤塗布',
 };
 
 export default ja;

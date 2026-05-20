@@ -777,5 +777,14 @@ const nl: Partial<Record<TranslationKey, string>> = {
   workLogMossAction_moisten: 'Moisten',
   workLogPositionTo: 'New location',
   workLogPositionToPlaceholder: 'Please select',
+  eventType_leaf_first_aid: 'Leaf first aid',
+  workLogLeafAidSymptom: 'Symptom',
+  workLogLeafAidSymptom_burn: 'Leaf burn',
+  workLogLeafAidSymptom_wither: 'Branch wither',
+  workLogLeafAidSymptom_pest: 'Pest',
+  workLogLeafAidSymptom_mold: 'Mold',
+  workLogLeafAidSymptom_other: 'Other',
+  workLogLeafAidTreatment: 'Treatment',
+  workLogLeafAidTreatmentPlaceholder: 'e.g. Remove infected area, apply healing paste',
 };
 export default nl;

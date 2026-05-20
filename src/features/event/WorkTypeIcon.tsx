@@ -233,6 +233,25 @@ export function WorkTypeIcon({ type, size = 32, color = TEXT_PRIMARY, strokeWidt
         </Svg>
       );
 
+    case 'leaf_first_aid':
+      // Sess16 PR-E: 葉の手当 = 葉 + ばんそうこう (cross) outline、 mockup 135145.png 整合。
+      return (
+        <Svg width={size} height={size} viewBox={vb} fill="none">
+          <Path
+            d="M5 22 C5 14, 10 8, 20 6 C20 14, 14 20, 5 22 Z"
+            stroke={color}
+            strokeWidth={sw}
+            strokeLinejoin="round"
+          />
+          <Path
+            d="M11 14 L19 14 M15 10 L15 18"
+            stroke={color}
+            strokeWidth={sw + 0.3}
+            strokeLinecap="round"
+          />
+        </Svg>
+      );
+
     default:
       return null;
   }
