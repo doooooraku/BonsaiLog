@@ -737,6 +737,9 @@ const baseEn = {
   workLogPhotoField: 'Photos',
   workLogPhotoAdd: 'Add',
   workLogPhotoCaptionPlaceholder: 'Caption (optional, up to 100 chars)',
+  workLogWirePart_all: 'All',
+  workLogWireUnwireDate: 'Unwire date',
+  workLogWireUnwireDatePlaceholder: 'YYYY/MM/DD',
 };
 
 export type TranslationKey = keyof typeof baseEn;

@@ -740,6 +740,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogPhotoField: '写真',
   workLogPhotoAdd: '追加',
   workLogPhotoCaptionPlaceholder: 'キャプション (任意・100文字まで)',
+  workLogWirePart_all: 'すべて',
+  workLogWireUnwireDate: '外し予定日',
+  workLogWireUnwireDatePlaceholder: '年 / 月 / 日',
 };
 
 export default ja;
