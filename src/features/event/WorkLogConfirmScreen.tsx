@@ -20,7 +20,7 @@
  */
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
@@ -34,11 +34,9 @@ import { nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
-  BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
   ON_BRAND,
-  TEXT_MUTED,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
@@ -287,18 +285,19 @@ export default function WorkLogConfirmScreen() {
           </>
         )}
 
+        {/* Sess17 PR-F3: leaf_first_aid + moss_care 内部 Field → LabeledSegmented 移行。 */}
         {selectedType === 'leaf_first_aid' && (
           <>
-            <Field label={t('workLogLeafAidSymptom')}>
-              <Segmented
-                items={LEAF_AID_SYMPTOMS.map((v) => ({
-                  v,
-                  l: t(`workLogLeafAidSymptom_${v}` as TranslationKey),
-                }))}
-                value={leafAidSymptom}
-                onChange={(v) => setLeafAidSymptom(v as (typeof LEAF_AID_SYMPTOMS)[number])}
-              />
-            </Field>
+            <LabeledSegmented
+              label={t('workLogLeafAidSymptom')}
+              items={LEAF_AID_SYMPTOMS.map((v) => ({
+                v,
+                l: t(`workLogLeafAidSymptom_${v}` as TranslationKey),
+              }))}
+              value={leafAidSymptom}
+              onChange={(v) => setLeafAidSymptom(v as (typeof LEAF_AID_SYMPTOMS)[number])}
+              testID="e2e_work_log_leaf_aid_symptom"
+            />
             <View style={styles.field}>
               <LabeledTextInput
                 label={t('workLogLeafAidTreatment')}
@@ -315,16 +314,16 @@ export default function WorkLogConfirmScreen() {
         )}
 
         {selectedType === 'moss_care' && (
-          <Field label={t('workLogMossAction')}>
-            <Segmented
-              items={MOSS_ACTIONS.map((v) => ({
-                v,
-                l: t(`workLogMossAction_${v}` as TranslationKey),
-              }))}
-              value={mossAction}
-              onChange={(v) => setMossAction(v as (typeof MOSS_ACTIONS)[number])}
-            />
-          </Field>
+          <LabeledSegmented
+            label={t('workLogMossAction')}
+            items={MOSS_ACTIONS.map((v) => ({
+              v,
+              l: t(`workLogMossAction_${v}` as TranslationKey),
+            }))}
+            value={mossAction}
+            onChange={(v) => setMossAction(v as (typeof MOSS_ACTIONS)[number])}
+            testID="e2e_work_log_moss_action"
+          />
         )}
 
         {selectedType === 'position_change' && (
@@ -342,21 +341,22 @@ export default function WorkLogConfirmScreen() {
           </View>
         )}
 
+        {/* Sess17 PR-F3: leaf_trimming family 4 種別 → LabeledSegmented 移行。 */}
         {(selectedType === 'leaf_trimming' ||
           selectedType === 'defoliation' ||
           selectedType === 'deshoot' ||
           selectedType === 'candle_cut') && (
           <>
-            <Field label={t('workLogTrimRange')}>
-              <Segmented
-                items={TRIM_RANGES.map((v) => ({
-                  v,
-                  l: t(`workLogTrimRange_${v}` as TranslationKey),
-                }))}
-                value={trimRange}
-                onChange={(v) => setTrimRange(v as (typeof TRIM_RANGES)[number])}
-              />
-            </Field>
+            <LabeledSegmented
+              label={t('workLogTrimRange')}
+              items={TRIM_RANGES.map((v) => ({
+                v,
+                l: t(`workLogTrimRange_${v}` as TranslationKey),
+              }))}
+              value={trimRange}
+              onChange={(v) => setTrimRange(v as (typeof TRIM_RANGES)[number])}
+              testID="e2e_work_log_trim_range"
+            />
             {selectedType === 'candle_cut' && (
               <View style={styles.field}>
                 <LabeledNumberInput
@@ -534,17 +534,22 @@ export default function WorkLogConfirmScreen() {
           </>
         )}
 
-        <Field label={t('workLogNote')} optional>
-          <TextInput
+        {/* Sess17 PR-F3: 内部 Field + TextInput inline → LabeledTextInput atom 移行
+            (ADR-0029 D1、 全 form typography 統一達成)。 */}
+        <View style={styles.field}>
+          <LabeledTextInput
+            label={t('workLogNote')}
+            optional
+            optionalText={t('workLogOptional')}
             value={note}
             onChangeText={(v) => setNote(v.slice(0, 2000))}
             placeholder={t('workLogNotePlaceholder')}
-            placeholderTextColor={TEXT_MUTED}
+            maxLength={2000}
+            showCounter
             multiline
-            style={styles.textarea}
+            testID="e2e_work_log_note"
           />
-          <ThemedText style={styles.charCount}>{note.length} / 2000</ThemedText>
-        </Field>
+        </View>
 
         {/* Sess16 PR-A3: 写真添付 (mockup 14 種別共通、 最大 10 枚)。 */}
         <View style={styles.field}>
@@ -574,67 +579,10 @@ export default function WorkLogConfirmScreen() {
   );
 }
 
-function Field({
-  label,
-  hint,
-  optional,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  optional?: boolean;
-  children: React.ReactNode;
-}) {
-  const { t } = useTranslation();
-  return (
-    <View style={styles.field}>
-      <View style={styles.fieldHeader}>
-        <ThemedText style={styles.fieldLabel}>
-          {label}
-          {optional && (
-            <ThemedText style={styles.fieldOptional}> {t('workLogOptional')}</ThemedText>
-          )}
-        </ThemedText>
-        {hint && <ThemedText style={styles.fieldHint}>{hint}</ThemedText>}
-      </View>
-      {children}
-    </View>
-  );
-}
-
-type SegmentedItem = { v: string; l: string };
-
-function Segmented({
-  items,
-  value,
-  onChange,
-  multi = false,
-}: {
-  items: readonly SegmentedItem[];
-  value: string | readonly string[];
-  onChange: (v: string) => void;
-  multi?: boolean;
-}) {
-  return (
-    <View style={styles.segmented}>
-      {items.map((it) => {
-        const on = multi ? (value as readonly string[]).includes(it.v) : value === it.v;
-        return (
-          <Pressable
-            key={it.v}
-            accessibilityRole="button"
-            accessibilityState={{ selected: on }}
-            accessibilityLabel={it.l}
-            style={[styles.segment, on && styles.segmentOn]}
-            onPress={() => onChange(it.v)}
-          >
-            <ThemedText style={[styles.segmentText, on && styles.segmentTextOn]}>{it.l}</ThemedText>
-          </Pressable>
-        );
-      })}
-    </View>
-  );
-}
+// Sess17 PR-F3: 内部 Field / Segmented component を全廃 (ADR-0029 D1 完了)。
+// 14 種別すべて Labeled* atom (LabeledSegmented / LabeledNumberInputUnit /
+// LabeledNumberSegmentOrFree / LabeledTextInput / LabeledNumberInput / LabeledDateRow /
+// PhotoField) に統一、 typography drift ゼロ達成。
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG_PRIMARY },
@@ -648,42 +596,6 @@ const styles = StyleSheet.create({
   },
   subject: { fontSize: 13, color: TEXT_SECONDARY },
   field: { marginBottom: 18 },
-  fieldHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  fieldLabel: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY },
-  fieldOptional: { color: TEXT_MUTED, fontWeight: '400' },
-  fieldHint: { fontFamily: 'Inter_400Regular', fontSize: 11, color: TEXT_MUTED },
-  segmented: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  segment: {
-    paddingHorizontal: 14,
-    minHeight: 40,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: 'transparent',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  segmentOn: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN },
-  segmentText: { fontSize: 13, color: TEXT_SECONDARY },
-  segmentTextOn: { color: ON_BRAND, fontWeight: '500' },
-  textarea: {
-    minHeight: 96,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 12,
-    backgroundColor: BG_SURFACE,
-    padding: 14,
-    fontSize: 16,
-    color: TEXT_PRIMARY,
-    textAlignVertical: 'top',
-  },
-  charCount: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: TEXT_MUTED,
-    textAlign: 'right',
-    marginTop: 4,
-  },
   footer: {
     paddingHorizontal: 16,
     paddingTop: 12,
