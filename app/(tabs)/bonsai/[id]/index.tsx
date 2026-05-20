@@ -137,16 +137,10 @@ export default function BonsaiDetailScreen() {
   // 旧即書込 path (logEvent + showEventOverloadPopup) は deadcode、 削除は別 PR で。
   const [pendingScheduleType, setPendingScheduleType] = useState<EventType | null>(null);
   const [showSchedulePicker, setShowSchedulePicker] = useState(false);
-  const handleWorkPickerSelect = React.useCallback(
-    (type: EventType) => {
-      // Sess16 PR-C: 全 14 種別を (modals)/work-log-confirm へ遷移 (mockup 整合)。
-      if (!item) return;
-      router.push(
-        `/work-log-confirm?bonsaiName=${encodeURIComponent(item.name)}&type=${type}` as Href,
-      );
-    },
-    [item],
-  );
+  // Sess18 PR-1 (ADR-0030 D2): handleWorkPickerSelect 廃止。
+  // WorkPickerScreen で log mode は直接 router.push('/work-log-confirm') するため、
+  // caller (本画面) で consume + push する logic は不要 (Case C 解消)。
+  // schedule mode は handleSchedulePickerSelect (下) で Case A 維持。
 
   // Issue #298 Phase 2: 予定追加フロー (3 step を 2 step に簡略化、確認ステップ省略)
   // Step 1: WorkPickerSheet (再利用、titleOverrideKey='addScheduleTitle') で作業選択
@@ -158,18 +152,17 @@ export default function BonsaiDetailScreen() {
   }, []);
 
   // Phase G2 part 1 (ADR-0024): `/work-picker` から戻った時に workPickerResult を消費、
-  // mode に応じて log / schedule 分岐。
+  // mode に応じて分岐。
+  // Sess18 PR-1 (ADR-0030 D2): log mode は WorkPicker で直接 router.push されるため
+  // ここでは consume 不要 (Case C 解消)。 schedule mode のみ Case A (DatePicker dialog) を維持。
   // Phase G2 part 2 (ADR-0024 Accepted): `/work-log-confirm` から戻った時は workLogConfirmResult
-  // を消費して createEvent で DB に書込 (旧 onSubmit callback 経路の置換)。
+  // を消費して createEvent で DB に書込 (Case B、 caller state 更新のみ、 ADR-0030 §17-2 維持)。
   useFocusEffect(
     React.useCallback(() => {
       const workResult = usePickerStore.getState().consumeWorkPickerResult();
-      if (workResult) {
-        if (workResult.mode === 'log') {
-          handleWorkPickerSelect(workResult.type);
-        } else {
-          handleSchedulePickerSelect(workResult.type);
-        }
+      if (workResult && workResult.mode === 'schedule') {
+        // Sess18 PR-1: schedule mode のみ caller で DatePicker dialog を開く (Case A)。
+        handleSchedulePickerSelect(workResult.type);
       }
       const logResult = usePickerStore.getState().consumeWorkLogConfirmResult();
       if (logResult) {
@@ -197,7 +190,7 @@ export default function BonsaiDetailScreen() {
         }
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [handleWorkPickerSelect, handleSchedulePickerSelect]),
+    }, [handleSchedulePickerSelect]),
   );
 
   const handleScheduleDateSelect = React.useCallback(
@@ -916,7 +909,8 @@ export default function BonsaiDetailScreen() {
 
       {/* Phase G2 part 1 (ADR-0024): 旧 <WorkPickerSheet> 2 件 (記録モード + 予定モード) は
           `(modals)/work-picker` (formSheet) に置換、本コンポーネント直下から削除済。
-          handleWorkPickerSelect / handleSchedulePickerSelect は useFocusEffect 経由で呼び出し。 */}
+          Sess18 PR-1 (ADR-0030 D2): log mode は WorkPickerScreen で直接 router.push、
+          schedule mode のみ handleSchedulePickerSelect で Case A (DatePicker dialog) を呼び出す。 */}
 
       {/* Issue #298 Phase 2: 予定追加 日付 picker (action 選択後に表示) */}
       {showSchedulePicker && (
