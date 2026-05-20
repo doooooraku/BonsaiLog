@@ -25,26 +25,16 @@ import { nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
 import { bulkScheduleEvents } from '@/src/db/eventRepository';
-import type { EventType } from '@/src/db/schema';
+import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
-const BULK_WORK_TYPES: readonly EventType[] = [
-  'watering',
-  'pruning',
-  'wiring',
-  'unwiring',
-  'repotting',
-  'fertilizing',
-  'pest_control',
-  'leaf_trimming',
-  'defoliation',
-  'deshoot',
-  'moss_care',
-  'position_change',
-  'leaf_first_aid', // Sess16 PR-G: 葉の手当 (Phase γ で EVENT_TYPES に追加した 14 種別目)
-];
+// Sess16 PR-J (T-5): EVENT_TYPES から動的生成 (旧 BULK_WORK_TYPES 手動 list 廃止)。
+// bulk path では bonsai が松か否か事前判定不能のため candle_cut を除外
+// (mockup mockup v1.0 02-Home.html の bulk picker 描画と整合)。
+const BULK_EXCLUDED: ReadonlySet<EventType> = new Set(['candle_cut']);
+const BULK_WORK_TYPES: readonly EventType[] = EVENT_TYPES.filter((t) => !BULK_EXCLUDED.has(t));
 
 export default function BulkWorkPickerScreen() {
   const { t } = useTranslation();

@@ -24,26 +24,13 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
-import type { EventType } from '@/src/db/schema';
+import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore, type WorkPickerMode } from '@/src/stores/pickerStore';
 
-const ALL_WORK_TYPES: readonly EventType[] = [
-  'watering',
-  'pruning',
-  'wiring',
-  'unwiring',
-  'repotting',
-  'fertilizing',
-  'pest_control',
-  'leaf_trimming',
-  'defoliation',
-  'deshoot',
-  'candle_cut',
-  'moss_care',
-  'position_change',
-  'leaf_first_aid', // Sess16 PR-G: 葉の手当 (Phase γ で EVENT_TYPES に追加した 14 種別目)
-];
+// Sess16 PR-J (T-5): EVENT_TYPES から動的生成 (旧 ALL_WORK_TYPES 手動 list 廃止)。
+// PR-G で発覚した leaf_first_aid 追加時の表示漏れ bug を恒久解消、 将来 EventType 追加時に
+// schema.ts の EVENT_TYPES に追加するだけで自動的に work-picker grid に反映される。
 const PINE_ONLY: ReadonlySet<EventType> = new Set(['candle_cut']);
 
 export default function WorkPickerScreen() {
@@ -58,7 +45,7 @@ export default function WorkPickerScreen() {
   const mode: WorkPickerMode = params.mode === 'schedule' ? 'schedule' : 'log';
 
   const items = React.useMemo(
-    () => ALL_WORK_TYPES.filter((t) => !PINE_ONLY.has(t) || isPine),
+    () => EVENT_TYPES.filter((t) => !PINE_ONLY.has(t) || isPine),
     [isPine],
   );
   const handleSelect = (type: EventType) => {
