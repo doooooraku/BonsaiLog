@@ -6,7 +6,6 @@
  * 設定タブから本サブ画面に集約。設定タブ側は「通知設定 ›」 1 行のみに簡素化。
  *
  * Related:
- * - Issue #25 F-05 (気遣い型ポップアップ、ADR-0011)
  * - Issue #30 F-16 (当日まとめ + 水やり繰り返し通知、ADR-0014)
  *
  * 残作業 (A2b、別 Issue で track 予定):
@@ -38,8 +37,7 @@ export default function SettingsNotificationsScreen() {
   const notificationMasterEnabled = useSettingsStore((s) => s.notificationMasterEnabled);
   const masterOff = !notificationMasterEnabled;
 
-  const eventOverloadEnabled = useSettingsStore((s) => s.eventOverloadEnabled);
-  const setEventOverloadEnabled = useSettingsStore((s) => s.setEventOverloadEnabled);
+  // Sess19-3 (user 真意「F-05 不要」): eventOverloadEnabled toggle 削除済。
 
   // F-16 Phase B (Issue #30, ADR-0014): 通知設定 ON/OFF + 時刻表示
   const notifSummaryEnabled = useSettingsStore((s) => s.notificationDailySummaryEnabled);
@@ -104,23 +102,7 @@ export default function SettingsNotificationsScreen() {
             </ThemedText>
           </View>
         )}
-        <View
-          style={[styles.toggleRow, masterOff && styles.toggleRowDisabled]}
-          testID="e2e_event_overload_toggle_row"
-        >
-          <View style={styles.toggleLabelBox}>
-            <ThemedText type="defaultSemiBold">{t('settingsEventOverloadToggle')}</ThemedText>
-            <ThemedText style={styles.entryDesc}>{t('settingsEventOverloadToggleDesc')}</ThemedText>
-          </View>
-          <Switch
-            accessibilityRole="switch"
-            accessibilityLabel={t('settingsEventOverloadToggle')}
-            testID="e2e_event_overload_toggle"
-            value={eventOverloadEnabled}
-            onValueChange={setEventOverloadEnabled}
-            disabled={masterOff}
-          />
-        </View>
+        {/* Sess19-3 (user 真意「F-05 不要」): 気遣い型 toggle 削除済。 */}
 
         {/* F-16 Phase B (Issue #30, ADR-0014): 当日まとめ通知 + 水やり繰り返し通知トグル */}
         <View

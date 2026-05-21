@@ -2,10 +2,10 @@
  * アプリ全体の設定 store (Zustand + AsyncStorage 永続化)。
  *
  * Related:
- * - Issue #25 F-05 気遣い型ポップアップ ON/OFF (eventOverloadEnabled)
  * - Issue #30 F-16 ローカル通知 (notificationDailySummary* / notificationWateringRepeat*、ADR-0014)
- * - ADR-0011 (F-05 再定義: 「今後表示しない」を選んだら永続的に OFF)
  * - ADR-0014 §通知設定の既定値 (デフォルト 1 回 / 朝 07:00、当日まとめ 07:00、K1 = OFF 初期化)
+ *
+ * Sess19-3 (user 真意「F-05 不要」): eventOverloadEnabled 削除済。
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
@@ -32,14 +32,6 @@ type SettingsState = {
    */
   notificationMasterEnabled: boolean;
   setNotificationMasterEnabled: (enabled: boolean) => void;
-  /**
-   * F-05 気遣い型ポップアップを表示するかどうか (ADR-0011、Issue #25)。
-   * - デフォルト ON
-   * - Settings → 通知設定 でユーザーが OFF にできる
-   * - Alert の「今後表示しない」でも OFF になる
-   */
-  eventOverloadEnabled: boolean;
-  setEventOverloadEnabled: (enabled: boolean) => void;
   /**
    * F-16 当日まとめ通知の有効/無効 (ADR-0014 §30 / §K1、Issue #30)。
    * - デフォルト OFF (チュートリアル「あとで」/スキップ時の K1 既定)
@@ -82,8 +74,6 @@ export const useSettingsStore = create<SettingsState>()(
       // ADR-0014 §30 / §32: master = ON 既定、AsyncStorage 永続化 ('myapp-settings')
       notificationMasterEnabled: true,
       setNotificationMasterEnabled: (enabled) => set({ notificationMasterEnabled: enabled }),
-      eventOverloadEnabled: true,
-      setEventOverloadEnabled: (enabled) => set({ eventOverloadEnabled: enabled }),
       notificationDailySummaryEnabled: false,
       setNotificationDailySummaryEnabled: (enabled) =>
         set({ notificationDailySummaryEnabled: enabled }),
