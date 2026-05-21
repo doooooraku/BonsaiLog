@@ -223,6 +223,15 @@
 
 ---
 
+### R-43. business operation 単位の transaction helper 必須 (Sess23 ADR-0035 D7 由来)
+
+- **ルール**: 1 業務操作で複数 DB 書込 (例: 「予定→記録変換」 = softDelete + createEvent + FTS5 同期) を扱う場合、 必ず単一 `db.withTransactionAsync(async () => { ... })` で wrap。 sequential `runAsync` での「成功半分 + 失敗半分」 状態を構造禁止 (SQLite ACID 保証)。 単独 API (例: `softDeleteEvent` / `createEvent`) を組合せて呼出側で transaction 制御は **NG**、 必ず business operation 専用 helper を提供
+- **根拠**: Sess23 ADR-0035 D7 で「予定→記録変換」 = 2 操作の部分失敗時にデータ整合崩れ (元 planned が softDelete されたが新 logged の createEvent 失敗 → user データ消失)。 `src/db/photoRepository.ts` L291/311/335 で同 pattern 既存使用済、 eventRepository.bulkLogEvents (Promise.allSettled) は **個別 transaction** で「業務操作 = bulk 全体」 ではないことを明記
+- **自動化**: 当面 code review + ADR-0035 D7 整合 grep。 Phase ζ 検討: ESLint AST rule 化
+- **関連**: ADR-0035 D7 / `src/db/eventRepository.ts` convertPlannedToRecorded / `src/db/photoRepository.ts` (前例)
+
+---
+
 ## 関連
 
 - 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-41 索引 + 運用ルール)
