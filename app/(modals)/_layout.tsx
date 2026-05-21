@@ -31,25 +31,28 @@ export default function ModalsLayout() {
 
   return (
     <Stack screenOptions={{ presentation: 'modal' }}>
-      <Stack.Screen name="species-picker" options={{ title: '樹種を選ぶ' }} />
-      <Stack.Screen name="style-picker" options={{ title: '樹形を選ぶ' }} />
+      <Stack.Screen name="species-picker" options={{ title: t('stackSpeciesPickerTitle') }} />
+      <Stack.Screen name="style-picker" options={{ title: t('stackStylePickerTitle') }} />
       <Stack.Screen
         name="work-picker"
         options={({ route }) => ({
           title: workTitleFor((route.params as { mode?: string } | undefined)?.mode),
         })}
       />
-      <Stack.Screen name="work-log-confirm" options={{ title: '作業を記録' }} />
-      <Stack.Screen name="bonsai-multi-select" options={{ title: '盆栽を選ぶ' }} />
+      <Stack.Screen name="work-log-confirm" options={{ title: t('workPickerTitle') }} />
+      <Stack.Screen
+        name="bonsai-multi-select"
+        options={{ title: t('stackBonsaiMultiSelectTitle') }}
+      />
       <Stack.Screen
         name="bulk-work-picker"
         options={({ route }) => ({
           title: workTitleFor((route.params as { mode?: string } | undefined)?.mode),
         })}
       />
-      <Stack.Screen name="bulk-log-confirm" options={{ title: 'まとめて記録' }} />
-      <Stack.Screen name="watering-day-detail" options={{ title: 'この日の水やり' }} />
-      <Stack.Screen name="bonsai-new" options={{ title: '盆栽を登録' }} />
+      <Stack.Screen name="bulk-log-confirm" options={{ title: t('stackBulkLogConfirmTitle') }} />
+      <Stack.Screen name="watering-day-detail" options={{ title: t('stackWateringDayTitle') }} />
+      <Stack.Screen name="bonsai-new" options={{ title: t('stackBonsaiNewTitle') }} />
     </Stack>
   );
 }

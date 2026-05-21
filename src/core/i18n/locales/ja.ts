@@ -806,6 +806,16 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogDoneToast: '記録しました',
   planSectionUpcoming: 'これから',
   planSectionDone: '完了',
+  stackSpeciesPickerTitle: '樹種を選ぶ',
+  stackStylePickerTitle: '樹形を選ぶ',
+  stackBonsaiMultiSelectTitle: '盆栽を選ぶ',
+  stackBulkLogConfirmTitle: 'まとめて記録',
+  stackWateringDayTitle: 'この日の水やり',
+  stackBonsaiNewTitle: '盆栽を登録',
+  stackBonsaiCreateModalTitle: '新規登録',
+  stackBonsaiDetailTitle: '盆栽の詳細',
+  stackBonsaiWateringHistoryTitle: '水やり履歴',
+  stackWireListTitle: '針金がけ一覧',
 };
 
 export default ja;

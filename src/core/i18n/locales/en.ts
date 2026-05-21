@@ -805,6 +805,16 @@ const baseEn = {
   workLogDoneToast: 'Recorded',
   planSectionUpcoming: 'Upcoming',
   planSectionDone: 'Done',
+  stackSpeciesPickerTitle: 'Choose species',
+  stackStylePickerTitle: 'Choose style',
+  stackBonsaiMultiSelectTitle: 'Choose bonsai',
+  stackBulkLogConfirmTitle: 'Log together',
+  stackWateringDayTitle: 'Watering this day',
+  stackBonsaiNewTitle: 'Register bonsai',
+  stackBonsaiCreateModalTitle: 'New',
+  stackBonsaiDetailTitle: 'Bonsai detail',
+  stackBonsaiWateringHistoryTitle: 'Watering history',
+  stackWireListTitle: 'Wire list',
 };
 
 export type TranslationKey = keyof typeof baseEn;

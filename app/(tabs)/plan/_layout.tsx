@@ -8,14 +8,17 @@
 import { Stack } from 'expo-router';
 import React from 'react';
 
+import { useTranslation } from '@/src/core/i18n/i18n';
+
 export default function PlanStackLayout() {
+  const { t } = useTranslation();
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
         name="wiring"
         options={{
-          title: '針金がけ一覧',
+          title: t('stackWireListTitle'),
           headerShown: true,
           headerTitleAlign: 'center',
           headerTitleStyle: { fontFamily: 'NotoSerifJP_500Medium', fontSize: 20 },

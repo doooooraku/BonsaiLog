@@ -1,3 +1,13 @@
 #!/bin/bash
 # Run lint-staged on staged files
 npx lint-staged
+
+# Sess20 PR-H1 (ADR-0033 D2 + R-41): user 視覚部分の直書きハードコード検知
+# 0 件保証、 violation あれば commit block
+node scripts/check-hardcode-strings.mjs || {
+  echo ""
+  echo "✗ commit blocked: 直書きハードコード違反 (ADR-0033 D2 / R-41)"
+  echo "  対処: 各 hardcode を i18n key 化 (t('key') 経由)、 ja.ts に SoT 追加"
+  echo "  詳細: docs/adr/ADR-0033-i18n-translation-policy.md (D2)"
+  exit 1
+}
