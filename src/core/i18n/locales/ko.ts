@@ -805,5 +805,14 @@ const ko: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: '분재 상세',
   stackBonsaiWateringHistoryTitle: '물주기 기록',
   stackWireListTitle: '철사 감기 목록',
+  planLegendTitle: '범례',
+  planLegendToggleShow: '범례 표시',
+  planLegendToggleHide: '범례 숨기기',
+  planLegendDotLoggedLabel: '완료 (●)',
+  planLegendDotPlannedLabel: '예정 (○)',
+  planLegendDotMultipleLabel: '여러 작업 (+)',
+  planListingBonsaiCount: '×{count}개 화분',
+  lookBackCardCalendarTitle: '캘린더',
+  lookBackCardCalendarDesc: '월별로 지난 작업 보기',
 };
 export default ko;

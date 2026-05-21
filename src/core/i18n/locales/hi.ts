@@ -807,5 +807,14 @@ const hi: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: 'बोनसाई विवरण',
   stackBonsaiWateringHistoryTitle: 'पानी देने का इतिहास',
   stackWireListTitle: 'तार लपेटने की सूची',
+  planLegendTitle: 'किंवदंती',
+  planLegendToggleShow: 'किंवदंती दिखाएं',
+  planLegendToggleHide: 'किंवदंती छुपाएं',
+  planLegendDotLoggedLabel: 'पूर्ण (●)',
+  planLegendDotPlannedLabel: 'निर्धारित (○)',
+  planLegendDotMultipleLabel: 'अनेक कार्य (+)',
+  planListingBonsaiCount: '×{count} गमले',
+  lookBackCardCalendarTitle: 'कैलेंडर',
+  lookBackCardCalendarDesc: 'माह के अनुसार पिछले कार्य देखें',
 };
 export default hi;

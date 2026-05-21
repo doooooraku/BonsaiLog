@@ -808,5 +808,14 @@ const sv: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: 'Bonsai-detaljer',
   stackBonsaiWateringHistoryTitle: 'Vattningshistorik',
   stackWireListTitle: 'Trådlista',
+  planLegendTitle: 'Förklaring',
+  planLegendToggleShow: 'Visa förklaring',
+  planLegendToggleHide: 'Dölj förklaring',
+  planLegendDotLoggedLabel: 'Klart (●)',
+  planLegendDotPlannedLabel: 'Planerat (○)',
+  planLegendDotMultipleLabel: 'Flera uppgifter (+)',
+  planListingBonsaiCount: '×{count} krukor',
+  lookBackCardCalendarTitle: 'Kalender',
+  lookBackCardCalendarDesc: 'Granska tidigare uppgifter per månad',
 };
 export default sv;

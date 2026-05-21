@@ -808,5 +808,14 @@ const pl: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: 'Szczegóły bonsai',
   stackBonsaiWateringHistoryTitle: 'Historia podlewania',
   stackWireListTitle: 'Lista drutowania',
+  planLegendTitle: 'Legenda',
+  planLegendToggleShow: 'Pokaż legendę',
+  planLegendToggleHide: 'Ukryj legendę',
+  planLegendDotLoggedLabel: 'Wykonano (●)',
+  planLegendDotPlannedLabel: 'Zaplanowane (○)',
+  planLegendDotMultipleLabel: 'Wiele zadań (+)',
+  planListingBonsaiCount: '×{count} doniczek',
+  lookBackCardCalendarTitle: 'Kalendarz',
+  lookBackCardCalendarDesc: 'Przeglądaj zadania według miesiąca',
 };
 export default pl;

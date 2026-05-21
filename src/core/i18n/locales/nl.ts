@@ -808,5 +808,14 @@ const nl: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: 'Bonsai-details',
   stackBonsaiWateringHistoryTitle: 'Watergeefgeschiedenis',
   stackWireListTitle: 'Bedradinglijst',
+  planLegendTitle: 'Legenda',
+  planLegendToggleShow: 'Legenda tonen',
+  planLegendToggleHide: 'Legenda verbergen',
+  planLegendDotLoggedLabel: 'Voltooid (●)',
+  planLegendDotPlannedLabel: 'Gepland (○)',
+  planLegendDotMultipleLabel: 'Meerdere taken (+)',
+  planListingBonsaiCount: '×{count} potten',
+  lookBackCardCalendarTitle: 'Kalender',
+  lookBackCardCalendarDesc: 'Bekijk taken per maand terug',
 };
 export default nl;

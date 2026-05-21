@@ -796,5 +796,14 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: '盆栽详情',
   stackBonsaiWateringHistoryTitle: '浇水记录',
   stackWireListTitle: '蟠扎清单',
+  planLegendTitle: '图例',
+  planLegendToggleShow: '显示图例',
+  planLegendToggleHide: '隐藏图例',
+  planLegendDotLoggedLabel: '已完成 (●)',
+  planLegendDotPlannedLabel: '计划 (○)',
+  planLegendDotMultipleLabel: '多个作业 (+)',
+  planListingBonsaiCount: '×{count} 盆',
+  lookBackCardCalendarTitle: '日历',
+  lookBackCardCalendarDesc: '按月查看过往作业',
 };
 export default zhHans;

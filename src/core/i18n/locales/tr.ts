@@ -807,5 +807,14 @@ const tr: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: 'Bonsai detayı',
   stackBonsaiWateringHistoryTitle: 'Sulama geçmişi',
   stackWireListTitle: 'Tel sarma listesi',
+  planLegendTitle: 'Lejant',
+  planLegendToggleShow: 'Lejantı göster',
+  planLegendToggleHide: 'Lejantı gizle',
+  planLegendDotLoggedLabel: 'Tamamlandı (●)',
+  planLegendDotPlannedLabel: 'Planlanmış (○)',
+  planLegendDotMultipleLabel: 'Birden fazla görev (+)',
+  planListingBonsaiCount: '×{count} saksı',
+  lookBackCardCalendarTitle: 'Takvim',
+  lookBackCardCalendarDesc: 'Aylara göre geçmiş görevleri inceleyin',
 };
 export default tr;

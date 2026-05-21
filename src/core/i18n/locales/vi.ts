@@ -806,5 +806,14 @@ const vi: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: 'Chi tiết bonsai',
   stackBonsaiWateringHistoryTitle: 'Lịch sử tưới nước',
   stackWireListTitle: 'Danh sách quấn dây',
+  planLegendTitle: 'Chú giải',
+  planLegendToggleShow: 'Hiện chú giải',
+  planLegendToggleHide: 'Ẩn chú giải',
+  planLegendDotLoggedLabel: 'Hoàn thành (●)',
+  planLegendDotPlannedLabel: 'Đã lên kế hoạch (○)',
+  planLegendDotMultipleLabel: 'Nhiều công việc (+)',
+  planListingBonsaiCount: '×{count} chậu',
+  lookBackCardCalendarTitle: 'Lịch',
+  lookBackCardCalendarDesc: 'Xem các công việc trước theo tháng',
 };
 export default vi;

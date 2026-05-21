@@ -805,5 +805,14 @@ const th: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: 'รายละเอียดบอนไซ',
   stackBonsaiWateringHistoryTitle: 'ประวัติการรดน้ำ',
   stackWireListTitle: 'รายการดัดลวด',
+  planLegendTitle: 'คำอธิบาย',
+  planLegendToggleShow: 'แสดงคำอธิบาย',
+  planLegendToggleHide: 'ซ่อนคำอธิบาย',
+  planLegendDotLoggedLabel: 'เสร็จ (●)',
+  planLegendDotPlannedLabel: 'กำหนดไว้ (○)',
+  planLegendDotMultipleLabel: 'หลายงาน (+)',
+  planListingBonsaiCount: '×{count} กระถาง',
+  lookBackCardCalendarTitle: 'ปฏิทิน',
+  lookBackCardCalendarDesc: 'ดูงานในอดีตตามเดือน',
 };
 export default th;

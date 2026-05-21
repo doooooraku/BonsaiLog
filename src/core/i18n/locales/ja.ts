@@ -816,6 +816,15 @@ const ja: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: '盆栽の詳細',
   stackBonsaiWateringHistoryTitle: '水やり履歴',
   stackWireListTitle: '針金がけ一覧',
+  planLegendTitle: '凡例',
+  planLegendToggleShow: '凡例を表示',
+  planLegendToggleHide: '凡例を隠す',
+  planLegendDotLoggedLabel: '完了 (●)',
+  planLegendDotPlannedLabel: '予定 (○)',
+  planLegendDotMultipleLabel: '複数作業 (+)',
+  planListingBonsaiCount: '×{count} 鉢',
+  lookBackCardCalendarTitle: 'カレンダー',
+  lookBackCardCalendarDesc: '月ごとに過去の作業を振り返る',
 };
 
 export default ja;
