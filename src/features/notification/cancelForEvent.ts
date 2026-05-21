@@ -71,3 +71,22 @@ export async function cancelForDateKey(_dateKey: string, t: TFunc): Promise<void
   void _dateKey; // 当面未使用、 signature 整備のみ
   await triggerSummaryReschedule(t);
 }
+
+/**
+ * 複数 event 削除時の通知 cancel bulk wrapper (Sess25 ADR-0036 D5/D8 / R-44 / R-43 整合)。
+ *
+ * 用途: `bulkSoftDeleteEvents` 直後の SUMMARY 再計算 (削除済 events は自動的に集計外 = 結果整合)。
+ *
+ * 内部実装: 全 SUMMARY を 1 回 reschedule (冪等のため N 件分 sequential 不要、 1 回呼出で全 dateKey
+ * の SUMMARY が削除済 events を除外して再集計される)。
+ *
+ * wiring cascade (ADR-0036 D8): wiring planned 削除 → wiring payload 内 scheduled_unwire_at の
+ * unwiring scheduled 通知も SUMMARY 再計算で自動 cancel (unwiring event は独立 record 不在のため、
+ * 個別 cancel API 不要)。
+ *
+ * @param _eventIds 削除した event ID 配列 (将来 dateKey 単位最適化 hook 用、 当面は未使用)
+ */
+export async function cancelForEvents(_eventIds: readonly string[], t: TFunc): Promise<void> {
+  void _eventIds; // 当面未使用、 全 SUMMARY reschedule で結果整合
+  await triggerSummaryReschedule(t);
+}
