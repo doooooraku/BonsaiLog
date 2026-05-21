@@ -238,7 +238,7 @@
   1. **`<ConfirmDialog>`** (`src/components/ConfirmDialog.tsx`) で 確認 → OS 標準 `Alert.alert` 不採用 (アプリ世界観統一)。 title は question form (Apple HIG)、 desc は **optional** (即削除前提では省略推奨、 ADR-0036 D4)
   2. **`<UndoSnackbar>`** (Toast 拡張、 `src/components/Toast.tsx` action button slot 利用、 helper `showUndoToast(message, undoFn)`) で 4s 表示 + [元に戻す] action + 復元 helper (`restoreEvents` 等) 配線。 ライブ user の「気づかぬうち削除」 を即時補完 (Material 3 Snackbar / Gmail Undo Send 標準)
 - **根拠**: Sess23 ADR-0035 D3「個別 row 削除のみ」 scope 限定 → Sess25 実機検証で group 100 鉢誤削除リスク (R6) v1.0 release blocker 確証。 30 日復元 spec があっても画面に出ないと user 認識不可、 Nielsen Norman Group "Recovery from Error" 整合
-- **自動化**: 当面 code review + ADR-0036 D5 整合 grep。 Phase ζ-3 検討: `scripts/eslint-rules/destructive-undo.mjs` で `softDelete*` / `purge*` callsite が Snackbar wrap されているか AST grep
+- **自動化**: ✅ **Sess26 PR-η-3 完遂** — `scripts/check-destructive-undo.mjs` で `bulkSoftDeleteEvents` / `softDeleteEvent` / `purgeOldTrash` / `deleteEventHard` / `restoreEvents` callsite が **同 file 内 `showUndoToast` 併用** されているか grep 検証 (ESLint custom rule より既存 lint script pattern 採用、 保守容易性 ◎)。 `pnpm lint:destructive-undo` で実行、 違反時 exit 1。 除外: `src/dev/` (seed) / `src/db/` (実装) / `src/services/` / `src/features/notification/` (wrapper) / test ファイル
 - **関連**: ADR-0036 D1/D4/D5 (本ルール由来) / `src/components/ConfirmDialog.tsx` / `src/components/Toast.tsx` (拡張) / Material 3 Snackbar + Gmail Undo Send
 
 ---
