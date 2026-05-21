@@ -297,3 +297,23 @@ Sess19 ADR-0031 で「保存後の遷移先をカレンダーに統一」、 Ses
 3. **R-42 自動化** (`scripts/a11y-contrast-check.mjs` を拡張、 AST grep で「色のみ識別」 pattern 検出)
 4. **Legend rehydrate flicker 検証** (persist rehydrate 前 default false → 折りたたみ切替 flicker、 実機で目視確認 + 必要なら `useSettingsBootstrap` で対応)
 5. **plan-tab-dot-icon.yml の DEV seed 固定 date pattern** (本 Sess22 で skip、 flaky 抑制実装後に追加)
+
+### 2026-05-21 Sess23 ADR-0035 起票で D1 凡例 + D3 dot 順序 + D6 完全 revert で改訂
+
+ADR-0035 (Phase ε) で本 ADR の 3 D を改訂:
+
+- **D1 凡例 label 改訂**: 「完了 (●)」 → 「**記録 (●)**」 (タブ名「予定」 (ADR-0035 D1) + section header「予定/記録」 (ADR-0035 D4) と語彙統一)
+  - i18n key `planLegendDotLoggedLabel` 物理削除 → `planLegendDotRecordedLabel` 新規追加
+  - `src/features/plan/CalendarLegend.tsx` items array で planned (○) を **先頭** に並べ替え (D3 dot 順序 flip 整合)
+  - testID `e2e_plan_legend_item_logged` / `e2e_plan_legend_item_planned` は維持 (Maestro 互換性、 内容 flip でも testID 名固定)
+- **D3 dot 順序 flip**: 旧「logged (●) 左、 planned (○) 右」 → 新「**planned (○) 左、 logged (●) 右**」 (時間軸「予定 → 記録」 を左→右で表現、 自然順序)
+  - render 順 flip: `renderedPlanned` 先 → `renderedLogged` 後 (旧: logged 先 → planned 後)
+  - cell accessibilityLabel: 「予定 N 件, 記録 N 件」 (順序整合)
+  - 「+」 閾値 `totalUniqueCount > 3` (ADR-0034 D2) 維持
+- **D6 完全 revert**: ふりかえりタブ hub 5 card 目「カレンダー」 (本 ADR D6 で新設、 Sess22 PR-4-1 #714) を **物理削除** (4 card に戻す)
+  - `app/(tabs)/look-back/index.tsx` cards 配列 calendar entry 削除、 `CardDef.key` union から `'calendar'` 削除
+  - `src/features/look-back/computePast30DaysKey.ts` + test 物理削除 (`git rm`)
+  - i18n keys `lookBackCardCalendarTitle` + `lookBackCardCalendarDesc` 物理削除 (19 言語 × 2 = 38 文字列)
+  - 理由: user 真意「別にタブバー記録から確認すればいいのだから」、 ADR-0035 D6 (記録タブ tap → カレンダー画面遷移) で hub 経由は二重動線
+- 本 ADR D2 (作業別 unique 粒度) / D4 (PlanScreen で EventRow 流用) / D5 (EventRow 共通化) / D7 (件数補完「×N 鉢」) / D8 (functional_spec §23 SoT) は **引き続き有効**
+- 関連: ADR-0035 D1/D3/D5/D6/D9 / PR-2-1 (D3 dot 順序 + D1 凡例) / PR-5-1 (D6 完全 revert)
