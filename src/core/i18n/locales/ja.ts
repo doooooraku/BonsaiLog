@@ -804,6 +804,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tabCalendar: 'カレンダー',
   calendarScreenTitle: 'カレンダー',
   workLogDoneToast: '記録しました',
+  planSectionUpcoming: 'これから',
+  planSectionDone: '完了',
 };
 
 export default ja;

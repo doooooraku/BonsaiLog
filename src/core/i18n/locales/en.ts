@@ -803,6 +803,8 @@ const baseEn = {
   tabCalendar: 'Calendar',
   calendarScreenTitle: 'Calendar',
   workLogDoneToast: 'Recorded',
+  planSectionUpcoming: 'Upcoming',
+  planSectionDone: 'Done',
 };
 
 export type TranslationKey = keyof typeof baseEn;
