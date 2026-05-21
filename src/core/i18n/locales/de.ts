@@ -821,5 +821,16 @@ const de: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'Diesen Eintrag löschen?',
   planEventDeleteConfirmDesc: 'Gelöschte Einträge werden nach 30 Tagen endgültig entfernt.',
   planEventConvertedToast: '{count} geplante Aufgabe(n) in Aufzeichnung umgewandelt',
+  planEventDeleteConfirmPlannedSingleTitle: 'Diesen Plan löschen?',
+  planEventDeleteConfirmLoggedSingleTitle: 'Diesen Eintrag löschen?',
+  planEventDeleteConfirmPlannedGroupTitle: '{count} Pläne zusammen löschen?',
+  planEventDeleteConfirmLoggedGroupTitle: '{count} Einträge zusammen löschen?',
+  planEventDeleteConfirmWiringCascadeNote:
+    '(Verknüpfte Drahtentfernungs-Termine werden ebenfalls gelöscht)',
+  rowActionMenuDelete: 'Löschen',
+  rowActionMenuRecordAll: 'Alle {count} aufzeichnen',
+  undoSnackbarPlannedDeleteN: '{count} Plan/Pläne gelöscht',
+  undoSnackbarLoggedDeleteN: '{count} Eintrag/Einträge gelöscht',
+  undoSnackbarAction: 'Rückgängig',
 };
 export default de;

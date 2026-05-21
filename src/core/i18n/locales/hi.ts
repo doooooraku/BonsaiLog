@@ -819,5 +819,15 @@ const hi: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'यह प्रविष्टि हटाएं?',
   planEventDeleteConfirmDesc: 'हटाई गई प्रविष्टियाँ 30 दिनों के बाद स्थायी रूप से हटा दी जाती हैं।',
   planEventConvertedToast: '{count} नियोजित कार्य रिकॉर्ड में बदले गए',
+  planEventDeleteConfirmPlannedSingleTitle: 'इस योजना को हटाएँ?',
+  planEventDeleteConfirmLoggedSingleTitle: 'इस रिकॉर्ड को हटाएँ?',
+  planEventDeleteConfirmPlannedGroupTitle: 'क्या {count} योजनाओं को एक साथ हटाएँ?',
+  planEventDeleteConfirmLoggedGroupTitle: 'क्या {count} रिकॉर्ड को एक साथ हटाएँ?',
+  planEventDeleteConfirmWiringCascadeNote: '(संबंधित तार-निकालने की योजनाएँ भी हटा दी जाएँगी)',
+  rowActionMenuDelete: 'हटाएँ',
+  rowActionMenuRecordAll: 'सभी {count} रिकॉर्ड करें',
+  undoSnackbarPlannedDeleteN: '{count} योजना(एँ) हटाई गई',
+  undoSnackbarLoggedDeleteN: '{count} रिकॉर्ड हटाए गए',
+  undoSnackbarAction: 'पूर्ववत् करें',
 };
 export default hi;

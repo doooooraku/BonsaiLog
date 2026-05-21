@@ -828,6 +828,16 @@ const ja: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'この予定を削除しますか?',
   planEventDeleteConfirmDesc: '削除した予定は 30 日後に自動的に消えます。',
   planEventConvertedToast: '予定 {count} 件を記録に変更しました',
+  planEventDeleteConfirmPlannedSingleTitle: 'この予定を削除しますか?',
+  planEventDeleteConfirmLoggedSingleTitle: 'この記録を削除しますか?',
+  planEventDeleteConfirmPlannedGroupTitle: 'この予定 {count} 件をまとめて削除しますか?',
+  planEventDeleteConfirmLoggedGroupTitle: 'この記録 {count} 件をまとめて削除しますか?',
+  planEventDeleteConfirmWiringCascadeNote: '(関連する取り外し予定も削除されます)',
+  rowActionMenuDelete: '削除',
+  rowActionMenuRecordAll: '全 {count} 件を記録',
+  undoSnackbarPlannedDeleteN: '予定 {count} 件を削除しました',
+  undoSnackbarLoggedDeleteN: '記録 {count} 件を削除しました',
+  undoSnackbarAction: '元に戻す',
 };
 
 export default ja;

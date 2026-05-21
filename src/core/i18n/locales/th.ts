@@ -817,5 +817,15 @@ const th: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'ลบรายการนี้?',
   planEventDeleteConfirmDesc: 'รายการที่ลบจะถูกลบถาวรหลังจาก 30 วัน',
   planEventConvertedToast: 'เปลี่ยน {count} งานที่กำหนดไว้เป็นบันทึกแล้ว',
+  planEventDeleteConfirmPlannedSingleTitle: 'ลบแผนนี้?',
+  planEventDeleteConfirmLoggedSingleTitle: 'ลบบันทึกนี้?',
+  planEventDeleteConfirmPlannedGroupTitle: 'ลบแผน {count} รายการพร้อมกัน?',
+  planEventDeleteConfirmLoggedGroupTitle: 'ลบบันทึก {count} รายการพร้อมกัน?',
+  planEventDeleteConfirmWiringCascadeNote: '(กำหนดการถอดลวดที่เกี่ยวข้องจะถูกลบด้วย)',
+  rowActionMenuDelete: 'ลบ',
+  rowActionMenuRecordAll: 'บันทึกทั้งหมด {count} รายการ',
+  undoSnackbarPlannedDeleteN: 'ลบแผน {count} รายการแล้ว',
+  undoSnackbarLoggedDeleteN: 'ลบบันทึก {count} รายการแล้ว',
+  undoSnackbarAction: 'เลิกทำ',
 };
 export default th;

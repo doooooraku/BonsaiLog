@@ -822,5 +822,16 @@ const it: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'Eliminare questa voce?',
   planEventDeleteConfirmDesc: 'Le voci eliminate vengono rimosse definitivamente dopo 30 giorni.',
   planEventConvertedToast: '{count} attività programmata(e) convertita(e) in registro',
+  planEventDeleteConfirmPlannedSingleTitle: 'Eliminare questo piano?',
+  planEventDeleteConfirmLoggedSingleTitle: 'Eliminare questa registrazione?',
+  planEventDeleteConfirmPlannedGroupTitle: 'Eliminare {count} piani insieme?',
+  planEventDeleteConfirmLoggedGroupTitle: 'Eliminare {count} registrazioni insieme?',
+  planEventDeleteConfirmWiringCascadeNote:
+    '(Saranno eliminati anche i programmi di rimozione filo correlati)',
+  rowActionMenuDelete: 'Elimina',
+  rowActionMenuRecordAll: 'Registra tutti i {count}',
+  undoSnackbarPlannedDeleteN: '{count} piano/i eliminato/i',
+  undoSnackbarLoggedDeleteN: '{count} registrazione/i eliminata/e',
+  undoSnackbarAction: 'Annulla',
 };
 export default it;

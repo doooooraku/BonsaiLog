@@ -821,5 +821,15 @@ const ru: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'Удалить эту запись?',
   planEventDeleteConfirmDesc: 'Удаленные записи стираются навсегда через 30 дней.',
   planEventConvertedToast: 'Запланированных задач преобразовано в записи: {count}',
+  planEventDeleteConfirmPlannedSingleTitle: 'Удалить этот план?',
+  planEventDeleteConfirmLoggedSingleTitle: 'Удалить эту запись?',
+  planEventDeleteConfirmPlannedGroupTitle: 'Удалить вместе {count} планов?',
+  planEventDeleteConfirmLoggedGroupTitle: 'Удалить вместе {count} записей?',
+  planEventDeleteConfirmWiringCascadeNote: '(Связанные планы снятия проволоки также будут удалены)',
+  rowActionMenuDelete: 'Удалить',
+  rowActionMenuRecordAll: 'Записать все {count}',
+  undoSnackbarPlannedDeleteN: 'Удалено планов: {count}',
+  undoSnackbarLoggedDeleteN: 'Удалено записей: {count}',
+  undoSnackbarAction: 'Отменить',
 };
 export default ru;

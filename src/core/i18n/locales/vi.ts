@@ -818,5 +818,15 @@ const vi: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'Xóa mục này?',
   planEventDeleteConfirmDesc: 'Các mục đã xóa sẽ bị xóa vĩnh viễn sau 30 ngày.',
   planEventConvertedToast: 'Đã chuyển {count} công việc đã lên kế hoạch sang ghi',
+  planEventDeleteConfirmPlannedSingleTitle: 'Xóa kế hoạch này?',
+  planEventDeleteConfirmLoggedSingleTitle: 'Xóa bản ghi này?',
+  planEventDeleteConfirmPlannedGroupTitle: 'Xóa {count} kế hoạch cùng lúc?',
+  planEventDeleteConfirmLoggedGroupTitle: 'Xóa {count} bản ghi cùng lúc?',
+  planEventDeleteConfirmWiringCascadeNote: '(Lịch tháo dây liên quan cũng sẽ bị xóa)',
+  rowActionMenuDelete: 'Xóa',
+  rowActionMenuRecordAll: 'Ghi tất cả {count}',
+  undoSnackbarPlannedDeleteN: 'Đã xóa {count} kế hoạch',
+  undoSnackbarLoggedDeleteN: 'Đã xóa {count} bản ghi',
+  undoSnackbarAction: 'Hoàn tác',
 };
 export default vi;

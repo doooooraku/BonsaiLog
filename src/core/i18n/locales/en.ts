@@ -828,6 +828,16 @@ const baseEn = {
   planEventDeleteConfirmTitle: 'Delete this entry?',
   planEventDeleteConfirmDesc: 'Deleted entries are removed permanently after 30 days.',
   planEventConvertedToast: 'Changed {count} planned task(s) to records',
+  planEventDeleteConfirmPlannedSingleTitle: 'Delete this plan?',
+  planEventDeleteConfirmLoggedSingleTitle: 'Delete this record?',
+  planEventDeleteConfirmPlannedGroupTitle: 'Delete {count} plans together?',
+  planEventDeleteConfirmLoggedGroupTitle: 'Delete {count} records together?',
+  planEventDeleteConfirmWiringCascadeNote: '(Related unwiring schedules will also be deleted)',
+  rowActionMenuDelete: 'Delete',
+  rowActionMenuRecordAll: 'Record all {count}',
+  undoSnackbarPlannedDeleteN: 'Deleted {count} plan(s)',
+  undoSnackbarLoggedDeleteN: 'Deleted {count} record(s)',
+  undoSnackbarAction: 'Undo',
 };
 
 export type TranslationKey = keyof typeof baseEn;

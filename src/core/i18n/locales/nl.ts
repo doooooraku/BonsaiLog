@@ -820,5 +820,16 @@ const nl: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'Deze invoer verwijderen?',
   planEventDeleteConfirmDesc: 'Verwijderde invoer wordt na 30 dagen definitief verwijderd.',
   planEventConvertedToast: '{count} geplande taak(taken) omgezet naar opname',
+  planEventDeleteConfirmPlannedSingleTitle: 'Dit plan verwijderen?',
+  planEventDeleteConfirmLoggedSingleTitle: 'Dit record verwijderen?',
+  planEventDeleteConfirmPlannedGroupTitle: '{count} plannen samen verwijderen?',
+  planEventDeleteConfirmLoggedGroupTitle: '{count} records samen verwijderen?',
+  planEventDeleteConfirmWiringCascadeNote:
+    '(Gerelateerde draadverwijdering-planningen worden ook verwijderd)',
+  rowActionMenuDelete: 'Verwijderen',
+  rowActionMenuRecordAll: 'Alle {count} vastleggen',
+  undoSnackbarPlannedDeleteN: '{count} plan(nen) verwijderd',
+  undoSnackbarLoggedDeleteN: '{count} record(s) verwijderd',
+  undoSnackbarAction: 'Ongedaan maken',
 };
 export default nl;
