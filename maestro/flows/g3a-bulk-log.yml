@@ -157,14 +157,16 @@ appId: 'com.doooooraku.bonsailog'
 - assertVisible:
     id: 'e2e_bulk_log_save_cta'
 
-# 一括記録 CTA tap → 盆栽タブに戻り
+# 一括記録 CTA tap → Sess19 PR-5 (ADR-0031 D1): router.replace('/(tabs)/plan?selectedDateKey=...')
+# でカレンダー画面に遷移、 記録した日付が選択状態 (旧: '/(tabs)/record' stub に戻っていた)
 - tapOn:
     id: 'e2e_bulk_log_save_cta'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
-# selectMode 解除後の盆栽タブ確認 (お師匠の真柏 が単独表示モードに戻る)
+# Sess19 PR-8 (R-39 整合): DB 反映 assertion = カレンダー画面 (PlanScreen) が visible
+# 直接 await pattern で「保存 → カレンダー遷移」 が成立 = Bulk 動線も Single と統一達成
 - extendedWaitUntil:
     visible:
-      text: 'お師匠の真柏'
+      id: 'e2e_plan_screen'
     timeout: 10000
