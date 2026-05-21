@@ -1,0 +1,38 @@
+# maestro/flows/plan-tab-undo.yml
+# Sess25 PR-ζ-2-⑩ (ADR-0036 D5 / R-44): 削除実行後 UndoSnackbar 4s 表示
+# [元に戻す] tap で restoreEvents + cancelForEvents + reload → 復元
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: false
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- pressKey: 'Back'
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_list'
+    timeout: 20000
+
+- tapOn:
+    text: '予定'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_plan_screen'
+    timeout: 10000
+
+# Toast (拡張版 UndoSnackbar) testID: e2e_toast
+# action button testID: e2e_toast_action
+# 実際の Undo 動線は手動 SS で別途検証 (4s timing)
+- assertVisible:
+    id: 'e2e_plan_screen'

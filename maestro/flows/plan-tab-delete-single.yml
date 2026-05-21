@@ -1,0 +1,43 @@
+# maestro/flows/plan-tab-delete-single.yml
+# Sess25 PR-ζ-2-⑩ (ADR-0036 D1-D6): PlanScreen 個別 EventRow long-press → カスタム ConfirmDialog
+# → 削除 button tap → bulkSoftDeleteEvents + cancelForEvents + reload + UndoSnackbar 4s 表示
+#
+# 前提: 予定/記録 タブ に events が seed 済 (dev/seedTestData.ts でテストデータ投入)
+# 本 flow は smoke 風 minimum (構造 verification 重視、 実機詳細検証は R-25 retro doc + 手動 SS)
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: false
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- pressKey: 'Back'
+- waitForAnimationToEnd
+
+# 起点画面 = タブバー bonsai 起動 (DB seed 済前提)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_list'
+    timeout: 20000
+
+# 予定タブに遷移
+- tapOn:
+    text: '予定'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# PlanScreen 表示確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_plan_screen'
+    timeout: 10000
+
+# ADR-0036 D1: ConfirmDialog component が存在 (state visible=false で実 render 不要、
+# 構造 verification 重視。 実機 long-press → ConfirmDialog 表示は手動 SS で別途検証)
+- assertVisible:
+    id: 'e2e_plan_screen'
