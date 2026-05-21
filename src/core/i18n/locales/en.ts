@@ -307,7 +307,7 @@ const baseEn = {
   settingsNotifSummaryToggleDesc:
     'Receive a single summary at {time} when you have planned events on that day.',
   settingsNotifSummaryEditTime: 'Notification time',
-  settingsNotifWateringToggle: 'Watering reminders',
+  settingsNotifWateringToggle: 'Watering notifications',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
