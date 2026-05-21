@@ -205,14 +205,19 @@ PR Template
 
 > **背景**: Sess17 違和感 ④ (戻る 2 画面飛び) は Case C (store-callback + 次画面遷移) の use case が不明確で発生。 ADR-0030 §17 で Case A/B/C 分類を明文化、 navigation 変更時の実機検証義務化。
 
-- [ ] navigation 変更内容を ADR-0030 §17 の Case A/B/C で分類して PR description に記載:
+- [ ] navigation 変更内容を ADR-0030 §17 + ADR-0031 Case 4 で分類して PR description に記載:
   - **Case A**: picker → 即時 dialog (DatePicker / Alert.alert 等)、 store-callback 許容
   - **Case B**: picker → caller state 更新のみ、 次画面遷移なし、 store-callback 許容
   - **Case C**: 次画面遷移を伴う store-callback → 禁止、 直接 `router.push` 必須
+  - **Case 4 (Sess19 ADR-0031 D1)**: form 保存後 → tab 遷移、 **直接 await + router.replace('/(tabs)/<tab>?...')** 必須
 - [ ] **← back button** + **画面端 swipe gesture (Android predictive back)** の両方で 1 画面 = 1 step 動作確認
 - [ ] 実機 SS を PR に添付 (戻る挙動を撮影) — Sess18 R-36.5 整合
-- [ ] `pnpm navigation:check` で AP-1/AP-2 を確認、 検出時は ADR-0030 §17 で再分類
+- [ ] `pnpm navigation:check` で AP-1/AP-2/AP-3 を確認、 検出時は ADR-0030 §17 + ADR-0031 R-39 で再分類
   - 理由: \_\_\_\_\_
+- [ ] **(Sess19 ADR-0031 D5 / R-39 整合)** form 保存後の navigation 変更時、 **DB 反映 manual 検証 SS** を添付:
+  - 「記録する」 tap 後 → 期待 tab/screen に遷移確認 SS
+  - 該当画面で **新規記録が表示されているか** 確認 SS (履歴 list / Plan tab ドット数 等)
+  - これは Sess19 で発覚した stale closure bug (8 試行 100% 再現) の再発防止
 
 ---
 

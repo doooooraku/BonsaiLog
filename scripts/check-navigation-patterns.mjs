@@ -68,6 +68,29 @@ function detectAP1(content) {
   return hasRouterBack && hasSetterCall && hasUseFocusEffect;
 }
 
+// AP-3 detection (Sess19 PR-7、 R-39 整合): useFocusEffect callback で stale closure 候補関数を呼出
+// pattern: useFocusEffect.*useCallback で deps 配列に持たない関数 (persist* / countSameDay*) を呼ぶ
+function detectAP3Lines(content) {
+  const lines = content.split('\n');
+  const hits = [];
+  // useFocusEffect( ... React.useCallback( ... persist|countSameDay ... , [deps]) ) を緩く検出
+  // 完全 AST 解析でなく、 useFocusEffect / useCallback / persist|countSameDay の 3 keyword が
+  // 近接 (50 行以内) で出現する場合に警告
+  const useFocusIdx = lines.findIndex((l) => /useFocusEffect\s*\(/.test(l));
+  if (useFocusIdx === -1) return hits;
+  const block = lines.slice(useFocusIdx, useFocusIdx + 50).join('\n');
+  if (!/useCallback\s*\(/.test(block)) return hits;
+  const persistMatch = block.match(
+    /(persistEventWithPayload|persistEvent|countSameDayPlannedOrLoggedEvents|showEventOverloadPopup)/,
+  );
+  if (!persistMatch) return hits;
+  hits.push({
+    line: useFocusIdx + 1,
+    snippet: `useFocusEffect + useCallback で ${persistMatch[1]} を呼出 (stale closure 疑い、 R-39 違反候補)`,
+  });
+  return hits;
+}
+
 // AP-2 detection: router.replace 使用箇所 (用途違反の疑い)
 function detectAP2Lines(content) {
   const lines = content.split('\n');
@@ -90,6 +113,7 @@ function main() {
   }
   const ap1Hits = [];
   const ap2Hits = [];
+  const ap3Hits = [];
   files.forEach((p) => {
     let content;
     try {
@@ -104,11 +128,15 @@ function main() {
     if (ap2Lines.length > 0) {
       ap2Hits.push({ file: p, lines: ap2Lines });
     }
+    const ap3Lines = detectAP3Lines(content);
+    if (ap3Lines.length > 0) {
+      ap3Hits.push({ file: p, lines: ap3Lines });
+    }
   });
 
   console.log('');
-  if (ap1Hits.length === 0 && ap2Hits.length === 0) {
-    console.log('✅ Navigation anti-pattern 検出ゼロ (ADR-0030 §17 整合)');
+  if (ap1Hits.length === 0 && ap2Hits.length === 0 && ap3Hits.length === 0) {
+    console.log('✅ Navigation anti-pattern 検出ゼロ (ADR-0030 §17 + ADR-0031 R-39 整合)');
     process.exit(0);
   }
 
@@ -142,11 +170,27 @@ function main() {
     console.log('');
   }
 
+  // Sess19 PR-7 (R-39): AP-3 (useFocusEffect callback で stale closure 候補関数呼出)
+  if (ap3Hits.length > 0) {
+    console.log(
+      '[AP-3] useFocusEffect callback で persist* / countSameDay* / showEventOverloadPopup を呼出 (stale closure 疑い):',
+    );
+    ap3Hits.forEach(({ file, lines }) => {
+      lines.forEach(({ line, snippet }) => {
+        console.log(`  ${file}:${line}: ${snippet}`);
+      });
+    });
+    console.log(
+      '  → R-39 (Sess19 ADR-0031 D5) 違反候補。 useCallback deps 配列に当該関数を含めるか、 useEvent / useRef pattern または直接 await + router.replace pattern に置換推奨。',
+    );
+    console.log('');
+  }
+
   console.log(
-    `合計: AP-1 ${ap1Hits.length} files、 AP-2 ${ap2Hits.length} files、 ${files.length} files scanned`,
+    `合計: AP-1 ${ap1Hits.length} files、 AP-2 ${ap2Hits.length} files、 AP-3 ${ap3Hits.length} files、 ${files.length} files scanned`,
   );
 
-  // Sess18 では warning のみ、 exit 0
+  // Sess18-19 では warning のみ、 exit 0 (block 化は将来検討)
   process.exit(0);
 }
 
