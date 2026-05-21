@@ -812,8 +812,6 @@ const ru: Partial<Record<TranslationKey, string>> = {
   planLegendDotPlannedLabel: 'Запланировано (○)',
   planLegendDotMultipleLabel: 'Несколько задач (+)',
   planListingBonsaiCount: '×{count} горшков',
-  lookBackCardCalendarTitle: 'Календарь',
-  lookBackCardCalendarDesc: 'Просматривайте задачи по месяцам',
   tabPlan: 'План',
   planSectionScheduled: 'Запланировано',
   planSectionRecorded: 'Записано',

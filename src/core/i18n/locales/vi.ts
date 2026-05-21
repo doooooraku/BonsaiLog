@@ -809,8 +809,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   planLegendDotPlannedLabel: 'Đã lên kế hoạch (○)',
   planLegendDotMultipleLabel: 'Nhiều công việc (+)',
   planListingBonsaiCount: '×{count} chậu',
-  lookBackCardCalendarTitle: 'Lịch',
-  lookBackCardCalendarDesc: 'Xem các công việc trước theo tháng',
   tabPlan: 'Kế hoạch',
   planSectionScheduled: 'Đã lên kế hoạch',
   planSectionRecorded: 'Đã ghi',

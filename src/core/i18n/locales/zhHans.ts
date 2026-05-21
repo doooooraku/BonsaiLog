@@ -799,8 +799,6 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   planLegendDotPlannedLabel: '计划 (○)',
   planLegendDotMultipleLabel: '多个作业 (+)',
   planListingBonsaiCount: '×{count} 盆',
-  lookBackCardCalendarTitle: '日历',
-  lookBackCardCalendarDesc: '按月查看过往作业',
   tabPlan: '计划',
   planSectionScheduled: '计划',
   planSectionRecorded: '记录',

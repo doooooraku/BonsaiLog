@@ -811,8 +811,6 @@ const pt: Partial<Record<TranslationKey, string>> = {
   planLegendDotPlannedLabel: 'Planejado (○)',
   planLegendDotMultipleLabel: 'Várias tarefas (+)',
   planListingBonsaiCount: '×{count} vasos',
-  lookBackCardCalendarTitle: 'Calendário',
-  lookBackCardCalendarDesc: 'Reveja tarefas passadas por mês',
   tabPlan: 'Plano',
   planSectionScheduled: 'Agendado',
   planSectionRecorded: 'Registrado',

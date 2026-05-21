@@ -808,8 +808,6 @@ const th: Partial<Record<TranslationKey, string>> = {
   planLegendDotPlannedLabel: 'กำหนดไว้ (○)',
   planLegendDotMultipleLabel: 'หลายงาน (+)',
   planListingBonsaiCount: '×{count} กระถาง',
-  lookBackCardCalendarTitle: 'ปฏิทิน',
-  lookBackCardCalendarDesc: 'ดูงานในอดีตตามเดือน',
   tabPlan: 'แผน',
   planSectionScheduled: 'กำหนดไว้',
   planSectionRecorded: 'บันทึกแล้ว',

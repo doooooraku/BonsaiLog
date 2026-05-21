@@ -810,8 +810,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   planLegendDotPlannedLabel: 'Direncanakan (○)',
   planLegendDotMultipleLabel: 'Beberapa tugas (+)',
   planListingBonsaiCount: '×{count} pot',
-  lookBackCardCalendarTitle: 'Kalender',
-  lookBackCardCalendarDesc: 'Tinjau tugas masa lalu per bulan',
   tabPlan: 'Rencana',
   planSectionScheduled: 'Terjadwal',
   planSectionRecorded: 'Tercatat',

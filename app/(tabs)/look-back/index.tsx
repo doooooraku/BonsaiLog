@@ -1,11 +1,10 @@
 /**
  * ふりかえりタブ index = CareHub Hub 画面 (4 カード)。
  *
- * ADR-0020 §Decision §7 (2026-05-10 改訂、T1-8c) + §Notes Amended (2026-05-18、 Sess9 PR-6)。
- * mockup `docs/mockups/v1.0/wireframes/care-screens.jsx CareHubScreen` (L1576-1719) を基に、
- * 4 カード目「タグを管理」 を user 真意 (Q1 H1 二重動線) で追加、 subtitle を「整理」 意義拡張。
+ * ADR-0020 §Decision §7 (2026-05-10 改訂、T1-8c) + §Notes Amended (2026-05-18、 Sess9 PR-6) +
+ * Sess23 ADR-0035 D9 (Sess22 PR-4-1 #714「カレンダー」 5 card 化を完全 revert、 5→4 card に戻し)。
  *
- * 4 カード:
+ * 4 カード (Sess23 状態):
  * 1. 水やり履歴 → /(tabs)/look-back/watering-history (Issue #361 で本実装)
  * 2. 針金がけ一覧 → /(tabs)/plan/wiring (既存)
  * 3. 盆栽を検索 → /(tabs)/look-back/search (T1-8c で sub-route 化)
@@ -15,6 +14,10 @@
  * - 経路 1 (高速): Home Header 検索 → /(tabs)/look-back/search (1 タップ)
  * - 経路 2 (Hub): TabBar ふりかえり → 本画面 → 盆栽を検索カード → search (3 タップ)
  * - 経路 3 (Sess9 PR-6 新規): TabBar ふりかえり → 本画面 → タグを管理カード → tags (3 タップ)
+ *
+ * Sess23 ADR-0035 D9 削除済: 「カレンダー」 card (過去 30 日 default deep link)。
+ * user 真意「別にタブバー記録から確認すればいいのだから不要」、 ADR-0035 D6 (記録タブ tap →
+ * カレンダー画面遷移) で hub 経由は二重動線。
  */
 import { useRouter, type Href } from 'expo-router';
 import React from 'react';
@@ -23,14 +26,12 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {
-  CalendarIcon,
   ChevronRightIcon,
   DropletIcon,
   SearchIcon,
   TagIcon,
   WireIcon,
 } from '@/src/components/icons';
-import { getTzOffsetMin } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
@@ -42,10 +43,9 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
-import { computePast30DaysKey } from '@/src/features/look-back/computePast30DaysKey';
 
 type CardDef = {
-  key: 'watering' | 'calendar' | 'wiring' | 'search' | 'tags';
+  key: 'watering' | 'wiring' | 'search' | 'tags';
   title: string;
   desc: string;
   Icon: typeof DropletIcon;
@@ -65,19 +65,8 @@ export default function LookBackHubScreen() {
       Icon: DropletIcon,
       onPress: () => router.push('/(tabs)/look-back/watering-history' as Href),
     },
-    // Sess22 ADR-0034 D6: 「カレンダー」 過去軸 hub (subtitle で「過去 30 日前 default」 差別化)
-    // 下タブ Calendar (今日中心の月ナビ) と意味分離、 「いつ何をしたか日付軸で振り返る」 入口。
-    // 履歴系を連続配置 (watering / calendar / wiring) で発見性向上。
-    {
-      key: 'calendar',
-      title: t('lookBackCardCalendarTitle'),
-      desc: t('lookBackCardCalendarDesc'),
-      Icon: CalendarIcon,
-      onPress: () => {
-        const past30dKey = computePast30DaysKey(new Date(), getTzOffsetMin());
-        router.push(`/(tabs)/plan?selectedDateKey=${past30dKey}` as Href);
-      },
-    },
+    // Sess23 ADR-0035 D9: Sess22 PR-4-1 #714「カレンダー」 5 card 化を完全 revert
+    // (user 真意「別にタブバー記録から確認すればいいのだから不要」)
     {
       key: 'wiring',
       title: t('lookBackCardWiringTitle'),

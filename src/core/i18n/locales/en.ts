@@ -819,8 +819,6 @@ const baseEn = {
   planLegendDotPlannedLabel: 'Planned (○)',
   planLegendDotMultipleLabel: 'Multiple tasks (+)',
   planListingBonsaiCount: '×{count} pots',
-  lookBackCardCalendarTitle: 'Calendar',
-  lookBackCardCalendarDesc: 'Review past tasks by month',
   tabPlan: 'Plan',
   planSectionScheduled: 'Scheduled',
   planSectionRecorded: 'Recorded',
