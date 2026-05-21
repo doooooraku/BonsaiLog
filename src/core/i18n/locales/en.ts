@@ -233,7 +233,7 @@ const baseEn = {
   exportCsvFailed: 'Export failed.',
   exportCsvShareTitle: 'BonsaiLog care logs CSV',
   exportProRequiredTitle: 'Pro feature',
-  exportProRequiredBody: 'CSV export is available for Pro members. Upgrade to unlock.',
+  exportProRequiredBody: 'This export is available for Pro members. Upgrade to unlock.',
   exportShareUnavailableTitle: 'Sharing is not available',
   exportShareUnavailableBody:
     'Sharing is not available on this device. Please update the OS and try again.',
