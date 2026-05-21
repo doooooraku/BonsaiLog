@@ -22,13 +22,7 @@ import { ThemedText } from '@/components/themed-text';
 import { EventIcon } from '@/src/components/icons';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { nowUtc } from '@/src/core/datetime';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { BG_SURFACE, BORDER_DEFAULT, TEXT_PRIMARY, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import { type Event, type EventType } from '@/src/db/schema';
 import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
 import { HistoryChipRow } from '@/src/features/event/HistoryChip';
