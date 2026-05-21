@@ -55,7 +55,7 @@ Sess23 PR-3-1 (#724) で「PlanScreen 個別 EventRow long-press → `Alert.aler
 
 #### D1: `<ConfirmDialog>` カスタムモーダル 新規 component (`Alert.alert` 置換)
 
-- **決定**: `src/components/ConfirmDialog.tsx` 新設。 props = `{ visible, title, description?, confirmLabel, cancelLabel?, destructive?, onConfirm, onCancel, testID? }`、 `react-native` の `<Modal>` 直接使用 (Tamagui Dialog 不採用) + `transparent` + `animationType="fade"` (80ms、 Material 3 Motion) + `onRequestClose` で Android Back キャンセル + backdrop tap dismiss (Material 3 整合) + `accessibilityViewIsModal={true}` + `accessibilityRole="alert"` (WAI-ARIA Dialog Pattern + WCAG 2.1.1 整合) + onConfirm 直前に `Haptics.notificationAsync(NotificationFeedbackStyle.Warning)`
+- **決定**: `src/components/ConfirmDialog.tsx` 新設。 props = `{ visible, title, description?, confirmLabel, cancelLabel?, destructive?, onConfirm, onCancel, testID? }`、 `react-native` の `<Modal>` 直接使用 (Tamagui Dialog 不採用) + `transparent` + `animationType="fade"` (80ms、 Material 3 Motion) + `onRequestClose` で Android Back キャンセル + backdrop tap dismiss (Material 3 整合) + `accessibilityViewIsModal={true}` + `accessibilityRole="alert"` (WAI-ARIA Dialog Pattern + WCAG 2.1.1 整合) + onConfirm 直前に `Haptics.notificationAsync(NotificationFeedbackType.Warning)`
 - **理由**: OS 標準 `Alert.alert` は Android で Material 2 風古い、 アプリ世界観 (NotoSerifJP + BRAND_GREEN) 断裂、 user「作りこんでほしい」 整合
 - **影響**: 既存 `Alert.alert` callsite で「削除確認」 用途 2 箇所 (`app/(tabs)/plan/index.tsx` L244 + `app/(tabs)/bonsai/[id]/index.tsx` L920) を本 ADR で置換、 他 callsite (archive / 写真権限 / 日付エラー) は scope 外 (別 PR or v1.x)
 - **参考実装**: 既存 inline Modal pattern `src/features/bonsai/StylePickerScreen.tsx:159-209` を component 化
@@ -96,7 +96,7 @@ Sess23 PR-3-1 (#724) で「PlanScreen 個別 EventRow long-press → `Alert.aler
 
 #### D6: Haptics 触覚 feedback (`expo-haptics`)
 
-- **決定**: 長押し成功時 (削除 confirm dialog 表示直前) `Haptics.impactAsync(ImpactFeedbackStyle.Medium)` + 削除実行時 `Haptics.notificationAsync(NotificationFeedbackStyle.Warning)`。 全 `<Pressable onLongPress={...}>` 配線箇所で標準化 (R-45 で恒久化)
+- **決定**: 長押し成功時 (削除 confirm dialog 表示直前) `Haptics.impactAsync(ImpactFeedbackStyle.Medium)` + 削除実行時 `Haptics.notificationAsync(NotificationFeedbackType.Warning)`。 全 `<Pressable onLongPress={...}>` 配線箇所で標準化 (R-45 で恒久化)
 - **理由**: 視覚 fb (背景色変化) のみだと指で隠れて user が長押し中を認識できない、 触覚 + 視覚 + 聴覚 (OS 任意) 3 chan feedback で UX 標準
 - **影響**: `expo-haptics` は既存依存 (package.json L100)、 新規 install 不要
 
