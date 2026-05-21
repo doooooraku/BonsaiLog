@@ -47,8 +47,6 @@ import { addPhotoFromUri } from '@/src/db/photoRepository';
 import type { EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { useSettingsStore } from '@/src/stores/settingsStore';
-import type { WorkLogPayload } from '@/src/stores/pickerStore';
-
 import {
   WorkLogTypeFormFields,
   buildWorkLogPayload,
@@ -56,8 +54,6 @@ import {
   getWorkLogNotePlaceholderKey,
   type WorkLogTypeFormState,
 } from './WorkLogTypeFormFields';
-
-export type { WorkLogPayload };
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();

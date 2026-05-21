@@ -22,28 +22,10 @@ export type WorkPickerMode = 'log' | 'schedule';
 type WorkPickerValue = { type: EventType; mode: WorkPickerMode };
 type WorkPickerResult = WorkPickerValue | 'CONSUMED';
 
-/**
- * 作業記録 詳細 入力の戻り値 (Phase G2 part 2、ADR-0024 Accepted)。
- * 循環依存回避のため WorkLogConfirmScreen ではなく本 store 側で型定義し、Screen 側 import する。
- */
-/** Sess16 PR-A3 → PR-H: form 添付の pending photo (DB 未保存、 caller が addPhotoFromUri で永続化)。
- * BonsaiBasicForm の PendingPhoto と整合 (Sess14 PR-T で caption 削除済)。 */
-export type PendingPhoto = {
-  uri: string;
-  width: number | null;
-  height: number | null;
-};
-
-export type WorkLogPayload = {
-  type: EventType;
-  note: string;
-  payload: Record<string, unknown>;
-  /** Sess16 PR-A2: user 入力の日付 (YYYY-MM-DD)。 未指定 = caller 側で nowUtc default。 */
-  occurredAtDate?: string;
-  /** Sess16 PR-A3: form 添付の pending photo (DB 未保存、 caller が永続化)。 */
-  photos?: readonly PendingPhoto[];
-};
-type WorkLogConfirmResult = WorkLogPayload | 'CONSUMED';
+// Sess19 PR-6 (ADR-0031 D3): WorkLogPayload / PendingPhoto / WorkLogConfirmResult 削除。
+// WorkLogConfirm が直接 await + router.replace でカレンダー画面に遷移するため、
+// store-callback chain 経由の payload 受け渡しが不要になった。
+// PendingPhoto は WorkLogConfirm 側で PhotoFieldItem type を直接使用、 store には依存しない。
 
 /** 一括操作の context (selectedBonsais を Screen 間で共有、Phase G3a)。 */
 export type BulkBonsaiRef = { id: string; name: string };
@@ -79,10 +61,9 @@ type PickerStore = {
   setWorkPickerResult: (result: WorkPickerValue) => void;
   consumeWorkPickerResult: () => WorkPickerValue | undefined;
 
-  // 作業記録 詳細 (work-log-confirm、Phase G2 part 2)
-  workLogConfirmResult: WorkLogConfirmResult;
-  setWorkLogConfirmResult: (payload: WorkLogPayload) => void;
-  consumeWorkLogConfirmResult: () => WorkLogPayload | undefined;
+  // Sess19 PR-6 (ADR-0031 D3): workLogConfirmResult / setWorkLogConfirmResult /
+  // consumeWorkLogConfirmResult を削除。 WorkLogConfirm が直接 await + router.replace
+  // でカレンダー画面に遷移するため不要。
 
   // 一括操作 context (selectedBonsais を Screen 間共有、Phase G3a)
   // Sess12 PR-B+C 後: bulkWorkPickerResult / bulkLogConfirmResult は dead code 化により削除済
@@ -138,15 +119,6 @@ export const usePickerStore = create<PickerStore>((set, get) => ({
     const result = get().workPickerResult;
     if (result === 'CONSUMED') return undefined;
     set({ workPickerResult: 'CONSUMED' });
-    return result;
-  },
-
-  workLogConfirmResult: 'CONSUMED',
-  setWorkLogConfirmResult: (payload) => set({ workLogConfirmResult: payload }),
-  consumeWorkLogConfirmResult: () => {
-    const result = get().workLogConfirmResult;
-    if (result === 'CONSUMED') return undefined;
-    set({ workLogConfirmResult: 'CONSUMED' });
     return result;
   },
 
