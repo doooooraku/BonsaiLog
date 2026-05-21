@@ -22,7 +22,14 @@ import { ThemedText } from '@/components/themed-text';
 import { EventIcon } from '@/src/components/icons';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { nowUtc } from '@/src/core/datetime';
-import { BG_SURFACE, BORDER_DEFAULT, TEXT_PRIMARY, TEXT_SECONDARY } from '@/src/core/theme/colors';
+import {
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  ON_BRAND,
+  TEXT_PRIMARY,
+  TEXT_SECONDARY,
+} from '@/src/core/theme/colors';
 import { type Event, type EventType } from '@/src/db/schema';
 import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
 import { HistoryChipRow } from '@/src/features/event/HistoryChip';
@@ -65,6 +72,10 @@ export type EventRowProps = {
   indent?: boolean;
   /** PlanScreen=true (bonsai 名表示) / bonsai-detail=false (自明) */
   showBonsaiName?: boolean;
+  /** ADR-0035 D7 (Sess23): planned section で「作業を記録」 button 配置 */
+  actionButtonLabel?: string;
+  onActionPress?: (ev: Event) => void;
+  actionButtonTestID?: string;
 };
 
 export function EventRow({
@@ -77,6 +88,9 @@ export function EventRow({
   onPress,
   indent = false,
   showBonsaiName = false,
+  actionButtonLabel,
+  onActionPress,
+  actionButtonTestID,
 }: EventRowProps) {
   let wiringDuration: {
     weeks: number;
@@ -157,6 +171,17 @@ export function EventRow({
           </ThemedText>
         )}
         <HistoryChipRow chips={buildHistoryChips(ev)} />
+        {actionButtonLabel && onActionPress && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={actionButtonLabel}
+            onPress={() => onActionPress(ev)}
+            style={styles.actionButton}
+            testID={actionButtonTestID}
+          >
+            <ThemedText style={styles.actionButtonText}>{actionButtonLabel}</ThemedText>
+          </Pressable>
+        )}
       </View>
     </Pressable>
   );
@@ -192,4 +217,14 @@ const styles = StyleSheet.create({
   eventBonsaiName: { fontSize: 15, color: TEXT_PRIMARY, fontWeight: '500' },
   eventRowDate: { fontSize: 12, color: TEXT_SECONDARY },
   eventRowNote: { fontSize: 12, color: TEXT_SECONDARY, marginTop: 2 },
+  // ADR-0035 D7 (Sess23): planned section の「作業を記録」 button
+  actionButton: {
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: BRAND_GREEN,
+  },
+  actionButtonText: { fontSize: 12, fontWeight: '600', color: ON_BRAND },
 });

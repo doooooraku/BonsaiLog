@@ -209,6 +209,33 @@ export default function PlanScreen() {
     });
   }, []);
 
+  // ADR-0035 D7 (Sess23 PR-4-2): 予定→記録 変換動線
+  // single 変換: 個別 EventRow の「作業を記録」 button tap → WorkLogConfirm に既選択 prefilled
+  const handleSingleConvert = useCallback(
+    (ev: Event) => {
+      const b = bonsaiMap.get(ev.bonsaiId);
+      const bonsaiNameParam = encodeURIComponent(b?.name ?? '');
+      router.push(
+        `/work-log-confirm?bonsaiId=${ev.bonsaiId}&bonsaiName=${bonsaiNameParam}&type=${ev.type}&fromPlannedId=${ev.id}` as Href,
+      );
+    },
+    [bonsaiMap, router],
+  );
+
+  // bulk 変換: planned section group 「全 N 件を記録」 button tap → BulkLogConfirm に csv + bulkContext prefilled
+  const handleBulkConvert = useCallback(
+    (type: EventType, groupEvents: readonly Event[]) => {
+      const csvIds = groupEvents.map((e) => e.id).join(',');
+      const selectedBonsais = groupEvents.map((e) => ({
+        id: e.bonsaiId,
+        name: bonsaiMap.get(e.bonsaiId)?.name ?? '',
+      }));
+      usePickerStore.getState().setBulkContext({ selectedBonsais });
+      router.push(`/bulk-log-confirm?type=${type}&fromPlannedIds=${csvIds}` as Href);
+    },
+    [bonsaiMap, router],
+  );
+
   // ADR-0035 D3 (Sess23 PR-3-1): event 個別削除動線
   // long-press → Alert.alert 確認 → softDelete + cancelForEvent + reload
   // bonsai-detail history タブと同 pattern (Sess16 で確立)、 30 日ゴミ箱で復元可
@@ -454,6 +481,24 @@ export default function PlanScreen() {
                             {toggleText} {isExpanded ? '▲' : '▼'}
                           </ThemedText>
                         </Pressable>
+                        {/* ADR-0035 D7 (Sess23 PR-4-2): group 一括変換 button (planned section のみ) */}
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={t('planEventRecordButtonGroup').replace(
+                            '{count}',
+                            String(events.length),
+                          )}
+                          onPress={() => handleBulkConvert(type, events)}
+                          style={styles.groupRecordButton}
+                          testID={`e2e_plan_group_record_button_${type}`}
+                        >
+                          <ThemedText style={styles.groupRecordButtonText}>
+                            {t('planEventRecordButtonGroup').replace(
+                              '{count}',
+                              String(events.length),
+                            )}
+                          </ThemedText>
+                        </Pressable>
                         {isExpanded && (
                           <View style={styles.expandedContainer}>
                             {events.map((e) => {
@@ -461,6 +506,7 @@ export default function PlanScreen() {
                               const isOverdue =
                                 toLocalDateKey(e.occurredAtUtc, tzOffsetMin) < todayLocalKey;
                               // Sess22 ADR-0034 D4/D5: EventRow 流用で bonsai-detail history と pixel 整合
+                              // ADR-0035 D7 (Sess23): 個別「作業を記録」 button 配線
                               return (
                                 <View
                                   key={e.id}
@@ -481,6 +527,9 @@ export default function PlanScreen() {
                                       )
                                     }
                                     onLongPress={confirmDeleteEvent}
+                                    actionButtonLabel={t('planEventRecordButtonSingle')}
+                                    onActionPress={handleSingleConvert}
+                                    actionButtonTestID={`e2e_plan_event_record_button_${e.id}`}
                                     showBonsaiName
                                     indent
                                   />
@@ -677,6 +726,17 @@ const styles = StyleSheet.create({
   // Sess19-2 ADR-0032 D3: 期限切れ planned 警告色 (TEXT_MUTED で薄く、 「期限切れ」 ラベルなし)
   groupRowOverdue: { opacity: 0.6 },
   groupLabelOverdue: { color: TEXT_MUTED },
+  // ADR-0035 D7 (Sess23 PR-4-2): planned section の group「全 N 件を記録」 button
+  groupRecordButton: {
+    marginTop: 6,
+    marginBottom: 4,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: BRAND_GREEN,
+  },
+  groupRecordButtonText: { fontSize: 12, fontWeight: '600', color: ON_BRAND },
   eventCardOverdue: { opacity: 0.6 },
   eventBonsaiOverdue: { color: TEXT_MUTED },
   listLabel: {
