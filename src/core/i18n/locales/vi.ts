@@ -297,7 +297,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: 'Tóm tắt hàng ngày',
   settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+    'Nhận một bản tóm tắt vào {time} khi có sự kiện được lên lịch trong ngày đó.',
   settingsNotifSummaryEditTime: 'Giờ thông báo',
   settingsNotifWateringToggle: 'Nhắc tưới nước',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -624,7 +624,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: 'Chưa đặt',
   settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+    'Thông báo đang tắt. Bật công tắc chính trong Cài đặt để sử dụng các tùy chọn này.',
   wiringRowUnwireAction: 'Đánh dấu đã tháo dây',
   wiringUnwireConfirmTitle: 'Đánh dấu quấn dây đã tháo?',
   paywallFeatureTheme: 'Themes',

@@ -298,7 +298,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: 'Günlük özet',
   settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+    'O gün için planlanmış etkinlik olduğunda {time} saatinde tek bir özet alın.',
   settingsNotifSummaryEditTime: 'Bildirim saati',
   settingsNotifWateringToggle: 'Sulama hatırlatıcısı',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -625,7 +625,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: 'Ayarlanmadı',
   settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+    "Bildirimler kapalı. Bu seçenekleri kullanmak için Ayarlar'da ana anahtarı açın.",
   wiringRowUnwireAction: 'Telleri sökülmüş olarak işaretle',
   wiringUnwireConfirmTitle: 'Tel sarmayı sökülmüş olarak işaretle?',
   paywallFeatureTheme: 'Themes',

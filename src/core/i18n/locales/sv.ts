@@ -298,7 +298,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: 'Daglig sammanfattning',
   settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+    'Få en enda sammanfattning kl. {time} när du har planerade händelser den dagen.',
   settingsNotifSummaryEditTime: 'Aviseringstid',
   settingsNotifWateringToggle: 'Vattningspåminnelser',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -625,7 +625,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: 'Inte inställd',
   settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+    'Aviseringar är inaktiverade. Slå på huvudreglaget i Inställningar för att använda dessa alternativ.',
   wiringRowUnwireAction: 'Markera som borttagen tråd',
   wiringUnwireConfirmTitle: 'Markera tråd som borttagen?',
   paywallFeatureTheme: 'Themes',

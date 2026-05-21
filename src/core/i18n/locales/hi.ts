@@ -298,7 +298,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: 'दैनिक सारांश',
   settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+    'जिस दिन योजनाबद्ध कार्यक्रम हों, उस दिन {time} पर एक संक्षेप सूचना प्राप्त करें।',
   settingsNotifSummaryEditTime: 'सूचना समय',
   settingsNotifWateringToggle: 'पानी देने की सूचना',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -625,7 +625,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: 'तय नहीं',
   settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+    'सूचनाएँ बंद हैं। इन विकल्पों का उपयोग करने के लिए सेटिंग्स में मास्टर स्विच चालू करें।',
   wiringRowUnwireAction: 'तार हटाया गया',
   wiringUnwireConfirmTitle: 'तार लपेटना हटाया गया चिह्नित करें?',
   paywallFeatureTheme: 'Themes',

@@ -299,7 +299,7 @@ const pl: Partial<Record<TranslationKey, string>> = {
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: 'Dzienne podsumowanie',
   settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+    'Otrzymaj jedno podsumowanie o {time}, gdy masz zaplanowane wydarzenia tego dnia.',
   settingsNotifSummaryEditTime: 'Czas powiadomienia',
   settingsNotifWateringToggle: 'Przypomnienia o podlewaniu',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -626,7 +626,7 @@ const pl: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: 'Nie ustawiono',
   settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+    'Powiadomienia są wyłączone. Włącz główny przełącznik w Ustawieniach, aby korzystać z tych opcji.',
   wiringRowUnwireAction: 'Oznacz jako rozdrutowane',
   wiringUnwireConfirmTitle: 'Oznaczyć drutowanie jako usunięte?',
   paywallFeatureTheme: 'Themes',

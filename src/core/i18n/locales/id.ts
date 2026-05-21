@@ -298,7 +298,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: 'Ringkasan harian',
   settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+    'Terima satu ringkasan pada {time} saat ada acara terjadwal hari itu.',
   settingsNotifSummaryEditTime: 'Waktu notifikasi',
   settingsNotifWateringToggle: 'Pengingat penyiraman',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -625,7 +625,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: 'Belum diatur',
   settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+    'Notifikasi dimatikan. Nyalakan sakelar utama di Pengaturan untuk menggunakan opsi ini.',
   wiringRowUnwireAction: 'Tandai sebagai dilepas',
   wiringUnwireConfirmTitle: 'Tandai pengawatan sebagai dilepas?',
   paywallFeatureTheme: 'Themes',

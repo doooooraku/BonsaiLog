@@ -299,7 +299,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: 'Dagelijkse samenvatting',
   settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+    'Ontvang één samenvatting om {time} wanneer er gebeurtenissen voor die dag zijn gepland.',
   settingsNotifSummaryEditTime: 'Meldingstijd',
   settingsNotifWateringToggle: 'Watergeefherinneringen',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -626,7 +626,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: 'Niet ingesteld',
   settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+    'Meldingen zijn uitgeschakeld. Schakel de hoofdschakelaar in Instellingen in om deze opties te gebruiken.',
   wiringRowUnwireAction: 'Markeren als gedraad-verwijderd',
   wiringUnwireConfirmTitle: 'Bedrading als verwijderd markeren?',
   paywallFeatureTheme: 'Themes',

@@ -299,7 +299,7 @@ const de: Partial<Record<TranslationKey, string>> = {
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: 'Tageszusammenfassung',
   settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+    'Erhalten Sie eine einzige Zusammenfassung um {time}, wenn an diesem Tag Ereignisse geplant sind.',
   settingsNotifSummaryEditTime: 'Benachrichtigungszeit',
   settingsNotifWateringToggle: 'Bewässerungserinnerungen',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -626,7 +626,7 @@ const de: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: 'Nicht festgelegt',
   settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+    'Benachrichtigungen sind deaktiviert. Aktivieren Sie den Hauptschalter in den Einstellungen, um diese Optionen zu nutzen.',
   wiringRowUnwireAction: 'Als entdrahtet markieren',
   wiringUnwireConfirmTitle: 'Drahtanlage als entfernt markieren?',
   paywallFeatureTheme: 'Themes',

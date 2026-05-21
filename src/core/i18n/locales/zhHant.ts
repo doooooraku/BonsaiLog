@@ -288,8 +288,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
 
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: '每日摘要',
-  settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+  settingsNotifSummaryToggleDesc: '當天有計畫事件時，於 {time} 收到一則彙總通知。',
   settingsNotifSummaryEditTime: '通知時間',
   settingsNotifWateringToggle: '澆水提醒',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -615,8 +614,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   settingsNotificationRowLabel: '通知',
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: '未設定',
-  settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+  settingsNotifMasterOffBanner: '通知已關閉。在設定中開啟主開關以使用這些選項。',
   wiringRowUnwireAction: '標記為已解紮',
   wiringUnwireConfirmTitle: '標記蟠紮為已解開?',
   paywallFeatureTheme: 'Themes',

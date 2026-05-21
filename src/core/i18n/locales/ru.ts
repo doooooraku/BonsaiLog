@@ -299,7 +299,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: 'Ежедневная сводка',
   settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+    'Получайте одну сводку в {time}, когда на этот день запланированы события.',
   settingsNotifSummaryEditTime: 'Время уведомления',
   settingsNotifWateringToggle: 'Напоминания о поливе',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -626,7 +626,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: 'Не задано',
   settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+    'Уведомления отключены. Включите главный переключатель в Настройках, чтобы использовать эти параметры.',
   wiringRowUnwireAction: 'Отметить как снятую проволоку',
   wiringUnwireConfirmTitle: 'Отметить проволоку как снятую?',
   paywallFeatureTheme: 'Themes',

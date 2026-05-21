@@ -296,7 +296,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: 'สรุปประจำวัน',
   settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+    'รับสรุปครั้งเดียวเมื่อ {time} เมื่อมีกิจกรรมที่วางแผนไว้ในวันนั้น',
   settingsNotifSummaryEditTime: 'เวลาแจ้งเตือน',
   settingsNotifWateringToggle: 'การแจ้งเตือนรดน้ำ',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -623,7 +623,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: 'ยังไม่ตั้ง',
   settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+    'การแจ้งเตือนถูกปิดอยู่ เปิดสวิตช์หลักในการตั้งค่าเพื่อใช้ตัวเลือกเหล่านี้',
   wiringRowUnwireAction: 'ทำเครื่องหมายว่าถอดแล้ว',
   wiringUnwireConfirmTitle: 'ทำเครื่องหมายดัดลวดว่าถอดแล้ว?',
   paywallFeatureTheme: 'Themes',

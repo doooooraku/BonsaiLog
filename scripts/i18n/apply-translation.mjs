@@ -154,6 +154,61 @@ function escapeForJsString(s) {
   return s.replace(/'/g, "\\'");
 }
 
+/**
+ * Sess21 PR-2 (バグ A) — multi-line value 対応。
+ * 旧 regex は single-line のみ (`  key: 'value',`) 対応。
+ * multi-line (`  key:\n    'value',` or formatter による複数行 'value' + ',') にも対応するため、
+ * 行ベース走査で startLine (`  key:` 含む) から endLine (`',` 終端) までを 1 行に置換。
+ */
+function applyTranslationsToFile(content, translations, lang, missedOut) {
+  const lines = content.split('\n');
+  let updated = 0;
+  for (const [key, langMap] of Object.entries(translations)) {
+    const newValue = langMap[lang];
+    if (newValue == null) continue;
+    const escapedKey = escapeForRegex(key);
+    // start: `  key:` or `  key: '...` を含む line
+    const startRe = new RegExp(`^(\\s+)${escapedKey}:\\s*(.*)$`);
+    let startLineIdx = -1;
+    let indent = '';
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(startRe);
+      if (m) {
+        startLineIdx = i;
+        indent = m[1];
+        break;
+      }
+    }
+    if (startLineIdx === -1) {
+      missedOut.push(`${lang}: ${key}`);
+      continue;
+    }
+    // end: 同 line に `',` ある (single-line) or 後続 line で `',` 終端まで探す (multi-line、 最大 20 line)
+    let endLineIdx = -1;
+    for (let i = startLineIdx; i < Math.min(lines.length, startLineIdx + 20); i++) {
+      // `',` または `'` + 改行 + 次の line から始まる pattern
+      if (/'\s*,?\s*$/.test(lines[i]) && i > startLineIdx) {
+        endLineIdx = i;
+        break;
+      }
+      // single-line: `  key: 'value',` の場合は同 line で完結
+      if (i === startLineIdx && /:\s*'[^']*'\s*,?\s*$/.test(lines[i])) {
+        endLineIdx = i;
+        break;
+      }
+    }
+    if (endLineIdx === -1) {
+      missedOut.push(`${lang}: ${key}`);
+      continue;
+    }
+    // 該当範囲を 1 行で置換
+    const newLine = `${indent}${key}: '${escapeForJsString(newValue)}',`;
+    lines.splice(startLineIdx, endLineIdx - startLineIdx + 1, newLine);
+    updated++;
+  }
+  return { content: lines.join('\n'), updated };
+}
+
 function applyTranslations(translations, { dryRun }) {
   const summary = { perLang: {}, total: 0, missed: [] };
   for (const lang of LANGS) {
@@ -163,20 +218,13 @@ function applyTranslations(translations, { dryRun }) {
       process.exit(2);
     }
     let content = readFileSync(filePath, 'utf8');
-    let updated = 0;
-    for (const [key, langMap] of Object.entries(translations)) {
-      const newValue = langMap[lang];
-      if (newValue == null) continue;
-      const escapedKey = escapeForRegex(key);
-      const re = new RegExp(`^(\\s+${escapedKey}: )'[^']*',`, 'm');
-      if (re.test(content)) {
-        content = content.replace(re, (_m, p1) => `${p1}'${escapeForJsString(newValue)}',`);
-        updated++;
-      } else {
-        summary.missed.push(`${lang}: ${key}`);
-      }
-    }
-    if (!dryRun) writeFileSync(filePath, content);
+    const { content: newContent, updated } = applyTranslationsToFile(
+      content,
+      translations,
+      lang,
+      summary.missed,
+    );
+    if (!dryRun) writeFileSync(filePath, newContent);
     summary.perLang[lang] = updated;
     summary.total += updated;
   }
