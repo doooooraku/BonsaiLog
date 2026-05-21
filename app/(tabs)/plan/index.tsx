@@ -41,8 +41,10 @@ import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type Bonsai, type Event, type EventType } from '@/src/db/schema';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
+import { CalendarLegend } from '@/src/features/plan/CalendarLegend';
 import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 import { usePickerStore } from '@/src/stores/pickerStore';
+import { useSettingsStore } from '@/src/stores/settingsStore';
 
 function getMonthDays(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate();
@@ -181,6 +183,13 @@ export default function PlanScreen() {
 
   const [expandedTypes, setExpandedTypes] = useState<Set<EventType>>(new Set());
 
+  // Sess22 ADR-0034 D1: カレンダー凡例 collapsible bar の折りたたみ状態 (Zustand persist 永続化)
+  const calendarLegendCollapsed = useSettingsStore((s) => s.calendarLegendCollapsed);
+  const setCalendarLegendCollapsed = useSettingsStore((s) => s.setCalendarLegendCollapsed);
+  const toggleLegend = useCallback(() => {
+    setCalendarLegendCollapsed(!calendarLegendCollapsed);
+  }, [calendarLegendCollapsed, setCalendarLegendCollapsed]);
+
   const toggleExpand = useCallback((type: EventType) => {
     setExpandedTypes((prev) => {
       const next = new Set(prev);
@@ -257,6 +266,9 @@ export default function PlanScreen() {
             <ThemedText style={styles.monthArrowText}>{'›'}</ThemedText>
           </Pressable>
         </View>
+
+        {/* Sess22 ADR-0034 D1: カレンダー凡例 collapsible bar (月選択 row と DOW header の間に配置) */}
+        <CalendarLegend collapsed={calendarLegendCollapsed} onToggle={toggleLegend} />
 
         <View style={styles.dowRow}>
           {dowLabels.map((d, i) => (
