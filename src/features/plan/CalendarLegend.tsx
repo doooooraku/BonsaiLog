@@ -1,15 +1,16 @@
 /**
- * カレンダー凡例 collapsible bar (Sess22 ADR-0034 D1)。
+ * カレンダー凡例 collapsible bar (Sess22 ADR-0034 D1、 Sess23 ADR-0035 D1/D4/D5 で改訂)。
  *
  * 用途:
  * - PlanScreen 月選択 row と DOW header の間に配置
- * - dot の色 + アイコン (logged=● filled / planned=○ outline) + 「+」 (4+ 件) の意味を説明
+ * - dot の色 + アイコン (planned=○ outline / logged=● filled) + 「+」 (4+ 件) の意味を説明
  * - WCAG 1.4.1 (Use of Color、 Level A) 達成のため、 色のみ識別を回避
  *
  * 永続化: `useSettingsStore.calendarLegendCollapsed` (Zustand persist で AsyncStorage 自動保存)
  * - 初回起動 = 展開 (default false)、 user toggle で折りたたみ状態永続化
  *
- * PR-1-3 で `CalendarDot` component に置換予定 (現状 inline View で円描画)。
+ * Sess23 ADR-0035 D4/D5 改訂: planLegendDotLoggedLabel → planLegendDotRecordedLabel + items 順序 flip
+ * (planned ○ を上に、 logged ● を下に、 時間軸「予定 → 記録」 を上→下/左→右で表現)
  */
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -52,13 +53,14 @@ export function CalendarLegend({ collapsed, onToggle }: CalendarLegendProps) {
       </Pressable>
       {!collapsed && (
         <View style={styles.items}>
-          <View style={styles.item} testID="e2e_plan_legend_item_logged">
-            <CalendarDot status="logged" size={10} />
-            <ThemedText style={styles.itemLabel}>{t('planLegendDotLoggedLabel')}</ThemedText>
-          </View>
+          {/* ADR-0035 D5 (Sess23): planned (○) を上 / logged (●) を下 に flip (時間軸 予定 → 記録) */}
           <View style={styles.item} testID="e2e_plan_legend_item_planned">
             <CalendarDot status="planned" size={10} />
             <ThemedText style={styles.itemLabel}>{t('planLegendDotPlannedLabel')}</ThemedText>
+          </View>
+          <View style={styles.item} testID="e2e_plan_legend_item_logged">
+            <CalendarDot status="logged" size={10} />
+            <ThemedText style={styles.itemLabel}>{t('planLegendDotRecordedLabel')}</ThemedText>
           </View>
           <View style={styles.item} testID="e2e_plan_legend_item_multiple">
             <ThemedText style={styles.plusSymbol}>+</ThemedText>

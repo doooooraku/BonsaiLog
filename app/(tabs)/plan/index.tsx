@@ -71,16 +71,26 @@ export default function PlanScreen() {
   const today = new Date();
   const todayLocalKey = toLocalDateKey(today.toISOString(), getTzOffsetMin());
 
+  // ADR-0035 D2 (Sess23 PR-2-1): タブ「予定」 tap = 当日+1日 (明日) default 選択
+  const tomorrowLocalKey = useMemo(() => {
+    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+    return toLocalDateKey(tomorrow.toISOString(), getTzOffsetMin());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Sess19 ADR-0031 D1: URL param `?selectedDateKey=YYYY-MM-DD` で記録/予定追加後の遷移先
-  // 日付を受信。 WorkLogConfirm / BulkLogConfirm から `router.replace('/(tabs)/plan?selectedDateKey=...')`
-  // で渡される。 優先順位: URL param > pickerStore.planSelectedDateKey (Sess12 PR-H) > today
-  const params = useLocalSearchParams<{ selectedDateKey?: string }>();
+  // 日付を受信。 ADR-0035 D2/D6 (Sess23): `?source=tab` 付与で予定タブ tap (明日 default) /
+  // 記録タブ tap (今日 selectedDateKey 明示) の入口を区別。
+  // 優先順位: URL param > storedDateKey > (source=tab かつ selectedDateKey 不在 → tomorrow) > today
+  const params = useLocalSearchParams<{ selectedDateKey?: string; source?: string }>();
   const urlDateKey = params.selectedDateKey ?? null;
+  const sourceIsTab = params.source === 'tab';
 
   // Sess12 PR-H: PlanScreen 再 mount 時に pickerStore から 前回の selectedDateKey を restore
   // (PR-G router.replace で PlanScreen 再 mount され selectedDateKey が today reset される副作用 fix)
   const storedDateKey = usePickerStore.getState().planSelectedDateKey;
-  const initialDateKey = urlDateKey ?? storedDateKey ?? todayLocalKey;
+  const initialDateKey =
+    urlDateKey ?? (sourceIsTab ? tomorrowLocalKey : (storedDateKey ?? todayLocalKey));
   const initialYear = Number(initialDateKey.slice(0, 4));
   const initialMonth = Number(initialDateKey.slice(5, 7)) - 1;
 
@@ -99,13 +109,18 @@ export default function PlanScreen() {
   // Sess19 ADR-0031 D1: URL param `?selectedDateKey=...` 変化時に該当日付を選択状態に。
   // PlanScreen は tab 内 screen で permanent mount のため initial state では URL param が
   // 後続の router.replace で更新されず、 useEffect で watch して setSelectedDateKey 経由で同期。
+  // ADR-0035 D2 (Sess23): source=tab かつ urlDateKey なし → tomorrow に同期
   useEffect(() => {
     if (urlDateKey) {
       setSelectedDateKey(urlDateKey);
       setYear(Number(urlDateKey.slice(0, 4)));
       setMonth(Number(urlDateKey.slice(5, 7)) - 1);
+    } else if (sourceIsTab) {
+      setSelectedDateKey(tomorrowLocalKey);
+      setYear(Number(tomorrowLocalKey.slice(0, 4)));
+      setMonth(Number(tomorrowLocalKey.slice(5, 7)) - 1);
     }
-  }, [urlDateKey, setSelectedDateKey]);
+  }, [urlDateKey, sourceIsTab, tomorrowLocalKey, setSelectedDateKey]);
 
   const reload = useCallback(async () => {
     const [evs, bs] = await Promise.all([
@@ -254,7 +269,7 @@ export default function PlanScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_plan_screen"
     >
-      <SearchHeader title={t('calendarScreenTitle')} showSearch={false} testIdSuffix="plan" />
+      <SearchHeader title={t('tabPlan')} showSearch={false} testIdSuffix="plan" />
 
       {/* Issue #456: 「針金がけ一覧」 row を削除。mockup `plan-tab-{01,02}.png` 整合、
           動線は CareHub (ふりかえりタブ) → 針金がけ一覧 カード経由が単一情報源。
@@ -312,15 +327,16 @@ export default function PlanScreen() {
                 const totalUniqueCount = loggedUniqueCount + plannedUniqueCount;
                 const isSel = dateKey === selectedDateKey;
                 const isToday = dateKey === todayLocalKey;
-                // Sess19-2 ADR-0032 D1 + Sess22 ADR-0034 D2: 各日 max 3 個まで dot (logged 優先、 残りを planned で埋める)
-                const renderedLogged = Math.min(loggedUniqueCount, 3);
-                const remainingSlots = Math.max(0, 3 - renderedLogged);
-                const renderedPlanned = Math.min(plannedUniqueCount, remainingSlots);
+                // ADR-0035 D5 (Sess23): planned (○) を左に並べ、 残 slot を logged (●) で右に埋める
+                // (時間軸 予定 → 記録 を左→右で表現、 旧 ADR-0034 D3 logged 優先 を flip)
+                const renderedPlanned = Math.min(plannedUniqueCount, 3);
+                const remainingSlots = Math.max(0, 3 - renderedPlanned);
+                const renderedLogged = Math.min(loggedUniqueCount, remainingSlots);
                 return (
                   <Pressable
                     key={i}
                     accessibilityRole="button"
-                    accessibilityLabel={`${d}日, ${t('planLegendDotLoggedLabel').replace(' (●)', '')} ${renderedLogged}件, ${t('planLegendDotPlannedLabel').replace(' (○)', '')} ${renderedPlanned}件`}
+                    accessibilityLabel={`${d}日, ${t('planLegendDotPlannedLabel').replace(' (○)', '')} ${renderedPlanned}件, ${t('planLegendDotRecordedLabel').replace(' (●)', '')} ${renderedLogged}件`}
                     style={[styles.cell, isSel && styles.cellSel]}
                     onPress={() => setSelectedDateKey(dateKey)}
                     testID={`e2e_plan_cell_${dateKey}`}
@@ -335,14 +351,14 @@ export default function PlanScreen() {
                       {d}
                     </ThemedText>
                     <View style={styles.dotRow}>
-                      {/* Sess22 ADR-0034 D3: 色 + アイコン併用で WCAG 1.4.1 解消 (CalendarDot component) */}
-                      {Array.from({ length: renderedLogged }).map((_, k) => (
-                        <CalendarDot key={`logged-${k}`} status="logged" />
-                      ))}
+                      {/* ADR-0035 D5 (Sess23): planned (○) を左、 logged (●) を右に flip */}
                       {Array.from({ length: renderedPlanned }).map((_, k) => (
                         <CalendarDot key={`planned-${k}`} status="planned" />
                       ))}
-                      {/* mockup v1.0 「●●●+」 整合: 4+ で「+」 (Sess22 ADR-0034 D2 で unique count ベースに変更) */}
+                      {Array.from({ length: renderedLogged }).map((_, k) => (
+                        <CalendarDot key={`logged-${k}`} status="logged" />
+                      ))}
+                      {/* mockup v1.0 「●●●+」 整合: 4+ で「+」 (Sess22 ADR-0034 D2 で unique count ベース) */}
                       {totalUniqueCount > 3 && <ThemedText style={styles.dotPlus}>+</ThemedText>}
                     </View>
                   </Pressable>
@@ -368,7 +384,7 @@ export default function PlanScreen() {
               {plannedGroupedEvents.length > 0 && (
                 <>
                   <ThemedText style={styles.sectionHeader} testID="e2e_plan_section_upcoming">
-                    {t('planSectionUpcoming')} (
+                    {t('planSectionScheduled')} (
                     {plannedGroupedEvents.reduce((sum, [, evs]) => sum + evs.length, 0)} 件)
                   </ThemedText>
                   {plannedGroupedEvents.map(([type, events]) => {
@@ -459,7 +475,7 @@ export default function PlanScreen() {
               {loggedGroupedEvents.length > 0 && (
                 <>
                   <ThemedText style={styles.sectionHeader} testID="e2e_plan_section_done">
-                    {t('planSectionDone')} (
+                    {t('planSectionRecorded')} (
                     {loggedGroupedEvents.reduce((sum, [, evs]) => sum + evs.length, 0)} 件)
                   </ThemedText>
                   {loggedGroupedEvents.map(([type, events]) => {
