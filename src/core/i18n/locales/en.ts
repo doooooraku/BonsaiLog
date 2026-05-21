@@ -370,11 +370,9 @@ const baseEn = {
 
   // --- ADR-0020 Phase 1: 4-tab labels (盆栽 / 予定 / 探す / 設定) ---
   tabBonsai: 'Bonsai',
-  tabPlan: 'Plan',
   tabLookBack: 'Activity',
   tabSettings: 'Settings',
   tabPlanComingSoon: 'Coming soon',
-  planScreenTitle: 'Care Schedule',
 
   // --- ADR-0020 Phase 2: bonsai tab = Claude Design HomeScreen ---
   bonsaiBookTitle: 'BonsaiLog',

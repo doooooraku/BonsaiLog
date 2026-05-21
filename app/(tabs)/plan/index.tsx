@@ -15,8 +15,8 @@
  * - 針金がけ一覧 (WiringListScreen) は v1.x、本 PR には含めない (機能は wiring 既存実装で維持)
  */
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { useFocusEffect, useRouter, type Href } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -66,12 +66,18 @@ export default function PlanScreen() {
   const today = new Date();
   const todayLocalKey = toLocalDateKey(today.toISOString(), getTzOffsetMin());
 
+  // Sess19 ADR-0031 D1: URL param `?selectedDateKey=YYYY-MM-DD` で記録/予定追加後の遷移先
+  // 日付を受信。 WorkLogConfirm / BulkLogConfirm から `router.replace('/(tabs)/plan?selectedDateKey=...')`
+  // で渡される。 優先順位: URL param > pickerStore.planSelectedDateKey (Sess12 PR-H) > today
+  const params = useLocalSearchParams<{ selectedDateKey?: string }>();
+  const urlDateKey = params.selectedDateKey ?? null;
+
   // Sess12 PR-H: PlanScreen 再 mount 時に pickerStore から 前回の selectedDateKey を restore
   // (PR-G router.replace で PlanScreen 再 mount され selectedDateKey が today reset される副作用 fix)
   const storedDateKey = usePickerStore.getState().planSelectedDateKey;
-  const initialDateKey = storedDateKey ?? todayLocalKey;
-  const initialYear = storedDateKey ? Number(storedDateKey.slice(0, 4)) : today.getFullYear();
-  const initialMonth = storedDateKey ? Number(storedDateKey.slice(5, 7)) - 1 : today.getMonth();
+  const initialDateKey = urlDateKey ?? storedDateKey ?? todayLocalKey;
+  const initialYear = Number(initialDateKey.slice(0, 4));
+  const initialMonth = Number(initialDateKey.slice(5, 7)) - 1;
 
   const [year, setYear] = useState<number>(initialYear);
   const [month, setMonth] = useState<number>(initialMonth);
@@ -84,6 +90,17 @@ export default function PlanScreen() {
     setSelectedDateKeyState(dateKey);
     usePickerStore.getState().setPlanSelectedDateKey(dateKey);
   }, []);
+
+  // Sess19 ADR-0031 D1: URL param `?selectedDateKey=...` 変化時に該当日付を選択状態に。
+  // PlanScreen は tab 内 screen で permanent mount のため initial state では URL param が
+  // 後続の router.replace で更新されず、 useEffect で watch して setSelectedDateKey 経由で同期。
+  useEffect(() => {
+    if (urlDateKey) {
+      setSelectedDateKey(urlDateKey);
+      setYear(Number(urlDateKey.slice(0, 4)));
+      setMonth(Number(urlDateKey.slice(5, 7)) - 1);
+    }
+  }, [urlDateKey, setSelectedDateKey]);
 
   const reload = useCallback(async () => {
     const [evs, bs] = await Promise.all([
@@ -191,7 +208,7 @@ export default function PlanScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_plan_screen"
     >
-      <SearchHeader title={t('planScreenTitle')} showSearch={false} testIdSuffix="plan" />
+      <SearchHeader title={t('calendarScreenTitle')} showSearch={false} testIdSuffix="plan" />
 
       {/* Issue #456: 「針金がけ一覧」 row を削除。mockup `plan-tab-{01,02}.png` 整合、
           動線は CareHub (ふりかえりタブ) → 針金がけ一覧 カード経由が単一情報源。

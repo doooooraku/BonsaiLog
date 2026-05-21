@@ -372,11 +372,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
 
   // --- ADR-0020 Phase 1: 4-tab labels (盆栽 / 予定 / 探す / 設定) ---
   tabBonsai: '盆栽',
-  tabPlan: '予定',
   tabLookBack: 'ふりかえり',
   tabSettings: '設定',
   tabPlanComingSoon: '準備中',
-  planScreenTitle: '作業予定',
 
   // --- ADR-0020 Phase 2: 盆栽タブ Claude Design HomeScreen 整合 ---
   bonsaiBookTitle: '盆栽手帳',
