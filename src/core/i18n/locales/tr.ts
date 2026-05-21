@@ -816,5 +816,14 @@ const tr: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} saksı',
   lookBackCardCalendarTitle: 'Takvim',
   lookBackCardCalendarDesc: 'Aylara göre geçmiş görevleri inceleyin',
+  tabPlan: 'Plan',
+  planSectionScheduled: 'Planlanmış',
+  planSectionRecorded: 'Kaydedildi',
+  planLegendDotRecordedLabel: 'Kaydedildi (●)',
+  planEventRecordButtonSingle: 'Kaydet',
+  planEventRecordButtonGroup: 'Tümünü kaydet ({count})',
+  planEventDeleteConfirmTitle: 'Bu girdi silinsin mi?',
+  planEventDeleteConfirmDesc: 'Silinen girdiler 30 gün sonra kalıcı olarak silinir.',
+  planEventConvertedToast: '{count} planlanan görev kayda dönüştürüldü',
 };
 export default tr;

@@ -818,5 +818,14 @@ const ru: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} горшков',
   lookBackCardCalendarTitle: 'Календарь',
   lookBackCardCalendarDesc: 'Просматривайте задачи по месяцам',
+  tabPlan: 'План',
+  planSectionScheduled: 'Запланировано',
+  planSectionRecorded: 'Записано',
+  planLegendDotRecordedLabel: 'Записано (●)',
+  planEventRecordButtonSingle: 'Записать',
+  planEventRecordButtonGroup: 'Записать все ({count})',
+  planEventDeleteConfirmTitle: 'Удалить эту запись?',
+  planEventDeleteConfirmDesc: 'Удаленные записи стираются навсегда через 30 дней.',
+  planEventConvertedToast: 'Запланированных задач преобразовано в записи: {count}',
 };
 export default ru;

@@ -805,5 +805,14 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} 盆',
   lookBackCardCalendarTitle: '日历',
   lookBackCardCalendarDesc: '按月查看过往作业',
+  tabPlan: '计划',
+  planSectionScheduled: '计划',
+  planSectionRecorded: '记录',
+  planLegendDotRecordedLabel: '记录 (●)',
+  planEventRecordButtonSingle: '记录此项',
+  planEventRecordButtonGroup: '全部记录 ({count} 件)',
+  planEventDeleteConfirmTitle: '删除此项？',
+  planEventDeleteConfirmDesc: '已删除的项目将在 30 天后被永久删除。',
+  planEventConvertedToast: '已将 {count} 项计划转换为记录',
 };
 export default zhHans;

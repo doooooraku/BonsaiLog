@@ -817,5 +817,14 @@ const nl: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} potten',
   lookBackCardCalendarTitle: 'Kalender',
   lookBackCardCalendarDesc: 'Bekijk taken per maand terug',
+  tabPlan: 'Plan',
+  planSectionScheduled: 'Gepland',
+  planSectionRecorded: 'Opgenomen',
+  planLegendDotRecordedLabel: 'Opgenomen (●)',
+  planEventRecordButtonSingle: 'Opnemen',
+  planEventRecordButtonGroup: 'Alles opnemen ({count})',
+  planEventDeleteConfirmTitle: 'Deze invoer verwijderen?',
+  planEventDeleteConfirmDesc: 'Verwijderde invoer wordt na 30 dagen definitief verwijderd.',
+  planEventConvertedToast: '{count} geplande taak(taken) omgezet naar opname',
 };
 export default nl;

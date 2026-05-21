@@ -825,6 +825,15 @@ const ja: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} 鉢',
   lookBackCardCalendarTitle: 'カレンダー',
   lookBackCardCalendarDesc: '月ごとに過去の作業を振り返る',
+  tabPlan: '予定',
+  planSectionScheduled: '予定',
+  planSectionRecorded: '記録',
+  planLegendDotRecordedLabel: '記録 (●)',
+  planEventRecordButtonSingle: '作業を記録',
+  planEventRecordButtonGroup: '全 {count} 件を記録',
+  planEventDeleteConfirmTitle: 'この予定を削除しますか?',
+  planEventDeleteConfirmDesc: '削除した予定は 30 日後に自動的に消えます。',
+  planEventConvertedToast: '予定 {count} 件を記録に変更しました',
 };
 
 export default ja;
