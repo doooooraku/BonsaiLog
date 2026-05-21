@@ -889,17 +889,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // ADR-0035 D7 (Sess23 PR-4-2、 Sess25 ADR-0036 D7 で kebab menu に統合): 旧 planned 緑 button (現在未使用、 削除予定 → cleanup PR で物理削除)
-  groupRecordButton: {
-    marginTop: 6,
-    marginBottom: 4,
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: BRAND_GREEN,
-  },
-  groupRecordButtonText: { fontSize: 12, fontWeight: '600', color: ON_BRAND },
+  // Sess26 PR-η-1 cleanup: 旧 ADR-0035 D7 緑 button styles (groupRecordButton + groupRecordButtonText) を
+  // 物理削除。 ADR-0036 D7 で kebab menu「全 N 件を記録」 item に統合済 (Sess25 PR-⑦)。
   eventCardOverdue: { opacity: 0.6 },
   listLabel: {
     fontFamily: 'Inter_400Regular',
