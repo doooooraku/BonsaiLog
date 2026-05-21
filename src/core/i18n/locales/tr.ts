@@ -59,21 +59,21 @@ const tr: Partial<Record<TranslationKey, string>> = {
   proPlanFreeTitle: 'Ücretsiz',
   proPlanMonthlyTitle: 'Aylık',
   proPlanYearlyTitle: 'Yıllık',
-  proPlanYearlyBadge: 'En avantajlı',
+  proPlanYearlyBadge: 'En iyi değer',
   proBadgeShort: 'PRO',
   priceFree: '₺0 / sonsuza kadar',
   priceLoading: 'Yükleniyor...',
   priceUnavailable: 'Kullanılamıyor',
-  proCtaYearly: 'Yıllık planı başlat',
-  proCtaMonthly: 'Aylık planı başlat',
+  proCtaYearly: 'Yıllık plana başla',
+  proCtaMonthly: 'Aylık plana başla',
   proCtaStayFree: 'Ücretsiz kal',
-  proCtaUpgrade: 'Upgrade to Pro',
+  proCtaUpgrade: "Pro'ya yükselt",
   proFinePrint:
     'Abonelikler otomatik olarak yenilenir. Hesap ayarlarınızdan istediğiniz zaman iptal edebilirsiniz.',
 
   proPlanLifetimeTitle: 'Ömür boyu',
   proPlanLifetimeBadge: 'Tek seferlik',
-  proCtaLifetime: 'Ömür Boyu Satın Al',
+  proCtaLifetime: 'Ömür boyu satın al',
   proLifetimeFinePrint: 'Tek seferlik satın alma. Otomatik yenileme yok.',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
   paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
@@ -277,11 +277,11 @@ const tr: Partial<Record<TranslationKey, string>> = {
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'What you get with Pro',
-  proComparisonPhotos: 'Unlimited photos per bonsai',
-  proComparisonCsv: 'Export care logs to CSV',
-  proComparisonPdf: 'Export bonsai records to PDF',
-  proComparisonNoAds: 'No ads',
+  proComparisonTitle: 'Pro ile elde edecekleriniz',
+  proComparisonPhotos: 'Bonsai başına sınırsız fotoğraf',
+  proComparisonCsv: "Bakım kayıtlarını CSV'ye aktar",
+  proComparisonPdf: "Bonsai kayıtlarını PDF'ye aktar",
+  proComparisonNoAds: 'Reklamsız',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
@@ -310,12 +310,12 @@ const tr: Partial<Record<TranslationKey, string>> = {
   adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
-  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeTitle: "BonsaiLog'a hoş geldiniz",
   onboardingWelcomeBody:
     'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
-  onboardingWelcomeCta: 'Get started',
+  onboardingWelcomeCta: 'Başla',
   onboardingSkip: 'Later',
-  onboardingLanguageTitle: 'Choose your language',
+  onboardingLanguageTitle: 'Dilinizi seçin',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
@@ -438,7 +438,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
   onboardingTut5Cta: 'Enable notifications',
-  onboardingTutNext: 'Next',
+  onboardingTutNext: 'İleri',
   skipForLater: 'Skip for later',
   settingsHelpSection: 'Yardım',
   settingsTutorialReplayTitle: 'Eğitimi tekrar oynat',
@@ -578,7 +578,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
-  onboardingWelcomeNote: 'No account required',
+  onboardingWelcomeNote: 'Bonsai bakım günlüğünüz, tamamen çevrimdışı.',
   detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
@@ -587,7 +587,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
-  onboardingLanguageContinue: 'Continue with this language',
+  onboardingLanguageContinue: 'Devam et',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',

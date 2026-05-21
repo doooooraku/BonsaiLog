@@ -59,15 +59,15 @@ const fr: Partial<Record<TranslationKey, string>> = {
   proPlanFreeTitle: 'Gratuit',
   proPlanMonthlyTitle: 'Mensuel',
   proPlanYearlyTitle: 'Annuel',
-  proPlanYearlyBadge: 'Meilleure offre',
+  proPlanYearlyBadge: 'Meilleur rapport',
   proBadgeShort: 'PRO',
   priceFree: '0 € / pour toujours',
   priceLoading: 'Chargement...',
   priceUnavailable: 'Indisponible',
-  proCtaYearly: 'Choisir le plan annuel',
-  proCtaMonthly: 'Choisir le plan mensuel',
+  proCtaYearly: 'Choisir le forfait annuel',
+  proCtaMonthly: 'Choisir le forfait mensuel',
   proCtaStayFree: 'Rester en gratuit',
-  proCtaUpgrade: 'Upgrade to Pro',
+  proCtaUpgrade: 'Passer à Pro',
   proFinePrint:
     "L'abonnement se renouvelle automatiquement. Vous pouvez annuler à tout moment dans les paramètres de votre compte.",
 
@@ -278,11 +278,11 @@ const fr: Partial<Record<TranslationKey, string>> = {
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'What you get with Pro',
-  proComparisonPhotos: 'Unlimited photos per bonsai',
-  proComparisonCsv: 'Export care logs to CSV',
-  proComparisonPdf: 'Export bonsai records to PDF',
-  proComparisonNoAds: 'No ads',
+  proComparisonTitle: 'Ce que Pro vous offre',
+  proComparisonPhotos: 'Photos illimitées par bonsaï',
+  proComparisonCsv: 'Exporter les journaux en CSV',
+  proComparisonPdf: 'Exporter les fiches en PDF',
+  proComparisonNoAds: 'Sans publicité',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
@@ -311,12 +311,12 @@ const fr: Partial<Record<TranslationKey, string>> = {
   adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
-  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeTitle: 'Bienvenue dans BonsaiLog',
   onboardingWelcomeBody:
     'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
-  onboardingWelcomeCta: 'Get started',
+  onboardingWelcomeCta: 'Commencer',
   onboardingSkip: 'Later',
-  onboardingLanguageTitle: 'Choose your language',
+  onboardingLanguageTitle: 'Choisissez votre langue',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
@@ -439,7 +439,7 @@ const fr: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
   onboardingTut5Cta: 'Enable notifications',
-  onboardingTutNext: 'Next',
+  onboardingTutNext: 'Suivant',
   skipForLater: 'Skip for later',
   settingsHelpSection: 'Aide',
   settingsTutorialReplayTitle: 'Revoir le tutoriel',
@@ -579,7 +579,7 @@ const fr: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
-  onboardingWelcomeNote: 'No account required',
+  onboardingWelcomeNote: 'Votre journal de soins bonsaï, entièrement hors ligne.',
   detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
@@ -588,7 +588,7 @@ const fr: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
-  onboardingLanguageContinue: 'Continue with this language',
+  onboardingLanguageContinue: 'Continuer',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',

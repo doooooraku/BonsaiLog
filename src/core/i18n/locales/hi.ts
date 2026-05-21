@@ -54,20 +54,20 @@ const hi: Partial<Record<TranslationKey, string>> = {
   restoreDesc: 'इस खाते से की गई खरीदारी पुनर्स्थापित करें।',
 
   // --- Pro / Paywall ---
-  proTitle: 'Pro में अपग्रेड करें',
+  proTitle: 'Pro में अपग्रेड',
   paywallModalHeaderTitle: 'BonsaiLog Pro',
-  proPlanFreeTitle: 'निःशुल्क',
+  proPlanFreeTitle: 'मुफ़्त',
   proPlanMonthlyTitle: 'मासिक',
   proPlanYearlyTitle: 'वार्षिक',
-  proPlanYearlyBadge: 'सबसे किफायती',
+  proPlanYearlyBadge: 'बेहतरीन मूल्य',
   proBadgeShort: 'PRO',
   priceFree: '₹0 / हमेशा के लिए',
   priceLoading: 'लोड हो रहा है...',
   priceUnavailable: 'अनुपलब्ध',
-  proCtaYearly: 'वार्षिक प्लान शुरू करें',
-  proCtaMonthly: 'मासिक प्लान शुरू करें',
-  proCtaStayFree: 'निःशुल्क जारी रखें',
-  proCtaUpgrade: 'Upgrade to Pro',
+  proCtaYearly: 'वार्षिक योजना शुरू',
+  proCtaMonthly: 'मासिक योजना शुरू',
+  proCtaStayFree: 'मुफ़्त ही रखें',
+  proCtaUpgrade: 'Pro में अपग्रेड',
   proFinePrint:
     'सदस्यता स्वचालित रूप से नवीनीकृत होती है। आप अपने खाता सेटिंग्स में कभी भी रद्द कर सकते हैं।',
 
@@ -277,11 +277,11 @@ const hi: Partial<Record<TranslationKey, string>> = {
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'What you get with Pro',
-  proComparisonPhotos: 'Unlimited photos per bonsai',
-  proComparisonCsv: 'Export care logs to CSV',
-  proComparisonPdf: 'Export bonsai records to PDF',
-  proComparisonNoAds: 'No ads',
+  proComparisonTitle: 'Pro में आपको क्या मिलता है',
+  proComparisonPhotos: 'प्रति बोनसाई असीमित तस्वीरें',
+  proComparisonCsv: 'देखभाल लॉग CSV में निर्यात',
+  proComparisonPdf: 'बोनसाई रिकॉर्ड PDF में निर्यात',
+  proComparisonNoAds: 'कोई विज्ञापन नहीं',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
@@ -310,12 +310,12 @@ const hi: Partial<Record<TranslationKey, string>> = {
   adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
-  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeTitle: 'BonsaiLog में आपका स्वागत है',
   onboardingWelcomeBody:
     'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
-  onboardingWelcomeCta: 'Get started',
+  onboardingWelcomeCta: 'शुरू करें',
   onboardingSkip: 'Later',
-  onboardingLanguageTitle: 'Choose your language',
+  onboardingLanguageTitle: 'अपनी भाषा चुनें',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
@@ -438,7 +438,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
   onboardingTut5Cta: 'Enable notifications',
-  onboardingTutNext: 'Next',
+  onboardingTutNext: 'अगला',
   skipForLater: 'Skip for later',
   settingsHelpSection: 'सहायता',
   settingsTutorialReplayTitle: 'ट्यूटोरियल फिर देखें',
@@ -578,7 +578,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
-  onboardingWelcomeNote: 'No account required',
+  onboardingWelcomeNote: 'आपका बोनसाई देखभाल लॉग, पूरी तरह ऑफ़लाइन।',
   detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
@@ -587,7 +587,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
-  onboardingLanguageContinue: 'Continue with this language',
+  onboardingLanguageContinue: 'जारी रखें',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',

@@ -64,14 +64,14 @@ const vi: Partial<Record<TranslationKey, string>> = {
   priceFree: '0đ / vĩnh viễn',
   priceLoading: 'Đang tải...',
   priceUnavailable: 'Không khả dụng',
-  proCtaYearly: 'Bắt đầu gói năm',
-  proCtaMonthly: 'Bắt đầu gói tháng',
-  proCtaStayFree: 'Tiếp tục miễn phí',
-  proCtaUpgrade: 'Upgrade to Pro',
+  proCtaYearly: 'Bắt đầu gói hàng năm',
+  proCtaMonthly: 'Bắt đầu gói hàng tháng',
+  proCtaStayFree: 'Giữ miễn phí',
+  proCtaUpgrade: 'Nâng cấp lên Pro',
   proFinePrint: 'Gói đăng ký tự động gia hạn. Hủy bất cứ lúc nào trong cài đặt tài khoản.',
 
   proPlanLifetimeTitle: 'Trọn đời',
-  proPlanLifetimeBadge: 'Thanh toán một lần',
+  proPlanLifetimeBadge: 'Một lần',
   proCtaLifetime: 'Mua trọn đời',
   proLifetimeFinePrint: 'Mua một lần. Không tự động gia hạn.',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
@@ -276,11 +276,11 @@ const vi: Partial<Record<TranslationKey, string>> = {
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'What you get with Pro',
-  proComparisonPhotos: 'Unlimited photos per bonsai',
-  proComparisonCsv: 'Export care logs to CSV',
-  proComparisonPdf: 'Export bonsai records to PDF',
-  proComparisonNoAds: 'No ads',
+  proComparisonTitle: 'Những gì bạn nhận được với Pro',
+  proComparisonPhotos: 'Ảnh không giới hạn mỗi bonsai',
+  proComparisonCsv: 'Xuất nhật ký chăm sóc sang CSV',
+  proComparisonPdf: 'Xuất hồ sơ bonsai sang PDF',
+  proComparisonNoAds: 'Không quảng cáo',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
@@ -309,12 +309,12 @@ const vi: Partial<Record<TranslationKey, string>> = {
   adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
-  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeTitle: 'Chào mừng đến với BonsaiLog',
   onboardingWelcomeBody:
     'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
-  onboardingWelcomeCta: 'Get started',
+  onboardingWelcomeCta: 'Bắt đầu',
   onboardingSkip: 'Later',
-  onboardingLanguageTitle: 'Choose your language',
+  onboardingLanguageTitle: 'Chọn ngôn ngữ',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
@@ -437,7 +437,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
   onboardingTut5Cta: 'Enable notifications',
-  onboardingTutNext: 'Next',
+  onboardingTutNext: 'Tiếp',
   skipForLater: 'Skip for later',
   settingsHelpSection: 'Trợ giúp',
   settingsTutorialReplayTitle: 'Xem lại hướng dẫn',
@@ -577,7 +577,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
-  onboardingWelcomeNote: 'No account required',
+  onboardingWelcomeNote: 'Nhật ký chăm sóc bonsai của bạn, hoàn toàn ngoại tuyến.',
   detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
@@ -586,7 +586,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
-  onboardingLanguageContinue: 'Continue with this language',
+  onboardingLanguageContinue: 'Tiếp tục',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',

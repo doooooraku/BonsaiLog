@@ -59,19 +59,19 @@ const ko: Partial<Record<TranslationKey, string>> = {
   proPlanFreeTitle: '무료',
   proPlanMonthlyTitle: '월간',
   proPlanYearlyTitle: '연간',
-  proPlanYearlyBadge: '최고의 선택',
+  proPlanYearlyBadge: '최고 가성비',
   proBadgeShort: 'PRO',
   priceFree: '₩0 / 평생',
   priceLoading: '로딩 중...',
   priceUnavailable: '이용 불가',
   proCtaYearly: '연간 플랜 시작',
   proCtaMonthly: '월간 플랜 시작',
-  proCtaStayFree: '무료로 계속 사용',
-  proCtaUpgrade: 'Upgrade to Pro',
+  proCtaStayFree: '무료 유지',
+  proCtaUpgrade: 'Pro로 업그레이드',
   proFinePrint: '구독은 자동으로 갱신됩니다. 계정 설정에서 언제든지 해지할 수 있습니다.',
 
   proPlanLifetimeTitle: '평생',
-  proPlanLifetimeBadge: '일회성 결제',
+  proPlanLifetimeBadge: '1회 결제',
   proCtaLifetime: '평생 구매',
   proLifetimeFinePrint: '일회성 구매입니다. 자동 갱신이 없습니다.',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
@@ -276,11 +276,11 @@ const ko: Partial<Record<TranslationKey, string>> = {
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'What you get with Pro',
-  proComparisonPhotos: 'Unlimited photos per bonsai',
-  proComparisonCsv: 'Export care logs to CSV',
-  proComparisonPdf: 'Export bonsai records to PDF',
-  proComparisonNoAds: 'No ads',
+  proComparisonTitle: 'Pro에서 받는 혜택',
+  proComparisonPhotos: '분재당 무제한 사진',
+  proComparisonCsv: '관리 기록 CSV 내보내기',
+  proComparisonPdf: '분재 기록 PDF 내보내기',
+  proComparisonNoAds: '광고 없음',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
@@ -309,12 +309,12 @@ const ko: Partial<Record<TranslationKey, string>> = {
   adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
-  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeTitle: 'BonsaiLog에 오신 것을 환영합니다',
   onboardingWelcomeBody:
     'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
-  onboardingWelcomeCta: 'Get started',
+  onboardingWelcomeCta: '시작하기',
   onboardingSkip: 'Later',
-  onboardingLanguageTitle: 'Choose your language',
+  onboardingLanguageTitle: '언어 선택',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
@@ -437,7 +437,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
   onboardingTut5Cta: 'Enable notifications',
-  onboardingTutNext: 'Next',
+  onboardingTutNext: '다음',
   skipForLater: 'Skip for later',
   settingsHelpSection: '도움말',
   settingsTutorialReplayTitle: '튜토리얼 다시 보기',
@@ -577,7 +577,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
-  onboardingWelcomeNote: 'No account required',
+  onboardingWelcomeNote: '완전 오프라인 분재 관리 일지.',
   detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
@@ -586,7 +586,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
-  onboardingLanguageContinue: 'Continue with this language',
+  onboardingLanguageContinue: '계속',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',

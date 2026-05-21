@@ -56,24 +56,24 @@ const it: Partial<Record<TranslationKey, string>> = {
   // --- Pro / Paywall ---
   proTitle: 'Passa a Pro',
   paywallModalHeaderTitle: 'BonsaiLog Pro',
-  proPlanFreeTitle: 'Gratis',
+  proPlanFreeTitle: 'Gratuito',
   proPlanMonthlyTitle: 'Mensile',
   proPlanYearlyTitle: 'Annuale',
-  proPlanYearlyBadge: 'Migliore offerta',
+  proPlanYearlyBadge: 'Miglior valore',
   proBadgeShort: 'PRO',
   priceFree: '0 € / per sempre',
   priceLoading: 'Caricamento...',
   priceUnavailable: 'Non disponibile',
-  proCtaYearly: 'Inizia il piano annuale',
-  proCtaMonthly: 'Inizia il piano mensile',
-  proCtaStayFree: 'Resta gratis',
-  proCtaUpgrade: 'Upgrade to Pro',
+  proCtaYearly: 'Inizia piano annuale',
+  proCtaMonthly: 'Inizia piano mensile',
+  proCtaStayFree: 'Continua gratis',
+  proCtaUpgrade: 'Passa a Pro',
   proFinePrint:
     'Gli abbonamenti si rinnovano automaticamente. Puoi annullare in qualsiasi momento dalle impostazioni del tuo account.',
 
   proPlanLifetimeTitle: 'A vita',
-  proPlanLifetimeBadge: 'Pagamento unico',
-  proCtaLifetime: 'Acquisto a vita',
+  proPlanLifetimeBadge: 'Una tantum',
+  proCtaLifetime: 'Acquista a vita',
   proLifetimeFinePrint: 'Acquisto unico. Nessun rinnovo automatico.',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
   paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
@@ -278,11 +278,11 @@ const it: Partial<Record<TranslationKey, string>> = {
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'What you get with Pro',
-  proComparisonPhotos: 'Unlimited photos per bonsai',
-  proComparisonCsv: 'Export care logs to CSV',
-  proComparisonPdf: 'Export bonsai records to PDF',
-  proComparisonNoAds: 'No ads',
+  proComparisonTitle: 'Cosa ottieni con Pro',
+  proComparisonPhotos: 'Foto illimitate per bonsai',
+  proComparisonCsv: 'Esporta registri in CSV',
+  proComparisonPdf: 'Esporta schede in PDF',
+  proComparisonNoAds: 'Senza pubblicità',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
@@ -311,12 +311,12 @@ const it: Partial<Record<TranslationKey, string>> = {
   adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
-  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeTitle: 'Benvenuto in BonsaiLog',
   onboardingWelcomeBody:
     'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
-  onboardingWelcomeCta: 'Get started',
+  onboardingWelcomeCta: 'Inizia',
   onboardingSkip: 'Later',
-  onboardingLanguageTitle: 'Choose your language',
+  onboardingLanguageTitle: 'Scegli la tua lingua',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
@@ -439,7 +439,7 @@ const it: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
   onboardingTut5Cta: 'Enable notifications',
-  onboardingTutNext: 'Next',
+  onboardingTutNext: 'Avanti',
   skipForLater: 'Skip for later',
   settingsHelpSection: 'Aiuto',
   settingsTutorialReplayTitle: 'Rivedi tutorial',
@@ -580,7 +580,7 @@ const it: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
-  onboardingWelcomeNote: 'No account required',
+  onboardingWelcomeNote: 'Il tuo diario di cura del bonsai, completamente offline.',
   detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
@@ -589,7 +589,7 @@ const it: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
-  onboardingLanguageContinue: 'Continue with this language',
+  onboardingLanguageContinue: 'Continua',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',
