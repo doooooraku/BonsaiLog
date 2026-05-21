@@ -40,6 +40,7 @@ import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
 import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type Bonsai, type Event, type EventType } from '@/src/db/schema';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
+import { EventRow } from '@/src/features/event/EventRow';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
 import { CalendarDot } from '@/src/features/plan/CalendarDot';
 import { CalendarLegend } from '@/src/features/plan/CalendarLegend';
@@ -61,7 +62,7 @@ function pad(n: number): string {
 }
 
 export default function PlanScreen() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const router = useRouter();
   const c = useColors();
   const tabBarHeight = useBottomTabBarHeight();
@@ -421,41 +422,30 @@ export default function PlanScreen() {
                               const b = bonsaiMap.get(e.bonsaiId);
                               const isOverdue =
                                 toLocalDateKey(e.occurredAtUtc, tzOffsetMin) < todayLocalKey;
+                              // Sess22 ADR-0034 D4/D5: EventRow 流用で bonsai-detail history と pixel 整合
                               return (
-                                <Pressable
+                                <View
                                   key={e.id}
-                                  accessibilityRole="button"
-                                  accessibilityLabel={b?.name ?? ''}
-                                  style={[styles.eventCard, isOverdue && styles.eventCardOverdue]}
-                                  onPress={() => {
-                                    router.push(
-                                      `/(tabs)/bonsai/${e.bonsaiId}?tab=timeline` as Href,
-                                    );
-                                  }}
+                                  style={isOverdue && styles.eventCardOverdue}
                                   testID={`e2e_plan_event_${e.id}`}
                                 >
-                                  <View style={styles.eventIconBox}>
-                                    {e.type === 'watering' ? (
-                                      <DropletIcon size={18} />
-                                    ) : (
-                                      <EventIcon type={e.type as EventType} size={18} />
+                                  <EventRow
+                                    ev={e}
+                                    eventsForBonsai={events.filter(
+                                      (x) => x.bonsaiId === e.bonsaiId,
                                     )}
-                                  </View>
-                                  <View style={styles.eventBody}>
-                                    <ThemedText
-                                      style={[
-                                        styles.eventBonsai,
-                                        isOverdue && styles.eventBonsaiOverdue,
-                                      ]}
-                                      numberOfLines={1}
-                                    >
-                                      {b?.name ?? ''}
-                                    </ThemedText>
-                                    <ThemedText style={styles.eventLabel}>
-                                      {t(`eventType_${e.type}` as Parameters<typeof t>[0])}
-                                    </ThemedText>
-                                  </View>
-                                </Pressable>
+                                    bonsaiName={b?.name}
+                                    lang={lang}
+                                    t={t}
+                                    onPress={(ev) =>
+                                      router.push(
+                                        `/(tabs)/bonsai/${ev.bonsaiId}?tab=timeline` as Href,
+                                      )
+                                    }
+                                    showBonsaiName
+                                    indent
+                                  />
+                                </View>
                               );
                             })}
                           </View>
@@ -514,33 +504,26 @@ export default function PlanScreen() {
                           <View style={styles.expandedContainer}>
                             {events.map((e) => {
                               const b = bonsaiMap.get(e.bonsaiId);
+                              // Sess22 ADR-0034 D4/D5: EventRow 流用で bonsai-detail history と pixel 整合
                               return (
-                                <Pressable
-                                  key={e.id}
-                                  accessibilityRole="button"
-                                  accessibilityLabel={b?.name ?? ''}
-                                  style={styles.eventCard}
-                                  onPress={() => {
-                                    router.push(`/(tabs)/bonsai/${e.bonsaiId}?tab=history` as Href);
-                                  }}
-                                  testID={`e2e_plan_event_${e.id}`}
-                                >
-                                  <View style={styles.eventIconBox}>
-                                    {e.type === 'watering' ? (
-                                      <DropletIcon size={18} />
-                                    ) : (
-                                      <EventIcon type={e.type as EventType} size={18} />
+                                <View key={e.id} testID={`e2e_plan_event_${e.id}`}>
+                                  <EventRow
+                                    ev={e}
+                                    eventsForBonsai={events.filter(
+                                      (x) => x.bonsaiId === e.bonsaiId,
                                     )}
-                                  </View>
-                                  <View style={styles.eventBody}>
-                                    <ThemedText style={styles.eventBonsai} numberOfLines={1}>
-                                      {b?.name ?? ''}
-                                    </ThemedText>
-                                    <ThemedText style={styles.eventLabel}>
-                                      {t(`eventType_${e.type}` as Parameters<typeof t>[0])}
-                                    </ThemedText>
-                                  </View>
-                                </Pressable>
+                                    bonsaiName={b?.name}
+                                    lang={lang}
+                                    t={t}
+                                    onPress={(ev) =>
+                                      router.push(
+                                        `/(tabs)/bonsai/${ev.bonsaiId}?tab=history` as Href,
+                                      )
+                                    }
+                                    showBonsaiName
+                                    indent
+                                  />
+                                </View>
                               );
                             })}
                           </View>
