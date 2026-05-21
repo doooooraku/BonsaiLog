@@ -82,8 +82,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   eventLogCta: '作業を記録',
   eventTypePickerDesc: '何をしましたか?',
   eventEmpty: 'まだ記録がありません。',
-  eventDeleteConfirmTitle: 'この記録をゴミ箱に移しますか?',
-  eventDeleteConfirmDesc: 'ゴミ箱の記録は 30 日後に自動的に削除されます。',
 
   // --- F-05 気遣い型ポップアップ (Issue #25、ADR-0011) ---
   eventType_watering: '水やり',
@@ -825,8 +823,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   planLegendDotRecordedLabel: '記録 (●)',
   planEventRecordButtonSingle: '作業を記録',
   planEventRecordButtonGroup: '全 {count} 件を記録',
-  planEventDeleteConfirmTitle: 'この予定を削除しますか?',
-  planEventDeleteConfirmDesc: '削除した予定は 30 日後に自動的に消えます。',
   planEventConvertedToast: '予定 {count} 件を記録に変更しました',
   planEventDeleteConfirmPlannedSingleTitle: 'この予定を削除しますか?',
   planEventDeleteConfirmLoggedSingleTitle: 'この記録を削除しますか?',

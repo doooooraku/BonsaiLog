@@ -154,9 +154,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   eventLogCta: 'Log a care event',
   eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: 'Brak rekordów pracy',
-  eventDeleteConfirmTitle: 'Usunąć ten rekord?',
-  eventDeleteConfirmDesc:
-    'Ten rekord zostanie przeniesiony do kosza. Możesz go później przywrócić.',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
   eventType_wiring: 'Wiring',
@@ -817,8 +814,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   planLegendDotRecordedLabel: 'Zapisane (●)',
   planEventRecordButtonSingle: 'Zapisz',
   planEventRecordButtonGroup: 'Zapisz wszystkie ({count})',
-  planEventDeleteConfirmTitle: 'Usunąć ten wpis?',
-  planEventDeleteConfirmDesc: 'Usunięte wpisy są trwale usuwane po 30 dniach.',
   planEventConvertedToast: 'Przekształcono {count} zaplanowane zadanie(a) w zapis',
   planEventDeleteConfirmPlannedSingleTitle: 'Usunąć ten plan?',
   planEventDeleteConfirmLoggedSingleTitle: 'Usunąć ten wpis?',

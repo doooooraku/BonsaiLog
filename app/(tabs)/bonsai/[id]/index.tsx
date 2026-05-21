@@ -57,7 +57,16 @@ import {
   updatePhotoCaption,
   type PhotoRead,
 } from '@/src/db/photoRepository';
-import { createEvent, getActiveEventsByBonsai, softDeleteEvent } from '@/src/db/eventRepository';
+import {
+  bulkSoftDeleteEvents,
+  createEvent,
+  getActiveEventsByBonsai,
+  restoreEvents,
+} from '@/src/db/eventRepository';
+import { cancelForEvents } from '@/src/features/notification/cancelForEvent';
+import { ConfirmDialog } from '@/src/components/ConfirmDialog';
+import { showUndoToast } from '@/src/components/Toast';
+import * as Haptics from 'expo-haptics';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { type Event, type EventType } from '@/src/db/schema';
 import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
@@ -233,6 +242,28 @@ export default function BonsaiDetailScreen() {
   // Issue #440 Phase 1: 作業履歴タブのフィルタ chip (すべて / 水やり / 剪定 / 針金 / 植替え)。
   // mockup `bonsai-detail-history-01.png` 整合、横並び single row。
   type HistoryFilter = 'all' | 'watering' | 'pruning' | 'wiring' | 'repotting';
+  // ADR-0036 D1-D5 (Sess25 PR-ζ-2-⑧): event 削除 ConfirmDialog state + Undo callback
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const handleConfirmDelete = useCallback(async () => {
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
+    await bulkSoftDeleteEvents([id]); // R-43 atomic、 単体でも bulk wrapper 経由で統一
+    await cancelForEvents([id], t);
+    await reload();
+    // ADR-0036 D5 / R-44: 4 秒 UndoSnackbar、 [元に戻す] tap で restore
+    showUndoToast(
+      t('undoSnackbarLoggedDeleteN').replace('{count}', '1'),
+      t('undoSnackbarAction'),
+      async () => {
+        await restoreEvents([id]);
+        await cancelForEvents([id], t);
+        await reload();
+      },
+    );
+  }, [pendingDeleteId, t, reload]);
+  const handleCancelDelete = useCallback(() => setPendingDeleteId(null), []);
+
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>('all');
   // 連続日まとめの展開状態 (group の events[0].id を key にして個別開閉)
   const [expandedGroupIds, setExpandedGroupIds] = useState<Set<string>>(new Set());
@@ -900,6 +931,18 @@ export default function BonsaiDetailScreen() {
 
       {/* Sess15 PR-SS: sticky footer 廃止 (PR-PP revert)、
           アーカイブ + 保存 button は BonsaiBasicSection 内 inline に復活 (PR-NN 構造)。 */}
+
+      {/* ADR-0036 D1/D3/D4 (Sess25 PR-ζ-2-⑧): カスタム ConfirmDialog (history タブ = logged 削除) */}
+      <ConfirmDialog
+        visible={pendingDeleteId !== null}
+        title={t('planEventDeleteConfirmLoggedSingleTitle')}
+        confirmLabel={t('delete')}
+        cancelLabel={t('cancel')}
+        destructive
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        testID="e2e_bonsai_detail_confirm_delete"
+      />
     </ThemedView>
   );
 
@@ -916,18 +959,13 @@ export default function BonsaiDetailScreen() {
   // WorkLogConfirm が直接 await + F-05 popup (line 92-129 の persistAndNavigate) で完結するため不要。
   // stale closure bug (deps 欠落の useFocusEffect callback closure が古い item=null を参照) 構造的解消。
 
+  // ADR-0036 D1-D6 (Sess25 PR-ζ-2-⑧): カスタム ConfirmDialog + Haptics + Undo + cancelForEvents 補完
+  // 旧 Alert.alert (eventDeleteConfirmTitle/Desc) → ConfirmDialog + i18n key 統合
+  // (planEventDeleteConfirmLoggedSingleTitle 利用、 history タブ = logged only)
+  // Sess23 PR-3-1 で漏れた cancelForEvent も同時に追加 (cancelForEvents bulk wrapper、 R-43)
   function confirmDeleteEvent(ev: Event) {
-    Alert.alert(t('eventDeleteConfirmTitle'), t('eventDeleteConfirmDesc'), [
-      { text: t('cancel'), style: 'cancel' },
-      {
-        text: t('delete'),
-        style: 'destructive',
-        onPress: async () => {
-          await softDeleteEvent(ev.id);
-          await reload();
-        },
-      },
-    ]);
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // R-45 長押し成功 fb
+    setPendingDeleteId(ev.id);
   }
 }
 
