@@ -23,12 +23,14 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {
+  CalendarIcon,
   ChevronRightIcon,
   DropletIcon,
   SearchIcon,
   TagIcon,
   WireIcon,
 } from '@/src/components/icons';
+import { getTzOffsetMin } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
@@ -40,9 +42,10 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
+import { computePast30DaysKey } from '@/src/features/look-back/computePast30DaysKey';
 
 type CardDef = {
-  key: 'watering' | 'wiring' | 'search' | 'tags';
+  key: 'watering' | 'calendar' | 'wiring' | 'search' | 'tags';
   title: string;
   desc: string;
   Icon: typeof DropletIcon;
@@ -61,6 +64,19 @@ export default function LookBackHubScreen() {
       desc: t('lookBackCardWateringDesc'),
       Icon: DropletIcon,
       onPress: () => router.push('/(tabs)/look-back/watering-history' as Href),
+    },
+    // Sess22 ADR-0034 D6: 「カレンダー」 過去軸 hub (subtitle で「過去 30 日前 default」 差別化)
+    // 下タブ Calendar (今日中心の月ナビ) と意味分離、 「いつ何をしたか日付軸で振り返る」 入口。
+    // 履歴系を連続配置 (watering / calendar / wiring) で発見性向上。
+    {
+      key: 'calendar',
+      title: t('lookBackCardCalendarTitle'),
+      desc: t('lookBackCardCalendarDesc'),
+      Icon: CalendarIcon,
+      onPress: () => {
+        const past30dKey = computePast30DaysKey(new Date(), getTzOffsetMin());
+        router.push(`/(tabs)/plan?selectedDateKey=${past30dKey}` as Href);
+      },
     },
     {
       key: 'wiring',
