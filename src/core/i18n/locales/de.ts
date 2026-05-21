@@ -794,5 +794,7 @@ const de: Partial<Record<TranslationKey, string>> = {
   tabCalendar: 'Calendar',
   calendarScreenTitle: 'Calendar',
   workLogDoneToast: 'Recorded',
+  planSectionUpcoming: 'Upcoming',
+  planSectionDone: 'Done',
 };
 export default de;
