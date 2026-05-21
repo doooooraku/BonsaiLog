@@ -462,11 +462,9 @@ const vi: Partial<Record<TranslationKey, string>> = {
   outdoorModeToggleA11y: 'Toggle outdoor mode',
   // --- ADR-0020 Phase 1: 4-tab labels (English fallback for i18n.test.ts) ---
   tabBonsai: 'Bonsai',
-  tabPlan: 'Plan',
   tabLookBack: 'Activity',
   tabSettings: 'Settings',
   tabPlanComingSoon: 'Coming soon',
-  planScreenTitle: 'Care Schedule',
   // --- ADR-0020 Phase 2: bonsai tab Claude Design HomeScreen (English fallback) ---
   bonsaiBookTitle: 'BonsaiLog',
   homeFilterAll: 'All',

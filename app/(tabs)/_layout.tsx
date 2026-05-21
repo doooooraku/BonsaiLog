@@ -63,7 +63,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="plan"
         options={{
-          title: t('tabPlan'),
+          title: t('tabCalendar'),
           tabBarIcon: ({ color }) => <CalendarIcon size={28} color={color} />,
           tabBarButtonTestID: 'e2e_tab_plan',
         }}
