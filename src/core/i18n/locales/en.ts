@@ -809,6 +809,7 @@ const baseEn = {
   workLogLeafAidSymptom_other: 'Other',
   workLogLeafAidTreatment: 'Treatment',
   workLogLeafAidTreatmentPlaceholder: 'e.g. Remove infected area, apply healing paste',
+  workLogDoneToast: 'Recorded',
 };
 
 export type TranslationKey = keyof typeof baseEn;

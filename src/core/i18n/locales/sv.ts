@@ -800,5 +800,6 @@ const sv: Partial<Record<TranslationKey, string>> = {
   workLogLeafAidSymptom_other: 'Other',
   workLogLeafAidTreatment: 'Treatment',
   workLogLeafAidTreatmentPlaceholder: 'e.g. Remove infected area, apply healing paste',
+  workLogDoneToast: 'Recorded',
 };
 export default sv;
