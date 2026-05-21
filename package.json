@@ -17,6 +17,7 @@
     "i18n:forbidden": "node scripts/i18n-forbidden-words.mjs",
     "i18n:placeholder-audit": "node scripts/i18n-placeholder-audit.mjs",
     "i18n:add-key": "node scripts/i18n-add-key.mjs",
+    "i18n:remove-key": "node scripts/i18n-remove-key.mjs",
     "i18n:apply": "node scripts/i18n/apply-translation.mjs",
     "lint:hardcode": "node scripts/check-hardcode-strings.mjs",
     "config:check": "node scripts/config-check.mjs",
