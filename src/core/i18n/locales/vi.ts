@@ -795,5 +795,15 @@ const vi: Partial<Record<TranslationKey, string>> = {
   workLogDoneToast: 'Recorded',
   planSectionUpcoming: 'Upcoming',
   planSectionDone: 'Done',
+  stackSpeciesPickerTitle: 'Choose species',
+  stackStylePickerTitle: 'Choose style',
+  stackBonsaiMultiSelectTitle: 'Choose bonsai',
+  stackBulkLogConfirmTitle: 'Log together',
+  stackWateringDayTitle: 'Watering this day',
+  stackBonsaiNewTitle: 'Register bonsai',
+  stackBonsaiCreateModalTitle: 'New',
+  stackBonsaiDetailTitle: 'Bonsai detail',
+  stackBonsaiWateringHistoryTitle: 'Watering history',
+  stackWireListTitle: 'Wire list',
 };
 export default vi;
