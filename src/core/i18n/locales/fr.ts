@@ -88,6 +88,7 @@ const fr: Partial<Record<TranslationKey, string>> = {
   // --- Errors ---
   errorLoadFailed: 'Échec du chargement des données.',
   errorSaveFailed: "Échec de l'enregistrement.",
+  errorDeleteFailed: 'Échec de la suppression.',
 
   // --- F-01 Bonsai (P2-01 PR-D, English fallback for v1.0, localized in v1.x) ---
   bonsaiTab: 'Bonsai',
