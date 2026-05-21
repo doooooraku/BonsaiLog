@@ -66,6 +66,7 @@ import {
   groupContinuousEventsAsc,
   type EventGroupEntry,
 } from '@/src/features/event/groupContinuousEvents';
+import { EventRow } from '@/src/features/event/EventRow';
 import { HistoryChipRow } from '@/src/features/event/HistoryChip';
 import { usePickerStore } from '@/src/stores/pickerStore';
 import { WiringPeriodDisplay } from '@/src/features/wiring/WiringPeriodDisplay';
@@ -734,13 +735,13 @@ export default function BonsaiDetailScreen() {
                       </Pressable>
                       {expanded &&
                         entry.events.map((ev) => (
-                          <EventSingleRow
+                          <EventRow
                             key={ev.id}
                             ev={ev}
-                            events={events}
+                            eventsForBonsai={events}
                             lang={lang}
                             t={t}
-                            confirmDeleteEvent={confirmDeleteEvent}
+                            onLongPress={confirmDeleteEvent}
                             indent
                           />
                         ))}
@@ -748,13 +749,13 @@ export default function BonsaiDetailScreen() {
                   );
                 }
                 return (
-                  <EventSingleRow
+                  <EventRow
                     key={entry.event.id}
                     ev={entry.event}
-                    events={events}
+                    eventsForBonsai={events}
                     lang={lang}
                     t={t}
-                    confirmDeleteEvent={confirmDeleteEvent}
+                    onLongPress={confirmDeleteEvent}
                   />
                 );
               })}
@@ -1020,92 +1021,8 @@ function TimelineRow({
   );
 }
 
-/**
- * Issue #440 Phase 1: 作業履歴の単一 event 行 (連続日 group 展開時 + フィルタ後の単独 event)。
- * 元 BonsaiDetailScreen body 内の events.map(...) ロジックを関数化、wiring 装着期間 +
- * scheduled unwire + note + chip 描画を踏襲。
- */
-function EventSingleRow({
-  ev,
-  events,
-  lang,
-  t,
-  confirmDeleteEvent,
-  indent = false,
-}: {
-  ev: Event;
-  events: Event[];
-  lang: string;
-  t: (key: TranslationKey) => string;
-  confirmDeleteEvent: (ev: Event) => void;
-  indent?: boolean;
-}) {
-  let wiringDuration: {
-    weeks: number;
-    kind: 'within' | 'overdue';
-    isUnwired: boolean;
-  } | null = null;
-  let scheduledUnwireLabel: string | null = null;
-  if (ev.type === 'wiring' && ev.status === 'logged') {
-    const days = getDaysSinceWired(ev, new Date(nowUtc() as string));
-    const weeks = getWeeksSinceWired(days);
-    const kind = classifyWiringDuration(days);
-    const isUnwired = events.some(
-      (other) =>
-        other.type === 'unwiring' &&
-        other.status === 'logged' &&
-        other.occurredAtUtc >= ev.occurredAtUtc,
-    );
-    wiringDuration = { weeks, kind, isUnwired };
-    const scheduled = getScheduledUnwireAtWithFallback(ev);
-    if (scheduled) {
-      scheduledUnwireLabel = t('wiringScheduledUnwireSet').replace(
-        '{date}',
-        scheduled.slice(0, 10),
-      );
-    }
-  }
-  return (
-    <Pressable
-      style={[styles.eventRow, indent && styles.eventRowIndent]}
-      accessibilityRole="button"
-      accessibilityLabel={t(`eventType_${ev.type}` as TranslationKey)}
-      onLongPress={() => confirmDeleteEvent(ev)}
-    >
-      <View style={styles.eventIconBox}>
-        <EventIcon type={ev.type as EventType} size={20} />
-      </View>
-      <View style={styles.eventContent}>
-        <View style={styles.eventRowMain}>
-          <ThemedText style={styles.eventLabel}>
-            {t(`eventType_${ev.type}` as TranslationKey)}
-          </ThemedText>
-          <ThemedText style={styles.eventRowDate}>{formatDate(ev.occurredAtUtc, lang)}</ThemedText>
-        </View>
-        {wiringDuration && (
-          <WiringPeriodDisplay
-            weeks={wiringDuration.weeks}
-            kind={wiringDuration.kind}
-            isUnwired={wiringDuration.isUnwired}
-            style={styles.eventRowNote}
-            testID={`e2e_wiring_duration_${ev.id}`}
-          />
-        )}
-        {scheduledUnwireLabel && (
-          <ThemedText style={styles.eventRowNote} testID={`e2e_wiring_scheduled_${ev.id}`}>
-            {scheduledUnwireLabel}
-          </ThemedText>
-        )}
-        {ev.note && (
-          <ThemedText style={styles.eventRowNote} numberOfLines={2}>
-            {ev.note}
-          </ThemedText>
-        )}
-        <HistoryChipRow chips={buildHistoryChips(ev)} />
-      </View>
-    </Pressable>
-  );
-}
+// Sess22 ADR-0034 D5: 旧 EventSingleRow 定義は `src/features/event/EventRow.tsx` に移設、
+// PlanScreen listing でも流用 (整合性レベル 2、 D4)。 削除済、 import は line 70 周辺。
 
 const styles = StyleSheet.create({
   // backgroundColor は useColors の c.background で動的指定 (light/dark 両対応)
