@@ -188,9 +188,35 @@
 
 ---
 
+### R-40. i18n Phase H2 翻訳適用前の glossary.md Read 義務 (Sess20 ADR-0033 D3 由来)
+
+- **ルール**: i18n Phase H2 翻訳適用 PR (画面別 17 言語翻訳適用、 PR-H2-1 〜 PR-H2-7) 着手前に `docs/reference/glossary.md` を必ず Read。 各言語プロペルソナ手動翻訳時、 glossary 概念定義 + 翻訳禁止リスト (bonsai/niwaki/karikomi/nebari/jin/shari/kokedama/yamadori/mame/shohin/akadama/kusamono/sabamiki/bunjin/ishizuki 計 15 語) を厳守。
+- **根拠**: 2026-05-21 Sess20 議論で確認。 Crowdin / Lokalise 2026 業界 standard で「Glossary 早期構築 + 厳守」 が大規模 i18n の最重要 best practice。 「同概念 3 種類の用語」 worst pattern を構造的回避。 user 真意「18 言語手動翻訳」 (ADR-0033 D1) と整合。
+- **自動化**: `scripts/i18n/apply-translation.mjs --glossary docs/reference/glossary.md` (PR-0-2 で追加) で翻訳禁止リスト違反を warn。 Phase 2 で glossary.md 全文 parse 拡張予定。
+- **関連**: ADR-0033 D3 (glossary 厳守) / `docs/reference/glossary.md` (用語集 19 言語統一表記) / `scripts/i18n/apply-translation.mjs` (PR-0-2 で昇格) / Crowdin 2026 best practice
+
+---
+
+### R-41. user 視覚部分の直書きハードコード禁止 (Sess20 ADR-0033 D2 由来)
+
+- **ルール**: 以下 pattern の user 視覚 string は i18n key 化必須、 直書き hardcode 禁止:
+  - JSX text 内日本語: `>[ぁ-んァ-ヶ一-龯][^<]*<`
+  - props string literal 日本語: `title|headerTitle|label|placeholder|message|accessibilityLabel|aria-label|alt|subtitle|caption|hint` 等の prop key で日本語 literal
+  - `Alert.alert\(` 第 1/2 引数 + `Snackbar.show\(` + `Toast.show/success/error/info/warn\(` の user 表示 string
+  - **除外**: console.log/warn/error/info/debug, `__DEV__` 内ブロック (簡易 brace tracking で検出), Sentry tag, `test/__tests__/`, `*.test.ts(x)`, `src/core/i18n/locales/`, `scripts/`, `docs/`
+- **根拠**: 2026-05-21 Sess20 user 追加指示「直書きハードコードは無くしていきましょう」。 Sess19-4 PR-T1a (#690) 完遂後も Stack header 11 件 (modals/_layout.tsx 7 + bonsai/_layout.tsx 3 + plan/_layout.tsx 1) の日本語直書きが残存、 18 言語切替で ja 以外でも日本語表示 = user 信頼喪失。 「注意ではなく構造で防ぐ」 (CLAUDE.md §9 記憶の昇華ルール) 準拠で PreCommit hook + lint:hardcode 機械検証。
+- **自動化**:
+  - `scripts/check-hardcode-strings.mjs` (Sess20 PR-0-3) で grep-based 検知、 violation あれば exit 1
+  - `pnpm lint:hardcode` script 経由
+  - Phase H1 完了 (PR-H1 で 11 件全 fix) 後、 `pnpm verify` に組込 + `.githooks/pre-commit` 連動 (PR-H1 完了 commit に含める or 別 PR)
+  - `--json` mode で CI 連携可能
+- **関連**: ADR-0033 D2 (直書き禁止) / `scripts/check-hardcode-strings.mjs` (PR-0-3 新規) / Sess20 PR-H1 (11 件全件 i18n key 化) / Phase 1 explore agent 報告
+
+---
+
 ## 関連
 
-- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-33 索引 + 運用ルール)
+- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-41 索引 + 運用ルール)
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
