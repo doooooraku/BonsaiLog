@@ -356,3 +356,16 @@ ADR-0031 (カレンダー統一動線) で以下を反映:
 - **Single 動線完了後の遷移先**: 旧「bonsai-detail に戻る (実は stale closure で DB 書込失敗)」 → 「カレンダーに遷移 + 記録した日が選択状態」 (Bulk と統一、 ADR-0031 D1)。
 
 本 ADR §Decision §1 (案 X 記録タブ tap intercept) は引き続き有効、 ADR-0031 はその「完了後遷移先の統一」 を追加する関係性。
+
+### 2026-05-21 Sess22 ADR-0034 D6 起票による「ふりかえり hub」 5 card 化
+
+ADR-0034 D6 (Phase δ) で以下を反映:
+
+- **ふりかえりタブ hub に 5 card 目「カレンダー」 追加** (`app/(tabs)/look-back/index.tsx`):
+  - 順序: watering / **calendar** / wiring / search / tags (履歴系を連続配置で発見性向上)
+  - subtitle: 「月ごとに過去の作業を振り返る」 (i18n `lookBackCardCalendarDesc` 19 言語)
+  - onPress: `router.push('/(tabs)/plan?selectedDateKey=<past30dKey>')` で過去 30 日 default 表示
+- **下タブ Calendar との差別化** (二重動線回避):
+  - 下タブ「カレンダー」: 今日中心の月ナビ (Sess19 ADR-0031 で確立)
+  - ふりかえり hub「カレンダー」: 過去 30 日前 default で「過去軸入口」 文脈
+- 本 ADR §⑤ 「ふりかえりタブは現状維持」 (旧決定) は Sess9 PR-6 「タグを管理」 4 card 化 + 本 Sess22「カレンダー」 5 card 化で **「現状維持」 → 「拡張可」** に方針変更。 「ふりかえり = 振り返り + 整理 + 過去軸入口」 と意義 3 軸拡張。
