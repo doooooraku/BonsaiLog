@@ -192,6 +192,30 @@ export default function PlanScreen() {
     });
   }, []);
 
+  // Sess22 ADR-0034 D7: listing 件数補完「×N (M 鉢)」
+  // PR-2-1 で dot 粒度を作業別 unique 化したため、 listing で「同日 3 鉢 watering」 のような
+  // 件数情報を補完表示。 events.length === uniqueBonsaiCount なら従来通り「×N」 簡潔表示、
+  // 異なる場合「×N (M 鉢)」 で「N 件 → M 鉢」 を明示。 業務プロが視認可能。
+  const formatGroupCount = useCallback(
+    (groupEvents: readonly Event[]): string => {
+      const uniqueBonsaiCount = new Set(groupEvents.map((e) => e.bonsaiId)).size;
+      if (groupEvents.length === uniqueBonsaiCount) return `×${groupEvents.length}`;
+      return `×${groupEvents.length} (${t('planListingBonsaiCount').replace('{count}', String(uniqueBonsaiCount))})`;
+    },
+    [t],
+  );
+
+  const formatGroupAccessibility = useCallback(
+    (groupLabel: string, groupEvents: readonly Event[], toggleText: string): string => {
+      const uniqueBonsaiCount = new Set(groupEvents.map((e) => e.bonsaiId)).size;
+      if (groupEvents.length === uniqueBonsaiCount) {
+        return `${groupLabel} ×${groupEvents.length}, ${toggleText}`;
+      }
+      return `${groupLabel} ${groupEvents.length}件 ${uniqueBonsaiCount}鉢, ${toggleText}`;
+    },
+    [],
+  );
+
   const daysInMonth = getMonthDays(year, month);
   const firstDow = getFirstDow(year, month);
   const cells: (number | null)[] = [];
@@ -358,7 +382,11 @@ export default function PlanScreen() {
                       <View key={`planned-${type}`}>
                         <Pressable
                           accessibilityRole="button"
-                          accessibilityLabel={`${groupLabel} ×${events.length}, ${toggleText}`}
+                          accessibilityLabel={formatGroupAccessibility(
+                            groupLabel,
+                            events,
+                            toggleText,
+                          )}
                           accessibilityState={{ expanded: isExpanded }}
                           style={[styles.groupRow, hasOverdue && styles.groupRowOverdue]}
                           onPress={() => toggleExpand(type)}
@@ -379,7 +407,7 @@ export default function PlanScreen() {
                           </ThemedText>
                           <View style={styles.groupCountBadge}>
                             <ThemedText style={styles.groupCountBadgeText}>
-                              ×{events.length}
+                              {formatGroupCount(events)}
                             </ThemedText>
                           </View>
                           <View style={styles.groupSpacer} />
@@ -452,7 +480,11 @@ export default function PlanScreen() {
                       <View key={`logged-${type}`}>
                         <Pressable
                           accessibilityRole="button"
-                          accessibilityLabel={`${groupLabel} ×${events.length}, ${toggleText}`}
+                          accessibilityLabel={formatGroupAccessibility(
+                            groupLabel,
+                            events,
+                            toggleText,
+                          )}
                           accessibilityState={{ expanded: isExpanded }}
                           style={styles.groupRow}
                           onPress={() => toggleExpand(type)}
@@ -470,7 +502,7 @@ export default function PlanScreen() {
                           </ThemedText>
                           <View style={styles.groupCountBadge}>
                             <ThemedText style={styles.groupCountBadgeText}>
-                              ×{events.length}
+                              {formatGroupCount(events)}
                             </ThemedText>
                           </View>
                           <View style={styles.groupSpacer} />
