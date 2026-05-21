@@ -277,3 +277,23 @@ Sess19 ADR-0031 で「保存後の遷移先をカレンダーに統一」、 Ses
 ## Notes Amended (随時更新)
 
 (初版 2026-05-21、 Sess22 議題 ⑦ 議論結果反映、 7 sub-decision 統合)
+
+### 2026-05-21 Sess22 PR-5-2 retro 完了 — R-25 構造系 4 項目評価 PASS
+
+13 PR (#705-#717) + 1 hotfix (#707) 全 main merge 完了、 R-25 構造系 4 項目評価 PASS (詳細: `docs/reference/tasks/lessons/sess22-r25-evaluation.md`)。
+
+実機 SS 検証 (Sess22 dev build 反映済) で D1-D8 全達成確認:
+
+- ✅ Legend collapsible bar 表示 + 3 row (● 完了 / ○ 予定 / + 複数作業)
+- ✅ dot icon 化 (logged=● filled / planned=○ outline)、 WCAG 1.4.1 解消
+- ✅ 作業別 unique 粒度 (実機 5/20 = ●●● = 3 種別 logged)
+- ✅ ふりかえり hub 5 card (順序: watering / **カレンダー** / 針金がけ一覧 / 盆栽を検索 / タグを管理)
+- ✅ i18n ja proper 整合 (「凡例」 「完了 (●)」 「予定 (○)」 「複数作業 (+)」 等)
+
+### Future Work (Sess23+ 候補)
+
+1. **EventRow `eventsForBonsai` の O(N\*M) を useMemo 化** (PlanScreen で N=1000+ / M=20 で性能課題なら)
+2. **17 言語 `settingsNotifWateringToggle` の意味的整合** (en.ts のみ Sess22 hotfix で `reminders → notifications`、 他 18 言語の各国語 word も「通知」 ベースに統一すべき)
+3. **R-42 自動化** (`scripts/a11y-contrast-check.mjs` を拡張、 AST grep で「色のみ識別」 pattern 検出)
+4. **Legend rehydrate flicker 検証** (persist rehydrate 前 default false → 折りたたみ切替 flicker、 実機で目視確認 + 必要なら `useSettingsBootstrap` で対応)
+5. **plan-tab-dot-icon.yml の DEV seed 固定 date pattern** (本 Sess22 で skip、 flaky 抑制実装後に追加)
