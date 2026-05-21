@@ -172,13 +172,13 @@ const ru: Partial<Record<TranslationKey, string>> = {
   eventType_position_change: 'Position change',
 
   // --- Settings sections (F-05 notification + F-11 move, English fallback for v1.0) ---
-  settingsNotificationSection: 'Notifications',
+  settingsNotificationSection: 'Уведомления',
   settingsEventOverloadToggleDesc:
     'When this is on, a gentle confirmation appears when you log the 6th entry on the same day.',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: 'Settings',
-  settingsBackupSection: 'Move data',
+  settingsBackupSection: 'Резервная копия',
   backupTitle: 'Move data',
   backupExportTitle: 'Create a backup',
   backupExportDesc:
@@ -223,13 +223,13 @@ const ru: Partial<Record<TranslationKey, string>> = {
   wateringLastOverYear: 'Over a year since last watering',
 
   // --- F-15 Theme settings (Phase A、English fallback) ---
-  settingsThemeSection: 'Appearance',
+  settingsThemeSection: 'Внешний вид',
   settingsThemeSystem: 'System',
   settingsThemeLight: 'Light',
   settingsThemeDark: 'Dark',
 
   // --- F-09 Search (Phase A、English fallback) ---
-  settingsSearchSection: 'Search',
+  settingsSearchSection: 'Поиск',
   searchAction: 'Search',
   bulkLog: 'Log all',
   bulkSchedule: 'Select task',
@@ -259,7 +259,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   searchEventSection: 'Care logs',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
-  settingsExportSection: 'Export',
+  settingsExportSection: 'Экспорт',
   exportCsvTitle: 'Export care logs to CSV',
   exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
   exportCsvAction: 'Export CSV',
@@ -297,11 +297,11 @@ const ru: Partial<Record<TranslationKey, string>> = {
   tagsDeleteConfirmBody: 'Tag "{name}" and all of its links to care logs will be removed.',
 
   // --- F-16 Notification settings (Phase B、English fallback) ---
-  settingsNotifSummaryToggle: 'Daily summary notification',
+  settingsNotifSummaryToggle: 'Ежедневная сводка',
   settingsNotifSummaryToggleDesc:
     'Receive a single summary at {time} when you have planned events on that day.',
-  settingsNotifSummaryEditTime: 'Edit notification time',
-  settingsNotifWateringToggle: 'Watering notification',
+  settingsNotifSummaryEditTime: 'Время уведомления',
+  settingsNotifWateringToggle: 'Напоминания о поливе',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
@@ -342,7 +342,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   searchTagFilterClear: 'Clear filter',
 
   // --- F-13 Settings → Account / Paywall entry (Phase 1b、English fallback) ---
-  settingsAccountSection: 'Account',
+  settingsAccountSection: 'Аккаунт',
   settingsAccountProActive: 'Pro member',
   settingsAccountProActiveDesc: 'Manage your subscription from here.',
   settingsAccountProInactiveDesc: 'See plans and upgrade.',
@@ -400,8 +400,8 @@ const ru: Partial<Record<TranslationKey, string>> = {
     'Purchases are not allowed on this device. Please check your device settings.',
   purchasePending:
     'Your purchase is pending approval. We will activate Pro automatically once approved.',
-  settingsRestoreTitle: 'Restore purchases',
-  settingsRestoreDesc: 'Already paid on another device? Restore here.',
+  settingsRestoreTitle: 'Восстановить из резервной копии',
+  settingsRestoreDesc: 'Восстановите данные из файла резервной копии',
   lifetimeWarningTitle: 'Confirm Lifetime purchase',
   lifetimeWarningBody:
     'Existing subscriptions are not auto-cancelled. Please manage them in your Apple ID or Google Play settings.',
@@ -411,8 +411,8 @@ const ru: Partial<Record<TranslationKey, string>> = {
     'You can choose whether to allow the use of an identifier to help measure ad performance.',
   attExplainerAllow: 'If allowed: ads may be more relevant to you.',
   attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
-  settingsExportListPdfTitle: 'Export full list PDF',
-  settingsExportListPdfDesc: 'A4 PDF with cover, list and stats',
+  settingsExportListPdfTitle: 'Экспорт списка бонсай (PDF)',
+  settingsExportListPdfDesc: 'Создать PDF-сводку всех бонсай',
   exportListPdfTitle: 'Full list PDF',
   exportListPdfDesc: 'Generates an A4 PDF with cover, full bonsai list and statistics.',
   exportListPdfAction: 'Generate',
@@ -441,18 +441,18 @@ const ru: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Cta: 'Enable notifications',
   onboardingTutNext: 'Next',
   skipForLater: 'Skip for later',
-  settingsHelpSection: 'Help',
-  settingsTutorialReplayTitle: 'Replay tutorial',
-  settingsTutorialReplayDesc: 'See the 5 feature tutorial screens again from the beginning.',
+  settingsHelpSection: 'Помощь',
+  settingsTutorialReplayTitle: 'Повторить руководство',
+  settingsTutorialReplayDesc: 'Посмотреть вводное руководство снова',
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
-  settingsArchiveSection: 'Archive',
-  settingsArchiveTitle: 'Archived bonsai',
-  settingsArchiveDesc: 'View archived bonsai list',
-  settingsLegalSection: 'Other',
-  settingsLegalTerms: 'Terms of Service',
-  settingsLegalPrivacy: 'Privacy Policy',
-  settingsVersionSection: 'Version',
-  settingsVersionLabel: 'App version',
+  settingsArchiveSection: 'Архив',
+  settingsArchiveTitle: 'Архивированные бонсай',
+  settingsArchiveDesc: 'Просмотр и восстановление архивированных бонсай',
+  settingsLegalSection: 'Юридическое',
+  settingsLegalTerms: 'Условия использования',
+  settingsLegalPrivacy: 'Политика конфиденциальности',
+  settingsVersionSection: 'О приложении',
+  settingsVersionLabel: 'Версия',
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
   outdoorModeToggleA11y: 'Toggle outdoor mode',
@@ -620,11 +620,11 @@ const ru: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Теги',
   bonsaiTagsEmpty: 'Тегов пока нет',
-  settingsThemeRowLabel: 'Theme',
-  settingsLanguageRowLabel: 'Language',
-  settingsNotificationRowLabel: 'Notifications',
+  settingsThemeRowLabel: 'Тема',
+  settingsLanguageRowLabel: 'Язык',
+  settingsNotificationRowLabel: 'Уведомления',
   settingsNotifTimeRangeRowLabel: 'Notification time range',
-  settingsNotifTimeRangeNone: 'No notifications enabled',
+  settingsNotifTimeRangeNone: 'Не задано',
   settingsNotifMasterOffBanner:
     'Notifications are disabled. Turn on the master switch in Settings to use these options.',
   wiringRowUnwireAction: 'Отметить как снятую проволоку',
@@ -676,8 +676,8 @@ const ru: Partial<Record<TranslationKey, string>> = {
   bonsaiTagsAddCta: 'Добавить тег',
   tagShowMore: '+{count} ещё',
   tagShowLess: 'Свернуть',
-  settingsPlanLabel: 'Plan',
-  settingsPlanUpgradeBadge: 'Upgrade',
+  settingsPlanLabel: 'План',
+  settingsPlanUpgradeBadge: 'Обновить',
   bonsaiFieldAcquiredFrom: 'Приобретён у',
   bonsaiFieldAcquiredFromPlaceholder: 'напр. Название питомника',
   bonsaiFieldPotInfo: 'Горшок',
@@ -722,7 +722,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotDepthPlaceholder: 'напр. 10',
   bonsaiFieldPotMaterial: 'Материал',
   bonsaiFieldPotMaterialPlaceholder: 'напр. Глина Токонамэ',
-  settingsPotUnit: 'Pot size unit',
+  settingsPotUnit: 'Единица размера горшка',
   settingsPotUnitCm: 'cm',
   settingsPotUnitMm: 'mm',
   settingsPotUnitInch: 'inch',

@@ -172,13 +172,13 @@ const it: Partial<Record<TranslationKey, string>> = {
   eventType_position_change: 'Position change',
 
   // --- Settings sections (F-05 notification + F-11 move, English fallback for v1.0) ---
-  settingsNotificationSection: 'Notifications',
+  settingsNotificationSection: 'Notifiche',
   settingsEventOverloadToggleDesc:
     'When this is on, a gentle confirmation appears when you log the 6th entry on the same day.',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: 'Settings',
-  settingsBackupSection: 'Move data',
+  settingsBackupSection: 'Backup',
   backupTitle: 'Move data',
   backupExportTitle: 'Create a backup',
   backupExportDesc:
@@ -223,13 +223,13 @@ const it: Partial<Record<TranslationKey, string>> = {
   wateringLastOverYear: 'Over a year since last watering',
 
   // --- F-15 Theme settings (Phase A、English fallback) ---
-  settingsThemeSection: 'Appearance',
+  settingsThemeSection: 'Aspetto',
   settingsThemeSystem: 'System',
   settingsThemeLight: 'Light',
   settingsThemeDark: 'Dark',
 
   // --- F-09 Search (Phase A、English fallback) ---
-  settingsSearchSection: 'Search',
+  settingsSearchSection: 'Ricerca',
   searchAction: 'Search',
   bulkLog: 'Log all',
   bulkSchedule: 'Select task',
@@ -259,7 +259,7 @@ const it: Partial<Record<TranslationKey, string>> = {
   searchEventSection: 'Care logs',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
-  settingsExportSection: 'Export',
+  settingsExportSection: 'Esporta',
   exportCsvTitle: 'Export care logs to CSV',
   exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
   exportCsvAction: 'Export CSV',
@@ -297,11 +297,11 @@ const it: Partial<Record<TranslationKey, string>> = {
   tagsDeleteConfirmBody: 'Tag "{name}" and all of its links to care logs will be removed.',
 
   // --- F-16 Notification settings (Phase B、English fallback) ---
-  settingsNotifSummaryToggle: 'Daily summary notification',
+  settingsNotifSummaryToggle: 'Riepilogo giornaliero',
   settingsNotifSummaryToggleDesc:
     'Receive a single summary at {time} when you have planned events on that day.',
-  settingsNotifSummaryEditTime: 'Edit notification time',
-  settingsNotifWateringToggle: 'Watering notification',
+  settingsNotifSummaryEditTime: 'Orario notifica',
+  settingsNotifWateringToggle: 'Promemoria di annaffiatura',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
@@ -400,8 +400,8 @@ const it: Partial<Record<TranslationKey, string>> = {
     'Purchases are not allowed on this device. Please check your device settings.',
   purchasePending:
     'Your purchase is pending approval. We will activate Pro automatically once approved.',
-  settingsRestoreTitle: 'Restore purchases',
-  settingsRestoreDesc: 'Already paid on another device? Restore here.',
+  settingsRestoreTitle: 'Ripristina dal backup',
+  settingsRestoreDesc: 'Ripristina i dati da un file di backup',
   lifetimeWarningTitle: 'Confirm Lifetime purchase',
   lifetimeWarningBody:
     'Existing subscriptions are not auto-cancelled. Please manage them in your Apple ID or Google Play settings.',
@@ -411,8 +411,8 @@ const it: Partial<Record<TranslationKey, string>> = {
     'You can choose whether to allow the use of an identifier to help measure ad performance.',
   attExplainerAllow: 'If allowed: ads may be more relevant to you.',
   attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
-  settingsExportListPdfTitle: 'Export full list PDF',
-  settingsExportListPdfDesc: 'A4 PDF with cover, list and stats',
+  settingsExportListPdfTitle: 'Esporta lista bonsai (PDF)',
+  settingsExportListPdfDesc: 'Genera un PDF riepilogativo di tutti i bonsai',
   exportListPdfTitle: 'Full list PDF',
   exportListPdfDesc: 'Generates an A4 PDF with cover, full bonsai list and statistics.',
   exportListPdfAction: 'Generate',
@@ -441,18 +441,18 @@ const it: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Cta: 'Enable notifications',
   onboardingTutNext: 'Next',
   skipForLater: 'Skip for later',
-  settingsHelpSection: 'Help',
-  settingsTutorialReplayTitle: 'Replay tutorial',
-  settingsTutorialReplayDesc: 'See the 5 feature tutorial screens again from the beginning.',
+  settingsHelpSection: 'Aiuto',
+  settingsTutorialReplayTitle: 'Rivedi tutorial',
+  settingsTutorialReplayDesc: 'Rivedi il tutorial di benvenuto',
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
-  settingsArchiveSection: 'Archive',
-  settingsArchiveTitle: 'Archived bonsai',
-  settingsArchiveDesc: 'View archived bonsai list',
-  settingsLegalSection: 'Other',
-  settingsLegalTerms: 'Terms of Service',
-  settingsLegalPrivacy: 'Privacy Policy',
-  settingsVersionSection: 'Version',
-  settingsVersionLabel: 'App version',
+  settingsArchiveSection: 'Archivio',
+  settingsArchiveTitle: 'Bonsai archiviati',
+  settingsArchiveDesc: 'Visualizza e ripristina i bonsai archiviati',
+  settingsLegalSection: 'Note legali',
+  settingsLegalTerms: 'Termini di servizio',
+  settingsLegalPrivacy: 'Informativa sulla privacy',
+  settingsVersionSection: 'Informazioni',
+  settingsVersionLabel: 'Versione',
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
   outdoorModeToggleA11y: 'Toggle outdoor mode',
@@ -621,11 +621,11 @@ const it: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Etichette',
   bonsaiTagsEmpty: 'Nessuna etichetta',
-  settingsThemeRowLabel: 'Theme',
-  settingsLanguageRowLabel: 'Language',
-  settingsNotificationRowLabel: 'Notifications',
+  settingsThemeRowLabel: 'Tema',
+  settingsLanguageRowLabel: 'Lingua',
+  settingsNotificationRowLabel: 'Notifiche',
   settingsNotifTimeRangeRowLabel: 'Notification time range',
-  settingsNotifTimeRangeNone: 'No notifications enabled',
+  settingsNotifTimeRangeNone: 'Non impostato',
   settingsNotifMasterOffBanner:
     'Notifications are disabled. Turn on the master switch in Settings to use these options.',
   wiringRowUnwireAction: 'Segna come slegato',
@@ -677,8 +677,8 @@ const it: Partial<Record<TranslationKey, string>> = {
   bonsaiTagsAddCta: 'Aggiungi etichetta',
   tagShowMore: '+{count} altri',
   tagShowLess: 'Mostra meno',
-  settingsPlanLabel: 'Plan',
-  settingsPlanUpgradeBadge: 'Upgrade',
+  settingsPlanLabel: 'Piano',
+  settingsPlanUpgradeBadge: 'Aggiorna',
   bonsaiFieldAcquiredFrom: 'Acquisito da',
   bonsaiFieldAcquiredFromPlaceholder: 'es. Nome del vivaio',
   bonsaiFieldPotInfo: 'Vaso',
@@ -723,7 +723,7 @@ const it: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotDepthPlaceholder: 'es. 10',
   bonsaiFieldPotMaterial: 'Materiale',
   bonsaiFieldPotMaterialPlaceholder: 'es. Argilla di Tokoname',
-  settingsPotUnit: 'Pot size unit',
+  settingsPotUnit: 'Unità dimensione vaso',
   settingsPotUnitCm: 'cm',
   settingsPotUnitMm: 'mm',
   settingsPotUnitInch: 'inch',

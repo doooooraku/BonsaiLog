@@ -183,7 +183,7 @@ const baseEn = {
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: 'Settings',
-  settingsBackupSection: 'Move data',
+  settingsBackupSection: 'Backup',
   backupTitle: 'Move data',
   backupExportTitle: 'Create a backup',
   backupExportDesc:
@@ -303,11 +303,11 @@ const baseEn = {
   tagsDeleteConfirmBody: 'Tag "{name}" and all of its links to care logs will be removed.',
 
   // --- F-16 Notification settings (Phase B, Issue #30, ADR-0014) ---
-  settingsNotifSummaryToggle: 'Daily summary notification',
+  settingsNotifSummaryToggle: 'Daily summary',
   settingsNotifSummaryToggleDesc:
     'Receive a single summary at {time} when you have planned events on that day.',
-  settingsNotifSummaryEditTime: 'Edit notification time',
-  settingsNotifWateringToggle: 'Watering notification',
+  settingsNotifSummaryEditTime: 'Notification time',
+  settingsNotifWateringToggle: 'Watering reminders',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
@@ -539,8 +539,8 @@ const baseEn = {
     'Purchases are not allowed on this device. Please check your device settings.',
   purchasePending:
     'Your purchase is pending approval. We will activate Pro automatically once approved.',
-  settingsRestoreTitle: 'Restore purchases',
-  settingsRestoreDesc: 'Already paid on another device? Restore here.',
+  settingsRestoreTitle: 'Restore from backup',
+  settingsRestoreDesc: 'Restore your data from a backup file',
   lifetimeWarningTitle: 'Confirm Lifetime purchase',
   lifetimeWarningBody:
     'Existing subscriptions are not auto-cancelled. Please manage them in your Apple ID or Google Play settings.',
@@ -550,8 +550,8 @@ const baseEn = {
     'You can choose whether to allow the use of an identifier to help measure ad performance.',
   attExplainerAllow: 'If allowed: ads may be more relevant to you.',
   attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
-  settingsExportListPdfTitle: 'Export full list PDF',
-  settingsExportListPdfDesc: 'A4 PDF with cover, list and stats',
+  settingsExportListPdfTitle: 'Export bonsai list (PDF)',
+  settingsExportListPdfDesc: 'Generate a PDF summary of all bonsai for printing or sharing',
   exportListPdfTitle: 'Full list PDF',
   exportListPdfDesc: 'Generates an A4 PDF with cover, full bonsai list and statistics.',
   exportListPdfAction: 'Generate',
@@ -582,17 +582,17 @@ const baseEn = {
   skipForLater: 'Skip for later',
   settingsHelpSection: 'Help',
   settingsTutorialReplayTitle: 'Replay tutorial',
-  settingsTutorialReplayDesc: 'See the 5 feature tutorial screens again from the beginning.',
+  settingsTutorialReplayDesc: 'Watch the onboarding tutorial again',
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
   settingsArchiveSection: 'Archive',
   settingsArchiveTitle: 'Archived bonsai',
   settingsArchivedCountValue: '{count} items',
-  settingsArchiveDesc: 'View archived bonsai list',
-  settingsLegalSection: 'Other',
+  settingsArchiveDesc: 'View and restore archived bonsai',
+  settingsLegalSection: 'Legal',
   settingsLegalTerms: 'Terms of Service',
   settingsLegalPrivacy: 'Privacy Policy',
-  settingsVersionSection: 'Version',
-  settingsVersionLabel: 'App version',
+  settingsVersionSection: 'About',
+  settingsVersionLabel: 'Version',
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
   outdoorModeToggleA11y: 'Toggle outdoor mode',
@@ -644,7 +644,7 @@ const baseEn = {
   settingsLanguageRowLabel: 'Language',
   settingsNotificationRowLabel: 'Notifications',
   settingsNotifTimeRangeRowLabel: 'Notification time range',
-  settingsNotifTimeRangeNone: 'No notifications enabled',
+  settingsNotifTimeRangeNone: 'Not set',
   settingsNotifMasterOffBanner:
     'Notifications are disabled. Turn on the master switch in Settings to use these options.',
   wiringRowUnwireAction: 'Mark as unwired',

@@ -169,13 +169,13 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   eventType_position_change: 'Position change',
 
   // --- Settings sections (F-05 notification + F-11 move, English fallback for v1.0) ---
-  settingsNotificationSection: 'Notifications',
+  settingsNotificationSection: '通知',
   settingsEventOverloadToggleDesc:
     'When this is on, a gentle confirmation appears when you log the 6th entry on the same day.',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: '設定',
-  settingsBackupSection: '搬家',
+  settingsBackupSection: '備份',
   backupTitle: '搬家',
   backupExportTitle: '建立備份',
   backupExportDesc:
@@ -213,13 +213,13 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   wateringLastOverYear: 'Over a year since last watering',
 
   // --- F-15 Theme settings (Phase A、English fallback) ---
-  settingsThemeSection: 'Appearance',
+  settingsThemeSection: '外觀',
   settingsThemeSystem: 'System',
   settingsThemeLight: 'Light',
   settingsThemeDark: 'Dark',
 
   // --- F-09 Search (Phase A、English fallback) ---
-  settingsSearchSection: 'Search',
+  settingsSearchSection: '搜尋',
   searchAction: 'Search',
   bulkLog: 'Log all',
   bulkSchedule: 'Select task',
@@ -249,7 +249,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   searchEventSection: 'Care logs',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
-  settingsExportSection: 'Export',
+  settingsExportSection: '匯出',
   exportCsvTitle: 'Export care logs to CSV',
   exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
   exportCsvAction: 'Export CSV',
@@ -287,11 +287,11 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   tagsDeleteConfirmBody: 'Tag "{name}" and all of its links to care logs will be removed.',
 
   // --- F-16 Notification settings (Phase B、English fallback) ---
-  settingsNotifSummaryToggle: 'Daily summary notification',
+  settingsNotifSummaryToggle: '每日摘要',
   settingsNotifSummaryToggleDesc:
     'Receive a single summary at {time} when you have planned events on that day.',
-  settingsNotifSummaryEditTime: 'Edit notification time',
-  settingsNotifWateringToggle: 'Watering notification',
+  settingsNotifSummaryEditTime: '通知時間',
+  settingsNotifWateringToggle: '澆水提醒',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
@@ -332,7 +332,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   searchTagFilterClear: 'Clear filter',
 
   // --- F-13 Settings → Account / Paywall entry (Phase 1b、English fallback) ---
-  settingsAccountSection: 'Account',
+  settingsAccountSection: '帳號',
   settingsAccountProActive: 'Pro member',
   settingsAccountProActiveDesc: 'Manage your subscription from here.',
   settingsAccountProInactiveDesc: 'See plans and upgrade.',
@@ -390,8 +390,8 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
     'Purchases are not allowed on this device. Please check your device settings.',
   purchasePending:
     'Your purchase is pending approval. We will activate Pro automatically once approved.',
-  settingsRestoreTitle: 'Restore purchases',
-  settingsRestoreDesc: 'Already paid on another device? Restore here.',
+  settingsRestoreTitle: '從備份還原',
+  settingsRestoreDesc: '從備份檔案還原您的資料',
   lifetimeWarningTitle: 'Confirm Lifetime purchase',
   lifetimeWarningBody:
     'Existing subscriptions are not auto-cancelled. Please manage them in your Apple ID or Google Play settings.',
@@ -401,8 +401,8 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
     'You can choose whether to allow the use of an identifier to help measure ad performance.',
   attExplainerAllow: 'If allowed: ads may be more relevant to you.',
   attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
-  settingsExportListPdfTitle: 'Export full list PDF',
-  settingsExportListPdfDesc: 'A4 PDF with cover, list and stats',
+  settingsExportListPdfTitle: '匯出盆栽列表 (PDF)',
+  settingsExportListPdfDesc: '產生所有盆栽的 PDF 摘要',
   exportListPdfTitle: 'Full list PDF',
   exportListPdfDesc: 'Generates an A4 PDF with cover, full bonsai list and statistics.',
   exportListPdfAction: 'Generate',
@@ -431,18 +431,18 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Cta: 'Enable notifications',
   onboardingTutNext: 'Next',
   skipForLater: 'Skip for later',
-  settingsHelpSection: 'Help',
-  settingsTutorialReplayTitle: 'Replay tutorial',
-  settingsTutorialReplayDesc: 'See the 5 feature tutorial screens again from the beginning.',
+  settingsHelpSection: '說明',
+  settingsTutorialReplayTitle: '重看教學',
+  settingsTutorialReplayDesc: '再次觀看入門教學',
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
-  settingsArchiveSection: 'Archive',
-  settingsArchiveTitle: 'Archived bonsai',
-  settingsArchiveDesc: 'View archived bonsai list',
-  settingsLegalSection: 'Other',
-  settingsLegalTerms: 'Terms of Service',
-  settingsLegalPrivacy: 'Privacy Policy',
-  settingsVersionSection: 'Version',
-  settingsVersionLabel: 'App version',
+  settingsArchiveSection: '封存',
+  settingsArchiveTitle: '封存的盆栽',
+  settingsArchiveDesc: '檢視並還原封存的盆栽',
+  settingsLegalSection: '法律',
+  settingsLegalTerms: '服務條款',
+  settingsLegalPrivacy: '隱私權政策',
+  settingsVersionSection: '關於',
+  settingsVersionLabel: '版本',
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
   outdoorModeToggleA11y: 'Toggle outdoor mode',
@@ -610,11 +610,11 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: '標籤',
   bonsaiTagsEmpty: '尚無標籤',
-  settingsThemeRowLabel: 'Theme',
-  settingsLanguageRowLabel: 'Language',
-  settingsNotificationRowLabel: 'Notifications',
+  settingsThemeRowLabel: '主題',
+  settingsLanguageRowLabel: '語言',
+  settingsNotificationRowLabel: '通知',
   settingsNotifTimeRangeRowLabel: 'Notification time range',
-  settingsNotifTimeRangeNone: 'No notifications enabled',
+  settingsNotifTimeRangeNone: '未設定',
   settingsNotifMasterOffBanner:
     'Notifications are disabled. Turn on the master switch in Settings to use these options.',
   wiringRowUnwireAction: '標記為已解紮',
@@ -666,8 +666,8 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   bonsaiTagsAddCta: '新增標籤',
   tagShowMore: '+{count} 個',
   tagShowLess: '收起',
-  settingsPlanLabel: 'Plan',
-  settingsPlanUpgradeBadge: 'Upgrade',
+  settingsPlanLabel: '方案',
+  settingsPlanUpgradeBadge: '升級',
   bonsaiFieldAcquiredFrom: '購入來源',
   bonsaiFieldAcquiredFromPlaceholder: '例如：苗圃名稱',
   bonsaiFieldPotInfo: '盆器',
@@ -712,7 +712,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotDepthPlaceholder: '例如：10',
   bonsaiFieldPotMaterial: '材質',
   bonsaiFieldPotMaterialPlaceholder: '例如：常滑陶土',
-  settingsPotUnit: 'Pot size unit',
+  settingsPotUnit: '盆器尺寸單位',
   settingsPotUnitCm: 'cm',
   settingsPotUnitMm: 'mm',
   settingsPotUnitInch: 'inch',

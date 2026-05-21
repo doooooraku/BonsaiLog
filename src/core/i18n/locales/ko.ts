@@ -169,13 +169,13 @@ const ko: Partial<Record<TranslationKey, string>> = {
   eventType_position_change: 'Position change',
 
   // --- Settings sections (F-05 notification + F-11 move, English fallback for v1.0) ---
-  settingsNotificationSection: 'Notifications',
+  settingsNotificationSection: '알림',
   settingsEventOverloadToggleDesc:
     'When this is on, a gentle confirmation appears when you log the 6th entry on the same day.',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: '설정',
-  settingsBackupSection: '이사',
+  settingsBackupSection: '백업',
   backupTitle: '이사',
   backupExportTitle: '백업 만들기',
   backupExportDesc:
@@ -221,13 +221,13 @@ const ko: Partial<Record<TranslationKey, string>> = {
   wateringLastOverYear: 'Over a year since last watering',
 
   // --- F-15 Theme settings (Phase A、English fallback) ---
-  settingsThemeSection: 'Appearance',
+  settingsThemeSection: '외관',
   settingsThemeSystem: 'System',
   settingsThemeLight: 'Light',
   settingsThemeDark: 'Dark',
 
   // --- F-09 Search (Phase A、English fallback) ---
-  settingsSearchSection: 'Search',
+  settingsSearchSection: '검색',
   searchAction: 'Search',
   bulkLog: 'Log all',
   bulkSchedule: 'Select task',
@@ -257,7 +257,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   searchEventSection: 'Care logs',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
-  settingsExportSection: 'Export',
+  settingsExportSection: '내보내기',
   exportCsvTitle: 'Export care logs to CSV',
   exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
   exportCsvAction: 'Export CSV',
@@ -295,11 +295,11 @@ const ko: Partial<Record<TranslationKey, string>> = {
   tagsDeleteConfirmBody: 'Tag "{name}" and all of its links to care logs will be removed.',
 
   // --- F-16 Notification settings (Phase B、English fallback) ---
-  settingsNotifSummaryToggle: 'Daily summary notification',
+  settingsNotifSummaryToggle: '일일 요약',
   settingsNotifSummaryToggleDesc:
     'Receive a single summary at {time} when you have planned events on that day.',
-  settingsNotifSummaryEditTime: 'Edit notification time',
-  settingsNotifWateringToggle: 'Watering notification',
+  settingsNotifSummaryEditTime: '알림 시간',
+  settingsNotifWateringToggle: '물주기 알림',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
@@ -340,7 +340,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   searchTagFilterClear: 'Clear filter',
 
   // --- F-13 Settings → Account / Paywall entry (Phase 1b、English fallback) ---
-  settingsAccountSection: 'Account',
+  settingsAccountSection: '계정',
   settingsAccountProActive: 'Pro member',
   settingsAccountProActiveDesc: 'Manage your subscription from here.',
   settingsAccountProInactiveDesc: 'See plans and upgrade.',
@@ -398,8 +398,8 @@ const ko: Partial<Record<TranslationKey, string>> = {
     'Purchases are not allowed on this device. Please check your device settings.',
   purchasePending:
     'Your purchase is pending approval. We will activate Pro automatically once approved.',
-  settingsRestoreTitle: 'Restore purchases',
-  settingsRestoreDesc: 'Already paid on another device? Restore here.',
+  settingsRestoreTitle: '백업에서 복원',
+  settingsRestoreDesc: '백업 파일에서 데이터 복원',
   lifetimeWarningTitle: 'Confirm Lifetime purchase',
   lifetimeWarningBody:
     'Existing subscriptions are not auto-cancelled. Please manage them in your Apple ID or Google Play settings.',
@@ -409,8 +409,8 @@ const ko: Partial<Record<TranslationKey, string>> = {
     'You can choose whether to allow the use of an identifier to help measure ad performance.',
   attExplainerAllow: 'If allowed: ads may be more relevant to you.',
   attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
-  settingsExportListPdfTitle: 'Export full list PDF',
-  settingsExportListPdfDesc: 'A4 PDF with cover, list and stats',
+  settingsExportListPdfTitle: '분재 목록 내보내기 (PDF)',
+  settingsExportListPdfDesc: '모든 분재의 PDF 요약 생성',
   exportListPdfTitle: 'Full list PDF',
   exportListPdfDesc: 'Generates an A4 PDF with cover, full bonsai list and statistics.',
   exportListPdfAction: 'Generate',
@@ -439,18 +439,18 @@ const ko: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Cta: 'Enable notifications',
   onboardingTutNext: 'Next',
   skipForLater: 'Skip for later',
-  settingsHelpSection: 'Help',
-  settingsTutorialReplayTitle: 'Replay tutorial',
-  settingsTutorialReplayDesc: 'See the 5 feature tutorial screens again from the beginning.',
+  settingsHelpSection: '도움말',
+  settingsTutorialReplayTitle: '튜토리얼 다시 보기',
+  settingsTutorialReplayDesc: '온보딩 튜토리얼 다시 시청',
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
-  settingsArchiveSection: 'Archive',
-  settingsArchiveTitle: 'Archived bonsai',
-  settingsArchiveDesc: 'View archived bonsai list',
-  settingsLegalSection: 'Other',
-  settingsLegalTerms: 'Terms of Service',
-  settingsLegalPrivacy: 'Privacy Policy',
-  settingsVersionSection: 'Version',
-  settingsVersionLabel: 'App version',
+  settingsArchiveSection: '보관함',
+  settingsArchiveTitle: '보관된 분재',
+  settingsArchiveDesc: '보관된 분재 보기 및 복원',
+  settingsLegalSection: '법적 고지',
+  settingsLegalTerms: '서비스 약관',
+  settingsLegalPrivacy: '개인정보 처리방침',
+  settingsVersionSection: '정보',
+  settingsVersionLabel: '버전',
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
   outdoorModeToggleA11y: 'Toggle outdoor mode',
@@ -618,11 +618,11 @@ const ko: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: '태그',
   bonsaiTagsEmpty: '태그 없음',
-  settingsThemeRowLabel: 'Theme',
-  settingsLanguageRowLabel: 'Language',
-  settingsNotificationRowLabel: 'Notifications',
+  settingsThemeRowLabel: '테마',
+  settingsLanguageRowLabel: '언어',
+  settingsNotificationRowLabel: '알림',
   settingsNotifTimeRangeRowLabel: 'Notification time range',
-  settingsNotifTimeRangeNone: 'No notifications enabled',
+  settingsNotifTimeRangeNone: '설정 안 됨',
   settingsNotifMasterOffBanner:
     'Notifications are disabled. Turn on the master switch in Settings to use these options.',
   wiringRowUnwireAction: '철사 제거 완료',
@@ -674,8 +674,8 @@ const ko: Partial<Record<TranslationKey, string>> = {
   bonsaiTagsAddCta: '태그 추가',
   tagShowMore: '+{count}개 더',
   tagShowLess: '접기',
-  settingsPlanLabel: 'Plan',
-  settingsPlanUpgradeBadge: 'Upgrade',
+  settingsPlanLabel: '요금제',
+  settingsPlanUpgradeBadge: '업그레이드',
   bonsaiFieldAcquiredFrom: '취득처',
   bonsaiFieldAcquiredFromPlaceholder: '예: 묘목원 이름',
   bonsaiFieldPotInfo: '분',
@@ -720,7 +720,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotDepthPlaceholder: '예: 10',
   bonsaiFieldPotMaterial: '재질',
   bonsaiFieldPotMaterialPlaceholder: '예: 도코나메 도자기',
-  settingsPotUnit: 'Pot size unit',
+  settingsPotUnit: '분 크기 단위',
   settingsPotUnitCm: 'cm',
   settingsPotUnitMm: 'mm',
   settingsPotUnitInch: 'inch',
