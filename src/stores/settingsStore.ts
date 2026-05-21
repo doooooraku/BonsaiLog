@@ -61,6 +61,13 @@ type SettingsState = {
    */
   potUnit: PotUnit;
   setPotUnit: (unit: PotUnit) => void;
+  /**
+   * Sess22 ADR-0034 D1: カレンダー画面の凡例 collapsible bar の折りたたみ状態。
+   * - デフォルト false = 初回展開、 user が toggle した結果を AsyncStorage 永続化
+   * - PlanScreen の `<CalendarLegend collapsed={...} onToggle={...} />` で参照
+   */
+  calendarLegendCollapsed: boolean;
+  setCalendarLegendCollapsed: (collapsed: boolean) => void;
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -90,6 +97,9 @@ export const useSettingsStore = create<SettingsState>()(
       // (ADR-0026 案 α: 過去 user なし前提で AsyncStorage persist 値を reset、 src/core/i18n/lang-defaults.ts 参照)。
       potUnit: 'cm' as PotUnit,
       setPotUnit: (unit) => set({ potUnit: unit }),
+      // Sess22 ADR-0034 D1: 凡例は初回展開、 user toggle で永続化
+      calendarLegendCollapsed: false,
+      setCalendarLegendCollapsed: (collapsed) => set({ calendarLegendCollapsed: collapsed }),
     }),
     {
       name: 'myapp-settings',
