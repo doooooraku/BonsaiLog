@@ -972,7 +972,10 @@ export default function BonsaiDetailScreen() {
   function showEventTypePicker() {
     if (!item) return;
     // Sess16 PR-Q: isPine URL param 撤廃 (松類限定 candle_cut 表示廃止、 全種別常時表示)
-    router.push(`/work-picker?bonsaiName=${encodeURIComponent(item.name)}&mode=log` as Href);
+    // Sess19 PR-4 (ADR-0031 D1): WorkLogConfirm が直接 await + createEvent するため bonsaiId 必須
+    router.push(
+      `/work-picker?bonsaiName=${encodeURIComponent(item.name)}&bonsaiId=${item.id}&mode=log` as Href,
+    );
   }
 
   /**

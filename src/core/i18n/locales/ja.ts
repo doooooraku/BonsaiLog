@@ -809,6 +809,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogLeafAidTreatmentPlaceholder: '例: 患部除去・癒合剤塗布',
   tabCalendar: 'カレンダー',
   calendarScreenTitle: 'カレンダー',
+  workLogDoneToast: '記録しました',
 };
 
 export default ja;

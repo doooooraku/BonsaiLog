@@ -801,5 +801,6 @@ const it: Partial<Record<TranslationKey, string>> = {
   workLogLeafAidTreatmentPlaceholder: 'e.g. Remove infected area, apply healing paste',
   tabCalendar: 'Calendar',
   calendarScreenTitle: 'Calendar',
+  workLogDoneToast: 'Recorded',
 };
 export default it;

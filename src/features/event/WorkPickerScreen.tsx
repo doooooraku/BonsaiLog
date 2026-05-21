@@ -33,9 +33,11 @@ export default function WorkPickerScreen() {
   const { t } = useTranslation();
   const params = useLocalSearchParams<{
     bonsaiName?: string;
+    bonsaiId?: string;
     mode?: WorkPickerMode;
   }>();
   const bonsaiName = params.bonsaiName ?? '';
+  const bonsaiId = params.bonsaiId ?? '';
   const mode: WorkPickerMode = params.mode === 'schedule' ? 'schedule' : 'log';
 
   const items = EVENT_TYPES;
@@ -43,8 +45,9 @@ export default function WorkPickerScreen() {
     if (mode === 'log') {
       // Sess18 PR-1 (ADR-0030 D2): Case C 解消、 WorkLogConfirm に直接 push。
       // user 体感「← で 1 画面ずつ戻る」 達成 (Stack: detail → picker → confirm)。
+      // Sess19 PR-4 (ADR-0031 D1): bonsaiId 渡す (WorkLogConfirm 直接 await + createEvent で必須)
       router.push(
-        `/work-log-confirm?bonsaiName=${encodeURIComponent(bonsaiName)}&type=${type}` as Href,
+        `/work-log-confirm?bonsaiName=${encodeURIComponent(bonsaiName)}&bonsaiId=${bonsaiId}&type=${type}` as Href,
       );
     } else {
       // schedule mode: caller (bonsai-detail) で DatePicker dialog を呼ぶ Case A、

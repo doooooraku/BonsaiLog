@@ -1,5 +1,5 @@
 /**
- * 作業記録 詳細 入力画面 (Phase G2 part 2、ADR-0024 Accepted)。
+ * 作業記録 詳細 入力画面 (Phase G2 part 2、ADR-0024 Accepted、 Sess19 PR-4 で直接 await 化)。
  *
  * 旧 `WorkLogConfirmSheet.tsx` (`@gorhom/bottom-sheet` snap 78%) を画面化、
  * `(modals)/work-log-confirm` route で `presentation: 'formSheet'` 配下に配置。
@@ -7,24 +7,27 @@
  * Sess17 PR-G1: 14 種別固有 form を WorkLogTypeFormFields component に切り出し、
  * WorkLogConfirm (Single) と BulkLogConfirm (Bulk) で 1:1 UI 整合 (ADR-0029 D5)。
  *
+ * Sess19 PR-4 (ADR-0031 D1 + D3 + D4): handleSubmit を直接 await pattern に書換、
+ * stale closure bug 撲滅 (bonsai-detail useFocusEffect 経由を排除)。 F-05 popup logic 移植
+ * (countSameDayPlannedOrLoggedEvents + Alert.alert)。 保存後 `router.replace('/(tabs)/plan?
+ * selectedDateKey=...')` でカレンダー画面に遷移、 記録した日付が選択状態で開く。
+ *
  * 種別別 form 入力 (14 種別すべて) + 日付 + 写真 + メモ (全種別共通) を入力して保存。
  *
  * Query params:
  * - bonsaiName: 表示用 (サブタイトル)
+ * - bonsaiId: createEvent で必須 (Sess19 PR-4 で追加)
  * - type: 作業種別 (EventType、必須)
- *
- * 保存時に `usePickerStore.setWorkLogConfirmResult({ type, note, payload })` + `router.back()`
- * で caller に返却。caller 側 `useFocusEffect` で `consumeWorkLogConfirmResult()` 取得 →
- * createEvent で DB に書込。
  */
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
+import { useToastStore } from '@/src/components/Toast';
 import { nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
@@ -35,9 +38,16 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import {
+  EVENT_OVERLOAD_THRESHOLD,
+  countSameDayPlannedOrLoggedEvents,
+  createEvent,
+} from '@/src/db/eventRepository';
+import { addPhotoFromUri } from '@/src/db/photoRepository';
 import type { EventType } from '@/src/db/schema';
+import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { useSettingsStore } from '@/src/stores/settingsStore';
-import { usePickerStore, type WorkLogPayload } from '@/src/stores/pickerStore';
+import type { WorkLogPayload } from '@/src/stores/pickerStore';
 
 import {
   WorkLogTypeFormFields,
@@ -51,8 +61,13 @@ export type { WorkLogPayload };
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
-  const params = useLocalSearchParams<{ bonsaiName?: string; type?: EventType }>();
+  const params = useLocalSearchParams<{
+    bonsaiName?: string;
+    bonsaiId?: string;
+    type?: EventType;
+  }>();
   const bonsaiName = params.bonsaiName ?? '';
+  const bonsaiId = params.bonsaiId ?? '';
   const selectedType = (params.type ?? null) as EventType | null;
 
   const [note, setNote] = React.useState('');
@@ -71,23 +86,99 @@ export default function WorkLogConfirmScreen() {
   // Sess17 PR-G1: wiring 外し予定日は WorkLogTypeFormFields に含めず、 caller (本画面) で
   // LabeledDateRow を直接 render (Single 専用 / Bulk では別 UI、 ADR-0029 D5 §16-3 整合)。
   const [wireUnwireDate, setWireUnwireDate] = React.useState('');
+  // Sess19 PR-4: 重複 tap 防止 (await 中の submit lock)。
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const handleSubmit = () => {
-    if (selectedType == null) return;
-    // Sess17 PR-G1: buildWorkLogPayload で 14 種別の payload を生成。
+  // Sess19 PR-4 (ADR-0031 D3 + D4): 直接 await + F-05 popup + router.replace でカレンダー遷移。
+  // 同コンポーネント scope の関数 (closure 内 state 参照) なので stale closure 問題なし。
+  const persistAndNavigate = React.useCallback(
+    async (payload: Record<string, unknown>, occurredAtUtc: string) => {
+      if (!bonsaiId || !selectedType) return;
+      try {
+        const created = await createEvent({
+          bonsaiId,
+          type: selectedType,
+          status: 'logged',
+          note: note.trim().length > 0 ? note.trim() : undefined,
+          payload,
+          occurredAtUtc,
+        });
+        // 写真添付: created event の id に紐付け
+        if (photos.length > 0) {
+          for (const p of photos) {
+            await addPhotoFromUri({
+              bonsaiId,
+              sourceUri: p.uri,
+              eventId: created.id,
+            });
+          }
+        }
+        // Bulk と同等の通知 reschedule (logged event 増加 → 当日通知件数変化)
+        void triggerSummaryReschedule(t);
+        // Toast「記録しました」 で feedback
+        useToastStore.getState().show(t('workLogDoneToast'));
+        // カレンダー画面に遷移、 記録した日が選択状態で開く (ADR-0031 D1)
+        const dateKey = occurredAtDate || occurredAtUtc.slice(0, 10);
+        router.replace(`/(tabs)/plan?selectedDateKey=${dateKey}` as Href);
+      } catch (err) {
+        Alert.alert(t('error'), String(err));
+        setIsSubmitting(false);
+      }
+    },
+    [bonsaiId, selectedType, note, photos, occurredAtDate, t],
+  );
+
+  const handleSubmit = async () => {
+    if (selectedType == null || !bonsaiId) return;
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     const payload = buildWorkLogPayload(selectedType, formState);
-    // wiring 外し予定日は WorkLogConfirm 専用 state、 payload に inject
     if (selectedType === 'wiring' && wireUnwireDate) {
       payload.scheduled_unwire_at = `${wireUnwireDate}T00:00:00.000Z`;
     }
-    usePickerStore.getState().setWorkLogConfirmResult({
-      type: selectedType,
-      note: note.trim(),
-      payload,
-      ...(occurredAtDate ? { occurredAtDate } : {}),
-      ...(photos.length > 0 ? { photos } : {}),
-    });
-    router.back();
+    const occurredAtUtc = occurredAtDate ? `${occurredAtDate}T00:00:00.000Z` : (nowUtc() as string);
+
+    // F-05「気遣い型」 popup (Sess16 PR-L から移植、 ADR-0031 D4)。
+    // 設定 OFF (eventOverloadEnabled=false) なら popup 出さず即書込。
+    const enabled = useSettingsStore.getState().eventOverloadEnabled;
+    if (enabled) {
+      try {
+        const count = await countSameDayPlannedOrLoggedEvents(occurredAtUtc);
+        if (count >= EVENT_OVERLOAD_THRESHOLD) {
+          Alert.alert(
+            t('eventOverloadTitle'),
+            t('eventOverloadBody').replace('{count}', String(EVENT_OVERLOAD_THRESHOLD)),
+            [
+              {
+                text: t('eventOverloadActionConfirm'),
+                onPress: () => void persistAndNavigate(payload, occurredAtUtc),
+              },
+              {
+                text: t('eventOverloadActionViewList'),
+                // 一覧を見る: dismiss のみ (詳細画面で既に履歴が見える、 ただし本画面は modal なので
+                // user は ← で picker / bonsai-detail に戻る)
+                style: 'cancel',
+                onPress: () => setIsSubmitting(false),
+              },
+              {
+                text: t('eventOverloadActionNeverShow'),
+                onPress: () => {
+                  useSettingsStore.getState().setEventOverloadEnabled(false);
+                  void persistAndNavigate(payload, occurredAtUtc);
+                },
+              },
+            ],
+            { cancelable: true, onDismiss: () => setIsSubmitting(false) },
+          );
+          return;
+        }
+      } catch {
+        // 件数取得失敗時は popup 出さず即書込 (記録のみ哲学、 ADR-0011)
+      }
+    }
+
+    void persistAndNavigate(payload, occurredAtUtc);
   };
 
   if (selectedType == null) return null;
