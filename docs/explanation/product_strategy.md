@@ -630,6 +630,17 @@ if __name__ == '__main__':
 - `re.compile(r'\{[a-zA-Z_]+\}')`: `{days}` パターンを探すレシピ
 - `sys.exit(1)`: エラー時の「失敗」合図。CI が止まる
 
+### Notes Amended (2026-05-21, Sess20 ADR-0033 起票)
+
+本節 §9-2 のワークフロー 2 番「Claude Code にプロンプトテンプレートで翻訳依頼（一言語ずつ）」 = AI 単独翻訳方針は **ADR-0033 D1/D5 で supersede** された。
+
+- **新方針 (ADR-0033 D1)**: v1.0 翻訳ポリシー = 18 言語**手動翻訳** (各言語 native UX writer ペルソナを立てて Claude Code が 1 つずつ脳内翻訳、 機械翻訳臭ゼロ)
+- **18 言語プロペルソナ集合**: Sarah Chen (en) / Pierre Lefebvre (fr) / Sofía Martínez (es) / Klaus Müller (de) / 他 14 言語 (詳細は ADR-0033)
+- **保持 (引き続き有効)**: 自動検証スクリプト (キー数 / placeholder / 音訳必須用語) / Pseudo-localization (ADR-0033 D4 で復活実施義務化) / glossary 厳守 (ADR-0033 D3、 R-40)
+- **直書きハードコード禁止** (ADR-0033 D2、 R-41): PreCommit hook で構造的 block
+
+Sess18 PR-5/10 (メモ placeholder 19 言語手動翻訳 266 文字列) + Sess19-4 PR-T1a (#690 作業記録 form 17 keys × 17 言語 306 文字列) で実証済、 Sess20 で全 user 視覚部分に拡張 (~6,850 文字列)。
+
 ## 9-3. 段階的リリース戦略
 
 **v1.0 から全 19 言語フル展開**（Repolog 実装踏襲、段階リリース廃止）。
@@ -671,6 +682,15 @@ Pinus thunbergii, Juniperus chinensis, Ficus retusa 等
    - 名前クレジット掲載と引き換えで品質チェック
 3. **各言語版のApp Storeレビューを月次チェック**
    - 「翻訳が変」コメント3件以上で該当箇所再翻訳
+
+### Notes Amended (2026-05-21, Sess20 ADR-0033 起票)
+
+本節 §9-5 は **v1.0 リリース後の継続改善運用** として引き続き有効。 ただし **v1.0 リリース前の品質基準** は ADR-0033 D1 で強化:
+
+- **事前防止 (v1.0 前)**: 18 言語プロペルソナ手動翻訳 + Pseudo-loc + glossary 厳守
+- **事後改善 (v1.0 後)**: 本節 §9-5 のアプリ内フィードバック 3 件 → 再翻訳
+
+「事前防止 + 事後改善」 の 2 段構えで §11-3 R2 リスクを構造的に抑制。
 
 ---
 
@@ -765,6 +785,23 @@ Pinus thunbergii, Juniperus chinensis, Ficus retusa 等
 - Reddit r/bonsai、r/Flutter/ReactNatve で**ベータテスター募集**（クレジット引き換え）
 - 各言語App Storeレビュー月次チェック、「翻訳が変」3件で再翻訳
 - ar は v1.x 全期間で非対応（RTL 回避）、印・泰は v1.0 から含む
+
+### Notes Amended (2026-05-21, Sess20 ADR-0033 起票)
+
+本節 §11-3 R2 「Claude Code 単独では文化ニュアンス外す」 という前提は **ADR-0033 D1/D5 で解消**:
+
+- **新方針**: Claude Code が**各言語 native UX writer ペルソナを立てて手動翻訳** (Sarah Chen Apple HIG / Pierre Lefebvre Académie 等、 18 言語)
+- 機械翻訳ではなく**文化的配慮を反映した手動翻訳**で「文化ニュアンス外し」 を構造的回避
+- 加えて **glossary.md 厳守** (ADR-0033 D3、 R-40) + **直書きハードコード PreCommit block** (ADR-0033 D2、 R-41) + **Pseudo-loc 実施義務** (ADR-0033 D4) で 4 重防御
+
+恒久策 (本節既存):
+
+- Pseudo-localization + Visual Regression Testing
+- アプリ内フィードバックボタン
+- Reddit ベータテスター募集
+- App Store レビュー月次チェック
+
+→ ADR-0033 D1-D5 と本節恒久策の組合せで R2 リスク事前/事後 2 段防御。
 
 ## 11-4. R3: ストア審査での誤判定
 
