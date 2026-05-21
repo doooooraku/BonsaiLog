@@ -160,6 +160,19 @@
 - **根拠**: 2026-05-17 Sess2 で `app.config.ts` の `showFloatingButton: false` → `toolsButton: false` 修正を実行 (Edit) したが、その後の議論段階で `git restore` で revert され、最終 commit には反映されず main に残った。Sess4 で実際に Dev Build install して初めて発覚、デバッグに数時間ロス。「Edit したと思い込んでいた」 が「commit には含まれてない」 という認知バイアスを構造的に防ぐ必要あり。
 - **自動化候補**: `.claude/hooks/pre-commit-staged-verify.mjs` で `pre-commit` git hook 経由 (`.githooks/`)、staged file list と commit message keyword の整合チェック (例: commit message に「toolsButton」 含まれるなら app.config.ts に該当 keyword の staged diff 必須)。Sess5+ で実装。
 
+### R-39. useFocusEffect callback での関数呼出時 deps 必須 + store-callback chain 限定用途 (Sess19 ADR-0031 D5 由来)
+
+- **ルール**:
+  - **R-39.1**: `useFocusEffect(React.useCallback(() => { ... }, [deps]))` の callback 内で「コンポーネント scope の関数」 を呼ぶ場合、 useCallback deps 配列に **必ず含める** か、 useEvent / useRef pattern を使う
+  - **R-39.2**: `// eslint-disable-next-line react-hooks/exhaustive-deps` コメントは **禁止**、 例外は ADR 起票して明文化
+  - **R-39.3**: store-callback chain (`setX + router.back() + caller useFocusEffect で consume`) は ADR-0030 Case A (dialog 起動) + Case B (state 更新のみ) のみ許容。 「次の画面に進む / DB に書込む」 用途は **直接 await + router.replace / router.push** 必須 (ADR-0031 Case 4 で log mode form 保存後遷移 pattern を確立)
+  - **R-39.4**: grep-based 検出: `scripts/check-navigation-patterns.mjs` AP-3 (Sess19 PR-7 で追加) で warning。 将来 ESLint AST rule 化
+- **根拠**: 2026-05-21 Sess19 実機検証 (8 試行 100% 再現) で発覚。 Sess16-18 で 53 PR 投下した form 改修中、 Single 動線の DB 書込が **stale closure で完全失敗** していた。 `app/(tabs)/bonsai/[id]/index.tsx` の useFocusEffect callback が `useCallback(..., [handleSchedulePickerSelect])` で memoize、 `persistEventWithPayload` 関数を closure 経由で呼ぶが、 callback memo 化により **初回 mount 時の関数 reference (item=null) を永続保持** → `if (!item) return;` で静かに早期 return → DB 書込スキップ。 ESLint exhaustive-deps disable + メンタル契約で構造的破綻、 Maestro flow にも DB 反映 assertion が無く 53 PR 通過。 ADR-0031 で path 変更 (直接 await + router.replace) + 本 R-rule で構造防止。
+- **自動化**: `scripts/check-navigation-patterns.mjs` AP-3 で `useFocusEffect.*useCallback.*persist|countSameDay` pattern を grep-based 検出、 warning 出力 (Sess19 PR-7 で追加)。 PR テンプレ §7.6.4 で navigation 変更 PR の DB 反映 manual 検証 SS 添付必須化 (Sess19 PR-7)。
+- **関連**: ADR-0030 (Navigation patterns Case 分類) / ADR-0031 (Sess19 カレンダー統一 + stale closure 撲滅) / `scripts/check-navigation-patterns.mjs` / Sess19 retro
+
+---
+
 ### R-33. route / Phase 変更時の影響範囲全網羅 grep (廃止 route 構造的検出)
 
 - **ルール**: route (e.g., `/(tabs)/<name>` / `/<route>`) や Phase / 構造を変更する PR では、 以下を必ず実施:
