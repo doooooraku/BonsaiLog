@@ -296,8 +296,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
 
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: '일일 요약',
-  settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+  settingsNotifSummaryToggleDesc: '그날 예정된 일정이 있으면 {time}에 하나의 요약 알림을 받습니다.',
   settingsNotifSummaryEditTime: '알림 시간',
   settingsNotifWateringToggle: '물주기 알림',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -624,7 +623,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: '설정 안 됨',
   settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+    '알림이 꺼져 있습니다. 설정에서 마스터 스위치를 켜면 이 옵션을 사용할 수 있습니다.',
   wiringRowUnwireAction: '철사 제거 완료',
   wiringUnwireConfirmTitle: '철사 감기를 제거 완료로 표시할까요?',
   paywallFeatureTheme: 'Themes',

@@ -298,7 +298,7 @@ const pt: Partial<Record<TranslationKey, string>> = {
   // --- F-16 Notification settings (Phase B、English fallback) ---
   settingsNotifSummaryToggle: 'Resumo diário',
   settingsNotifSummaryToggleDesc:
-    'Receive a single summary at {time} when you have planned events on that day.',
+    'Receba um resumo único às {time} quando tiver eventos planeados nesse dia.',
   settingsNotifSummaryEditTime: 'Hora da notificação',
   settingsNotifWateringToggle: 'Lembretes de rega',
   settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
@@ -625,7 +625,7 @@ const pt: Partial<Record<TranslationKey, string>> = {
   settingsNotifTimeRangeRowLabel: 'Notification time range',
   settingsNotifTimeRangeNone: 'Não definido',
   settingsNotifMasterOffBanner:
-    'Notifications are disabled. Turn on the master switch in Settings to use these options.',
+    'As notificações estão desativadas. Ative o interruptor principal nas Configurações para usar estas opções.',
   wiringRowUnwireAction: 'Marcar como desaramado',
   wiringUnwireConfirmTitle: 'Marcar a aramação como removida?',
   paywallFeatureTheme: 'Themes',
