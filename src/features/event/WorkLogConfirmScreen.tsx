@@ -40,9 +40,14 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
-import { createEvent } from '@/src/db/eventRepository';
+import {
+  convertPlannedToRecorded,
+  createEvent,
+  findPlannedEventByCondition,
+} from '@/src/db/eventRepository';
 import { addPhotoFromUri } from '@/src/db/photoRepository';
 import type { EventType } from '@/src/db/schema';
+import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 import {
@@ -59,10 +64,12 @@ export default function WorkLogConfirmScreen() {
     bonsaiName?: string;
     bonsaiId?: string;
     type?: EventType;
+    fromPlannedId?: string;
   }>();
   const bonsaiName = params.bonsaiName ?? '';
   const bonsaiId = params.bonsaiId ?? '';
   const selectedType = (params.type ?? null) as EventType | null;
+  const fromPlannedId = params.fromPlannedId ?? null;
 
   const [note, setNote] = React.useState('');
   // Sess16 PR-A2 → PR-H: 日付選択 default = 今日 (Repolog pattern 整合)、 maxToday=true で未来日防止。
@@ -83,20 +90,57 @@ export default function WorkLogConfirmScreen() {
   // Sess19 PR-4: 重複 tap 防止 (await 中の submit lock)。
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // Sess19 PR-4 (ADR-0031 D3 + D4): 直接 await + F-05 popup + router.replace でカレンダー遷移。
-  // 同コンポーネント scope の関数 (closure 内 state 参照) なので stale closure 問題なし。
+  // Sess19 PR-4 (ADR-0031 D3 + D4): 直接 await + router.replace でカレンダー遷移。
+  // Sess23 PR-4-3 (ADR-0035 D7/D8): fromPlannedId 指定時 → atomic 変換、 通常 FAB 経路 → 同条件 planned auto-cancel。
   const persistAndNavigate = React.useCallback(
     async (payload: Record<string, unknown>, occurredAtUtc: string) => {
       if (!bonsaiId || !selectedType) return;
       try {
-        const created = await createEvent({
-          bonsaiId,
-          type: selectedType,
-          status: 'logged',
-          note: note.trim().length > 0 ? note.trim() : undefined,
-          payload,
-          occurredAtUtc,
-        });
+        let created;
+        let convertedCount = 0;
+        const noteText = note.trim().length > 0 ? note.trim() : undefined;
+        if (fromPlannedId) {
+          // ADR-0035 D7 場面 A: 予定→記録変換 (atomic transaction、 R-43 整合)
+          created = await convertPlannedToRecorded({
+            plannedEventId: fromPlannedId,
+            recordPayload: {
+              bonsaiId,
+              type: selectedType,
+              note: noteText,
+              payload,
+              occurredAtUtc,
+            },
+          });
+          await cancelForEvent(fromPlannedId, t);
+          convertedCount = 1;
+        } else {
+          // ADR-0035 D8 場面 B: 通常 FAB 経路、 同条件 planned 検索 → hit 時 atomic 変換
+          const dateKey = (occurredAtDate || occurredAtUtc.slice(0, 10)).slice(0, 10);
+          const matched = await findPlannedEventByCondition(dateKey, bonsaiId, selectedType);
+          if (matched) {
+            created = await convertPlannedToRecorded({
+              plannedEventId: matched.id,
+              recordPayload: {
+                bonsaiId,
+                type: selectedType,
+                note: noteText,
+                payload,
+                occurredAtUtc,
+              },
+            });
+            await cancelForEvent(matched.id, t);
+            convertedCount = 1;
+          } else {
+            created = await createEvent({
+              bonsaiId,
+              type: selectedType,
+              status: 'logged',
+              note: noteText,
+              payload,
+              occurredAtUtc,
+            });
+          }
+        }
         // 写真添付: created event の id に紐付け
         if (photos.length > 0) {
           for (const p of photos) {
@@ -107,11 +151,15 @@ export default function WorkLogConfirmScreen() {
             });
           }
         }
-        // Bulk と同等の通知 reschedule (logged event 増加 → 当日通知件数変化)
         void triggerSummaryReschedule(t);
-        // Toast「記録しました」 で feedback
-        useToastStore.getState().show(t('workLogDoneToast'));
-        // カレンダー画面に遷移、 記録した日が選択状態で開く (ADR-0031 D1)
+        // Toast 文言分岐 (ADR-0035 D8 統一): convertedCount > 0 で「予定 N 件を記録に変更」 / それ以外で「記録しました」
+        if (convertedCount > 0) {
+          useToastStore
+            .getState()
+            .show(t('planEventConvertedToast').replace('{count}', String(convertedCount)));
+        } else {
+          useToastStore.getState().show(t('workLogDoneToast'));
+        }
         const dateKey = occurredAtDate || occurredAtUtc.slice(0, 10);
         router.replace(`/(tabs)/plan?selectedDateKey=${dateKey}` as Href);
       } catch (err) {
@@ -119,7 +167,7 @@ export default function WorkLogConfirmScreen() {
         setIsSubmitting(false);
       }
     },
-    [bonsaiId, selectedType, note, photos, occurredAtDate, t],
+    [bonsaiId, selectedType, note, photos, occurredAtDate, fromPlannedId, t],
   );
 
   const handleSubmit = async () => {

@@ -36,7 +36,14 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
-import { bulkLogEvents } from '@/src/db/eventRepository';
+import {
+  bulkConvertPlannedToRecorded,
+  bulkLogEvents,
+  convertPlannedToRecorded,
+  createEvent,
+  findPlannedEventByCondition,
+} from '@/src/db/eventRepository';
+import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { addPhotoFromUri } from '@/src/db/photoRepository';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
@@ -62,8 +69,12 @@ function parseType(typeParam: string | undefined): EventType | null {
 export default function BulkLogConfirmScreen() {
   const { t } = useTranslation();
   const c = useColors();
-  const params = useLocalSearchParams<{ type?: string }>();
+  const params = useLocalSearchParams<{ type?: string; fromPlannedIds?: string }>();
   const selectedType = React.useMemo(() => parseType(params.type), [params.type]);
+  const fromPlannedIds = React.useMemo<string[]>(
+    () => (params.fromPlannedIds ? params.fromPlannedIds.split(',').filter(Boolean) : []),
+    [params.fromPlannedIds],
+  );
   const selectedBonsais = usePickerStore((s) => s.bulkContext?.selectedBonsais ?? []);
 
   const [note, setNote] = React.useState('');
@@ -95,17 +106,67 @@ export default function BulkLogConfirmScreen() {
     // wiring 外し予定日は Bulk では UI 出さない方針なので buildWorkLogPayload では未設定
     // (formState.wireUnwireDate は default '' で payload にも含まれない)。
     const payload = buildWorkLogPayload(selectedType, formState);
+    const noteValue = trimmed.length > 0 ? trimmed : null;
+    let convertedCount = 0;
+    let createdEvents: { id: string; bonsaiId: string }[] = [];
     try {
-      const result = await bulkLogEvents({
-        bonsaiIds,
-        type: selectedType,
-        note: trimmed.length > 0 ? trimmed : null,
-        ...(occurredAtUtc ? { occurredAtUtc } : {}),
-        payload,
-      });
-      // Sess16 PR-B2 → PR-H: 全 bonsai に同じ photos 紐付け (caption 削除済、 BonsaiBasicForm pattern 整合)
-      if (photos.length > 0 && result.created.length > 0) {
-        for (const event of result.created) {
+      if (fromPlannedIds.length > 0) {
+        // ADR-0035 D7 場面 A: bulk 変換 (各 planned に atomic transaction、 sequential)
+        // fromPlannedIds と bonsaiIds は PlanScreen handleBulkConvert で同 events から構築済 (順序一致)
+        const inputs = fromPlannedIds.map((plannedId, i) => ({
+          plannedEventId: plannedId,
+          recordPayload: {
+            bonsaiId: bonsaiIds[i] as string,
+            type: selectedType,
+            note: noteValue,
+            payload,
+            ...(occurredAtUtc ? { occurredAtUtc } : {}),
+          },
+        }));
+        const result = await bulkConvertPlannedToRecorded(inputs);
+        convertedCount = result.converted.length;
+        createdEvents = result.converted.map((e) => ({ id: e.id, bonsaiId: e.bonsaiId }));
+        // cancelForEvent 連動 (各 planned)
+        for (const plannedId of fromPlannedIds) {
+          await cancelForEvent(plannedId, t);
+        }
+      } else {
+        // ADR-0035 D8 場面 B: 通常 FAB 経路、 各 bonsai 単位で findPlannedEventByCondition + auto-cancel
+        const dateKey = (occurredAtDate || occurredAtUtc?.slice(0, 10) || '').slice(0, 10);
+        for (const bid of bonsaiIds) {
+          const matched = dateKey
+            ? await findPlannedEventByCondition(dateKey, bid, selectedType)
+            : null;
+          if (matched) {
+            const ev = await convertPlannedToRecorded({
+              plannedEventId: matched.id,
+              recordPayload: {
+                bonsaiId: bid,
+                type: selectedType,
+                note: noteValue,
+                payload,
+                ...(occurredAtUtc ? { occurredAtUtc } : {}),
+              },
+            });
+            await cancelForEvent(matched.id, t);
+            createdEvents.push({ id: ev.id, bonsaiId: ev.bonsaiId });
+            convertedCount++;
+          } else {
+            const ev = await createEvent({
+              bonsaiId: bid,
+              type: selectedType,
+              status: 'logged',
+              note: noteValue,
+              payload,
+              ...(occurredAtUtc ? { occurredAtUtc } : {}),
+            });
+            createdEvents.push({ id: ev.id, bonsaiId: ev.bonsaiId });
+          }
+        }
+      }
+      // Sess16 PR-B2 → PR-H: 全 bonsai に同じ photos 紐付け
+      if (photos.length > 0 && createdEvents.length > 0) {
+        for (const event of createdEvents) {
           for (const p of photos) {
             await addPhotoFromUri({
               bonsaiId: event.bonsaiId,
@@ -115,11 +176,16 @@ export default function BulkLogConfirmScreen() {
           }
         }
       }
-      // Sess19 PR-5 (ADR-0031 D1): Toast 件数 hardcode '1' → bonsaiIds.length に修正
-      // (副次 bug fix: 2 件選択しても「1 件の作業を記録しました」 と表示されていた)
-      useToastStore
-        .getState()
-        .show(t('bulkLogDoneToast').replace('{count}', String(bonsaiIds.length)));
+      // Toast 文言分岐 (ADR-0035 D8 統一)
+      if (convertedCount > 0) {
+        useToastStore
+          .getState()
+          .show(t('planEventConvertedToast').replace('{count}', String(convertedCount)));
+      } else {
+        useToastStore
+          .getState()
+          .show(t('bulkLogDoneToast').replace('{count}', String(bonsaiIds.length)));
+      }
     } catch (error) {
       console.warn('[bulk-log] failed:', error);
     }
