@@ -1,9 +1,8 @@
 # maestro/flows/plan-tab-delete-single.yml
-# Sess25 PR-ζ-2-⑩ (ADR-0036 D1-D6): PlanScreen 個別 EventRow long-press → カスタム ConfirmDialog
+# Sess26 PR-η-4 (ADR-0036 D1-D6): PlanScreen 個別 EventRow long-press → カスタム ConfirmDialog
 # → 削除 button tap → bulkSoftDeleteEvents + cancelForEvents + reload + UndoSnackbar 4s 表示
 #
-# 前提: 予定/記録 タブ に events が seed 済 (dev/seedTestData.ts でテストデータ投入)
-# 本 flow は smoke 風 minimum (構造 verification 重視、 実機詳細検証は R-25 retro doc + 手動 SS)
+# 前提: 設定タブ → e2e_dev_seed_button で seed data 投入済、 予定タブに planned events が存在
 appId: 'com.doooooraku.bonsailog'
 ---
 - launchApp:
@@ -18,7 +17,6 @@ appId: 'com.doooooraku.bonsailog'
 - pressKey: 'Back'
 - waitForAnimationToEnd
 
-# 起点画面 = タブバー bonsai 起動 (DB seed 済前提)
 - extendedWaitUntil:
     visible:
       id: 'e2e_bonsai_home_list'
@@ -31,13 +29,38 @@ appId: 'com.doooooraku.bonsailog'
 - waitForAnimationToEnd:
     timeout: 3000
 
-# PlanScreen 表示確認
 - extendedWaitUntil:
     visible:
       id: 'e2e_plan_screen'
     timeout: 10000
 
-# ADR-0036 D1: ConfirmDialog component が存在 (state visible=false で実 render 不要、
-# 構造 verification 重視。 実機 long-press → ConfirmDialog 表示は手動 SS で別途検証)
+# planned group 行を展開 (e2e_plan_group_planned_watering 等、 seed 内容に依存)
+- tapOn:
+    id: 'e2e_plan_group_planned_watering'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 個別 EventRow を long-press → ConfirmDialog (ADR-0036 D1-D6)
+# 注: event ID は random ULID なので、 group 内の 1 件目を text または bonsaiName で識別
+- longPressOn:
+    text: '水やり'
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# カスタム ConfirmDialog (planned single 文言「この予定を削除しますか?」) 表示確認
 - assertVisible:
-    id: 'e2e_plan_screen'
+    id: 'e2e_plan_confirm_delete'
+
+# 「削除」 button tap (DANGER 赤、 Haptics Warning 発火 → bulkSoftDeleteEvents + Undo Snackbar)
+- tapOn:
+    id: 'e2e_plan_confirm_delete_confirm'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# UndoSnackbar 表示確認 (4s、 Material 3 default)
+- assertVisible:
+    id: 'e2e_toast'

@@ -1,8 +1,6 @@
 # maestro/flows/plan-tab-delete-group.yml
-# Sess25 PR-ζ-2-⑩ (ADR-0036 D2): PlanScreen group 行 long-press → ConfirmDialog (group まとめ削除)
-# → wiring 含む group の場合 title 末尾に「(関連する取り外し予定も削除されます)」 補足 (D8)
-#
-# 前提: 予定タブに seed events (複数 type の group が存在)
+# Sess26 PR-η-4 (ADR-0036 D2/D8): PlanScreen group 行 long-press → ConfirmDialog
+# (group まとめ削除、 wiring 含む場合 title 末尾 cascade note 補足)
 appId: 'com.doooooraku.bonsailog'
 ---
 - launchApp:
@@ -33,7 +31,23 @@ appId: 'com.doooooraku.bonsailog'
       id: 'e2e_plan_screen'
     timeout: 10000
 
-# group 行 testID 命名: e2e_plan_group_planned_<type> / e2e_plan_group_logged_<type>
-# 実機 long-press 動作は手動 SS で別途検証
+# planned group 行 (展開せず) を long-press → ConfirmDialog (group まとめ削除)
+- longPressOn:
+    id: 'e2e_plan_group_planned_watering'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# ConfirmDialog (planned group 文言「この予定 N 件をまとめて削除しますか?」) 表示確認
 - assertVisible:
-    id: 'e2e_plan_screen'
+    id: 'e2e_plan_confirm_delete'
+
+# 「削除」 button tap
+- tapOn:
+    id: 'e2e_plan_confirm_delete_confirm'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# UndoSnackbar 表示確認 (N 件まとめて削除した文言)
+- assertVisible:
+    id: 'e2e_toast'
