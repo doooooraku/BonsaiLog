@@ -809,6 +809,8 @@ const baseEn = {
   workLogLeafAidSymptom_other: 'Other',
   workLogLeafAidTreatment: 'Treatment',
   workLogLeafAidTreatmentPlaceholder: 'e.g. Remove infected area, apply healing paste',
+  tabCalendar: 'Calendar',
+  calendarScreenTitle: 'Calendar',
 };
 
 export type TranslationKey = keyof typeof baseEn;
