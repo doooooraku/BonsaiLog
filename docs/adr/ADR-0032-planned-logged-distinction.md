@@ -191,3 +191,14 @@ WCAG 1.4.1 (Use of Color、 Level A) 違反 = 「色のみ」 で planned/logged
 - 新規 component: `src/features/plan/CalendarDot.tsx` (props: `{ status: 'planned' | 'logged', size?: number }`)
 - 旧 `styles.dot` (使用 0) / `styles.dotLogged` / `styles.dotPlanned` は PR-1-3 で削除
 - R-42 (`.claude/recurrence-prevention/specialized.md`) 新規起票で「色で意味を伝える UI 設計時、 アイコン or pattern 必ず併用」 構造防止仕組み化
+
+### 2026-05-21 Sess23 ADR-0035 D4 起票で D5 label「これから/完了」 → 「予定/記録」 改訂
+
+ADR-0035 D4 (Phase ε) で以下を反映:
+
+- **section header label 改訂**: ja「これから」 → 「**予定**」 / ja「完了」 → 「**記録**」 (タブ名「予定」 = ADR-0035 D1 と語彙統一、 user 真意「新たな表現を用いるのは面倒」 シンプル明快)
+- **i18n keys 物理削除** (R-4 整合、 deprecated comment 残さず): `planSectionUpcoming` / `planSectionDone`
+- **i18n keys 新規追加**: `planSectionScheduled` ja「予定」 / `planSectionRecorded` ja「記録」 (19 言語、 ADR-0033 D1 ペルソナ翻訳)
+- 凡例 label も合わせて改訂 (ADR-0034 D1 Notes Amended で詳細): `planLegendDotLoggedLabel` ja「完了 (●)」 → `planLegendDotRecordedLabel` ja「記録 (●)」
+- 本 ADR D5 全文 (5 keys 列挙) は ADR-0035 PR-1-1 で実施される i18n swap で実質改訂、 旧 `planSectionUpcoming` / `planSectionDone` 削除
+- 関連: ADR-0035 D4 / PR-1-1 (i18n 19 keys × 19 言語 swap、 361 文字列影響)

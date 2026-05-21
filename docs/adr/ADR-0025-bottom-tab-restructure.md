@@ -369,3 +369,17 @@ ADR-0034 D6 (Phase δ) で以下を反映:
   - 下タブ「カレンダー」: 今日中心の月ナビ (Sess19 ADR-0031 で確立)
   - ふりかえり hub「カレンダー」: 過去 30 日前 default で「過去軸入口」 文脈
 - 本 ADR §⑤ 「ふりかえりタブは現状維持」 (旧決定) は Sess9 PR-6 「タグを管理」 4 card 化 + 本 Sess22「カレンダー」 5 card 化で **「現状維持」 → 「拡張可」** に方針変更。 「ふりかえり = 振り返り + 整理 + 過去軸入口」 と意義 3 軸拡張。
+
+### 2026-05-21 Sess23 ADR-0035 起票で §② 案 X revert + §⑤ 5 card → 4 card 戻し
+
+ADR-0035 D6 + D9 (Phase ε) で本 ADR の 2 § を改訂:
+
+- **§② 案 X revert (D6 起源)**: 「記録 tab tap intercept → bonsai-multi-select modal 直接起動」 を **revert**、 新動線 = 「記録 tab tap → `router.push('/(tabs)/plan?source=tab&selectedDateKey=<today>')` でカレンダー画面 (今日 default) 遷移」
+  - 旧 `useBulkActionFlow('log')` import + `startRecordAction` 呼出 削除 (本 ADR §② Sess8 PR-3 #524 完全 revert)
+  - 理由: user 真意「タブ tap = カレンダー画面 + 予定タスクから記録 button (ADR-0035 D7 予定→記録変換動線)」、 二重動線解消
+  - 既存 multi-select modal 動線は予定タブ FAB (ADR-0025 案 B FAB 起動) で生存、 記録タブ tap 経路のみ削除
+- **§⑤ 5 card → 4 card 戻し (D9 起源)**: ふりかえりタブ hub 5 card 目「カレンダー」 (Sess22 PR-4-1 #714 で追加) を **物理削除**、 Sess9 PR-6 状態 (4 card: watering / wiring / search / tags) に戻る
+  - 理由: ADR-0035 D6 で記録タブ tap = カレンダー画面遷移が確立、 hub 経由は二重動線で不要
+  - `app/(tabs)/look-back/index.tsx` cards 配列 calendar entry 削除、 関連 i18n / 純関数 / test 物理削除 (PR-5-1)
+- 本 ADR §① (4 タブ構成) / §③ (SearchHeader simplify + 盆栽タブ長押し撤廃) / §④ (設定 = Header Cog 経由) は **引き続き有効**
+- 関連: ADR-0035 D6 / D9 / PR-2-2 (案 X revert) / PR-5-1 (5→4 card 戻し)
