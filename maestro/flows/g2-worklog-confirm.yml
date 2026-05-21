@@ -159,14 +159,16 @@ appId: 'com.doooooraku.bonsailog'
 - assertVisible:
     id: 'e2e_work_log_save'
 
-# 保存 tap → router.back() で詳細画面に戻る
+# 保存 tap → Sess19 PR-4 (ADR-0031 D1): 直接 await + router.replace('/(tabs)/plan?selectedDateKey=...')
+# でカレンダー画面に遷移、 記録した日付が選択状態 (旧 Sess18: router.back() で work-picker に戻る → stale closure で書込失敗 bug)
 - tapOn:
     id: 'e2e_work_log_save'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
-# 詳細画面の履歴 FAB が再表示で動作確認 (work-log-confirm 閉じ + persistEventWithPayload 完了)
+# Sess19 PR-8 (R-39 整合): DB 反映 assertion = カレンダー画面 (PlanScreen) が visible
+# 直接 await pattern で「保存 → カレンダー遷移」 が成立 = stale closure bug 解消の証明
 - extendedWaitUntil:
     visible:
-      id: 'e2e_history_fab'
+      id: 'e2e_plan_screen'
     timeout: 10000
