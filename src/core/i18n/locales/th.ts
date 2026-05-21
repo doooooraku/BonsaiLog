@@ -814,5 +814,14 @@ const th: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} กระถาง',
   lookBackCardCalendarTitle: 'ปฏิทิน',
   lookBackCardCalendarDesc: 'ดูงานในอดีตตามเดือน',
+  tabPlan: 'แผน',
+  planSectionScheduled: 'กำหนดไว้',
+  planSectionRecorded: 'บันทึกแล้ว',
+  planLegendDotRecordedLabel: 'บันทึกแล้ว (●)',
+  planEventRecordButtonSingle: 'บันทึกรายการนี้',
+  planEventRecordButtonGroup: 'บันทึกทั้งหมด {count}',
+  planEventDeleteConfirmTitle: 'ลบรายการนี้?',
+  planEventDeleteConfirmDesc: 'รายการที่ลบจะถูกลบถาวรหลังจาก 30 วัน',
+  planEventConvertedToast: 'เปลี่ยน {count} งานที่กำหนดไว้เป็นบันทึกแล้ว',
 };
 export default th;

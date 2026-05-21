@@ -819,5 +819,14 @@ const it: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} vasi',
   lookBackCardCalendarTitle: 'Calendario',
   lookBackCardCalendarDesc: 'Rivedi le attività passate per mese',
+  tabPlan: 'Piano',
+  planSectionScheduled: 'Programmato',
+  planSectionRecorded: 'Registrato',
+  planLegendDotRecordedLabel: 'Registrato (●)',
+  planEventRecordButtonSingle: 'Registra',
+  planEventRecordButtonGroup: 'Registra tutti ({count})',
+  planEventDeleteConfirmTitle: 'Eliminare questa voce?',
+  planEventDeleteConfirmDesc: 'Le voci eliminate vengono rimosse definitivamente dopo 30 giorni.',
+  planEventConvertedToast: '{count} attività programmata(e) convertita(e) in registro',
 };
 export default it;

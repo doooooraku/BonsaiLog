@@ -825,6 +825,15 @@ const baseEn = {
   planListingBonsaiCount: '×{count} pots',
   lookBackCardCalendarTitle: 'Calendar',
   lookBackCardCalendarDesc: 'Review past tasks by month',
+  tabPlan: 'Plan',
+  planSectionScheduled: 'Scheduled',
+  planSectionRecorded: 'Recorded',
+  planLegendDotRecordedLabel: 'Recorded (●)',
+  planEventRecordButtonSingle: 'Record this',
+  planEventRecordButtonGroup: 'Record all {count}',
+  planEventDeleteConfirmTitle: 'Delete this entry?',
+  planEventDeleteConfirmDesc: 'Deleted entries are removed permanently after 30 days.',
+  planEventConvertedToast: 'Changed {count} planned task(s) to records',
 };
 
 export type TranslationKey = keyof typeof baseEn;

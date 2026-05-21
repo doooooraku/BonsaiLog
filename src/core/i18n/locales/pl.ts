@@ -817,5 +817,14 @@ const pl: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} doniczek',
   lookBackCardCalendarTitle: 'Kalendarz',
   lookBackCardCalendarDesc: 'Przeglądaj zadania według miesiąca',
+  tabPlan: 'Plan',
+  planSectionScheduled: 'Zaplanowane',
+  planSectionRecorded: 'Zapisane',
+  planLegendDotRecordedLabel: 'Zapisane (●)',
+  planEventRecordButtonSingle: 'Zapisz',
+  planEventRecordButtonGroup: 'Zapisz wszystkie ({count})',
+  planEventDeleteConfirmTitle: 'Usunąć ten wpis?',
+  planEventDeleteConfirmDesc: 'Usunięte wpisy są trwale usuwane po 30 dniach.',
+  planEventConvertedToast: 'Przekształcono {count} zaplanowane zadanie(a) w zapis',
 };
 export default pl;

@@ -818,5 +818,14 @@ const de: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} Töpfe',
   lookBackCardCalendarTitle: 'Kalender',
   lookBackCardCalendarDesc: 'Vergangene Aufgaben monatsweise einsehen',
+  tabPlan: 'Plan',
+  planSectionScheduled: 'Geplant',
+  planSectionRecorded: 'Aufgezeichnet',
+  planLegendDotRecordedLabel: 'Aufgezeichnet (●)',
+  planEventRecordButtonSingle: 'Aufzeichnen',
+  planEventRecordButtonGroup: 'Alle aufzeichnen ({count})',
+  planEventDeleteConfirmTitle: 'Diesen Eintrag löschen?',
+  planEventDeleteConfirmDesc: 'Gelöschte Einträge werden nach 30 Tagen endgültig entfernt.',
+  planEventConvertedToast: '{count} geplante Aufgabe(n) in Aufzeichnung umgewandelt',
 };
 export default de;

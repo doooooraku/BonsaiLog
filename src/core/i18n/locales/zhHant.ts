@@ -805,5 +805,14 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} 盆',
   lookBackCardCalendarTitle: '日曆',
   lookBackCardCalendarDesc: '按月查看過往作業',
+  tabPlan: '計劃',
+  planSectionScheduled: '計劃',
+  planSectionRecorded: '紀錄',
+  planLegendDotRecordedLabel: '紀錄 (●)',
+  planEventRecordButtonSingle: '紀錄此項',
+  planEventRecordButtonGroup: '全部紀錄 ({count} 件)',
+  planEventDeleteConfirmTitle: '刪除此項？',
+  planEventDeleteConfirmDesc: '已刪除的項目將在 30 天後被永久刪除。',
+  planEventConvertedToast: '已將 {count} 項計劃轉換為紀錄',
 };
 export default zhHant;

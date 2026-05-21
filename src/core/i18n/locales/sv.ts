@@ -817,5 +817,14 @@ const sv: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} krukor',
   lookBackCardCalendarTitle: 'Kalender',
   lookBackCardCalendarDesc: 'Granska tidigare uppgifter per månad',
+  tabPlan: 'Plan',
+  planSectionScheduled: 'Schemalagt',
+  planSectionRecorded: 'Registrerat',
+  planLegendDotRecordedLabel: 'Registrerat (●)',
+  planEventRecordButtonSingle: 'Registrera',
+  planEventRecordButtonGroup: 'Registrera alla ({count})',
+  planEventDeleteConfirmTitle: 'Ta bort den här posten?',
+  planEventDeleteConfirmDesc: 'Borttagna poster tas bort permanent efter 30 dagar.',
+  planEventConvertedToast: '{count} schemalagd(a) uppgift(er) omvandlade till registrering',
 };
 export default sv;

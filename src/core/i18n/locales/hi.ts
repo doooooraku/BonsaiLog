@@ -816,5 +816,14 @@ const hi: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} गमले',
   lookBackCardCalendarTitle: 'कैलेंडर',
   lookBackCardCalendarDesc: 'माह के अनुसार पिछले कार्य देखें',
+  tabPlan: 'योजना',
+  planSectionScheduled: 'अनुसूचित',
+  planSectionRecorded: 'रिकॉर्ड किया गया',
+  planLegendDotRecordedLabel: 'रिकॉर्ड (●)',
+  planEventRecordButtonSingle: 'रिकॉर्ड करें',
+  planEventRecordButtonGroup: 'सभी {count} रिकॉर्ड करें',
+  planEventDeleteConfirmTitle: 'यह प्रविष्टि हटाएं?',
+  planEventDeleteConfirmDesc: 'हटाई गई प्रविष्टियाँ 30 दिनों के बाद स्थायी रूप से हटा दी जाती हैं।',
+  planEventConvertedToast: '{count} नियोजित कार्य रिकॉर्ड में बदले गए',
 };
 export default hi;

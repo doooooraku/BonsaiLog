@@ -816,5 +816,15 @@ const id: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} pot',
   lookBackCardCalendarTitle: 'Kalender',
   lookBackCardCalendarDesc: 'Tinjau tugas masa lalu per bulan',
+  tabPlan: 'Rencana',
+  planSectionScheduled: 'Terjadwal',
+  planSectionRecorded: 'Tercatat',
+  planLegendDotRecordedLabel: 'Tercatat (●)',
+  planEventRecordButtonSingle: 'Catat ini',
+  planEventRecordButtonGroup: 'Catat semua {count}',
+  planEventDeleteConfirmTitle: 'Hapus entri ini?',
+  planEventDeleteConfirmDesc:
+    'Entri yang dihapus akan dihilangkan secara permanen setelah 30 hari.',
+  planEventConvertedToast: '{count} tugas terjadwal diubah menjadi catatan',
 };
 export default id;

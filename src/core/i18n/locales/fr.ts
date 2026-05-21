@@ -819,5 +819,14 @@ const fr: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} pots',
   lookBackCardCalendarTitle: 'Calendrier',
   lookBackCardCalendarDesc: 'Consultez les tâches passées par mois',
+  tabPlan: 'Prévu',
+  planSectionScheduled: 'Prévu',
+  planSectionRecorded: 'Enregistré',
+  planLegendDotRecordedLabel: 'Enregistré (●)',
+  planEventRecordButtonSingle: 'Enregistrer',
+  planEventRecordButtonGroup: 'Enregistrer tout ({count})',
+  planEventDeleteConfirmTitle: 'Supprimer cette entrée ?',
+  planEventDeleteConfirmDesc: 'Les entrées supprimées sont définitivement effacées après 30 jours.',
+  planEventConvertedToast: '{count} tâche(s) prévue(s) convertie(s) en enregistrement',
 };
 export default fr;

@@ -814,5 +814,14 @@ const ko: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count}개 화분',
   lookBackCardCalendarTitle: '캘린더',
   lookBackCardCalendarDesc: '월별로 지난 작업 보기',
+  tabPlan: '예정',
+  planSectionScheduled: '예정',
+  planSectionRecorded: '기록',
+  planLegendDotRecordedLabel: '기록 (●)',
+  planEventRecordButtonSingle: '기록하기',
+  planEventRecordButtonGroup: '전체 {count}건 기록',
+  planEventDeleteConfirmTitle: '이 항목을 삭제하시겠습니까?',
+  planEventDeleteConfirmDesc: '삭제된 항목은 30일 후 영구적으로 제거됩니다。',
+  planEventConvertedToast: '예정 {count}건을 기록으로 변경했습니다',
 };
 export default ko;

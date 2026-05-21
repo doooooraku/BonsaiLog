@@ -815,5 +815,14 @@ const vi: Partial<Record<TranslationKey, string>> = {
   planListingBonsaiCount: '×{count} chậu',
   lookBackCardCalendarTitle: 'Lịch',
   lookBackCardCalendarDesc: 'Xem các công việc trước theo tháng',
+  tabPlan: 'Kế hoạch',
+  planSectionScheduled: 'Đã lên kế hoạch',
+  planSectionRecorded: 'Đã ghi',
+  planLegendDotRecordedLabel: 'Đã ghi (●)',
+  planEventRecordButtonSingle: 'Ghi mục này',
+  planEventRecordButtonGroup: 'Ghi tất cả {count}',
+  planEventDeleteConfirmTitle: 'Xóa mục này?',
+  planEventDeleteConfirmDesc: 'Các mục đã xóa sẽ bị xóa vĩnh viễn sau 30 ngày.',
+  planEventConvertedToast: 'Đã chuyển {count} công việc đã lên kế hoạch sang ghi',
 };
 export default vi;
