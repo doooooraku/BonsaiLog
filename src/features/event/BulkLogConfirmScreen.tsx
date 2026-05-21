@@ -38,7 +38,6 @@ import {
 import { useColors } from '@/src/core/theme/useColors';
 import {
   bulkConvertPlannedToRecorded,
-  bulkLogEvents,
   convertPlannedToRecorded,
   createEvent,
   findPlannedEventByCondition,

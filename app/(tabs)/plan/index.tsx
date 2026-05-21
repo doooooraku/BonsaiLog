@@ -738,7 +738,6 @@ const styles = StyleSheet.create({
   },
   groupRecordButtonText: { fontSize: 12, fontWeight: '600', color: ON_BRAND },
   eventCardOverdue: { opacity: 0.6 },
-  eventBonsaiOverdue: { color: TEXT_MUTED },
   listLabel: {
     fontFamily: 'Inter_400Regular',
     fontSize: 11,
@@ -791,39 +790,9 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
     gap: 6,
   },
-  eventCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 14,
-    backgroundColor: BG_SURFACE,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 12,
-  },
-  eventIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 9,
-    backgroundColor: BG_SURFACE,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  eventBody: { flex: 1, minWidth: 0, gap: 2 },
-  eventBonsai: { fontSize: 15, fontWeight: '500', color: TEXT_PRIMARY },
-  eventLabel: { fontSize: 12, color: TEXT_SECONDARY },
-  plannedLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: ACCENT_BARK,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    backgroundColor: 'rgba(90,70,55,0.1)',
-    borderRadius: 4,
-    letterSpacing: 0.6,
-  },
+  // Sess24 Phase ζ-1-③ (PR-zeta-1-3): EventRow 流用後の未使用 styles 削除
+  // (eventCard / eventIconBox / eventBody / eventBonsai / eventLabel / plannedLabel /
+  //  eventBonsaiOverdue 7 件、 grep 0 hit 確認後)
   fab: {
     position: 'absolute',
     right: 16,
