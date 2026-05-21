@@ -115,14 +115,20 @@ export default function BulkLogConfirmScreen() {
           }
         }
       }
-      useToastStore.getState().show(t('bulkLogDoneToast').replace('{count}', '1'));
+      // Sess19 PR-5 (ADR-0031 D1): Toast 件数 hardcode '1' → bonsaiIds.length に修正
+      // (副次 bug fix: 2 件選択しても「1 件の作業を記録しました」 と表示されていた)
+      useToastStore
+        .getState()
+        .show(t('bulkLogDoneToast').replace('{count}', String(bonsaiIds.length)));
     } catch (error) {
       console.warn('[bulk-log] failed:', error);
     }
     // Sess12 PR-I: 通知 reschedule (planned → logged 状態変化、 当日通知更新)
     void triggerSummaryReschedule(t);
-    // Sess12 PR-G 改善 I: 記録タブに直接戻る (dismissAll の 1 階問題回避)
-    router.replace('/(tabs)/record');
+    // Sess19 PR-5 (ADR-0031 D1): 記録タブ stub に戻る → カレンダー画面に遷移、
+    // 記録した日が選択状態 (Single と統一、 user 提案「作業記録カレンダー」 整合)
+    const dateKey = occurredAtDate || (occurredAtUtc?.slice(0, 10) ?? '');
+    router.replace(`/(tabs)/plan?selectedDateKey=${dateKey}`);
   };
 
   const typeLabel = t(`eventType_${selectedType}` as TranslationKey);
