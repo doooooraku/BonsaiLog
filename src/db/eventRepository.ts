@@ -747,3 +747,86 @@ export async function findPlannedEventByCondition(
   }
   return null;
 }
+
+/**
+ * 複数 event を atomic 一括 softDelete (Sess25 ADR-0036 D5/D8、 R-43 整合)。
+ *
+ * 用途: PlanScreen group 行 削除 + bonsai-detail 履歴一括削除 + Undo Snackbar 復元 sequence。
+ *
+ * R-43 atomic transaction 保証: 1 件でも UPDATE が失敗 (該当 ID 不在 etc.) すれば throw + rollback、
+ * 部分削除 = データ整合崩れ防止。
+ *
+ * wiring cascade (ADR-0036 D8): unwiring「event」 は独立 record 不在 (wiring payload 内
+ * scheduled_unwire_at で予定日のみ保持)、 通知 cancel は呼出側で `cancelForEvents(eventIds, t)`
+ * を sequential 実行で SUMMARY 再計算 → wiring 削除に伴う unwiring scheduled 通知も自動除外 = cascade 完了。
+ *
+ * @returns deletedCount = 削除成功件数 (input.length と必ず一致、 不一致は throw)
+ * @throws Error 該当 ID 不在 / 既削除済 で UPDATE getChanges === 0 の場合、 transaction rollback
+ */
+export async function bulkSoftDeleteEvents(eventIds: readonly string[]): Promise<number> {
+  if (eventIds.length === 0) return 0;
+  const db = await getDb();
+  const now = nowUtc() as string;
+  let totalChanges = 0;
+
+  await db.withTransactionAsync(async () => {
+    for (const id of eventIds) {
+      const result = await db.runAsync(
+        'UPDATE events SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL;',
+        [now, now, id],
+      );
+      if (result.changes === 0) {
+        throw new Error(
+          `bulkSoftDeleteEvents: event ${id} not found or already deleted (transaction rolled back)`,
+        );
+      }
+      totalChanges += result.changes;
+      // FTS5 から削除 (再検索ノイズ防止、 existing softDeleteEvent と同 logic)
+      await db.runAsync('DELETE FROM events_fts WHERE event_id = ?;', [id]);
+    }
+  });
+
+  return totalChanges;
+}
+
+/**
+ * 複数 event を atomic 一括復元 (Sess25 ADR-0036 D5、 R-43 整合)。
+ *
+ * 用途: UndoSnackbar [元に戻す] tap で削除直後の N 件を atomic 復元、 通知 reschedule は呼出側で
+ * `cancelForEvents(restoredIds, t)` sequential 実行 (SUMMARY 再計算で復元 event も自動再集計)。
+ *
+ * R-43 atomic: 1 件でも UPDATE が失敗 (該当 ID 不在 etc.) すれば throw + rollback。
+ *
+ * @returns restoredCount = 復元成功件数 (input.length と必ず一致、 不一致は throw)
+ */
+export async function restoreEvents(eventIds: readonly string[]): Promise<number> {
+  if (eventIds.length === 0) return 0;
+  const db = await getDb();
+  const now = nowUtc() as string;
+  let totalChanges = 0;
+
+  await db.withTransactionAsync(async () => {
+    for (const id of eventIds) {
+      const result = await db.runAsync(
+        'UPDATE events SET deleted_at = NULL, updated_at = ? WHERE id = ? AND deleted_at IS NOT NULL;',
+        [now, id],
+      );
+      if (result.changes === 0) {
+        throw new Error(
+          `restoreEvents: event ${id} not found or not in trash (transaction rolled back)`,
+        );
+      }
+      totalChanges += result.changes;
+      // FTS5 に再 INSERT (existing restoreEvent と同 logic)
+      const event = await getEventById(id);
+      if (event) {
+        await db.runAsync(
+          'INSERT INTO events_fts (event_id, bonsai_id, note, payload_text) VALUES (?, ?, ?, ?);',
+          [event.id, event.bonsaiId, event.note ?? '', event.payloadJson ?? ''],
+        );
+      }
+    }
+  });
+
+  return totalChanges;
+}
