@@ -506,5 +506,45 @@ if (version < N + 1) {
 
 ---
 
+## 18. 長押し UX 標準 (ADR-0036 D6 / R-45 由来)
+
+### 18-1. 原則 P1 — 触覚 + 視覚 + 動作 3 chan feedback
+
+`Pressable onLongPress` を使う全 component で以下 3 段 fb を必須:
+
+1. **触覚 (Haptics)**: 長押し成功時 `Haptics.impactAsync(ImpactFeedbackStyle.Medium)` を `onLongPress` callback 内 で実行直前に発火
+2. **視覚 (Modal / Animation)**: ConfirmDialog 80ms フェードイン (Material 3 Motion duration、 animationType="fade")
+3. **動作 (delayLongPress)**: default 500ms 維持 (Material 3 標準 + iOS HIG「Long Press」 整合)、 短縮禁止
+
+### 18-2. 原則 P2 — 破壊的操作は ConfirmDialog + UndoSnackbar 必須 (R-44 連動)
+
+長押し → 破壊的操作 (削除 / アーカイブ / クリア) 動線では:
+
+- OS 標準 `Alert.alert` 不採用、 必ずカスタム `<ConfirmDialog>` (`src/components/ConfirmDialog.tsx`) 利用
+- 削除実行後 `<UndoSnackbar>` (Toast 拡張、 `src/components/Toast.tsx`) で 4s 表示 + [元に戻す] action
+- 削除実行直前 `Haptics.notificationAsync(NotificationFeedbackStyle.Warning)` で 2 段目の触覚 fb
+
+### 18-3. 原則 P3 — kebab menu (⋮) と long-press 共存
+
+発見性 (kebab) + power user 効率 (long-press) の両立:
+
+- group 行 / list item 右端に kebab icon button slot 配置 (`onKebabPress?: () => void` prop)
+- kebab tap → `<RowActionMenu>` (`src/components/RowActionMenu.tsx`、 bottom sheet 風) で「削除」 + 文脈別 action
+- Pressable nested で gesture 独立、 内側 kebab button 領域の長押しは parent に伝わらず button tap として処理 (React Native 仕様)
+
+### 18-4. 自動検出 (将来)
+
+- `scripts/eslint-rules/destructive-undo.mjs` (Phase ζ-3 or v1.x): `softDelete*` / `purge*` callsite が Snackbar wrap されているか AST grep (R-44 連動)
+- 当面 code review + ADR-0036 整合 grep
+
+### 18-5. 関連
+
+- ADR-0036 D1-D9 (本セクション由来)
+- R-44 (破壊的操作 = Undo 必須) / R-45 (長押し UX 標準)
+- `src/components/ConfirmDialog.tsx` / `src/components/Toast.tsx` (拡張) / `src/components/RowActionMenu.tsx`
+- Material 3 Dialog / Snackbar / Bottom Sheet + Apple HIG Alerts / Action Sheets + WAI-ARIA Dialog Pattern
+
+---
+
 _このドキュメントは `src/core/theme/colors.ts` として TypeScript 定数にも反映される。_
 _変更時は ADR `docs/adr/YYYY-MM-DD-design-tokens.md` を作成。_
