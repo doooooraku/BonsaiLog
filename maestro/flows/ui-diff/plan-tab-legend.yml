@@ -1,24 +1,20 @@
-## UI diff capture: plan-tab
+## UI diff capture: plan-tab-legend (Sess22 ADR-0034 D1)
 ##
-## ADR-0021 / ADR-0020 §Notes §画面マップ row 14 (予定タブ ⟷ care-screens.jsx CalendarScreen)
-## 対象実装: app/(tabs)/plan/index.tsx (testID e2e_plan_screen)
-## 対象モックアップ: docs/mockups/v1.0/wireframes/02-Home.html [data-screen-label="10 ケア 作業予定カレンダー"]
+## カレンダー凡例 collapsible bar の toggle + AsyncStorage 永続化検証。
 ##
-## 経路 (clearState + Onboarding skip + DEV seed 自動投入 + 予定タブ tap):
-## 1. App 起動 (clearState: true)
-## 2. Dev Client menu + Continue dismiss
-## 3. Onboarding skip
-## 4. 盆栽タブ Empty CTA visible
-## 5. 設定タブ → DEV seed button tap → Alert dismiss
-## 6. 予定タブ tap (e2e_tab_plan)
-## 7. e2e_plan_screen 表示確認
+## 経路:
+## 1. plan-tab.yml と同じ前処理 (clearState + Onboarding skip + DEV seed + 予定タブ tap)
+## 2. e2e_plan_legend visible 確認 (初回 = 展開状態)
+## 3. e2e_plan_legend_toggle tap → 折りたたみ確認 (e2e_plan_legend_item_logged が hidden)
+## 4. 再度 tap → 展開確認
 ##
-## 2 回反復 2/2 PASS 基準 (2026-05-13 user 指示)。
+## R-31 整合: _template.yml 由来、 tapOn text 不使用、 3 回反復 3/3 PASS 基準。
 
 appId: 'com.doooooraku.bonsailog'
-name: 'UI diff capture: plan-tab'
+name: 'UI diff capture: plan-tab-legend (Sess22)'
 tags:
   - ui-diff
+  - sess22
 ---
 - launchApp:
     clearState: true
@@ -96,7 +92,7 @@ tags:
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
-# 予定タブ tap (testID 経由)
+# 予定タブ tap
 - tapOn:
     id: 'e2e_tab_plan'
     retryTapIfNoChange: true
@@ -107,11 +103,36 @@ tags:
     visible:
       id: 'e2e_plan_screen'
     timeout: 30000
-
 - waitForAnimationToEnd
 
-# Sess22 ADR-0034 D1: カレンダー凡例 collapsible bar 表示確認 (default 展開)
+# 凡例 bar 初回 = 展開状態 (default false)
 - extendedWaitUntil:
     visible:
       id: 'e2e_plan_legend'
     timeout: 5000
+- assertVisible:
+    id: 'e2e_plan_legend_item_logged'
+- assertVisible:
+    id: 'e2e_plan_legend_item_planned'
+- assertVisible:
+    id: 'e2e_plan_legend_item_multiple'
+
+# Toggle tap → 折りたたみ
+- tapOn:
+    id: 'e2e_plan_legend_toggle'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# 折りたたみ状態: legend root は visible (header だけ表示)、 items は hidden
+- assertVisible:
+    id: 'e2e_plan_legend'
+- assertNotVisible:
+    id: 'e2e_plan_legend_item_logged'
+
+# Toggle tap → 再展開
+- tapOn:
+    id: 'e2e_plan_legend_toggle'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- assertVisible:
+    id: 'e2e_plan_legend_item_logged'

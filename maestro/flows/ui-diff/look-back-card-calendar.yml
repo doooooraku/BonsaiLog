@@ -1,24 +1,20 @@
-## UI diff capture: plan-tab
+## UI diff capture: look-back-card-calendar (Sess22 ADR-0034 D6)
 ##
-## ADR-0021 / ADR-0020 §Notes §画面マップ row 14 (予定タブ ⟷ care-screens.jsx CalendarScreen)
-## 対象実装: app/(tabs)/plan/index.tsx (testID e2e_plan_screen)
-## 対象モックアップ: docs/mockups/v1.0/wireframes/02-Home.html [data-screen-label="10 ケア 作業予定カレンダー"]
+## ふりかえりタブ hub の 5 card 目「カレンダー」 tap → PlanScreen 過去 30 日 default 確認。
 ##
-## 経路 (clearState + Onboarding skip + DEV seed 自動投入 + 予定タブ tap):
-## 1. App 起動 (clearState: true)
-## 2. Dev Client menu + Continue dismiss
-## 3. Onboarding skip
-## 4. 盆栽タブ Empty CTA visible
-## 5. 設定タブ → DEV seed button tap → Alert dismiss
-## 6. 予定タブ tap (e2e_tab_plan)
-## 7. e2e_plan_screen 表示確認
+## 経路:
+## 1. plan-tab.yml と同じ前処理 (clearState + Onboarding skip + DEV seed)
+## 2. ふりかえりタブ tap (e2e_tab_look_back)
+## 3. e2e_look_back_card_calendar visible 確認
+## 4. tap → e2e_plan_screen 表示確認 (過去 30 日が選択状態)
 ##
-## 2 回反復 2/2 PASS 基準 (2026-05-13 user 指示)。
+## R-31 整合: testID 命名は既存 pattern `e2e_look_back_card_<key>` に整合 (自動生成)。
 
 appId: 'com.doooooraku.bonsailog'
-name: 'UI diff capture: plan-tab'
+name: 'UI diff capture: look-back-card-calendar (Sess22)'
 tags:
   - ui-diff
+  - sess22
 ---
 - launchApp:
     clearState: true
@@ -90,28 +86,42 @@ tags:
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
-# Alert dismiss (R-31 例外)
+# Alert dismiss
 - tapOn:
     text: 'OK'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
-# 予定タブ tap (testID 経由)
+# ふりかえりタブ tap
 - tapOn:
-    id: 'e2e_tab_plan'
+    id: 'e2e_tab_look_back'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
-# 予定タブ画面表示確認
+# 5 card 並び確認 (watering / calendar / wiring / search / tags)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_look_back_hub'
+    timeout: 10000
+- assertVisible:
+    id: 'e2e_look_back_card_watering'
+- assertVisible:
+    id: 'e2e_look_back_card_calendar'
+- assertVisible:
+    id: 'e2e_look_back_card_wiring'
+- assertVisible:
+    id: 'e2e_look_back_card_search'
+- assertVisible:
+    id: 'e2e_look_back_card_tags'
+
+# カレンダー card tap → PlanScreen 過去 30 日 default 表示
+- tapOn:
+    id: 'e2e_look_back_card_calendar'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
 - extendedWaitUntil:
     visible:
       id: 'e2e_plan_screen'
-    timeout: 30000
-
-- waitForAnimationToEnd
-
-# Sess22 ADR-0034 D1: カレンダー凡例 collapsible bar 表示確認 (default 展開)
-- extendedWaitUntil:
-    visible:
-      id: 'e2e_plan_legend'
-    timeout: 5000
+    timeout: 10000
+- assertVisible:
+    id: 'e2e_plan_legend'
