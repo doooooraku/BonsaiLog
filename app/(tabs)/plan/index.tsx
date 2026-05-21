@@ -43,6 +43,7 @@ import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
 import { CalendarDot } from '@/src/features/plan/CalendarDot';
 import { CalendarLegend } from '@/src/features/plan/CalendarLegend';
+import { computeDotsByDay } from '@/src/features/plan/dotsByDay';
 import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 import { usePickerStore } from '@/src/stores/pickerStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
@@ -122,19 +123,10 @@ export default function PlanScreen() {
 
   const tzOffsetMin = getTzOffsetMin();
 
-  // Sess19-2 ADR-0032 D1: dotsByDay を planned/logged で別カウントに拡張
-  // Pattern C: 全 logged → 緑のみ / 全 planned → 茶のみ / 混在 → 両色併記 (max 3 個まで)
-  const dotsByDay = useMemo(() => {
-    const map = new Map<string, { planned: number; logged: number }>();
-    for (const e of events) {
-      const key = toLocalDateKey(e.occurredAtUtc, tzOffsetMin);
-      const cur = map.get(key) ?? { planned: 0, logged: 0 };
-      if (e.status === 'planned') cur.planned += 1;
-      else if (e.status === 'logged') cur.logged += 1;
-      map.set(key, cur);
-    }
-    return map;
-  }, [events, tzOffsetMin]);
+  // Sess22 ADR-0034 D2: dotsByDay を「作業別 unique (Set<EventType>)」 に変更
+  // 「複数盆栽でも 1 作業なら dot 1 個」 (user 真意) を構造実現。
+  // 純関数 computeDotsByDay は src/features/plan/dotsByDay.ts、 5 case unit test 済。
+  const dotsByDay = useMemo(() => computeDotsByDay(events, tzOffsetMin), [events, tzOffsetMin]);
 
   const selectedDayEvents = useMemo(
     () => events.filter((e) => toLocalDateKey(e.occurredAtUtc, tzOffsetMin) === selectedDateKey),
@@ -285,14 +277,20 @@ export default function PlanScreen() {
               {cells.slice(w * 7, w * 7 + 7).map((d, i) => {
                 if (d == null) return <View key={i} style={styles.cell} />;
                 const dateKey = `${year}-${pad(month + 1)}-${pad(d)}`;
-                const dotData = dotsByDay.get(dateKey) ?? { planned: 0, logged: 0 };
-                const totalDots = dotData.planned + dotData.logged;
+                // Sess22 ADR-0034 D2: 作業別 unique 集計、 size ベース render
+                const dotData = dotsByDay.get(dateKey) ?? {
+                  plannedTypes: new Set<EventType>(),
+                  loggedTypes: new Set<EventType>(),
+                };
+                const loggedUniqueCount = dotData.loggedTypes.size;
+                const plannedUniqueCount = dotData.plannedTypes.size;
+                const totalUniqueCount = loggedUniqueCount + plannedUniqueCount;
                 const isSel = dateKey === selectedDateKey;
                 const isToday = dateKey === todayLocalKey;
-                // Sess19-2 ADR-0032 D1: 各日 max 3 個まで dot (logged 優先で並べる、 残りを planned で埋める)
-                const renderedLogged = Math.min(dotData.logged, 3);
+                // Sess19-2 ADR-0032 D1 + Sess22 ADR-0034 D2: 各日 max 3 個まで dot (logged 優先、 残りを planned で埋める)
+                const renderedLogged = Math.min(loggedUniqueCount, 3);
                 const remainingSlots = Math.max(0, 3 - renderedLogged);
-                const renderedPlanned = Math.min(dotData.planned, remainingSlots);
+                const renderedPlanned = Math.min(plannedUniqueCount, remainingSlots);
                 return (
                   <Pressable
                     key={i}
@@ -319,8 +317,8 @@ export default function PlanScreen() {
                       {Array.from({ length: renderedPlanned }).map((_, k) => (
                         <CalendarDot key={`planned-${k}`} status="planned" />
                       ))}
-                      {/* mockup v1.0 「●●●+」 整合: 4+ で「+」 (planned + logged 合算) */}
-                      {totalDots > 3 && <ThemedText style={styles.dotPlus}>+</ThemedText>}
+                      {/* mockup v1.0 「●●●+」 整合: 4+ で「+」 (Sess22 ADR-0034 D2 で unique count ベースに変更) */}
+                      {totalUniqueCount > 3 && <ThemedText style={styles.dotPlus}>+</ThemedText>}
                     </View>
                   </Pressable>
                 );
