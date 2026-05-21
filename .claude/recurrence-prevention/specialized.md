@@ -232,6 +232,30 @@
 
 ---
 
+### R-44. 破壊的操作 = ConfirmDialog + UndoSnackbar 必須 (Sess25 ADR-0036 由来)
+
+- **ルール**: 破壊的操作 (delete / archive / clear / purge) を実装する場合、 以下 2 件必須:
+  1. **`<ConfirmDialog>`** (`src/components/ConfirmDialog.tsx`) で 確認 → OS 標準 `Alert.alert` 不採用 (アプリ世界観統一)。 title は question form (Apple HIG)、 desc は **optional** (即削除前提では省略推奨、 ADR-0036 D4)
+  2. **`<UndoSnackbar>`** (Toast 拡張、 `src/components/Toast.tsx` action button slot 利用、 helper `showUndoToast(message, undoFn)`) で 4s 表示 + [元に戻す] action + 復元 helper (`restoreEvents` 等) 配線。 ライブ user の「気づかぬうち削除」 を即時補完 (Material 3 Snackbar / Gmail Undo Send 標準)
+- **根拠**: Sess23 ADR-0035 D3「個別 row 削除のみ」 scope 限定 → Sess25 実機検証で group 100 鉢誤削除リスク (R6) v1.0 release blocker 確証。 30 日復元 spec があっても画面に出ないと user 認識不可、 Nielsen Norman Group "Recovery from Error" 整合
+- **自動化**: 当面 code review + ADR-0036 D5 整合 grep。 Phase ζ-3 検討: `scripts/eslint-rules/destructive-undo.mjs` で `softDelete*` / `purge*` callsite が Snackbar wrap されているか AST grep
+- **関連**: ADR-0036 D1/D4/D5 (本ルール由来) / `src/components/ConfirmDialog.tsx` / `src/components/Toast.tsx` (拡張) / Material 3 Snackbar + Gmail Undo Send
+
+---
+
+### R-45. 長押し UX 標準 = Haptics 必須 + delayLongPress 500ms (Sess25 ADR-0036 由来)
+
+- **ルール**: `Pressable onLongPress` を使う全 component で以下を必須:
+  1. **`expo-haptics.impactAsync(ImpactFeedbackStyle.Medium)`** を `onLongPress` callback 内で 実行直前に発火 (触覚 fb で長押し中認識補助)
+  2. **`delayLongPress` default 500ms** 維持 (Material 3 標準 + iOS HIG「Long Press」 整合)、 短縮禁止
+  3. 破壊的操作の場合は ConfirmDialog 表示時に 80ms フェードイン (Material 3 Motion duration)
+  4. 削除実行時 `Haptics.notificationAsync(NotificationFeedbackStyle.Warning)` で 2 段目の触覚 fb
+- **根拠**: 視覚 fb (背景色変化) のみだと指で隠れて user が長押し中を認識できない。 触覚 + 視覚 + 聴覚 (OS 任意) 3 chan feedback で UX 標準。 Sess25 議論で「長押し UX 標準」 未整備が判明、 design_system.md §18 に SoT 化
+- **自動化**: 当面 code review + design_system.md §18 整合 grep。 Phase ζ-3 検討: ESLint rule 化 (`onLongPress` 検出時に `Haptics` import + invocation を check)
+- **関連**: ADR-0036 D6 (本ルール由来) / `docs/reference/design_system.md` §18 / `expo-haptics` (既存依存) / Material 3 / iOS HIG「Long Press」
+
+---
+
 ## 関連
 
 - 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-41 索引 + 運用ルール)
