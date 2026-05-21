@@ -17,7 +17,7 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -37,11 +37,12 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
-import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
+import { getAllActivePlannedAndLoggedEvents, softDeleteEvent } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type Bonsai, type Event, type EventType } from '@/src/db/schema';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { EventRow } from '@/src/features/event/EventRow';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
+import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { CalendarDot } from '@/src/features/plan/CalendarDot';
 import { CalendarLegend } from '@/src/features/plan/CalendarLegend';
 import { computeDotsByDay } from '@/src/features/plan/dotsByDay';
@@ -207,6 +208,27 @@ export default function PlanScreen() {
       return next;
     });
   }, []);
+
+  // ADR-0035 D3 (Sess23 PR-3-1): event 個別削除動線
+  // long-press → Alert.alert 確認 → softDelete + cancelForEvent + reload
+  // bonsai-detail history タブと同 pattern (Sess16 で確立)、 30 日ゴミ箱で復元可
+  const confirmDeleteEvent = useCallback(
+    (ev: Event) => {
+      Alert.alert(t('planEventDeleteConfirmTitle'), t('planEventDeleteConfirmDesc'), [
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: t('delete'),
+          style: 'destructive',
+          onPress: async () => {
+            await softDeleteEvent(ev.id);
+            await cancelForEvent(ev.id, t);
+            await reload();
+          },
+        },
+      ]);
+    },
+    [t, reload],
+  );
 
   // Sess22 ADR-0034 D7: listing 件数補完「×N (M 鉢)」
   // PR-2-1 で dot 粒度を作業別 unique 化したため、 listing で「同日 3 鉢 watering」 のような
@@ -458,6 +480,7 @@ export default function PlanScreen() {
                                         `/(tabs)/bonsai/${ev.bonsaiId}?tab=timeline` as Href,
                                       )
                                     }
+                                    onLongPress={confirmDeleteEvent}
                                     showBonsaiName
                                     indent
                                   />
@@ -536,6 +559,7 @@ export default function PlanScreen() {
                                         `/(tabs)/bonsai/${ev.bonsaiId}?tab=history` as Href,
                                       )
                                     }
+                                    onLongPress={confirmDeleteEvent}
                                     showBonsaiName
                                     indent
                                   />
