@@ -820,5 +820,15 @@ const sv: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'Ta bort den här posten?',
   planEventDeleteConfirmDesc: 'Borttagna poster tas bort permanent efter 30 dagar.',
   planEventConvertedToast: '{count} schemalagd(a) uppgift(er) omvandlade till registrering',
+  planEventDeleteConfirmPlannedSingleTitle: 'Ta bort denna plan?',
+  planEventDeleteConfirmLoggedSingleTitle: 'Ta bort denna post?',
+  planEventDeleteConfirmPlannedGroupTitle: 'Ta bort {count} planer tillsammans?',
+  planEventDeleteConfirmLoggedGroupTitle: 'Ta bort {count} poster tillsammans?',
+  planEventDeleteConfirmWiringCascadeNote: '(Relaterade trådborttagningar tas också bort)',
+  rowActionMenuDelete: 'Ta bort',
+  rowActionMenuRecordAll: 'Registrera alla {count}',
+  undoSnackbarPlannedDeleteN: '{count} plan(er) borttagna',
+  undoSnackbarLoggedDeleteN: '{count} post(er) borttagna',
+  undoSnackbarAction: 'Ångra',
 };
 export default sv;

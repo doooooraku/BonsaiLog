@@ -822,5 +822,16 @@ const fr: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'Supprimer cette entrée ?',
   planEventDeleteConfirmDesc: 'Les entrées supprimées sont définitivement effacées après 30 jours.',
   planEventConvertedToast: '{count} tâche(s) prévue(s) convertie(s) en enregistrement',
+  planEventDeleteConfirmPlannedSingleTitle: 'Supprimer ce plan ?',
+  planEventDeleteConfirmLoggedSingleTitle: 'Supprimer cet enregistrement ?',
+  planEventDeleteConfirmPlannedGroupTitle: 'Supprimer ces {count} plans ensemble ?',
+  planEventDeleteConfirmLoggedGroupTitle: 'Supprimer ces {count} enregistrements ensemble ?',
+  planEventDeleteConfirmWiringCascadeNote:
+    '(Les calendriers de retrait associés seront également supprimés)',
+  rowActionMenuDelete: 'Supprimer',
+  rowActionMenuRecordAll: 'Enregistrer les {count} tâches',
+  undoSnackbarPlannedDeleteN: '{count} plan(s) supprimé(s)',
+  undoSnackbarLoggedDeleteN: '{count} enregistrement(s) supprimé(s)',
+  undoSnackbarAction: 'Annuler',
 };
 export default fr;

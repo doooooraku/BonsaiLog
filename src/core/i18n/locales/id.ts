@@ -820,5 +820,15 @@ const id: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmDesc:
     'Entri yang dihapus akan dihilangkan secara permanen setelah 30 hari.',
   planEventConvertedToast: '{count} tugas terjadwal diubah menjadi catatan',
+  planEventDeleteConfirmPlannedSingleTitle: 'Hapus rencana ini?',
+  planEventDeleteConfirmLoggedSingleTitle: 'Hapus catatan ini?',
+  planEventDeleteConfirmPlannedGroupTitle: 'Hapus {count} rencana sekaligus?',
+  planEventDeleteConfirmLoggedGroupTitle: 'Hapus {count} catatan sekaligus?',
+  planEventDeleteConfirmWiringCascadeNote: '(Jadwal pelepasan kawat terkait juga akan dihapus)',
+  rowActionMenuDelete: 'Hapus',
+  rowActionMenuRecordAll: 'Catat semua {count}',
+  undoSnackbarPlannedDeleteN: '{count} rencana dihapus',
+  undoSnackbarLoggedDeleteN: '{count} catatan dihapus',
+  undoSnackbarAction: 'Urungkan',
 };
 export default id;

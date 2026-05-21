@@ -808,5 +808,15 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: '刪除此項？',
   planEventDeleteConfirmDesc: '已刪除的項目將在 30 天後被永久刪除。',
   planEventConvertedToast: '已將 {count} 項計劃轉換為紀錄',
+  planEventDeleteConfirmPlannedSingleTitle: '刪除此計畫？',
+  planEventDeleteConfirmLoggedSingleTitle: '刪除此記錄？',
+  planEventDeleteConfirmPlannedGroupTitle: '一併刪除 {count} 個計畫？',
+  planEventDeleteConfirmLoggedGroupTitle: '一併刪除 {count} 條記錄？',
+  planEventDeleteConfirmWiringCascadeNote: '（相關的拆線計畫也將被刪除）',
+  rowActionMenuDelete: '刪除',
+  rowActionMenuRecordAll: '記錄全部 {count} 項',
+  undoSnackbarPlannedDeleteN: '已刪除 {count} 個計畫',
+  undoSnackbarLoggedDeleteN: '已刪除 {count} 條記錄',
+  undoSnackbarAction: '復原',
 };
 export default zhHant;

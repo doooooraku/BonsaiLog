@@ -819,5 +819,15 @@ const tr: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'Bu girdi silinsin mi?',
   planEventDeleteConfirmDesc: 'Silinen girdiler 30 gün sonra kalıcı olarak silinir.',
   planEventConvertedToast: '{count} planlanan görev kayda dönüştürüldü',
+  planEventDeleteConfirmPlannedSingleTitle: 'Bu planı silmek istiyor musunuz?',
+  planEventDeleteConfirmLoggedSingleTitle: 'Bu kaydı silmek istiyor musunuz?',
+  planEventDeleteConfirmPlannedGroupTitle: '{count} planı birlikte silmek istiyor musunuz?',
+  planEventDeleteConfirmLoggedGroupTitle: '{count} kaydı birlikte silmek istiyor musunuz?',
+  planEventDeleteConfirmWiringCascadeNote: '(İlgili tel çıkarma planları da silinecektir)',
+  rowActionMenuDelete: 'Sil',
+  rowActionMenuRecordAll: 'Tümünü kaydet ({count})',
+  undoSnackbarPlannedDeleteN: '{count} plan silindi',
+  undoSnackbarLoggedDeleteN: '{count} kayıt silindi',
+  undoSnackbarAction: 'Geri al',
 };
 export default tr;

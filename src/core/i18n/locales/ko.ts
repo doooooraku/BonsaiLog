@@ -817,5 +817,15 @@ const ko: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: '이 항목을 삭제하시겠습니까?',
   planEventDeleteConfirmDesc: '삭제된 항목은 30일 후 영구적으로 제거됩니다。',
   planEventConvertedToast: '예정 {count}건을 기록으로 변경했습니다',
+  planEventDeleteConfirmPlannedSingleTitle: '이 계획을 삭제할까요?',
+  planEventDeleteConfirmLoggedSingleTitle: '이 기록을 삭제할까요?',
+  planEventDeleteConfirmPlannedGroupTitle: '이 계획 {count} 건을 함께 삭제할까요?',
+  planEventDeleteConfirmLoggedGroupTitle: '이 기록 {count} 건을 함께 삭제할까요?',
+  planEventDeleteConfirmWiringCascadeNote: '(관련된 철사 제거 일정도 함께 삭제됩니다)',
+  rowActionMenuDelete: '삭제',
+  rowActionMenuRecordAll: '전체 {count} 건 기록',
+  undoSnackbarPlannedDeleteN: '계획 {count} 건 삭제됨',
+  undoSnackbarLoggedDeleteN: '기록 {count} 건 삭제됨',
+  undoSnackbarAction: '되돌리기',
 };
 export default ko;

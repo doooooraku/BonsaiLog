@@ -820,5 +820,16 @@ const pt: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'Excluir esta entrada?',
   planEventDeleteConfirmDesc: 'Entradas excluídas são removidas permanentemente após 30 dias.',
   planEventConvertedToast: '{count} tarefa(s) agendada(s) convertida(s) em registro',
+  planEventDeleteConfirmPlannedSingleTitle: 'Eliminar este plano?',
+  planEventDeleteConfirmLoggedSingleTitle: 'Eliminar este registro?',
+  planEventDeleteConfirmPlannedGroupTitle: 'Eliminar {count} planos juntos?',
+  planEventDeleteConfirmLoggedGroupTitle: 'Eliminar {count} registros juntos?',
+  planEventDeleteConfirmWiringCascadeNote:
+    '(Os agendamentos de remoção de arame relacionados também serão eliminados)',
+  rowActionMenuDelete: 'Eliminar',
+  rowActionMenuRecordAll: 'Registrar todos os {count}',
+  undoSnackbarPlannedDeleteN: '{count} plano(s) eliminado(s)',
+  undoSnackbarLoggedDeleteN: '{count} registro(s) eliminado(s)',
+  undoSnackbarAction: 'Desfazer',
 };
 export default pt;

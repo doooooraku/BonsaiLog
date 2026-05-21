@@ -820,5 +820,16 @@ const pl: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: 'Usunąć ten wpis?',
   planEventDeleteConfirmDesc: 'Usunięte wpisy są trwale usuwane po 30 dniach.',
   planEventConvertedToast: 'Przekształcono {count} zaplanowane zadanie(a) w zapis',
+  planEventDeleteConfirmPlannedSingleTitle: 'Usunąć ten plan?',
+  planEventDeleteConfirmLoggedSingleTitle: 'Usunąć ten wpis?',
+  planEventDeleteConfirmPlannedGroupTitle: 'Usunąć razem {count} planów?',
+  planEventDeleteConfirmLoggedGroupTitle: 'Usunąć razem {count} wpisów?',
+  planEventDeleteConfirmWiringCascadeNote:
+    '(Powiązane harmonogramy zdejmowania drutu również zostaną usunięte)',
+  rowActionMenuDelete: 'Usuń',
+  rowActionMenuRecordAll: 'Zapisz wszystkie ({count})',
+  undoSnackbarPlannedDeleteN: 'Usunięto {count} plan(ów)',
+  undoSnackbarLoggedDeleteN: 'Usunięto {count} wpis(ów)',
+  undoSnackbarAction: 'Cofnij',
 };
 export default pl;

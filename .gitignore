@@ -75,3 +75,6 @@ docs/mockups/v1.0/app.sqlite-wal
 
 # Sess 一時 capture (user 確認用 SS、commit 不要)
 tmp-captures/
+
+# Sess25 PR-ζ-2-② で誤コミット防止 (out/ は ui-diff / 検証 SS 用 ローカル output、 commit 不要)
+out/

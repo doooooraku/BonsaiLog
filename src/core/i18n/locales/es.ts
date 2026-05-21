@@ -822,5 +822,16 @@ const es: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmDesc:
     'Las entradas eliminadas se borran permanentemente después de 30 días.',
   planEventConvertedToast: '{count} tarea(s) planeada(s) convertida(s) en registro',
+  planEventDeleteConfirmPlannedSingleTitle: '¿Eliminar este plan?',
+  planEventDeleteConfirmLoggedSingleTitle: '¿Eliminar este registro?',
+  planEventDeleteConfirmPlannedGroupTitle: '¿Eliminar {count} planes juntos?',
+  planEventDeleteConfirmLoggedGroupTitle: '¿Eliminar {count} registros juntos?',
+  planEventDeleteConfirmWiringCascadeNote:
+    '(También se eliminarán los calendarios de retirada de alambre relacionados)',
+  rowActionMenuDelete: 'Eliminar',
+  rowActionMenuRecordAll: 'Registrar todos los {count}',
+  undoSnackbarPlannedDeleteN: '{count} plan(es) eliminado(s)',
+  undoSnackbarLoggedDeleteN: '{count} registro(s) eliminado(s)',
+  undoSnackbarAction: 'Deshacer',
 };
 export default es;

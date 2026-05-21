@@ -808,5 +808,15 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   planEventDeleteConfirmTitle: '删除此项？',
   planEventDeleteConfirmDesc: '已删除的项目将在 30 天后被永久删除。',
   planEventConvertedToast: '已将 {count} 项计划转换为记录',
+  planEventDeleteConfirmPlannedSingleTitle: '删除此计划？',
+  planEventDeleteConfirmLoggedSingleTitle: '删除此记录？',
+  planEventDeleteConfirmPlannedGroupTitle: '一并删除 {count} 个计划？',
+  planEventDeleteConfirmLoggedGroupTitle: '一并删除 {count} 条记录？',
+  planEventDeleteConfirmWiringCascadeNote: '（相关的拆线计划也将被删除）',
+  rowActionMenuDelete: '删除',
+  rowActionMenuRecordAll: '记录全部 {count} 项',
+  undoSnackbarPlannedDeleteN: '已删除 {count} 个计划',
+  undoSnackbarLoggedDeleteN: '已删除 {count} 条记录',
+  undoSnackbarAction: '撤销',
 };
 export default zhHans;
