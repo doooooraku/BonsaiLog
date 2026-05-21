@@ -249,7 +249,7 @@
   1. **`expo-haptics.impactAsync(ImpactFeedbackStyle.Medium)`** を `onLongPress` callback 内で 実行直前に発火 (触覚 fb で長押し中認識補助)
   2. **`delayLongPress` default 500ms** 維持 (Material 3 標準 + iOS HIG「Long Press」 整合)、 短縮禁止
   3. 破壊的操作の場合は ConfirmDialog 表示時に 80ms フェードイン (Material 3 Motion duration)
-  4. 削除実行時 `Haptics.notificationAsync(NotificationFeedbackStyle.Warning)` で 2 段目の触覚 fb
+  4. 削除実行時 `Haptics.notificationAsync(NotificationFeedbackType.Warning)` で 2 段目の触覚 fb
 - **根拠**: 視覚 fb (背景色変化) のみだと指で隠れて user が長押し中を認識できない。 触覚 + 視覚 + 聴覚 (OS 任意) 3 chan feedback で UX 標準。 Sess25 議論で「長押し UX 標準」 未整備が判明、 design_system.md §18 に SoT 化
 - **自動化**: 当面 code review + design_system.md §18 整合 grep。 Phase ζ-3 検討: ESLint rule 化 (`onLongPress` 検出時に `Haptics` import + invocation を check)
 - **関連**: ADR-0036 D6 (本ルール由来) / `docs/reference/design_system.md` §18 / `expo-haptics` (既存依存) / Material 3 / iOS HIG「Long Press」
