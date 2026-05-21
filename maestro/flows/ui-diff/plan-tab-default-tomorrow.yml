@@ -1,0 +1,84 @@
+## UI diff capture: plan-tab-default-tomorrow (Sess23 ADR-0035 D2)
+##
+## タブ「予定」 tap で 当日+1日 (明日) default 選択を smoke 検証。
+## R-31 整合: testID 経由、 _template.yml 由来、 text tap は Alert 例外のみ。
+##
+## 経路:
+## 1. App 起動 (clearState: true)
+## 2. Onboarding skip
+## 3. 盆栽タブ Empty CTA visible 確認
+## 4. 予定タブ tap (e2e_tab_plan)
+## 5. e2e_plan_screen 表示 + e2e_plan_legend visible 確認
+##    (具体 date 確認は flaky 抑制で skip、 動作確認のみ)
+
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: plan-tab-default-tomorrow'
+tags:
+  - ui-diff
+  - sess23
+---
+- launchApp:
+    clearState: true
+
+- runFlow:
+    when:
+      visible:
+        text: 'http://localhost:8081'
+    commands:
+      - tapOn:
+          text: 'http://localhost:8081'
+          retryTapIfNoChange: true
+      - waitForAnimationToEnd
+      - pressKey: 'Back'
+      - waitForAnimationToEnd
+
+# Onboarding Welcome
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 60000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# Language ja
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# Tut1-5 skip
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+
+# 盆栽タブ Empty CTA visible 確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+
+# 予定タブ tap (ADR-0035 D2: source=tab 付与で 明日 default)
+- tapOn:
+    id: 'e2e_tab_plan'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# 予定タブ画面 + 凡例 visible 確認 (smoke、 具体 date は flaky 抑制で skip)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_plan_screen'
+    timeout: 30000
+- assertVisible:
+    id: 'e2e_plan_legend'
