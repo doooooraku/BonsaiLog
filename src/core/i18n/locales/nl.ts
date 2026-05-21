@@ -59,20 +59,20 @@ const nl: Partial<Record<TranslationKey, string>> = {
   proPlanFreeTitle: 'Gratis',
   proPlanMonthlyTitle: 'Maandelijks',
   proPlanYearlyTitle: 'Jaarlijks',
-  proPlanYearlyBadge: 'Beste keuze',
+  proPlanYearlyBadge: 'Beste waarde',
   proBadgeShort: 'PRO',
   priceFree: '€0 / voor altijd',
   priceLoading: 'Laden...',
   priceUnavailable: 'Niet beschikbaar',
-  proCtaYearly: 'Start jaarplan',
-  proCtaMonthly: 'Start maandplan',
+  proCtaYearly: 'Start jaarabonnement',
+  proCtaMonthly: 'Start maandabonnement',
   proCtaStayFree: 'Gratis blijven',
-  proCtaUpgrade: 'Upgrade to Pro',
+  proCtaUpgrade: 'Upgraden naar Pro',
   proFinePrint:
     'Abonnementen worden automatisch verlengd. Annuleer op elk moment in je accountinstellingen.',
 
   proPlanLifetimeTitle: 'Levenslang',
-  proPlanLifetimeBadge: 'Eenmalige betaling',
+  proPlanLifetimeBadge: 'Eenmalig',
   proCtaLifetime: 'Levenslang kopen',
   proLifetimeFinePrint: 'Eenmalige aankoop. Geen automatische verlenging.',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
@@ -278,11 +278,11 @@ const nl: Partial<Record<TranslationKey, string>> = {
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'What you get with Pro',
-  proComparisonPhotos: 'Unlimited photos per bonsai',
-  proComparisonCsv: 'Export care logs to CSV',
-  proComparisonPdf: 'Export bonsai records to PDF',
-  proComparisonNoAds: 'No ads',
+  proComparisonTitle: 'Wat je krijgt met Pro',
+  proComparisonPhotos: "Onbeperkt foto's per bonsai",
+  proComparisonCsv: 'Verzorgingslogboeken naar CSV exporteren',
+  proComparisonPdf: 'Bonsai-records naar PDF exporteren',
+  proComparisonNoAds: 'Geen advertenties',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
@@ -311,12 +311,12 @@ const nl: Partial<Record<TranslationKey, string>> = {
   adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
-  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeTitle: 'Welkom bij BonsaiLog',
   onboardingWelcomeBody:
     'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
-  onboardingWelcomeCta: 'Get started',
+  onboardingWelcomeCta: 'Beginnen',
   onboardingSkip: 'Later',
-  onboardingLanguageTitle: 'Choose your language',
+  onboardingLanguageTitle: 'Kies je taal',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
@@ -439,7 +439,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
   onboardingTut5Cta: 'Enable notifications',
-  onboardingTutNext: 'Next',
+  onboardingTutNext: 'Volgende',
   skipForLater: 'Skip for later',
   settingsHelpSection: 'Help',
   settingsTutorialReplayTitle: 'Tutorial opnieuw afspelen',
@@ -579,7 +579,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
-  onboardingWelcomeNote: 'No account required',
+  onboardingWelcomeNote: 'Je bonsai-verzorgingslogboek, volledig offline.',
   detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
@@ -588,7 +588,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
-  onboardingLanguageContinue: 'Continue with this language',
+  onboardingLanguageContinue: 'Doorgaan',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',

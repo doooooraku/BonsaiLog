@@ -58,7 +58,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   paywallModalHeaderTitle: 'BonsaiLog Pro',
   proPlanFreeTitle: 'Gratis',
   proPlanMonthlyTitle: 'Månadsvis',
-  proPlanYearlyTitle: 'Årsvis',
+  proPlanYearlyTitle: 'Årligen',
   proPlanYearlyBadge: 'Bästa värde',
   proBadgeShort: 'PRO',
   priceFree: '0 kr / för alltid',
@@ -67,7 +67,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   proCtaYearly: 'Starta årsplan',
   proCtaMonthly: 'Starta månadsplan',
   proCtaStayFree: 'Fortsätt gratis',
-  proCtaUpgrade: 'Upgrade to Pro',
+  proCtaUpgrade: 'Uppgradera till Pro',
   proFinePrint:
     'Prenumerationer förnyas automatiskt. Avsluta när som helst i dina kontoinställningar.',
 
@@ -277,11 +277,11 @@ const sv: Partial<Record<TranslationKey, string>> = {
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'What you get with Pro',
-  proComparisonPhotos: 'Unlimited photos per bonsai',
-  proComparisonCsv: 'Export care logs to CSV',
-  proComparisonPdf: 'Export bonsai records to PDF',
-  proComparisonNoAds: 'No ads',
+  proComparisonTitle: 'Det här får du med Pro',
+  proComparisonPhotos: 'Obegränsade foton per bonsai',
+  proComparisonCsv: 'Exportera vårdloggar till CSV',
+  proComparisonPdf: 'Exportera bonsai-poster till PDF',
+  proComparisonNoAds: 'Inga annonser',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
@@ -310,12 +310,12 @@ const sv: Partial<Record<TranslationKey, string>> = {
   adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
-  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeTitle: 'Välkommen till BonsaiLog',
   onboardingWelcomeBody:
     'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
-  onboardingWelcomeCta: 'Get started',
+  onboardingWelcomeCta: 'Kom igång',
   onboardingSkip: 'Later',
-  onboardingLanguageTitle: 'Choose your language',
+  onboardingLanguageTitle: 'Välj ditt språk',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
@@ -438,7 +438,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
   onboardingTut5Cta: 'Enable notifications',
-  onboardingTutNext: 'Next',
+  onboardingTutNext: 'Nästa',
   skipForLater: 'Skip for later',
   settingsHelpSection: 'Hjälp',
   settingsTutorialReplayTitle: 'Spela upp handledning igen',
@@ -578,7 +578,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
-  onboardingWelcomeNote: 'No account required',
+  onboardingWelcomeNote: 'Din bonsai-vårdjournal, helt offline.',
   detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
@@ -587,7 +587,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
-  onboardingLanguageContinue: 'Continue with this language',
+  onboardingLanguageContinue: 'Fortsätt',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',

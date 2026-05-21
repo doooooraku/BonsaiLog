@@ -54,11 +54,11 @@ const pl: Partial<Record<TranslationKey, string>> = {
   restoreDesc: 'Przywróć zakupy dokonane na tym koncie.',
 
   // --- Pro / Paywall ---
-  proTitle: 'Przejdź na Pro',
+  proTitle: 'Uaktualnij do Pro',
   paywallModalHeaderTitle: 'BonsaiLog Pro',
-  proPlanFreeTitle: 'Bezpłatny',
-  proPlanMonthlyTitle: 'Miesięczny',
-  proPlanYearlyTitle: 'Roczny',
+  proPlanFreeTitle: 'Darmowy',
+  proPlanMonthlyTitle: 'Miesięcznie',
+  proPlanYearlyTitle: 'Rocznie',
   proPlanYearlyBadge: 'Najlepsza wartość',
   proBadgeShort: 'PRO',
   priceFree: '0 zł / na zawsze',
@@ -66,13 +66,13 @@ const pl: Partial<Record<TranslationKey, string>> = {
   priceUnavailable: 'Niedostępne',
   proCtaYearly: 'Rozpocznij plan roczny',
   proCtaMonthly: 'Rozpocznij plan miesięczny',
-  proCtaStayFree: 'Pozostań za darmo',
-  proCtaUpgrade: 'Upgrade to Pro',
+  proCtaStayFree: 'Pozostań w darmowej',
+  proCtaUpgrade: 'Uaktualnij do Pro',
   proFinePrint:
     'Subskrypcje odnawiają się automatycznie. Możesz anulować w dowolnym momencie w ustawieniach konta.',
 
-  proPlanLifetimeTitle: 'Dożywotnio',
-  proPlanLifetimeBadge: 'Płatność jednorazowa',
+  proPlanLifetimeTitle: 'Dożywotni',
+  proPlanLifetimeBadge: 'Jednorazowo',
   proCtaLifetime: 'Kup dożywotnio',
   proLifetimeFinePrint: 'Zakup jednorazowy. Brak automatycznego odnowienia.',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
@@ -278,11 +278,11 @@ const pl: Partial<Record<TranslationKey, string>> = {
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'What you get with Pro',
-  proComparisonPhotos: 'Unlimited photos per bonsai',
-  proComparisonCsv: 'Export care logs to CSV',
-  proComparisonPdf: 'Export bonsai records to PDF',
-  proComparisonNoAds: 'No ads',
+  proComparisonTitle: 'Co zyskujesz w Pro',
+  proComparisonPhotos: 'Nieograniczone zdjęcia na bonsai',
+  proComparisonCsv: 'Eksportuj logi pielęgnacji do CSV',
+  proComparisonPdf: 'Eksportuj karty bonsai do PDF',
+  proComparisonNoAds: 'Bez reklam',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
@@ -311,12 +311,12 @@ const pl: Partial<Record<TranslationKey, string>> = {
   adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
-  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeTitle: 'Witaj w BonsaiLog',
   onboardingWelcomeBody:
     'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
-  onboardingWelcomeCta: 'Get started',
+  onboardingWelcomeCta: 'Zaczynamy',
   onboardingSkip: 'Later',
-  onboardingLanguageTitle: 'Choose your language',
+  onboardingLanguageTitle: 'Wybierz swój język',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
@@ -439,7 +439,7 @@ const pl: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
   onboardingTut5Cta: 'Enable notifications',
-  onboardingTutNext: 'Next',
+  onboardingTutNext: 'Dalej',
   skipForLater: 'Skip for later',
   settingsHelpSection: 'Pomoc',
   settingsTutorialReplayTitle: 'Odtwórz samouczek',
@@ -579,7 +579,7 @@ const pl: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
-  onboardingWelcomeNote: 'No account required',
+  onboardingWelcomeNote: 'Twój dziennik pielęgnacji bonsai, całkowicie offline.',
   detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
@@ -588,7 +588,7 @@ const pl: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
-  onboardingLanguageContinue: 'Continue with this language',
+  onboardingLanguageContinue: 'Kontynuuj',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',

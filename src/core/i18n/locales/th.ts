@@ -64,14 +64,14 @@ const th: Partial<Record<TranslationKey, string>> = {
   priceFree: '฿0 / ตลอดไป',
   priceLoading: 'กำลังโหลด...',
   priceUnavailable: 'ไม่พร้อมใช้งาน',
-  proCtaYearly: 'เริ่มแพ็กเกจรายปี',
-  proCtaMonthly: 'เริ่มแพ็กเกจรายเดือน',
-  proCtaStayFree: 'ใช้งานฟรีต่อไป',
-  proCtaUpgrade: 'Upgrade to Pro',
+  proCtaYearly: 'เริ่มแผนรายปี',
+  proCtaMonthly: 'เริ่มแผนรายเดือน',
+  proCtaStayFree: 'ใช้ฟรีต่อ',
+  proCtaUpgrade: 'อัปเกรดเป็น Pro',
   proFinePrint: 'การสมัครสมาชิกจะต่ออายุอัตโนมัติ ยกเลิกได้ทุกเมื่อในการตั้งค่าบัญชี',
 
   proPlanLifetimeTitle: 'ตลอดชีพ',
-  proPlanLifetimeBadge: 'จ่ายครั้งเดียว',
+  proPlanLifetimeBadge: 'ครั้งเดียว',
   proCtaLifetime: 'ซื้อตลอดชีพ',
   proLifetimeFinePrint: 'ซื้อครั้งเดียว ไม่มีการต่ออายุอัตโนมัติ',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
@@ -275,11 +275,11 @@ const th: Partial<Record<TranslationKey, string>> = {
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'What you get with Pro',
-  proComparisonPhotos: 'Unlimited photos per bonsai',
-  proComparisonCsv: 'Export care logs to CSV',
-  proComparisonPdf: 'Export bonsai records to PDF',
-  proComparisonNoAds: 'No ads',
+  proComparisonTitle: 'สิ่งที่คุณได้รับกับ Pro',
+  proComparisonPhotos: 'รูปไม่จำกัดต่อบอนไซ',
+  proComparisonCsv: 'ส่งออกบันทึกการดูแลเป็น CSV',
+  proComparisonPdf: 'ส่งออกบันทึกบอนไซเป็น PDF',
+  proComparisonNoAds: 'ไม่มีโฆษณา',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
@@ -308,12 +308,12 @@ const th: Partial<Record<TranslationKey, string>> = {
   adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
-  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeTitle: 'ยินดีต้อนรับสู่ BonsaiLog',
   onboardingWelcomeBody:
     'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
-  onboardingWelcomeCta: 'Get started',
+  onboardingWelcomeCta: 'เริ่มต้น',
   onboardingSkip: 'Later',
-  onboardingLanguageTitle: 'Choose your language',
+  onboardingLanguageTitle: 'เลือกภาษาของคุณ',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
@@ -436,7 +436,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
   onboardingTut5Cta: 'Enable notifications',
-  onboardingTutNext: 'Next',
+  onboardingTutNext: 'ถัดไป',
   skipForLater: 'Skip for later',
   settingsHelpSection: 'ความช่วยเหลือ',
   settingsTutorialReplayTitle: 'ดูบทเรียนอีกครั้ง',
@@ -576,7 +576,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
-  onboardingWelcomeNote: 'No account required',
+  onboardingWelcomeNote: 'บันทึกการดูแลบอนไซของคุณ ออฟไลน์ทั้งหมด',
   detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
@@ -585,7 +585,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
-  onboardingLanguageContinue: 'Continue with this language',
+  onboardingLanguageContinue: 'ดำเนินต่อ',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',

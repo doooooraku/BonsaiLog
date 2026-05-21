@@ -54,12 +54,12 @@ const id: Partial<Record<TranslationKey, string>> = {
   restoreDesc: 'Pulihkan pembelian yang dilakukan dengan akun ini.',
 
   // --- Pro / Paywall ---
-  proTitle: 'Upgrade ke Pro',
+  proTitle: 'Tingkatkan ke Pro',
   paywallModalHeaderTitle: 'BonsaiLog Pro',
   proPlanFreeTitle: 'Gratis',
   proPlanMonthlyTitle: 'Bulanan',
   proPlanYearlyTitle: 'Tahunan',
-  proPlanYearlyBadge: 'Paling hemat',
+  proPlanYearlyBadge: 'Nilai terbaik',
   proBadgeShort: 'PRO',
   priceFree: 'Rp0 / selamanya',
   priceLoading: 'Memuat...',
@@ -67,13 +67,13 @@ const id: Partial<Record<TranslationKey, string>> = {
   proCtaYearly: 'Mulai paket tahunan',
   proCtaMonthly: 'Mulai paket bulanan',
   proCtaStayFree: 'Tetap gratis',
-  proCtaUpgrade: 'Upgrade to Pro',
+  proCtaUpgrade: 'Tingkatkan ke Pro',
   proFinePrint:
     'Langganan diperpanjang secara otomatis. Batalkan kapan saja di pengaturan akun Anda.',
 
-  proPlanLifetimeTitle: 'Seumur Hidup',
-  proPlanLifetimeBadge: 'Bayar sekali',
-  proCtaLifetime: 'Beli Seumur Hidup',
+  proPlanLifetimeTitle: 'Seumur hidup',
+  proPlanLifetimeBadge: 'Sekali bayar',
+  proCtaLifetime: 'Beli seumur hidup',
   proLifetimeFinePrint: 'Pembelian sekali. Tidak ada perpanjangan otomatis.',
   paywallChampionBannerTitle: 'You are a Pro Member (Lifetime)',
   paywallChampionBannerDesc: 'Subscriptions are hidden because you already own Pro permanently.',
@@ -277,11 +277,11 @@ const id: Partial<Record<TranslationKey, string>> = {
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'What you get with Pro',
-  proComparisonPhotos: 'Unlimited photos per bonsai',
-  proComparisonCsv: 'Export care logs to CSV',
-  proComparisonPdf: 'Export bonsai records to PDF',
-  proComparisonNoAds: 'No ads',
+  proComparisonTitle: 'Yang Anda dapatkan dengan Pro',
+  proComparisonPhotos: 'Foto tak terbatas per bonsai',
+  proComparisonCsv: 'Ekspor log perawatan ke CSV',
+  proComparisonPdf: 'Ekspor catatan bonsai ke PDF',
+  proComparisonNoAds: 'Tanpa iklan',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
@@ -310,12 +310,12 @@ const id: Partial<Record<TranslationKey, string>> = {
   adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
-  onboardingWelcomeTitle: 'A bonsai journal for a lifetime',
+  onboardingWelcomeTitle: 'Selamat datang di BonsaiLog',
   onboardingWelcomeBody:
     'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
-  onboardingWelcomeCta: 'Get started',
+  onboardingWelcomeCta: 'Mulai',
   onboardingSkip: 'Later',
-  onboardingLanguageTitle: 'Choose your language',
+  onboardingLanguageTitle: 'Pilih bahasa Anda',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
@@ -438,7 +438,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   onboardingTut5Body:
     'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
   onboardingTut5Cta: 'Enable notifications',
-  onboardingTutNext: 'Next',
+  onboardingTutNext: 'Berikutnya',
   skipForLater: 'Skip for later',
   settingsHelpSection: 'Bantuan',
   settingsTutorialReplayTitle: 'Putar ulang tutorial',
@@ -578,7 +578,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
-  onboardingWelcomeNote: 'No account required',
+  onboardingWelcomeNote: 'Catatan perawatan bonsai Anda, sepenuhnya offline.',
   detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
@@ -587,7 +587,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   detailMenuExportPdf: 'Export to PDF',
   detailExportProTitle: 'Pro feature',
   detailExportProDesc: 'PDF export is a Pro plan feature.',
-  onboardingLanguageContinue: 'Continue with this language',
+  onboardingLanguageContinue: 'Lanjutkan',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
   lookBackCardWateringTitle: 'Watering history',
