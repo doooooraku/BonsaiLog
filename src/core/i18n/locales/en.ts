@@ -363,7 +363,7 @@ const baseEn = {
 
   // --- ADR-0020 Phase 1: 4-tab labels (盆栽 / 予定 / 探す / 設定) ---
   tabBonsai: 'Bonsai',
-  tabLookBack: 'Activity',
+  tabLookBack: 'Look Back',
   tabSettings: 'Settings',
   tabPlanComingSoon: 'Coming soon',
 
