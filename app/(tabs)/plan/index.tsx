@@ -119,11 +119,16 @@ export default function PlanScreen() {
 
   const tzOffsetMin = getTzOffsetMin();
 
+  // Sess19-2 ADR-0032 D1: dotsByDay を planned/logged で別カウントに拡張
+  // Pattern C: 全 logged → 緑のみ / 全 planned → 茶のみ / 混在 → 両色併記 (max 3 個まで)
   const dotsByDay = useMemo(() => {
-    const map = new Map<string, number>();
+    const map = new Map<string, { planned: number; logged: number }>();
     for (const e of events) {
       const key = toLocalDateKey(e.occurredAtUtc, tzOffsetMin);
-      map.set(key, (map.get(key) ?? 0) + 1);
+      const cur = map.get(key) ?? { planned: 0, logged: 0 };
+      if (e.status === 'planned') cur.planned += 1;
+      else if (e.status === 'logged') cur.logged += 1;
+      map.set(key, cur);
     }
     return map;
   }, [events, tzOffsetMin]);
@@ -142,17 +147,31 @@ export default function PlanScreen() {
     [selectedDateKey, todayLocalKey],
   );
 
-  // Sess12 PR-E 改善 B: 作業種別ごとに events をグループ化 (EVENT_TYPES schema 順固定)
-  // ぎっしり 22 件 listing を 「水やり ×20 / 施肥 ×2」 等の集約 row に置換、
-  // 「個別に開く ▼」 で inline 展開 (Sess9 PR-10 タグ管理同パターン)
-  const groupedEvents = useMemo<readonly (readonly [EventType, readonly Event[]])[]>(() => {
+  // Sess19-2 ADR-0032 D2: 選択日 events を「これから (planned)」 + 「完了 (logged)」 で section 分割
+  // 各 section 内は type 別 group (既存 Sess12 PR-E pattern を 2 階層に拡張)
+  const plannedGroupedEvents = useMemo<readonly (readonly [EventType, readonly Event[]])[]>(() => {
     const groups = new Map<EventType, Event[]>();
     for (const e of selectedDayEvents) {
+      if (e.status !== 'planned') continue;
       const t = e.type as EventType;
       if (!groups.has(t)) groups.set(t, []);
       groups.get(t)!.push(e);
     }
-    // 固定順 (EVENT_TYPES schema の順) でソート
+    return Array.from(groups.entries()).sort((a, b) => {
+      const oa = EVENT_TYPES.indexOf(a[0]);
+      const ob = EVENT_TYPES.indexOf(b[0]);
+      return (oa === -1 ? 999 : oa) - (ob === -1 ? 999 : ob);
+    });
+  }, [selectedDayEvents]);
+
+  const loggedGroupedEvents = useMemo<readonly (readonly [EventType, readonly Event[]])[]>(() => {
+    const groups = new Map<EventType, Event[]>();
+    for (const e of selectedDayEvents) {
+      if (e.status !== 'logged') continue;
+      const t = e.type as EventType;
+      if (!groups.has(t)) groups.set(t, []);
+      groups.get(t)!.push(e);
+    }
     return Array.from(groups.entries()).sort((a, b) => {
       const oa = EVENT_TYPES.indexOf(a[0]);
       const ob = EVENT_TYPES.indexOf(b[0]);
@@ -253,9 +272,14 @@ export default function PlanScreen() {
               {cells.slice(w * 7, w * 7 + 7).map((d, i) => {
                 if (d == null) return <View key={i} style={styles.cell} />;
                 const dateKey = `${year}-${pad(month + 1)}-${pad(d)}`;
-                const dots = dotsByDay.get(dateKey) ?? 0;
+                const dotData = dotsByDay.get(dateKey) ?? { planned: 0, logged: 0 };
+                const totalDots = dotData.planned + dotData.logged;
                 const isSel = dateKey === selectedDateKey;
                 const isToday = dateKey === todayLocalKey;
+                // Sess19-2 ADR-0032 D1: 各日 max 3 個まで dot (logged 優先で並べる、 残りを planned で埋める)
+                const renderedLogged = Math.min(dotData.logged, 3);
+                const remainingSlots = Math.max(0, 3 - renderedLogged);
+                const renderedPlanned = Math.min(dotData.planned, remainingSlots);
                 return (
                   <Pressable
                     key={i}
@@ -275,11 +299,16 @@ export default function PlanScreen() {
                       {d}
                     </ThemedText>
                     <View style={styles.dotRow}>
-                      {Array.from({ length: Math.min(dots, 3) }).map((_, k) => (
-                        <View key={k} style={styles.dot} />
+                      {/* Sess19-2 ADR-0032 D1: logged 緑 dot を先に並べる */}
+                      {Array.from({ length: renderedLogged }).map((_, k) => (
+                        <View key={`logged-${k}`} style={styles.dotLogged} />
                       ))}
-                      {/* Issue #321: mockup v1.0 「●●●+」 整合、4+ で「+」 インジケーター */}
-                      {dots > 3 && <ThemedText style={styles.dotPlus}>+</ThemedText>}
+                      {/* planned 茶 dot を続けて並べる (max 3 個合算で打切り) */}
+                      {Array.from({ length: renderedPlanned }).map((_, k) => (
+                        <View key={`planned-${k}`} style={styles.dotPlanned} />
+                      ))}
+                      {/* mockup v1.0 「●●●+」 整合: 4+ で「+」 (planned + logged 合算) */}
+                      {totalDots > 3 && <ThemedText style={styles.dotPlus}>+</ThemedText>}
                     </View>
                   </Pressable>
                 );
@@ -299,85 +328,187 @@ export default function PlanScreen() {
           {selectedDayEvents.length === 0 ? (
             <ThemedText style={styles.emptyText}>{t('planSelectedEmpty')}</ThemedText>
           ) : (
-            // Sess12 PR-E 改善 B: 作業種別 ×件数 row + 「個別に開く ▼」 inline 展開
-            groupedEvents.map(([type, events]) => {
-              const isExpanded = expandedTypes.has(type);
-              const groupLabel = t(`eventType_${type}` as Parameters<typeof t>[0]);
-              const toggleText = isExpanded ? t('planGroupCollapse') : t('planGroupExpand');
-              return (
-                <View key={type}>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`${groupLabel} ×${events.length}, ${toggleText}`}
-                    accessibilityState={{ expanded: isExpanded }}
-                    style={styles.groupRow}
-                    onPress={() => toggleExpand(type)}
-                    testID={`e2e_plan_group_${type}`}
-                  >
-                    <View style={styles.groupIconBox}>
-                      {type === 'watering' ? (
-                        <DropletIcon size={18} />
-                      ) : (
-                        <EventIcon type={type} size={18} />
-                      )}
-                    </View>
-                    <ThemedText style={styles.groupLabel} numberOfLines={1}>
-                      {groupLabel}
-                    </ThemedText>
-                    <View style={styles.groupCountBadge}>
-                      <ThemedText style={styles.groupCountBadgeText}>×{events.length}</ThemedText>
-                    </View>
-                    <View style={styles.groupSpacer} />
-                    <ThemedText style={styles.groupToggleText}>
-                      {toggleText} {isExpanded ? '▲' : '▼'}
-                    </ThemedText>
-                  </Pressable>
-                  {isExpanded && (
-                    <View style={styles.expandedContainer}>
-                      {events.map((e) => {
-                        const b = bonsaiMap.get(e.bonsaiId);
-                        return (
-                          <Pressable
-                            key={e.id}
-                            accessibilityRole="button"
-                            accessibilityLabel={b?.name ?? ''}
-                            style={styles.eventCard}
-                            onPress={() => {
-                              // Sess12 PR-F 改善 F: status で初期タブ分岐
-                              // planned → 作業予定 (timeline)、 logged → 作業履歴 (history)
-                              const tab = e.status === 'planned' ? 'timeline' : 'history';
-                              router.push(`/(tabs)/bonsai/${e.bonsaiId}?tab=${tab}` as Href);
-                            }}
-                            testID={`e2e_plan_event_${e.id}`}
-                          >
-                            <View style={styles.eventIconBox}>
-                              {e.type === 'watering' ? (
-                                <DropletIcon size={18} />
-                              ) : (
-                                <EventIcon type={e.type as EventType} size={18} />
-                              )}
-                            </View>
-                            <View style={styles.eventBody}>
-                              <ThemedText style={styles.eventBonsai} numberOfLines={1}>
-                                {b?.name ?? ''}
-                              </ThemedText>
-                              <ThemedText style={styles.eventLabel}>
-                                {t(`eventType_${e.type}` as Parameters<typeof t>[0])}
-                              </ThemedText>
-                            </View>
-                            {e.status === 'planned' && (
-                              <ThemedText style={styles.plannedLabel}>
-                                {t('planEventPlanned')}
-                              </ThemedText>
+            <>
+              {/* Sess19-2 ADR-0032 D2: 「これから (planned)」 section、 件数 0 なら非表示 */}
+              {plannedGroupedEvents.length > 0 && (
+                <>
+                  <ThemedText style={styles.sectionHeader} testID="e2e_plan_section_upcoming">
+                    {t('planSectionUpcoming')} (
+                    {plannedGroupedEvents.reduce((sum, [, evs]) => sum + evs.length, 0)} 件)
+                  </ThemedText>
+                  {plannedGroupedEvents.map(([type, events]) => {
+                    const isExpanded = expandedTypes.has(type);
+                    const groupLabel = t(`eventType_${type}` as Parameters<typeof t>[0]);
+                    const toggleText = isExpanded ? t('planGroupCollapse') : t('planGroupExpand');
+                    // Sess19-2 ADR-0032 D3: 期限切れ planned (occurredAtUtc < today) は警告色
+                    const hasOverdue = events.some(
+                      (e) => toLocalDateKey(e.occurredAtUtc, tzOffsetMin) < todayLocalKey,
+                    );
+                    return (
+                      <View key={`planned-${type}`}>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`${groupLabel} ×${events.length}, ${toggleText}`}
+                          accessibilityState={{ expanded: isExpanded }}
+                          style={[styles.groupRow, hasOverdue && styles.groupRowOverdue]}
+                          onPress={() => toggleExpand(type)}
+                          testID={`e2e_plan_group_planned_${type}`}
+                        >
+                          <View style={styles.groupIconBox}>
+                            {type === 'watering' ? (
+                              <DropletIcon size={18} />
+                            ) : (
+                              <EventIcon type={type} size={18} />
                             )}
-                          </Pressable>
-                        );
-                      })}
-                    </View>
-                  )}
-                </View>
-              );
-            })
+                          </View>
+                          <ThemedText
+                            style={[styles.groupLabel, hasOverdue && styles.groupLabelOverdue]}
+                            numberOfLines={1}
+                          >
+                            {groupLabel}
+                          </ThemedText>
+                          <View style={styles.groupCountBadge}>
+                            <ThemedText style={styles.groupCountBadgeText}>
+                              ×{events.length}
+                            </ThemedText>
+                          </View>
+                          <View style={styles.groupSpacer} />
+                          <ThemedText style={styles.groupToggleText}>
+                            {toggleText} {isExpanded ? '▲' : '▼'}
+                          </ThemedText>
+                        </Pressable>
+                        {isExpanded && (
+                          <View style={styles.expandedContainer}>
+                            {events.map((e) => {
+                              const b = bonsaiMap.get(e.bonsaiId);
+                              const isOverdue =
+                                toLocalDateKey(e.occurredAtUtc, tzOffsetMin) < todayLocalKey;
+                              return (
+                                <Pressable
+                                  key={e.id}
+                                  accessibilityRole="button"
+                                  accessibilityLabel={b?.name ?? ''}
+                                  style={[styles.eventCard, isOverdue && styles.eventCardOverdue]}
+                                  onPress={() => {
+                                    router.push(
+                                      `/(tabs)/bonsai/${e.bonsaiId}?tab=timeline` as Href,
+                                    );
+                                  }}
+                                  testID={`e2e_plan_event_${e.id}`}
+                                >
+                                  <View style={styles.eventIconBox}>
+                                    {e.type === 'watering' ? (
+                                      <DropletIcon size={18} />
+                                    ) : (
+                                      <EventIcon type={e.type as EventType} size={18} />
+                                    )}
+                                  </View>
+                                  <View style={styles.eventBody}>
+                                    <ThemedText
+                                      style={[
+                                        styles.eventBonsai,
+                                        isOverdue && styles.eventBonsaiOverdue,
+                                      ]}
+                                      numberOfLines={1}
+                                    >
+                                      {b?.name ?? ''}
+                                    </ThemedText>
+                                    <ThemedText style={styles.eventLabel}>
+                                      {t(`eventType_${e.type}` as Parameters<typeof t>[0])}
+                                    </ThemedText>
+                                  </View>
+                                </Pressable>
+                              );
+                            })}
+                          </View>
+                        )}
+                      </View>
+                    );
+                  })}
+                </>
+              )}
+              {/* Sess19-2 ADR-0032 D2: 「完了 (logged)」 section、 件数 0 なら非表示 */}
+              {loggedGroupedEvents.length > 0 && (
+                <>
+                  <ThemedText style={styles.sectionHeader} testID="e2e_plan_section_done">
+                    {t('planSectionDone')} (
+                    {loggedGroupedEvents.reduce((sum, [, evs]) => sum + evs.length, 0)} 件)
+                  </ThemedText>
+                  {loggedGroupedEvents.map(([type, events]) => {
+                    const isExpanded = expandedTypes.has(type);
+                    const groupLabel = t(`eventType_${type}` as Parameters<typeof t>[0]);
+                    const toggleText = isExpanded ? t('planGroupCollapse') : t('planGroupExpand');
+                    return (
+                      <View key={`logged-${type}`}>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`${groupLabel} ×${events.length}, ${toggleText}`}
+                          accessibilityState={{ expanded: isExpanded }}
+                          style={styles.groupRow}
+                          onPress={() => toggleExpand(type)}
+                          testID={`e2e_plan_group_logged_${type}`}
+                        >
+                          <View style={styles.groupIconBox}>
+                            {type === 'watering' ? (
+                              <DropletIcon size={18} />
+                            ) : (
+                              <EventIcon type={type} size={18} />
+                            )}
+                          </View>
+                          <ThemedText style={styles.groupLabel} numberOfLines={1}>
+                            {groupLabel}
+                          </ThemedText>
+                          <View style={styles.groupCountBadge}>
+                            <ThemedText style={styles.groupCountBadgeText}>
+                              ×{events.length}
+                            </ThemedText>
+                          </View>
+                          <View style={styles.groupSpacer} />
+                          <ThemedText style={styles.groupToggleText}>
+                            {toggleText} {isExpanded ? '▲' : '▼'}
+                          </ThemedText>
+                        </Pressable>
+                        {isExpanded && (
+                          <View style={styles.expandedContainer}>
+                            {events.map((e) => {
+                              const b = bonsaiMap.get(e.bonsaiId);
+                              return (
+                                <Pressable
+                                  key={e.id}
+                                  accessibilityRole="button"
+                                  accessibilityLabel={b?.name ?? ''}
+                                  style={styles.eventCard}
+                                  onPress={() => {
+                                    router.push(`/(tabs)/bonsai/${e.bonsaiId}?tab=history` as Href);
+                                  }}
+                                  testID={`e2e_plan_event_${e.id}`}
+                                >
+                                  <View style={styles.eventIconBox}>
+                                    {e.type === 'watering' ? (
+                                      <DropletIcon size={18} />
+                                    ) : (
+                                      <EventIcon type={e.type as EventType} size={18} />
+                                    )}
+                                  </View>
+                                  <View style={styles.eventBody}>
+                                    <ThemedText style={styles.eventBonsai} numberOfLines={1}>
+                                      {b?.name ?? ''}
+                                    </ThemedText>
+                                    <ThemedText style={styles.eventLabel}>
+                                      {t(`eventType_${e.type}` as Parameters<typeof t>[0])}
+                                    </ThemedText>
+                                  </View>
+                                </Pressable>
+                              );
+                            })}
+                          </View>
+                        )}
+                      </View>
+                    );
+                  })}
+                </>
+              )}
+            </>
           )}
         </View>
       </ScrollView>
@@ -464,9 +595,27 @@ const styles = StyleSheet.create({
   cellText: { fontSize: 15, color: TEXT_PRIMARY },
   cellTextToday: { fontWeight: '700' },
   dotRow: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 6 },
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: BRAND_GREEN },
+  // Sess19-2 ADR-0032 D1: planned/logged を別色 dot で区別
+  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: BRAND_GREEN }, // legacy (使用箇所 0、 keep for safety)
+  dotLogged: { width: 5, height: 5, borderRadius: 3, backgroundColor: BRAND_GREEN }, // 完了 = 緑
+  dotPlanned: { width: 5, height: 5, borderRadius: 3, backgroundColor: ACCENT_BARK }, // 予定 = 茶
   // Issue #321: 4+ events で「+」インジケーター (mockup v1.0「●●●+」整合)
   dotPlus: { fontSize: 10, lineHeight: 10, color: BRAND_GREEN, fontWeight: '700' },
+  // Sess19-2 ADR-0032 D2: section header (「これから」 / 「完了」)
+  sectionHeader: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    fontWeight: '600',
+    color: TEXT_SECONDARY,
+    marginTop: 12,
+    marginBottom: 6,
+    letterSpacing: 0.4,
+  },
+  // Sess19-2 ADR-0032 D3: 期限切れ planned 警告色 (TEXT_MUTED で薄く、 「期限切れ」 ラベルなし)
+  groupRowOverdue: { opacity: 0.6 },
+  groupLabelOverdue: { color: TEXT_MUTED },
+  eventCardOverdue: { opacity: 0.6 },
+  eventBonsaiOverdue: { color: TEXT_MUTED },
   listLabel: {
     fontFamily: 'Inter_400Regular',
     fontSize: 11,
