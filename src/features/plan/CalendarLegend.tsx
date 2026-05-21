@@ -17,13 +17,14 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
-  ACCENT_BARK,
   BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+
+import { CalendarDot } from './CalendarDot';
 
 type CalendarLegendProps = {
   collapsed: boolean;
@@ -52,11 +53,11 @@ export function CalendarLegend({ collapsed, onToggle }: CalendarLegendProps) {
       {!collapsed && (
         <View style={styles.items}>
           <View style={styles.item} testID="e2e_plan_legend_item_logged">
-            <View style={styles.dotLogged} />
+            <CalendarDot status="logged" size={10} />
             <ThemedText style={styles.itemLabel}>{t('planLegendDotLoggedLabel')}</ThemedText>
           </View>
           <View style={styles.item} testID="e2e_plan_legend_item_planned">
-            <View style={styles.dotPlanned} />
+            <CalendarDot status="planned" size={10} />
             <ThemedText style={styles.itemLabel}>{t('planLegendDotPlannedLabel')}</ThemedText>
           </View>
           <View style={styles.item} testID="e2e_plan_legend_item_multiple">
@@ -107,22 +108,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  dotLogged: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: BRAND_GREEN,
-  },
-  dotPlanned: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: ACCENT_BARK,
-  },
   plusSymbol: {
-    width: 8,
+    width: 10,
     fontSize: 12,
     fontWeight: '700',
     color: BRAND_GREEN,

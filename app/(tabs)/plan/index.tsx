@@ -41,6 +41,7 @@ import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type Bonsai, type Event, type EventType } from '@/src/db/schema';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
+import { CalendarDot } from '@/src/features/plan/CalendarDot';
 import { CalendarLegend } from '@/src/features/plan/CalendarLegend';
 import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 import { usePickerStore } from '@/src/stores/pickerStore';
@@ -296,7 +297,7 @@ export default function PlanScreen() {
                   <Pressable
                     key={i}
                     accessibilityRole="button"
-                    accessibilityLabel={`${d}`}
+                    accessibilityLabel={`${d}日, ${t('planLegendDotLoggedLabel').replace(' (●)', '')} ${renderedLogged}件, ${t('planLegendDotPlannedLabel').replace(' (○)', '')} ${renderedPlanned}件`}
                     style={[styles.cell, isSel && styles.cellSel]}
                     onPress={() => setSelectedDateKey(dateKey)}
                     testID={`e2e_plan_cell_${dateKey}`}
@@ -311,13 +312,12 @@ export default function PlanScreen() {
                       {d}
                     </ThemedText>
                     <View style={styles.dotRow}>
-                      {/* Sess19-2 ADR-0032 D1: logged 緑 dot を先に並べる */}
+                      {/* Sess22 ADR-0034 D3: 色 + アイコン併用で WCAG 1.4.1 解消 (CalendarDot component) */}
                       {Array.from({ length: renderedLogged }).map((_, k) => (
-                        <View key={`logged-${k}`} style={styles.dotLogged} />
+                        <CalendarDot key={`logged-${k}`} status="logged" />
                       ))}
-                      {/* planned 茶 dot を続けて並べる (max 3 個合算で打切り) */}
                       {Array.from({ length: renderedPlanned }).map((_, k) => (
-                        <View key={`planned-${k}`} style={styles.dotPlanned} />
+                        <CalendarDot key={`planned-${k}`} status="planned" />
                       ))}
                       {/* mockup v1.0 「●●●+」 整合: 4+ で「+」 (planned + logged 合算) */}
                       {totalDots > 3 && <ThemedText style={styles.dotPlus}>+</ThemedText>}
@@ -607,10 +607,8 @@ const styles = StyleSheet.create({
   cellText: { fontSize: 15, color: TEXT_PRIMARY },
   cellTextToday: { fontWeight: '700' },
   dotRow: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 6 },
-  // Sess19-2 ADR-0032 D1: planned/logged を別色 dot で区別
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: BRAND_GREEN }, // legacy (使用箇所 0、 keep for safety)
-  dotLogged: { width: 5, height: 5, borderRadius: 3, backgroundColor: BRAND_GREEN }, // 完了 = 緑
-  dotPlanned: { width: 5, height: 5, borderRadius: 3, backgroundColor: ACCENT_BARK }, // 予定 = 茶
+  // Sess22 ADR-0034 D3: dot render は CalendarDot component に統一、 legacy styles 削除
+  // (旧 styles.dot / dotLogged / dotPlanned は CalendarDot に置換、 ADR-0032 Notes Amended で記載)
   // Issue #321: 4+ events で「+」インジケーター (mockup v1.0「●●●+」整合)
   dotPlus: { fontSize: 10, lineHeight: 10, color: BRAND_GREEN, fontWeight: '700' },
   // Sess19-2 ADR-0032 D2: section header (「これから」 / 「完了」)
