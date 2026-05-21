@@ -809,5 +809,14 @@ const ru: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: 'Детали бонсай',
   stackBonsaiWateringHistoryTitle: 'История полива',
   stackWireListTitle: 'Список проволоки',
+  planLegendTitle: 'Легенда',
+  planLegendToggleShow: 'Показать легенду',
+  planLegendToggleHide: 'Скрыть легенду',
+  planLegendDotLoggedLabel: 'Готово (●)',
+  planLegendDotPlannedLabel: 'Запланировано (○)',
+  planLegendDotMultipleLabel: 'Несколько задач (+)',
+  planListingBonsaiCount: '×{count} горшков',
+  lookBackCardCalendarTitle: 'Календарь',
+  lookBackCardCalendarDesc: 'Просматривайте задачи по месяцам',
 };
 export default ru;

@@ -807,5 +807,14 @@ const id: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: 'Detail bonsai',
   stackBonsaiWateringHistoryTitle: 'Riwayat penyiraman',
   stackWireListTitle: 'Daftar pengawatan',
+  planLegendTitle: 'Legenda',
+  planLegendToggleShow: 'Tampilkan legenda',
+  planLegendToggleHide: 'Sembunyikan legenda',
+  planLegendDotLoggedLabel: 'Selesai (●)',
+  planLegendDotPlannedLabel: 'Direncanakan (○)',
+  planLegendDotMultipleLabel: 'Beberapa tugas (+)',
+  planListingBonsaiCount: '×{count} pot',
+  lookBackCardCalendarTitle: 'Kalender',
+  lookBackCardCalendarDesc: 'Tinjau tugas masa lalu per bulan',
 };
 export default id;

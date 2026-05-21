@@ -796,5 +796,14 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   stackBonsaiDetailTitle: '盆栽詳情',
   stackBonsaiWateringHistoryTitle: '澆水紀錄',
   stackWireListTitle: '蟠紮清單',
+  planLegendTitle: '圖例',
+  planLegendToggleShow: '顯示圖例',
+  planLegendToggleHide: '隱藏圖例',
+  planLegendDotLoggedLabel: '已完成 (●)',
+  planLegendDotPlannedLabel: '計劃 (○)',
+  planLegendDotMultipleLabel: '多項作業 (+)',
+  planListingBonsaiCount: '×{count} 盆',
+  lookBackCardCalendarTitle: '日曆',
+  lookBackCardCalendarDesc: '按月查看過往作業',
 };
 export default zhHant;

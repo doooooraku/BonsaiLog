@@ -816,6 +816,15 @@ const baseEn = {
   stackBonsaiDetailTitle: 'Bonsai detail',
   stackBonsaiWateringHistoryTitle: 'Watering history',
   stackWireListTitle: 'Wire list',
+  planLegendTitle: 'Legend',
+  planLegendToggleShow: 'Show legend',
+  planLegendToggleHide: 'Hide legend',
+  planLegendDotLoggedLabel: 'Done (●)',
+  planLegendDotPlannedLabel: 'Planned (○)',
+  planLegendDotMultipleLabel: 'Multiple tasks (+)',
+  planListingBonsaiCount: '×{count} pots',
+  lookBackCardCalendarTitle: 'Calendar',
+  lookBackCardCalendarDesc: 'Review past tasks by month',
 };
 
 export type TranslationKey = keyof typeof baseEn;
