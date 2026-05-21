@@ -134,23 +134,29 @@ export function EventRow({
         <EventIcon type={ev.type as EventType} size={20} />
       </View>
       <View style={styles.eventContent}>
+        {/*
+         * ADR-0036 D9 (Sess25 PR-ζ-2-⑨): showBonsaiName=true (PlanScreen 展開時) は
+         * 1 行目 = bonsaiName 単独。 同情報 (作業名 + 日付) は group header / selectedDateKey で既に既知、
+         * 重複行 を物理削除 (Nielsen Norman Group "Information Scent" ノイズ過多解消)。
+         * showBonsaiName=false (bonsai-detail history タブ) は 異なる日の events が並ぶため
+         * 1 行目 = 作業名 + 日付 を維持 (regression なし)。
+         */}
         <View style={styles.eventRowMain}>
           {showBonsaiName && bonsaiName ? (
             <ThemedText style={styles.eventBonsaiName} numberOfLines={1}>
               {bonsaiName}
             </ThemedText>
           ) : (
-            <ThemedText style={styles.eventLabel}>
-              {t(`eventType_${ev.type}` as TranslationKey)}
-            </ThemedText>
+            <>
+              <ThemedText style={styles.eventLabel}>
+                {t(`eventType_${ev.type}` as TranslationKey)}
+              </ThemedText>
+              <ThemedText style={styles.eventRowDate}>
+                {formatDate(ev.occurredAtUtc, lang)}
+              </ThemedText>
+            </>
           )}
-          <ThemedText style={styles.eventRowDate}>{formatDate(ev.occurredAtUtc, lang)}</ThemedText>
         </View>
-        {showBonsaiName && bonsaiName && (
-          <ThemedText style={styles.eventLabel}>
-            {t(`eventType_${ev.type}` as TranslationKey)}
-          </ThemedText>
-        )}
         {wiringDuration && (
           <WiringPeriodDisplay
             weeks={wiringDuration.weeks}
