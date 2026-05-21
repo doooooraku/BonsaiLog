@@ -45,7 +45,7 @@ Sess18 (PR-5/10) で **メモ placeholder 19 言語手動翻訳** (266 文字列
 
 ### D1: v1.0 翻訳ポリシー = 18 言語手動翻訳 (各言語 native UX writer ペルソナ)
 
-- **決定**: ja (SoT) + 17 言語 (en/fr/es/de/it/pt/nl/sv/pl/ru/zhHans/zhHant/ko/hi/id/th/vi/tr) = **18 言語**、 各言語の native UX writer ペルソナを立てて Claude Code が手動翻訳。
+- **決定**: ja (SoT) + **18 言語** (en/fr/es/de/it/pt/nl/sv/pl/ru/zhHans/zhHant/ko/hi/id/th/vi/tr) = **全 19 言語** (product_strategy §9-1 と整合、 ar 非対応 RTL 回避)。 各言語の native UX writer ペルソナを立てて Claude Code が手動翻訳。 ja は SoT のため翻訳対象外、 実翻訳対象は **18 言語**。
 - **18 言語プロペルソナ集合** (Sess19-4 PR-T1a #690 で確立、 本 ADR で正式採用):
   | Lang | ペルソナ | 文化的配慮 |
   |---|---|---|
@@ -128,14 +128,14 @@ Sess18 (PR-5/10) で **メモ placeholder 19 言語手動翻訳** (266 文字列
 
 ### Option A: AI 下訳 + ja native sampling のみ (= 旧 §9-2 維持)
 
-- 概要: Claude Code が全 17 言語を一気生成、 ja native user (= 開発者) が読める en/zh で sampling、 残 15 言語は §9-5 アプリ内フィードバック後手
+- 概要: Claude Code が全 18 言語を一気生成、 ja native user (= 開発者) が読める en/zh で sampling、 残 16 言語は §9-5 アプリ内フィードバック後手
 - 良い点: 1-2 PR で完遂、 速度 10 倍
 - 悪い点: 機械翻訳臭リスク、 §11-3 R2 リスク現実化、 user 真意違反
 - 却下理由: 4 ペルソナ全員 ✕ (Sess20 議論)
 
 ### Option B: Hybrid (Claude 1 次案 + glossary 厳守 + 5 言語 native sampling)
 
-- 概要: Claude が glossary を input context にして 17 言語生成、 用語不一致 lint で機械検証、 5 言語 (en/fr/es/de/zhHans) で SS sampling
+- 概要: Claude が glossary を input context にして 18 言語生成、 用語不一致 lint で機械検証、 5 言語 (en/fr/es/de/zhHans) で SS sampling
 - 良い点: 速度 + 用語一貫性
 - 悪い点: glossary に無い文脈依存表現は Claude 判断頼り、 user 真意「手動」 と微妙な距離
 - 却下理由: v1.0 直前で品質リスク取るのは戦略矛盾
@@ -213,3 +213,13 @@ Sess18 (PR-5/10) で **メモ placeholder 19 言語手動翻訳** (266 文字列
 ## Notes Amended (随時更新)
 
 (初版 2026-05-21、 Sess20 議論結果 + user Q1-Q8 全推薦案 A 承認反映)
+
+### 2026-05-21 Sess21 PR-1 言語カウント typo 訂正
+
+初版で 3 箇所の言語カウント typo を訂正:
+
+- **D1 決定**: 旧 「ja (SoT) + 17 言語 (...) = **18 言語**」 → 正 「ja (SoT) + **18 言語** (...) = **全 19 言語**、 翻訳対象は 18 言語」
+- **Option A**: 旧 「Claude Code が全 **17 言語**を一気生成、 残 15 言語は …後手」 → 正 「全 **18 言語**を一気生成、 残 16 言語は …後手」
+- **Option B**: 旧 「Claude が glossary を input context にして **17 言語**生成」 → 正 「**18 言語**生成」
+
+LANGS 配列 (`src/core/i18n/locales/` の ja 以外) を数え直すと **18 言語**、 ja 含めて全 **19 言語** (product_strategy §9-1 と整合)。 旧 typo は Sess19-4 PR-T1a `/tmp/apply-i18n-phase1a.mjs` の console.log 文言「17 keys × 17 langs = 289」 (LANGS 配列は 18 個だが log は 17 と書かれていた既存 bug) を ADR に書き写してしまったもの。 D1 タイトル「18 言語手動翻訳」 と 18 言語プロペルソナ集合表 (18 行) は変更不要 (= 翻訳対象 18 言語の意味で正しい)。
