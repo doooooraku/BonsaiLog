@@ -19,7 +19,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-na
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useTranslation } from '@/src/core/i18n/i18n';
+import { useTranslation, setPseudoMode, getPseudoMode } from '@/src/core/i18n/i18n';
 import { findLanguageOption } from '@/src/core/i18n/languageOptions';
 import { ACCENT_GOLD, BG_SURFACE, BORDER_DEFAULT, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
@@ -723,6 +723,31 @@ export default function SettingsScreen() {
               <ThemedText type="defaultSemiBold">Onboarding をリセット</ThemedText>
               <ThemedText style={styles.entryDesc}>
                 onboarding.completed=false に戻して Welcome 画面を再表示 (ui-diff flow 用)
+              </ThemedText>
+            </Pressable>
+            {/* Sess20 PR-0.5 (ADR-0033 D4): Pseudo-localization toggle (__DEV__ only)。
+                全 string を [xx-{原文}-xx] で 2 倍長化、 UI 崩れ (overflow / 文字切れ) 事前検出。
+                本番 build (__DEV__=false) では完全無効。 */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="toggle pseudo-localization"
+              testID="e2e_dev_pseudo_toggle"
+              style={styles.entry}
+              onPress={() => {
+                const current = getPseudoMode();
+                setPseudoMode(!current);
+                Alert.alert(
+                  'Pseudo-loc',
+                  current
+                    ? 'OFF: 通常表示に戻りました'
+                    : 'ON: [xx-{原文}-xx] で 2 倍長化、 全画面で UI 崩れを確認',
+                );
+              }}
+            >
+              <ThemedText type="defaultSemiBold">Pseudo-loc toggle (UI 崩れ検出)</ThemedText>
+              <ThemedText style={styles.entryDesc}>
+                ADR-0033 D4: 全 string を [xx-{'{'}原文{'}'}-xx] で wrap、 button truncation /
+                overflow 事前検出
               </ThemedText>
             </Pressable>
           </SettingsSection>

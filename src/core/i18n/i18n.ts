@@ -25,6 +25,7 @@ import pl from './locales/pl';
 import sv from './locales/sv';
 
 import { type Lang, normalizeLangCode } from './langCode';
+import { pseudoWrap, isPseudoLang } from './pseudoLoc';
 
 const dictionaries = {
   en: baseEn,
@@ -65,14 +66,18 @@ const detectInitialLang = (): Lang => {
 
 type I18nState = {
   lang: Lang;
+  pseudoMode: boolean;
   setLang: (lang: Lang) => void;
+  setPseudoMode: (enabled: boolean) => void;
 };
 
 const useI18nStore = create<I18nState>()(
   persist(
     (set) => ({
       lang: detectInitialLang(),
+      pseudoMode: false,
       setLang: (lang) => set({ lang: normalizeLangCode(lang) }),
+      setPseudoMode: (enabled) => set({ pseudoMode: __DEV__ ? enabled : false }),
     }),
     {
       name: 'app-i18n-lang',
@@ -83,6 +88,9 @@ const useI18nStore = create<I18nState>()(
         if (state.lang !== normalized) {
           state.setLang(normalized);
         }
+        if (!__DEV__ && state.pseudoMode) {
+          state.setPseudoMode(false);
+        }
       },
     },
   ),
@@ -91,8 +99,15 @@ const useI18nStore = create<I18nState>()(
 export function useTranslation() {
   const lang = useI18nStore((s) => s.lang);
   const setLang = useI18nStore((s) => s.setLang);
+  const pseudoMode = useI18nStore((s) => s.pseudoMode);
   const dict = useMemo(() => ({ ...baseEn, ...dictionaries[lang] }), [lang]);
-  const t = useMemo(() => (key: TranslationKey) => dict[key] ?? key, [dict]);
+  const t = useMemo(
+    () => (key: TranslationKey) => {
+      const value = dict[key] ?? key;
+      return __DEV__ && pseudoMode ? pseudoWrap(value) : value;
+    },
+    [dict, pseudoMode],
+  );
   return { t, lang, setLang };
 }
 
@@ -104,6 +119,14 @@ export function getLang(): Lang {
   return useI18nStore.getState().lang;
 }
 
+export function setPseudoMode(enabled: boolean) {
+  useI18nStore.getState().setPseudoMode(enabled);
+}
+
+export function getPseudoMode(): boolean {
+  return useI18nStore.getState().pseudoMode;
+}
+
 export function tAll() {
   const lang = useI18nStore.getState().lang;
   return { ...baseEn, ...dictionaries[lang] };
@@ -111,7 +134,9 @@ export function tAll() {
 
 export function t(key: TranslationKey) {
   const lang = useI18nStore.getState().lang;
-  return dictionaries[lang][key] ?? baseEn[key] ?? key;
+  const pseudoMode = useI18nStore.getState().pseudoMode;
+  const value = dictionaries[lang][key] ?? baseEn[key] ?? key;
+  return __DEV__ && pseudoMode ? pseudoWrap(value) : value;
 }
 
 export { type Lang, TranslationKey };
