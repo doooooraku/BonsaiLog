@@ -819,8 +819,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   planLegendDotPlannedLabel: '予定 (○)',
   planLegendDotMultipleLabel: '複数作業 (+)',
   planListingBonsaiCount: '×{count} 鉢',
-  lookBackCardCalendarTitle: 'カレンダー',
-  lookBackCardCalendarDesc: '月ごとに過去の作業を振り返る',
   tabPlan: '予定',
   planSectionScheduled: '予定',
   planSectionRecorded: '記録',

@@ -808,8 +808,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   planLegendDotPlannedLabel: '예정 (○)',
   planLegendDotMultipleLabel: '여러 작업 (+)',
   planListingBonsaiCount: '×{count}개 화분',
-  lookBackCardCalendarTitle: '캘린더',
-  lookBackCardCalendarDesc: '월별로 지난 작업 보기',
   tabPlan: '예정',
   planSectionScheduled: '예정',
   planSectionRecorded: '기록',

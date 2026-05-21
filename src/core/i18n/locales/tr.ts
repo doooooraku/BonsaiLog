@@ -810,8 +810,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   planLegendDotPlannedLabel: 'Planlanmış (○)',
   planLegendDotMultipleLabel: 'Birden fazla görev (+)',
   planListingBonsaiCount: '×{count} saksı',
-  lookBackCardCalendarTitle: 'Takvim',
-  lookBackCardCalendarDesc: 'Aylara göre geçmiş görevleri inceleyin',
   tabPlan: 'Plan',
   planSectionScheduled: 'Planlanmış',
   planSectionRecorded: 'Kaydedildi',

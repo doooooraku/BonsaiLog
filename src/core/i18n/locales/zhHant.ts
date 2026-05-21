@@ -799,8 +799,6 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   planLegendDotPlannedLabel: '計劃 (○)',
   planLegendDotMultipleLabel: '多項作業 (+)',
   planListingBonsaiCount: '×{count} 盆',
-  lookBackCardCalendarTitle: '日曆',
-  lookBackCardCalendarDesc: '按月查看過往作業',
   tabPlan: '計劃',
   planSectionScheduled: '計劃',
   planSectionRecorded: '紀錄',

@@ -811,8 +811,6 @@ const nl: Partial<Record<TranslationKey, string>> = {
   planLegendDotPlannedLabel: 'Gepland (○)',
   planLegendDotMultipleLabel: 'Meerdere taken (+)',
   planListingBonsaiCount: '×{count} potten',
-  lookBackCardCalendarTitle: 'Kalender',
-  lookBackCardCalendarDesc: 'Bekijk taken per maand terug',
   tabPlan: 'Plan',
   planSectionScheduled: 'Gepland',
   planSectionRecorded: 'Opgenomen',

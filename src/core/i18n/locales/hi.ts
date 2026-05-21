@@ -810,8 +810,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   planLegendDotPlannedLabel: 'निर्धारित (○)',
   planLegendDotMultipleLabel: 'अनेक कार्य (+)',
   planListingBonsaiCount: '×{count} गमले',
-  lookBackCardCalendarTitle: 'कैलेंडर',
-  lookBackCardCalendarDesc: 'माह के अनुसार पिछले कार्य देखें',
   tabPlan: 'योजना',
   planSectionScheduled: 'अनुसूचित',
   planSectionRecorded: 'रिकॉर्ड किया गया',
