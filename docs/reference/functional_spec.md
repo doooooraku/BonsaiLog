@@ -80,6 +80,7 @@
 | F-14   | Home 下部バナー広告              | §19    |
 | F-15   | ダークモード / 屋外モード        | §20    |
 | F-16   | ローカル通知                     | §21    |
+| F-17   | 作業カレンダー                   | §23    |
 
 ---
 
@@ -3013,14 +3014,117 @@ flowchart TD
 
 ---
 
-## §23. Deep Link 仕様
+## §23. F-17 作業カレンダー
 
-### §23.1 URL スキーム
+### §23.1 目的
+
+planned + logged 両方を月カレンダー上で一覧表示する SoT 画面。 ADR-0031 (Sess19) で確立した「Single/Bulk 保存後の遷移先をカレンダーに統一」 動線の最終遷移先。 ADR-0032 (Sess19-2) で planned/logged を視覚区別、 ADR-0034 (Sess22 Phase δ) で WCAG 1.4.1 解消 (色 + アイコン併用) + 凡例 + 作業別 unique 粒度 + listing 共通 EventRow に拡張。
+
+### §23.2 画面 / 入口
+
+- **タブ**: TabBar 2 番目「カレンダー」 (`/(tabs)/plan`、 Sess19 で「予定」 から rename、 i18n `tabCalendar`)
+- **保存後遷移**: Single (`WorkLogConfirm`) / Bulk (`BulkLogConfirm`) の `handleSubmit` 完了で `router.replace('/(tabs)/plan?selectedDateKey=<occurredAtDate>')` (ADR-0031 D1)
+- **ふりかえり hub**: `look-back/index.tsx` の 5 card 目「カレンダー」 (ADR-0034 D6) tap → `router.push('/(tabs)/plan?selectedDateKey=<past30dKey>')` で過去 30 日 default 表示
+- **通知タップ**: Deep Link `bonsailog://calendar?date=YYYY-MM-DD` (S-08、 §24.2 参照) で当日選択状態で開く (F-16 連携)
+
+### §23.3 期待動作
+
+#### §23.3.1 月選択
+
+- 月名 row (NotoSerifJP 18pt、 例「2026 5」) + 前月 (‹) / 次月 (›) Pressable
+- 初期値: URL param `selectedDateKey` > `pickerStore.planSelectedDateKey` (前回値、 Sess12 PR-H) > today
+
+#### §23.3.2 凡例 Legend bar (ADR-0034 D1)
+
+- 月選択 row と DOW header の間に **collapsible Legend bar** 配置 (ScrollView 内で共に流れる)
+- 内容 4 行:
+  - **● 完了** (BRAND_GREEN filled 円) + `t('planLegendDotLoggedLabel')`
+  - **○ 予定** (ACCENT_BARK outline 円) + `t('planLegendDotPlannedLabel')`
+  - **+ 複数作業** + `t('planLegendDotMultipleLabel')`
+- 永続化: `useSettingsStore.calendarLegendCollapsed: boolean` (default `false` = 初回展開)、 Zustand persist で AsyncStorage 自動保存
+- testID: `e2e_plan_legend` / `e2e_plan_legend_toggle`
+
+#### §23.3.3 月カレンダー grid + ドット (ADR-0034 D2/D3)
+
+- 5-6 週 grid (aspectRatio 1、 当日 BRAND_GREEN 強調)、 DOW header (日曜 DANGER 赤 / 土曜 BRAND_GREEN 緑 / 平日 TEXT_MUTED)
+- 各 cell:
+  - 日付 number (今日は太字 + 緑)
+  - 選択日は cellSel border + 薄背景
+  - ドット (max 3 個、 4+ で「+」)
+    - **粒度 = 作業別 unique** (`Set<EventType>` 集計、 ADR-0034 D2)
+    - 複数盆栽でも 1 作業なら dot 1 個 (作業の有無 = `loggedTypes.size + plannedTypes.size`)
+    - **logged 優先で並べる、 残 slot を planned で埋める**
+- アイコン併用 (ADR-0034 D3、 WCAG 1.4.1 解消):
+  - logged: ● 塗りつぶし (`CalendarDot status="logged"`)
+  - planned: ○ outline (`CalendarDot status="planned"`)
+- accessibilityLabel: `${d}日, 完了 N 件, 予定 N 件`
+
+#### §23.3.4 選択日 listing (ADR-0032 D2 / ADR-0034 D4/D5/D7)
+
+- 選択日に該当する events を「これから (planned)」「完了 (logged)」 2 section 分割
+- 各 section 内: type 別 group (Sess19-2 既存 pattern)
+- group row: アイコン + label + 「×N」 件数 badge + 「×N (M 鉢)」 補完 (件数 ≠ unique 鉢数の場合、 ADR-0034 D7)
+- group expand 時: 各 event を `EventRow` (`src/features/event/EventRow.tsx`、 ADR-0034 D5 で bonsai-detail と共通化) で render
+  - logged: tap → `router.push('/(tabs)/bonsai/${bonsaiId}?tab=history')`
+  - planned: tap → `router.push('/(tabs)/bonsai/${bonsaiId}?tab=timeline')`
+- 期限切れ planned (`occurredAtUtc < today`): opacity 0.6 + TEXT_MUTED 薄表示 (ADR-0032 D3、 「期限切れ」 ラベルなし)
+
+#### §23.3.5 FAB
+
+- 右下固定 FAB (+ icon)、 tap → `useBulkActionFlow('schedule')` で予定追加 flow
+- 過去日選択時は disable (TEXT_MUTED 灰、 押せない、 Sess12 PR-D 改善 C)
+
+### §23.4 境界値テーブル
+
+| 項目              | 境界                                              | 補足                                                                                           |
+| ----------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| dot 個数          | max 3                                             | 4+ で「+」 表示 (`totalUniqueCount > 3`)                                                       |
+| 連続日 group 最小 | 2 件                                              | `groupContinuousEvents` で同 type 連続日 stack (本画面では未流用、 bonsai-detail history 専用) |
+| unique 集計 key   | `EventType`                                       | `Set<EventType>` で重複排除                                                                    |
+| 期限切れ判定      | `occurredAtUtc < toLocalDateKey(today, tzOffset)` | TZ 補正後の字列比較                                                                            |
+| Legend default    | `collapsed: false`                                | 初回展開、 user toggle で永続化                                                                |
+
+### §23.5 エラーフロー
+
+- 該当なし (本画面は read-only display、 書込なし)
+- データ取得失敗時は `getAllActivePlannedAndLoggedEvents()` の reject を上位でハンドル (Sentry tag)
+
+### §23.6 受け入れ条件
+
+- [ ] 凡例 collapse 状態がアプリ再起動後も維持
+- [ ] dot に色 + アイコン両方 render (logged=● filled / planned=○ outline)
+- [ ] グレースケール mode でも planned/logged 識別可 (WCAG 1.4.1 達成)
+- [ ] 同日 watering 5 鉢で dot 1 個 (作業別 unique)
+- [ ] listing で件数 ≠ 鉢数の場合「×N (M 鉢)」 補完表示
+- [ ] PlanScreen listing と bonsai-detail history の row 表示が pixel 整合 (EventRow 共通化整合性レベル 2)
+- [ ] ふりかえり hub 5 card 目「カレンダー」 tap → PlanScreen 過去 30 日 default 表示
+
+### §23.7 対応テスト
+
+- Maestro: `plan-tab.yml` (基本) / `plan-tab-legend.yml` (凡例 expand/collapse + 永続化) / `plan-tab-dot-icon.yml` (dot 色 + icon visible) / `look-back-card-calendar.yml` (hub 5 card 動線)
+- unit: `dotsByDay.test.ts` (5 case: 同日複数同 type / 混在 / 4+ / 空 / TZ 跨ぎ) / `EventRow.test.tsx` (6 case) / `computePast30DaysKey.test.ts` (TZ 跨ぎ)
+- 実機 SS R-25 評価: ADR-0034 PR-5-2 retro で構造系 4 項目 (タブ / セクション / UI 種別 / スクロール範囲)
+
+### §23.8 関連 ADR / 機能
+
+- **ADR-0031**: カレンダー統一動線 + stale closure 撲滅 (Sess19)
+- **ADR-0032**: planned/logged 視覚区別 (Sess19-2、 D1 アイコン併用 Notes Amended で本 §23.3.3 整合)
+- **ADR-0033**: i18n 翻訳ポリシー (Sess20/21、 凡例 9 keys × 19 言語追加)
+- **ADR-0034**: Phase δ UX 改善 (Sess22、 本 §23 SoT 起源)
+- **F-02** (§7): 作業履歴記録 — 保存後本画面遷移
+- **F-05** (§10): 「気遣い型」 popup — Sess19-3 で完全削除 (本画面に影響なし)
+- **F-16** (§21): ローカル通知 — Deep Link で本画面に遷移
+
+---
+
+## §24. Deep Link 仕様
+
+### §24.1 URL スキーム
 
 - **Custom Scheme**: `bonsailog://`
 - **Universal Link / App Links**: `https://bonsailog.app/` (v2+)
 
-### §23.2 URL パターン
+### §24.2 URL パターン
 
 | URL                                      | 画面                    | Stack 構築                                                          |
 | ---------------------------------------- | ----------------------- | ------------------------------------------------------------------- |
@@ -3035,7 +3139,7 @@ flowchart TD
 | `bonsailog://migration`                  | お引っ越し              | `(tabs)/settings` → `(modals)/migration`                            |
 | `bonsailog://calendar?date=YYYY-MM-DD`   | 作業予定カレンダー S-08 | `(tabs)/index` → `calendar?date=YYYY-MM-DD` (ADR-0014 通知タップ用) |
 
-### §23.3 失敗時の挙動
+### §24.3 失敗時の挙動
 
 | エラー                  | 挙動                             |
 | ----------------------- | -------------------------------- |
@@ -3045,9 +3149,9 @@ flowchart TD
 
 ---
 
-## §24. エラーコード一覧
+## §25. エラーコード一覧
 
-### §24.1 RevenueCat エラーコード（§18.5 再掲）
+### §25.1 RevenueCat エラーコード（§18.5 再掲）
 
 | コード | 名称                      | UI 対応    |
 | ------ | ------------------------- | ---------- |
@@ -3059,7 +3163,7 @@ flowchart TD
 | 20     | PAYMENT_PENDING           | 待機       |
 | 22     | CONFIGURATION             | 開発エラー |
 
-### §24.2 BonsaiLog 内部エラー（アプリ固有）
+### §25.2 BonsaiLog 内部エラー（アプリ固有）
 
 | コード | 名称                    | 発生場所 | UI 対応                                    |
 | ------ | ----------------------- | -------- | ------------------------------------------ |
@@ -3073,7 +3177,7 @@ flowchart TD
 | BL-008 | NOTIFICATION_LIMIT      | F-16     | 自動削減 + ログ                            |
 | BL-010 | TRANSLATION_MISSING     | F-12     | キー文字列表示 + ログ                      |
 
-### §24.3 Expo / RN 既知エラー
+### §25.3 Expo / RN 既知エラー
 
 | エラー                                      | 発生条件                      | 回避策                                                 |
 | ------------------------------------------- | ----------------------------- | ------------------------------------------------------ |
