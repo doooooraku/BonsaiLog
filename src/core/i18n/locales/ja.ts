@@ -86,11 +86,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   eventDeleteConfirmDesc: 'ゴミ箱の記録は 30 日後に自動的に削除されます。',
 
   // --- F-05 気遣い型ポップアップ (Issue #25、ADR-0011) ---
-  eventOverloadTitle: 'お知らせ',
-  eventOverloadBody: 'この日は既に {count} 件の予定があります。無理のない範囲で進めてくださいね。',
-  eventOverloadActionConfirm: 'そのまま登録',
-  eventOverloadActionViewList: '一覧を見る',
-  eventOverloadActionNeverShow: '今後表示しない',
   eventType_watering: '水やり',
   eventType_pruning: '剪定',
   eventType_wiring: '針金がけ',
@@ -186,7 +181,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
 
   // --- 設定セクション (F-05 通知 + F-11 お引っ越し) ---
   settingsNotificationSection: '通知',
-  settingsEventOverloadToggle: '予定が多い時の確認ポップアップ',
   settingsEventOverloadToggleDesc:
     'ON にすると、同じ日に 6 件目の作業を記録するときに、無理のない範囲を確認するメッセージが出ます。',
 

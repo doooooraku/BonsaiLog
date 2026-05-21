@@ -8,9 +8,11 @@
  * WorkLogConfirm (Single) と BulkLogConfirm (Bulk) で 1:1 UI 整合 (ADR-0029 D5)。
  *
  * Sess19 PR-4 (ADR-0031 D1 + D3 + D4): handleSubmit を直接 await pattern に書換、
- * stale closure bug 撲滅 (bonsai-detail useFocusEffect 経由を排除)。 F-05 popup logic 移植
- * (countSameDayPlannedOrLoggedEvents + Alert.alert)。 保存後 `router.replace('/(tabs)/plan?
- * selectedDateKey=...')` でカレンダー画面に遷移、 記録した日付が選択状態で開く。
+ * stale closure bug 撲滅 (bonsai-detail useFocusEffect 経由を排除)。 保存後
+ * `router.replace('/(tabs)/plan?selectedDateKey=...')` でカレンダー画面に遷移、
+ * 記録した日付が選択状態で開く。
+ *
+ * Sess19-3 (user 真意「F-05 不要」): F-05「気遣い型」 popup logic 削除、 直接書込のみ。
  *
  * 種別別 form 入力 (14 種別すべて) + 日付 + 写真 + メモ (全種別共通) を入力して保存。
  *
@@ -38,11 +40,7 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
-import {
-  EVENT_OVERLOAD_THRESHOLD,
-  countSameDayPlannedOrLoggedEvents,
-  createEvent,
-} from '@/src/db/eventRepository';
+import { createEvent } from '@/src/db/eventRepository';
 import { addPhotoFromUri } from '@/src/db/photoRepository';
 import type { EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
@@ -135,45 +133,8 @@ export default function WorkLogConfirmScreen() {
     }
     const occurredAtUtc = occurredAtDate ? `${occurredAtDate}T00:00:00.000Z` : (nowUtc() as string);
 
-    // F-05「気遣い型」 popup (Sess16 PR-L から移植、 ADR-0031 D4)。
-    // 設定 OFF (eventOverloadEnabled=false) なら popup 出さず即書込。
-    const enabled = useSettingsStore.getState().eventOverloadEnabled;
-    if (enabled) {
-      try {
-        const count = await countSameDayPlannedOrLoggedEvents(occurredAtUtc);
-        if (count >= EVENT_OVERLOAD_THRESHOLD) {
-          Alert.alert(
-            t('eventOverloadTitle'),
-            t('eventOverloadBody').replace('{count}', String(EVENT_OVERLOAD_THRESHOLD)),
-            [
-              {
-                text: t('eventOverloadActionConfirm'),
-                onPress: () => void persistAndNavigate(payload, occurredAtUtc),
-              },
-              {
-                text: t('eventOverloadActionViewList'),
-                // 一覧を見る: dismiss のみ (詳細画面で既に履歴が見える、 ただし本画面は modal なので
-                // user は ← で picker / bonsai-detail に戻る)
-                style: 'cancel',
-                onPress: () => setIsSubmitting(false),
-              },
-              {
-                text: t('eventOverloadActionNeverShow'),
-                onPress: () => {
-                  useSettingsStore.getState().setEventOverloadEnabled(false);
-                  void persistAndNavigate(payload, occurredAtUtc);
-                },
-              },
-            ],
-            { cancelable: true, onDismiss: () => setIsSubmitting(false) },
-          );
-          return;
-        }
-      } catch {
-        // 件数取得失敗時は popup 出さず即書込 (記録のみ哲学、 ADR-0011)
-      }
-    }
-
+    // Sess19-3: F-05「気遣い型」 popup 削除 (user 真意「承知の上で行っているので不要」)。
+    // 同日件数チェック + Alert.alert 3 ボタンの分岐をすべて撤廃、 直接書込。
     void persistAndNavigate(payload, occurredAtUtc);
   };
 

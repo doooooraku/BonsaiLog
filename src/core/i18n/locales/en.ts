@@ -161,12 +161,6 @@ const baseEn = {
   eventDeleteConfirmTitle: 'Move this event to trash?',
   eventDeleteConfirmDesc: 'Trashed events are permanently removed after 30 days.',
 
-  // --- F-05 Event overload popup (Issue #25, ADR-0011) ---
-  eventOverloadTitle: 'A quick note',
-  eventOverloadBody: 'You already have {count} entries on this day. Take it at your own pace.',
-  eventOverloadActionConfirm: 'Save anyway',
-  eventOverloadActionViewList: 'See the list',
-  eventOverloadActionNeverShow: 'Don’t show again',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
   eventType_wiring: 'Wiring',
@@ -183,7 +177,6 @@ const baseEn = {
 
   // --- Settings sections (F-05 notification + F-11 move) ---
   settingsNotificationSection: 'Notifications',
-  settingsEventOverloadToggle: 'Confirm when there are many entries',
   settingsEventOverloadToggleDesc:
     'When this is on, a gentle confirmation appears when you log the 6th entry on the same day.',
 
