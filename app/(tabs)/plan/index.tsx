@@ -15,13 +15,17 @@
  * - 針金がけ一覧 (WiringListScreen) は v1.x、本 PR には含めない (機能は wiring 既存実装で維持)
  */
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { DropletIcon, EventIcon, PlusIcon } from '@/src/components/icons';
+import { DropletIcon, EventIcon, MoreVerticalIcon, PlusIcon } from '@/src/components/icons';
+import { ConfirmDialog } from '@/src/components/ConfirmDialog';
+import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
+import { showUndoToast } from '@/src/components/Toast';
 import { getTzOffsetMin } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
@@ -37,12 +41,16 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
-import { getAllActivePlannedAndLoggedEvents, softDeleteEvent } from '@/src/db/eventRepository';
+import {
+  bulkSoftDeleteEvents,
+  getAllActivePlannedAndLoggedEvents,
+  restoreEvents,
+} from '@/src/db/eventRepository';
 import { EVENT_TYPES, type Bonsai, type Event, type EventType } from '@/src/db/schema';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { EventRow } from '@/src/features/event/EventRow';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
-import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
+import { cancelForEvents } from '@/src/features/notification/cancelForEvent';
 import { CalendarDot } from '@/src/features/plan/CalendarDot';
 import { CalendarLegend } from '@/src/features/plan/CalendarLegend';
 import { computeDotsByDay } from '@/src/features/plan/dotsByDay';
@@ -236,26 +244,115 @@ export default function PlanScreen() {
     [bonsaiMap, router],
   );
 
-  // ADR-0035 D3 (Sess23 PR-3-1): event 個別削除動線
-  // long-press → Alert.alert 確認 → softDelete + cancelForEvent + reload
-  // bonsai-detail history タブと同 pattern (Sess16 で確立)、 30 日ゴミ箱で復元可
+  // ADR-0036 D1-D9 (Sess25 PR-ζ-2-⑦): カスタム ConfirmDialog + RowActionMenu + UndoSnackbar + Haptics
+  // 旧 ADR-0035 D3 (Sess23 PR-3-1) の Alert.alert 経路を完全置換、 planned/logged 文言分離 + group 削除 +
+  // wiring cascade + 4 秒 Undo + Haptics 2 段 fb (R-44/R-45 整合)。
+  type PendingDelete = {
+    eventIds: readonly string[];
+    titleKey:
+      | 'planEventDeleteConfirmPlannedSingleTitle'
+      | 'planEventDeleteConfirmLoggedSingleTitle'
+      | 'planEventDeleteConfirmPlannedGroupTitle'
+      | 'planEventDeleteConfirmLoggedGroupTitle';
+    count: number;
+    hasWiring: boolean;
+    /** Undo Snackbar 用 (planned/logged で文言分岐) */
+    undoMessageKey: 'undoSnackbarPlannedDeleteN' | 'undoSnackbarLoggedDeleteN';
+  };
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  // RowActionMenu (kebab) state、 ADR-0036 D7
+  type KebabMenu = {
+    type: EventType;
+    events: readonly Event[];
+    status: 'planned' | 'logged';
+  };
+  const [kebabMenu, setKebabMenu] = useState<KebabMenu | null>(null);
+
+  const triggerLongPressHaptic = useCallback(() => {
+    // R-45: 長押し成功時の触覚 fb (Medium、 削除 dialog 表示前 1 段目)
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  }, []);
+
+  /** 個別 event long-press → ConfirmDialog (planned/logged 文言分離) */
   const confirmDeleteEvent = useCallback(
     (ev: Event) => {
-      Alert.alert(t('planEventDeleteConfirmTitle'), t('planEventDeleteConfirmDesc'), [
-        { text: t('cancel'), style: 'cancel' },
-        {
-          text: t('delete'),
-          style: 'destructive',
-          onPress: async () => {
-            await softDeleteEvent(ev.id);
-            await cancelForEvent(ev.id, t);
-            await reload();
-          },
-        },
-      ]);
+      triggerLongPressHaptic();
+      setPendingDelete({
+        eventIds: [ev.id],
+        titleKey:
+          ev.status === 'planned'
+            ? 'planEventDeleteConfirmPlannedSingleTitle'
+            : 'planEventDeleteConfirmLoggedSingleTitle',
+        count: 1,
+        hasWiring: ev.type === 'wiring',
+        undoMessageKey:
+          ev.status === 'planned' ? 'undoSnackbarPlannedDeleteN' : 'undoSnackbarLoggedDeleteN',
+      });
     },
-    [t, reload],
+    [triggerLongPressHaptic],
   );
+
+  /** group 行 long-press / kebab menu「削除」 → ConfirmDialog (group まとめ削除、 wiring cascade 補足) */
+  const confirmDeleteGroup = useCallback(
+    (status: 'planned' | 'logged', type: EventType, groupEvents: readonly Event[]) => {
+      triggerLongPressHaptic();
+      const hasWiring = type === 'wiring' || groupEvents.some((e) => e.type === 'wiring');
+      setPendingDelete({
+        eventIds: groupEvents.map((e) => e.id),
+        titleKey:
+          status === 'planned'
+            ? 'planEventDeleteConfirmPlannedGroupTitle'
+            : 'planEventDeleteConfirmLoggedGroupTitle',
+        count: groupEvents.length,
+        hasWiring,
+        undoMessageKey:
+          status === 'planned' ? 'undoSnackbarPlannedDeleteN' : 'undoSnackbarLoggedDeleteN',
+      });
+    },
+    [triggerLongPressHaptic],
+  );
+
+  /** ConfirmDialog 「削除」 押下: bulkSoftDelete + cancelForEvents + reload + UndoSnackbar */
+  const handleConfirmDelete = useCallback(async () => {
+    if (!pendingDelete) return;
+    const { eventIds, count, undoMessageKey } = pendingDelete;
+    setPendingDelete(null);
+    await bulkSoftDeleteEvents(eventIds);
+    await cancelForEvents(eventIds, t);
+    await reload();
+    // ADR-0036 D5 / R-44: 4 秒 UndoSnackbar、 [元に戻す] tap で restoreEvents + cancelForEvents + reload
+    showUndoToast(
+      t(undoMessageKey).replace('{count}', String(count)),
+      t('undoSnackbarAction'),
+      async () => {
+        await restoreEvents(eventIds);
+        await cancelForEvents(eventIds, t);
+        await reload();
+      },
+    );
+  }, [pendingDelete, t, reload]);
+
+  const handleCancelDelete = useCallback(() => setPendingDelete(null), []);
+
+  /** group 行 右端 kebab tap → RowActionMenu 表示 */
+  const handleKebabPress = useCallback(
+    (status: 'planned' | 'logged', type: EventType, groupEvents: readonly Event[]) => {
+      setKebabMenu({ type, events: groupEvents, status });
+    },
+    [],
+  );
+  const handleKebabDismiss = useCallback(() => setKebabMenu(null), []);
+
+  /** ConfirmDialog title 組立 (count placeholder + wiring cascade 補足) */
+  const confirmDialogTitle = useMemo(() => {
+    if (!pendingDelete) return '';
+    const base = t(pendingDelete.titleKey).replace('{count}', String(pendingDelete.count));
+    // ADR-0036 D8: wiring cascade 含む group の場合、 title 末尾に補足
+    if (pendingDelete.hasWiring && pendingDelete.eventIds.length > 1) {
+      return `${base} ${t('planEventDeleteConfirmWiringCascadeNote')}`;
+    }
+    return base;
+  }, [pendingDelete, t]);
 
   // Sess22 ADR-0034 D7: listing 件数補完「×N (M 鉢)」
   // PR-2-1 で dot 粒度を作業別 unique 化したため、 listing で「同日 3 鉢 watering」 のような
@@ -456,6 +553,8 @@ export default function PlanScreen() {
                           accessibilityState={{ expanded: isExpanded }}
                           style={[styles.groupRow, hasOverdue && styles.groupRowOverdue]}
                           onPress={() => toggleExpand(type)}
+                          // ADR-0036 D2 / R-44/R-45 (Sess25): group まとめ削除 (Haptics + ConfirmDialog + Undo)
+                          onLongPress={() => confirmDeleteGroup('planned', type, events)}
                           testID={`e2e_plan_group_planned_${type}`}
                         >
                           <View style={styles.groupIconBox}>
@@ -480,24 +579,17 @@ export default function PlanScreen() {
                           <ThemedText style={styles.groupToggleText}>
                             {toggleText} {isExpanded ? '▲' : '▼'}
                           </ThemedText>
-                        </Pressable>
-                        {/* ADR-0035 D7 (Sess23 PR-4-2): group 一括変換 button (planned section のみ) */}
-                        <Pressable
-                          accessibilityRole="button"
-                          accessibilityLabel={t('planEventRecordButtonGroup').replace(
-                            '{count}',
-                            String(events.length),
-                          )}
-                          onPress={() => handleBulkConvert(type, events)}
-                          style={styles.groupRecordButton}
-                          testID={`e2e_plan_group_record_button_${type}`}
-                        >
-                          <ThemedText style={styles.groupRecordButtonText}>
-                            {t('planEventRecordButtonGroup').replace(
-                              '{count}',
-                              String(events.length),
-                            )}
-                          </ThemedText>
+                          {/* ADR-0036 D7 (Sess25): kebab menu (削除 + 全 N 件を記録)、 旧緑 button 統合 */}
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={t('rowActionMenuDelete')}
+                            style={styles.kebabButton}
+                            hitSlop={8}
+                            onPress={() => handleKebabPress('planned', type, events)}
+                            testID={`e2e_plan_group_kebab_planned_${type}`}
+                          >
+                            <MoreVerticalIcon size={20} color={TEXT_SECONDARY} />
+                          </Pressable>
                         </Pressable>
                         {isExpanded && (
                           <View style={styles.expandedContainer}>
@@ -566,6 +658,8 @@ export default function PlanScreen() {
                           accessibilityState={{ expanded: isExpanded }}
                           style={styles.groupRow}
                           onPress={() => toggleExpand(type)}
+                          // ADR-0036 D2 / R-44/R-45 (Sess25): logged group も まとめ削除可
+                          onLongPress={() => confirmDeleteGroup('logged', type, events)}
                           testID={`e2e_plan_group_logged_${type}`}
                         >
                           <View style={styles.groupIconBox}>
@@ -587,6 +681,17 @@ export default function PlanScreen() {
                           <ThemedText style={styles.groupToggleText}>
                             {toggleText} {isExpanded ? '▲' : '▼'}
                           </ThemedText>
+                          {/* ADR-0036 D7 (Sess25): logged は kebab menu = 削除のみ 1 item */}
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={t('rowActionMenuDelete')}
+                            style={styles.kebabButton}
+                            hitSlop={8}
+                            onPress={() => handleKebabPress('logged', type, events)}
+                            testID={`e2e_plan_group_kebab_logged_${type}`}
+                          >
+                            <MoreVerticalIcon size={20} color={TEXT_SECONDARY} />
+                          </Pressable>
                         </Pressable>
                         {isExpanded && (
                           <View style={styles.expandedContainer}>
@@ -649,6 +754,57 @@ export default function PlanScreen() {
       >
         <PlusIcon size={28} color={ON_BRAND} />
       </Pressable>
+
+      {/* ADR-0036 D1/D3/D4/D8 (Sess25): カスタム ConfirmDialog (削除確認、 planned/logged 分離、 wiring cascade 補足) */}
+      <ConfirmDialog
+        visible={pendingDelete !== null}
+        title={confirmDialogTitle}
+        confirmLabel={t('delete')}
+        cancelLabel={t('cancel')}
+        destructive
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        testID="e2e_plan_confirm_delete"
+      />
+
+      {/* ADR-0036 D7 (Sess25): RowActionMenu (kebab) — planned = 削除 + 全 N 件を記録 / logged = 削除のみ */}
+      <RowActionMenu
+        visible={kebabMenu !== null}
+        items={
+          kebabMenu === null
+            ? []
+            : kebabMenu.status === 'planned'
+              ? ([
+                  {
+                    key: 'delete',
+                    label: t('rowActionMenuDelete'),
+                    destructive: true,
+                    onPress: () => confirmDeleteGroup('planned', kebabMenu.type, kebabMenu.events),
+                    testID: `e2e_plan_kebab_delete_${kebabMenu.type}`,
+                  },
+                  {
+                    key: 'record-all',
+                    label: t('rowActionMenuRecordAll').replace(
+                      '{count}',
+                      String(kebabMenu.events.length),
+                    ),
+                    onPress: () => handleBulkConvert(kebabMenu.type, kebabMenu.events),
+                    testID: `e2e_plan_kebab_record_all_${kebabMenu.type}`,
+                  },
+                ] satisfies RowActionMenuItem[])
+              : ([
+                  {
+                    key: 'delete',
+                    label: t('rowActionMenuDelete'),
+                    destructive: true,
+                    onPress: () => confirmDeleteGroup('logged', kebabMenu.type, kebabMenu.events),
+                    testID: `e2e_plan_kebab_delete_${kebabMenu.type}`,
+                  },
+                ] satisfies RowActionMenuItem[])
+        }
+        onDismiss={handleKebabDismiss}
+        testID="e2e_plan_kebab_menu"
+      />
     </ThemedView>
   );
 }
@@ -726,7 +882,14 @@ const styles = StyleSheet.create({
   // Sess19-2 ADR-0032 D3: 期限切れ planned 警告色 (TEXT_MUTED で薄く、 「期限切れ」 ラベルなし)
   groupRowOverdue: { opacity: 0.6 },
   groupLabelOverdue: { color: TEXT_MUTED },
-  // ADR-0035 D7 (Sess23 PR-4-2): planned section の group「全 N 件を記録」 button
+  // ADR-0036 D7 (Sess25): group 行 右端 kebab (⋮) icon button、 RowActionMenu 起動
+  kebabButton: {
+    padding: 6,
+    marginLeft: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // ADR-0035 D7 (Sess23 PR-4-2、 Sess25 ADR-0036 D7 で kebab menu に統合): 旧 planned 緑 button (現在未使用、 削除予定 → cleanup PR で物理削除)
   groupRecordButton: {
     marginTop: 6,
     marginBottom: 4,
