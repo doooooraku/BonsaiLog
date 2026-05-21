@@ -119,6 +119,7 @@
 | **R-35** | 議論時 alternative 必須提示 + 業界事例「現状最適解」 明示 | 議論 Round で初期案 1 つだけでなく alternative 2-3 案を必ず併記。 業界事例リサーチで「最新トレンド = 現状最適解」 を明示し、 古いパターン (Apple Notes long-press 等) を「業界 outdated」 と判定。 Sess9 PR-9 → PR-10 long-press → toggle 60 分ロスが根拠。 詳細: `lessons/discuss.md` |
 | **R-36** | navigation API 使用時 1 次情報確認 + 実機検証必須 | `router.dismissAll` / `router.canDismiss` 等 expo-router API の挙動を **docs/source で確認 + 実機で挙動検証** してから採用。 `while (canX) { doX() }` パターンは無限 loop リスクで禁止 (max iteration limit or 別 API)。 Sess12 PR-F で canDismiss loop → JS thread freeze 事例。 **Sess18 PR-3 (2026-05-21) で R-36.4/R-36.5 追加**: **R-36.4 UX 評価必須**: 新規 navigation 実装時、 「← で戻ったら user は何画面戻ったと感じるか」 を議論 step として必須化 (ADR-0030 §17 Case A/B/C 分類)。 **R-36.5 実機検証義務**: navigation 変更を伴う PR は実機で ← back button + 画面端 swipe gesture の両方の挙動 SS を PR 添付必須 (PR テンプレ §7.6)。 Sess17 違和感 ④ (戻る 2 画面飛び) が Case C 不明確で発生した教訓。 詳細: `lessons/navigation.md` + `docs/adr/ADR-0030.md` |
 | **R-37** | 仕様 TBD (未確定) は ADR §TBD として明示残し | 議論で「あとで決める」 で先送りした仕様は ADR / Issue に `§TBD` として明文化、 実装時に user 承認で確定。 Sess12 PR-G で log mode の note 仕様 (a/b/c) を未確定で進めかけた事例。 |
+| **R-42** | 色で意味を伝える UI は アイコン or pattern 必ず併用 (WCAG 1.4.1) | 状態 (planned/logged/error/warning) や severity を **色のみ** で識別する UI 設計禁止。 アイコン形状 (●/○/✓) or pattern (縞模様) で重複表現。 WCAG 2.1 SC 1.4.1 Level A 必達。 Sess22 ADR-0034 D3 由来 (planned/logged dot 緑/茶 色のみ識別が色覚多様性 + シニア老眼 + 屋外モードで不能)。 詳細: `recurrence-prevention/specialized.md` |
 
 ---
 

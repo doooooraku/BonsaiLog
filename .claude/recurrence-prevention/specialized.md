@@ -214,6 +214,15 @@
 
 ---
 
+### R-42. 色で意味を伝える UI は アイコン or pattern を必ず併用 (WCAG 1.4.1 Level A、 Sess22 ADR-0034 D3 由来)
+
+- **ルール**: 状態 (planned/logged/error/warning/success) や severity を **色のみ** で識別する UI 設計禁止。 必ずアイコン形状 (●/○/✓/!) or pattern (縞模様/斜線) で重複表現。 既存「色のみ」 識別 UI を新規発見時は ADR で受容 (色覚不要層対象 + grayscale 視認性確認済の場合のみ) or 改修 PR 起票
+- **根拠**: WCAG 2.1 SC 1.4.1 Use of Color (Level A、 必達)。 色覚多様性 (赤緑色覚異常 = 男性 8%、 女性 0.4%) + シニア老眼 + 屋外モード + ダークモードで「緑/茶」 等の色相差は識別困難。 Sess22 ADR-0034 D3 で planned/logged dot (緑/茶) が色のみ識別 = WCAG 違反確証 → ●filled / ○outline アイコン併用に改修。 業界 1 次情報 ([UX Patterns Dev Calendar](https://uxpatterns.dev/patterns/data-display/calendar)) 整合
+- **自動化**: 当面 code review + ADR-0034 D3 整合 grep。 Phase ε 検討: `scripts/a11y-contrast-check.mjs` を `scripts/a11y-check.mjs` に拡張し AST grep で「色のみ識別」 pattern 検出 (e.g., `styles.<state>: { color: <COLOR> }` で対応 icon component 不在)
+- **関連**: ADR-0034 D3 (本ルール由来) / ADR-0032 D1 Notes Amended (色のみ → 色+アイコン併用) / `src/features/plan/CalendarDot.tsx` (実装) / WCAG 2.1 SC 1.4.1
+
+---
+
 ## 関連
 
 - 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-41 索引 + 運用ルール)
