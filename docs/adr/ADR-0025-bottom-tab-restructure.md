@@ -342,3 +342,17 @@ else router.replace('/(tabs)/record');
 
 - Repolog (前作) は記録特化アプリ、 タブ構成は **記録 / カレンダー / 設定** 等 (要確認)
 - BonsaiLog 案 A は「タブ = action 起動」 で Repolog と差別化
+
+---
+
+## Notes Amended
+
+### 2026-05-21 Sess19 ADR-0031 起票による「予定」 → 「カレンダー」 rename + 記録 tab 役割再定義
+
+ADR-0031 (カレンダー統一動線) で以下を反映:
+
+- **「予定」 タブ → 「カレンダー」 タブ** に rename (i18n 19 言語、 `tabPlan` → `tabCalendar` 等)。 PlanScreen の内部実装名は不変 (route path `/(tabs)/plan` も不変)、 表示名のみ rename。
+- **「記録」 タブ** の役割再定義: 案 X (tab tap intercept で bonsai-multi-select 起動) は **維持**、 ただし Bulk 完了後の遷移先が `'/(tabs)/record'` (stub) → `'/(tabs)/plan?selectedDateKey=...'` (カレンダー) に変更。 記録 tab は stub 画面を user に見せない (intercept で即 modal、 完了後はカレンダーに遷移)。
+- **Single 動線完了後の遷移先**: 旧「bonsai-detail に戻る (実は stale closure で DB 書込失敗)」 → 「カレンダーに遷移 + 記録した日が選択状態」 (Bulk と統一、 ADR-0031 D1)。
+
+本 ADR §Decision §1 (案 X 記録タブ tap intercept) は引き続き有効、 ADR-0031 はその「完了後遷移先の統一」 を追加する関係性。

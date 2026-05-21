@@ -248,3 +248,21 @@ Sess18 で本 ADR の D2-D4 実装完了 (Sess17 PR-A2 起票後、 同日中に
 - **Before (Sess17 まで)**: WorkLogConfirm ← back → bonsai-detail (2 画面飛び、 WorkPicker skip)
 - **After (Sess18 PR-1 以降)**: WorkLogConfirm ← back → WorkPicker (1 画面分) → ← back → bonsai-detail (1 画面分)
 - user 体感「← 1 回で 1 画面ずつ戻る」 達成、 Material Design Up navigation + iOS HIG Back navigation 整合
+
+### 2026-05-21 Sess19 ADR-0031 起票による Case 4 追加 (log mode 直接 await + replace)
+
+Sess19 実機検証 (ADR-0031 §Context) で Sess18 PR-1 の「戻る 1 step」 達成と並行して、 **Single × log mode の DB 書込が stale closure で失敗** していたことが判明。 ADR-0030 の Case 分類を以下のように拡張:
+
+- **Case 4 (新規、 ADR-0031 D1)**: log mode の form 保存後遷移は **直接 await + `router.replace('/(tabs)/plan?selectedDateKey=...')`**。 store-callback chain を経由せず、 同コンポーネント scope で `await createEvent + addPhotoFromUri + triggerSummaryReschedule` を完結。 「← 1 step」 達成は維持 (前画面が plan tab に変わる)、 user 体感「記録 → カレンダーで視認」 達成
+
+旧 Case C (「次の画面に進む store-callback」 禁止) の **完全実装**: Sess18 PR-1 は picker → confirm を直接 push 化したが、 confirm → bonsai-detail の back chain は store-callback のままだった。 ADR-0031 D1 で confirm → calendar replace に変更し、 store-callback chain を log mode から完全排除。
+
+**Case 表 (更新版)**:
+| Case | 用途 | 実装 |
+| --- | --- | --- |
+| A | picker → dialog (DatePicker / Alert) | store-callback (setX + router.back() + caller useFocusEffect で consume) |
+| B | picker → caller state 更新のみ (次画面遷移なし) | 同上 |
+| C | picker → 次画面遷移 | **直接 router.push 必須** (Sess18 PR-1 で WorkPicker 解消) |
+| **4** | form 保存後 → tab 遷移 | **直接 await + router.replace('/(tabs)/<tab>?...')** (Sess19 PR-4/5 で実装) |
+
+R-39 (`.claude/recurrence-prevention.md`) で stale closure pattern + store-callback の濫用を **構造的に防止** (ADR-0031 D5)。
