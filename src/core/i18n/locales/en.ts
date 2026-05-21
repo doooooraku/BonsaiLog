@@ -159,8 +159,6 @@ const baseEn = {
   eventLogCta: 'Log a care event',
   eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: 'No work records yet',
-  eventDeleteConfirmTitle: 'Delete this record?',
-  eventDeleteConfirmDesc: 'This record will be moved to trash. You can restore it later.',
 
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
@@ -825,8 +823,6 @@ const baseEn = {
   planLegendDotRecordedLabel: 'Recorded (●)',
   planEventRecordButtonSingle: 'Record this',
   planEventRecordButtonGroup: 'Record all {count}',
-  planEventDeleteConfirmTitle: 'Delete this entry?',
-  planEventDeleteConfirmDesc: 'Deleted entries are removed permanently after 30 days.',
   planEventConvertedToast: 'Changed {count} planned task(s) to records',
   planEventDeleteConfirmPlannedSingleTitle: 'Delete this plan?',
   planEventDeleteConfirmLoggedSingleTitle: 'Delete this record?',

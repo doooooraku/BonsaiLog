@@ -154,9 +154,6 @@ const de: Partial<Record<TranslationKey, string>> = {
   eventLogCta: 'Log a care event',
   eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: 'Noch keine Arbeitseinträge',
-  eventDeleteConfirmTitle: 'Diesen Eintrag löschen?',
-  eventDeleteConfirmDesc:
-    'Dieser Eintrag wird in den Papierkorb verschoben. Sie können ihn später wiederherstellen.',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
   eventType_wiring: 'Wiring',
@@ -818,8 +815,6 @@ const de: Partial<Record<TranslationKey, string>> = {
   planLegendDotRecordedLabel: 'Aufgezeichnet (●)',
   planEventRecordButtonSingle: 'Aufzeichnen',
   planEventRecordButtonGroup: 'Alle aufzeichnen ({count})',
-  planEventDeleteConfirmTitle: 'Diesen Eintrag löschen?',
-  planEventDeleteConfirmDesc: 'Gelöschte Einträge werden nach 30 Tagen endgültig entfernt.',
   planEventConvertedToast: '{count} geplante Aufgabe(n) in Aufzeichnung umgewandelt',
   planEventDeleteConfirmPlannedSingleTitle: 'Diesen Plan löschen?',
   planEventDeleteConfirmLoggedSingleTitle: 'Diesen Eintrag löschen?',

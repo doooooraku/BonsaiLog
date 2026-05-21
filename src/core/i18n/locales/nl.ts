@@ -154,9 +154,6 @@ const nl: Partial<Record<TranslationKey, string>> = {
   eventLogCta: 'Log a care event',
   eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: 'Nog geen werkrecords',
-  eventDeleteConfirmTitle: 'Dit record verwijderen?',
-  eventDeleteConfirmDesc:
-    'Dit record wordt naar de prullenbak verplaatst. Je kunt het later herstellen.',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
   eventType_wiring: 'Wiring',
@@ -817,8 +814,6 @@ const nl: Partial<Record<TranslationKey, string>> = {
   planLegendDotRecordedLabel: 'Opgenomen (●)',
   planEventRecordButtonSingle: 'Opnemen',
   planEventRecordButtonGroup: 'Alles opnemen ({count})',
-  planEventDeleteConfirmTitle: 'Deze invoer verwijderen?',
-  planEventDeleteConfirmDesc: 'Verwijderde invoer wordt na 30 dagen definitief verwijderd.',
   planEventConvertedToast: '{count} geplande taak(taken) omgezet naar opname',
   planEventDeleteConfirmPlannedSingleTitle: 'Dit plan verwijderen?',
   planEventDeleteConfirmLoggedSingleTitle: 'Dit record verwijderen?',

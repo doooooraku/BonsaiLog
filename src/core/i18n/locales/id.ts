@@ -154,8 +154,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   eventLogCta: 'Log a care event',
   eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: 'Belum ada catatan kerja',
-  eventDeleteConfirmTitle: 'Hapus catatan ini?',
-  eventDeleteConfirmDesc: 'Catatan ini akan dipindahkan ke sampah. Anda dapat memulihkannya nanti.',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
   eventType_wiring: 'Wiring',
@@ -816,9 +814,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   planLegendDotRecordedLabel: 'Tercatat (●)',
   planEventRecordButtonSingle: 'Catat ini',
   planEventRecordButtonGroup: 'Catat semua {count}',
-  planEventDeleteConfirmTitle: 'Hapus entri ini?',
-  planEventDeleteConfirmDesc:
-    'Entri yang dihapus akan dihilangkan secara permanen setelah 30 hari.',
   planEventConvertedToast: '{count} tugas terjadwal diubah menjadi catatan',
   planEventDeleteConfirmPlannedSingleTitle: 'Hapus rencana ini?',
   planEventDeleteConfirmLoggedSingleTitle: 'Hapus catatan ini?',

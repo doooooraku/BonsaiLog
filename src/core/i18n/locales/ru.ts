@@ -154,9 +154,6 @@ const ru: Partial<Record<TranslationKey, string>> = {
   eventLogCta: 'Log a care event',
   eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: 'Записей работ пока нет',
-  eventDeleteConfirmTitle: 'Удалить эту запись?',
-  eventDeleteConfirmDesc:
-    'Эта запись будет перемещена в корзину. Вы сможете восстановить её позже.',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
   eventType_wiring: 'Wiring',
@@ -818,8 +815,6 @@ const ru: Partial<Record<TranslationKey, string>> = {
   planLegendDotRecordedLabel: 'Записано (●)',
   planEventRecordButtonSingle: 'Записать',
   planEventRecordButtonGroup: 'Записать все ({count})',
-  planEventDeleteConfirmTitle: 'Удалить эту запись?',
-  planEventDeleteConfirmDesc: 'Удаленные записи стираются навсегда через 30 дней.',
   planEventConvertedToast: 'Запланированных задач преобразовано в записи: {count}',
   planEventDeleteConfirmPlannedSingleTitle: 'Удалить этот план?',
   planEventDeleteConfirmLoggedSingleTitle: 'Удалить эту запись?',
