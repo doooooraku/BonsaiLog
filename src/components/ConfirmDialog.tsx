@@ -12,7 +12,7 @@
  * - `accessibilityViewIsModal={true}` + `accessibilityRole="alert"` (WAI-ARIA Dialog Pattern + WCAG 2.1.1)
  * - `description` は **optional** (user 真意「desc 不要」 整合、 即削除前提 ADR-0036 D4)
  * - `destructive=true` で confirm button DANGER 赤 (削除等)
- * - onConfirm 直前に `Haptics.notificationAsync(NotificationFeedbackStyle.Warning)` (R-45 連動)
+ * - onConfirm 直前に `Haptics.notificationAsync(NotificationFeedbackType.Warning)` (R-45 連動)
  *
  * 関連: ADR-0036 D1 / R-44 / `docs/reference/design_system.md` §18 / Material 3 Dialog / Apple HIG Alerts
  */
