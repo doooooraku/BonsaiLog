@@ -47,7 +47,6 @@ import {
   type BonsaiWithSpecies,
 } from '@/src/db/bonsaiRepository';
 import {
-  addPhotoFromUri,
   deletePhoto,
   FREE_PHOTO_LIMIT_PER_BONSAI,
   getPhotoCountByBonsai,
@@ -58,13 +57,7 @@ import {
   updatePhotoCaption,
   type PhotoRead,
 } from '@/src/db/photoRepository';
-import {
-  countSameDayPlannedOrLoggedEvents,
-  createEvent,
-  EVENT_OVERLOAD_THRESHOLD,
-  getActiveEventsByBonsai,
-  softDeleteEvent,
-} from '@/src/db/eventRepository';
+import { createEvent, getActiveEventsByBonsai, softDeleteEvent } from '@/src/db/eventRepository';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { type Event, type EventType } from '@/src/db/schema';
 import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
@@ -74,7 +67,6 @@ import {
   type EventGroupEntry,
 } from '@/src/features/event/groupContinuousEvents';
 import { HistoryChipRow } from '@/src/features/event/HistoryChip';
-import type { WorkLogPayload } from '@/src/stores/pickerStore';
 import { usePickerStore } from '@/src/stores/pickerStore';
 import { WiringPeriodDisplay } from '@/src/features/wiring/WiringPeriodDisplay';
 import {
@@ -151,45 +143,18 @@ export default function BonsaiDetailScreen() {
     setTimeout(() => setShowSchedulePicker(true), 200);
   }, []);
 
-  // Phase G2 part 1 (ADR-0024): `/work-picker` から戻った時に workPickerResult を消費、
-  // mode に応じて分岐。
-  // Sess18 PR-1 (ADR-0030 D2): log mode は WorkPicker で直接 router.push されるため
-  // ここでは consume 不要 (Case C 解消)。 schedule mode のみ Case A (DatePicker dialog) を維持。
-  // Phase G2 part 2 (ADR-0024 Accepted): `/work-log-confirm` から戻った時は workLogConfirmResult
-  // を消費して createEvent で DB に書込 (Case B、 caller state 更新のみ、 ADR-0030 §17-2 維持)。
+  // Sess19 PR-6 (ADR-0031 D3): log mode consume + persistEventWithPayload を完全削除。
+  // WorkLogConfirm が直接 await + router.replace('/(tabs)/plan?selectedDateKey=...')
+  // でカレンダー画面に遷移するため、 bonsai-detail で consume する必要なし。
+  // stale closure bug (deps `[handleSchedulePickerSelect]` で persistEventWithPayload が
+  // 初回 mount 時の関数を保持、 item=null で早期 return) も path 排除で構造的解消。
+  // schedule mode (Case A、 ADR-0030 §17 P2) は維持: WorkPicker からの DatePicker dialog 起動。
   useFocusEffect(
     React.useCallback(() => {
       const workResult = usePickerStore.getState().consumeWorkPickerResult();
       if (workResult && workResult.mode === 'schedule') {
-        // Sess18 PR-1: schedule mode のみ caller で DatePicker dialog を開く (Case A)。
         handleSchedulePickerSelect(workResult.type);
       }
-      const logResult = usePickerStore.getState().consumeWorkLogConfirmResult();
-      if (logResult) {
-        // Sess16 PR-L (T-3): F-05「気遣い型」 popup 復活 (PR-C 動線統一で deadcode 化していた logic)。
-        // user が WorkLogConfirm で「記録する」 tap 後、 同日 6 件目以降の event なら popup 表示。
-        const enabled = useSettingsStore.getState().eventOverloadEnabled;
-        if (enabled) {
-          const occurredAtUtc = logResult.occurredAtDate
-            ? `${logResult.occurredAtDate}T00:00:00.000Z`
-            : (nowUtc() as string);
-          void countSameDayPlannedOrLoggedEvents(occurredAtUtc)
-            .then((count) => {
-              if (count >= EVENT_OVERLOAD_THRESHOLD) {
-                showEventOverloadPopupForPayload(logResult);
-              } else {
-                void persistEventWithPayload(logResult);
-              }
-            })
-            .catch(() => {
-              // 件数取得失敗時は popup 出さず即書込 (記録のみ哲学、 ADR-0011)
-              void persistEventWithPayload(logResult);
-            });
-        } else {
-          void persistEventWithPayload(logResult);
-        }
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [handleSchedulePickerSelect]),
   );
 
@@ -937,38 +902,6 @@ export default function BonsaiDetailScreen() {
     </ThemedView>
   );
 
-  /** v1.x-3: 詳細 form から payload + note を受け取り createEvent で保存。 */
-  async function persistEventWithPayload(payload: WorkLogPayload) {
-    if (!item) return;
-    try {
-      // Sess16 PR-A2: occurredAtDate (YYYY-MM-DD) → ISO UTC、 未指定なら createEvent default (now)。
-      const occurredAtUtc = payload.occurredAtDate
-        ? `${payload.occurredAtDate}T00:00:00.000Z`
-        : undefined;
-      const created = await createEvent({
-        bonsaiId: item.id,
-        type: payload.type,
-        status: 'logged',
-        note: payload.note.length > 0 ? payload.note : undefined,
-        payload: payload.payload,
-        ...(occurredAtUtc ? { occurredAtUtc } : {}),
-      });
-      // Sess16 PR-A3 → PR-H: pending photos を作成された event に紐付けて永続化 (caption 削除済)。
-      if (payload.photos && payload.photos.length > 0) {
-        for (const p of payload.photos) {
-          await addPhotoFromUri({
-            bonsaiId: item.id,
-            sourceUri: p.uri,
-            eventId: created.id,
-          });
-        }
-      }
-      await reload();
-    } catch (err) {
-      Alert.alert(t('error'), String(err));
-    }
-  }
-
   function showEventTypePicker() {
     if (!item) return;
     // Sess16 PR-Q: isPine URL param 撤廃 (松類限定 candle_cut 表示廃止、 全種別常時表示)
@@ -978,41 +911,9 @@ export default function BonsaiDetailScreen() {
     );
   }
 
-  /**
-   * F-05 気遣い型ポップアップ (Issue #25、ADR-0011、 Sess16 PR-L で WorkLogConfirm 動線に移植):
-   * - 同じローカル日に planned + logged が既に 5 件以上ある場合 (= 6 件目)、 WorkLogConfirm
-   *   で「記録する」 tap 後の useFocusEffect 内で本関数を呼び出して Alert 表示。 3 ボタン:
-   *   1. そのまま登録 (default): persistEventWithPayload 実行
-   *   2. 一覧を見る: 登録せずに dismiss (詳細画面で既に履歴が見える)
-   *   3. 今後表示しない: ポップアップを永続 OFF にしてから登録
-   * - 設定 OFF (eventOverloadEnabled=false) なら useFocusEffect 内で本関数を呼ばず即書込。
-   */
-  function showEventOverloadPopupForPayload(payload: WorkLogPayload) {
-    Alert.alert(
-      t('eventOverloadTitle'),
-      t('eventOverloadBody').replace('{count}', String(EVENT_OVERLOAD_THRESHOLD)),
-      [
-        {
-          text: t('eventOverloadActionConfirm'),
-          onPress: () => void persistEventWithPayload(payload),
-        },
-        {
-          text: t('eventOverloadActionViewList'),
-          // 一覧を見る: 詳細画面下部に既に作業履歴一覧が表示されているため dismiss のみ。
-          // ユーザーは確認後に再度「+ 作業を記録」をタップできる。
-          style: 'cancel',
-        },
-        {
-          text: t('eventOverloadActionNeverShow'),
-          onPress: () => {
-            useSettingsStore.getState().setEventOverloadEnabled(false);
-            void persistEventWithPayload(payload);
-          },
-        },
-      ],
-      { cancelable: true },
-    );
-  }
+  // Sess19 PR-6 (ADR-0031 D3): persistEventWithPayload + showEventOverloadPopupForPayload 削除。
+  // WorkLogConfirm が直接 await + F-05 popup (line 92-129 の persistAndNavigate) で完結するため不要。
+  // stale closure bug (deps 欠落の useFocusEffect callback closure が古い item=null を参照) 構造的解消。
 
   function confirmDeleteEvent(ev: Event) {
     Alert.alert(t('eventDeleteConfirmTitle'), t('eventDeleteConfirmDesc'), [
