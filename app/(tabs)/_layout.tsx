@@ -1,44 +1,53 @@
 /**
- * Tab Layout (ADR-0020 Phase 1: 4 タブ構成 + ADR-0025 Phase 2 案 B FAB 起動 + 案 X 記録タブ部分回帰)。
+ * Tab Layout (ADR-0020 Phase 1: 4 タブ構成 + ADR-0025 Phase 2 案 B FAB 起動)。
  *
  * - 盆栽 (Leaf): 盆栽カード一覧
- * - 予定 (Calendar): 月カレンダー画面 + FAB → bulk-schedule (案 B)
- * - 記録 (Droplet): **タブ tap で intercept → 直接 bonsai-multi-select modal 起動** (案 X、 2026-05-18 Sess8 PR-3)
+ * - 予定 (Calendar): 月カレンダー画面 + FAB、 タブ tap で source=tab + 明日 default (ADR-0035 D1/D2)
+ * - 記録 (Droplet): タブ tap で予定タブ (= カレンダー画面) + 今日 default に遷移 (ADR-0035 D6、 ADR-0025 §② 案 X revert)
  * - ふりかえり (Pencil): CareHub Hub 画面 + 検索 (ADR-0020 §Decision §7、 2026-05-10 改訂)
  *
- * ADR-0025 §② Notes Amended (2026-05-18 Sess8 PR-3):
- * 記録タブのみ案 A (タブ tap intercept) に部分回帰、 予定タブは案 B (画面 + FAB) 維持の非対称設計。
- * user 真意「empty hub 不要、 タブ tap で直接 modal」 整合。
+ * ADR-0035 D1 + D6 (Sess23 PR-2-1 + PR-2-2):
+ * - タブ「カレンダー」 → 「予定」 revert (ADR-0031 D2 取消)、 タブ「予定」 tap で source=tab 付与 → 明日 default
+ * - 記録タブ tap = カレンダー画面 (今日 default) 遷移、 旧 modal 起動 (案 X) を revert
  *
  * 実装: React Navigation v7 公式パターン (`<Tabs.Screen listeners>` で screen config 経由、
- * lazy render 制約回避)。 件数分岐 (0/1/2+ 件) は useBulkActionFlow で集約。
+ * lazy render 制約回避)。
  */
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter, type Href } from 'expo-router';
 import React, { useCallback } from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/theme';
 import { CalendarIcon, DropletIcon, LeafIcon, PencilNavIcon } from '@/src/components/icons';
+import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
-import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
+import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 
 export default function TabLayout() {
   const { t } = useTranslation();
+  const router = useRouter();
   // Sess6 PR-1: TabBar 強制 light 固定 (user 「ライトモード設定なのに dark」 bug 解消、
   // dark mode 完全対応は Phase C 別 PR で扱う、 ADR-0015 TT2 パターン拡張)。
   const c = Colors.light;
 
-  // ADR-0025 案 X (2026-05-18): 記録タブ tap intercept で直接 bonsai-multi-select modal 起動。
-  const { startBulkAction: startRecordAction } = useBulkActionFlow('log');
-
-  const handleRecordTabPress = useCallback(
-    async (e: { preventDefault: () => void }) => {
+  // ADR-0035 D2 (Sess23 PR-2-1): 予定タブ tap で source=tab 付与 → PlanScreen で明日 default selectedDateKey
+  const handlePlanTabPress = useCallback(
+    (e: { preventDefault: () => void }) => {
       e.preventDefault();
-      const bonsais = await getAllActiveBonsai();
-      startRecordAction(bonsais.map((b) => ({ id: b.id, name: b.name })));
+      router.push('/(tabs)/plan?source=tab' as Href);
     },
-    [startRecordAction],
+    [router],
+  );
+
+  // ADR-0035 D6 (Sess23 PR-2-2): 記録タブ tap で予定タブに source=tab + 今日 selectedDateKey で遷移
+  // (旧 ADR-0025 §② 案 X modal 直接起動を revert)
+  const handleRecordTabPress = useCallback(
+    (e: { preventDefault: () => void }) => {
+      e.preventDefault();
+      const todayKey = toLocalDateKey(nowUtc() as string, getTzOffsetMin());
+      router.push(`/(tabs)/plan?source=tab&selectedDateKey=${todayKey}` as Href);
+    },
+    [router],
   );
 
   return (
@@ -63,10 +72,13 @@ export default function TabLayout() {
       <Tabs.Screen
         name="plan"
         options={{
-          title: t('tabCalendar'),
+          title: t('tabPlan'),
           tabBarIcon: ({ color }) => <CalendarIcon size={28} color={color} />,
           tabBarButtonTestID: 'e2e_tab_plan',
         }}
+        listeners={() => ({
+          tabPress: handlePlanTabPress,
+        })}
       />
       <Tabs.Screen
         name="record"
