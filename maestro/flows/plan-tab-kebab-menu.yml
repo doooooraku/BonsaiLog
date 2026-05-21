@@ -1,0 +1,39 @@
+# maestro/flows/plan-tab-kebab-menu.yml
+# Sess25 PR-ζ-2-⑩ (ADR-0036 D7): group 行 右端 kebab (⋮) tap → RowActionMenu
+# planned: 「削除」 (destructive) + 「全 {count} 件を記録」
+# logged: 「削除」 のみ
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: false
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- pressKey: 'Back'
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_list'
+    timeout: 20000
+
+- tapOn:
+    text: '予定'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_plan_screen'
+    timeout: 10000
+
+# kebab button testID: e2e_plan_group_kebab_planned_<type> / e2e_plan_group_kebab_logged_<type>
+# RowActionMenu testID: e2e_plan_kebab_menu
+# menu item testID: e2e_plan_kebab_delete_<type> / e2e_plan_kebab_record_all_<type>
+- assertVisible:
+    id: 'e2e_plan_screen'

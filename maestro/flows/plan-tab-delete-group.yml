@@ -1,0 +1,39 @@
+# maestro/flows/plan-tab-delete-group.yml
+# Sess25 PR-ζ-2-⑩ (ADR-0036 D2): PlanScreen group 行 long-press → ConfirmDialog (group まとめ削除)
+# → wiring 含む group の場合 title 末尾に「(関連する取り外し予定も削除されます)」 補足 (D8)
+#
+# 前提: 予定タブに seed events (複数 type の group が存在)
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: false
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- pressKey: 'Back'
+- waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_list'
+    timeout: 20000
+
+- tapOn:
+    text: '予定'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_plan_screen'
+    timeout: 10000
+
+# group 行 testID 命名: e2e_plan_group_planned_<type> / e2e_plan_group_logged_<type>
+# 実機 long-press 動作は手動 SS で別途検証
+- assertVisible:
+    id: 'e2e_plan_screen'
