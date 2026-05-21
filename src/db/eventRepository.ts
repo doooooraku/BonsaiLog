@@ -606,3 +606,144 @@ export async function bulkLogEvents(input: BulkLogInput): Promise<BulkLogResult>
   });
   return { created, failed };
 }
+
+// ---------------------------------------------------------------------------
+// 予定→記録 atomic 変換 (Sess23 ADR-0035 D7、 R-43 整合)
+// ---------------------------------------------------------------------------
+
+export type ConvertPlannedToRecordedInput = {
+  plannedEventId: string;
+  recordPayload: Omit<CreateEventInput, 'status'>;
+};
+
+/**
+ * 予定 event を記録 event に atomic 変換 (Sess23 ADR-0035 D7)。
+ *
+ * 単一 `db.withTransactionAsync` で UPDATE deleted_at + DELETE events_fts + INSERT events +
+ * INSERT events_fts を atomic 実行 (R-43 整合)。 該当 planned 不在 (UPDATE 0 行) なら
+ * throw + rollback で「予定 0 件 + 記録 1 件」 中途半端状態を構造禁止。
+ */
+export async function convertPlannedToRecorded(
+  input: ConvertPlannedToRecordedInput,
+): Promise<Event> {
+  validateEventPayload(input.recordPayload.type, input.recordPayload.payload ?? {});
+  const payloadJson = serializeEventPayload(
+    input.recordPayload.type,
+    input.recordPayload.payload ?? {},
+  );
+
+  const db = await getDb();
+  const now = nowUtc() as string;
+  const id = ulid();
+  const occurredAt = input.recordPayload.occurredAtUtc ?? now;
+  const tzOffset = getTzOffsetMin();
+  const tzIana = getTzIana();
+  const bonsaiId = input.recordPayload.bonsaiId;
+  const type = input.recordPayload.type;
+  const durationMin = input.recordPayload.durationMin ?? null;
+  const note = input.recordPayload.note ?? null;
+
+  await db.withTransactionAsync(async () => {
+    const updateResult = await db.runAsync(
+      'UPDATE events SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL;',
+      [now, now, input.plannedEventId],
+    );
+    if (updateResult.changes === 0) {
+      throw new Error(
+        `convertPlannedToRecorded: plannedEventId ${input.plannedEventId} not found or already deleted`,
+      );
+    }
+    await db.runAsync('DELETE FROM events_fts WHERE event_id = ?;', [input.plannedEventId]);
+    await db.runAsync(
+      `INSERT INTO events
+         (id, bonsai_id, type, status, occurred_at_utc, tz_offset_min, tz_iana, duration_min, payload_json, note, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+      [
+        id,
+        bonsaiId,
+        type,
+        'logged',
+        occurredAt,
+        tzOffset as number,
+        tzIana as string,
+        durationMin,
+        payloadJson,
+        note,
+        now,
+        now,
+      ],
+    );
+    await db.runAsync(
+      'INSERT INTO events_fts (event_id, bonsai_id, note, payload_text) VALUES (?, ?, ?, ?);',
+      [id, bonsaiId, note ?? '', payloadJson ?? ''],
+    );
+  });
+
+  return {
+    id,
+    bonsaiId,
+    type,
+    status: 'logged',
+    occurredAtUtc: occurredAt,
+    tzOffsetMin: tzOffset as number,
+    tzIana: tzIana as string,
+    durationMin,
+    payloadJson,
+    note,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+export type BulkConvertResult = {
+  converted: Event[];
+  failed: { plannedEventId: string; error: unknown }[];
+};
+
+/**
+ * 複数 planned event を atomic 変換 (Sess23 ADR-0035 D7)。
+ * **sequential await 必須** (Promise.all 不可、 SQLite ロック競合回避)。
+ */
+export async function bulkConvertPlannedToRecorded(
+  inputs: readonly ConvertPlannedToRecordedInput[],
+): Promise<BulkConvertResult> {
+  const converted: Event[] = [];
+  const failed: { plannedEventId: string; error: unknown }[] = [];
+  for (const input of inputs) {
+    try {
+      const created = await convertPlannedToRecorded(input);
+      converted.push(created);
+    } catch (error) {
+      failed.push({ plannedEventId: input.plannedEventId, error });
+    }
+  }
+  return { converted, failed };
+}
+
+/**
+ * 同日 + 同 bonsaiId + 同 type の planned event を検索 (Sess23 ADR-0035 D7/D8 場面 B 用)。
+ * @param dateKey YYYY-MM-DD (UTC date 部、 呼出側で TZ 補正済前提)
+ */
+export async function findPlannedEventByCondition(
+  dateKey: string,
+  bonsaiId: string,
+  type: EventType,
+): Promise<Event | null> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<Record<string, unknown>>(
+    `SELECT * FROM events
+       WHERE bonsai_id = ? AND type = ? AND status = ? AND deleted_at IS NULL
+       ORDER BY occurred_at_utc DESC;`,
+    [bonsaiId, type, 'planned'],
+  );
+  for (const row of rows) {
+    const ev = snakeToCamelRow<Event>(row);
+    if (!ev) continue;
+    const evDateKey = ev.occurredAtUtc.slice(0, 10);
+    if (evDateKey === dateKey) {
+      return ev;
+    }
+  }
+  return null;
+}
