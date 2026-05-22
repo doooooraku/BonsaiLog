@@ -61,8 +61,13 @@ import {
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
-  // Sess28 PR-3 (ADR-0037 D1 / R-46): キーボード回避 props 共通 hook 適用 (Android で multiline メモ被り解消)。
+  // Sess28 PR-3 (ADR-0037 D1 / R-46): キーボード回避 props 共通 hook 適用 (KAV、 container 縮小)。
   const kavProps = useKeyboardAvoidingProps();
+  // Sess31 PR-1 (R-46 拡張): ScrollView ref + メモ欄 onFocus → scrollToEnd で IME 起動時の可視性確保。
+  const scrollRef = React.useRef<ScrollView>(null);
+  const handleNoteFocus = React.useCallback(() => {
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
+  }, []);
   const params = useLocalSearchParams<{
     bonsaiName?: string;
     bonsaiId?: string;
@@ -198,7 +203,11 @@ export default function WorkLogConfirmScreen() {
   return (
     <View style={styles.container} testID="e2e_work_log_confirm_screen">
       <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          ref={scrollRef}
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.header}>
             <ThemedText style={styles.title}>
               {t('workLogTitle').replace('{type}', titleLabel)}
@@ -242,13 +251,15 @@ export default function WorkLogConfirmScreen() {
           )}
 
           {/* Sess17 PR-F3: メモ TextInput → LabeledTextInput atom 移行 (typography 統一)。
-            Sess18 PR-10: placeholder を type-aware に (getWorkLogNotePlaceholderKey)。 */}
+            Sess18 PR-10: placeholder を type-aware に (getWorkLogNotePlaceholderKey)。
+            Sess31 PR-1 (R-46 拡張): onFocus で auto-scroll、 IME 起動時の可視性確保。 */}
           <View style={styles.field}>
             <LabeledTextInput
               label={t('workLogNote')}
               optional
               optionalText={t('workLogOptional')}
               value={note}
+              onFocus={handleNoteFocus}
               onChangeText={(v) => setNote(v.slice(0, 2000))}
               placeholder={t(getWorkLogNotePlaceholderKey(selectedType) as TranslationKey)}
               maxLength={2000}

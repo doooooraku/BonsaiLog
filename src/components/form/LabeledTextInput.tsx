@@ -56,6 +56,12 @@ export type LabeledTextInputProps = {
   editable?: boolean;
   accessibilityLabel?: string;
   testID?: string;
+  /**
+   * Sess31 PR-1 (R-46 拡張): TextInput focus 時 callback。
+   * 親 ScrollView で `scrollToEnd()` 等を呼び、 IME 起動時の input 可視性を確保する用途。
+   * @see .claude/recurrence-prevention/specialized.md R-46 (KAV + auto-scroll 2 点セット必須)
+   */
+  onFocus?: () => void;
 };
 
 export function LabeledTextInput({
@@ -76,6 +82,7 @@ export function LabeledTextInput({
   editable = true,
   accessibilityLabel,
   testID,
+  onFocus,
 }: LabeledTextInputProps) {
   const length = value.length;
   const overLimit = maxLength != null && length >= maxLength;
@@ -142,6 +149,7 @@ export function LabeledTextInput({
         accessibilityLabel={accessibilityLabel ?? label}
         testID={testID}
         onContentSizeChange={handleContentSizeChange}
+        onFocus={onFocus}
       />
       {overLimit && (
         <ThemedText style={styles.overlimitText}>

@@ -302,14 +302,26 @@
 
 ---
 
-### R-46. キーボード回避は共通 hook 必須 (Sess28 ADR-0037 由来)
+### R-46. キーボード被り完全対処 = KAV + ScrollView auto-scroll の **2 点セット**必須 (Sess28 起票、 Sess31 拡張)
 
-- **ルール**: フォーム input を含む全 screen / modal で **`useKeyboardAvoidingProps()`** (`src/core/hooks/useKeyboardAvoidingProps.ts`) を必ず利用すること。 `KeyboardAvoidingView` を直接書く / Platform.OS 分岐で `behavior` を ad-hoc に決める実装を **禁止**。 hook の戻り値 (`behavior` / `keyboardVerticalOffset` / `style`) を `<KeyboardAvoidingView {...kavProps}>` で展開する。
-  - iOS: `behavior='padding'`、 offset = ヘッダ高さ自動計算
-  - Android: `behavior='height'`、 offset = 0 (modal 用)、 windowSoftInputMode=adjustResize と協調
-- **根拠**: Sess15 PR-TT で BonsaiCreateScreen に `behavior={Platform.OS === 'ios' ? 'padding' : undefined}` パターンを採用、 Android で **behavior=undefined → KAV 機能無効** → user 報告「Home FAB → 編集 → メモ欄でキーボード被り」 が Sess28 で発生。 別画面 (bonsai-detail.tsx:572) は既に修正済だったが、 新規 modal で**同パターン再現 = 仕組み欠如**。 user 指摘「他の文字列入力欄の挙動を統一して、 コード的にも見やすく分かりやすくできないモノなの?」 が本 R-46 の真意源。
-- **自動化**: Sess28 PR-2 完遂後、 `scripts/check-keyboard-avoiding.mjs` で `KeyboardAvoidingView` の直接利用 (test ファイル除く) を grep 検出し、 `pnpm lint:kav` で違反 exit 1。 ESLint rule 化は次セッション候補。
-- **関連**: ADR-0037 (本ルール由来) / `src/core/hooks/useKeyboardAvoidingProps.ts` / `android/app/src/main/AndroidManifest.xml` (windowSoftInputMode=adjustResize) / Expo SDK 54 modal presentation 既知挙動
+- **ルール (Sess31 拡張)**: フォーム input を含む全 screen / modal で以下 **2 点セット**を必ず実装すること。 どちらか片方のみは **不十分** (Sess28 では KAV 単体で「対応完了」 と誤認、 Sess30 実機検証で再発判明):
+
+  1. **KAV (KeyboardAvoidingView)**: `useKeyboardAvoidingProps()` (`src/core/hooks/useKeyboardAvoidingProps.ts`) を利用、 `<KeyboardAvoidingView {...kavProps}>` で展開。 **KAV は container 高さを縮めるのみ**。
+     - iOS: `behavior='padding'`、 offset = `useHeaderHeight()` 動的取得
+     - Android: `behavior='height'`、 offset = 0、 windowSoftInputMode=adjustResize と協調
+  2. **ScrollView auto-scroll**: ScrollView に `ref` を持たせ、 末尾配置 multiline input (メモ欄等) の `onFocus` で `scrollRef.current?.scrollToEnd({ animated: true })` を呼ぶ。 IME 起動アニメーション完了待ちで `setTimeout(..., 300)` 推奨。 共通 component (`LabeledTextInput` 等) は `onFocus?: () => void` prop を expose、 各 form screen で配線する。
+
+- **根拠 (Sess30 retro → Sess31 構造化)**:
+  - Sess15 PR-TT で `behavior={Platform.OS === 'ios' ? 'padding' : undefined}` (Android で KAV 無効化 anti-pattern) → Sess28 で user 報告で顕在化
+  - Sess28 PR-2/3 で KAV 共通 hook 化、 全 form 適用 → 「対応完了」 判定
+  - **しかし KAV は container 縮小のみ機能、 ScrollView 内部の auto-scroll は別途配線必要**だった (React Native 公式 docs `<KeyboardAvoidingView>` Note: This component will not adjust the scroll position」、 1 次情報未参照で見落とし)
+  - Sess30 実機検証で BulkLogConfirmScreen メモ欄が IME に隠れる事象を再発見、 真因「KAV + auto-scroll の 2 点セット必須」 を Sess31 で構造化
+
+- **自動化**:
+  - ✅ Sess28: `KeyboardAvoidingView` 直接利用検出 (R-46 v1、 hook 強制)
+  - Future Work: `scripts/check-form-keyboard.mjs` で「multiline TextInput + KAV + ScrollView ref + onFocus 配線」 の **4 点 grep** (R-46 v2 = Sess31 起票候補)
+
+- **関連**: ADR-0037 D1 (本ルール v1 由来) / Sess30 retro `docs/reference/tasks/lessons/sess30-retro.md` (Sess31 拡張根拠) / `src/core/hooks/useKeyboardAvoidingProps.ts` / `src/components/form/LabeledTextInput.tsx` (Sess31 PR-1 で `onFocus` prop 追加) / `docs/reference/design_system.md` §21 / Android `windowSoftInputMode=adjustResize` / React Native `<ScrollView>` 公式 docs (`scrollToEnd`)
 
 ---
 

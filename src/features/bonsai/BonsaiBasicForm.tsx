@@ -593,6 +593,11 @@ export type BonsaiBasicFormFieldsProps = {
    * 案 P (新規 modal の field 順序) と完全 1:1 一致を実現。
    */
   customPhotoBlock?: React.ReactNode;
+  /**
+   * Sess31 PR-1 (R-46 拡張): メモ欄 onFocus callback。 親 ScrollView 側で scrollToEnd を呼び、
+   * IME 起動時の可視性を確保する用途。
+   */
+  onMemoFocus?: () => void;
 };
 
 /**
@@ -603,6 +608,7 @@ export function BonsaiBasicFormFields({
   form,
   showPhotos = true,
   customPhotoBlock,
+  onMemoFocus,
 }: BonsaiBasicFormFieldsProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -1052,7 +1058,8 @@ export function BonsaiBasicFormFields({
           排他制御で 1 つだけ render。 */}
       {showPhotoField ? photoBlock : customPhotoBlock}
 
-      {/* Sess13 PR-K: メモを LabeledTextInput 共通化 (multiline + 文字数 + 上限赤字) */}
+      {/* Sess13 PR-K: メモを LabeledTextInput 共通化 (multiline + 文字数 + 上限赤字)。
+          Sess31 PR-1 (R-46 拡張): onMemoFocus prop で親 ScrollView の auto-scroll 配線。 */}
       <LabeledTextInput
         label={t('bonsaiFieldMemo')}
         optional
@@ -1060,6 +1067,7 @@ export function BonsaiBasicFormFields({
         overlimitText={t('inputOverLimit')}
         value={memo}
         onChangeText={setMemo}
+        onFocus={onMemoFocus}
         placeholder={t('bonsaiFieldMemoPlaceholder')}
         maxLength={500}
         showCounter

@@ -593,40 +593,68 @@ if (version < N + 1) {
 
 ---
 
-## 21. KeyboardAvoidingView 統一 pattern (ADR-0037 D1 / R-46 由来)
+## 21. キーボード被り完全対処 pattern (ADR-0037 D1 / R-46 v2、 Sess31 拡張)
 
-### 21-1. 義務化
+### 21-1. 義務化 — KAV + ScrollView auto-scroll の 2 点セット必須
 
-フォーム input を含む全 screen / modal で **`useKeyboardAvoidingProps()`** (`src/core/hooks/useKeyboardAvoidingProps.ts`) を必須利用。 `KeyboardAvoidingView` を直接書く / Platform.OS 分岐で `behavior` を ad-hoc に決める実装は **禁止** (R-46)。
+フォーム input (特に末尾配置 multiline メモ欄) を含む全 screen / modal で以下 **2 点セット**を必ず実装。 どちらか片方のみは不十分 (Sess28 で KAV 単体は「対応完了」 と誤認、 Sess30 実機検証で再発判明)。
 
 ```tsx
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 
-const kavProps = useKeyboardAvoidingProps();
+function MyFormScreen() {
+  const kavProps = useKeyboardAvoidingProps();
+  // ① KAV (container 縮小)
+  // ② ScrollView ref + onFocus → scrollToEnd (auto-scroll)
+  const scrollRef = React.useRef<ScrollView>(null);
+  const handleMemoFocus = React.useCallback(() => {
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
+  }, []);
 
-return (
-  <KeyboardAvoidingView {...kavProps}>
-    <ScrollView ...>...</ScrollView>
-  </KeyboardAvoidingView>
-);
+  return (
+    <KeyboardAvoidingView style={{ flex: 1 }} {...kavProps}>
+      <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled">
+        <LabeledTextInput
+          label="メモ"
+          multiline
+          value={memo}
+          onChangeText={setMemo}
+          onFocus={handleMemoFocus}
+        />
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
 ```
 
-### 21-2. 戻り値仕様
+### 21-2. KAV 戻り値仕様 (`useKeyboardAvoidingProps()`)
 
-- iOS: `{ behavior: 'padding', keyboardVerticalOffset: useHeaderHeight() }`
+- iOS: `{ behavior: 'padding', keyboardVerticalOffset: useHeaderHeight() }` (Stack header 高さ動的取得)
 - Android: `{ behavior: 'height', keyboardVerticalOffset: 0 }` (windowSoftInputMode=adjustResize と協調)
 
-### 21-3. 禁止パターン
+### 21-3. ScrollView auto-scroll 仕様 (Sess31 拡張)
 
-- ❌ `behavior={Platform.OS === 'ios' ? 'padding' : undefined}` (Android で KAV 機能無効、 Sess15 PR-TT 由来 anti-pattern、 R-46 違反)
-- ❌ `keyboardVerticalOffset` のハードコード (画面別に hook 内で計算化)
+- `<ScrollView ref={scrollRef}>` で ref を取得
+- 末尾配置 multiline input の `onFocus` で `scrollRef.current?.scrollToEnd({ animated: true })` を実行
+- **`setTimeout(..., 300)` 推奨** (IME 起動アニメーション完了待ち、 Android 約 250-300ms / iOS 約 200ms)
+- 共通 component (`LabeledTextInput` 等) は `onFocus?: () => void` prop を expose して任意配線
 
-### 21-4. 関連
+### 21-4. 禁止パターン
 
-- ADR-0037 D1 (本セクション由来、 Sess28 PR-1)
-- R-46 (本 pattern 違反検出ルール)
+- ❌ `behavior={Platform.OS === 'ios' ? 'padding' : undefined}` (Android で KAV 機能無効、 Sess15 PR-TT 由来 anti-pattern、 R-46 v1 違反)
+- ❌ `keyboardVerticalOffset` のハードコード (hook 内で動的計算)
+- ❌ **KAV のみで「対応完了」 判定** (Sess28 PR-2/3 で発生した anti-pattern、 R-46 v2 違反): KAV は container 縮小のみ機能、 ScrollView auto-scroll が無いと末尾 input が IME に隠れる
+- ❌ ScrollView auto-scroll に `setTimeout` なしで即時呼出 (IME 起動アニメ未完了 → scroll 距離不正)
+
+### 21-5. 関連
+
+- ADR-0037 D1 (本 pattern v1 由来、 Sess28 PR-1)
+- R-46 (本 pattern 違反検出ルール、 Sess31 で v2 拡張)
 - `src/core/hooks/useKeyboardAvoidingProps.ts` (Sess28 PR-2 で新設)
+- `src/components/form/LabeledTextInput.tsx` (Sess31 PR-1 で `onFocus` prop 追加)
 - `android/app/src/main/AndroidManifest.xml` (windowSoftInputMode=adjustResize)
+- React Native `<KeyboardAvoidingView>` 公式 docs (Note: does not adjust scroll position)
+- React Native `<ScrollView>` 公式 docs (`scrollToEnd({ animated })`)
 
 ---
 

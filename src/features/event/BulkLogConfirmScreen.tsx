@@ -47,7 +47,8 @@ import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { addPhotoFromUri } from '@/src/db/photoRepository';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
-import { BonsaiPlaceholder, hashSeed } from '@/src/features/bonsai/BonsaiPlaceholder';
+// Sess31 PR-1: BonsaiPlaceholder/hashSeed import 削除 (chip 内の灰色丸を撤去、 SelectedBonsaiChip に集約)
+import { SelectedBonsaiChip } from '@/src/features/bonsai/SelectedBonsaiChip';
 import { usePickerStore } from '@/src/stores/pickerStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
@@ -69,8 +70,15 @@ function parseType(typeParam: string | undefined): EventType | null {
 export default function BulkLogConfirmScreen() {
   const { t } = useTranslation();
   const c = useColors();
-  // Sess28 PR-3 (ADR-0037 D1 / R-46): キーボード回避 props 共通 hook 適用 (multiline メモ被り解消)。
+  // Sess28 PR-3 (ADR-0037 D1 / R-46): キーボード回避 props 共通 hook 適用 (KAV、 container 縮小)。
   const kavProps = useKeyboardAvoidingProps();
+  // Sess31 PR-1 (R-46 拡張): KAV 単体では ScrollView auto-scroll しないため、 ScrollView ref + メモ欄
+  // onFocus → scrollToEnd で IME 起動時のメモ欄可視性を確保。 KAV + auto-scroll 2 点セット必須化。
+  const scrollRef = React.useRef<ScrollView>(null);
+  const handleNoteFocus = React.useCallback(() => {
+    // IME 起動アニメーション完了待ち (Android: 約 250-300ms、 iOS: 約 200ms) で安定 scroll。
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
+  }, []);
   const params = useLocalSearchParams<{ type?: string; fromPlannedIds?: string }>();
   const selectedType = React.useMemo(() => parseType(params.type), [params.type]);
   const fromPlannedIds = React.useMemo<string[]>(
@@ -220,17 +228,16 @@ export default function BulkLogConfirmScreen() {
         contentContainerStyle={styles.chipsRow}
       >
         {selectedBonsais.map((b) => (
-          <View key={b.id} style={styles.chip}>
-            <BonsaiPlaceholder size={24} seed={hashSeed(b.id)} radius={12} />
-            <ThemedText style={styles.chipText} numberOfLines={1}>
-              {b.name}
-            </ThemedText>
-          </View>
+          <SelectedBonsaiChip key={b.id} name={b.name} testID={`e2e_bulk_log_chip_${b.id}`} />
         ))}
       </ScrollView>
 
       <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          ref={scrollRef}
+          contentContainerStyle={styles.body}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Sess16 PR-B2: 日付選択 (mockup 14 種別共通、 chips の後・form の前)。 */}
           <View style={styles.field}>
             <LabeledDateRow
@@ -251,7 +258,8 @@ export default function BulkLogConfirmScreen() {
           <WorkLogTypeFormFields type={selectedType} state={formState} onChange={setFormState} />
 
           {/* Sess17 PR-H2: メモ入力 (atom 統一、 typography 整合)。
-            Sess18 PR-10: placeholder を type-aware に (getWorkLogNotePlaceholderKey)。 */}
+            Sess18 PR-10: placeholder を type-aware に (getWorkLogNotePlaceholderKey)。
+            Sess31 PR-1 (R-46 拡張): onFocus で auto-scroll、 IME 起動時にメモ欄を可視範囲に。 */}
           <View style={styles.field}>
             <LabeledTextInput
               label={t('workLogNote')}
@@ -264,6 +272,7 @@ export default function BulkLogConfirmScreen() {
               showCounter
               multiline
               testID="e2e_bulk_log_confirm_note_input"
+              onFocus={handleNoteFocus}
             />
           </View>
 
@@ -322,23 +331,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: BORDER_DEFAULT,
   },
-  chip: {
-    // Sess18 PR-11: design_system §4 (spacing 4/8/12/16) + §5 (borderRadius 16 カード相当) 整合。
-    // user 要求「chips の枠を統一」 反映 (Sess17 SS 13-18 で観察された幅バラつき解消)。
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 4,
-    paddingLeft: 8, // 旧 4 → 8 (左右対称、 spacing token 整合)
-    paddingRight: 12, // 旧 10 → 12 (spacing token 整合)
-    borderRadius: 16, // 旧 18 → 16 (design_system §5 カード用途、 Q2 user 確認)
-    backgroundColor: BG_SURFACE,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    minWidth: 80, // 短い盆栽名 (例: 「松」) でも視覚的に揃う最低幅
-    maxWidth: 140, // 長い名前は ellipsis (flexShrink: 1 + numberOfLines: 1 で吸収)
-  },
-  chipText: { fontSize: 12, fontWeight: '500', color: TEXT_PRIMARY, flexShrink: 1 },
+  // Sess31 PR-1: 旧 chip + chipText styles は SelectedBonsaiChip component に集約済、 物理削除。
   body: { padding: 16, gap: 12 },
   field: { marginBottom: 4 },
   footer: { padding: 16, paddingBottom: 22, borderTopWidth: 1 },
