@@ -302,29 +302,43 @@
 
 ---
 
-### R-46. キーボード被り完全対処 = KAV + ScrollView auto-scroll の **2 点セット**必須 (Sess28 起票、 Sess31 拡張、 Sess32 v3 拡張)
+### R-46. キーボード被り完全対処 = KAV + ScrollView auto-scroll の **2 点セット**必須 (Sess28 起票、 Sess31 拡張、 Sess32 v3 拡張、 Sess33 v4 拡張)
 
-- **ルール (Sess32 v3 拡張)**: フォーム input を含む全 screen / modal で **2 点セット**を必ず実装。 input の位置 (末尾 / 中盤) に応じて auto-scroll の手段を **2 タイプ使い分け**:
+- **ルール (Sess33 v4 拡張)**: フォーム input を含む全 screen / modal で **2 点セット**を必ず実装。 input の位置 (末尾 / 中盤) に応じて auto-scroll の手段を **2 タイプ使い分け** + **logcat / Console Error 検証強制**:
 
   1. **KAV (KeyboardAvoidingView)**: `useKeyboardAvoidingProps()` を利用、 `<KeyboardAvoidingView {...kavProps}>` で展開。 **KAV は container 高さを縮めるのみ**。
      - iOS: `behavior='padding'`、 offset = `useHeaderHeight()` 動的取得
      - Android: `behavior='height'`、 offset = 0、 windowSoftInputMode=adjustResize と協調
   2. **ScrollView auto-scroll** (input 位置で **2 タイプ使い分け**):
-     - **タイプ A (末尾 input)**: ScrollView 末尾配置 input は `scrollRef.current?.scrollToEnd({ animated: true })` で OK。 例: BonsaiCreateScreen / WorkLogConfirm / bonsai-detail 基本情報タブ (Sess31 PR-1 で 3 form 経路 ✅ 確認済)
-     - **タイプ B (中盤 input)** (Sess32 PR-1 で確立): ScrollView 中盤配置 input (後ろに他フィールドがある場合) は **forwardRef + measureLayout** で精密 scroll が必須。 例: BulkLogConfirmScreen (メモ欄の後に写真フィールドあり) → scrollToEnd では効果不全 (max scroll 値で頭打ち、 Sess31 PR-2 で発覚)
+     - **タイプ A (末尾 input)**: ScrollView 末尾配置 input は `scrollRef.current?.scrollToEnd({ animated: true })` で OK。 例: BonsaiCreateScreen / WorkLogConfirm / bonsai-detail 基本情報タブ
+     - **タイプ B (中盤 input)** (Sess33 v4 で UIManager API に変更): ScrollView 中盤配置 input (後ろに他フィールドあり) は **`findNodeHandle` + `UIManager.measureLayout`** で精密 scroll 必須。 例: BulkLogConfirmScreen (メモ欄の後に写真フィールド)。
        ```tsx
+       import { UIManager, findNodeHandle, TextInput } from 'react-native';
        const inputRef = React.useRef<TextInput>(null);
        const handleFocus = () => {
          setTimeout(() => {
            const scrollNode = findNodeHandle(scrollRef.current);
-           if (!scrollNode) return;
-           inputRef.current?.measureLayout(scrollNode, (_x, y) => {
-             scrollRef.current?.scrollTo({ y: Math.max(0, y - 80), animated: true });
-           }, () => scrollRef.current?.scrollToEnd({ animated: true })); // fallback
+           const inputNode = findNodeHandle(inputRef.current);
+           if (scrollNode == null || inputNode == null) {
+             scrollRef.current?.scrollToEnd({ animated: true });
+             return;
+           }
+           UIManager.measureLayout(
+             inputNode, scrollNode,
+             () => scrollRef.current?.scrollToEnd({ animated: true }), // onFail
+             (_x, y) => scrollRef.current?.scrollTo({ y: Math.max(0, y - 80), animated: true }), // onSuccess
+           );
          }, 350);
        };
        ```
-     - 共通 component (`LabeledTextInput`) は `forwardRef<TextInput>` 化 + `onFocus?` prop expose で両タイプ対応 (Sess32 PR-1 で実装完了)
+     - ❌ **禁止**: `inputRef.current?.measureLayout(scrollNode, success, fail)` — forwardRef 経由 ref では「native component ref」 として認識されず Console Error `ref.measureLayout must be called with a ref to a native component.` (Sess32 PR-1 から Sess33 PR-2 hotfix で発覚)
+     - 共通 component (`LabeledTextInput`) は `forwardRef<TextInput>` 化 + `onFocus?` prop expose で両タイプ対応 (Sess32 PR-1)
+
+- **検証必須項目 (Sess33 v4 追加)**:
+  - ✅ SS: タイトル / chips / フォーム要素が ScrollView 内に統合 (sticky 要素は FormScreenHeader のみ)
+  - ✅ SS: IME 起動時にメモ欄 / 末尾 input が画面内 visible
+  - ✅ **logcat**: `adb logcat -d -t 500 | grep -iE "ERROR|Warning|Exception|measureLayout"` で アプリ関連 0 件確認
+  - ✅ **Dev menu Console**: Error 0 件 (赤バー非表示) — SS のみ確認は禁止 (Sess32 検証漏れの教訓)
 
 - **根拠 (Sess30 retro → Sess31 構造化)**:
   - Sess15 PR-TT で `behavior={Platform.OS === 'ios' ? 'padding' : undefined}` (Android で KAV 無効化 anti-pattern) → Sess28 で user 報告で顕在化
@@ -348,6 +362,24 @@
 - **根拠**: Sess31 計画議論で QA / テックリード両者が「リスク #1 cross-feature 連鎖崩壊」 を最重大判定 (発生確率: 中、 影響度: 高、 リスクレベル: 🔴 高)。 「機能フォルダ = 機能境界」 だが「フォルダ内ファイル = 機能内サブ責務」 という暗黙ルールが曖昧で、 汎用 util が機能フォルダに残置されることが構造的に発生する。
 - **自動化**: 当面 review 時の手動 grep。 3 回再発したら `scripts/check-cross-feature-imports.mjs` を作成し、 機能削除時に `pnpm lint:cross-feature-imports <path>` で feature フォルダ外への import を検出して exit 1 (ESLint custom rule 化候補)。
 - **関連**: ADR-0039 (本ルール由来) / `docs/reference/tasks/lessons/feature-removal-cross-import.md` (詳細 lesson) / Sess31 PR-A #773 (shared util 分離成功事例) / Sess31 PR-B (削除のみの安全 diff 事例)
+
+---
+
+### R-51. フォーム画面は `FormScreenHeader` + full-screen scroll 必須 (Sess33 ADR-0040 由来)
+
+- **ルール**: フォーム画面 (盆栽追加 / 作業記録 / まとめて記録) では以下 4 要素を全部満たすこと:
+  1. `Stack.Screen options={{ headerShown: false }}` で Stack header 廃止
+  2. `<FormScreenHeader />` を sticky 配置 (戻るボタンのみ、 高さ 56 + insets.top)
+  3. 単一 `<ScrollView>` がタイトル / chips / フォーム要素を全部内包 (full-screen scroll)
+  4. `useKeyboardAvoidingProps()` で KAV 設定 (R-46 v1 整合)
+  - ❌ 禁止: タイトル / chips / Hero を ScrollView の外に sticky 配置 (BulkLogConfirm 旧構造)
+  - ❌ 禁止: Stack header + 別の sticky 要素 を併用する二重 header
+  - **対象外**: bonsai-detail (詳細画面)、 picker/multi-select modal (選択画面)
+- **根拠**: Sess28-32 連続改善で 4 form 画面のキーボード被りを R-46 で個別対応、 Sess33 で「全体スクロール」 user 報告を機に構造ばらつき発覚。 design_system §21 に sticky header の規約なし = 暗黙的実装判断で 4 画面の構造が分岐していた。 ADR-0040 で構造統一を SoT 化。
+- **自動化**:
+  - ✅ Sess33 P2-2: `scripts/check-form-screen-scroll.mjs` で「フォーム画面 (BulkLogConfirm / BonsaiCreate / WorkLogConfirm) の `Stack.Screen options.headerShown=false` 強制 + `FormScreenHeader` 配置強制」 を grep で検出、 `pnpm verify:form-screen-scroll` 経由で `pnpm verify` に組込。
+  - Future Work: ESLint custom rule (eslint-plugin-bonsailog 新設要)。
+- **関連**: ADR-0040 (本ルール由来) / R-46 v4 (KAV + auto-scroll 2 タイプ + logcat 検証) / design_system §23 (Form Screen Layout Pattern SoT) / `src/components/form/FormScreenHeader.tsx`
 
 ---
 
