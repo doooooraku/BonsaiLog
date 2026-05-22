@@ -3,19 +3,12 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CameraIcon, EventIcon } from '@/src/components/icons';
+import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 import {
   BonsaiBasicFormFields,
   type BonsaiBasicFormState,
@@ -104,6 +97,8 @@ export default function BonsaiDetailScreen() {
   const c = useColors();
   // Sess15 PR-RR: Tab bar の高さ取得 (sticky footer を Tab bar の上に固定するため)。
   const tabBarHeight = useBottomTabBarHeight();
+  // Sess28 PR-3 (ADR-0037 D1 / R-46): KAV props 共通 hook 適用 (旧 Platform.OS 分岐 + offset=64 ハードコード置換)。
+  const kavProps = useKeyboardAvoidingProps();
   const [item, setItem] = useState<BonsaiWithSpecies | null>(null);
   const [loading, setLoading] = useState(true);
   // Repolog 風 photoCard 縦リスト (orderIndex 順、年次グループ化は廃止)
@@ -567,13 +562,9 @@ export default function BonsaiDetailScreen() {
         })}
       </View>
 
-      {/* Sess15 PR-TT: KeyboardAvoidingView で TextInput focus 時にキーボードが入力欄を隠さないよう調整。
-          iOS は 'padding'、 Android は 'height' (windowSoftInputMode=adjustResize と協調)。 */}
-      <KeyboardAvoidingView
-        style={styles.flexOne}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-      >
+      {/* Sess28 PR-3 (ADR-0037 D1 / R-46): useKeyboardAvoidingProps() で Platform 別 props を集約。
+          旧 Platform.OS 分岐 + offset=64 ハードコード (Sess15 PR-TT) を hook 経由で動的化。 */}
+      <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
         <ScrollView
           contentContainerStyle={[
             styles.scrollContent,

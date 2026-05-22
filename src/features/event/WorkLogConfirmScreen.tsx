@@ -23,9 +23,10 @@
  */
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
@@ -60,6 +61,8 @@ import {
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
+  // Sess28 PR-3 (ADR-0037 D1 / R-46): キーボード回避 props 共通 hook 適用 (Android で multiline メモ被り解消)。
+  const kavProps = useKeyboardAvoidingProps();
   const params = useLocalSearchParams<{
     bonsaiName?: string;
     bonsaiId?: string;
@@ -191,96 +194,99 @@ export default function WorkLogConfirmScreen() {
 
   return (
     <View style={styles.container} testID="e2e_work_log_confirm_screen">
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <ThemedText style={styles.title}>
-            {t('workLogTitle').replace('{type}', titleLabel)}
-          </ThemedText>
-          <ThemedText style={styles.subject}>{bonsaiName}</ThemedText>
-        </View>
+      <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <View style={styles.header}>
+            <ThemedText style={styles.title}>
+              {t('workLogTitle').replace('{type}', titleLabel)}
+            </ThemedText>
+            <ThemedText style={styles.subject}>{bonsaiName}</ThemedText>
+          </View>
 
-        {/* Sess16 PR-A2: 日付選択 (mockup 14 種別共通 field、 全 form の先頭に配置)。 */}
-        <View style={styles.field}>
-          <LabeledDateRow
-            label={t('workLogDateField')}
-            optional
-            optionalText={t('workLogOptional')}
-            value={occurredAtDate}
-            onChangeText={setOccurredAtDate}
-            placeholder={t('workLogDatePlaceholderToday')}
-            maxToday
-            testID="e2e_work_log_date"
-            testIDClear="e2e_work_log_date_clear"
-          />
-        </View>
-
-        {/* Sess17 PR-G1: 14 種別固有 form を WorkLogTypeFormFields に委譲 (controlled)。 */}
-        <WorkLogTypeFormFields type={selectedType} state={formState} onChange={setFormState} />
-
-        {/* wiring 外し予定日 (Single 専用 UI、 Bulk では出さない方針 ADR-0029 D5 §16-3)。 */}
-        {selectedType === 'wiring' && (
+          {/* Sess16 PR-A2: 日付選択 (mockup 14 種別共通 field、 全 form の先頭に配置)。 */}
           <View style={styles.field}>
             <LabeledDateRow
-              label={t('workLogWireUnwireDate')}
+              label={t('workLogDateField')}
               optional
               optionalText={t('workLogOptional')}
-              value={wireUnwireDate}
-              onChangeText={setWireUnwireDate}
-              placeholder={t('workLogWireUnwireDatePlaceholder')}
-              maxToday={false}
-              testID="e2e_work_log_wire_unwire_date"
-              testIDClear="e2e_work_log_wire_unwire_date_clear"
+              value={occurredAtDate}
+              onChangeText={setOccurredAtDate}
+              placeholder={t('workLogDatePlaceholderToday')}
+              maxToday
+              testID="e2e_work_log_date"
+              testIDClear="e2e_work_log_date_clear"
             />
           </View>
-        )}
 
-        {/* Sess17 PR-F3: メモ TextInput → LabeledTextInput atom 移行 (typography 統一)。
+          {/* Sess17 PR-G1: 14 種別固有 form を WorkLogTypeFormFields に委譲 (controlled)。 */}
+          <WorkLogTypeFormFields type={selectedType} state={formState} onChange={setFormState} />
+
+          {/* wiring 外し予定日 (Single 専用 UI、 Bulk では出さない方針 ADR-0029 D5 §16-3)。 */}
+          {selectedType === 'wiring' && (
+            <View style={styles.field}>
+              <LabeledDateRow
+                label={t('workLogWireUnwireDate')}
+                optional
+                optionalText={t('workLogOptional')}
+                value={wireUnwireDate}
+                onChangeText={setWireUnwireDate}
+                placeholder={t('workLogWireUnwireDatePlaceholder')}
+                maxToday={false}
+                testID="e2e_work_log_wire_unwire_date"
+                testIDClear="e2e_work_log_wire_unwire_date_clear"
+              />
+            </View>
+          )}
+
+          {/* Sess17 PR-F3: メモ TextInput → LabeledTextInput atom 移行 (typography 統一)。
             Sess18 PR-10: placeholder を type-aware に (getWorkLogNotePlaceholderKey)。 */}
-        <View style={styles.field}>
-          <LabeledTextInput
-            label={t('workLogNote')}
-            optional
-            optionalText={t('workLogOptional')}
-            value={note}
-            onChangeText={(v) => setNote(v.slice(0, 2000))}
-            placeholder={t(getWorkLogNotePlaceholderKey(selectedType) as TranslationKey)}
-            maxLength={2000}
-            showCounter
-            multiline
-            testID="e2e_work_log_note"
-          />
-        </View>
+          <View style={styles.field}>
+            <LabeledTextInput
+              label={t('workLogNote')}
+              optional
+              optionalText={t('workLogOptional')}
+              value={note}
+              onChangeText={(v) => setNote(v.slice(0, 2000))}
+              placeholder={t(getWorkLogNotePlaceholderKey(selectedType) as TranslationKey)}
+              maxLength={2000}
+              showCounter
+              multiline
+              testID="e2e_work_log_note"
+            />
+          </View>
 
-        {/* Sess16 PR-A3: 写真添付 (mockup 14 種別共通、 最大 10 枚)。 */}
-        <View style={styles.field}>
-          <PhotoField
-            label={t('workLogPhotoField')}
-            optional
-            optionalText={t('workLogOptional')}
-            photos={photos}
-            onChange={setPhotos}
-            testID="e2e_work_log_photo_field"
-          />
-        </View>
-      </ScrollView>
+          {/* Sess16 PR-A3: 写真添付 (mockup 14 種別共通、 最大 10 枚)。 */}
+          <View style={styles.field}>
+            <PhotoField
+              label={t('workLogPhotoField')}
+              optional
+              optionalText={t('workLogOptional')}
+              photos={photos}
+              onChange={setPhotos}
+              testID="e2e_work_log_photo_field"
+            />
+          </View>
+        </ScrollView>
 
-      <View style={styles.footer}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('workLogSaveCta')}
-          style={styles.saveBtn}
-          onPress={handleSubmit}
-          testID="e2e_work_log_save"
-        >
-          <ThemedText style={styles.saveText}>{t('workLogSaveCta')}</ThemedText>
-        </Pressable>
-      </View>
+        <View style={styles.footer}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('workLogSaveCta')}
+            style={styles.saveBtn}
+            onPress={handleSubmit}
+            testID="e2e_work_log_save"
+          >
+            <ThemedText style={styles.saveText}>{t('workLogSaveCta')}</ThemedText>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG_PRIMARY },
+  flexOne: { flex: 1 },
   content: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 96 },
   header: { paddingTop: 8, paddingBottom: 16, alignItems: 'center', gap: 4 },
   title: {

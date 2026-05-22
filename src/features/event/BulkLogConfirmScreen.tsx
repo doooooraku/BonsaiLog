@@ -18,9 +18,10 @@
  */
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
@@ -68,6 +69,8 @@ function parseType(typeParam: string | undefined): EventType | null {
 export default function BulkLogConfirmScreen() {
   const { t } = useTranslation();
   const c = useColors();
+  // Sess28 PR-3 (ADR-0037 D1 / R-46): キーボード回避 props 共通 hook 適用 (multiline メモ被り解消)。
+  const kavProps = useKeyboardAvoidingProps();
   const params = useLocalSearchParams<{ type?: string; fromPlannedIds?: string }>();
   const selectedType = React.useMemo(() => parseType(params.type), [params.type]);
   const fromPlannedIds = React.useMemo<string[]>(
@@ -224,80 +227,83 @@ export default function BulkLogConfirmScreen() {
         ))}
       </ScrollView>
 
-      <ScrollView contentContainerStyle={styles.body}>
-        {/* Sess16 PR-B2: 日付選択 (mockup 14 種別共通、 chips の後・form の前)。 */}
-        <View style={styles.field}>
-          <LabeledDateRow
-            label={t('workLogDateField')}
-            optional
-            optionalText={t('workLogOptional')}
-            value={occurredAtDate}
-            onChangeText={setOccurredAtDate}
-            placeholder={t('workLogDatePlaceholderToday')}
-            maxToday
-            testID="e2e_bulk_log_date"
-            testIDClear="e2e_bulk_log_date_clear"
-          />
-        </View>
+      <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
+        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+          {/* Sess16 PR-B2: 日付選択 (mockup 14 種別共通、 chips の後・form の前)。 */}
+          <View style={styles.field}>
+            <LabeledDateRow
+              label={t('workLogDateField')}
+              optional
+              optionalText={t('workLogOptional')}
+              value={occurredAtDate}
+              onChangeText={setOccurredAtDate}
+              placeholder={t('workLogDatePlaceholderToday')}
+              maxToday
+              testID="e2e_bulk_log_date"
+              testIDClear="e2e_bulk_log_date_clear"
+            />
+          </View>
 
-        {/* Sess17 PR-H2 (ADR-0029 D5): 14 種別固有 form を WorkLogTypeFormFields で
+          {/* Sess17 PR-H2 (ADR-0029 D5): 14 種別固有 form を WorkLogTypeFormFields で
             WorkLogConfirm (Single) と 1:1 同じ UI 表示。 */}
-        <WorkLogTypeFormFields type={selectedType} state={formState} onChange={setFormState} />
+          <WorkLogTypeFormFields type={selectedType} state={formState} onChange={setFormState} />
 
-        {/* Sess17 PR-H2: メモ入力 (atom 統一、 typography 整合)。
+          {/* Sess17 PR-H2: メモ入力 (atom 統一、 typography 整合)。
             Sess18 PR-10: placeholder を type-aware に (getWorkLogNotePlaceholderKey)。 */}
-        <View style={styles.field}>
-          <LabeledTextInput
-            label={t('workLogNote')}
-            optional
-            optionalText={t('workLogOptional')}
-            value={note}
-            onChangeText={(v) => setNote(v.slice(0, 2000))}
-            placeholder={t(getWorkLogNotePlaceholderKey(selectedType) as TranslationKey)}
-            maxLength={2000}
-            showCounter
-            multiline
-            testID="e2e_bulk_log_confirm_note_input"
-          />
-        </View>
+          <View style={styles.field}>
+            <LabeledTextInput
+              label={t('workLogNote')}
+              optional
+              optionalText={t('workLogOptional')}
+              value={note}
+              onChangeText={(v) => setNote(v.slice(0, 2000))}
+              placeholder={t(getWorkLogNotePlaceholderKey(selectedType) as TranslationKey)}
+              maxLength={2000}
+              showCounter
+              multiline
+              testID="e2e_bulk_log_confirm_note_input"
+            />
+          </View>
 
-        {/* Sess16 PR-B2: 写真添付 (mockup 14 種別共通、 最大 10 枚、 全 bonsai に同 photos 紐付け)。 */}
-        <View style={styles.field}>
-          <PhotoField
-            label={t('workLogPhotoField')}
-            optional
-            optionalText={t('workLogOptional')}
-            photos={photos}
-            onChange={setPhotos}
-            testID="e2e_bulk_log_photo_field"
-          />
-        </View>
-      </ScrollView>
+          {/* Sess16 PR-B2: 写真添付 (mockup 14 種別共通、 最大 10 枚、 全 bonsai に同 photos 紐付け)。 */}
+          <View style={styles.field}>
+            <PhotoField
+              label={t('workLogPhotoField')}
+              optional
+              optionalText={t('workLogOptional')}
+              photos={photos}
+              onChange={setPhotos}
+              testID="e2e_bulk_log_photo_field"
+            />
+          </View>
+        </ScrollView>
 
-      <View style={[styles.footer, { borderTopColor: c.border, backgroundColor: c.background }]}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('bulkLogSaveCta').replace(
-            '{count}',
-            String(selectedBonsais.length),
-          )}
-          accessibilityState={{ disabled: isSubmitting }}
-          disabled={isSubmitting}
-          style={[styles.cta, { backgroundColor: c.tint }, isSubmitting && styles.ctaDisabled]}
-          onPress={handleSave}
-          testID="e2e_bulk_log_save_cta"
-        >
-          <ThemedText style={styles.ctaText}>
-            {t('bulkLogSaveCta').replace('{count}', String(selectedBonsais.length))}
-          </ThemedText>
-        </Pressable>
-      </View>
+        <View style={[styles.footer, { borderTopColor: c.border, backgroundColor: c.background }]}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('bulkLogSaveCta').replace(
+              '{count}',
+              String(selectedBonsais.length),
+            )}
+            accessibilityState={{ disabled: isSubmitting }}
+            disabled={isSubmitting}
+            style={[styles.cta, { backgroundColor: c.tint }, isSubmitting && styles.ctaDisabled]}
+            onPress={handleSave}
+            testID="e2e_bulk_log_save_cta"
+          >
+            <ThemedText style={styles.ctaText}>
+              {t('bulkLogSaveCta').replace('{count}', String(selectedBonsais.length))}
+            </ThemedText>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG_PRIMARY },
+  flexOne: { flex: 1 },
   header: { paddingTop: 8, paddingBottom: 8, alignItems: 'center', gap: 4 },
   title: {
     fontFamily: 'NotoSerifJP_500Medium',
