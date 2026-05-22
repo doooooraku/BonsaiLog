@@ -805,5 +805,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: 'पूरा नोट दिखाएँ',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '{count} फ़ोटो, बड़ा करने के लिए टैप करें',
+  eventRowCollapse: 'समेटें ▲',
+  eventRowCollapseAccessibility: 'नोट समेटें',
 };
 export default hi;

@@ -813,6 +813,8 @@ const baseEn = {
   eventRowReadMoreAccessibility: 'Show full memo',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '{count} photo(s), tap to enlarge',
+  eventRowCollapse: 'Collapse ▲',
+  eventRowCollapseAccessibility: 'Collapse memo',
 };
 
 export type TranslationKey = keyof typeof baseEn;

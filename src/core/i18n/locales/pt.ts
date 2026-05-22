@@ -807,5 +807,7 @@ const pt: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: 'Mostrar nota completa',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '{count} foto(s), tocar para ampliar',
+  eventRowCollapse: 'Recolher ▲',
+  eventRowCollapseAccessibility: 'Recolher nota',
 };
 export default pt;

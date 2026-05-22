@@ -805,5 +805,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: 'Tüm notu göster',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '{count} fotoğraf, büyütmek için dokunun',
+  eventRowCollapse: 'Daralt ▲',
+  eventRowCollapseAccessibility: 'Notu daralt',
 };
 export default tr;

@@ -806,5 +806,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: 'Visa hela anteckningen',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '{count} foto(n), tryck för att förstora',
+  eventRowCollapse: 'Dölj ▲',
+  eventRowCollapseAccessibility: 'Dölj anteckning',
 };
 export default sv;

@@ -803,5 +803,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: 'แสดงบันทึกเต็ม',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: 'ภาพ {count} ภาพ แตะเพื่อขยาย',
+  eventRowCollapse: 'ย่อ ▲',
+  eventRowCollapseAccessibility: 'ย่อบันทึก',
 };
 export default th;

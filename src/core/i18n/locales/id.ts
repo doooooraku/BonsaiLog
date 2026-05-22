@@ -805,5 +805,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: 'Tampilkan catatan lengkap',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '{count} foto, ketuk untuk perbesar',
+  eventRowCollapse: 'Ciutkan ▲',
+  eventRowCollapseAccessibility: 'Ciutkan catatan',
 };
 export default id;

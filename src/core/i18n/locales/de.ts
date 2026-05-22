@@ -807,5 +807,7 @@ const de: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: 'Vollständige Notiz anzeigen',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '{count} Foto(s), zum Vergrößern tippen',
+  eventRowCollapse: 'Einklappen ▲',
+  eventRowCollapseAccessibility: 'Notiz einklappen',
 };
 export default de;
