@@ -1,25 +1,26 @@
 # maestro/flows/plan-tab-kebab-menu.yml
-# Sess26 PR-η-4 (ADR-0036 D7): group 行 右端 kebab (⋮) tap → RowActionMenu
+# Sess27 PR-7 (ADR-0036 D7 拡張): group 行 + 個別 row 右端 kebab (⋮) tap → RowActionMenu / ConfirmDialog
 # planned: 「削除」 (destructive) + 「全 {count} 件を記録」
 # logged: 「削除」 のみ
+# Dev Client 環境では URL list 経由で bundle 読込が必要 (Sess27 PR-7 改修)
 appId: 'com.doooooraku.bonsailog'
 ---
 - launchApp:
     clearState: false
 
+# Dev Client URL list (初回 launch時のみ): bundle 読込を tap で起動
 - tapOn:
     text: 'http://localhost:8081'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 30000
 
-- pressKey: 'Back'
-- waitForAnimationToEnd
-
+# bundle 読込完了後 home list 表示確認
 - extendedWaitUntil:
     visible:
       id: 'e2e_bonsai_home_list'
-    timeout: 20000
+    timeout: 30000
 
 - tapOn:
     text: '予定'

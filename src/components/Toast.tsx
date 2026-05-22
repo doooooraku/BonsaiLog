@@ -1,7 +1,7 @@
 /**
  * Toast (snackbar) コンポーネント (Sess12 PR-B+C、 一括予定/記録追加完了通知)。
  *
- * Sess27 PR-2 (ADR-0036 D5/D6 撤回、 R-44 緩和): action button slot + showUndoToast 削除。
+ * Sess27 PR-2/PR-7 (ADR-0036 D5/D6 撤回、 R-44 緩和): action button slot + Undo helper 削除。
  * 実機検証で Undo button hit area WCAG 違反 + pointerEvents 貫通 bug 判明、
  * user 真意「Undo 不要、 通知 Toast のみ」 に従い action 関連 機能を全削除。
  * 既存 Toast.show callsite (action 未指定) は完全後方互換。
@@ -59,19 +59,6 @@ export const useToastStore = create<ToastState>((set) => {
     },
   };
 });
-
-/**
- * @deprecated Sess27 PR-2 で Undo 動線撤回 (ADR-0036 D5 撤回、 R-44 緩和)。
- * 段階的廃止のため stub として残置 (内部は Toast.show、 actionLabel/undoFn は無視)。
- * PR-3 (PlanScreen) + PR-4 (bonsai-detail) で `Toast.show` へ置換 → PR-7 で完全削除予定。
- */
-export function showUndoToast(
-  message: string,
-  _actionLabel: string,
-  _undoFn: () => void | Promise<void>,
-): void {
-  useToastStore.getState().show(message, { durationMs: 4000 });
-}
 
 export function Toast() {
   const message = useToastStore((s) => s.message);
