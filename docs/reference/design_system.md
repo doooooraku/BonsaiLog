@@ -706,5 +706,80 @@ function MyFormScreen() {
 
 ---
 
+## 23. Form Screen Layout Pattern (ADR-0040 / R-50 由来、 Sess33)
+
+フォーム画面 (盆栽追加 / 作業記録 / まとめて記録) の **4 要素 SoT**。 構造ばらつき禁止。
+
+### 23-1. 必須 4 要素
+
+1. **Header**: `<FormScreenHeader />` を `Stack.Screen options={{ headerShown: false }}` と組合せ sticky 配置
+   - 戻るボタンのみ (タイトルは ScrollView 内に配置)
+   - 高さ = 56 + insets.top、 SafeArea + StatusBar 内包
+   - `accessibilityRole="header"` 必須
+
+2. **Scroll**: 単一 `<ScrollView>` がタイトル / chips / フォーム要素を全て内包 (full-screen scroll)
+   - sticky な要素 (タイトル / chips / Hero) を ScrollView 外に置く pattern 禁止
+   - IME 起動時に全要素がスクロール可能
+
+3. **KAV**: `useKeyboardAvoidingProps()` 強制利用 (R-46 v1 / ADR-0037 D1)
+   - `<KeyboardAvoidingView {...kavProps}>` で ScrollView を wrap
+   - footer (保存ボタン等) は KAV 内 ScrollView 外に配置
+
+4. **SafeArea**: FormScreenHeader 内で `useSafeAreaInsets()` で top inset を吸収
+   - 各画面で個別に SafeArea 対応する必要なし (FormScreenHeader が内包)
+
+### 23-2. measureLayout 必須 pattern (R-46 v4 / ADR-0040 D2)
+
+中盤 input (後ろに他フィールドあり) の auto-scroll は **UIManager 公式 API 必須**:
+
+```tsx
+import { UIManager, findNodeHandle, TextInput } from 'react-native';
+
+const noteInputRef = React.useRef<TextInput>(null);
+const handleNoteFocus = React.useCallback(() => {
+  setTimeout(() => {
+    const scrollNode = findNodeHandle(scrollRef.current);
+    const inputNode = findNodeHandle(noteInputRef.current);
+    if (scrollNode == null || inputNode == null) {
+      scrollRef.current?.scrollToEnd({ animated: true });
+      return;
+    }
+    UIManager.measureLayout(
+      inputNode,
+      scrollNode,
+      () => scrollRef.current?.scrollToEnd({ animated: true }), // onFail
+      (_x, y) => scrollRef.current?.scrollTo({ y: Math.max(0, y - 80), animated: true }), // onSuccess
+    );
+  }, 350);
+}, []);
+```
+
+❌ 禁止 pattern: `inputRef.current?.measureLayout(...)` — forwardRef 経由 ref では「native component ref」 として認識されず Console Error。
+
+### 23-3. 対象外
+
+- `bonsai-detail/[id]` (詳細画面 + タブ切替、 Stack header にタイトル必要)
+- picker / multi-select modal (選択画面、 form ではない)
+
+### 23-4. 検証必須項目 (R-46 v4 / R-51)
+
+実機検証時は以下を **全部** 確認:
+
+1. ✅ SS: タイトル / chips / フォーム要素が ScrollView 内に統合されている
+2. ✅ SS: IME 起動時にメモ欄 / 末尾 input が画面内 visible
+3. ✅ logcat: アプリ関連 ERROR / Warning / Exception 0 件
+4. ✅ Dev menu Console: Error 0 件 (赤バー非表示)
+5. ✅ 戻るボタン sticky 残存、 tap で `router.back()` 動作
+
+### 23-5. 関連
+
+- ADR-0040 (本セクション由来、 Sess33)
+- R-46 v4 (KAV + auto-scroll 2 タイプ + logcat 検証強制)
+- R-51 (FormScreenHeader + full-screen scroll 必須)
+- `src/components/form/FormScreenHeader.tsx`
+- `src/core/hooks/useKeyboardAvoidingProps.ts`
+
+---
+
 _このドキュメントは `src/core/theme/colors.ts` として TypeScript 定数にも反映される。_
 _変更時は ADR `docs/adr/YYYY-MM-DD-design-tokens.md` を作成。_
