@@ -317,3 +317,14 @@ ADR-0035 (Phase ε) で本 ADR の 3 D を改訂:
   - 理由: user 真意「別にタブバー記録から確認すればいいのだから」、 ADR-0035 D6 (記録タブ tap → カレンダー画面遷移) で hub 経由は二重動線
 - 本 ADR D2 (作業別 unique 粒度) / D4 (PlanScreen で EventRow 流用) / D5 (EventRow 共通化) / D7 (件数補完「×N 鉢」) / D8 (functional_spec §23 SoT) は **引き続き有効**
 - 関連: ADR-0035 D1/D3/D5/D6/D9 / PR-2-1 (D3 dot 順序 + D1 凡例) / PR-5-1 (D6 完全 revert)
+
+### 2026-05-23 Sess32 ADR-0041 起票で D4 整合性レベル 2 を範囲拡張 (displayMode 含む)
+
+ADR-0041 (Phase η) で本 ADR D4「PlanScreen ⟷ bonsai-detail history で同一 event 表示が pixel 整合 (整合性レベル 2)」 を **`displayMode` 値を含めて pixel 整合** に範囲拡張:
+
+- **新 contract**: 整合性レベル 2 = 「同一 event を **同じ `displayMode`** で表示した時、 PlanScreen ⟷ bonsai-detail history で pixel 整合」
+- **新 mode 値**: `EventRow` に `displayMode: 'compact' | 'detailed'` prop 追加 (default = `'compact'`、 既存 callsite 後方互換)
+- **適用範囲拡張**: CalendarTabScreen の **logged section + bonsai-detail history タブ** で `displayMode='detailed'` を渡す (両画面で同期同時改修、 ADR-0041 PR-6)
+- **planned section** は本 ADR D4 整合性レベル 2 を **`displayMode='compact'`** で引き続き満たす (ADR-0041 D7)
+- 本 ADR D5 (EventRow 共通化 + props 設計) は引き続き有効、 ADR-0041 で `displayMode` prop が追加されるのみ
+- 関連: ADR-0041 D1/D7/D8 + PR-5 (displayMode prop 追加) + PR-6 (全 callsite 適用)
