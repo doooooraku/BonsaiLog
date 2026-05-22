@@ -9,7 +9,7 @@
  * 純関数: events は **occurredAtUtc 降順** で渡される前提 (新しい順 → 古い順)。
  */
 import { type Event, type EventType } from '@/src/db/schema';
-import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 
 export type EventGroupEntry =
   | {

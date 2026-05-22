@@ -15,7 +15,7 @@
  * 件数情報損失への対処は PR-2-2 で listing 「×N 鉢」 補完 (D7)。
  */
 import { type Event, type EventType } from '@/src/db/schema';
-import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 
 export type DotsByDayEntry = {
   plannedTypes: Set<EventType>;
