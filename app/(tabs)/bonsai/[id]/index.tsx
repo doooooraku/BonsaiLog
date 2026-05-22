@@ -764,6 +764,8 @@ export default function BonsaiDetailScreen() {
                             lang={lang}
                             t={t}
                             onLongPress={confirmDeleteEvent}
+                            onKebabPress={kebabDeleteEvent}
+                            kebabTestID={`e2e_bonsai_event_kebab_${ev.id}`}
                             indent
                           />
                         ))}
@@ -778,6 +780,8 @@ export default function BonsaiDetailScreen() {
                     lang={lang}
                     t={t}
                     onLongPress={confirmDeleteEvent}
+                    onKebabPress={kebabDeleteEvent}
+                    kebabTestID={`e2e_bonsai_event_kebab_${entry.event.id}`}
                   />
                 );
               })}
@@ -950,12 +954,15 @@ export default function BonsaiDetailScreen() {
   // WorkLogConfirm が直接 await + F-05 popup (line 92-129 の persistAndNavigate) で完結するため不要。
   // stale closure bug (deps 欠落の useFocusEffect callback closure が古い item=null を参照) 構造的解消。
 
-  // ADR-0036 D1-D6 (Sess25 PR-ζ-2-⑧): カスタム ConfirmDialog + Haptics + Undo + cancelForEvents 補完
-  // 旧 Alert.alert (eventDeleteConfirmTitle/Desc) → ConfirmDialog + i18n key 統合
-  // (planEventDeleteConfirmLoggedSingleTitle 利用、 history タブ = logged only)
-  // Sess23 PR-3-1 で漏れた cancelForEvent も同時に追加 (cancelForEvents bulk wrapper、 R-43)
+  // ADR-0036 D1-D4 (Sess25 PR-ζ-2-⑧、 Sess27 PR-4-5 で D5/D6 撤回): カスタム ConfirmDialog + Haptics
+  // history タブ = logged only、 planEventDeleteConfirmLoggedSingleTitle 利用
   function confirmDeleteEvent(ev: Event) {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // R-45 長押し成功 fb
+    setPendingDeleteId(ev.id);
+  }
+
+  // Sess27 PR-5: kebab tap (Haptics なし、 個別 row 代替動線)
+  function kebabDeleteEvent(ev: Event) {
     setPendingDeleteId(ev.id);
   }
 }

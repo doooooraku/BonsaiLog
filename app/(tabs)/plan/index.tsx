@@ -269,23 +269,28 @@ export default function PlanScreen() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }, []);
 
-  /** 個別 event long-press → ConfirmDialog (planned/logged 文言分離) */
+  /** 個別 event 削除 dialog 表示 helper (long-press + kebab tap 共用、 Sess27 PR-5) */
+  const showIndividualDeleteDialog = useCallback((ev: Event) => {
+    setPendingDelete({
+      eventIds: [ev.id],
+      titleKey:
+        ev.status === 'planned'
+          ? 'planEventDeleteConfirmPlannedSingleTitle'
+          : 'planEventDeleteConfirmLoggedSingleTitle',
+      count: 1,
+      hasWiring: ev.type === 'wiring',
+      undoMessageKey:
+        ev.status === 'planned' ? 'undoSnackbarPlannedDeleteN' : 'undoSnackbarLoggedDeleteN',
+    });
+  }, []);
+
+  /** 個別 event long-press → Haptics + ConfirmDialog (R-45 触覚 fb 経路) */
   const confirmDeleteEvent = useCallback(
     (ev: Event) => {
       triggerLongPressHaptic();
-      setPendingDelete({
-        eventIds: [ev.id],
-        titleKey:
-          ev.status === 'planned'
-            ? 'planEventDeleteConfirmPlannedSingleTitle'
-            : 'planEventDeleteConfirmLoggedSingleTitle',
-        count: 1,
-        hasWiring: ev.type === 'wiring',
-        undoMessageKey:
-          ev.status === 'planned' ? 'undoSnackbarPlannedDeleteN' : 'undoSnackbarLoggedDeleteN',
-      });
+      showIndividualDeleteDialog(ev);
     },
-    [triggerLongPressHaptic],
+    [triggerLongPressHaptic, showIndividualDeleteDialog],
   );
 
   /** group 行 long-press / kebab menu「削除」 → ConfirmDialog (group まとめ削除、 wiring cascade 補足) */
@@ -607,6 +612,8 @@ export default function PlanScreen() {
                                       )
                                     }
                                     onLongPress={confirmDeleteEvent}
+                                    onKebabPress={showIndividualDeleteDialog}
+                                    kebabTestID={`e2e_plan_event_kebab_${e.id}`}
                                     actionButtonLabel={t('planEventRecordButtonSingle')}
                                     onActionPress={handleSingleConvert}
                                     actionButtonTestID={`e2e_plan_event_record_button_${e.id}`}
@@ -702,6 +709,8 @@ export default function PlanScreen() {
                                       )
                                     }
                                     onLongPress={confirmDeleteEvent}
+                                    onKebabPress={showIndividualDeleteDialog}
+                                    kebabTestID={`e2e_plan_event_kebab_${e.id}`}
                                     showBonsaiName
                                     indent
                                   />
