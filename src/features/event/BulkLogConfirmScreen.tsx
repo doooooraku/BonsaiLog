@@ -16,7 +16,7 @@
  * - タブ式 UI + 複数 type loop 廃止 (user 真意「複数作業記録は不要」)
  * - 完了: router.replace('/(tabs)/record') で記録タブに直接戻る
  */
-import { router, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import {
   KeyboardAvoidingView,
@@ -30,6 +30,7 @@ import {
 
 import { ThemedText } from '@/components/themed-text';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
+import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
@@ -239,28 +240,12 @@ export default function BulkLogConfirmScreen() {
 
   return (
     <View style={styles.container} testID="e2e_bulk_log_confirm_screen">
-      <View style={styles.header}>
-        <ThemedText style={styles.title}>
-          {t('bulkLogConfirmTitle')
-            .replace('{label}', typeLabel)
-            .replace('{count}', String(selectedBonsais.length))}
-        </ThemedText>
-        <ThemedText style={styles.sub}>{t('bulkLogConfirmSub')}</ThemedText>
-      </View>
-
-      {/* Sess32 PR-2: ScrollView horizontal は default で flex 親に縦 stretch される事象 (Sess31 実機 SS で
-          chips header 縦サイズ約 400px の余白発生) を `style={styles.chipsScroll}` で `flexGrow: 0` 明示 +
-          height 固定で抑制。 chips は natural height (chip 約 30px + padding 上下 8 = 約 46px) に収まる。 */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.chipsScroll}
-        contentContainerStyle={styles.chipsRow}
-      >
-        {selectedBonsais.map((b) => (
-          <SelectedBonsaiChip key={b.id} name={b.name} testID={`e2e_bulk_log_chip_${b.id}`} />
-        ))}
-      </ScrollView>
+      {/* Sess33 PR-1 (ADR-0039 起票予定): Stack header 廃止 + FormScreenHeader sticky。
+          タイトル + chips + フォームを全部 ScrollView 内に統合し、 IME 起動時にも
+          画面全体スクロール (full-screen scroll) 可能に。 旧 sticky header (タイトル + chips)
+          は ScrollView の **外** にあり IME 起動時に縦領域を圧迫していた問題を構造解消。 */}
+      <Stack.Screen options={{ headerShown: false }} />
+      <FormScreenHeader testID="e2e_bulk_log_form_header" />
 
       <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
         <ScrollView
@@ -268,6 +253,30 @@ export default function BulkLogConfirmScreen() {
           contentContainerStyle={styles.body}
           keyboardShouldPersistTaps="handled"
         >
+          {/* Sess33 PR-1: タイトル + サブタイトルを ScrollView 内 (旧 sticky header 廃止)。 */}
+          <View style={styles.titleBlock}>
+            <ThemedText style={styles.title}>
+              {t('bulkLogConfirmTitle')
+                .replace('{label}', typeLabel)
+                .replace('{count}', String(selectedBonsais.length))}
+            </ThemedText>
+            <ThemedText style={styles.sub}>{t('bulkLogConfirmSub')}</ThemedText>
+          </View>
+
+          {/* Sess32 PR-2 (継続): horizontal ScrollView は親 flex に縦 stretch される default を
+              `flexGrow:0` で抑制。 Sess33 PR-1 で本体 ScrollView 内に移動 (旧 sticky → scroll 一体)。
+              ネスト構造 (外: vertical / 内: horizontal) は RN 標準 pattern、 ジェスチャ衝突なし。 */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.chipsScroll}
+            contentContainerStyle={styles.chipsRow}
+          >
+            {selectedBonsais.map((b) => (
+              <SelectedBonsaiChip key={b.id} name={b.name} testID={`e2e_bulk_log_chip_${b.id}`} />
+            ))}
+          </ScrollView>
+
           {/* Sess16 PR-B2: 日付選択 (mockup 14 種別共通、 chips の後・form の前)。 */}
           <View style={styles.field}>
             <LabeledDateRow
@@ -348,7 +357,9 @@ export default function BulkLogConfirmScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG_PRIMARY },
   flexOne: { flex: 1 },
-  header: { paddingTop: 8, paddingBottom: 8, alignItems: 'center', gap: 4 },
+  // Sess33 PR-1: 旧 `header` style (sticky 用、 paddingTop:8 + alignItems:center) は ScrollView
+  // 内タイトルブロックに置換 → `titleBlock` に rename + paddingTop 拡張 (header 直下 spacing)。
+  titleBlock: { paddingTop: 12, paddingBottom: 8, alignItems: 'center', gap: 4 },
   title: {
     fontFamily: 'NotoSerifJP_500Medium',
     fontSize: 20,
@@ -357,11 +368,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   sub: { fontSize: 12, color: TEXT_SECONDARY },
-  // Sess32 PR-2: ScrollView outer style に flexGrow:0 明示で flex 親による縦 stretch を抑制、
-  // chips header の縦余白約 400px 問題 (Sess31 実機 SS sess31-04a 〜 04c 等) を解消。
-  // alignItems:'center' で chip が縦中央寄せ (chips 自然高さ約 46px の中で chip 30px 配置)。
+  // Sess32 PR-2 + Sess33 PR-1: flexGrow:0 で縦 stretch 抑制 (継続)。
+  // marginHorizontal: -16 で body padding (16) を相殺し chips を画面端まで届かせる。
   chipsScroll: {
     flexGrow: 0,
+    marginHorizontal: -16,
   },
   chipsRow: {
     paddingHorizontal: 16,
