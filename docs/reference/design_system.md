@@ -516,32 +516,33 @@ if (version < N + 1) {
 2. **視覚 (Modal / Animation)**: ConfirmDialog 80ms フェードイン (Material 3 Motion duration、 animationType="fade")
 3. **動作 (delayLongPress)**: default 500ms 維持 (Material 3 標準 + iOS HIG「Long Press」 整合)、 短縮禁止
 
-### 18-2. 原則 P2 — 破壊的操作は ConfirmDialog + UndoSnackbar 必須 (R-44 連動)
+### 18-2. 原則 P2 — 破壊的操作は ConfirmDialog + 通知 Toast 必須 (R-44 連動、 Sess27 緩和)
 
 長押し → 破壊的操作 (削除 / アーカイブ / クリア) 動線では:
 
 - OS 標準 `Alert.alert` 不採用、 必ずカスタム `<ConfirmDialog>` (`src/components/ConfirmDialog.tsx`) 利用
-- 削除実行後 `<UndoSnackbar>` (Toast 拡張、 `src/components/Toast.tsx`) で 4s 表示 + [元に戻す] action
-- 削除実行直前 `Haptics.notificationAsync(NotificationFeedbackStyle.Warning)` で 2 段目の触覚 fb
+- 削除実行後 通常 `Toast.show()` (`src/components/Toast.tsx`) で「{処理} を実行しました」 表示 (default 3s、 action なし)
+- 削除実行直前 `Haptics.notificationAsync(NotificationFeedbackType.Warning)` で 2 段目の触覚 fb
+- ※ **Undo (元に戻す) button は不採用** (Sess27 実機検証で hit area WCAG 違反 + 貫通バグ判明 → user 真意「即削除 simple」 で撤回、 DB の 30 日 soft delete が誤削除保険として機能)
 
-### 18-3. 原則 P3 — kebab menu (⋮) と long-press 共存
+### 18-3. 原則 P3 — kebab menu (⋮) と long-press 共存 (group + 個別 両 row 配置、 Sess27 拡張)
 
 発見性 (kebab) + power user 効率 (long-press) の両立:
 
-- group 行 / list item 右端に kebab icon button slot 配置 (`onKebabPress?: () => void` prop)
-- kebab tap → `<RowActionMenu>` (`src/components/RowActionMenu.tsx`、 bottom sheet 風) で「削除」 + 文脈別 action
+- group 行 / **個別 row** 両方の右端に kebab icon button slot 配置 (`onKebabPress?: () => void` prop) — 長押しが分からない user 向けの代替動線
+- kebab tap → `<RowActionMenu>` (`src/components/RowActionMenu.tsx`、 bottom sheet 風) で「削除」 1 item (将来 archive 等の拡張余地)
 - Pressable nested で gesture 独立、 内側 kebab button 領域の長押しは parent に伝わらず button tap として処理 (React Native 仕様)
 
 ### 18-4. 自動検出 (将来)
 
-- `scripts/eslint-rules/destructive-undo.mjs` (Phase ζ-3 or v1.x): `softDelete*` / `purge*` callsite が Snackbar wrap されているか AST grep (R-44 連動)
+- `scripts/eslint-rules/destructive-undo.mjs` (Phase ζ-3 or v1.x): `softDelete*` / `purge*` callsite が `Toast.show()` wrap されているか AST grep (R-44 連動、 Sess26 PR-η-3 の lint script を AST 化)
 - 当面 code review + ADR-0036 整合 grep
 
 ### 18-5. 関連
 
-- ADR-0036 D1-D9 (本セクション由来)
-- R-44 (破壊的操作 = Undo 必須) / R-45 (長押し UX 標準)
-- `src/components/ConfirmDialog.tsx` / `src/components/Toast.tsx` (拡張) / `src/components/RowActionMenu.tsx`
+- ADR-0036 D1-D9 (本セクション由来、 D5/D6 は Sess27 撤回 / D7 は個別 row にも適用)
+- R-44 (破壊的操作 = ConfirmDialog + 通知 Toast 必須、 Sess27 緩和) / R-45 (長押し UX 標準)
+- `src/components/ConfirmDialog.tsx` / `src/components/Toast.tsx` / `src/components/RowActionMenu.tsx`
 - Material 3 Dialog / Snackbar / Bottom Sheet + Apple HIG Alerts / Action Sheets + WAI-ARIA Dialog Pattern
 
 ---
