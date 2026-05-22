@@ -473,6 +473,32 @@
 
 ---
 
+### R-56. 議論で言及する技術参照は実在 grep 確認必須 (Sess38 retro 由来)
+
+- **適用範囲**: 議論モード (`/discuss` / Plan mode / AskUserQuestion) で具体的な技術参照を user に推薦する前。 i18n key / file path / function 名 / 型名 / ADR 番号 / R-XX 番号 など、 実在確認が grep / ls で可能なものすべて。
+- **必須運用 — Self-check 4 項目** (議論で技術参照を含む推薦を user に提示する前):
+  1. **言及する i18n key を grep 確認**: `grep -rn "keyName" src/core/i18n/locales/` で 19 言語完備か実在確認、 不在なら「新規 key 追加が必要」 と user に明示
+  2. **言及する file path を確認**: `ls /path/to/file` or `Read` で実在確認、 存在しない path を「既存 file」 と提示しない
+  3. **言及する function / 型名を grep 確認**: `grep -rn "functionName\|TypeName" src/` で実在確認、 推測で「既存 function」 と書かない
+  4. **不在の場合は明示**: 「既存流用 / 追加翻訳 0 entries」 と書く前に grep 確認、 不在なら「新規追加 N entries」 と数値で示す
+- **根拠**: Sess37 PR-1 議論で「memo セクションラベルは既存 `workLogMemoTitle` 流用、 追加翻訳 0 entries」 と推薦 → Plan agent validation で **0/19 言語存在** 判明 → 既存 `workLogNote` 流用に訂正 (form の memo field label と完全整合、 結果として真の DRY 達成)。 推測ベース議論が Plan agent validation 経由でしか検出されない構造は脆弱、 議論段階で能動的 grep 確認に切替。
+- **R-9 / R-13 / R-55 との関係**:
+  - R-9 (既存スクリプト先読み): 実行段階の検出
+  - R-13 (議論前 spec Read): 仕様レベルの確認
+  - R-55 (関連項目網羅調査): 問題発見後の同 pattern 拡大調査
+  - R-56 (本ルール): **議論段階の具体的技術参照の実在 grep 確認** (R-13 と相補、 R-55 の前段)
+- **検証手順** (議論モード PR レビュー時):
+  - [ ] 議論で言及した i18n key を grep 結果として PR 本文に貼付 (19 言語完備の確認 evidence)
+  - [ ] 議論で言及した file path を ls / Read 結果として確認 evidence 明示
+  - [ ] 「既存流用」 と書いた箇所はすべて grep 確認済か (推測ゼロ)
+  - [ ] Plan agent validation で flag された致命的問題があれば PR 本文の「R-56 違反として訂正」 セクションに記録
+- **自動化** (検討、 議論段階は git diff として捕捉困難):
+  - 議論段階 hook 化は Claude Code 側機能依存 (将来 improvement)
+  - PR 段階の補完: `scripts/check-i18n-key-references.mjs` で `t('xxx')` 全件 19 言語完備確認 (PR diff 範囲)
+- **関連**: Sess38 retro / Sess37 PR-1 (#814、 workLogMemoTitle 致命的事象) / R-9 / R-13 / R-55 / Plan agent validation pattern
+
+---
+
 ## 関連
 
 - 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-52 索引 + 運用ルール)
