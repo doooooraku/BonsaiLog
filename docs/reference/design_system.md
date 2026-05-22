@@ -781,5 +781,91 @@ const handleNoteFocus = React.useCallback(() => {
 
 ---
 
+## 24. EventRow contract matrix (ADR-0041 Phase η/θ / Sess34)
+
+`src/features/event/EventRow.tsx` の `displayMode: 'compact' | 'detailed'` prop で切替可能な表示モードの SoT。 callsite と整合性レベル 2 (ADR-0034 D4) を維持。
+
+### 24-1. matrix
+
+| 表示要素                                 | compact                                                     | detailed                                                                       |
+| ---------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| layout 方向                              | horizontal row (iconBox left + content right + kebab right) | **vertical stack** (Phase θ D1)                                                |
+| iconBox / 写真 strip                     | 36×36 EventIcon                                             | (なし、 PhotoBlock で置換)                                                     |
+| **写真 PhotoBlock**                      | (なし)                                                      | 横幅 full × **aspect 4:3** (約 720-padding × 540)、 +N badge 右下 (Phase θ D2) |
+| **盆栽名 (showBonsaiName=true)**         | 1 行目に表示 (fontSize 15)                                  | header に表示 (**fontSize 16-18**)                                             |
+| **作業名 + 日付 (showBonsaiName=false)** | 1 行目 Fragment                                             | header に Fragment (fontSize 16)                                               |
+| **時刻 HH:mm**                           | 非表示 (ADR-0036 D9)                                        | 非表示 (Phase θ D6)                                                            |
+| **labeled chips block**                  | (なし、 chips は flexWrap で表示)                           | **vertical stack** で「label: [chip]」 形式 (Phase θ D4)                       |
+| **chip max 数**                          | 制限なし                                                    | **max 4 + 「+N」 sentinel** (ADR-0041 D4)                                      |
+| **WiringPeriodDisplay** (wiring 時)      | 通常表示                                                    | labeled chip 同列 (「装着期間: [N週]」、 Phase θ D11)                          |
+| **scheduledUnwireLabel** (wiring 時)     | 通常表示                                                    | labeled chip 同列 (「解除予定日: [日付]」、 Phase θ D11)                       |
+| **memo (ev.note)**                       | 2 行 truncate                                               | **3 行 truncate** + 「もっと見る ▶」 link (ADR-0041 D5)                        |
+| **「もっと見る」 リンク**                | (なし)                                                      | truncate 時のみ表示、 tap で `/(tabs)/bonsai/[id]?tab=history` 遷移            |
+| **kebab ⋮**                              | row 右端                                                    | header 右端                                                                    |
+| **actionButton (planned 時)**            | content 末尾 (「作業を記録」、 ADR-0035 D7)                 | 同上 (logged では出ない)                                                       |
+
+### 24-2. callsite 設定
+
+| callsite                                                       | displayMode                      | showBonsaiName | 用途                                                                         |
+| -------------------------------------------------------------- | -------------------------------- | -------------- | ---------------------------------------------------------------------------- |
+| `CalendarTabScreen.tsx` planned section                        | `'compact'` (default、 明示不要) | true           | 予定 row (写真なし、 「全 N 件を記録」 button が主目的、 D7)                 |
+| `CalendarTabScreen.tsx` logged section                         | `'detailed'`                     | true           | 記録 row (写真 + 詳細 chip 表示)                                             |
+| `app/(tabs)/bonsai/[id]/index.tsx` history タブ (group 展開)   | `'detailed'`                     | false          | 整合性 lv 2 維持 (ADR-0034 D4、 Phase η Notes Amended で displayMode 値含む) |
+| `app/(tabs)/bonsai/[id]/index.tsx` history タブ (single event) | `'detailed'`                     | false          | 同上                                                                         |
+
+### 24-3. labeled chip 表示の i18n
+
+- chip の `fieldLabelKey` は **既存 workLog\* keys 流用** (Sess16 各言語ペルソナ翻訳済)
+- 追加 i18n 翻訳ゼロ (`historyField*` prefix 新設は user 指摘で path 撤回)
+- 14 種別の chip mapping は `src/features/event/buildHistoryChips.ts` の switch + `fieldLabelKey` 参照
+- RTL 配慮: i18n value にコロンを含めず、 component で `${t(key)}:` 結合
+
+### 24-4. 写真ゼロ event の動的 row 高さ (Phase θ D12)
+
+- 写真有 event: 行高 約 600px (PhotoBlock 4:3 + chips + memo)、 1 画面 1-2 row
+- 写真無 event: PhotoBlock **完全非表示** (`photoRepository.getRepresentativePhotoByEventId` で null 時条件 render)、 行高 約 200-300px に縮小
+- regression: 旧来の「全 row 同高度」 は破棄、 動的縮小で scroll 量緩和
+
+### 24-5. EventIcon mapping (14 種別フル網羅、 ADR-0041 Phase θ D10)
+
+`src/components/icons/EventIcons.tsx` の EventIcon switch は **exhaustive** (default なし)、 14 種別すべて non-null React element を返す:
+
+| type                                                         | Icon component                            |
+| ------------------------------------------------------------ | ----------------------------------------- |
+| watering                                                     | DropletIcon                               |
+| pruning / leaf_trimming / defoliation / deshoot / candle_cut | ScissorsIcon                              |
+| wiring / unwiring                                            | WireIcon                                  |
+| repotting / moss_care                                        | PotIconSmall                              |
+| fertilizing                                                  | FertilizerIcon                            |
+| pest_control                                                 | SprayIcon                                 |
+| position_change                                              | CompassIcon                               |
+| **leaf_first_aid**                                           | **LeafAidIcon (新規、 葉 + 絆創膏 2 色)** |
+
+新規 EventType 追加時は `__tests__/components/icons/EventIcons.test.tsx` の exhaustive 走査で **non-null assertion fail** で silent miss 検出。
+
+### 24-6. 単位表示の規約
+
+- 鉢サイズ等の長さ値は DB に **cm canonical** 保存 (`lengthToCanonical()` で cm 統一)
+- chip 表示は **常に "Xcm"** (`buildHistoryChips` 内 `${payload.pot_size_cm}cm` hardcode)
+- user 入力時の単位 (cm/mm/inch) は保存後失われる、 表示は cm 固定
+
+### 24-7. 関連
+
+- ADR-0041 (本セクション由来、 Phase η + θ、 Sess34)
+- ADR-0034 D4 (整合性レベル 2、 Phase η Notes Amended で displayMode 含む)
+- ADR-0036 D9 (重複表示削除、 時刻 / 日付 / wiring scheduled_unwire chip 非表示)
+- ADR-0027 (14 種別 form + 写真/日付 共通基盤、 EventRow 表示の前提)
+- `src/features/event/EventRow.tsx` (本 contract の実装)
+- `src/features/event/EventRowPhotoBlock.tsx` (Phase θ 新規)
+- `src/features/event/EventRowPhotoStrip.tsx` (Phase η、 forward-only 温存)
+- `src/features/event/buildHistoryChips.ts` (14 種別 chip 生成 + fieldLabelKey)
+- `src/features/event/HistoryChip.tsx` (labeled 表示)
+- `src/features/event/payloadValidator.ts` (14 種別 schema、 PR-Q-fix で漏れ修正)
+- `__tests__/components/icons/EventIcons.test.tsx` (exhaustive 走査)
+- `__tests__/features/event/buildHistoryChips.test.ts` (14 種別 chip 生成 + payload 各 case)
+- `__tests__/features/event/payloadValidator.test.ts` (schema strip 防止 test)
+
+---
+
 _このドキュメントは `src/core/theme/colors.ts` として TypeScript 定数にも反映される。_
 _変更時は ADR `docs/adr/YYYY-MM-DD-design-tokens.md` を作成。_
