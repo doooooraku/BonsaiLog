@@ -15,7 +15,8 @@ import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BG_PRIMARY, BORDER_DEFAULT, TEXT_SECONDARY } from '@/src/core/theme/colors';
+import { BG_PRIMARY, BORDER_DEFAULT } from '@/src/core/theme/colors';
+import { eventRowChipLabel, eventRowChipText } from '@/src/core/theme/typography';
 
 import type { HistoryChip as HistoryChipData } from './buildHistoryChips';
 
@@ -25,7 +26,9 @@ import type { HistoryChip as HistoryChipData } from './buildHistoryChips';
  */
 export function HistoryChip({ chip }: { chip: HistoryChipData }) {
   const { t } = useTranslation();
-  const valueLabel = chip.labelKey ? t(chip.labelKey) : (chip.text ?? '');
+  const baseValue = chip.labelKey ? t(chip.labelKey) : (chip.text ?? '');
+  // Sess37 PR-1 C4: valueUnitKey があれば値の後ろに単位 i18n 値を結合 (例: `${1000}${'倍'}` = `1000倍`)
+  const valueLabel = chip.valueUnitKey ? `${baseValue}${t(chip.valueUnitKey)}` : baseValue;
   if (valueLabel.length === 0) return null;
 
   if (chip.fieldLabelKey) {
@@ -110,10 +113,10 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 4,
   },
+  // Sess37 PR-1 C5: fontSize 11→14 (token 経由)、 minWidth 64 維持 (field label 幅統一)
   fieldLabel: {
-    fontSize: 11,
-    color: TEXT_SECONDARY,
-    minWidth: 64, // 「症状:」「処置:」 等の field label 幅統一
+    ...eventRowChipLabel,
+    minWidth: 64,
   },
   chip: {
     paddingHorizontal: 8,
@@ -122,9 +125,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: BORDER_DEFAULT,
     backgroundColor: BG_PRIMARY,
-    maxWidth: 200,
+    // Sess37 PR-1 C5: maxWidth 200→240 (fontSize 14 化で truncate 防止)
+    maxWidth: 240,
   },
-  chipText: { fontSize: 11, color: TEXT_SECONDARY, lineHeight: 14 },
+  // Sess37 PR-1 C5: fontSize 11→14 (token 経由、 lineHeight 14→20 で可読性 ↑)
+  chipText: { ...eventRowChipText },
   // Phase θ 新規: labeled 形式の chip vertical stack
   verticalStack: { flexDirection: 'column', gap: 4, marginTop: 4 },
   // 後方互換: compact 形式の chip flexWrap row

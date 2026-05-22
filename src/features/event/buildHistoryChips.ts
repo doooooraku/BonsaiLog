@@ -52,6 +52,12 @@ export type HistoryChip = {
   labelKey?: TranslationKey;
   /** 生文字列をそのまま表示 (自由テキスト / 数値 / 単位付き値)。 chip の値部分。 */
   text?: string;
+  /**
+   * 値の後ろに付与する単位の i18n key (Sess37 PR-1 C4 追加)。
+   * 例: `workLogPestDilutionUnit` = 「倍」 / 「x」 / 「раз」 (form suffix と同 key 流用)。
+   * HistoryChip 側で `${text}${t(valueUnitKey)}` で結合表示。
+   */
+  valueUnitKey?: TranslationKey;
 };
 
 type EventLike = {
@@ -182,7 +188,12 @@ export function buildHistoryChips(event: EventLike): HistoryChip[] {
       pushChip(contextChip(payload.target, getPestPurposeLabelKey, 'workLogPestPurpose'));
       pushChip(freeTextChip(payload.agent, 'workLogPestAgent'));
       if (typeof payload.dilution_ratio === 'number') {
-        chips.push({ fieldLabelKey: 'workLogPestDilution', text: `×${payload.dilution_ratio}` });
+        // Sess37 PR-1 C4: `×N` → `N + 単位` (form suffix `workLogPestDilutionUnit` 流用、 19 言語完備)
+        chips.push({
+          fieldLabelKey: 'workLogPestDilution',
+          text: `${payload.dilution_ratio}`,
+          valueUnitKey: 'workLogPestDilutionUnit',
+        });
       }
       break;
     }
@@ -197,7 +208,12 @@ export function buildHistoryChips(event: EventLike): HistoryChip[] {
       // payload.body_part + count (number)
       pushChip(contextChip(payload.body_part, getTrimRangeLabelKey, 'workLogTrimRange'));
       if (typeof payload.count === 'number') {
-        chips.push({ fieldLabelKey: 'workLogCandleCount', text: `×${payload.count}` });
+        // Sess37 PR-1 C4: `×N` → `N + 単位` (form suffix `workLogCandleCountUnit` 流用)
+        chips.push({
+          fieldLabelKey: 'workLogCandleCount',
+          text: `${payload.count}`,
+          valueUnitKey: 'workLogCandleCountUnit',
+        });
       }
       break;
     }
@@ -207,9 +223,10 @@ export function buildHistoryChips(event: EventLike): HistoryChip[] {
       break;
     }
     case 'position_change': {
-      // payload.from / to (free)、 to があれば「→ N」 形式で表示 (chip 自体に「→」 prefix で意味明示、 label 省略)
+      // payload.from / to (free)。 Sess37 PR-1 C4: 旧 `→ N` 形式から矢印撤去
+      // (fieldLabelKey「移動先:」 と「→」 が冗長、 user 指摘で修正)
       if (typeof payload.to === 'string' && payload.to.trim().length > 0) {
-        chips.push({ fieldLabelKey: 'workLogPositionTo', text: `→ ${payload.to.trim()}` });
+        chips.push({ fieldLabelKey: 'workLogPositionTo', text: payload.to.trim() });
       } else {
         // from は form 未入力 field のため label なし (旧データ互換のみ)
         pushChip(freeTextChip(payload.from));

@@ -151,7 +151,7 @@ describe('buildHistoryChips — 14 種別フル網羅 (ADR-0041 D4)', () => {
             dilution_ratio: 1000,
           }),
         ),
-      ).toEqual(['historyLabelPestPurposePrevention', 'ベニカ', '×1000']);
+      ).toEqual(['historyLabelPestPurposePrevention', 'ベニカ', '1000']);
     });
     test('target=treatment → 新 i18n key', () => {
       expect(chipsToStr(chipsOf('pest_control', { target: 'treatment' }))).toEqual([
@@ -189,14 +189,14 @@ describe('buildHistoryChips — 14 種別フル網羅 (ADR-0041 D4)', () => {
   // 11. candle_cut: body_part + count
   // ============================================================
   describe('11. candle_cut', () => {
-    test('body_part=moderate + count=5 → 2 chips', () => {
+    test('body_part=moderate + count=5 → 2 chips (Sess37 PR-1 C4: valueUnitKey 経由で `5本`)', () => {
       expect(chipsToStr(chipsOf('candle_cut', { body_part: 'moderate', count: 5 }))).toEqual([
         'historyLabelTrimRangeModerate',
-        '×5',
+        '5',
       ]);
     });
     test('count のみ → 1 chip', () => {
-      expect(chipsToStr(chipsOf('candle_cut', { count: 3 }))).toEqual(['×3']);
+      expect(chipsToStr(chipsOf('candle_cut', { count: 3 }))).toEqual(['3']);
     });
   });
 
@@ -221,9 +221,8 @@ describe('buildHistoryChips — 14 種別フル網羅 (ADR-0041 D4)', () => {
   // ============================================================
   describe('13. position_change', () => {
     test('to=「ベランダ南」 → 「→ ベランダ南」 形式', () => {
-      expect(chipsToStr(chipsOf('position_change', { to: 'ベランダ南' }))).toEqual([
-        '→ ベランダ南',
-      ]);
+      // Sess37 PR-1 C4: `→ X` → `X` (label「移動先:」 と矢印が冗長で撤去)
+      expect(chipsToStr(chipsOf('position_change', { to: 'ベランダ南' }))).toEqual(['ベランダ南']);
     });
     test('to 空 + from=「室内」 → from 表示', () => {
       expect(chipsToStr(chipsOf('position_change', { from: '室内', to: '' }))).toEqual(['室内']);
