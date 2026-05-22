@@ -24,6 +24,7 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
+  UIManager,
   View,
   findNodeHandle,
 } from 'react-native';
@@ -81,27 +82,33 @@ export default function BulkLogConfirmScreen() {
   const c = useColors();
   // Sess28 PR-3 (ADR-0037 D1 / R-46): キーボード回避 props 共通 hook 適用 (KAV、 container 縮小)。
   const kavProps = useKeyboardAvoidingProps();
-  // Sess32 PR-1 (R-46 v3): inputRef.measureLayout で ScrollView 内 input 位置を精密取得 + scrollTo。
-  // 旧 Sess31 PR-2 の onLayout + memoY 方式は scrollTo の y が max scroll 値で頭打ちになり効果不全 →
-  // measureLayout は IME 起動後の latest content layout を反映するため確実。
+  // Sess32 PR-1 → Sess33 PR-2 hotfix (R-46 v3): UIManager.measureLayout で ScrollView 内 input 位置を
+  // 精密取得 + scrollTo。 旧実装 `noteInputRef.current?.measureLayout(...)` は forwardRef 経由 ref で
+  // 「ref to a native component」 として認識されず Console Error 発生 (Sess32 PR-1 時から潜在)。
+  // findNodeHandle + UIManager.measureLayout (公式 native API) で安全に呼び出し。
   const scrollRef = React.useRef<ScrollView>(null);
   const noteInputRef = React.useRef<TextInput>(null);
   const handleNoteFocus = React.useCallback(() => {
     // IME 起動アニメ完了 + KAV resize 完了待ち (Android: 約 350ms、 iOS: 約 250ms 想定で 350 採用)。
     setTimeout(() => {
       const scrollNode = findNodeHandle(scrollRef.current);
-      if (scrollNode == null) return;
-      // input の ScrollView 内座標 (x, y, w, h) を取得 → scrollTo({y: y - 80}) で input 上端を
-      // 画面上から 80px 位置に配置 (header + 余白考慮)。 max scroll 制限はかかるが、 IME 起動後の
-      // viewport で input が IME に隠れない位置に scroll される。
-      noteInputRef.current?.measureLayout(
+      const inputNode = findNodeHandle(noteInputRef.current);
+      if (scrollNode == null || inputNode == null) {
+        scrollRef.current?.scrollToEnd({ animated: true });
+        return;
+      }
+      // UIManager.measureLayout(node, relativeToNativeNode, onFail, onSuccess) — RN 公式 API。
+      // input の ScrollView 内座標 y を取得 → scrollTo({y: y - 80}) で input 上端を画面上 80px に配置
+      // (FormScreenHeader 56 + 余白 24)。 IME 起動後 viewport で input が IME に隠れない位置に scroll。
+      UIManager.measureLayout(
+        inputNode,
         scrollNode,
+        () => {
+          // 失敗時 fallback、 scrollToEnd で代替。
+          scrollRef.current?.scrollToEnd({ animated: true });
+        },
         (_x, y) => {
           scrollRef.current?.scrollTo({ y: Math.max(0, y - 80), animated: true });
-        },
-        () => {
-          // 失敗時 fallback (measureLayout の error callback)、 scrollToEnd で代替。
-          scrollRef.current?.scrollToEnd({ animated: true });
         },
       );
     }, 350);
