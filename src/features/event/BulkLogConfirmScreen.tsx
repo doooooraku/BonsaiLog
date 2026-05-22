@@ -36,7 +36,7 @@ import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
 import { useToastStore } from '@/src/components/Toast';
-import { nowUtc } from '@/src/core/datetime';
+import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
@@ -57,6 +57,7 @@ import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { addPhotoFromUri } from '@/src/db/photoRepository';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 // Sess31 PR-1: BonsaiPlaceholder/hashSeed import 削除 (chip 内の灰色丸を撤去、 SelectedBonsaiChip に集約)
 import { SelectedBonsaiChip } from '@/src/features/bonsai/SelectedBonsaiChip';
 import { usePickerStore } from '@/src/stores/pickerStore';
@@ -113,7 +114,11 @@ export default function BulkLogConfirmScreen() {
       );
     }, 350);
   }, []);
-  const params = useLocalSearchParams<{ type?: string; fromPlannedIds?: string }>();
+  const params = useLocalSearchParams<{
+    type?: string;
+    fromPlannedIds?: string;
+    date?: string;
+  }>();
   const selectedType = React.useMemo(() => parseType(params.type), [params.type]);
   const fromPlannedIds = React.useMemo<string[]>(
     () => (params.fromPlannedIds ? params.fromPlannedIds.split(',').filter(Boolean) : []),
@@ -122,10 +127,12 @@ export default function BulkLogConfirmScreen() {
   const selectedBonsais = usePickerStore((s) => s.bulkContext?.selectedBonsais ?? []);
 
   const [note, setNote] = React.useState('');
-  // Sess16 PR-B2 → PR-H: 日付選択 default = 今日 (Repolog pattern 整合)、 maxToday=true で未来日防止
-  // ADR-0008 §TZ 3 層防御: new Date() 引数なし禁止、 nowUtc() 経由
-  const [occurredAtDate, setOccurredAtDate] = React.useState(() =>
-    (nowUtc() as string).slice(0, 10),
+  // Sess36 PR-7 (ADR-0042 関連 fix、 Bug ①+②): カレンダー選択日 URL param 優先、
+  // 未指定時は TZ 安全な local 「今日」 (toLocalDateKey)。 旧 `nowUtc().slice(0, 10)` は
+  // UTC 日付を返すため JST 早朝に「昨日」 default 化する bug を修正 (ADR-0008 §TZ 3 層防御の
+  // 正しい使い方 = `toLocalDateKey(utc, tzOffsetMin)`、 ADR-0008 Notes Amended PR-8 連動)。
+  const [occurredAtDate, setOccurredAtDate] = React.useState(
+    () => params.date ?? toLocalDateKey(nowUtc() as string, getTzOffsetMin()),
   );
   // Sess16 PR-B2 → PR-H: 写真添付 (caption 削除、 BonsaiBasicForm PendingPhoto 整合)
   const [photos, setPhotos] = React.useState<readonly PhotoFieldItem[]>([]);

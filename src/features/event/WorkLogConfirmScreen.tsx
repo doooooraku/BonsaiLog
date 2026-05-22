@@ -32,7 +32,7 @@ import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
 import { useToastStore } from '@/src/components/Toast';
-import { nowUtc } from '@/src/core/datetime';
+import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
@@ -51,6 +51,7 @@ import { addPhotoFromUri } from '@/src/db/photoRepository';
 import type { EventType } from '@/src/db/schema';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 import {
   WorkLogTypeFormFields,
@@ -81,10 +82,13 @@ export default function WorkLogConfirmScreen() {
   const fromPlannedId = params.fromPlannedId ?? null;
 
   const [note, setNote] = React.useState('');
-  // Sess16 PR-A2 → PR-H: 日付選択 default = 今日 (Repolog pattern 整合)、 maxToday=true で未来日防止。
-  // ADR-0008 §TZ 3 層防御: new Date() 引数なし禁止、 nowUtc() 経由。
+  // Sess36 PR-7 (ADR-0042 関連 fix): TZ 安全な local 「今日」 (toLocalDateKey)。
+  // 旧 `nowUtc().slice(0, 10)` は UTC 日付を返すため JST 早朝に「昨日」 default 化する
+  // bug を修正 (ADR-0008 §TZ 3 層防御の正しい使い方 = `toLocalDateKey(utc, tzOffsetMin)`、
+  // ADR-0008 Notes Amended PR-8 連動)。 Single 動線は現状 date URL param 受信なしのため
+  // 常に local 「今日」 default (将来 bonsai-detail からの日付指定機能追加時に拡張可)。
   const [occurredAtDate, setOccurredAtDate] = React.useState(() =>
-    (nowUtc() as string).slice(0, 10),
+    toLocalDateKey(nowUtc() as string, getTzOffsetMin()),
   );
   // Sess16 PR-A3 → PR-H: 写真添付 (caption 削除、 BonsaiBasicForm PendingPhoto 整合)。
   const [photos, setPhotos] = React.useState<readonly PhotoFieldItem[]>([]);
