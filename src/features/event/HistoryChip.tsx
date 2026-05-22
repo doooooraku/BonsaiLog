@@ -1,14 +1,14 @@
 /**
  * HistoryChip — Event payload から生成された 1 個の chip を表示 (Issue #296 Phase 2)。
  *
- * display-schema.md v1.3 §「14 作業の表示テンプレート」 整合の chip UI。
- * mockup detail-screens.jsx `_HistoryChip` 整合の見た目 (rounded + thin border +
- * 小さいテキスト、ellipsis 対応)。
+ * Sess34 ADR-0041 Phase θ PR-9 で labeled 形式 (「label: [chip]」) に変更。
+ * fieldLabelKey があれば label 部分 + chip 値 部分を 1 行 (vertical block 内) で表示、
+ * fieldLabelKey なしなら従来通り chip のみ表示 (compact mode で後方互換)。
  *
- * Sess34 ADR-0041 PR-5: HistoryChipRow に `maxVisible?: number` prop 追加。
- * detailed mode で chip 数を 4 に制限、 超過は末尾「+N」 sentinel chip で省略表示。
+ * RTL 配慮: i18n value にコロンを含めず、 component で `${t(key)}:` 結合。
+ * これによりアラビア語 / ヘブライ語等 RTL でコロン位置が自動調整される。
  *
- * @see docs/adr/ADR-0041-event-row-display-mode.md D4 (chips max 4 + +N sentinel)
+ * @see docs/adr/ADR-0041-event-row-display-mode.md §Phase θ 改訂 D4
  */
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -19,14 +19,36 @@ import { BG_PRIMARY, BORDER_DEFAULT, TEXT_SECONDARY } from '@/src/core/theme/col
 
 import type { HistoryChip as HistoryChipData } from './buildHistoryChips';
 
+/**
+ * 単一 chip 表示。 fieldLabelKey があれば「label: [chip]」 vertical row 形式、
+ * なければ chip のみ (compact mode 後方互換)。
+ */
 export function HistoryChip({ chip }: { chip: HistoryChipData }) {
   const { t } = useTranslation();
-  const label = chip.labelKey ? t(chip.labelKey) : (chip.text ?? '');
-  if (label.length === 0) return null;
+  const valueLabel = chip.labelKey ? t(chip.labelKey) : (chip.text ?? '');
+  if (valueLabel.length === 0) return null;
+
+  if (chip.fieldLabelKey) {
+    // labeled 形式: 「label: [chip]」 を 1 行で表示 (label 薄色 + chip 有色 BG)
+    return (
+      <View style={styles.labeledRow}>
+        <ThemedText style={styles.fieldLabel} numberOfLines={1}>
+          {`${t(chip.fieldLabelKey)}:`}
+        </ThemedText>
+        <View style={styles.chip}>
+          <ThemedText style={styles.chipText} numberOfLines={1}>
+            {valueLabel}
+          </ThemedText>
+        </View>
+      </View>
+    );
+  }
+
+  // 後方互換: fieldLabelKey なしは chip のみ (旧 compact 表示)
   return (
     <View style={styles.chip}>
       <ThemedText style={styles.chipText} numberOfLines={1}>
-        {label}
+        {valueLabel}
       </ThemedText>
     </View>
   );
@@ -54,8 +76,10 @@ export type HistoryChipRowProps = {
 };
 
 /**
- * HistoryChipRow — chip 配列を横並びで表示 (折り返しあり)。
- * maxVisible 指定時は N 個表示 + 末尾「+overflow」 chip。
+ * HistoryChipRow — chip 配列を vertical stack で表示 (Phase θ で flexWrap → column 化)。
+ *
+ * Phase θ 変更点: chip が fieldLabelKey 付き = labeled 形式の時、 1 chip = 1 row で
+ * vertical 配置。 旧 flexWrap pattern (compact mode 後方互換) は fieldLabelKey なし時のみ。
  */
 export function HistoryChipRow({ chips, maxVisible }: HistoryChipRowProps) {
   if (chips.length === 0) return null;
@@ -64,8 +88,12 @@ export function HistoryChipRow({ chips, maxVisible }: HistoryChipRowProps) {
   const visible = chips.slice(0, limit);
   const overflow = Math.max(0, chips.length - limit);
 
+  // labeled 形式 (fieldLabelKey 付き chip がある) なら vertical stack、 そうでなければ flexWrap row
+  const hasLabeledChip = visible.some((c) => c.fieldLabelKey != null);
+  const containerStyle = hasLabeledChip ? styles.verticalStack : styles.flexRow;
+
   return (
-    <View style={styles.row}>
+    <View style={containerStyle}>
       {visible.map((c, i) => (
         <HistoryChip key={i} chip={c} />
       ))}
@@ -75,6 +103,18 @@ export function HistoryChipRow({ chips, maxVisible }: HistoryChipRowProps) {
 }
 
 const styles = StyleSheet.create({
+  // labeled 形式: 1 chip = 1 row (label + chip 横並び)
+  labeledRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  fieldLabel: {
+    fontSize: 11,
+    color: TEXT_SECONDARY,
+    minWidth: 64, // 「症状:」「処置:」 等の field label 幅統一
+  },
   chip: {
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -85,5 +125,8 @@ const styles = StyleSheet.create({
     maxWidth: 200,
   },
   chipText: { fontSize: 11, color: TEXT_SECONDARY, lineHeight: 14 },
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
+  // Phase θ 新規: labeled 形式の chip vertical stack
+  verticalStack: { flexDirection: 'column', gap: 4, marginTop: 4 },
+  // 後方互換: compact 形式の chip flexWrap row
+  flexRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
 });
