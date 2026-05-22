@@ -27,7 +27,6 @@
  *
  * 関連: ADR-0038 D1/D2 (RecordTabScreen + PlanScreen 並存、 共通 component 抽出は本 PR で実現)。
  */
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -35,7 +34,8 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { DropletIcon, EventIcon, MoreVerticalIcon, PlusIcon } from '@/src/components/icons';
+import { DropletIcon, EventIcon, MoreVerticalIcon } from '@/src/components/icons';
+import { FAB } from '@/src/components/common/FAB';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
 import { useToastStore } from '@/src/components/Toast';
@@ -50,7 +50,6 @@ import {
   BUTTON_SECONDARY_BG,
   BUTTON_SECONDARY_TEXT,
   DANGER,
-  ON_BRAND,
   TEXT_MUTED,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
@@ -97,7 +96,6 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
   const { t, lang } = useTranslation();
   const router = useRouter();
   const c = useColors();
-  const tabBarHeight = useBottomTabBarHeight();
   // mode 切替: schedule (予定追加 flow) / log (作業を記録 flow)
   const { startBulkAction } = useBulkActionFlow(mode === 'plan' ? 'schedule' : 'log');
 
@@ -744,27 +742,18 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
         </View>
       </ScrollView>
 
-      {/* FAB: plan は過去日 disabled、 record は常に有効 */}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t(fabAccessibilityLabelKey)}
-        accessibilityState={{ disabled: isFabDisabled }}
-        disabled={isFabDisabled}
-        style={[
-          styles.fab,
-          { backgroundColor: isFabDisabled ? TEXT_MUTED : c.tint, bottom: tabBarHeight + 16 },
-          isFabDisabled && styles.fabDisabled,
-        ]}
+      {/* FAB: plan は過去日 disabled、 record は常に有効 (ADR-0042 D3 で共通 component 化) */}
+      <FAB
         onPress={() =>
           startBulkAction(
             bonsai.map((b) => ({ id: b.id, name: b.name })),
             selectedDateKey,
           )
         }
+        accessibilityLabel={t(fabAccessibilityLabelKey)}
         testID={`e2e_${testIdPrefix}_fab_action`}
-      >
-        <PlusIcon size={28} color={ON_BRAND} />
-      </Pressable>
+        disabled={isFabDisabled}
+      />
 
       <ConfirmDialog
         visible={pendingDelete !== null}
@@ -946,20 +935,4 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
     gap: 6,
   },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    zIndex: 10,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  fabDisabled: { opacity: 0.5, elevation: 0, shadowOpacity: 0 },
 });

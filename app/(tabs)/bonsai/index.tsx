@@ -25,6 +25,7 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { PlusIcon, PotIcon } from '@/src/components/icons';
+import { FAB } from '@/src/components/common/FAB';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { ON_BRAND } from '@/src/core/theme/colors';
@@ -217,21 +218,12 @@ export default function BonsaiHomeScreen() {
           <BonsaiCard data={item} onPress={handleCardPress} testID={`e2e_bonsai_card_${item.id}`} />
         )}
       />
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('bonsaiCreateNew')}
-        style={[
-          styles.fab,
-          {
-            backgroundColor: c.tint,
-            bottom: tabBarHeight + AD_BANNER_HEIGHT_APPROX + 16,
-          },
-        ]}
+      <FAB
         onPress={openCreateSheet}
+        accessibilityLabel={t('bonsaiCreateNew')}
         testID="e2e_home_fab_create"
-      >
-        <PlusIcon size={28} color={ON_BRAND} />
-      </Pressable>
+        showAdBanner
+      />
       <AdBanner />
     </ThemedView>
   );
@@ -267,18 +259,4 @@ const styles = StyleSheet.create({
   },
   emptyCtaText: { fontSize: 20, fontWeight: '500', letterSpacing: 0.8 },
   listContent: { paddingTop: 12 },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-  },
 });
