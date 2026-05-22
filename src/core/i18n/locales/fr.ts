@@ -828,5 +828,6 @@ const fr: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '{count} plan(s) supprimé(s)',
   undoSnackbarLoggedDeleteN: '{count} enregistrement(s) supprimé(s)',
   undoSnackbarAction: 'Annuler',
+  recordFabLabel: '作業を記録',
 };
 export default fr;

@@ -814,5 +814,6 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '已删除 {count} 个计划',
   undoSnackbarLoggedDeleteN: '已删除 {count} 条记录',
   undoSnackbarAction: '撤销',
+  recordFabLabel: '作業を記録',
 };
 export default zhHans;

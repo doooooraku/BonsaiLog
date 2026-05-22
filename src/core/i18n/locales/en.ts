@@ -834,6 +834,7 @@ const baseEn = {
   undoSnackbarPlannedDeleteN: 'Deleted {count} plan(s)',
   undoSnackbarLoggedDeleteN: 'Deleted {count} record(s)',
   undoSnackbarAction: 'Undo',
+  recordFabLabel: '作業を記録',
 };
 
 export type TranslationKey = keyof typeof baseEn;

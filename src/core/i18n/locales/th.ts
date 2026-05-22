@@ -823,5 +823,6 @@ const th: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: 'ลบแผน {count} รายการแล้ว',
   undoSnackbarLoggedDeleteN: 'ลบบันทึก {count} รายการแล้ว',
   undoSnackbarAction: 'เลิกทำ',
+  recordFabLabel: '作業を記録',
 };
 export default th;
