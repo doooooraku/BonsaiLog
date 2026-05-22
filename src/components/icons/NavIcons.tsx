@@ -70,6 +70,33 @@ export function CalendarIcon({ size = 28, color = TEXT_PRIMARY }: IconProps) {
 }
 
 /**
+ * ノート (記録タブ TabBar アイコン)。 28px。
+ *
+ * ADR-0042 D2 で追加: 記録タブ icon を mockup HI.Droplet (= EventIcons.tsx の watering 用
+ * `DropletIcon` を size override で兼用) から本 icon に変更。 14 種別記録 (剪定 / 針金 /
+ * 植替 / 施肥 / 葉刈 / 葉透かし / 芽摘み / 芽切り / 苔の手入れ / 場所変え / 防虫消毒 /
+ * 葉の手当 / 針金外し) を象徴する帳簿型 icon。 EventIcons `DropletIcon` (watering 用 size=16)
+ * は無傷で温存 (本 ADR D2 訂正、 NavIcons には元から DropletIcon なし)。
+ *
+ * 形状: 開いた帳簿 (中央綴じ縦線 = 2 矩形分離 + 左右 2 ページ + 各ページ横線 2 本)。
+ * `LeafIcon` / `CalendarIcon` / `PencilNavIcon` と統一の strokeWidth=1.5。
+ */
+export function NotebookIcon({ size = 28, color = TEXT_PRIMARY }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 5h7v14H4zM13 5h7v14h-7z"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <Path d="M6 9h3M6 12h3" stroke={color} strokeWidth="1.25" strokeLinecap="round" />
+      <Path d="M15 9h3M15 12h3" stroke={color} strokeWidth="1.25" strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+/**
  * 鉛筆 (ふりかえりタブ TabBar アイコン)。28px。
  *
  * mockup v1.0 home-screens.jsx HI.Pencil (L172-177) を移植。

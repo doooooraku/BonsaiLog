@@ -31,6 +31,7 @@ export {
   EditIcon,
   LeafIcon,
   MoreVerticalIcon,
+  NotebookIcon,
   PencilNavIcon,
   PlusIcon,
   SearchIcon,
