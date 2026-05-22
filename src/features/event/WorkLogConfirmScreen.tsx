@@ -8,9 +8,9 @@
  * WorkLogConfirm (Single) と BulkLogConfirm (Bulk) で 1:1 UI 整合 (ADR-0029 D5)。
  *
  * Sess19 PR-4 (ADR-0031 D1 + D3 + D4): handleSubmit を直接 await pattern に書換、
- * stale closure bug 撲滅 (bonsai-detail useFocusEffect 経由を排除)。 保存後
- * `router.replace('/(tabs)/plan?selectedDateKey=...')` でカレンダー画面に遷移、
- * 記録した日付が選択状態で開く。
+ * stale closure bug 撲滅 (bonsai-detail useFocusEffect 経由を排除)。 Sess30 PR-2 (ADR-0038 整合):
+ * 保存後 `router.replace('/(tabs)/record?selectedDateKey=...')` で **記録 tab** に遷移、
+ * 記録した日付が選択状態で開く (旧 `/(tabs)/plan` は Sess23 ADR-0035 D6 由来、 D6 撤回で修正)。
  *
  * Sess19-3 (user 真意「F-05 不要」): F-05「気遣い型」 popup logic 削除、 直接書込のみ。
  *
@@ -163,8 +163,11 @@ export default function WorkLogConfirmScreen() {
         } else {
           useToastStore.getState().show(t('workLogDoneToast'));
         }
+        // Sess30 PR-2 (ADR-0038 D1 整合): 保存後の遷移先を **記録 tab** に変更。
+        // WorkLogConfirmScreen は status='logged' を保存 (新規記録 or 予定→記録変換)
+        // → record tab に遷移が user 直感整合 (旧 `/(tabs)/plan` は Sess23 ADR-0035 D6 由来、 D6 撤回で修正)。
         const dateKey = occurredAtDate || occurredAtUtc.slice(0, 10);
-        router.replace(`/(tabs)/plan?selectedDateKey=${dateKey}` as Href);
+        router.replace(`/(tabs)/record?selectedDateKey=${dateKey}` as Href);
       } catch (err) {
         Alert.alert(t('error'), String(err));
         setIsSubmitting(false);
