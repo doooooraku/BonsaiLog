@@ -12,16 +12,10 @@
  */
 import { router } from 'expo-router';
 import React from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   BG_SURFACE,
@@ -35,6 +29,9 @@ import { usePickerStore } from '@/src/stores/pickerStore';
 
 export default function BonsaiCreateScreen() {
   const { t } = useTranslation();
+  // Sess28 PR-2 (ADR-0037 D1 / R-46): キーボード回避 props を共通 hook で取得。
+  // Android で behavior='height' offset=0、 iOS で behavior='padding' offset=Stack header 高さ。
+  const kavProps = useKeyboardAvoidingProps();
 
   const form = useBonsaiBasicForm({
     editingBonsai: null,
@@ -46,11 +43,7 @@ export default function BonsaiCreateScreen() {
 
   return (
     <View style={styles.container} testID="e2e_bonsai_create_screen">
-      {/* Sess15 PR-TT: KeyboardAvoidingView でキーボード表示時に入力欄が隠れないよう調整。 */}
-      <KeyboardAvoidingView
-        style={styles.flexOne}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
