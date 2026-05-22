@@ -271,3 +271,68 @@
 ---
 
 ## Notes Amended (随時更新)
+
+### 2026-05-23 Sess34 PR-7 実機検証で発覚した 2 課題を Phase θ で改訂
+
+Sess34 PR-7 実機検証 (#793) で本 ADR Phase η (PR-1〜7) は全 sub-decision 動作確認したが、 user 実機操作で以下 2 課題が浮上 → 本 Notes Amended で **Phase θ (PR-8a〜PR-11)** として改訂:
+
+#### 課題 1: detailed mode layout が見にくい (user 要望)
+
+実機 SS (`/tmp/sess34-pr7-ss/s_detailed-02-full-row.png`) で確認した現状:
+
+- 写真 80×60 (画面幅の 8%) で内容判別不可
+- chip 「[葉焼け] [Antiseptic_applied_and_p··]」 では「これは何の項目?」 不明
+- 重要情報 (写真・chip・memo) が左右に細切れ分散
+
+user 確定 6 件 (Phase θ 議論):
+
+| #   | 項目                               | 確定                                                             |
+| --- | ---------------------------------- | ---------------------------------------------------------------- |
+| 1   | 写真サイズ                         | **4:3 (height 約 540px、 横幅 full)**                            |
+| 2   | bonsai-detail history も同サイズ   | **一貫性優先 (整合性 lv 2 厳格維持)**                            |
+| 3   | labeled chip 表示形式              | **「label: [chip]」 (label 薄色 TEXT_SECONDARY + chip 有色 BG)** |
+| 4   | leaf_first_aid Icon                | **新規 LeafAidIcon (葉 + 絆創膏、 ACCENT_BARK + DANGER 2 色)**   |
+| 5   | wiring の WiringPeriodDisplay 配置 | **labeled chip 内に同列表示**                                    |
+| 6   | 写真ゼロ時の挙動                   | **写真 block 完全非表示 (row 高さ動的)**                         |
+
+#### 課題 2: EventIcon leaf_first_aid case 漏れ (silent bug)
+
+`src/components/icons/EventIcons.tsx` の EventIcon switch に leaf_first_aid case がない → default null → 「葉の手当」 group / row の iconBox が空白。 Sess16 PR-E で payload schema 追加した際に EventIcon の同期漏れ (= buildHistoryChips も同 pattern、 Phase η PR-2 で fix 済 と全く同じ)。
+
+#### Phase θ Decision 改訂 (本 ADR D1-D9 への amendment)
+
+- **D1 改訂**: detailed mode 内 layout を vertical stack に刷新 (盆栽名 → 区切り線 → labeled chips → 区切り線 → memo → 「もっと見る」 → 写真 block)
+- **D2 改訂**: 写真 strip 80×60 thumbnail を **横幅 full × 4:3 aspect (約 720-padding × 540)** に拡張。 既存 `EventRowPhotoStrip.tsx` は温存 (deprecate しない、 forward-only)、 新規 `EventRowPhotoBlock.tsx` 作成
+- **D4 改訂**: chip 表示を 「[chip]」 単独 → 「label: [chip]」 labeled 形式に変更。 HistoryChip type に `fieldLabelKey?: TranslationKey` 追加 (optional、 既存 callsite 後方互換)
+- **D5 維持**: memo 3 行 + 「もっと見る」 リンク (Phase η で実装済、 変更なし)
+- **D9 維持**: wiring scheduled_unwire の二重表示削除 (Phase η で fix 済)
+- **新 D10 (Phase θ)**: EventIcon switch に leaf_first_aid case 追加 + 新規 LeafAidIcon SVG component。 14 種別 exhaustive 走査 unit test 新規追加で再発防止
+- **新 D11 (Phase θ)**: wiring の WiringPeriodDisplay と scheduledUnwireLabel を labeled chip 内に同列表示 (「装着期間: [N 週]」、 「解除予定日: [日付]」)
+- **新 D12 (Phase θ)**: 写真ゼロ event は写真 block 完全非表示 (条件 render)、 row 高さ動的縮小 (約 200-300px)
+
+#### Follow-ups 修正
+
+- **R-25 構造系 5 項目化 (元 Phase η PR-9)** → Phase θ 完了後の **PR-13** に後送り。 detailed mode 内 sub-layout (vertical stack 構造) の評価項目を含めて拡張するため
+- **R-52 候補「list row 表示拡張時の visible-by-default 行高制約 max 220px」** → Phase θ で写真有時 約 600px、 写真無時 約 200-300px と動的化のため **撤回 or 緩和** (本 ADR で明記)
+- **新規 R-XX 候補「EventType 追加時の 3 同期確認チェックリスト」** (buildHistoryChips + EventIcon + i18n) を PR-13 で起票検討 (Sess16 PR-E → Sess34 PR-2 → Sess34 PR-8b で 3 回連鎖した silent miss の構造防止)
+
+#### Phase θ PR 分割 (5 PR)
+
+| PR    | 内容                                                                                  | 主な対象ファイル                                                                                 |
+| ----- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| PR-8a | 本 Notes Amended (Phase θ 計画明文化)                                                 | `docs/adr/ADR-0041-event-row-display-mode.md`                                                    |
+| PR-8b | LeafAidIcon SVG + EventIcon switch case + exhaustive 走査 unit test                   | `src/components/icons/EventIcons.tsx`、 `__tests__/components/icons/EventIcons.test.tsx`         |
+| PR-9  | buildHistoryChips labelKey 拡張 + HistoryChip labeled 形式 + i18n 19 言語 × 約 20 key | `buildHistoryChips.ts`、 `HistoryChip.tsx`、 `src/core/i18n/locales/*.ts` × 19、 一括追加 script |
+| PR-10 | EventRow detailed layout 全面刷新 + EventRowPhotoBlock 新規                           | `EventRow.tsx`、 `EventRowPhotoBlock.tsx` (新規)                                                 |
+| PR-11 | Phase θ 実機 SS 検証 (R-25 sub-layout 評価)                                           | `docs/reference/tasks/lessons/sess34-phase-theta-verification.md`                                |
+
+#### Phase θ 後 (PR-12〜13)
+
+- **PR-12**: functional_spec §23 + design_system EventRow contract SoT 改訂 (元 Phase η PR-8)
+- **PR-13**: PR テンプレ §7.5 R-25 5 項目化 + ESLint switch-exhaustiveness-check (元 Phase η PR-9)
+
+#### 関連
+
+- 本 ADR D1/D2/D4 (Phase θ で改訂)、 D5/D9 (Phase η で実装済維持)、 新 D10/D11/D12 (Phase θ で追加)
+- Phase η Status: PR-1〜7 全 MERGED 完了 (`docs/reference/tasks/lessons/sess34-pr7-verification.md` で動作確認済)
+- 業界 1 次情報: 既存 Phase η 起票時の引用 (Material 3 List / iOS HIG Lists / WCAG 2.1 SC 2.5.8) 維持、 Phase θ の labeled chip は WCAG 1.4.1 (色のみ識別禁止) 整合 (テキスト両方表現)
