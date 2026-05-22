@@ -573,14 +573,8 @@ export default function BonsaiDetailScreen() {
           ]}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Issue #439: Hero を ScrollView 内に移動 (画像が見える範囲より下のみスクロールできる問題を解消、Hero 含めて全画面スクロール可能に) */}
-          <BonsaiHero
-            coverUri={coverUri}
-            bonsaiName={item.name}
-            speciesCommonName={item.species?.commonName ?? null}
-            speciesScientificName={item.species?.scientificName ?? null}
-            styleLabel={item.style ? t(`bonsaiStyle_${item.style}` as TranslationKey) : null}
-          />
+          {/* Sess28 PR-4 (ADR-0037 D2): Hero は盆栽名のみ表示 (180px、 樹種・樹形 = 基本情報タブで参照)。 */}
+          <BonsaiHero coverUri={coverUri} bonsaiName={item.name} />
 
           {/* Issue #440 Phase 1: 旧 水やり概要セクション (LastWateredText + 水やり履歴を見るボタン)
             は削除。横断 watering 履歴は CareHub (ふりかえりタブ) 経由で到達可能。 */}
