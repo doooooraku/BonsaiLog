@@ -283,8 +283,9 @@
   6. **判断材料の明示**: description で **メリット / デメリット / 推薦理由**を 1 文ずつ明示
 - **トリガー**: user が `AskUserQuestion` 応答で **「clarify したい」「全く理解できない」「もっと簡単に」 のいずれかを 1 回でも発した時点で即時 Self-check 起動**、 説明品質に問題ありとして仕切り直し
 - **根拠**: Sess29 議論で「A-1/A-2/A-3」「B-X/B-Y/B-W」 等の記号 + ADR-0035 D6 / R-47 等の専門用語を多用、 user が clarify 要求を **3 回繰返** → 議論ロス約 30 分。 user instructions (CLAUDE.md「中学生にもわかる」) を agent が議論モードに入ると逸脱する認知バイアス
-- **自動化**: 当面 code review + agent self-discipline。 Phase Future: `scripts/check-discuss-jargon.mjs` 候補 (議論ログから参照記号 + clarify 要求回数を集計、 閾値超過で警告)
-- **関連**: Sess30 retro `docs/reference/tasks/lessons/sess30-retro.md` / `~/.claude/CLAUDE.md` (中学生レベル説明 user instructions) / `/discuss` skill template (Future Work で本ルール組込予定)
+- **自動化**: ✅ **Sess30 PR-5 完遂** — `scripts/check-discuss-jargon.mjs` で議論文 (file or stdin) を解析、 7 種の参照記号 pattern (ADR-XXXX / ADR-XXXX D-X / R-XX / §N / 案 X-Y / SessN / PR #N) を grep し、 周辺 ±80 文字に併記表現「(= ...)」「= ...」 等の有無を判定。 違反 3 件以上で exit 1 (CI ブロック)。 `pnpm lint:discuss-jargon <file>` or `cat draft.md | pnpm lint:discuss-jargon` で実行、 `--json` で JSON 出力 (CI 連携)。 unit test 10 件で構造保証 (`__tests__/scripts/check-discuss-jargon.test.js`)。
+- **使用例 (議論時 self-check)**: AskUserQuestion 投下予定の text を一時 file に保存 → `pnpm lint:discuss-jargon /tmp/q.md` で違反検出 → 違反箇所に「(= 中学生語訳)」 を併記 → 再実行で 0 件確認 → 投下
+- **関連**: Sess30 retro `docs/reference/tasks/lessons/sess30-retro.md` / `~/.claude/CLAUDE.md` (中学生レベル説明 user instructions) / `/discuss` skill template (Sess30 別作業で本ルール組込) / `scripts/check-discuss-jargon.mjs` (本 PR で実装)
 
 ---
 
