@@ -259,6 +259,46 @@ export async function getCoverPhoto(bonsaiId: string): Promise<PhotoRead | null>
 }
 
 /**
+ * event ID で紐付け済写真を全件取得 (Sess34 ADR-0041 PR-3、 photo-viewer modal で全写真 swipe 表示用)。
+ *
+ * order_index 昇順、 UI 用に絶対 URI 化。 event_id が NULL の写真は除外。
+ * 旧 logged events (event_id 未紐付け、 2026-05-15 以前) は空配列を返す (graceful degradation)。
+ */
+export async function getAllPhotosByEventId(eventId: string): Promise<PhotoRead[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<Photo>(
+    'SELECT * FROM photos WHERE event_id = ? ORDER BY order_index ASC;',
+    [eventId],
+  );
+  return rows.map(toPhotoRead);
+}
+
+/**
+ * event ID で紐付け済写真の「代表 1 枚」 を取得 (Sess34 ADR-0041 PR-3、 EventRowPhotoStrip 表示用)。
+ *
+ * 優先順:
+ *   1. is_cover=1 の写真 (event 紐付け内で cover 指定がある場合)
+ *   2. order_index 最小の写真 (fallback)
+ *   3. null (写真ゼロ件、 旧 logged events 等)
+ *
+ * 残枚数 (+N badge) は呼出側で `getAllPhotosByEventId(eventId).length - 1` で算出。
+ */
+export async function getRepresentativePhotoByEventId(eventId: string): Promise<PhotoRead | null> {
+  const db = await getDb();
+  const cover = await db.getFirstAsync<Photo>(
+    'SELECT * FROM photos WHERE event_id = ? AND is_cover = 1 LIMIT 1;',
+    [eventId],
+  );
+  if (cover) return toPhotoRead(cover);
+
+  const first = await db.getFirstAsync<Photo>(
+    'SELECT * FROM photos WHERE event_id = ? ORDER BY order_index ASC LIMIT 1;',
+    [eventId],
+  );
+  return first ? toPhotoRead(first) : null;
+}
+
+/**
  * 年次タイムライン用: 写真を taken_at の年でグルーピングして返却。
  * taken_at が NULL の写真は created_at 年でグルーピング。
  */

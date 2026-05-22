@@ -35,10 +35,32 @@ describe('photoRepository file structure', () => {
       'reorderPhotos',
       'deletePhoto',
       'deleteAllPhotosForBonsai',
+      // Sess34 ADR-0041 PR-3: event 紐付け写真 query (EventRowPhotoStrip + photo-viewer modal 用)
+      'getAllPhotosByEventId',
+      'getRepresentativePhotoByEventId',
     ];
     for (const name of requiredExports) {
       expect(source).toMatch(new RegExp(`export\\s+(async\\s+)?function\\s+${name}`));
     }
+  });
+
+  test('Sess34 PR-3: getRepresentativePhotoByEventId は is_cover 優先 → order_index fallback', () => {
+    // 関数定義内で is_cover=1 SELECT が先行、 fallback で ORDER BY order_index ASC LIMIT 1
+    const fnMatch = source.match(/getRepresentativePhotoByEventId[\s\S]*?\n}/);
+    expect(fnMatch).not.toBeNull();
+    const body = fnMatch![0];
+    // is_cover=1 query が先
+    expect(body).toMatch(/event_id\s*=\s*\?\s+AND\s+is_cover\s*=\s*1[\s\S]+LIMIT\s+1/i);
+    // fallback で order_index ASC
+    expect(body).toMatch(/ORDER\s+BY\s+order_index\s+ASC\s+LIMIT\s+1/i);
+  });
+
+  test('Sess34 PR-3: getAllPhotosByEventId は event_id = ? + ORDER BY order_index ASC', () => {
+    const fnMatch = source.match(/getAllPhotosByEventId[\s\S]*?\n}/);
+    expect(fnMatch).not.toBeNull();
+    const body = fnMatch![0];
+    expect(body).toMatch(/event_id\s*=\s*\?/);
+    expect(body).toMatch(/ORDER\s+BY\s+order_index\s+ASC/i);
   });
 
   test('PHOTO_PATH_ANCHOR が bonsailog/photos/ (Repolog PR #281 lesson)', () => {
