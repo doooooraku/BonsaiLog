@@ -298,10 +298,16 @@ export default function PlanScreen() {
     (status: 'planned' | 'logged', type: EventType, groupEvents: readonly Event[]) => {
       triggerLongPressHaptic();
       const hasWiring = type === 'wiring' || groupEvents.some((e) => e.type === 'wiring');
+      // Sess27 PR-6 (Issue 5): count===1 case (group ×1) で「まとめて」 は日本語として不自然、
+      // 個別 row と同じ Single title key を再利用 (既存 i18n key、 追加翻訳不要)
+      const isSingle = groupEvents.length === 1;
       setPendingDelete({
         eventIds: groupEvents.map((e) => e.id),
-        titleKey:
-          status === 'planned'
+        titleKey: isSingle
+          ? status === 'planned'
+            ? 'planEventDeleteConfirmPlannedSingleTitle'
+            : 'planEventDeleteConfirmLoggedSingleTitle'
+          : status === 'planned'
             ? 'planEventDeleteConfirmPlannedGroupTitle'
             : 'planEventDeleteConfirmLoggedGroupTitle',
         count: groupEvents.length,
