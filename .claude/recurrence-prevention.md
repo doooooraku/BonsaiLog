@@ -122,6 +122,7 @@
 | **R-42** | 色で意味を伝える UI は アイコン or pattern 必ず併用 (WCAG 1.4.1) | 状態 (planned/logged/error/warning) や severity を **色のみ** で識別する UI 設計禁止。 アイコン形状 (●/○/✓) or pattern (縞模様) で重複表現。 WCAG 2.1 SC 1.4.1 Level A 必達。 Sess22 ADR-0034 D3 由来 (planned/logged dot 緑/茶 色のみ識別が色覚多様性 + シニア老眼 + 屋外モードで不能)。 詳細: `recurrence-prevention/specialized.md` |
 | **R-43** | business operation 単位の transaction helper 必須 (atomic) | 1 業務操作で複数 DB 書込 (例: 「予定→記録変換」 = softDelete + createEvent) を扱う場合、 必ず単一 `db.withTransactionAsync` で wrap (SQLite ACID 保証)。 単独 API 組合せで呼出側 transaction 制御は NG、 business operation 専用 helper 必須。 Sess23 ADR-0035 D7 由来 (convertPlannedToRecorded)、 photoRepository 既存 pattern 参考。 詳細: `recurrence-prevention/specialized.md` |
 | **R-52** | EventType 追加時 4 同期確認チェックリスト (silent bug 連鎖防止) | EVENT_TYPES に新規 type 追加時、 (1) WorkLogTypeFormFields の case (2) payloadValidator schema (3) buildHistoryChips switch case (4) EventIcon switch case の **4 同期必須**。 Sess16 PR-E (leaf_first_aid 追加) で 3 回連鎖 silent bug 発覚 (Phase η PR-2 buildHistoryChips / Phase θ PR-8b EventIcon / PR-Q-fix #799 payloadValidator)。 ESLint switch-exhaustiveness-check + exhaustive 走査 unit test で構造防止。 詳細: `recurrence-prevention/specialized.md` |
+| **R-53** | タブ icon 選定 4 基準 + 重複検出 lint (Sess36 ADR-0042) | 画面下部 4 タブの icon 変更・追加時、 (1) 機能整合 (2) 重複排除 (`scripts/check-icon-duplication.mjs` CI 強制) (3) 4 ペルソナ ✕ なし (4) mockup 整合 or 上書き明示 の 4 基準を ADR 改訂で必須化。 Sess36 ADR-0042 で「記録タブ = 水滴」 が EventIcons watering と size override 兼用 + 機能整合 bug で発覚、 lint 自動化で恒久防止。 詳細: `recurrence-prevention/specialized.md` |
 
 ---
 

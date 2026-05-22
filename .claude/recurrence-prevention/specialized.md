@@ -411,6 +411,24 @@
 
 ---
 
+### R-53. タブ icon 選定 4 基準 + 重複検出 lint (ADR-0042 D1/D4 由来、 Sess36)
+
+- **適用範囲**: 画面下部 4 タブの icon を **変更・追加** する時 (`app/(tabs)/_layout.tsx` の `tabBarIcon` 変更を伴う PR)。 NavIcons.tsx / EventIcons.tsx の新 icon 追加時も同様。
+- **必須 4 基準** (ADR-0042 D1):
+  1. **機能整合**: icon が表すメンタルモデルがタブの **全機能** を象徴 (例: 「記録」 = 14 種別記録 → 「水滴」 (1 種別 = watering のみ) は不可)
+  2. **重複排除**: NavIcons / EventIcons / 他 icon file で **同名関数を export しない** (`scripts/check-icon-duplication.mjs` で CI 強制、 Sess36 PR-5)。 用途が異なる類似 icon (例: 水滴) が必要なら別名 (例: NavIcons は `WaterDropletIcon`、 EventIcons は `DropletIcon` のまま) で区別
+  3. **4 ペルソナ ✕ なし**: `docs/reference/personas.md` 4 名全員で ✕ がない (1 名でも ✕ なら再検討、 R-10 整合)
+  4. **mockup 整合 or 上書き明示**: `docs/mockups/v1.0/wireframes/*.jsx` HI.\* との整合が原則、 上書き時は ADR で理由明示 (ADR-0042 D2 が該当)
+- **根拠**: Sess36 ADR-0042 議論で発覚した「記録タブ icon = 水滴」 (EventIcons watering icon の size override 兼用) で「記録 = 水やり専用」 と新規ユーザーに誤認させる機能整合性 bug。 加えて Explore agent 報告の事実誤認 (「NavIcons に DropletIcon あり」 と誤認 → 実際は EventIcons 兼用) が PR-1 起票後に判明、 ADR Notes Amended で訂正した経緯。 lint 自動化で人力 review 依存から脱却。
+- **自動化**: `scripts/check-icon-duplication.mjs` (Sess36 PR-5)、 `pnpm verify:icon-duplication` 経由で `pnpm verify` chain に組込済。 現状重複ゼロ baseline を CI 強制 → 偶発的重複が入った瞬間 fail。
+- **検証手順** (タブ icon 変更 PR レビュー時):
+  - [ ] PR 本文に「4 基準を満たす」 説明あり (機能整合 / 重複排除 / 4 ペルソナ評価 / mockup 整合 or 上書き明示)
+  - [ ] `node scripts/check-icon-duplication.mjs` で 0 errors
+  - [ ] mockup 上書きの場合は ADR Notes Amended で履歴追記 (ADR-0020 の rename / icon 差替履歴と同 pattern)
+- **関連**: ADR-0042 D1/D4 (本ルール由来) / design_system §25 (タブアイコン SoT) §26 (FAB SoT) / `src/components/icons/NavIcons.tsx` `EventIcons.tsx` / Sess36 PR-1〜6
+
+---
+
 ## 関連
 
 - 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-52 索引 + 運用ルール)
