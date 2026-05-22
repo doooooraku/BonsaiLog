@@ -1,0 +1,61 @@
+# maestro/flows/sess28-bonsai-create-keyboard.yml
+# Sess28 PR-8 (ADR-0037 D1 / R-46): Home FAB → 盆栽新規作成 modal → メモ欄 focus 確認。
+# キーボード起動時もメモ欄が見える (useKeyboardAvoidingProps() 共通 hook の効果検証)。
+# Dev Client 環境では URL list 経由で bundle 読込が必要 (Sess27 PR-7 改修パターン整合)。
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: false
+
+# Dev Client URL list (初回 launch時のみ): bundle 読込を tap で起動
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 30000
+
+# bundle 読込完了後 home list 表示確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_list'
+    timeout: 30000
+
+# Home FAB tap → 盆栽新規作成 modal 表示
+- tapOn:
+    id: 'e2e_home_fab_create'
+- waitForAnimationToEnd:
+    timeout: 3000
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_create_screen'
+    timeout: 10000
+
+# 盆栽名 (必須) を入力
+- tapOn:
+    id: 'e2e_bonsai_create_name'
+- inputText: 'sess28 keyboard test'
+
+# scroll down to メモ欄 (フォーム末尾)
+- scrollUntilVisible:
+    element:
+      id: 'e2e_bonsai_create_memo'
+    direction: DOWN
+    timeout: 10000
+
+# メモ欄 tap → キーボード起動、 KAV で見えるべき
+- tapOn:
+    id: 'e2e_bonsai_create_memo'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# キーボード起動時もメモ欄が visible (KAV が機能している証拠)
+- assertVisible:
+    id: 'e2e_bonsai_create_memo'
+
+# 文字入力で実際に書込確認 (キーボード被りで input 不可だと此処で fail)
+- inputText: 'memo test 1234567890'
+
+# 保存 button 押下できるか (footer 可視性確認)
+- assertVisible:
+    id: 'e2e_bonsai_create_submit'
