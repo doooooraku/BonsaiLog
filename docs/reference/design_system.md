@@ -843,13 +843,37 @@ const handleNoteFocus = React.useCallback(() => {
 
 新規 EventType 追加時は `__tests__/components/icons/EventIcons.test.tsx` の exhaustive 走査で **non-null assertion fail** で silent miss 検出。
 
-### 24-6. 単位表示の規約
+### 24-6. 単位表示の規約 (Sess37 PR-1 R-54 連動)
 
 - 鉢サイズ等の長さ値は DB に **cm canonical** 保存 (`lengthToCanonical()` で cm 統一)
-- chip 表示は **常に "Xcm"** (`buildHistoryChips` 内 `${payload.pot_size_cm}cm` hardcode)
+- 長さ単位 (mm/cm) は SI 国際共通で chip text に hardcode 可: `${payload.wire_size_mm}mm` / `${payload.pot_size_cm}cm`
+- **言語依存単位 (倍 / 本 / pcs 等) は i18n key 経由必須** (R-54):
+  - form input suffix と chip 表示で **同一 `workLog*Unit` i18n key** を参照 (DRY、 19 言語完備)
+  - `HistoryChip` data に `valueUnitKey: TranslationKey` 格納、 component で `${chip.text}${t(chip.valueUnitKey)}` で結合表示
+  - 例: pest_control dilution_ratio → `workLogPestDilutionUnit` (ja「倍」 / en「x」 / ko「배」 / ar「مرة」)
+  - 例: candle_cut count → `workLogCandleCountUnit` (ja「本」 / en「pcs」 / zh「个」)
 - user 入力時の単位 (cm/mm/inch) は保存後失われる、 表示は cm 固定
 
-### 24-7. 関連
+### 24-7. EventRow display typography token (Sess37 PR-1 / ADR-0029 拡張)
+
+`src/core/theme/typography.ts` に **eventRow\* prefix で scope 明示** (form\* token と並列):
+
+| token                      | fontSize | lineHeight | fontWeight | color          | 用途                                                                           |
+| -------------------------- | -------- | ---------- | ---------- | -------------- | ------------------------------------------------------------------------------ |
+| `eventRowChipText`         | 14       | 20         | (default)  | TEXT_SECONDARY | HistoryChip 値表示 (旧 11 → WCAG AA / Material 3 body medium)                  |
+| `eventRowChipLabel`        | 14       | 20         | (default)  | TEXT_SECONDARY | HistoryChip 「希釈倍率:」 等 field label (chip 整合)                           |
+| `eventRowMemo`             | 15       | 22         | (default)  | TEXT_SECONDARY | EventRow detailed mode の memo 本文 (旧 12 → 長文可読性向上、 lineHeight 1.47) |
+| `eventRowReadMoreLink`     | 14       | 20         | (default)  | TEXT_SECONDARY | 「もっと見る ▶」「折りたたむ ▲」 link (chip と統一)                            |
+| `eventRowMemoSectionLabel` | 12       | 16         | 600        | TEXT_MUTED     | memo セクションヘッダー「メモ」 (Sess37 PR-1 C6、 左 border なし)              |
+
+設計判断:
+
+- 盆栽 user (高齢層 60-70 代) WCAG AA 推奨 minimum 12px 達成 + Material 3 body medium 14sp baseline 採用
+- detailedTitle 16px は維持 (盆栽名など見出しレベル、 fontSize 拡大対象外)
+- chip `maxWidth` 200 → **240** に拡大 (fontSize 14 化で truncate 防止)
+- memo セクションラベル「メモ」 は左 border **なし** (user 指摘確定、 視覚ノイズ防止)
+
+### 24-8. 関連
 
 - ADR-0041 (本セクション由来、 Phase η + θ、 Sess34)
 - ADR-0034 D4 (整合性レベル 2、 Phase η Notes Amended で displayMode 含む)
