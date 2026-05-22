@@ -263,71 +263,87 @@ function toIsoUtc(yyyymmdd: string): string {
 
 /**
  * OTHER_EVENTS 仕様 (idx 順序は SeedLangPack.otherEventNotes と対応)。
- * Sess28 PR-6 (ADR-0037 P0-1): mockup `bonsai-detail-history-01.png` 整合のため、
- * 各 def に payload (chip 表示用) を追加。 payload は buildHistoryChips.ts の対応 field
- * (body_part / pot_id / soil_mix / kind / amount / agent / target / action / to) に整合。
+ * Sess28 PR-6 (ADR-0037 P0-1): mockup `bonsai-detail-history-01.png` 整合のため payload 追加。
+ * Sess38 PR-1 (Phase ι-2、 issue #806): Sess16 PR-E 以前の旧 field 名 / 日本語 enum 値を
+ * 新 schema (payloadValidator picklist + WorkLogTypeFormFields.buildWorkLogPayload SoT) に整合化。
+ * 12 種類で旧 → 新 enum 値変換 (pruning / repotting / fertilizing / pest_control / leaf_trimming /
+ * defoliation / deshoot / candle_cut / moss_care / unwiring / wiring)、 position_change のみ free text で維持。
+ *
+ * @see src/features/event/payloadValidator.ts (新 schema SoT)
+ * @see src/features/event/WorkLogTypeFormFields.tsx buildWorkLogPayload (form 側 SoT)
  */
-const OTHER_EVENT_DEFS: readonly {
+// Sess38 PR-1: unit test 用に export (`__tests__/dev/seedTestData.test.ts` から参照)
+export const OTHER_EVENT_DEFS: readonly {
   bonsaiIdx: number;
   type: EventType;
   daysAgo: number;
   payload?: Record<string, unknown>;
 }[] = [
-  { bonsaiIdx: 0, type: 'pruning', daysAgo: 30, payload: { body_part: '枝' } },
-  { bonsaiIdx: 5, type: 'pruning', daysAgo: 45, payload: { body_part: '幹' } },
+  // pruning: parts (string[]) + amount enum (Sess38 PR-1: body_part → parts + amount)
+  { bonsaiIdx: 0, type: 'pruning', daysAgo: 30, payload: { parts: ['eda'], amount: 'some' } },
+  { bonsaiIdx: 5, type: 'pruning', daysAgo: 45, payload: { parts: ['miki'], amount: 'some' } },
   // wiring/unwiring は既存 payload なし (wiring 専用ループ 6-5 で payload 付き別建て生成)
   { bonsaiIdx: 0, type: 'wiring', daysAgo: 98 },
   { bonsaiIdx: 1, type: 'wiring', daysAgo: 70 },
-  { bonsaiIdx: 4, type: 'unwiring', daysAgo: 60, payload: { body_part: '枝' } },
+  // unwiring: body_part enum (Sess38 PR-1: '枝' → 'eda')
+  { bonsaiIdx: 4, type: 'unwiring', daysAgo: 60, payload: { body_part: 'eda' } },
+  // repotting: pot_size_cm (number) + root_pruning enum (Sess38 PR-1: pot_id 文字列 → number)
   {
     bonsaiIdx: 1,
     type: 'repotting',
     daysAgo: 75,
-    payload: { pot_id: '鉢18cm', soil_mix: '赤玉土:桐生砂=7:3' },
+    payload: { pot_size_cm: 18, soil_mix: '赤玉土:桐生砂=7:3', root_pruning: 'light' },
   },
   {
     bonsaiIdx: 3,
     type: 'repotting',
     daysAgo: 90,
-    payload: { pot_id: '鉢20cm', soil_mix: '赤玉土:鹿沼土=6:4' },
+    payload: { pot_size_cm: 20, soil_mix: '赤玉土:鹿沼土=6:4', root_pruning: 'light' },
   },
+  // fertilizing: kind enum (Sess38 PR-1: 日本語 → 英語 enum、 玉肥/油かす = 固形 = 'solid')
   {
     bonsaiIdx: 0,
     type: 'fertilizing',
     daysAgo: 15,
-    payload: { kind: '玉肥', amount: 'バイオゴールド' },
+    payload: { kind: 'solid', amount: 'バイオゴールド' },
   },
   {
     bonsaiIdx: 2,
     type: 'fertilizing',
     daysAgo: 20,
-    payload: { kind: '液肥', amount: 'ハイポネックス' },
+    payload: { kind: 'liquid', amount: 'ハイポネックス' },
   },
   {
     bonsaiIdx: 4,
     type: 'fertilizing',
     daysAgo: 40,
-    payload: { kind: '油かす', amount: '適量' },
+    payload: { kind: 'solid', amount: '油かす' },
   },
+  // pest_control: target enum (Sess38 PR-1: 予防 → 'prevention'、 アブラムシ (害虫対象) → 'treatment')
   {
     bonsaiIdx: 0,
     type: 'pest_control',
     daysAgo: 25,
-    payload: { agent: '石灰硫黄合剤', target: '予防' },
+    payload: { agent: '石灰硫黄合剤', target: 'prevention' },
   },
   {
     bonsaiIdx: 9,
     type: 'pest_control',
     daysAgo: 50,
-    payload: { agent: 'オルトラン水和剤', target: 'アブラムシ' },
+    payload: { agent: 'オルトラン水和剤', target: 'treatment' },
   },
-  { bonsaiIdx: 4, type: 'leaf_trimming', daysAgo: 50, payload: { body_part: '全体' } },
-  { bonsaiIdx: 1, type: 'defoliation', daysAgo: 100, payload: { body_part: '全体' } },
-  { bonsaiIdx: 1, type: 'deshoot', daysAgo: 80, payload: { body_part: '二番芽' } },
-  { bonsaiIdx: 2, type: 'deshoot', daysAgo: 65, payload: { body_part: '不要芽' } },
-  { bonsaiIdx: 0, type: 'candle_cut', daysAgo: 55, payload: { body_part: '全体' } },
-  { bonsaiIdx: 6, type: 'candle_cut', daysAgo: 60, payload: { body_part: '半分' } },
-  { bonsaiIdx: 5, type: 'moss_care', daysAgo: 35, payload: { action: 'はりかえ' } },
+  // leaf_trimming / defoliation: body_part enum (Sess38 PR-1: '全体' = 思い切り → 'heavy')
+  { bonsaiIdx: 4, type: 'leaf_trimming', daysAgo: 50, payload: { body_part: 'heavy' } },
+  { bonsaiIdx: 1, type: 'defoliation', daysAgo: 100, payload: { body_part: 'heavy' } },
+  // deshoot: body_part enum (Sess38 PR-1: 二番芽/不要芽 = 部分的 → 'moderate')
+  { bonsaiIdx: 1, type: 'deshoot', daysAgo: 80, payload: { body_part: 'moderate' } },
+  { bonsaiIdx: 2, type: 'deshoot', daysAgo: 65, payload: { body_part: 'moderate' } },
+  // candle_cut: body_part enum (Sess38 PR-1: 全体 → 'heavy'、 半分 → 'moderate')
+  { bonsaiIdx: 0, type: 'candle_cut', daysAgo: 55, payload: { body_part: 'heavy' } },
+  { bonsaiIdx: 6, type: 'candle_cut', daysAgo: 60, payload: { body_part: 'moderate' } },
+  // moss_care: action enum (Sess38 PR-1: はりかえ → 'attach')
+  { bonsaiIdx: 5, type: 'moss_care', daysAgo: 35, payload: { action: 'attach' } },
+  // position_change: free text (修正不要、 payloadValidator は free text 許容)
   { bonsaiIdx: 3, type: 'position_change', daysAgo: 10, payload: { to: 'ベランダ南' } },
   { bonsaiIdx: 9, type: 'position_change', daysAgo: 12, payload: { to: '棚下' } },
 ];
@@ -638,8 +654,15 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
     wire_size_mm: number;
     body_part: string;
   }[] = [
-    { bonsaiIdx: 0, weeksAgo: 14, scheduledUnwireDaysAhead: -14, wire_size_mm: 2, body_part: '幹' },
-    { bonsaiIdx: 1, weeksAgo: 10, scheduledUnwireDaysAhead: 14, wire_size_mm: 1, body_part: '枝' },
+    // Sess38 PR-1 (Phase ι-2): body_part 日本語 → 新 enum ('幹' → 'miki' / '枝' → 'eda')
+    {
+      bonsaiIdx: 0,
+      weeksAgo: 14,
+      scheduledUnwireDaysAhead: -14,
+      wire_size_mm: 2,
+      body_part: 'miki',
+    },
+    { bonsaiIdx: 1, weeksAgo: 10, scheduledUnwireDaysAhead: 14, wire_size_mm: 1, body_part: 'eda' },
   ];
   for (const w of wiringSpecs) {
     try {
