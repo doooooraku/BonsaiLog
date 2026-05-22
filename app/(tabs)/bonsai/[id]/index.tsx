@@ -8,6 +8,7 @@ import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { CameraIcon, EventIcon } from '@/src/components/icons';
+import { FAB } from '@/src/components/common/FAB';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 import {
   BonsaiBasicFormFields,
@@ -884,28 +885,24 @@ export default function BonsaiDetailScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Issue #440 Phase 1: 緑 FAB (画面右下、tab bar の上)。作業履歴タブ表示中のみ可視、
-          tap で WorkPickerSheet を開く (mockup `bonsai-detail-history-01.png` の緑「+」FAB 整合)。 */}
+      {/* Issue #440 Phase 1: 緑 FAB (画面右下、tab bar の上)。 作業履歴タブ表示中のみ可視、
+          tap で WorkPickerSheet を開く (mockup `bonsai-detail-history-01.png` の緑「+」FAB 整合)。
+          ADR-0042 D3 / Sess36 PR-3 で共通 <FAB /> に統一、 旧 ThemedText「+」 文字列を
+          PlusIcon SVG に統一 + SafeArea 反映 (旧 bottom=24 固定の bug 解消)。 */}
       {activeTab === 'history' && (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('eventLogCta')}
-          style={styles.historyFab}
+        <FAB
           onPress={() => showEventTypePicker()}
+          accessibilityLabel={t('eventLogCta')}
           testID="e2e_history_fab"
-        >
-          <ThemedText style={styles.historyFabPlus}>+</ThemedText>
-        </Pressable>
+        />
       )}
 
-      {/* Issue #441 Phase 1 + Phase G2 part 1 (ADR-0024): 予定タブ FAB。tap で
+      {/* Issue #441 Phase 1 + Phase G2 part 1 (ADR-0024): 予定タブ FAB。 tap で
           `/work-picker?mode=schedule` (formSheet) を開く (旧 schedulePickerRef は廃止)。
-          mockup `bonsai-detail-timeline-01/02.png` の緑「+」FAB 整合。 */}
+          mockup `bonsai-detail-timeline-01/02.png` の緑「+」FAB 整合。
+          ADR-0042 D3 / Sess36 PR-3 で共通 <FAB /> に統一。 */}
       {activeTab === 'timeline' && (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('addScheduleCta')}
-          style={styles.historyFab}
+        <FAB
           onPress={() => {
             if (!item) return;
             // Sess16 PR-Q: isPine URL param 撤廃 (松類限定 candle_cut 表示廃止、 全種別常時表示)
@@ -913,10 +910,9 @@ export default function BonsaiDetailScreen() {
               `/work-picker?bonsaiName=${encodeURIComponent(item.name)}&mode=schedule` as Href,
             );
           }}
+          accessibilityLabel={t('addScheduleCta')}
           testID="e2e_timeline_fab"
-        >
-          <ThemedText style={styles.historyFabPlus}>+</ThemedText>
-        </Pressable>
+        />
       )}
 
       {/* Phase G2 part 1 (ADR-0024): 旧 <WorkPickerSheet> 2 件 (記録モード + 予定モード) は
@@ -1166,24 +1162,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   historyExpandedRowContent: { flex: 1, paddingLeft: 8 },
-  // Issue #440 Phase 1: 緑円形 FAB (mockup right-bottom)
-  historyFab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: BRAND_GREEN,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  historyFabPlus: { color: '#FFFFFF', fontSize: 28, fontWeight: '300', lineHeight: 32 },
+  // Sess36 PR-3 ADR-0042 D3: 旧 historyFab + historyFabPlus は共通 <FAB /> に移行、 撤去済。
   // Issue #441 Phase 1: 予定タブ timeline UI (mockup `bonsai-detail-timeline-01/02.png` 整合)
   timelineHeader: {
     flexDirection: 'row',
