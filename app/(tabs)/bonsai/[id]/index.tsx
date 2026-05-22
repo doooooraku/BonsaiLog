@@ -780,6 +780,7 @@ export default function BonsaiDetailScreen() {
                                     onLongPress={confirmDeleteEvent}
                                     onKebabPress={kebabDeleteEvent}
                                     kebabTestID={`e2e_bonsai_event_kebab_${ev.id}`}
+                                    displayMode="detailed"
                                   />
                                 </View>
                               </View>
@@ -800,6 +801,7 @@ export default function BonsaiDetailScreen() {
                     onLongPress={confirmDeleteEvent}
                     onKebabPress={kebabDeleteEvent}
                     kebabTestID={`e2e_bonsai_event_kebab_${entry.event.id}`}
+                    displayMode="detailed"
                   />
                 );
               })}

@@ -727,6 +727,7 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
                                     kebabTestID={`e2e_${testIdPrefix}_event_kebab_${e.id}`}
                                     showBonsaiName
                                     indent
+                                    displayMode="detailed"
                                   />
                                 </View>
                               );
