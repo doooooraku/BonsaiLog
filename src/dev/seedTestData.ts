@@ -261,29 +261,75 @@ function toIsoUtc(yyyymmdd: string): string {
 // 共通 seed logic (言語非依存部分 + SeedLangPack でテキスト受け取り)
 // ---------------------------------------------------------------------------
 
-/** OTHER_EVENTS 仕様 (idx 順序は SeedLangPack.otherEventNotes と対応)。 */
-const OTHER_EVENT_DEFS: readonly { bonsaiIdx: number; type: EventType; daysAgo: number }[] = [
-  { bonsaiIdx: 0, type: 'pruning', daysAgo: 30 },
-  { bonsaiIdx: 5, type: 'pruning', daysAgo: 45 },
+/**
+ * OTHER_EVENTS 仕様 (idx 順序は SeedLangPack.otherEventNotes と対応)。
+ * Sess28 PR-6 (ADR-0037 P0-1): mockup `bonsai-detail-history-01.png` 整合のため、
+ * 各 def に payload (chip 表示用) を追加。 payload は buildHistoryChips.ts の対応 field
+ * (body_part / pot_id / soil_mix / kind / amount / agent / target / action / to) に整合。
+ */
+const OTHER_EVENT_DEFS: readonly {
+  bonsaiIdx: number;
+  type: EventType;
+  daysAgo: number;
+  payload?: Record<string, unknown>;
+}[] = [
+  { bonsaiIdx: 0, type: 'pruning', daysAgo: 30, payload: { body_part: '枝' } },
+  { bonsaiIdx: 5, type: 'pruning', daysAgo: 45, payload: { body_part: '幹' } },
+  // wiring/unwiring は既存 payload なし (wiring 専用ループ 6-5 で payload 付き別建て生成)
   { bonsaiIdx: 0, type: 'wiring', daysAgo: 98 },
   { bonsaiIdx: 1, type: 'wiring', daysAgo: 70 },
-  { bonsaiIdx: 4, type: 'unwiring', daysAgo: 60 },
-  { bonsaiIdx: 1, type: 'repotting', daysAgo: 75 },
-  { bonsaiIdx: 3, type: 'repotting', daysAgo: 90 },
-  { bonsaiIdx: 0, type: 'fertilizing', daysAgo: 15 },
-  { bonsaiIdx: 2, type: 'fertilizing', daysAgo: 20 },
-  { bonsaiIdx: 4, type: 'fertilizing', daysAgo: 40 },
-  { bonsaiIdx: 0, type: 'pest_control', daysAgo: 25 },
-  { bonsaiIdx: 9, type: 'pest_control', daysAgo: 50 },
-  { bonsaiIdx: 4, type: 'leaf_trimming', daysAgo: 50 },
-  { bonsaiIdx: 1, type: 'defoliation', daysAgo: 100 },
-  { bonsaiIdx: 1, type: 'deshoot', daysAgo: 80 },
-  { bonsaiIdx: 2, type: 'deshoot', daysAgo: 65 },
-  { bonsaiIdx: 0, type: 'candle_cut', daysAgo: 55 },
-  { bonsaiIdx: 6, type: 'candle_cut', daysAgo: 60 },
-  { bonsaiIdx: 5, type: 'moss_care', daysAgo: 35 },
-  { bonsaiIdx: 3, type: 'position_change', daysAgo: 10 },
-  { bonsaiIdx: 9, type: 'position_change', daysAgo: 12 },
+  { bonsaiIdx: 4, type: 'unwiring', daysAgo: 60, payload: { body_part: '枝' } },
+  {
+    bonsaiIdx: 1,
+    type: 'repotting',
+    daysAgo: 75,
+    payload: { pot_id: '鉢18cm', soil_mix: '赤玉土:桐生砂=7:3' },
+  },
+  {
+    bonsaiIdx: 3,
+    type: 'repotting',
+    daysAgo: 90,
+    payload: { pot_id: '鉢20cm', soil_mix: '赤玉土:鹿沼土=6:4' },
+  },
+  {
+    bonsaiIdx: 0,
+    type: 'fertilizing',
+    daysAgo: 15,
+    payload: { kind: '玉肥', amount: 'バイオゴールド' },
+  },
+  {
+    bonsaiIdx: 2,
+    type: 'fertilizing',
+    daysAgo: 20,
+    payload: { kind: '液肥', amount: 'ハイポネックス' },
+  },
+  {
+    bonsaiIdx: 4,
+    type: 'fertilizing',
+    daysAgo: 40,
+    payload: { kind: '油かす', amount: '適量' },
+  },
+  {
+    bonsaiIdx: 0,
+    type: 'pest_control',
+    daysAgo: 25,
+    payload: { agent: '石灰硫黄合剤', target: '予防' },
+  },
+  {
+    bonsaiIdx: 9,
+    type: 'pest_control',
+    daysAgo: 50,
+    payload: { agent: 'オルトラン水和剤', target: 'アブラムシ' },
+  },
+  { bonsaiIdx: 4, type: 'leaf_trimming', daysAgo: 50, payload: { body_part: '全体' } },
+  { bonsaiIdx: 1, type: 'defoliation', daysAgo: 100, payload: { body_part: '全体' } },
+  { bonsaiIdx: 1, type: 'deshoot', daysAgo: 80, payload: { body_part: '二番芽' } },
+  { bonsaiIdx: 2, type: 'deshoot', daysAgo: 65, payload: { body_part: '不要芽' } },
+  { bonsaiIdx: 0, type: 'candle_cut', daysAgo: 55, payload: { body_part: '全体' } },
+  { bonsaiIdx: 6, type: 'candle_cut', daysAgo: 60, payload: { body_part: '半分' } },
+  { bonsaiIdx: 5, type: 'moss_care', daysAgo: 35, payload: { action: 'はりかえ' } },
+  { bonsaiIdx: 3, type: 'position_change', daysAgo: 10, payload: { to: 'ベランダ南' } },
+  { bonsaiIdx: 9, type: 'position_change', daysAgo: 12, payload: { to: '棚下' } },
 ];
 
 async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
@@ -525,6 +571,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
   }
 
   // 6-2. その他の event_type (全 12 種、 each 1+ 件)、 OTHER_EVENT_DEFS + pack.otherEventNotes
+  // Sess28 PR-6 (ADR-0037 P0-1): def.payload があれば HistoryChip 表示用に渡す。
   for (const [defIdx, def] of OTHER_EVENT_DEFS.entries()) {
     try {
       await createEvent({
@@ -533,6 +580,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
         status: 'logged',
         occurredAtUtc: pastUtc(def.daysAgo, 9),
         note: pack.otherEventNotes[defIdx],
+        ...(def.payload ? { payload: def.payload } : {}),
       });
       eventCount += 1;
     } catch (err) {
