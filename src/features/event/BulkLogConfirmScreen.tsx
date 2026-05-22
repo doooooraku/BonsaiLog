@@ -248,9 +248,13 @@ export default function BulkLogConfirmScreen() {
         <ThemedText style={styles.sub}>{t('bulkLogConfirmSub')}</ThemedText>
       </View>
 
+      {/* Sess32 PR-2: ScrollView horizontal は default で flex 親に縦 stretch される事象 (Sess31 実機 SS で
+          chips header 縦サイズ約 400px の余白発生) を `style={styles.chipsScroll}` で `flexGrow: 0` 明示 +
+          height 固定で抑制。 chips は natural height (chip 約 30px + padding 上下 8 = 約 46px) に収まる。 */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.chipsScroll}
         contentContainerStyle={styles.chipsRow}
       >
         {selectedBonsais.map((b) => (
@@ -353,10 +357,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   sub: { fontSize: 12, color: TEXT_SECONDARY },
+  // Sess32 PR-2: ScrollView outer style に flexGrow:0 明示で flex 親による縦 stretch を抑制、
+  // chips header の縦余白約 400px 問題 (Sess31 実機 SS sess31-04a 〜 04c 等) を解消。
+  // alignItems:'center' で chip が縦中央寄せ (chips 自然高さ約 46px の中で chip 30px 配置)。
+  chipsScroll: {
+    flexGrow: 0,
+  },
   chipsRow: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     gap: 6,
+    alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: BORDER_DEFAULT,
   },
