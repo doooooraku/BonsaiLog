@@ -16,7 +16,7 @@ import { formatElapsedDays } from '@/src/core/datetime';
 import type { BonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getActiveEventsByBonsai } from '@/src/db/eventRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
-import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 
 import type { BonsaiCardData } from './BonsaiCard';
 

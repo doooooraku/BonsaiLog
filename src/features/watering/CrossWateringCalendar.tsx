@@ -23,7 +23,7 @@ import {
   TEXT_PRIMARY,
 } from '@/src/core/theme/colors';
 import type { Event } from '@/src/db/schema';
-import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 
 function getMonthDays(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate();

@@ -11,7 +11,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { classifyLastWatered, type LastWateredKind } from '@/src/features/watering/wateringHeatmap';
+import { classifyLastWatered, type LastWateredKind } from '@/src/features/watering/dateUtils';
 
 type Props = {
   daysSinceLast: number | null;

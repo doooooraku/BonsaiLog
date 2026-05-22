@@ -66,7 +66,7 @@ import { cancelForEvents } from '@/src/features/notification/cancelForEvent';
 import { CalendarDot } from '@/src/features/plan/CalendarDot';
 import { CalendarLegend } from '@/src/features/plan/CalendarLegend';
 import { computeDotsByDay } from '@/src/features/plan/dotsByDay';
-import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import { usePickerStore } from '@/src/stores/pickerStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
