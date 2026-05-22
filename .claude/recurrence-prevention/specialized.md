@@ -429,6 +429,50 @@
 
 ---
 
+### R-54. 単位表現は form / chip 両画面で i18n unit key 一元化 (Sess37 PR-1 由来)
+
+- **適用範囲**: number field に suffix 単位 (倍 / 本 / mm / cm / pcs / 年 等) を表示する全 component。 form input の suffix と display chip / row の text 両方で同 SoT (i18n key) 参照を必須化。
+- **必須運用**:
+  1. **i18n key 命名規則**: `workLog<FieldName>Unit` で統一 (例: `workLogPestDilutionUnit` / `workLogCandleCountUnit` / `workLogWireGaugeUnit` (新規時) 等)。 form 側 suffix と chip 側 `valueUnitKey` で同 key を参照。
+  2. **form 側参照**: `LabeledNumberInput` 等の `suffix` prop に `t('workLog*Unit')` で渡す。 hardcode (例: `suffix="倍"`) 禁止、 必ず i18n 経由。
+  3. **chip 側参照**: `HistoryChip` data に `valueUnitKey?: TranslationKey` を格納し、 `HistoryChip.tsx` component が `${chip.text}${t(chip.valueUnitKey)}` で結合表示 (Sess37 PR-1 確立 pattern)。
+  4. **19 言語完備**: form / chip いずれかで新 unit key を追加する時は **必ず 19 言語全部に翻訳追加** (ADR-0033 D1 ペルソナ翻訳 workflow)、 form 既存 key を chip でも流用する場合は追加翻訳ゼロで OK。
+- **根拠**: Sess37 PR-1 C4 由来 — `pest_control.dilution_ratio` chip が `×1000` で表示されるが form input は「倍」 suffix 表示で integrity レベル 2 違反 (ADR-0034 D4 違反)。 同様に `candle_cut.count` も `×5` で「本」 単位なし。 form と display で異なる単位表現は user 認知不整合の元凶。 既存 i18n key (`workLogPestDilutionUnit` 19 言語完備、 ja「倍」/ en「x」/ ko「배」 等) は form でのみ使用、 chip 側は hardcode `×` で SoT 二重化 → R-54 で一元化を明文化。
+- **検出方法**:
+  - **grep 検出**: `grep -rE "(suffix=|text:.*\`(?!.*workLog)).*[倍本mm cm本本]" src/` で hardcoded 単位 suffix を warning (Sess37 PR-2 で `scripts/check-unit-i18n.mjs` 起票検討、 任意)
+  - **R-55 連動**: 新規 number field 追加時は R-55 関連項目調査で form / chip / SoT 整合性を必ず Self-check
+- **検証手順** (number field 追加 PR レビュー時):
+  - [ ] form input suffix が `t('workLog*Unit')` 経由 (hardcode 「倍」「本」 等なし)
+  - [ ] chip 生成 (buildHistoryChips 等) で `valueUnitKey: 'workLog*Unit'` 格納
+  - [ ] 同 key が 19 言語完備 (`pnpm i18n:check` 緑)
+  - [ ] 実機 SS で form 入力中の suffix + chip 表示が **同一文言** で表示 (integrity レベル 2)
+- **関連**: ADR-0027 (14 種別 form schema) / ADR-0029 (Form Atom Typography) / ADR-0041 D5 (EventRow displayMode、 Notes Amended 予定) / Sess37 PR-1 (#814) / R-55 (関連項目網羅調査)
+
+---
+
+### R-55. 問題発見時の関連項目網羅調査必須 (Sess37 PR-1 由来)
+
+- **適用範囲**: user / Plan agent / QA / Maestro / CI から問題 / 修正対象を 1 つでも指摘されたら、 **実装着手前に同 pattern を持つ他箇所を grep / inventory で網羅調査** する。 単一箇所修正 → user 再修正リクエストの recurrence loop を構造的に防止。
+- **Self-check 5 項目** (実装着手前 = 最終提案前に必ず実行):
+  1. **同パターン全件 grep**: 指摘箇所の表現 / 単位 / format を 14 種別 / 全 component / 全 i18n locale で grep
+  2. **i18n key inventory**: 関連 key が 19 言語完備か / 既存流用可能か / 追加必要か grep 確認
+  3. **整合性検証**: form ↔ display ↔ docs SoT (functional_spec / design_system / ADR) で integrity チェック
+  4. **副次的問題発見の能動的姿勢**: grep 結果から「他にもおかしい箇所」 を 1 件以上発見しようとする (発見できなければ「網羅調査済」 と明示)
+  5. **PR 範囲拡張判断**: 関連項目を本 PR に含めるか別 PR にするかを user に明示提示 (1 件のみ修正 vs 統合修正のトレードオフを user 判断)
+- **根拠**: Sess37 PR-1 C4 で「`×1000` / `×5` を単位表示に直して」 user 指示 → 関連調査で **4 件の副次問題発見** (en `workLogCandleCountUnit: 'count'` が「5count」 で不自然 / `position_change` の `→` 矢印が label「移動先:」 と冗長 / 19 言語 i18n key が form 側で既完備で流用可能 / `wire_size_mm` / `pot_size_cm` の hardcoded は SI 単位で OK 確認)。 user 再修正リクエストを **1 PR で未然防止** + i18n 追加翻訳 **38 → 0 entries** に削減。
+- **R-54 との関係**: R-54 は「単位表現の SoT 一元化」 で具体的 (number + suffix の場合)、 R-55 は「関連項目網羅調査」 で一般的 (全 pattern 対象)。 R-54 違反は R-55 の 1 ケース。
+- **検証手順** (PR レビュー時):
+  - [ ] PR 本文に「R-55 Self-check 5 項目 実施結果」 セクションあり
+  - [ ] 関連箇所の grep 結果を PR 本文に貼付 (例: `grep -rE "対象 pattern" src/` 結果)
+  - [ ] 副次的問題発見の能動的姿勢 (発見した副次問題、 もしくは「網羅調査済 (副次なし)」 と明示)
+  - [ ] PR 範囲拡張判断の user 承認記録 (本 PR に含めるか別 PR か)
+- **自動化** (PR-2 以降検討、 任意):
+  - `scripts/check-related-coverage.mjs` で「同一 i18n key prefix の grep カバレッジ」 を warning 出力
+  - global `~/.claude/CLAUDE.md` §2 に「関連項目網羅調査」 原則として昇華推奨 (user 承認後手動編集)
+- **関連**: ADR-0027/0029/0041 / R-54 (単位 SoT) / R-9 (既存スクリプト先読み) / R-25 (構造系 5 項目) / Sess37 PR-1 (#814) / 全プロジェクト共通の「測定 2 回、 切断 1 回」 原則
+
+---
+
 ## 関連
 
 - 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-52 索引 + 運用ルール)
