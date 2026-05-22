@@ -10,7 +10,7 @@
  *
  * 用途: BonsaiBasicForm の名前 / 入手元 / 鉢材質 / メモ / 鉢幅 / 鉢深さ など。
  */
-import React, { useState } from 'react';
+import React, { forwardRef, useState } from 'react';
 import {
   StyleSheet,
   TextInput,
@@ -64,101 +64,112 @@ export type LabeledTextInputProps = {
   onFocus?: () => void;
 };
 
-export function LabeledTextInput({
-  label,
-  required,
-  optional,
-  optionalText = '任意',
-  requiredText = '必須',
-  overlimitText,
-  value,
-  onChangeText,
-  placeholder,
-  maxLength,
-  showCounter,
-  keyboardType,
-  multiline,
-  numberOfLines,
-  editable = true,
-  accessibilityLabel,
-  testID,
-  onFocus,
-}: LabeledTextInputProps) {
-  const length = value.length;
-  const overLimit = maxLength != null && length >= maxLength;
-  const showCountText = showCounter && maxLength != null;
+/**
+ * Sess32 PR-1 (R-46 v3 拡張): forwardRef 化、 内部 TextInput の ref を expose。
+ * 親が `inputRef.current?.measureLayout(scrollNode, ...)` で precise scroll を実装する用途。
+ * @see .claude/recurrence-prevention/specialized.md R-46 v3 (中盤 input は measureLayout 必須)
+ */
+export const LabeledTextInput = forwardRef<TextInput, LabeledTextInputProps>(
+  function LabeledTextInput(
+    {
+      label,
+      required,
+      optional,
+      optionalText = '任意',
+      requiredText = '必須',
+      overlimitText,
+      value,
+      onChangeText,
+      placeholder,
+      maxLength,
+      showCounter,
+      keyboardType,
+      multiline,
+      numberOfLines,
+      editable = true,
+      accessibilityLabel,
+      testID,
+      onFocus,
+    },
+    ref,
+  ) {
+    const length = value.length;
+    const overLimit = maxLength != null && length >= maxLength;
+    const showCountText = showCounter && maxLength != null;
 
-  // Sess14 PR-Q: label="" の場合 labelRow skip (caller 側で外部ラベル提供時の余白問題回避)。
-  const hasLabel = label.length > 0;
+    // Sess14 PR-Q: label="" の場合 labelRow skip (caller 側で外部ラベル提供時の余白問題回避)。
+    const hasLabel = label.length > 0;
 
-  // Sess15 PR-TT: multiline auto-grow (Q18 H1 採用)。
-  // minHeight = 96 (4 行)、 maxHeight = 380 (約 16 行) で上限制御、 超過は内部 scroll。
-  const MULTILINE_MIN_HEIGHT = 96;
-  const MULTILINE_MAX_HEIGHT = 380;
-  const [contentHeight, setContentHeight] = useState<number>(MULTILINE_MIN_HEIGHT);
-  const handleContentSizeChange = (
-    e: NativeSyntheticEvent<TextInputContentSizeChangeEventData>,
-  ) => {
-    if (!multiline) return;
-    const next = Math.min(
-      MULTILINE_MAX_HEIGHT,
-      Math.max(MULTILINE_MIN_HEIGHT, e.nativeEvent.contentSize.height + 16),
+    // Sess15 PR-TT: multiline auto-grow (Q18 H1 採用)。
+    // minHeight = 96 (4 行)、 maxHeight = 380 (約 16 行) で上限制御、 超過は内部 scroll。
+    const MULTILINE_MIN_HEIGHT = 96;
+    const MULTILINE_MAX_HEIGHT = 380;
+    const [contentHeight, setContentHeight] = useState<number>(MULTILINE_MIN_HEIGHT);
+    const handleContentSizeChange = (
+      e: NativeSyntheticEvent<TextInputContentSizeChangeEventData>,
+    ) => {
+      if (!multiline) return;
+      const next = Math.min(
+        MULTILINE_MAX_HEIGHT,
+        Math.max(MULTILINE_MIN_HEIGHT, e.nativeEvent.contentSize.height + 16),
+      );
+      setContentHeight(next);
+    };
+    return (
+      <View style={styles.field}>
+        {hasLabel && (
+          <View style={styles.labelRow}>
+            <ThemedText type="defaultSemiBold">{label}</ThemedText>
+            {required && (
+              <View style={styles.requiredBadge}>
+                <ThemedText style={styles.requiredText}>{requiredText}</ThemedText>
+              </View>
+            )}
+            {optional && !required && (
+              <ThemedText style={styles.optionalText}>{optionalText}</ThemedText>
+            )}
+            <View style={{ flex: 1 }} />
+            {showCountText && (
+              <ThemedText style={[styles.counter, overLimit && styles.counterOver]}>
+                {length}/{maxLength}
+              </ThemedText>
+            )}
+          </View>
+        )}
+        <TextInput
+          ref={ref}
+          style={[
+            styles.input,
+            multiline && styles.inputMultiline,
+            // Sess15 PR-TT: multiline auto-grow (動的高さ)。
+            multiline && { height: contentHeight },
+            overLimit && styles.inputOverLimit,
+            !editable && styles.inputDisabled,
+          ]}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={FORM_PLACEHOLDER_COLOR}
+          maxLength={maxLength}
+          keyboardType={keyboardType}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          textAlignVertical={multiline ? 'top' : 'auto'}
+          editable={editable}
+          accessibilityLabel={accessibilityLabel ?? label}
+          testID={testID}
+          onContentSizeChange={handleContentSizeChange}
+          onFocus={onFocus}
+        />
+        {overLimit && (
+          <ThemedText style={styles.overlimitText}>
+            {overlimitText ?? `${maxLength}文字に達しました`}
+          </ThemedText>
+        )}
+      </View>
     );
-    setContentHeight(next);
-  };
-  return (
-    <View style={styles.field}>
-      {hasLabel && (
-        <View style={styles.labelRow}>
-          <ThemedText type="defaultSemiBold">{label}</ThemedText>
-          {required && (
-            <View style={styles.requiredBadge}>
-              <ThemedText style={styles.requiredText}>{requiredText}</ThemedText>
-            </View>
-          )}
-          {optional && !required && (
-            <ThemedText style={styles.optionalText}>{optionalText}</ThemedText>
-          )}
-          <View style={{ flex: 1 }} />
-          {showCountText && (
-            <ThemedText style={[styles.counter, overLimit && styles.counterOver]}>
-              {length}/{maxLength}
-            </ThemedText>
-          )}
-        </View>
-      )}
-      <TextInput
-        style={[
-          styles.input,
-          multiline && styles.inputMultiline,
-          // Sess15 PR-TT: multiline auto-grow (動的高さ)。
-          multiline && { height: contentHeight },
-          overLimit && styles.inputOverLimit,
-          !editable && styles.inputDisabled,
-        ]}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={FORM_PLACEHOLDER_COLOR}
-        maxLength={maxLength}
-        keyboardType={keyboardType}
-        multiline={multiline}
-        numberOfLines={numberOfLines}
-        textAlignVertical={multiline ? 'top' : 'auto'}
-        editable={editable}
-        accessibilityLabel={accessibilityLabel ?? label}
-        testID={testID}
-        onContentSizeChange={handleContentSizeChange}
-        onFocus={onFocus}
-      />
-      {overLimit && (
-        <ThemedText style={styles.overlimitText}>
-          {overlimitText ?? `${maxLength}文字に達しました`}
-        </ThemedText>
-      )}
-    </View>
-  );
-}
+  },
+);
 
 const styles = StyleSheet.create({
   field: { gap: 6 },

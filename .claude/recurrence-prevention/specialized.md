@@ -302,14 +302,29 @@
 
 ---
 
-### R-46. キーボード被り完全対処 = KAV + ScrollView auto-scroll の **2 点セット**必須 (Sess28 起票、 Sess31 拡張)
+### R-46. キーボード被り完全対処 = KAV + ScrollView auto-scroll の **2 点セット**必須 (Sess28 起票、 Sess31 拡張、 Sess32 v3 拡張)
 
-- **ルール (Sess31 拡張)**: フォーム input を含む全 screen / modal で以下 **2 点セット**を必ず実装すること。 どちらか片方のみは **不十分** (Sess28 では KAV 単体で「対応完了」 と誤認、 Sess30 実機検証で再発判明):
+- **ルール (Sess32 v3 拡張)**: フォーム input を含む全 screen / modal で **2 点セット**を必ず実装。 input の位置 (末尾 / 中盤) に応じて auto-scroll の手段を **2 タイプ使い分け**:
 
-  1. **KAV (KeyboardAvoidingView)**: `useKeyboardAvoidingProps()` (`src/core/hooks/useKeyboardAvoidingProps.ts`) を利用、 `<KeyboardAvoidingView {...kavProps}>` で展開。 **KAV は container 高さを縮めるのみ**。
+  1. **KAV (KeyboardAvoidingView)**: `useKeyboardAvoidingProps()` を利用、 `<KeyboardAvoidingView {...kavProps}>` で展開。 **KAV は container 高さを縮めるのみ**。
      - iOS: `behavior='padding'`、 offset = `useHeaderHeight()` 動的取得
      - Android: `behavior='height'`、 offset = 0、 windowSoftInputMode=adjustResize と協調
-  2. **ScrollView auto-scroll**: ScrollView に `ref` を持たせ、 末尾配置 multiline input (メモ欄等) の `onFocus` で `scrollRef.current?.scrollToEnd({ animated: true })` を呼ぶ。 IME 起動アニメーション完了待ちで `setTimeout(..., 300)` 推奨。 共通 component (`LabeledTextInput` 等) は `onFocus?: () => void` prop を expose、 各 form screen で配線する。
+  2. **ScrollView auto-scroll** (input 位置で **2 タイプ使い分け**):
+     - **タイプ A (末尾 input)**: ScrollView 末尾配置 input は `scrollRef.current?.scrollToEnd({ animated: true })` で OK。 例: BonsaiCreateScreen / WorkLogConfirm / bonsai-detail 基本情報タブ (Sess31 PR-1 で 3 form 経路 ✅ 確認済)
+     - **タイプ B (中盤 input)** (Sess32 PR-1 で確立): ScrollView 中盤配置 input (後ろに他フィールドがある場合) は **forwardRef + measureLayout** で精密 scroll が必須。 例: BulkLogConfirmScreen (メモ欄の後に写真フィールドあり) → scrollToEnd では効果不全 (max scroll 値で頭打ち、 Sess31 PR-2 で発覚)
+       ```tsx
+       const inputRef = React.useRef<TextInput>(null);
+       const handleFocus = () => {
+         setTimeout(() => {
+           const scrollNode = findNodeHandle(scrollRef.current);
+           if (!scrollNode) return;
+           inputRef.current?.measureLayout(scrollNode, (_x, y) => {
+             scrollRef.current?.scrollTo({ y: Math.max(0, y - 80), animated: true });
+           }, () => scrollRef.current?.scrollToEnd({ animated: true })); // fallback
+         }, 350);
+       };
+       ```
+     - 共通 component (`LabeledTextInput`) は `forwardRef<TextInput>` 化 + `onFocus?` prop expose で両タイプ対応 (Sess32 PR-1 で実装完了)
 
 - **根拠 (Sess30 retro → Sess31 構造化)**:
   - Sess15 PR-TT で `behavior={Platform.OS === 'ios' ? 'padding' : undefined}` (Android で KAV 無効化 anti-pattern) → Sess28 で user 報告で顕在化
