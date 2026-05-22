@@ -61,11 +61,10 @@ import {
   bulkSoftDeleteEvents,
   createEvent,
   getActiveEventsByBonsai,
-  restoreEvents,
 } from '@/src/db/eventRepository';
 import { cancelForEvents } from '@/src/features/notification/cancelForEvent';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
-import { showUndoToast } from '@/src/components/Toast';
+import { useToastStore } from '@/src/components/Toast';
 import * as Haptics from 'expo-haptics';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { type Event, type EventType } from '@/src/db/schema';
@@ -242,7 +241,7 @@ export default function BonsaiDetailScreen() {
   // Issue #440 Phase 1: 作業履歴タブのフィルタ chip (すべて / 水やり / 剪定 / 針金 / 植替え)。
   // mockup `bonsai-detail-history-01.png` 整合、横並び single row。
   type HistoryFilter = 'all' | 'watering' | 'pruning' | 'wiring' | 'repotting';
-  // ADR-0036 D1-D5 (Sess25 PR-ζ-2-⑧): event 削除 ConfirmDialog state + Undo callback
+  // ADR-0036 D1-D4 (Sess25 PR-ζ-2-⑧、 Sess27 PR-4 で D5 撤回): event 削除 ConfirmDialog state + 通知 Toast のみ
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const handleConfirmDelete = useCallback(async () => {
     if (!pendingDeleteId) return;
@@ -251,16 +250,8 @@ export default function BonsaiDetailScreen() {
     await bulkSoftDeleteEvents([id]); // R-43 atomic、 単体でも bulk wrapper 経由で統一
     await cancelForEvents([id], t);
     await reload();
-    // ADR-0036 D5 / R-44: 4 秒 UndoSnackbar、 [元に戻す] tap で restore
-    showUndoToast(
-      t('undoSnackbarLoggedDeleteN').replace('{count}', '1'),
-      t('undoSnackbarAction'),
-      async () => {
-        await restoreEvents([id]);
-        await cancelForEvents([id], t);
-        await reload();
-      },
-    );
+    // Sess27 PR-4 (ADR-0036 D5 撤回、 R-44 緩和): Undo button 撤回、 通知 Toast のみ
+    useToastStore.getState().show(t('undoSnackbarLoggedDeleteN').replace('{count}', '1'));
   }, [pendingDeleteId, t, reload]);
   const handleCancelDelete = useCallback(() => setPendingDeleteId(null), []);
 
