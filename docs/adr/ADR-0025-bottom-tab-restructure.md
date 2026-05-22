@@ -383,3 +383,19 @@ ADR-0035 D6 + D9 (Phase ε) で本 ADR の 2 § を改訂:
   - `app/(tabs)/look-back/index.tsx` cards 配列 calendar entry 削除、 関連 i18n / 純関数 / test 物理削除 (PR-5-1)
 - 本 ADR §① (4 タブ構成) / §③ (SearchHeader simplify + 盆栽タブ長押し撤廃) / §④ (設定 = Header Cog 経由) は **引き続き有効**
 - 関連: ADR-0035 D6 / D9 / PR-2-2 (案 X revert) / PR-5-1 (5→4 card 戻し)
+
+---
+
+### 2026-05-22 Sess29 PR-6 — §② 案 A2 (RecordTabScreen 独立) Notes Amended (ADR-0038 連動)
+
+**改訂内容**:
+
+- **§② 案 X revert (Sess23 ADR-0035 D6)** を **再 revert** (= Sess23 の取消を Sess29 で更に取消)
+- 新動線 = **案 A2「記録 tab tap → RecordTabScreen 独立画面」** (ADR-0038 D1)
+  - PlanScreen と同等画面構造、 default 今日、 FAB = `useBulkActionFlow('log')` 「作業を記録」 5 ステップ flow
+  - 通常 tab navigation、 タブハイライト「記録」 ⭕
+- 旧案 X (modal 直接起動) は復活せず、 RecordTabScreen 独立画面で D7 動線 (予定→記録変換) も維持
+- 本 ADR §⑤ (5 card → 4 card) は **維持** (D9 維持と整合)
+- 本 ADR §① (4 タブ構成) / §③ / §④ は **引き続き有効**
+
+**関連**: ADR-0038 D1/D2 / Sess29 PR-2 (RecordTabScreen 実装) / ADR-0035 D6 Sess29 Notes Amended (連動)
