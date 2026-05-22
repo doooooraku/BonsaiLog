@@ -29,9 +29,13 @@ import { usePickerStore } from '@/src/stores/pickerStore';
 
 export default function BonsaiCreateScreen() {
   const { t } = useTranslation();
-  // Sess28 PR-2 (ADR-0037 D1 / R-46): キーボード回避 props を共通 hook で取得。
-  // Android で behavior='height' offset=0、 iOS で behavior='padding' offset=Stack header 高さ。
+  // Sess28 PR-2 (ADR-0037 D1 / R-46): キーボード回避 props を共通 hook で取得 (KAV、 container 縮小)。
   const kavProps = useKeyboardAvoidingProps();
+  // Sess31 PR-1 (R-46 拡張): ScrollView ref + メモ欄 onFocus → scrollToEnd で IME 起動時の可視性確保。
+  const scrollRef = React.useRef<ScrollView>(null);
+  const handleMemoFocus = React.useCallback(() => {
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
+  }, []);
 
   const form = useBonsaiBasicForm({
     editingBonsai: null,
@@ -45,10 +49,11 @@ export default function BonsaiCreateScreen() {
     <View style={styles.container} testID="e2e_bonsai_create_screen">
       <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <BonsaiBasicFormFields form={form} showPhotos />
+          <BonsaiBasicFormFields form={form} showPhotos onMemoFocus={handleMemoFocus} />
         </ScrollView>
 
         <View style={styles.footer}>

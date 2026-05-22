@@ -99,8 +99,13 @@ export default function BonsaiDetailScreen() {
   const c = useColors();
   // Sess15 PR-RR: Tab bar の高さ取得 (sticky footer を Tab bar の上に固定するため)。
   const tabBarHeight = useBottomTabBarHeight();
-  // Sess28 PR-3 (ADR-0037 D1 / R-46): KAV props 共通 hook 適用 (旧 Platform.OS 分岐 + offset=64 ハードコード置換)。
+  // Sess28 PR-3 (ADR-0037 D1 / R-46): KAV props 共通 hook 適用 (KAV、 container 縮小)。
   const kavProps = useKeyboardAvoidingProps();
+  // Sess31 PR-1 (R-46 拡張): ScrollView ref + 基本情報タブ メモ欄 onFocus → scrollToEnd で可視性確保。
+  const scrollRef = React.useRef<ScrollView>(null);
+  const handleMemoFocus = React.useCallback(() => {
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
+  }, []);
   const [item, setItem] = useState<BonsaiWithSpecies | null>(null);
   const [loading, setLoading] = useState(true);
   // Repolog 風 photoCard 縦リスト (orderIndex 順、年次グループ化は廃止)
@@ -568,6 +573,7 @@ export default function BonsaiDetailScreen() {
           旧 Platform.OS 分岐 + offset=64 ハードコード (Sess15 PR-TT) を hook 経由で動的化。 */}
       <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={[
             styles.scrollContent,
             // Sess15 PR-SS: sticky footer 廃止 (PR-RR revert)、 Tab bar + 余裕のみ。
@@ -588,6 +594,7 @@ export default function BonsaiDetailScreen() {
             <BonsaiBasicSection
               form={basicForm}
               onArchive={handleArchive}
+              onMemoFocus={handleMemoFocus}
               customPhotoBlock={
                 <View style={styles.section}>
                   <View style={styles.photoSectionLabelRow}>
@@ -1447,15 +1454,23 @@ function BonsaiBasicSection({
   form,
   onArchive,
   customPhotoBlock,
+  onMemoFocus,
 }: {
   form: BonsaiBasicFormState;
   onArchive: () => void;
   customPhotoBlock?: React.ReactNode;
+  /** Sess31 PR-1 (R-46 拡張): メモ欄 onFocus → 親 ScrollView の auto-scroll 配線。 */
+  onMemoFocus?: () => void;
 }) {
   const { t } = useTranslation();
   return (
     <View style={styles.basicFormSection}>
-      <BonsaiBasicFormFields form={form} showPhotos={false} customPhotoBlock={customPhotoBlock} />
+      <BonsaiBasicFormFields
+        form={form}
+        showPhotos={false}
+        customPhotoBlock={customPhotoBlock}
+        onMemoFocus={onMemoFocus}
+      />
       {/* Sess15 PR-SS: アーカイブ (上) + 保存 (下) inline 復活、 高さ 56 統一 (PR-NN design)。
           user 真意「アーカイブの下に保存ボタンがあるイメージ」 整合。 */}
       <Pressable
