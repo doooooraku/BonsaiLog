@@ -814,5 +814,6 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '已刪除 {count} 個計畫',
   undoSnackbarLoggedDeleteN: '已刪除 {count} 條記錄',
   undoSnackbarAction: '復原',
+  recordFabLabel: '作業を記録',
 };
 export default zhHant;

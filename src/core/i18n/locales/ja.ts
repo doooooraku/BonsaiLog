@@ -834,6 +834,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '予定 {count} 件を削除しました',
   undoSnackbarLoggedDeleteN: '記録 {count} 件を削除しました',
   undoSnackbarAction: '元に戻す',
+  recordFabLabel: '作業を記録',
 };
 
 export default ja;

@@ -826,5 +826,6 @@ const nl: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '{count} plan(nen) verwijderd',
   undoSnackbarLoggedDeleteN: '{count} record(s) verwijderd',
   undoSnackbarAction: 'Ongedaan maken',
+  recordFabLabel: '作業を記録',
 };
 export default nl;

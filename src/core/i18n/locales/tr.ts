@@ -825,5 +825,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '{count} plan silindi',
   undoSnackbarLoggedDeleteN: '{count} kayıt silindi',
   undoSnackbarAction: 'Geri al',
+  recordFabLabel: '作業を記録',
 };
 export default tr;

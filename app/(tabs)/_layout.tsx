@@ -2,13 +2,12 @@
  * Tab Layout (ADR-0020 Phase 1: 4 タブ構成 + ADR-0025 Phase 2 案 B FAB 起動)。
  *
  * - 盆栽 (Leaf): 盆栽カード一覧
- * - 予定 (Calendar): 月カレンダー画面 + FAB、 タブ tap で source=tab + 明日 default (ADR-0035 D1/D2)
- * - 記録 (Droplet): タブ tap で予定タブ (= カレンダー画面) + 今日 default に遷移 (ADR-0035 D6、 ADR-0025 §② 案 X revert)
+ * - 予定 (Calendar): 月カレンダー画面 (PlanScreen) + FAB「予定追加」 flow、 タブ tap で source=tab + 明日 default (ADR-0035 D1/D2)
+ * - 記録 (Droplet): 月カレンダー画面 (RecordTabScreen) + FAB「作業を記録」 flow、 タブ tap で今日 default (ADR-0038 D1)
  * - ふりかえり (Pencil): CareHub Hub 画面 + 検索 (ADR-0020 §Decision §7、 2026-05-10 改訂)
  *
- * ADR-0035 D1 + D6 (Sess23 PR-2-1 + PR-2-2):
- * - タブ「カレンダー」 → 「予定」 revert (ADR-0031 D2 取消)、 タブ「予定」 tap で source=tab 付与 → 明日 default
- * - 記録タブ tap = カレンダー画面 (今日 default) 遷移、 旧 modal 起動 (案 X) を revert
+ * Sess29 ADR-0038 D1 (本 PR): 旧 handleRecordTabPress (Sess23 ADR-0035 D6 で予定タブに統合) を撤去、
+ * 記録タブは RecordTabScreen 独立画面に移行 (タブハイライト整合 + FAB 動作整合)。
  *
  * 実装: React Navigation v7 公式パターン (`<Tabs.Screen listeners>` で screen config 経由、
  * lazy render 制約回避)。
@@ -19,9 +18,7 @@ import React, { useCallback } from 'react';
 import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/theme';
 import { CalendarIcon, DropletIcon, LeafIcon, PencilNavIcon } from '@/src/components/icons';
-import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
 
 export default function TabLayout() {
   const { t } = useTranslation();
@@ -39,16 +36,8 @@ export default function TabLayout() {
     [router],
   );
 
-  // ADR-0035 D6 (Sess23 PR-2-2): 記録タブ tap で予定タブに source=tab + 今日 selectedDateKey で遷移
-  // (旧 ADR-0025 §② 案 X modal 直接起動を revert)
-  const handleRecordTabPress = useCallback(
-    (e: { preventDefault: () => void }) => {
-      e.preventDefault();
-      const todayKey = toLocalDateKey(nowUtc() as string, getTzOffsetMin());
-      router.push(`/(tabs)/plan?source=tab&selectedDateKey=${todayKey}` as Href);
-    },
-    [router],
-  );
+  // Sess29 ADR-0038 D1: 旧 handleRecordTabPress 撤去。 記録タブは RecordTabScreen 独立画面で
+  // 通常 tab navigation、 タブハイライト「記録」 自然遷移、 FAB「作業を記録」 flow 起動。
 
   return (
     <Tabs
@@ -87,9 +76,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <DropletIcon size={28} color={color} />,
           tabBarButtonTestID: 'e2e_tab_record',
         }}
-        listeners={() => ({
-          tabPress: handleRecordTabPress,
-        })}
       />
       <Tabs.Screen
         name="look-back"
