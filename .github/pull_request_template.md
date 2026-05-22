@@ -179,16 +179,17 @@ PR Template
 
 > **背景**: 2026-05-11 セッションで ImageMagick RMSE のみで「達成」 と判定し、bonsai-detail 3 タブで構造的大差を見逃した (Issue #439-#441 で再起票)。PR #442 で「ImageMagick は第一フィルタ、最終判定は Claude Read 主導」 に運用切替。
 
-### 7.6.1. ui-diff / skip-list 編集 PR の構造系 4 項目チェック (REQUIRED)
+### 7.6.1. ui-diff / skip-list 編集 PR の構造系 5 項目チェック (REQUIRED、 Sess34 ADR-0041 で 4→5 拡張)
 
 - [ ] mockup 該当 PNG を **Read で目視確認**した (artifact パス: \_\_\_\_\_)
 - [ ] 実機 SS を **Read で目視確認**した (artifact パス: \_\_\_\_\_)
-- [ ] **構造系 4 項目** のチェック結果を PR description に記載:
+- [ ] **構造系 5 項目** のチェック結果を PR description に記載:
   - [ ] **タブ構成**: タブ名 / 順序 / 数が mockup と一致
   - [ ] **セクション構成**: 各タブの上から下までのセクションが一致
   - [ ] **UI 種別**: list / timeline / form / grid のどれか、mockup と一致
   - [ ] **スクロール範囲**: 全画面スクロール可能か (Hero 固定 + 下のみスクロール NG)
-- [ ] RMSE 数値 **+ 構造系 4 項目** の両方を満たす
+  - [ ] **EventRow 表示モード + sub-layout** (Sess34 ADR-0041 Phase η/θ): EventRow の `displayMode` ('compact' / 'detailed') が callsite mapping (design_system §24-2) と一致、 detailed mode の sub-layout (vertical stack + labeled chips + photo full-width + 写真ゼロ動的高さ) が ADR-0041 § Phase θ Decision と一致
+- [ ] RMSE 数値 **+ 構造系 5 項目** の両方を満たす
 
 ### 7.6.2. 「完遂」/「達成」 表記時の Phase 分割明示 (REQUIRED if 「完遂」 表記)
 
