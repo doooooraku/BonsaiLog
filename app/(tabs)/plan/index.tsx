@@ -25,7 +25,7 @@ import { ThemedView } from '@/components/themed-view';
 import { DropletIcon, EventIcon, MoreVerticalIcon, PlusIcon } from '@/src/components/icons';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
-import { showUndoToast } from '@/src/components/Toast';
+import { useToastStore } from '@/src/components/Toast';
 import { getTzOffsetMin } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
@@ -41,11 +41,7 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
-import {
-  bulkSoftDeleteEvents,
-  getAllActivePlannedAndLoggedEvents,
-  restoreEvents,
-} from '@/src/db/eventRepository';
+import { bulkSoftDeleteEvents, getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type Bonsai, type Event, type EventType } from '@/src/db/schema';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { EventRow } from '@/src/features/event/EventRow';
@@ -312,7 +308,7 @@ export default function PlanScreen() {
     [triggerLongPressHaptic],
   );
 
-  /** ConfirmDialog 「削除」 押下: bulkSoftDelete + cancelForEvents + reload + UndoSnackbar */
+  /** ConfirmDialog 「削除」 押下: bulkSoftDelete + cancelForEvents + reload + 通知 Toast (Sess27 PR-3、 ADR-0036 D5 撤回) */
   const handleConfirmDelete = useCallback(async () => {
     if (!pendingDelete) return;
     const { eventIds, count, undoMessageKey } = pendingDelete;
@@ -320,16 +316,8 @@ export default function PlanScreen() {
     await bulkSoftDeleteEvents(eventIds);
     await cancelForEvents(eventIds, t);
     await reload();
-    // ADR-0036 D5 / R-44: 4 秒 UndoSnackbar、 [元に戻す] tap で restoreEvents + cancelForEvents + reload
-    showUndoToast(
-      t(undoMessageKey).replace('{count}', String(count)),
-      t('undoSnackbarAction'),
-      async () => {
-        await restoreEvents(eventIds);
-        await cancelForEvents(eventIds, t);
-        await reload();
-      },
-    );
+    // Sess27 PR-3 (ADR-0036 D5 撤回、 R-44 緩和): Undo button 撤回、 通知 Toast のみ
+    useToastStore.getState().show(t(undoMessageKey).replace('{count}', String(count)));
   }, [pendingDelete, t, reload]);
 
   const handleCancelDelete = useCallback(() => setPendingDelete(null), []);
