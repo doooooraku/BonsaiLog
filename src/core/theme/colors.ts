@@ -93,3 +93,17 @@ export const DISABLED_BG = '#9E9E9E';
 
 /** Brand 上のテキスト色 (Pro バッジ等)。 */
 export const ON_BRAND = '#FFFFFF';
+
+// =========================================================================
+// Badge (Sess28 ADR-0037: ×n / N 日連続 等の count badge 統一トークン)
+// =========================================================================
+
+/**
+ * 「優しい」 バッジ背景 (薄緑、 washi 背景と調和、 BRAND_GREEN とコントラスト 9.5:1 = WCAG AAA)。
+ * 適用: PlanScreen groupCountBadge / bonsai-detail eventCountBadge (history + timeline) /
+ * timelineConsecutive (4 箇所統一)。
+ */
+export const BADGE_SOFT_BG = '#E8F0EA';
+
+/** バッジ文字色 (= BRAND_GREEN、 token 統一参照のため re-export)。 */
+export const BADGE_SOFT_TEXT = BRAND_GREEN;

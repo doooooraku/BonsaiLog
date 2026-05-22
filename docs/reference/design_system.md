@@ -16,21 +16,23 @@
 
 ### 2-1. ライトモード（デフォルト）
 
-| Token              | HEX       | 用途                                                               |
-| ------------------ | --------- | ------------------------------------------------------------------ |
-| `--bg-primary`     | `#F7F3E8` | 背景（washi 和紙色）                                               |
-| `--bg-surface`     | `#FFFFFF` | カード背景                                                         |
-| `--text-primary`   | `#1A1A1A` | 本文（sumi 墨色）                                                  |
-| `--text-secondary` | `#5A5248` | 補助テキスト                                                       |
-| `--text-muted`     | `#767066` | 3次テキスト (ADR-0020 Phase 10 で AA 4.5:1 適合に補正、旧 #8A8274) |
-| `--primary`        | `#1F3A2E` | プライマリ（深緑 fukamidori）                                      |
-| `--primary-hover`  | `#2A4C3D` | 押下時                                                             |
-| `--accent-bark`    | `#5A4637` | 樹皮色（タグ・区切り）                                             |
-| `--accent-gold`    | `#C69E48` | 秋葉色（Pro バッジのみ）                                           |
-| `--danger`         | `#8B2E2E` | 危険                                                               |
-| `--success`        | `#3E5C39` | 成功                                                               |
-| `--border`         | `#D9D1BF` | 境界線                                                             |
-| `--border-strong`  | `#8A8274` | 強調境界線                                                         |
+| Token               | HEX       | 用途                                                               |
+| ------------------- | --------- | ------------------------------------------------------------------ |
+| `--bg-primary`      | `#F7F3E8` | 背景（washi 和紙色）                                               |
+| `--bg-surface`      | `#FFFFFF` | カード背景                                                         |
+| `--text-primary`    | `#1A1A1A` | 本文（sumi 墨色）                                                  |
+| `--text-secondary`  | `#5A5248` | 補助テキスト                                                       |
+| `--text-muted`      | `#767066` | 3次テキスト (ADR-0020 Phase 10 で AA 4.5:1 適合に補正、旧 #8A8274) |
+| `--primary`         | `#1F3A2E` | プライマリ（深緑 fukamidori）                                      |
+| `--primary-hover`   | `#2A4C3D` | 押下時                                                             |
+| `--accent-bark`     | `#5A4637` | 樹皮色（タグ・区切り）                                             |
+| `--accent-gold`     | `#C69E48` | 秋葉色（Pro バッジのみ）                                           |
+| `--danger`          | `#8B2E2E` | 危険                                                               |
+| `--success`         | `#3E5C39` | 成功                                                               |
+| `--border`          | `#D9D1BF` | 境界線                                                             |
+| `--border-strong`   | `#8A8274` | 強調境界線                                                         |
+| `--badge-soft-bg`   | `#E8F0EA` | バッジ背景 (薄緑、 ADR-0037 Sess28、 §20 SoT)                      |
+| `--badge-soft-text` | `#1F3A2E` | バッジ文字色 (= primary、 token 統一参照)                          |
 
 ### 2-2. ダークモード（OLED焼き付き配慮）
 
@@ -544,6 +546,85 @@ if (version < N + 1) {
 - R-44 (破壊的操作 = ConfirmDialog + 通知 Toast 必須、 Sess27 緩和) / R-45 (長押し UX 標準)
 - `src/components/ConfirmDialog.tsx` / `src/components/Toast.tsx` / `src/components/RowActionMenu.tsx`
 - Material 3 Dialog / Snackbar / Bottom Sheet + Apple HIG Alerts / Action Sheets + WAI-ARIA Dialog Pattern
+
+---
+
+## 20. バッジ pattern (ADR-0037 D3 / Sess28 PR-1 由来)
+
+> **Note**: §18 が本ファイル内で 2 重採番されている (line 436「アンチパターン」 と line 509「長押し UX 標準」)。 §20 を採番、 §18 重複は Sess28 retro で別 PR fix 予定。
+
+### 20-1. 適用範囲
+
+`×n` / `N 日連続` 等の **件数バッジ + ステータスバッジ** に統一適用 (4 箇所):
+
+1. PlanScreen `groupCountBadge` (`app/(tabs)/plan/index.tsx`)
+2. bonsai-detail `eventCountBadge` (history タブ、 `app/(tabs)/bonsai/[id]/index.tsx`)
+3. bonsai-detail `eventCountBadge` (timeline タブ、 同上)
+4. bonsai-detail `timelineConsecutive` (同上)
+
+### 20-2. スタイル仕様
+
+- `backgroundColor`: `BADGE_SOFT_BG` (= `#E8F0EA`、 薄緑)
+- `color` (text): `BADGE_SOFT_TEXT` (= `BRAND_GREEN` `#1F3A2E`、 token 統一)
+- `borderRadius`: 8
+- `paddingHorizontal`: 6-8
+- `paddingVertical`: 2
+- `fontSize`: 11-12 (badge text 標準)
+- `fontWeight`: 600 (可読性)
+- `letterSpacing`: 0.4-0.6 (mono 風数字対応)
+
+### 20-3. WCAG コントラスト
+
+`#1F3A2E` text on `#E8F0EA` bg = **コントラスト比 9.5:1**、 WCAG **AAA** クリア (大文字 14pt 以上 OR 通常文字 12pt 以上両方クリア)。
+
+### 20-4. 禁止パターン
+
+- ❌ `backgroundColor: BRAND_GREEN` + `color: ON_BRAND` (= 旧 ×n 強調過剰、 washi 背景と不調和)
+- ❌ ad-hoc HEX `#E8F0EA` を src に直接書く (token 経由必須)
+- ❌ 透明背景 + border outline (周囲カード border と混在で視認性低下)
+
+### 20-5. 関連
+
+- ADR-0037 D3 (本セクション由来、 Sess28 PR-1)
+- `src/core/theme/colors.ts` (BADGE_SOFT_BG / BADGE_SOFT_TEXT)
+- ADR-0034 D7 (×N バッジ 件数補完、 色のみ本 ADR で変更)
+
+---
+
+## 21. KeyboardAvoidingView 統一 pattern (ADR-0037 D1 / R-46 由来)
+
+### 21-1. 義務化
+
+フォーム input を含む全 screen / modal で **`useKeyboardAvoidingProps()`** (`src/core/hooks/useKeyboardAvoidingProps.ts`) を必須利用。 `KeyboardAvoidingView` を直接書く / Platform.OS 分岐で `behavior` を ad-hoc に決める実装は **禁止** (R-46)。
+
+```tsx
+import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
+
+const kavProps = useKeyboardAvoidingProps();
+
+return (
+  <KeyboardAvoidingView {...kavProps}>
+    <ScrollView ...>...</ScrollView>
+  </KeyboardAvoidingView>
+);
+```
+
+### 21-2. 戻り値仕様
+
+- iOS: `{ behavior: 'padding', keyboardVerticalOffset: useHeaderHeight() }`
+- Android: `{ behavior: 'height', keyboardVerticalOffset: 0 }` (windowSoftInputMode=adjustResize と協調)
+
+### 21-3. 禁止パターン
+
+- ❌ `behavior={Platform.OS === 'ios' ? 'padding' : undefined}` (Android で KAV 機能無効、 Sess15 PR-TT 由来 anti-pattern、 R-46 違反)
+- ❌ `keyboardVerticalOffset` のハードコード (画面別に hook 内で計算化)
+
+### 21-4. 関連
+
+- ADR-0037 D1 (本セクション由来、 Sess28 PR-1)
+- R-46 (本 pattern 違反検出ルール)
+- `src/core/hooks/useKeyboardAvoidingProps.ts` (Sess28 PR-2 で新設)
+- `android/app/src/main/AndroidManifest.xml` (windowSoftInputMode=adjustResize)
 
 ---
 

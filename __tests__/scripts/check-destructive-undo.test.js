@@ -24,8 +24,8 @@ describe('check-destructive-undo.mjs (Sess26 PR-η-3、 R-44 自動検出)', () 
     }
   });
 
-  test('2. UNDO_CALL pattern = showUndoToast(', () => {
-    expect(SRC).toMatch(/const\s+UNDO_CALL\s*=\s*['"]showUndoToast\(['"]/);
+  test('2. UNDO_CALL pattern = useToastStore.getState().show( (Sess27 PR-7: showUndoToast 撤回後)', () => {
+    expect(SRC).toMatch(/const\s+UNDO_CALL\s*=\s*['"]useToastStore\.getState\(\)\.show\(['"]/);
   });
 
   test('3. scan 対象 dir = app / src/features / src/components', () => {
@@ -65,8 +65,9 @@ describe('check-destructive-undo.mjs (Sess26 PR-η-3、 R-44 自動検出)', () 
     expect(SRC).toMatch(/JSON\.stringify/);
   });
 
-  test('8. 違反検出時に Next steps ガイド (showUndoToast 呼出 or 除外 path 追加)', () => {
-    expect(SRC).toMatch(/showUndoToast\(message,/);
+  test('8. 違反検出時に Next steps ガイド (Toast.show 呼出 or 除外 path 追加)', () => {
+    // Sess27 PR-7 で showUndoToast 撤回 → 同 file 内 Toast.show callsite を検出
+    expect(SRC).toMatch(/Toast\.show/);
     expect(SRC).toMatch(/EXCLUDE_PATH_PATTERNS/);
   });
 });
