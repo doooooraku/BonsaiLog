@@ -255,17 +255,6 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §画面マップ row 4 / create-screens.jsx CreateBonsaiScreen prefill モード / src/features/bonsai/BonsaiCreateSheet.tsx editingBonsai prop (PR #378) / mockups v1.0 「03 新規登録 / 編集」 (create / edit 兼用、mockup PNG は create と同じ) / 前提: テスト盆栽 1 件以上登録済 + 詳細画面 → 基本情報タブ → 編集ボタン (e2e_detail_basic_edit_button) で sheet open。',
   },
-  'look-back-watering-history': {
-    id: 'look-back-watering-history',
-    description:
-      '横断水やり履歴画面 (PR #379 ヒートマップ + PR #383 月別 Calendar + PR #384 日付タップ詳細、Issue #361)',
-    appFlow: 'maestro/flows/ui-diff/look-back-watering-history.yml',
-    designHtml: '02-Home.html',
-    designSelector: '[data-screen-label="09 ケア 水やり履歴ヒートマップ"]',
-    mockupFile: 'watering-heatmap.png',
-    notes:
-      'ADR-0021 / Issue #361 / app/(tabs)/look-back/watering-history.tsx (PR #379/#383/#384) / mockup HTML には横断版の対応 PhoneShell が無いため、暫定で個別盆栽 HeatmapScreen を比較対象に流用 (整合度低いが画面構造は近い)。【Phase 1.5-T2 確定】横断版 mockup HTML 追加までは「整合判定対象外」= skip-list.skipped 維持 (achieved に移動しない)。完全整合は将来の mockup HTML 追加 or 横断版 mockup 作成依頼で対応。ADR-0020 §画面マップ row 16 Notes Amended 参照。前提: watering events 1 件以上 (seed 済) + ふりかえりタブ → 水やり履歴カード tap で遷移。',
-  },
   // PoC 安定後にユーザーと相談して順次追加 (ADR-0020 §Decision §3-§10):
   // 'work-log-confirm':   care-screens.jsx WorkLogConfirmSheet
 };

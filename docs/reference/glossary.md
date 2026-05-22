@@ -346,16 +346,18 @@
 - ダークモード：通常の暗色テーマ
 - 屋外モード：高輝度モード（直射日光下での視認性向上、F-15）
 
-### ヒートマップ（Heatmap）
+### ヒートマップ（Heatmap） — **廃止済 (ADR-0039、 Sess31 PR-B、 2026-05-22)**
 
-- 定義：データの量を色濃淡で表現する図表。F-04 では水やり実績を 7 行 × 52 列（年）/ 7 行 × 5 列（月）で表示
-- 形状: GitHub Contribution Graph 風（ADR-0013）
+- 定義：データの量を色濃淡で表現する図表。 F-04 で水やり実績を 7 行 × N 列で表示していた (履歴維持のため定義は残置、 但し実装は撤廃済)
+- 形状: GitHub Contribution Graph 風（ADR-0013、 Superseded）
 - 配色: ColorBrewer 2.0 Greens 4-class（color-blind safe）
+- 廃止理由: ADR-0039 参照 (user 判断「履歴可視化は意思決定価値なし」 + ADR-0011 整合)
 
-### Skia / Skia Atlas
+### Skia / Skia Atlas — **F-04 利用は廃止済 (ADR-0039、 Sess31 PR-B)**
 
 - Skia: Google が開発した 2D 描画エンジン（Chrome / Android 標準）。React Native では `@shopify/react-native-skia` で利用
-- Skia Atlas: 同形状のスプライト（小さな絵）を一括 GPU 描画する API。F-04 ヒートマップで 365 セルを 60-120 FPS 描画
+- Skia Atlas: 同形状のスプライト（小さな絵）を一括 GPU 描画する API。 F-04 ヒートマップで 365 セルを 60-120 FPS 描画していた (廃止)
+- 後続: `@shopify/react-native-skia` 依存自体の削除は PR-C で検証予定 (grep で他用途ゼロ確認後)
 
 ### BottomSheet（ボトムシート）
 

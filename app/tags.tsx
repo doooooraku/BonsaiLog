@@ -45,7 +45,7 @@ import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getTagsWithStats, type TagWithStats } from '@/src/db/tagRepository';
 import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCard';
 import { buildBonsaiCardData } from '@/src/features/bonsai/cardDataBuilder';
-import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 
 /** Sess9 PR-10: peek 段階で表示する盆栽カード上限 (これを超えると「もっと見る」 link 表示)。 */
 const PEEK_LIMIT = 3;

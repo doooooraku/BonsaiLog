@@ -37,7 +37,7 @@ import { buildBonsaiCardData } from '@/src/features/bonsai/cardDataBuilder';
 import { FilterEmptyState } from '@/src/features/bonsai/FilterEmptyState';
 import { HomeFilterTabs, type FilterChip } from '@/src/features/bonsai/HomeFilterTabs';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
-import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
 const ALL_FILTER_ID = 'ALL';

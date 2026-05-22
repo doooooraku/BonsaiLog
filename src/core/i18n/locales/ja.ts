@@ -63,12 +63,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   photoLimitPartialAdded: '{added} 枚追加しました（{skipped} 枚は上限超過のためスキップ）',
   photoDeletedBanner: '写真を削除しました',
   photoUndoLabel: '元に戻す',
-  wateringCalendarSectionTitle: '月別カレンダー',
-  wateringCalendarThisMonth: '今月',
-  wateringCalendarMonthTotal: '月合計 {count} 回',
-  wateringDayDetailTitle: '{date} の水やり',
-  wateringDayDetailCount: '{count} 件',
-  wateringDayDetailEmpty: '水やり記録なし',
   photoPermissionTitle: '許可が必要です',
   photoPermissionDesc: '設定からカメラと写真の利用を許可してください。',
   photoActionTitle: '写真の操作',
@@ -354,15 +348,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsAccountProInactiveDesc: 'プランを見てアップグレード。',
 
   // --- F-04 水やりヒートマップ (Phase B 簡易グリッド、Issue #29、ADR-0013) ---
-  wateringHeatmapLegendLabel: '水やり回数 (過去 12 週)',
-  wateringHeatmapLegend0: '0',
-  wateringHeatmapLegend1: '1',
-  wateringHeatmapLegend2: '2',
-  wateringHeatmapLegend3: '3+',
-  wateringHeatmapDetailTitle: '{date}',
-  wateringHeatmapDetailCount: '水やり {count} 回',
-
-  // --- ADR-0020 Phase 1: 4-tab labels (盆栽 / 予定 / 探す / 設定) ---
   tabBonsai: '盆栽',
   tabLookBack: 'ふりかえり',
   tabSettings: '設定',
@@ -477,34 +462,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailTabPhotos: '写真',
 
   // --- ADR-0020 Phase 3: 盆栽詳細 水やり履歴画面 (SS 222921 整合) ---
-  wateringHistoryLinkTitle: '水やり履歴を見る',
-  wateringRange30: '30日',
-  wateringRange90: '90日',
-  wateringRange365: '365日',
-  wateringLastFromLabel: '最後の水やりから',
   wateringSummaryStreak: '連続記録',
-  wateringSummaryRecorded30: '過去30日',
-  wateringSummaryRecorded90: '過去90日',
-  wateringSummaryRecorded365: '過去365日',
-  wateringSummaryRecordedValue: '{days}日 / {events}回',
   wateringSummaryDoubleDays: '2回の日',
-  wateringDisclaimerNoJudgement: '※ これは記録の表示です。水やりの判定はしません。',
-  wateringDisclaimerHeatmapMeaning: '濃淡は記録回数 (薄: 0回 / 中: 1回 / 濃: 2回)。',
-
-  // --- F-04 stats tab + aggregate K2 legend (Phase G-2, Issue #29, ADR-0013) ---
   statsTabTitle: '統計',
   statsHeaderAllBonsai: 'すべての盆栽 ({count}本)',
-  wateringHeatmapLegendLabelAggregate: '水やった盆栽の割合 (直近12週間)',
-  wateringHeatmapLegendAgg0: '0%',
-  wateringHeatmapLegendAgg1: '1-33%',
-  wateringHeatmapLegendAgg2: '34-66%',
-  wateringHeatmapLegendAgg3: '67-100%',
-
-  // --- F-04 Phase G-3 summary (Issue #29, ADR-0013 §27-28) ---
-  wateringHeatmapSummaryRecordedDays: '記録日数: {days} / {total} 日 ({percent}%)',
-  wateringHeatmapSummaryTotalEvents: '記録件数: {count} 件',
-
-  // --- F-04 Phase H-2 BonsaiFilterSheet (Issue #29, ADR-0013 §AC6) ---
   bonsaiFilterSelectAll: 'すべての盆栽',
   bonsaiFilterSearchPlaceholder: '盆栽を検索',
   bonsaiFilterRecentSection: '最近見た盆栽',
@@ -610,15 +571,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   onboardingLanguageContinue: '選択して続ける',
   // --- T1-8c CareHub Hub (ADR-0020 §Decision §7) ---
   lookBackHubSubtitle: '記録を振り返り、 整理するビューです。',
-  lookBackCardWateringTitle: '水やり履歴',
-  lookBackCardWateringDesc: 'カレンダー・ヒートマップで過去の水やりを確認',
   lookBackCardWiringTitle: '針金がけ一覧',
   lookBackCardWiringDesc: '巻いた針金と、自分で決めた外し予定を一覧',
   lookBackCardSearchTitle: '盆栽を検索',
   lookBackCardSearchDesc: '名前 / 樹種 / メモ / タグから探す',
-  wateringHistoryAllSubtitle: '全盆栽 横断ビュー',
-  wateringHistoryAllBonsaiCount: '対象 {count} 件',
-  // --- T1-10 BonsaiCard 220+3 段構造 (PR 予定) ---
   homeCardElapsedAgo: '{elapsed}前',
   homeCardNoLog: '記録はまだありません',
   // --- T2-2-ui 写真ライブラリ permission ---
@@ -805,7 +761,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   stackStylePickerTitle: '樹形を選ぶ',
   stackBonsaiMultiSelectTitle: '盆栽を選ぶ',
   stackBulkLogConfirmTitle: 'まとめて記録',
-  stackWateringDayTitle: 'この日の水やり',
   stackBonsaiNewTitle: '盆栽を登録',
   stackBonsaiCreateModalTitle: '新規登録',
   stackBonsaiDetailTitle: '盆栽の詳細',

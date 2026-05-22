@@ -11,8 +11,7 @@
  */
 import { create } from 'zustand';
 
-import type { BonsaiWithSpecies } from '@/src/db/bonsaiRepository';
-import type { BonsaiStyle, Event, EventType } from '@/src/db/schema';
+import type { BonsaiStyle, EventType } from '@/src/db/schema';
 
 type SpeciesResult = string | null | 'CONSUMED';
 type StyleResult = BonsaiStyle | null | 'CONSUMED';
@@ -30,14 +29,6 @@ type WorkPickerResult = WorkPickerValue | 'CONSUMED';
 /** 一括操作の context (selectedBonsais を Screen 間で共有、Phase G3a)。 */
 export type BulkBonsaiRef = { id: string; name: string };
 export type BulkContext = { selectedBonsais: readonly BulkBonsaiRef[] };
-
-/** 横断水やり日付詳細 (Phase G4 part 1) — caller から Screen への重 data 受け渡し。 */
-export type WateringDayDetailContext = {
-  dateKey: string;
-  events: readonly Event[];
-  bonsaiById: ReadonlyMap<string, BonsaiWithSpecies>;
-};
-type WateringDayDetailEntry = string | 'CONSUMED';
 
 /** 盆栽 新規登録結果 (bonsai-new modal、Phase G4 part 2) — 作成された bonsaiId を返却。 */
 type BonsaiCreateResult = string | 'CONSUMED';
@@ -75,13 +66,6 @@ type PickerStore = {
   // user が選択していた日付を restore、 today reset を回避)
   planSelectedDateKey: string | null;
   setPlanSelectedDateKey: (dateKey: string) => void;
-
-  // 横断水やり日付詳細 (watering-day-detail、Phase G4 part 1)
-  wateringDayDetailContext: WateringDayDetailContext | null;
-  setWateringDayDetailContext: (ctx: WateringDayDetailContext | null) => void;
-  wateringDayDetailEntry: WateringDayDetailEntry;
-  setWateringDayDetailEntry: (bonsaiId: string) => void;
-  consumeWateringDayDetailEntry: () => string | undefined;
 
   // 盆栽 新規登録結果 (bonsai-new modal、Phase G4 part 2)
   bonsaiCreateResult: BonsaiCreateResult;
@@ -128,17 +112,6 @@ export const usePickerStore = create<PickerStore>((set, get) => ({
   // Sess12 PR-H: PlanScreen selectedDateKey 永続化
   planSelectedDateKey: null,
   setPlanSelectedDateKey: (dateKey) => set({ planSelectedDateKey: dateKey }),
-
-  wateringDayDetailContext: null,
-  setWateringDayDetailContext: (ctx) => set({ wateringDayDetailContext: ctx }),
-  wateringDayDetailEntry: 'CONSUMED',
-  setWateringDayDetailEntry: (bonsaiId) => set({ wateringDayDetailEntry: bonsaiId }),
-  consumeWateringDayDetailEntry: () => {
-    const result = get().wateringDayDetailEntry;
-    if (result === 'CONSUMED') return undefined;
-    set({ wateringDayDetailEntry: 'CONSUMED' });
-    return result;
-  },
 
   bonsaiCreateResult: 'CONSUMED',
   setBonsaiCreateResult: (bonsaiId) => set({ bonsaiCreateResult: bonsaiId }),

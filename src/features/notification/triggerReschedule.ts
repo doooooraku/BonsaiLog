@@ -14,7 +14,7 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/i18n';
 import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
 import { useSettingsStore } from '@/src/stores/settingsStore';
-import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 
 import {
   rescheduleDailySummaryNotifications,
