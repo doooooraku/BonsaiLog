@@ -38,13 +38,19 @@ import {
 } from './payloadLabels';
 
 /**
- * Chip の表現。labelKey (i18n) または text (生文字列、 自由テキストや数値用) の
- * いずれか 1 つを持つ。
+ * Chip の表現。 値表示は labelKey (i18n) または text (生文字列、 自由テキストや数値用) の
+ * いずれか 1 つ。 fieldLabelKey は「label: [chip]」 表示時の field 名 (例: 「症状」「処置」)。
+ *
+ * Sess34 ADR-0041 Phase θ PR-9 で fieldLabelKey 追加 (optional、 既存 callsite 後方互換)。
+ * HistoryChip / HistoryChipRow が fieldLabelKey を component 側で結合して表示 (RTL 配慮で
+ * i18n value にコロンを含めず、 `${t(key)}:` で結合)。
  */
 export type HistoryChip = {
-  /** i18n key を解決して表示 (固定 enum 値用)。 */
+  /** Field 名 i18n key (例: `historyFieldSymptom` = 「症状」)。 labeled 表示時のラベル部分。 */
+  fieldLabelKey?: TranslationKey;
+  /** i18n key を解決して表示 (固定 enum 値用)。 chip の値部分。 */
   labelKey?: TranslationKey;
-  /** 生文字列をそのまま表示 (自由テキスト / 数値 / 単位付き値)。 */
+  /** 生文字列をそのまま表示 (自由テキスト / 数値 / 単位付き値)。 chip の値部分。 */
   text?: string;
 };
 
@@ -68,13 +74,14 @@ function parsePayload(json: string | null | undefined): Record<string, unknown> 
 /**
  * 共通 (parts / water amount) field の value から chip を生成。
  * i18n key 解決可なら labelKey、 不可なら生 text fallback、 空文字列は null。
+ * fieldLabelKey は labeled 表示時の field 名ラベル (Phase θ PR-9 で追加)。
  */
-function valueChip(value: unknown): HistoryChip | null {
+function valueChip(value: unknown, fieldLabelKey?: TranslationKey): HistoryChip | null {
   if (value == null) return null;
   const str = typeof value === 'string' ? value : String(value);
   if (str.length === 0) return null;
   const key = getPayloadValueLabelKey(str);
-  return key ? { labelKey: key } : { text: str };
+  return key ? { fieldLabelKey, labelKey: key } : { fieldLabelKey, text: str };
 }
 
 /**
@@ -84,23 +91,24 @@ function valueChip(value: unknown): HistoryChip | null {
 function contextChip(
   value: unknown,
   resolver: (v: string) => TranslationKey | null,
+  fieldLabelKey?: TranslationKey,
 ): HistoryChip | null {
   if (value == null) return null;
   const str = typeof value === 'string' ? value : String(value);
   if (str.length === 0) return null;
   const key = resolver(str);
-  return key ? { labelKey: key } : { text: str };
+  return key ? { fieldLabelKey, labelKey: key } : { fieldLabelKey, text: str };
 }
 
 /**
  * Free text (soil_mix / agent / fert product / leaf treatment / position to) を chip 化。
  * 空文字列は null。
  */
-function freeTextChip(value: unknown): HistoryChip | null {
+function freeTextChip(value: unknown, fieldLabelKey?: TranslationKey): HistoryChip | null {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   if (trimmed.length === 0) return null;
-  return { text: trimmed };
+  return { fieldLabelKey, text: trimmed };
 }
 
 /**
@@ -122,55 +130,59 @@ export function buildHistoryChips(event: EventLike): HistoryChip[] {
   // 不正な type は default で chip 空配列を返す (graceful degradation)。
   const type = event.type as EventType;
 
+  // fieldLabelKey は既存 workLog* keys (form field 名) を流用 (Phase θ PR-9、 user 指摘で path 変更):
+  // - 19 言語 × 18 keys = 342 entries の追加翻訳ゼロ
+  // - form と表示で field 名一致、 一貫性 ◎
+  // - Sess16 で各言語ペルソナ翻訳済の workLog* を活用
   switch (type) {
     case 'watering': {
       // payload.amount = 'normal' | 'plenty' | 'light'
-      pushChip(valueChip(payload.amount));
+      pushChip(valueChip(payload.amount, 'workLogWaterAmount'));
       break;
     }
     case 'pruning': {
       // payload.parts = string[] (multi)、 payload.amount = 'few' | 'some' | 'lot'
       if (Array.isArray(payload.parts)) {
-        for (const p of payload.parts) pushChip(valueChip(p));
+        for (const p of payload.parts) pushChip(valueChip(p, 'workLogPruneParts'));
       }
-      pushChip(contextChip(payload.amount, getPruneAmountLabelKey));
+      pushChip(contextChip(payload.amount, getPruneAmountLabelKey, 'workLogPruneAmount'));
       break;
     }
     case 'wiring': {
       // payload.wire_size_mm (number)、 body_part ('all' | 'miki' | 'eda')
       // ADR-0041 D9: scheduled_unwire_at は WiringPeriodDisplay 側で表示するため chip 化しない
       if (typeof payload.wire_size_mm === 'number') {
-        chips.push({ text: `${payload.wire_size_mm}mm` });
+        chips.push({ fieldLabelKey: 'workLogWireGauge', text: `${payload.wire_size_mm}mm` });
       }
-      pushChip(valueChip(payload.body_part));
+      pushChip(valueChip(payload.body_part, 'workLogWireParts'));
       break;
     }
     case 'unwiring': {
       // payload.body_part = 'miki' | 'eda' | 'all'
-      pushChip(valueChip(payload.body_part));
+      pushChip(valueChip(payload.body_part, 'workLogUnwireParts'));
       break;
     }
     case 'repotting': {
       // payload.pot_size_cm (number、 cm canonical)、 soil_mix (free)、 root_pruning ('none' | 'light' | 'third' | 'half')
       if (typeof payload.pot_size_cm === 'number') {
-        chips.push({ text: `${payload.pot_size_cm}cm` });
+        chips.push({ fieldLabelKey: 'workLogRepotPotSize', text: `${payload.pot_size_cm}cm` });
       }
-      pushChip(contextChip(payload.root_pruning, getRepotRootsLabelKey));
-      pushChip(freeTextChip(payload.soil_mix));
+      pushChip(contextChip(payload.root_pruning, getRepotRootsLabelKey, 'workLogRepotRootAmount'));
+      pushChip(freeTextChip(payload.soil_mix, 'workLogRepotSoilMix'));
       break;
     }
     case 'fertilizing': {
       // payload.kind = 'solid' | 'liquid' | 'slow_release' | 'other'、 amount (free、 product 銘柄)
-      pushChip(contextChip(payload.kind, getFertKindLabelKey));
-      pushChip(freeTextChip(payload.amount));
+      pushChip(contextChip(payload.kind, getFertKindLabelKey, 'workLogFertKind'));
+      pushChip(freeTextChip(payload.amount, 'workLogFertProduct'));
       break;
     }
     case 'pest_control': {
       // payload.target = 'prevention' | 'treatment' | 'both'、 agent (free)、 dilution_ratio (number)
-      pushChip(contextChip(payload.target, getPestPurposeLabelKey));
-      pushChip(freeTextChip(payload.agent));
+      pushChip(contextChip(payload.target, getPestPurposeLabelKey, 'workLogPestPurpose'));
+      pushChip(freeTextChip(payload.agent, 'workLogPestAgent'));
       if (typeof payload.dilution_ratio === 'number') {
-        chips.push({ text: `×${payload.dilution_ratio}` });
+        chips.push({ fieldLabelKey: 'workLogPestDilution', text: `×${payload.dilution_ratio}` });
       }
       break;
     }
@@ -178,35 +190,36 @@ export function buildHistoryChips(event: EventLike): HistoryChip[] {
     case 'defoliation':
     case 'deshoot': {
       // payload.body_part = 'tips_only' | 'moderate' | 'heavy'
-      pushChip(contextChip(payload.body_part, getTrimRangeLabelKey));
+      pushChip(contextChip(payload.body_part, getTrimRangeLabelKey, 'workLogTrimRange'));
       break;
     }
     case 'candle_cut': {
       // payload.body_part + count (number)
-      pushChip(contextChip(payload.body_part, getTrimRangeLabelKey));
+      pushChip(contextChip(payload.body_part, getTrimRangeLabelKey, 'workLogTrimRange'));
       if (typeof payload.count === 'number') {
-        chips.push({ text: `×${payload.count}` });
+        chips.push({ fieldLabelKey: 'workLogCandleCount', text: `×${payload.count}` });
       }
       break;
     }
     case 'moss_care': {
       // payload.action = 'attach' | 'remove' | 'moisten'
-      pushChip(contextChip(payload.action, getMossActionLabelKey));
+      pushChip(contextChip(payload.action, getMossActionLabelKey, 'workLogMossAction'));
       break;
     }
     case 'position_change': {
-      // payload.from / to (free)、 to があれば「→ N」 形式で表示
+      // payload.from / to (free)、 to があれば「→ N」 形式で表示 (chip 自体に「→」 prefix で意味明示、 label 省略)
       if (typeof payload.to === 'string' && payload.to.trim().length > 0) {
-        chips.push({ text: `→ ${payload.to.trim()}` });
+        chips.push({ fieldLabelKey: 'workLogPositionTo', text: `→ ${payload.to.trim()}` });
       } else {
+        // from は form 未入力 field のため label なし (旧データ互換のみ)
         pushChip(freeTextChip(payload.from));
       }
       break;
     }
     case 'leaf_first_aid': {
       // payload.symptom = 'burn' | 'wither' | 'pest' | 'mold' | 'other'、 treatment (free)
-      pushChip(contextChip(payload.symptom, getLeafAidSymptomLabelKey));
-      pushChip(freeTextChip(payload.treatment));
+      pushChip(contextChip(payload.symptom, getLeafAidSymptomLabelKey, 'workLogLeafAidSymptom'));
+      pushChip(freeTextChip(payload.treatment, 'workLogLeafAidTreatment'));
       break;
     }
     default: {
