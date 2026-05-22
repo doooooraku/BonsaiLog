@@ -84,7 +84,6 @@
     "@react-navigation/elements": "^2.9.15",
     "@react-navigation/native": "^7.1.8",
     "@shopify/flash-list": "^2.3.1",
-    "@shopify/react-native-skia": "^2.6.2",
     "@tamagui/animations-react-native": "1.144.3",
     "@tamagui/core": "1.144.3",
     "@tamagui/lucide-icons": "1.144.3",
@@ -187,10 +186,7 @@
   "pnpm": {
     "overrides": {
       "react-native-zip-archive": "7.0.2"
-    },
-    "onlyBuiltDependencies": [
-      "@shopify/react-native-skia"
-    ]
+    }
   },
   "private": true
 }
