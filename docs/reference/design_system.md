@@ -16,23 +16,25 @@
 
 ### 2-1. ライトモード（デフォルト）
 
-| Token               | HEX       | 用途                                                               |
-| ------------------- | --------- | ------------------------------------------------------------------ |
-| `--bg-primary`      | `#F7F3E8` | 背景（washi 和紙色）                                               |
-| `--bg-surface`      | `#FFFFFF` | カード背景                                                         |
-| `--text-primary`    | `#1A1A1A` | 本文（sumi 墨色）                                                  |
-| `--text-secondary`  | `#5A5248` | 補助テキスト                                                       |
-| `--text-muted`      | `#767066` | 3次テキスト (ADR-0020 Phase 10 で AA 4.5:1 適合に補正、旧 #8A8274) |
-| `--primary`         | `#1F3A2E` | プライマリ（深緑 fukamidori）                                      |
-| `--primary-hover`   | `#2A4C3D` | 押下時                                                             |
-| `--accent-bark`     | `#5A4637` | 樹皮色（タグ・区切り）                                             |
-| `--accent-gold`     | `#C69E48` | 秋葉色（Pro バッジのみ）                                           |
-| `--danger`          | `#8B2E2E` | 危険                                                               |
-| `--success`         | `#3E5C39` | 成功                                                               |
-| `--border`          | `#D9D1BF` | 境界線                                                             |
-| `--border-strong`   | `#8A8274` | 強調境界線                                                         |
-| `--badge-soft-bg`   | `#E8F0EA` | バッジ背景 (薄緑、 ADR-0037 Sess28、 §20 SoT)                      |
-| `--badge-soft-text` | `#1F3A2E` | バッジ文字色 (= primary、 token 統一参照)                          |
+| Token                     | HEX       | 用途                                                               |
+| ------------------------- | --------- | ------------------------------------------------------------------ |
+| `--bg-primary`            | `#F7F3E8` | 背景（washi 和紙色）                                               |
+| `--bg-surface`            | `#FFFFFF` | カード背景                                                         |
+| `--text-primary`          | `#1A1A1A` | 本文（sumi 墨色）                                                  |
+| `--text-secondary`        | `#5A5248` | 補助テキスト                                                       |
+| `--text-muted`            | `#767066` | 3次テキスト (ADR-0020 Phase 10 で AA 4.5:1 適合に補正、旧 #8A8274) |
+| `--primary`               | `#1F3A2E` | プライマリ（深緑 fukamidori）                                      |
+| `--primary-hover`         | `#2A4C3D` | 押下時                                                             |
+| `--accent-bark`           | `#5A4637` | 樹皮色（タグ・区切り）                                             |
+| `--accent-gold`           | `#C69E48` | 秋葉色（Pro バッジのみ）                                           |
+| `--danger`                | `#8B2E2E` | 危険                                                               |
+| `--success`               | `#3E5C39` | 成功                                                               |
+| `--border`                | `#D9D1BF` | 境界線                                                             |
+| `--border-strong`         | `#8A8274` | 強調境界線                                                         |
+| `--badge-soft-bg`         | `#E8F0EA` | バッジ背景 (薄緑、 ADR-0037 Sess28、 §20 SoT)                      |
+| `--badge-soft-text`       | `#1F3A2E` | バッジ文字色 (= primary、 token 統一参照)                          |
+| `--button-secondary-bg`   | `#E8F0EA` | Secondary CTA button 背景 (ADR-0038 Sess29、 §22 SoT)              |
+| `--button-secondary-text` | `#1F3A2E` | Secondary CTA button 文字色 (= primary、 token 統一参照)           |
 
 ### 2-2. ダークモード（OLED焼き付き配慮）
 
@@ -625,6 +627,54 @@ return (
 - R-46 (本 pattern 違反検出ルール)
 - `src/core/hooks/useKeyboardAvoidingProps.ts` (Sess28 PR-2 で新設)
 - `android/app/src/main/AndroidManifest.xml` (windowSoftInputMode=adjustResize)
+
+---
+
+## 22. CTA Button pattern (ADR-0038 D4 / R-48 由来、 Sess29 PR-1)
+
+### 22-1. 4 階層の CTA button
+
+| 階層            | 用途                      | 背景                                   | 文字色                                   | 例                                                     |
+| --------------- | ------------------------- | -------------------------------------- | ---------------------------------------- | ------------------------------------------------------ |
+| **Primary**     | 主要 CTA (画面の主要動作) | `BRAND_GREEN` (#1F3A2E) filled         | `ON_BRAND` (#FFFFFF)                     | 「保存」「アーカイブ」「記録する」 (form 内の最終確定) |
+| **Secondary**   | 補助 CTA (主要動作の補佐) | `BUTTON_SECONDARY_BG` (#E8F0EA) filled | `BUTTON_SECONDARY_TEXT` (= BRAND_GREEN)  | 「作業を記録」「全 N 件を記録」 (予定→記録変換動線)    |
+| **Tertiary**    | text link 風              | 透明背景                               | `BRAND_GREEN`                            | 「戻る」「キャンセル」 (auxiliary)                     |
+| **Destructive** | 破壊的操作                | `DANGER` (#8B2E2E) filled or border    | `ON_BRAND` (filled) or `DANGER` (border) | 「削除」「アーカイブ」 (破壊的)                        |
+
+### 22-2. Secondary CTA の仕様 (本セクションの中心)
+
+- `backgroundColor`: `BUTTON_SECONDARY_BG` (薄緑 #E8F0EA)
+- `color` (text): `BUTTON_SECONDARY_TEXT` (= `BRAND_GREEN` #1F3A2E)
+- `borderRadius`: 8
+- `paddingHorizontal`: 12
+- `paddingVertical`: 6
+- `fontSize`: 12-14
+- `fontWeight`: 600
+- `letterSpacing`: 0.4
+
+### 22-3. WCAG コントラスト
+
+`#1F3A2E` text on `#E8F0EA` bg = **コントラスト比 9.5:1**、 WCAG **AAA** クリア。
+
+### 22-4. 禁止パターン
+
+- ❌ `backgroundColor: BRAND_GREEN` + `color: ON_BRAND` を **Primary 以外**の用途で使用 (強調過剰)
+- ❌ ad-hoc HEX を src に直接書く (token 経由必須)
+- ❌ 階層を無視して全ボタンを Primary にする (視覚優先度の階層崩壊)
+
+### 22-5. 適用箇所 (現状 Sess29 PR-1 時点)
+
+- **Primary**: BonsaiCreateScreen「保存」 / BonsaiBasicSection「保存」 / WorkLogConfirm「記録する」 / BulkLogConfirm「記録する」 / 一括予定追加 form「予定を追加」 等
+- **Secondary**: EventRow `actionButton` (個別 row 「作業を記録」、 Sess29 PR-3 で適用予定) / PlanScreen + RecordTabScreen の group header「全 N 件を記録」 (Sess29 PR-4 で新設予定)
+- **Tertiary**: Stack header back button / cancel button 等
+- **Destructive**: bonsai-detail「アーカイブ」 / ConfirmDialog destructive 確定 button
+
+### 22-6. 関連
+
+- ADR-0038 D4 (本セクション由来、 Sess29 PR-1)
+- R-48 (本 pattern 違反検出ルール)
+- `src/core/theme/colors.ts` (BUTTON_SECONDARY_BG/TEXT)
+- ADR-0036 §18 (長押し UX) と並列、 CTA / destructive 共通の動作軸
 
 ---
 
