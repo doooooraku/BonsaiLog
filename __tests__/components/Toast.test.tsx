@@ -24,13 +24,11 @@ describe('Toast (Sess27 PR-2: action slot 撤回)', () => {
     expect(SRC).toMatch(/duration\s*=\s*normalized\.durationMs\s*\?\?\s*3000/);
   });
 
-  test('4. action slot は削除 (Sess27 R-44 緩和)、 showUndoToast は deprecated stub のみ残置', () => {
+  test('4. action slot + showUndoToast 完全削除 (Sess27 R-44 緩和、 PR-7 で stub も削除)', () => {
     expect(SRC).not.toMatch(/ToastAction/);
     expect(SRC).not.toMatch(/Pressable/);
     expect(SRC).not.toMatch(/e2e_toast_action/);
-    // showUndoToast は deprecated stub として残置 (PR-3/4 の段階的移行のため、 PR-7 で完全削除予定)
-    expect(SRC).toMatch(/@deprecated/);
-    expect(SRC).toMatch(/export\s+function\s+showUndoToast/);
+    expect(SRC).not.toMatch(/showUndoToast/);
   });
 
   test('5. pointerEvents 常時 none (action 撤回で背後貫通 bug も解消)', () => {

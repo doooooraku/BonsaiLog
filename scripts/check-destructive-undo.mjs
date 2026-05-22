@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 /**
- * scripts/check-destructive-undo.mjs (Sess26 PR-η-3、 ADR-0036 R-44 自動検出)
+ * scripts/check-destructive-undo.mjs (Sess26 PR-η-3、 Sess27 PR-7 緩和: R-44 自動検出)
  *
  * 破壊的操作 (bulkSoftDeleteEvents / softDeleteEvent / purgeOldTrash 等) を呼ぶ UI 層 file が
- * 同 file 内で `showUndoToast` を呼んでいるか検証 (R-44: 破壊的操作 = UndoSnackbar 必須)。
+ * 同 file 内で `Toast.show()` (useToastStore.getState().show) を呼んでいるか検証
+ * (R-44 緩和: 破壊的操作 = ConfirmDialog + 通知 Toast 必須、 Sess27 Undo 動線撤回反映)。
  *
  * 検出 pattern:
  *   - UI 層 file (`app/`, `src/features/`, `src/components/` 配下) で
  *     `bulkSoftDeleteEvents(`, `softDeleteEvent(`, `purgeOldTrash(`, `deleteEventHard(`,
  *     `restoreEvents(` のいずれかを呼んでいる場合、
- *   - 同 file 内に `showUndoToast(` callsite が **なし** なら warning (R-44 違反候補)
+ *   - 同 file 内に `useToastStore.getState().show(` callsite が **なし** なら warning
  *
  * 除外 (R-44 適用外):
  *   - `src/dev/`       (seed cleanup 用、 user 視覚動線なし)
@@ -51,7 +52,7 @@ const DESTRUCTIVE_FNS = [
   'restoreEvents', // 復元も対 (Undo の中で呼ぶが、 単独 callsite なら違反)
 ];
 
-const UNDO_CALL = 'showUndoToast(';
+const UNDO_CALL = 'useToastStore.getState().show(';
 
 const args = process.argv.slice(2);
 const jsonOutput = args.includes('--json');
@@ -86,7 +87,7 @@ function check(filePath) {
       if (/^\s*\*/.test(line)) continue;
       if (/^\s*import\b/.test(line)) continue;
       if (callPattern.test(line)) {
-        // 同 file 内に showUndoToast callsite があるか
+        // 同 file 内に Toast.show callsite があるか (Sess27 PR-7: showUndoToast 撤回)
         if (!content.includes(UNDO_CALL)) {
           violations.push({ fn, line: i + 1, snippet: line.trim().slice(0, 100) });
         }
@@ -126,21 +127,21 @@ if (jsonOutput) {
   const fileCount = Object.keys(violationsByFile).length;
   if (fileCount === 0) {
     console.log(
-      '[check-destructive-undo] OK — 破壊的操作 callsite は全て同 file 内に showUndoToast を併用 (ADR-0036 D5 / R-44 整合)',
+      '[check-destructive-undo] OK — 破壊的操作 callsite は全て同 file 内に Toast.show を併用 (ADR-0036 D5 撤回、 R-44 緩和、 Sess27 PR-7)',
     );
   } else {
     console.error(`[check-destructive-undo] ✗ R-44 違反候補: ${fileCount} file(s)`);
     for (const [file, vs] of Object.entries(violationsByFile)) {
       console.error(`  ${file}:`);
       for (const v of vs) {
-        console.error(`    L${v.line}  ${v.fn}(  — 同 file 内 showUndoToast 呼出なし`);
+        console.error(`    L${v.line}  ${v.fn}(  — 同 file 内 Toast.show 呼出なし`);
         console.error(`              ${v.snippet}`);
       }
     }
-    console.error('\nADR-0036 D5 / R-44: 破壊的操作 = ConfirmDialog + UndoSnackbar 必須。');
     console.error(
-      "同 file 内で `showUndoToast(message, t('undoSnackbarAction'), undoFn)` を呼ぶか、",
+      '\nADR-0036 D5 撤回 (Sess27) / R-44 緩和: 破壊的操作 = ConfirmDialog + 通知 Toast 必須。',
     );
+    console.error("同 file 内で `useToastStore.getState().show(t('...'))` を呼ぶか、");
     console.error('該当 file が UI 動線でないなら EXCLUDE_PATH_PATTERNS への追加を検討。');
   }
 }

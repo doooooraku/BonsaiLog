@@ -1,26 +1,27 @@
 # maestro/flows/plan-tab-delete-single.yml
-# Sess26 PR-η-4 (ADR-0036 D1-D6): PlanScreen 個別 EventRow long-press → カスタム ConfirmDialog
-# → 削除 button tap → bulkSoftDeleteEvents + cancelForEvents + reload + UndoSnackbar 4s 表示
+# Sess27 PR-7 (ADR-0036 D1-D4, D5 撤回): PlanScreen 個別 EventRow long-press → カスタム ConfirmDialog
+# → 削除 button tap → bulkSoftDeleteEvents + cancelForEvents + reload + 通知 Toast 3s
 #
 # 前提: 設定タブ → e2e_dev_seed_button で seed data 投入済、 予定タブに planned events が存在
+# Dev Client 環境では URL list 経由で bundle 読込が必要 (Sess27 PR-7 改修、 旧 pressKey Back を撤去)
 appId: 'com.doooooraku.bonsailog'
 ---
 - launchApp:
     clearState: false
 
+# Dev Client URL list (初回 launch時のみ): bundle 読込を tap で起動
 - tapOn:
     text: 'http://localhost:8081'
     optional: true
     retryTapIfNoChange: true
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 30000
 
-- pressKey: 'Back'
-- waitForAnimationToEnd
-
+# bundle 読込完了後 home list 表示確認
 - extendedWaitUntil:
     visible:
       id: 'e2e_bonsai_home_list'
-    timeout: 20000
+    timeout: 30000
 
 # 予定タブに遷移
 - tapOn:
@@ -61,6 +62,6 @@ appId: 'com.doooooraku.bonsailog'
 - waitForAnimationToEnd:
     timeout: 3000
 
-# UndoSnackbar 表示確認 (4s、 Material 3 default)
+# 通知 Toast 表示確認 (3s、 Sess27 PR-7 で UndoSnackbar 撤回 → 通知 Toast のみ、 ADR-0036 D5 撤回)
 - assertVisible:
     id: 'e2e_toast'
