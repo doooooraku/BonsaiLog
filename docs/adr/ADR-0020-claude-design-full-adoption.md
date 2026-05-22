@@ -743,3 +743,56 @@ ADR-0020 §Decision §10 が 6 → 4 画面に変更されたため、41 画面 
 - Sess9 PR-6 (本 PR、 #TBD): app/(tabs)/look-back/index.tsx 4 カード化 + ja/en 19 言語 i18n
 - Sess9 議論: タグ機能 5 PR スコープ (Q1-Q4 で user 真意確定)
 - mockup care-screens.jsx CareHubScreen (L1576-1719、 historical reference 維持)
+
+---
+
+### Notes Amended (2026-05-22、 Sess28 PR-1、 ADR-0037 連動): 盆栽詳細 Hero 規定変更 (盆栽名のみ表示)
+
+#### 改訂内容
+
+- mockup v1.0 `detail-screens.jsx DetailHero` (Claude Design 整合) では Hero に **盆栽名 + 樹種 (common + scientific italic) + 樹形** の 3 行情報 + container height **280px** + overlay height **140px** だったが、 Sess28 user 真意 + 4 ペルソナ評価により **盆栽名のみ** + container **180px** + overlay **64px** に縮小
+- 樹種 (常用名 + 学名) と 樹形 は **基本情報タブ**の LabeledPickerRow で確認 (現状実装で既に表示済、 追加実装不要)
+- 一覧画面 (BonsaiCard) では樹種 + 樹形 を引き続き表示 (cardDataBuilder)、 詳細 Hero でのみ非表示
+- placeholder PotIcon size: 120 → 100 (container 縮小に合わせる)
+
+#### Before / After
+
+| 項目                       | Before (mockup v1.0 整合) | After (Sess28 PR-4)           |
+| -------------------------- | ------------------------- | ----------------------------- |
+| container height           | 280px                     | **180px**                     |
+| overlay height             | 140px                     | **64px**                      |
+| 盆栽名 fontSize            | 28pt NotoSerifJP          | **同じ** (老眼対応で大型維持) |
+| 樹種 (common + scientific) | 表示                      | **非表示**                    |
+| 樹形 (style label)         | 表示                      | **非表示**                    |
+| 樹種・樹形 到達経路        | Hero overlay (常時可視)   | **基本情報タブ**で参照        |
+
+#### 理由 (議論経緯)
+
+1. **user 要望** (Sess28 改善項目 #3): 「盆栽カードをタップした際に表示される画面で、 一番上の画像に名前と樹形と樹種が表示されていますが名前だけで OK。 薄い黒い帯においても名前だけになるので、 高さを低めて調整してください」
+2. **ペルソナ 1 (高橋 62 歳老眼)**: 情報過剰、 list 領域が初期表示で 1-2 件しか見えない → Hero 縮小で event 1-2 件追加可視
+3. **ペルソナ 3 (盆栽園プロ 100 鉢)**: 一覧性向上で業務効率改善
+4. **mockup 上書きの理由**: Claude Design は初期 (v1.0) の HTML wireframe、 user 実機検証で「情報過剰」 が判明、 R-25 で実機検証主導の改訂が許容範囲
+
+#### R-28 境界判定 + R-16
+
+- **UI 表現** (Hero 高さ + 表示情報削減): R-16 では mockup HTML が下書き / ADR が正、 本 Notes Amended で ADR を正に確定
+- **ビジネス仕様**: データ層変更なし (樹種 / 樹形 / cover photo の保存形式は不変)、 表示位置のみ変更
+- **動線整合**: 樹種・樹形は基本情報タブで確認可能、 user 学習負荷ほぼ 0
+
+#### 4 ペルソナ評価 (本 Notes Amended)
+
+| 評価軸                    | 高橋 62 (シニア) | Marcus 35 (海外) | プロ 50 (業務) | ライト 28 (新人) |
+| ------------------------- | ---------------- | ---------------- | -------------- | ---------------- |
+| Hero 縮小 (180px)         | ◎ 老眼負荷低減   | ◎ 一覧性向上     | ◎ 100 鉢で重要 | ○                |
+| 樹種・樹形 = 基本情報タブ | ◎ シンプル       | ◎ 動線明確       | ◎ 業務効率     | ○ 学習軽い       |
+| **総合**                  | ◎                | ◎                | ◎              | ○                |
+
+→ R-10 4 ペルソナ評価で ✕ ゼロ、 user 真意整合
+
+#### 関連
+
+- ADR-0037 (本 Notes Amended の親 ADR、 Sess28 PR-1)
+- Sess28 PR-4 (BonsaiHero.tsx 実装変更、 dead prop 削除)
+- `src/features/bonsai/BonsaiHero.tsx` (Sess28 PR-4 で修正)
+- `src/features/bonsai/BonsaiBasicForm.tsx` (樹種 / 樹形 = 基本情報タブで現状通り表示)
+- mockup `detail-screens.jsx DetailHero` (historical reference 維持)

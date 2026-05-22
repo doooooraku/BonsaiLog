@@ -102,6 +102,31 @@ module.exports = defineConfig([
       'no-restricted-syntax': 'off',
     },
   },
+  // Sess28 PR-1 (ADR-0037 連動 hot-fix): __tests__/**/*.{js,ts,tsx} に Jest globals + Node.js globals。
+  // Sess26 で追加された __tests__/scripts/*.test.js + 既存 __tests__/**/*.test.ts で `describe`/`test`/`expect`
+  // /`__dirname` が no-undef となる pre-existing fail を解消。 eslint-config-expo/flat は jest env を
+  // 自動付与しないため、 明示登録が必要。
+  {
+    files: ['__tests__/**/*.{js,ts,tsx}'],
+    languageOptions: {
+      globals: {
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeAll: 'readonly',
+        beforeEach: 'readonly',
+        afterAll: 'readonly',
+        afterEach: 'readonly',
+        jest: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        process: 'readonly',
+      },
+    },
+  },
   // app/ 配下にも no-restricted-imports と Event.kind 禁止を適用
   {
     files: ['app/**/*.{ts,tsx}'],

@@ -256,6 +256,17 @@
 
 ---
 
+### R-46. キーボード回避は共通 hook 必須 (Sess28 ADR-0037 由来)
+
+- **ルール**: フォーム input を含む全 screen / modal で **`useKeyboardAvoidingProps()`** (`src/core/hooks/useKeyboardAvoidingProps.ts`) を必ず利用すること。 `KeyboardAvoidingView` を直接書く / Platform.OS 分岐で `behavior` を ad-hoc に決める実装を **禁止**。 hook の戻り値 (`behavior` / `keyboardVerticalOffset` / `style`) を `<KeyboardAvoidingView {...kavProps}>` で展開する。
+  - iOS: `behavior='padding'`、 offset = ヘッダ高さ自動計算
+  - Android: `behavior='height'`、 offset = 0 (modal 用)、 windowSoftInputMode=adjustResize と協調
+- **根拠**: Sess15 PR-TT で BonsaiCreateScreen に `behavior={Platform.OS === 'ios' ? 'padding' : undefined}` パターンを採用、 Android で **behavior=undefined → KAV 機能無効** → user 報告「Home FAB → 編集 → メモ欄でキーボード被り」 が Sess28 で発生。 別画面 (bonsai-detail.tsx:572) は既に修正済だったが、 新規 modal で**同パターン再現 = 仕組み欠如**。 user 指摘「他の文字列入力欄の挙動を統一して、 コード的にも見やすく分かりやすくできないモノなの?」 が本 R-46 の真意源。
+- **自動化**: Sess28 PR-2 完遂後、 `scripts/check-keyboard-avoiding.mjs` で `KeyboardAvoidingView` の直接利用 (test ファイル除く) を grep 検出し、 `pnpm lint:kav` で違反 exit 1。 ESLint rule 化は次セッション候補。
+- **関連**: ADR-0037 (本ルール由来) / `src/core/hooks/useKeyboardAvoidingProps.ts` / `android/app/src/main/AndroidManifest.xml` (windowSoftInputMode=adjustResize) / Expo SDK 54 modal presentation 既知挙動
+
+---
+
 ## 関連
 
 - 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-41 索引 + 運用ルール)
