@@ -10,18 +10,23 @@
  *
  * 「PlanScreen listing と bonsai-detail history の row 表示が pixel 整合」 (整合性レベル 2、 ADR-0034 D4)。
  *
+ * Sess34 ADR-0041 PR-5: `displayMode: 'compact' | 'detailed'` prop 追加。
+ * - compact (default): 後方互換、 既存 row 表示 (memo 2 行、 chips 制限なし、 写真なし)
+ * - detailed: ADR-0041 D2/D4/D5 — 写真 strip + chips max 4 + memo 3 行 + 「もっと見る」 リンク
+ *
  * wiring 期間判定の依存:
  * - `eventsForBonsai` は **該当 bonsai の全期間 events** を渡す必要あり (短絡防止)
  * - PlanScreen は `events.filter(x => x.bonsaiId === ev.bonsaiId)` で渡す
  * - bonsai-detail は同 component scope の `events` (= 該当 bonsai 全期間) を渡す
  */
-import React from 'react';
+import { useRouter, type Href } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
-import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { nowUtc } from '@/src/core/datetime';
+import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
   BG_SURFACE,
   BORDER_DEFAULT,
@@ -31,7 +36,13 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { type Event, type EventType } from '@/src/db/schema';
+import {
+  getAllPhotosByEventId,
+  getRepresentativePhotoByEventId,
+  type PhotoRead,
+} from '@/src/db/photoRepository';
 import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
+import { EventRowPhotoStrip } from '@/src/features/event/EventRowPhotoStrip';
 import { HistoryChipRow } from '@/src/features/event/HistoryChip';
 import {
   classifyWiringDuration,
@@ -56,6 +67,64 @@ function formatDate(iso: string, locale: string): string {
   }
 }
 
+/**
+ * ADR-0041 D5: detailed mode で memo 3 行 + 末尾 ellipsis 時に「もっと見る」 リンク表示。
+ * memo は `numberOfLines={3}` で打ち切り、 onTextLayout で truncated 検知して link 表示判定。
+ * Note: React Native onTextLayout は `nativeEvent.lines` を返す。 数 ≥ 3 かつ最後 line に省略があれば
+ * truncated とみなす実装が pragmatic (完全な ellipsis 検知 API は無い)。
+ */
+function MemoWithReadMore({
+  memo,
+  numberOfLines,
+  bonsaiId,
+  testID,
+  t,
+  readMoreTestID,
+}: {
+  memo: string;
+  numberOfLines: number;
+  bonsaiId: string;
+  testID?: string;
+  t: (key: TranslationKey) => string;
+  readMoreTestID?: string;
+}) {
+  const router = useRouter();
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  return (
+    <>
+      <ThemedText
+        style={styles.eventRowNote}
+        numberOfLines={numberOfLines}
+        ellipsizeMode="tail"
+        onTextLayout={(e) => {
+          // lines.length が numberOfLines を超えた場合は truncated
+          const lines = e.nativeEvent.lines ?? [];
+          setIsTruncated(
+            lines.length >= numberOfLines && (lines[lines.length - 1]?.text ?? '').length > 0,
+          );
+        }}
+        testID={testID}
+      >
+        {memo}
+      </ThemedText>
+      {isTruncated && (
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel={t('eventRowReadMoreAccessibility')}
+          onPress={() => router.push(`/(tabs)/bonsai/${bonsaiId}?tab=history` as Href)}
+          hitSlop={6}
+          testID={readMoreTestID}
+        >
+          <ThemedText style={styles.readMoreLink}>{t('eventRowReadMore')}</ThemedText>
+        </Pressable>
+      )}
+    </>
+  );
+}
+
+export type EventRowDisplayMode = 'compact' | 'detailed';
+
 export type EventRowProps = {
   ev: Event;
   /** 該当 bonsai の全期間 events (wiring 期間判定用、 短絡防止) */
@@ -79,6 +148,12 @@ export type EventRowProps = {
   /** ADR-0036 D7 拡張 (Sess27 PR-5): 個別 row 右端 kebab ⋮ tap = 長押し代替動線 */
   onKebabPress?: (ev: Event) => void;
   kebabTestID?: string;
+  /**
+   * Sess34 ADR-0041 PR-5: 表示モード切替。
+   * - 'compact' (default): 後方互換 (memo 2 行、 chips 制限なし、 写真なし)
+   * - 'detailed': ADR-0041 D2/D4/D5 — 写真 strip + chips max 4 + memo 3 行 + 「もっと見る」 リンク
+   */
+  displayMode?: EventRowDisplayMode;
 };
 
 export function EventRow({
@@ -96,7 +171,31 @@ export function EventRow({
   actionButtonTestID,
   onKebabPress,
   kebabTestID,
+  displayMode = 'compact',
 }: EventRowProps) {
+  const isDetailed = displayMode === 'detailed';
+
+  // detailed mode のみ event 紐付け写真を fetch
+  const [repPhoto, setRepPhoto] = useState<PhotoRead | null>(null);
+  const [totalPhotos, setTotalPhotos] = useState<number>(0);
+  useEffect(() => {
+    if (!isDetailed) return;
+    let cancelled = false;
+    void (async () => {
+      const [rep, all] = await Promise.all([
+        getRepresentativePhotoByEventId(ev.id),
+        getAllPhotosByEventId(ev.id),
+      ]);
+      if (!cancelled) {
+        setRepPhoto(rep);
+        setTotalPhotos(all.length);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ev.id, isDetailed]);
+
   let wiringDuration: {
     weeks: number;
     kind: 'within' | 'overdue';
@@ -123,6 +222,11 @@ export function EventRow({
     }
   }
 
+  // ADR-0041 D5: detailed 時 memo は 3 行、 compact 時は従来通り 2 行
+  const memoLines = isDetailed ? 3 : 2;
+  // ADR-0041 D4: detailed 時 chips max 4 + 末尾「+N」 sentinel
+  const chipsMaxVisible = isDetailed ? 4 : undefined;
+
   return (
     <Pressable
       style={[styles.eventRow, indent && styles.eventRowIndent]}
@@ -135,9 +239,19 @@ export function EventRow({
       onPress={onPress ? () => onPress(ev) : undefined}
       onLongPress={onLongPress ? () => onLongPress(ev) : undefined}
     >
-      <View style={styles.eventIconBox}>
-        <EventIcon type={ev.type as EventType} size={20} />
-      </View>
+      {/* ADR-0041 D2: detailed mode で写真 strip 表示 (写真ゼロ件は非表示) */}
+      {isDetailed && repPhoto ? (
+        <EventRowPhotoStrip
+          eventId={ev.id}
+          photo={repPhoto}
+          totalCount={totalPhotos}
+          testID={`e2e_event_row_photo_strip_${ev.id}`}
+        />
+      ) : (
+        <View style={styles.eventIconBox}>
+          <EventIcon type={ev.type as EventType} size={20} />
+        </View>
+      )}
       <View style={styles.eventContent}>
         {/*
          * ADR-0036 D9 (Sess25 PR-ζ-2-⑨): showBonsaiName=true (PlanScreen 展開時) は
@@ -176,12 +290,22 @@ export function EventRow({
             {scheduledUnwireLabel}
           </ThemedText>
         )}
-        {ev.note && (
-          <ThemedText style={styles.eventRowNote} numberOfLines={2}>
-            {ev.note}
-          </ThemedText>
-        )}
-        <HistoryChipRow chips={buildHistoryChips(ev)} />
+        {ev.note &&
+          (isDetailed ? (
+            <MemoWithReadMore
+              memo={ev.note}
+              numberOfLines={memoLines}
+              bonsaiId={ev.bonsaiId}
+              t={t}
+              testID={`e2e_event_row_memo_${ev.id}`}
+              readMoreTestID={`e2e_event_row_read_more_${ev.id}`}
+            />
+          ) : (
+            <ThemedText style={styles.eventRowNote} numberOfLines={memoLines}>
+              {ev.note}
+            </ThemedText>
+          ))}
+        <HistoryChipRow chips={buildHistoryChips(ev)} maxVisible={chipsMaxVisible} />
         {actionButtonLabel && onActionPress && (
           <Pressable
             accessibilityRole="button"
@@ -241,6 +365,13 @@ const styles = StyleSheet.create({
   eventBonsaiName: { fontSize: 15, color: TEXT_PRIMARY, fontWeight: '500' },
   eventRowDate: { fontSize: 12, color: TEXT_SECONDARY },
   eventRowNote: { fontSize: 12, color: TEXT_SECONDARY, marginTop: 2 },
+  // ADR-0041 D5: 「もっと見る」 リンク (TEXT_SECONDARY + fontSize 11 + ▶ icon は label に含む)
+  readMoreLink: {
+    fontSize: 11,
+    color: TEXT_SECONDARY,
+    marginTop: 2,
+    fontWeight: '500',
+  },
   // Sess29 ADR-0038 D4 / R-48: BUTTON_SECONDARY token 参照 (薄緑 + 濃緑文字、 design_system §22 Secondary CTA)。
   // 旧 BRAND_GREEN ベタ + ON_BRAND (Sess23 ADR-0035 D7) は強調過剰で washi 世界観と不調和、 §22 階層で Secondary に降格。
   actionButton: {
