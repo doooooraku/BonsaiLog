@@ -10,11 +10,12 @@
  * 新規登録成功時に `store.setBonsaiCreateResult(bonsaiId)` + `router.back()` で caller に
  * 返却 → caller 側 `useFocusEffect` で `consumeBonsaiCreateResult()` 取得 → `/bonsai/<id>` 遷移。
  */
-import { router } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import React from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
@@ -47,6 +48,12 @@ export default function BonsaiCreateScreen() {
 
   return (
     <View style={styles.container} testID="e2e_bonsai_create_screen">
+      {/* Sess33 PR-3 (ADR-0039 起票予定): Stack header 廃止 + FormScreenHeader sticky。
+          BonsaiBasicFormFields は ScrollView 内に全要素 (タイトルなし、 直接 fields)。
+          IME 起動時は scrollToEnd で末尾メモ欄まで scroll (R-46 v3 タイプ A)。 */}
+      <Stack.Screen options={{ headerShown: false }} />
+      <FormScreenHeader testID="e2e_bonsai_create_form_header" />
+
       <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
         <ScrollView
           ref={scrollRef}
