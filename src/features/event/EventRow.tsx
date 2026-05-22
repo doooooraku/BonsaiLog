@@ -19,7 +19,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { EventIcon } from '@/src/components/icons';
+import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { nowUtc } from '@/src/core/datetime';
 import {
@@ -76,6 +76,9 @@ export type EventRowProps = {
   actionButtonLabel?: string;
   onActionPress?: (ev: Event) => void;
   actionButtonTestID?: string;
+  /** ADR-0036 D7 拡張 (Sess27 PR-5): 個別 row 右端 kebab ⋮ tap = 長押し代替動線 */
+  onKebabPress?: (ev: Event) => void;
+  kebabTestID?: string;
 };
 
 export function EventRow({
@@ -91,6 +94,8 @@ export function EventRow({
   actionButtonLabel,
   onActionPress,
   actionButtonTestID,
+  onKebabPress,
+  kebabTestID,
 }: EventRowProps) {
   let wiringDuration: {
     weeks: number;
@@ -189,6 +194,19 @@ export function EventRow({
           </Pressable>
         )}
       </View>
+      {/* ADR-0036 D7 拡張 (Sess27 PR-5): 個別 row 右端 kebab ⋮ — 長押しが分からない user 向け代替動線 */}
+      {onKebabPress && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('rowActionMenuDelete')}
+          style={styles.kebabButton}
+          hitSlop={8}
+          onPress={() => onKebabPress(ev)}
+          testID={kebabTestID}
+        >
+          <MoreVerticalIcon size={20} color={TEXT_SECONDARY} />
+        </Pressable>
+      )}
     </Pressable>
   );
 }
@@ -233,4 +251,11 @@ const styles = StyleSheet.create({
     backgroundColor: BRAND_GREEN,
   },
   actionButtonText: { fontSize: 12, fontWeight: '600', color: ON_BRAND },
+  // ADR-0036 D7 拡張 (Sess27 PR-5): 個別 row 右端 kebab ⋮ button
+  kebabButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
