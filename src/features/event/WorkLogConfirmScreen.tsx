@@ -21,11 +21,12 @@
  * - bonsaiId: createEvent で必須 (Sess19 PR-4 で追加)
  * - type: 作業種別 (EventType、必須)
  */
-import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { Stack, router, useLocalSearchParams, type Href } from 'expo-router';
 import React from 'react';
 import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
@@ -202,6 +203,12 @@ export default function WorkLogConfirmScreen() {
 
   return (
     <View style={styles.container} testID="e2e_work_log_confirm_screen">
+      {/* Sess33 PR-4 (ADR-0039 起票予定): Stack header 廃止 + FormScreenHeader sticky。
+          タイトル + bonsaiName は既に ScrollView 内に統合済 → header (sticky) を消して
+          full-screen scroll 化。 既存 scrollToEnd (R-46 v3 タイプ A) はそのまま維持。 */}
+      <Stack.Screen options={{ headerShown: false }} />
+      <FormScreenHeader testID="e2e_work_log_form_header" />
+
       <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
         <ScrollView
           ref={scrollRef}
