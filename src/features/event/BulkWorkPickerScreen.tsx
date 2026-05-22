@@ -21,12 +21,13 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useToastStore } from '@/src/components/Toast';
-import { nowUtc } from '@/src/core/datetime';
+import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
 import { bulkScheduleEvents } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
@@ -55,8 +56,9 @@ export default function BulkWorkPickerScreen() {
 
       if (mode === 'schedule') {
         setIsSubmitting(true);
-        // ADR-0008 §TZ 3 層防御: new Date() 引数なし禁止、 nowUtc() 経由
-        const dateStr = scheduleDate || (nowUtc() as string).slice(0, 10);
+        // Sess36 PR-7 (ADR-0042 関連 fix): TZ 安全な local 「今日」 (toLocalDateKey)。
+        // 旧 `nowUtc().slice(0, 10)` は UTC 日付で JST 早朝に前日 default 化する bug。
+        const dateStr = scheduleDate || toLocalDateKey(nowUtc() as string, getTzOffsetMin());
         const occurredAtUtc = `${dateStr}T00:00:00.000Z`;
         try {
           await bulkScheduleEvents({ bonsaiIds, type, occurredAtUtc });
@@ -71,8 +73,11 @@ export default function BulkWorkPickerScreen() {
         return;
       }
 
-      // log mode: BulkLogConfirm に push (note + 日付 + 写真 入力画面)
-      router.push(`/bulk-log-confirm?type=${type}` as Href);
+      // log mode: BulkLogConfirm に push (note + 日付 + 写真 入力画面)。
+      // Sess36 PR-7 (ADR-0042 関連 fix): カレンダー選択日 (scheduleDate) を URL param で
+      // 引き継ぐ。 旧実装は date を渡しておらず、 BulkLogConfirm 側で UTC 「今日」 default 化していた。
+      const dateParam = scheduleDate ? `&date=${encodeURIComponent(scheduleDate)}` : '';
+      router.push(`/bulk-log-confirm?type=${type}${dateParam}` as Href);
     },
     [isSubmitting, mode, scheduleDate, selectedBonsais, t],
   );
