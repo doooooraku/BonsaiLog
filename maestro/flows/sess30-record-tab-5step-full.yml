@@ -1,0 +1,120 @@
+# maestro/flows/sess30-record-tab-5step-full.yml
+# Sess30 PR-3 (ADR-0038 D1 + Sess30 PR-2 保存後遷移先修正):
+# 「記録」 tab FAB → 5 ステップ動線の完全検証 (ボタン押す → 画面表示確認 → 別ボタン押す → 文字入力)。
+#
+# 経路 (全 step + assertion):
+# 1. launchApp
+# 2. Dev Client URL list dismiss (初回)
+# 3. home list 表示確認 (盆栽 tab default)
+# 4. 「記録」 tab tap → e2e_record_screen + タブハイライト「記録」 整合
+# 5. 「記録」 tab FAB tap → e2e_bonsai_multi_select_screen (mode='log')
+# 6. 盆栽 2 件選択 (アカシア + 思い出のツバキ) → 「一括記録」 button 表示確認
+# 7. 「一括記録」 button tap → e2e_bulk_log_confirm_screen (ヘッダ「作業を記録」、 mode='log')
+# 8. 水量「いつも通り」 default 確認 (input 項目空にしない user 要望整合)
+# 9. メモ欄 tap → 英語入力「Maestro%sflow%stest」 (日本語 IME 経由不可、 user 要望「英語 OK」)
+# 10. 「2件にまとめて記録」 button tap → 保存
+# 11. 記録 tab に遷移確認 (Sess30 PR-2 修正後、 旧予定 tab → 記録 tab 整合)
+# 12. selectedDateKey = 今日 で list 反映確認 (DB 書込 verify)
+#
+# 期待: 全 step PASS、 入力項目すべて充足 (盆栽 2 件 + 日付=今日 + 水量=いつも通り + メモ=Maestro flow test)。
+# 入力空欄ゼロ。 user 報告動線復活の最終 E2E 検証。
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: false
+
+# Dev Client URL list (初回 launch時のみ)
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 30000
+
+# Step 3: home list 表示確認 (盆栽 tab default、 startup 安定化)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_list'
+    timeout: 30000
+
+# Step 4: 「記録」 tab tap → タブハイライト整合
+- tapOn:
+    id: 'e2e_tab_record'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_record_screen'
+    timeout: 10000
+# Sess29 ADR-0038 D1 整合確認: タブハイライト「記録」、 SearchHeader タイトル「記録」
+
+# Step 5: 「記録」 tab FAB tap → mode='log' で 5 ステップ動線開始
+- tapOn:
+    id: 'e2e_record_fab_action'
+- waitForAnimationToEnd:
+    timeout: 3000
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_multi_select_screen'
+    timeout: 10000
+
+# Step 6: 盆栽 2 件選択 (テスト用 seed 盆栽)
+- tapOn:
+    text: 'アカシア'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    text: '思い出のツバキ'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Step 7: 「一括記録」 button tap (mode='log' で表示、 mode='schedule' なら「一括予定追加」)
+- tapOn:
+    text: '一括記録'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_log_confirm_screen'
+    timeout: 10000
+
+# Step 8: 作業種別「水やり」 tap → 詳細入力画面
+- tapOn:
+    text: '水やり'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Step 9: メモ欄 tap → 英語入力 (日本語 IME 経由不可のため英語、 user 要望「英語 OK」)
+- scrollUntilVisible:
+    element:
+      id: 'e2e_bulk_log_confirm_note_input'
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: 'e2e_bulk_log_confirm_note_input'
+- inputText: 'Maestro flow test'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Step 10: 「2件にまとめて記録」 button tap → 保存実行
+- tapOn:
+    id: 'e2e_bulk_log_save_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Step 11: 記録 tab に遷移確認 (Sess30 PR-2 修正後 = 旧予定 tab → 記録 tab 整合)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_record_screen'
+    timeout: 10000
+# 期待: SearchHeader タイトル「記録」、 タブハイライト「記録」 維持
+# 期待: selectedDateKey = 今日 で listing 反映 (logged 2 件追加)
