@@ -193,10 +193,12 @@ export default function BulkLogConfirmScreen() {
     }
     // Sess12 PR-I: 通知 reschedule (planned → logged 状態変化、 当日通知更新)
     void triggerSummaryReschedule(t);
-    // Sess19 PR-5 (ADR-0031 D1): 記録タブ stub に戻る → カレンダー画面に遷移、
-    // 記録した日が選択状態 (Single と統一、 user 提案「作業記録カレンダー」 整合)
+    // Sess30 PR-2 (ADR-0038 D1 整合): 保存後の遷移先を **記録 tab** に変更。
+    // 旧 `/(tabs)/plan` (Sess19 ADR-0031 D1 + Sess23 ADR-0035 D6 経由) は、 タブ名 ↔ FAB 動作
+    // 整合性違反 (記録 tab FAB から起動 → 保存後 予定 tab 遷移 → タブハイライト不整合) のため修正。
+    // BulkLogConfirmScreen は常に status='logged' を保存 → record tab に遷移が user 直感整合。
     const dateKey = occurredAtDate || (occurredAtUtc?.slice(0, 10) ?? '');
-    router.replace(`/(tabs)/plan?selectedDateKey=${dateKey}`);
+    router.replace(`/(tabs)/record?selectedDateKey=${dateKey}`);
   };
 
   const typeLabel = t(`eventType_${selectedType}` as TranslationKey);
