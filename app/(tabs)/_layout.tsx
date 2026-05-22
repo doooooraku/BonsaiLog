@@ -3,7 +3,7 @@
  *
  * - 盆栽 (Leaf): 盆栽カード一覧
  * - 予定 (Calendar): 月カレンダー画面 (PlanScreen) + FAB「予定追加」 flow、 タブ tap で source=tab + 明日 default (ADR-0035 D1/D2)
- * - 記録 (Droplet): 月カレンダー画面 (RecordTabScreen) + FAB「作業を記録」 flow、 タブ tap で今日 default (ADR-0038 D1)
+ * - 記録 (Notebook): 月カレンダー画面 (RecordTabScreen) + FAB「作業を記録」 flow、 タブ tap で今日 default (ADR-0038 D1)。 ADR-0042 D2 で icon を Droplet (mockup HI.Droplet = EventIcons watering 用 size override 兼用) → Notebook (14 種別記録象徴の帳簿型) に変更
  * - ふりかえり (Pencil): CareHub Hub 画面 + 検索 (ADR-0020 §Decision §7、 2026-05-10 改訂)
  *
  * Sess29 ADR-0038 D1 (本 PR): 旧 handleRecordTabPress (Sess23 ADR-0035 D6 で予定タブに統合) を撤去、
@@ -17,7 +17,7 @@ import React, { useCallback } from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/theme';
-import { CalendarIcon, DropletIcon, LeafIcon, PencilNavIcon } from '@/src/components/icons';
+import { CalendarIcon, LeafIcon, NotebookIcon, PencilNavIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 
 export default function TabLayout() {
@@ -73,7 +73,7 @@ export default function TabLayout() {
         name="record"
         options={{
           title: t('tabRecord'),
-          tabBarIcon: ({ color }) => <DropletIcon size={28} color={color} />,
+          tabBarIcon: ({ color }) => <NotebookIcon size={28} color={color} />,
           tabBarButtonTestID: 'e2e_tab_record',
         }}
       />

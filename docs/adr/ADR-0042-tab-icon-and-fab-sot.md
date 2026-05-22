@@ -314,4 +314,26 @@ export function NotebookIcon({ size = 28, color = TEXT_PRIMARY }: IconProps) {
 
 ## Notes Amended (随時更新)
 
-(現時点なし、 Phase θ で実装中に発覚した課題は随時追記)
+### 2026-05-23 Sess36 PR-2: D2 事実誤認の訂正
+
+PR-1 (ADR 起票) 時の Explore agent 報告に誤認があり、 D2 の以下記述を訂正:
+
+- 誤: **「NavIcons.tsx の `DropletIcon` (size=28 nav 用) を削除」 「NavIcons と EventIcons で同名関数 `DropletIcon` を別 file で重複定義」**
+- 正: **NavIcons.tsx に `DropletIcon` は元から存在しない**。 `app/(tabs)/_layout.tsx:20` の import 文 `import { CalendarIcon, DropletIcon, LeafIcon, PencilNavIcon } from '@/src/components/icons'` は barrel export 経由で **EventIcons.tsx の `DropletIcon` (size=16 watering 用) を import** し、 `_layout.tsx:76` で `<DropletIcon size={28} color={color} />` と size override して nav 用に兼用していた
+
+### 実装の正しい手順 (D2 訂正版)
+
+1. **新規追加**: `src/components/icons/NavIcons.tsx` に `NotebookIcon` (size=28 default)
+2. **barrel export**: `src/components/icons/index.ts` の NavIcons exports に `NotebookIcon` 追加 (削除はゼロ件)
+3. **配線切替**: `app/(tabs)/_layout.tsx:20, 76` の import + `tabBarIcon` を `DropletIcon` → `NotebookIcon`
+4. **無傷**: `EventIcons.tsx` の `DropletIcon` (size=16 watering 用) は本 ADR では一切触らない。 watering 用に **3 箇所** で使用中 (`EventIcons.tsx:191` EventIcon switch / `CalendarTabScreen.tsx:551,678` 月カレンダー row / `BonsaiCard.tsx:154` 盆栽カード)
+
+### D4 lint の意義 (訂正版)
+
+- 当初想定の「現状の同名重複を CI で検出して二度と作らない」 → 実際は **「現状重複ゼロを保つ予防策」**
+- NavIcons (UI ナビ用 24-28px) と EventIcons (event 種別用 14-18px) は **意味的役割が完全に異なる** ため、 同名 export は将来も禁止すべき (例: NavIcons に水滴 icon が必要なら `WaterDropletIcon` 等で別名)
+- 現状重複ゼロを baseline として CI 強制 → 仕様変更で偶発的重複が入った瞬間 fail で検出可能
+
+### `_layout.tsx` doc comment 修正
+
+- L6 `* - 記録 (Droplet): ...` → `* - 記録 (Notebook): ... (ADR-0042 D2 で icon 変更)` に修正済 (PR-2)
