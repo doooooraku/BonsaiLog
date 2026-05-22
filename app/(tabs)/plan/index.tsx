@@ -30,6 +30,8 @@ import { getTzOffsetMin } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   ACCENT_BARK,
+  BADGE_SOFT_BG,
+  BADGE_SOFT_TEXT,
   BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
@@ -926,8 +928,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   groupLabel: { fontSize: 15, fontWeight: '500', color: TEXT_PRIMARY },
+  // Sess28 PR-5 (ADR-0037 D3): BADGE_SOFT token 参照 (薄緑 + 濃緑文字、 design_system §20 整合)。
   groupCountBadge: {
-    backgroundColor: BRAND_GREEN,
+    backgroundColor: BADGE_SOFT_BG,
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -935,7 +938,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  groupCountBadgeText: { color: ON_BRAND, fontSize: 12, fontWeight: '600' },
+  groupCountBadgeText: { color: BADGE_SOFT_TEXT, fontSize: 12, fontWeight: '600' },
   groupSpacer: { flex: 1 },
   groupToggleText: { fontSize: 12, color: TEXT_SECONDARY },
   // 展開コンテナ: 左 indent + 縦 border-left で 「まとまり感」 (Notion / Apple Notes パターン)

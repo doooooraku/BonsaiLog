@@ -25,6 +25,8 @@ import {
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
+  BADGE_SOFT_BG,
+  BADGE_SOFT_TEXT,
   BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
@@ -1094,14 +1096,16 @@ const styles = StyleSheet.create({
   historyFilterChipTextOn: { color: '#FFFFFF', fontWeight: '600' },
   // Issue #440 Phase 1: 連続日 group の `×N` バッジ + 「N 回まとめて表示 個別に開く ▼」
   eventLabelWithCount: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  // Sess28 PR-5 (ADR-0037 D3): BADGE_SOFT token 参照 (薄緑 + 濃緑文字、 design_system §20 整合、
+  // history タブ + timeline タブで共用)。
   eventCountBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
-    backgroundColor: BRAND_GREEN,
+    backgroundColor: BADGE_SOFT_BG,
   },
   eventCountBadgeText: {
-    color: '#FFFFFF',
+    color: BADGE_SOFT_TEXT,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 0.4,
@@ -1187,14 +1191,15 @@ const styles = StyleSheet.create({
   },
   timelineRowMain: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   timelineDateRange: { fontSize: 13, color: TEXT_SECONDARY, fontVariant: ['tabular-nums'] },
+  // Sess28 PR-5 (ADR-0037 D3): ad-hoc HEX '#E8F0EA' を BADGE_SOFT token 参照に統一 (4 箇所目)。
   timelineConsecutive: {
     fontSize: 11,
-    color: BRAND_GREEN,
+    color: BADGE_SOFT_TEXT,
     fontWeight: '600',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
-    backgroundColor: '#E8F0EA',
+    backgroundColor: BADGE_SOFT_BG,
   },
   // ADR-0020 v1.x-2: DetailTabs (Claude Design detail-screens.jsx)
   detailTabs: {
