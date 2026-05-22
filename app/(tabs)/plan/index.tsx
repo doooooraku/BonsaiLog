@@ -35,6 +35,8 @@ import {
   BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
+  BUTTON_SECONDARY_BG,
+  BUTTON_SECONDARY_TEXT,
   DANGER,
   ON_BRAND,
   TEXT_MUTED,
@@ -577,10 +579,33 @@ export default function PlanScreen() {
                             </ThemedText>
                           </View>
                           <View style={styles.groupSpacer} />
+                          {/* Sess29 ADR-0038 D3: group header に「全 N 件を記録」 button 復活 (kebab menu と併存、 案 B-2)。
+                              stopPropagation で親 toggleExpand 不発火、 handleBulkConvert (D7 動線) で予定→記録変換。 */}
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={t('rowActionMenuRecordAll').replace(
+                              '{count}',
+                              String(events.length),
+                            )}
+                            style={styles.groupRecordButton}
+                            hitSlop={6}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              handleBulkConvert(type, events);
+                            }}
+                            testID={`e2e_plan_group_record_button_${type}`}
+                          >
+                            <ThemedText style={styles.groupRecordButtonText}>
+                              {t('rowActionMenuRecordAll').replace(
+                                '{count}',
+                                String(events.length),
+                              )}
+                            </ThemedText>
+                          </Pressable>
                           <ThemedText style={styles.groupToggleText}>
                             {toggleText} {isExpanded ? '▲' : '▼'}
                           </ThemedText>
-                          {/* ADR-0036 D7 (Sess25): kebab menu (削除 + 全 N 件を記録)、 旧緑 button 統合 */}
+                          {/* ADR-0036 D7 (Sess25): kebab menu (削除 + 全 N 件を記録)、 ADR-0038 D3 (Sess29) で group button と併存 (案 B-2) */}
                           <Pressable
                             accessibilityRole="button"
                             accessibilityLabel={t('rowActionMenuDelete')}
@@ -941,6 +966,22 @@ const styles = StyleSheet.create({
   groupCountBadgeText: { color: BADGE_SOFT_TEXT, fontSize: 12, fontWeight: '600' },
   groupSpacer: { flex: 1 },
   groupToggleText: { fontSize: 12, color: TEXT_SECONDARY },
+  // Sess29 ADR-0038 D3 / R-48: group header「全 N 件を記録」 button (Secondary CTA、 design_system §22)
+  groupRecordButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: BUTTON_SECONDARY_BG,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
+  },
+  groupRecordButtonText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: BUTTON_SECONDARY_TEXT,
+    letterSpacing: 0.3,
+  },
   // 展開コンテナ: 左 indent + 縦 border-left で 「まとまり感」 (Notion / Apple Notes パターン)
   expandedContainer: {
     marginTop: 8,
