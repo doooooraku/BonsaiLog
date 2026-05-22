@@ -272,6 +272,22 @@
 
 ---
 
+### R-49. 議論時の説明品質 Self-check 必須 (Sess30 retro 由来)
+
+- **ルール**: `/discuss` モード中、 user に `AskUserQuestion` を投下する前に以下 **6 項目 Self-check** を必須実施。 1 つでも違反があれば AskUserQuestion を取り下げて再構築:
+  1. **専門用語訳**: ADR-XXXX / R-XX / 案 A-1/B-Y / § 等の参照記号には**中学生でもわかる併記**を付ける (例: 「ADR-0035 D6 (= 1 ヶ月前の決定)」)
+  2. **図解 or 例え**: 構造を持つ概念 (タブ動線 / カレンダー / button 配置) は ASCII 図 or 物理世界の例え (リモコン / ノート / 押し入れ等) で補強
+  3. **選択肢ラベル長**: 各選択肢の label は **80 文字以内**、 description は 150 文字以内 (読みやすさ確保)
+  4. **記憶前提排除**: 「過去セッションで既に提示した A-2 案」 のような **user が記憶していない前提**で質問しない、 毎回その質問内で完結する説明
+  5. **clarify オプション提示**: 質問の最後に「**分かりにくい点を教えてください**」 を必ず添える (user 退路確保)
+  6. **判断材料の明示**: description で **メリット / デメリット / 推薦理由**を 1 文ずつ明示
+- **トリガー**: user が `AskUserQuestion` 応答で **「clarify したい」「全く理解できない」「もっと簡単に」 のいずれかを 1 回でも発した時点で即時 Self-check 起動**、 説明品質に問題ありとして仕切り直し
+- **根拠**: Sess29 議論で「A-1/A-2/A-3」「B-X/B-Y/B-W」 等の記号 + ADR-0035 D6 / R-47 等の専門用語を多用、 user が clarify 要求を **3 回繰返** → 議論ロス約 30 分。 user instructions (CLAUDE.md「中学生にもわかる」) を agent が議論モードに入ると逸脱する認知バイアス
+- **自動化**: 当面 code review + agent self-discipline。 Phase Future: `scripts/check-discuss-jargon.mjs` 候補 (議論ログから参照記号 + clarify 要求回数を集計、 閾値超過で警告)
+- **関連**: Sess30 retro `docs/reference/tasks/lessons/sess30-retro.md` / `~/.claude/CLAUDE.md` (中学生レベル説明 user instructions) / `/discuss` skill template (Future Work で本ルール組込予定)
+
+---
+
 ### R-48. CTA button design 整合 (Sess29 ADR-0038 由来)
 
 - **ルール**: CTA (Call-to-Action) button を実装する際、 `docs/reference/design_system.md` §22 (ボタン pattern SoT) の 4 階層 (Primary / Secondary / Tertiary / Destructive) のいずれかに従う。 ad-hoc な色・サイズ・配置を禁止:
