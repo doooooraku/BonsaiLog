@@ -1,9 +1,19 @@
 /**
  * Event 種別 SVG アイコン (Claude Design `home-screens.jsx` HI.* を移植)。
  *
- * v1.0 で実装済の主要 5 種 (watering / pruning / wiring / repotting / fertilizing) に
- * アイコンを割当。残り 8 種 (unwiring / pest_control / leaf_trimming /
- * defoliation / deshoot / candle_cut / moss_care / position_change) は v1.x で追加。
+ * 14 種別フル対応 (Sess34 ADR-0041 Phase θ PR-8b で leaf_first_aid 追加):
+ * - DropletIcon: watering
+ * - ScissorsIcon: pruning / leaf_trimming / defoliation / deshoot / candle_cut
+ * - WireIcon: wiring / unwiring
+ * - PotIconSmall: repotting / moss_care
+ * - FertilizerIcon: fertilizing
+ * - SprayIcon: pest_control
+ * - CompassIcon: position_change
+ * - LeafAidIcon: leaf_first_aid (新規、 葉 + 絆創膏、 ACCENT_BARK + DANGER 2 色)
+ *
+ * EventIcon switch は exhaustive (default なし)、 14 種別すべて返す。 新規 EventType
+ * 追加時は __tests__/components/icons/EventIcons.test.tsx の exhaustive 走査 test で
+ * non-null assertion fail → silent miss 防止。
  */
 import React from 'react';
 import Svg, { Circle, Path } from 'react-native-svg';
@@ -122,14 +132,60 @@ export function CompassIcon({ size = 16, color = TEXT_SECONDARY }: IconProps) {
   );
 }
 
-/** Event type → アイコンコンポーネントの対応表。未対応 type は null を返す (v1.x で追加)。 */
+/**
+ * LeafAidIcon — 葉の手当 (leaf_first_aid) 専用 (Sess34 ADR-0041 Phase θ PR-8b、 D10)。
+ *
+ * 「葉 + 絆創膏」 で 症状 (DANGER) + 治療 (温かみ ACCENT_BARK) の二重性を表現。
+ * Sess16 PR-E で leaf_first_aid 種別追加時に EventIcon switch case 追加漏れ
+ * (= buildHistoryChips も同 silent miss、 Phase η PR-2 で fix 済) → 本 PR で
+ * EventIcon 側も同期。 exhaustive 走査 test で再発防止。
+ *
+ * design:
+ * - viewBox 0 0 16 16、 strokeWidth 1.4 (他 EventIcons 整合)
+ * - 葉 path (ACCENT_BARK)
+ * - 絆創膏 path 45° 回転 (DANGER + fill opacity 0.15) + 縫い目 Circle 2 個
+ */
+export function LeafAidIcon({ size = 16 }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      {/* 葉 (左下→右上の楕円) */}
+      <Path
+        d="M3 12 Q3 5 10 4 Q12 4 13 5 Q13 12 6 13 Q4 13 3 12 Z"
+        stroke={ACCENT_BARK}
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      {/* 葉脈 */}
+      <Path d="M4.5 12 L11.5 5" stroke={ACCENT_BARK} strokeWidth="1" strokeLinecap="round" />
+      {/* 絆創膏本体 (45° 回転、 葉中央に重ね) */}
+      <Path
+        d="M6 9 L10 7 L10.7 8.2 L6.7 10.2 Z"
+        stroke={DANGER}
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+        fill={DANGER}
+        fillOpacity="0.15"
+      />
+      {/* 絆創膏の縫い目ドット 2 個 */}
+      <Circle cx="7" cy="9.2" r="0.3" fill={DANGER} />
+      <Circle cx="9.6" cy="7.8" r="0.3" fill={DANGER} />
+    </Svg>
+  );
+}
+
+/**
+ * Event type → アイコンコンポーネントの対応表 (14 種別フル網羅、 Sess34 ADR-0041 Phase θ PR-8b)。
+ *
+ * exhaustive switch で全 EventType を返す。 新規 EventType 追加時は本 switch + 専用 Icon 追加必須、
+ * exhaustive 走査 unit test (`__tests__/components/icons/EventIcons.test.tsx`) で silent miss 防止。
+ */
 export function EventIcon({
   type,
   size = 16,
 }: {
   type: EventType;
   size?: number;
-}): React.ReactElement | null {
+}): React.ReactElement {
   switch (type) {
     case 'watering':
       return <DropletIcon size={size} />;
@@ -151,7 +207,14 @@ export function EventIcon({
       return <SprayIcon size={size} />;
     case 'position_change':
       return <CompassIcon size={size} />;
-    default:
-      return null;
+    case 'leaf_first_aid':
+      return <LeafAidIcon size={size} />;
+    default: {
+      // exhaustive check: 新規 EventType 追加時に compile error
+      const _exhaustive: never = type;
+      void _exhaustive;
+      // unreachable、 unit test の non-null assertion が fail するので意図せず default に到達したことが分かる
+      return <CompassIcon size={size} />;
+    }
   }
 }
