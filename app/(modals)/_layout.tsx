@@ -52,6 +52,8 @@ export default function ModalsLayout() {
       />
       <Stack.Screen name="bulk-log-confirm" options={{ title: t('stackBulkLogConfirmTitle') }} />
       <Stack.Screen name="bonsai-new" options={{ title: t('stackBonsaiNewTitle') }} />
+      {/* Sess34 ADR-0041 PR-4: event 紐付け写真の全画面 swipe Viewer (title は内部で動的設定) */}
+      <Stack.Screen name="photo-viewer" options={{ title: '' }} />
     </Stack>
   );
 }
