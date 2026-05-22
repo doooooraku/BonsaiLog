@@ -1,11 +1,14 @@
 /**
- * 盆栽詳細 Hero (Sess28 PR-4 / ADR-0037 D2 で縮小、 ADR-0020 Notes Amended で規定変更)。
+ * 盆栽詳細 Hero (Sess29 ADR-0038 D5 / ADR-0037 D2 Notes Amended、 ADR-0020 Notes Amended 整合)。
  *
- * - cover photo がある場合: full bleed Image (height 180) + 下部 64px 半透明 overlay + 名前 overlay
- * - cover photo が無い場合: washi 背景 + 中央に PotIcon (100、 placeholder)
- * - 表示: **盆栽名のみ** (NotoSerifJP 28pt)、 樹種・樹形 は ADR-0037 D2 で削除 → 基本情報タブで参照
+ * - cover photo がある場合: full bleed Image (height 280) + 下部 64px 半透明 overlay + 名前 overlay
+ * - cover photo が無い場合: washi 背景 + 中央に PotIcon (120、 placeholder)
+ * - 表示: **盆栽名のみ** (NotoSerifJP 28pt)、 樹種・樹形 は ADR-0037 D2 で削除 → 基本情報タブで参照 (Sess28 確定)
  *
- * Hero 高さ 180px (旧 280px、 -36%)、 overlay 64px (旧 140px、 盆栽名 1 行 + padding)。
+ * Hero 高さ:
+ *   - Sess28 PR-4: 280px → 180px (縮小、 ADR-0037 D2 採用)
+ *   - Sess29 PR-5: 180px → **280px (撤回、 ADR-0038 D5 + ADR-0037 D2 Notes Amended)** = 元のサイズに復元
+ * overlay (黒帯) は 64px 維持 (盆栽名 1 行 + padding、 Sess28 確定)。
  * textShadow で写真上の可読性確保。
  */
 import { Image } from 'expo-image';
@@ -29,12 +32,12 @@ export function BonsaiHero({ coverUri, bonsaiName }: Props) {
       {hasCover ? (
         <>
           <Image source={{ uri: coverUri }} style={styles.image} contentFit="cover" />
-          {/* 下部 64px に半透明黒 overlay (盆栽名 1 行可読性確保、 grad 代替) */}
+          {/* 下部 64px に半透明黒 overlay (盆栽名 1 行可読性確保、 grad 代替、 Sess28 確定維持) */}
           <View style={styles.overlay} />
         </>
       ) : (
         <View style={styles.placeholder}>
-          <PotIcon size={100} />
+          <PotIcon size={120} />
         </View>
       )}
 
@@ -46,10 +49,10 @@ export function BonsaiHero({ coverUri, bonsaiName }: Props) {
 }
 
 const styles = StyleSheet.create({
-  // Sess28 PR-4 (ADR-0037 D2): height 280 → 180、 約 -36% で list 領域拡大
-  container: { width: '100%', height: 180, position: 'relative', backgroundColor: BG_PRIMARY },
+  // Sess29 PR-5 (ADR-0038 D5): height 180 → 280 撤回 (Sess28 PR-4 部分 revert、 画像サイズ復元)
+  container: { width: '100%', height: 280, position: 'relative', backgroundColor: BG_PRIMARY },
   image: { width: '100%', height: '100%' },
-  // Sess28 PR-4: overlay 140 → 64、 盆栽名 1 行 + padding 分のみ
+  // Sess28 確定: overlay 64px 維持 (盆栽名 1 行 + padding 分のみ、 Sess29 でも維持)
   overlay: {
     position: 'absolute',
     left: 0,
