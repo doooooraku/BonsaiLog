@@ -830,3 +830,57 @@ ADR-0020 §Decision §10 が 6 → 4 画面に変更されたため、41 画面 
 - `src/features/bonsai/BonsaiHero.tsx` (Sess28 PR-4 で修正)
 - `src/features/bonsai/BonsaiBasicForm.tsx` (樹種 / 樹形 = 基本情報タブで現状通り表示)
 - mockup `detail-screens.jsx DetailHero` (historical reference 維持)
+
+---
+
+### Notes Amended (2026-05-23、 Sess36 PR-6、 ADR-0042 連動): 記録タブ icon 変更 (DropletIcon → NotebookIcon) + タブ icon 履歴 SoT 化
+
+#### 背景 (Sess36 ADR-0042)
+
+user 報告: 「画面下部のタブバー『記録』 の UI が水の表現で『記録』 にあっていない」。 ADR-0042 D2 で **記録タブ icon を `DropletIcon` (水滴) → `NotebookIcon` (帳簿) に変更**。
+
+#### 構造的問題 (本 Notes Amended で SoT 化)
+
+- 旧: `_layout.tsx:20, 76` は barrel export 経由で **EventIcons.tsx の `DropletIcon` (size=16 watering 用) を import** し、 `size={28}` 上書きして nav 用に兼用
+- 結果として:
+  - 「記録 = 水やり専用」 と新規ユーザーに誤認 (実際は剪定 / 針金 / 植替 / 施肥など 14 種別記録)
+  - NavIcons / EventIcons の名前空間で 1 関数を 2 用途 (UI ナビ 28px + event 種別 16px) で兼用 → lint 検出困難
+
+#### Sess36 解消 (6 PR)
+
+- PR-1 (#808): ADR-0042 起票 (5 sub-decision: D1 4 基準 / D2 NotebookIcon / D3 FAB SoT / D4 lint / D5 ADR-0020 Notes Amended)
+- PR-2 (#809): NotebookIcon 追加 + 配線切替 (EventIcons.DropletIcon は無傷で watering 用 3 箇所維持)
+- PR-3 (#810): 共通 `<FAB />` component 新設 + 4 画面置換 (right=20, SafeArea 反映, bonsai-detail の ThemedText「+」 → PlusIcon 統一 + iOS Home Indicator 被り bug fix)
+- PR-4 (#811): design_system §25 タブアイコン + §26 FAB SoT 追記
+- PR-5 (#812): scripts/check-icon-duplication.mjs lint 自動化 (R-9 昇華)
+- PR-6 (本 Notes Amended): R-53 起票 + PR template §7.5.5 + ADR-0020 Notes Amended (本記録) + Engram + lessons
+
+#### タブ icon 履歴 (4 タブ、 本 Notes Amended で SoT 化)
+
+| タブ index | route     | icon (現在)                 | 履歴                                                                                                                            |
+| ---------- | --------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 1          | bonsai    | `LeafIcon` (葉)             | 初版から変更なし、 mockup HI.Leaf 整合                                                                                          |
+| 2          | plan      | `CalendarIcon` (カレンダー) | 初版から変更なし、 mockup HI.Cal 整合                                                                                           |
+| 3          | record    | `NotebookIcon` (帳簿)       | **Sess36 ADR-0042 D2 で変更** (旧: `DropletIcon` = EventIcons watering icon size override 兼用、 mockup HI.Droplet)             |
+| 4          | look-back | `PencilNavIcon` (鉛筆)      | **Sess9 ADR-0020 §Notes Amended で変更** (旧: `CompassNavIcon` = mockup HI.Compass、 タブ rename「探す」 → 「ふりかえり」 連動) |
+
+#### 4 ペルソナ評価 (本 Notes Amended 連動、 ADR-0042 Round 2 議論)
+
+| icon 案                   | 高橋 62 (シニア)     | Marcus 35 (米国 IT) | 業務プロ (100 鉢)          | ライト (1-2 本)  | 総合  |
+| ------------------------- | -------------------- | ------------------- | -------------------------- | ---------------- | ----- |
+| **NotebookIcon (採用)**   | ◎ 家計簿の安心感     | ○ 機能伝わる        | ◎ 顧客樹管理の帳簿感       | ○ 直感的         | **◎** |
+| ClipboardCheckIcon (次点) | ○ チェック付き完了感 | ◎ Material 標準     | ◎ 検品感                   | ○ タスクアプリ風 | ◎     |
+| DocumentTextIcon (却下)   | ○ 書類感             | ○ 汎用              | △ エクスポートと紛らわしい | △ 識別性低い     | ○     |
+
+→ R-10 4 ペルソナ評価で ✕ ゼロ、 BonsaiLog 和文化 brand 整合で NotebookIcon 採用
+
+#### 関連
+
+- ADR-0042 (本 Notes Amended の親 ADR、 Sess36 PR-1)
+- ADR-0042 Notes Amended (Sess36 PR-2): D2 事実誤認の訂正 (NavIcons には元から DropletIcon なし)
+- `src/components/icons/NavIcons.tsx` (NotebookIcon 追加、 Sess36 PR-2)
+- `src/components/common/FAB.tsx` (共通 FAB component、 Sess36 PR-3)
+- `docs/reference/design_system.md` §25 タブアイコン + §26 FAB (SoT、 Sess36 PR-4)
+- `scripts/check-icon-duplication.mjs` (lint 自動化、 Sess36 PR-5)
+- `.claude/recurrence-prevention/specialized.md` R-53 (本 Notes Amended 連動)
+- `.github/pull_request_template.md` §7.5.5 TabBar icon 変更時チェックリスト (Sess36 PR-6)

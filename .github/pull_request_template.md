@@ -173,6 +173,22 @@ PR Template
 - [ ] 本 PR は mockup 整合と無関係 (内部リファクタ / docs / config / build / test 等のみ)
   - 理由: \_\_\_\_\_
 
+### 7.5.5. TabBar icon 変更時チェックリスト (R-53 / ADR-0042 D1 / REQUIRED if `_layout.tsx tabBarIcon` 変更)
+
+> **背景**: Sess36 ADR-0042 で「記録タブ icon = DropletIcon」 が EventIcons watering icon を size override で兼用していた事故が発覚。 タブ icon 選定 4 基準を SoT 化、 PR 時 review チェック。
+
+- [ ] **基準 1 (機能整合)**: 新 icon がタブの **全機能** を象徴している (例: 「記録」 = 14 種別 → 「水滴」 1 種別は不可)
+  - 採用理由: \_\_\_\_\_
+- [ ] **基準 2 (重複排除)**: `node scripts/check-icon-duplication.mjs` で 0 errors (NavIcons / EventIcons 同名禁止)
+  - 検証コマンド: `node scripts/check-icon-duplication.mjs`
+- [ ] **基準 3 (4 ペルソナ評価)**: 高橋 62 / Marcus 35 / 盆栽園プロ / ライト で ✕ なし (R-10)
+  - 評価結果: \_\_\_\_\_ (例: 4 名 ◎/○、 ✕ なし)
+- [ ] **基準 4 (mockup 整合 or 上書き明示)**: `docs/mockups/v1.0/wireframes/*.jsx` HI.\* との整合 or ADR で上書き理由明記
+  - mockup 状況: \_\_\_\_\_ (整合 / 上書き → ADR 番号: \_\_\_\_\_)
+- [ ] **ADR-0020 Notes Amended に履歴追記** (icon 変更履歴 / rename 履歴の SoT)
+
+> 適用対象外の場合: [ ] 本 PR は TabBar icon 変更を含まない
+
 ---
 
 ## 7.6. Claude Read 評価ガイド遵守（ui-diff / 達成判定 PR で REQUIRED）
