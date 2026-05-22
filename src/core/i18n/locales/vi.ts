@@ -804,5 +804,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: 'Hiển thị toàn bộ ghi chú',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '{count} ảnh, chạm để phóng to',
+  eventRowCollapse: 'Thu gọn ▲',
+  eventRowCollapseAccessibility: 'Thu gọn ghi chú',
 };
 export default vi;

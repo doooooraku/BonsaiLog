@@ -806,5 +806,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: 'Показать полную заметку',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: 'Фото: {count}, нажмите для увеличения',
+  eventRowCollapse: 'Свернуть ▲',
+  eventRowCollapseAccessibility: 'Свернуть заметку',
 };
 export default ru;

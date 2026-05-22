@@ -19,7 +19,6 @@
  * - PlanScreen は `events.filter(x => x.bonsaiId === ev.bonsaiId)` で渡す
  * - bonsai-detail は同 component scope の `events` (= 該当 bonsai 全期間) を渡す
  */
-import { useRouter, type Href } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -70,36 +69,45 @@ function formatDate(iso: string, locale: string): string {
 
 /**
  * ADR-0041 D5: detailed mode で memo 3 行 + 末尾 ellipsis 時に「もっと見る」 リンク表示。
- * memo は `numberOfLines={3}` で打ち切り、 onTextLayout で truncated 検知して link 表示判定。
- * Note: React Native onTextLayout は `nativeEvent.lines` を返す。 数 ≥ 3 かつ最後 line に省略があれば
- * truncated とみなす実装が pragmatic (完全な ellipsis 検知 API は無い)。
+ *
+ * Sess35 PR-1 改訂: 旧 router.push (bonsai-detail history へ遷移) は bonsai-detail 内で同一 URL
+ * への遷移で no-op になる bug があったため、 **inline expand** (同 row 内で memo 全文展開) に変更。
+ * 業界標準 (Material 3 List / Twitter / Notion 等) と整合、 ADR-0030 navigation pattern 影響なし。
+ *
+ * memo は `numberOfLines={isExpanded ? undefined : numberOfLines}` で切替表示。 onTextLayout で
+ * truncated 検知して link 表示判定 (React Native onTextLayout は `nativeEvent.lines` を返す。
+ * 数 ≥ numberOfLines かつ最後 line に省略があれば truncated とみなす実装が pragmatic、 完全な
+ * ellipsis 検知 API は無い)。
+ *
+ * tap で `isExpanded` を toggle、 link text も「もっと見る ▶」 ⇄ 「折りたたむ ▲」 で切替。
+ * a11y は `accessibilityState={{ expanded }}` で展開状態を screen reader に伝達。
  */
 function MemoWithReadMore({
   memo,
   numberOfLines,
-  bonsaiId,
   testID,
   t,
   readMoreTestID,
 }: {
   memo: string;
   numberOfLines: number;
-  bonsaiId: string;
   testID?: string;
   t: (key: TranslationKey) => string;
   readMoreTestID?: string;
 }) {
-  const router = useRouter();
   const [isTruncated, setIsTruncated] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <>
       <ThemedText
         style={styles.eventRowNote}
-        numberOfLines={numberOfLines}
+        numberOfLines={isExpanded ? undefined : numberOfLines}
         ellipsizeMode="tail"
         onTextLayout={(e) => {
           // lines.length が numberOfLines を超えた場合は truncated
+          // isExpanded=true (展開中) は lines.length が全行数になるので skip
+          if (isExpanded) return;
           const lines = e.nativeEvent.lines ?? [];
           setIsTruncated(
             lines.length >= numberOfLines && (lines[lines.length - 1]?.text ?? '').length > 0,
@@ -111,13 +119,18 @@ function MemoWithReadMore({
       </ThemedText>
       {isTruncated && (
         <Pressable
-          accessibilityRole="link"
-          accessibilityLabel={t('eventRowReadMoreAccessibility')}
-          onPress={() => router.push(`/(tabs)/bonsai/${bonsaiId}?tab=history` as Href)}
+          accessibilityRole="button"
+          accessibilityLabel={
+            isExpanded ? t('eventRowCollapseAccessibility') : t('eventRowReadMoreAccessibility')
+          }
+          accessibilityState={{ expanded: isExpanded }}
+          onPress={() => setIsExpanded((prev) => !prev)}
           hitSlop={6}
           testID={readMoreTestID}
         >
-          <ThemedText style={styles.readMoreLink}>{t('eventRowReadMore')}</ThemedText>
+          <ThemedText style={styles.readMoreLink}>
+            {isExpanded ? t('eventRowCollapse') : t('eventRowReadMore')}
+          </ThemedText>
         </Pressable>
       )}
     </>
@@ -339,7 +352,6 @@ export function EventRow({
               <MemoWithReadMore
                 memo={ev.note!}
                 numberOfLines={memoLines}
-                bonsaiId={ev.bonsaiId}
                 t={t}
                 testID={`e2e_event_row_memo_${ev.id}`}
                 readMoreTestID={`e2e_event_row_read_more_${ev.id}`}

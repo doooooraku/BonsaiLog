@@ -806,5 +806,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: 'Volledige notitie tonen',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '{count} foto(s), tik om te vergroten',
+  eventRowCollapse: 'Inklappen ▲',
+  eventRowCollapseAccessibility: 'Notitie inklappen',
 };
 export default nl;

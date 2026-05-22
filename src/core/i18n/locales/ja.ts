@@ -813,6 +813,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: 'メモの全文を表示',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '写真 {count} 枚、 タップで拡大',
+  eventRowCollapse: '折りたたむ ▲',
+  eventRowCollapseAccessibility: 'メモを折りたたむ',
 };
 
 export default ja;

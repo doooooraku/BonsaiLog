@@ -794,5 +794,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: '显示完整备忘',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '照片 {count} 张，点击放大',
+  eventRowCollapse: '收起 ▲',
+  eventRowCollapseAccessibility: '收起备忘',
 };
 export default zhHans;

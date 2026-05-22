@@ -794,5 +794,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: '顯示完整備忘',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '照片 {count} 張，點擊放大',
+  eventRowCollapse: '收起 ▲',
+  eventRowCollapseAccessibility: '收起備忘',
 };
 export default zhHant;

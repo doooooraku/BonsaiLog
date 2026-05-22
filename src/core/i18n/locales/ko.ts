@@ -803,5 +803,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   eventRowReadMoreAccessibility: '메모 전문 표시',
   photoViewerIndexOfTotal: '{i} / {n}',
   photoStripAccessibility: '사진 {count}장, 탭하여 확대',
+  eventRowCollapse: '접기 ▲',
+  eventRowCollapseAccessibility: '메모 접기',
 };
 export default ko;
