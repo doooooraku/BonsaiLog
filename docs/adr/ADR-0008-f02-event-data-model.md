@@ -325,3 +325,70 @@ F-02 を以下の構成で実装する。
 - `docs/reference/tasks/lessons/data-model.md` に 「**2 系統 dead code 検出パターン**」 を記録
 - PR template に 「廃止候補 schema/関数の grep 確認」 チェック追加検討 (R-9 強化)
 - T2-6 のような 「機能の中核を入れ替える」 PR は **既存 dead code の cleanup を同 PR で完遂** を ADR / lessons で原則化
+
+---
+
+## Notes Amended (2026-05-23、 Sess36 PR-8): §TZ 3 層防御に `toLocalDateKey` を 6 つ目のラッパーとして明文化
+
+### 背景 (Sess36 実機検証で発覚した bug)
+
+Sess36 実機検証で「JST 早朝 (5:44 = UTC 5/22 20:44) に記録 form の日付欄が **2026-05-22 (UTC 日付)** で表示される」 bug が発覚。 原因は 3 file (`BulkLogConfirmScreen.tsx` / `BulkWorkPickerScreen.tsx` / `WorkLogConfirmScreen.tsx`) で `(nowUtc() as string).slice(0, 10)` という pattern が使われていたこと。
+
+旧コード comment は `// ADR-0008 §TZ 3 層防御: new Date() 引数なし禁止、 nowUtc() 経由` と本 ADR を参照していたが、 **実際は §TZ 3 層防御を破る誤用** だった (Sess16 PR-A2/B2/H 由来、 R-55 網羅調査で 3 件確認)。
+
+### 根本原因 = §TZ 3 層防御の不完全性
+
+本 ADR §TZ 仕組み化 (上記) で **ラッパー関数 5 つ** (`nowUtc` / `toIsoUtc` / `getTzOffsetMin` / `getTzIana` / `formatLocal`) を定義したが、 **「ローカル日付キー (YYYY-MM-DD) の取得」** に該当する関数が明示されていなかった。 そのため実装者は `nowUtc().slice(0, 10)` という UTC 日付取得を「ローカル日付取得」 と誤用した。
+
+実は同等の関数は **`src/features/watering/dateUtils.ts:38` の `toLocalDateKey(isoUtc, tzOffsetMin)`** として watering 由来で存在し、 notification 系 (`invalidator.ts` 等) で正しく使用されていた。 本 Notes Amended で本関数を **§TZ 3 層防御の正式 6 つ目のラッパー** として昇格させる。
+
+### §TZ 3 層防御の改訂 (本 Notes Amended)
+
+#### ラッパー関数 = 6 つ (旧 5 → 新 6)
+
+| #     | 関数                                      | 場所                                        | 用途                                                      |
+| ----- | ----------------------------------------- | ------------------------------------------- | --------------------------------------------------------- |
+| 1     | `nowUtc()`                                | `src/core/datetime/clock.ts`                | 現在時刻取得 (IsoUtc)                                     |
+| 2     | `isoUtcFrom(value)`                       | 同上                                        | 任意 Date/number/string から IsoUtc 生成                  |
+| 3     | `getTzOffsetMin()`                        | `src/core/datetime/tz.ts`                   | TZ オフセット (分、 JST=540、 符号反転は本 fn 内のみ)     |
+| 4     | `getTzIana()`                             | 同上                                        | TZ IANA 名 (DST 対応用)                                   |
+| 5     | `formatLocal(...)`                        | `src/core/datetime/format.ts`               | ローカル時刻表示                                          |
+| **6** | **`toLocalDateKey(isoUtc, tzOffsetMin)`** | **`src/features/watering/dateUtils.ts:38`** | **ローカル日付キー (YYYY-MM-DD) 取得 ★本 Amended で追加** |
+
+### 禁止 pattern
+
+- ❌ `nowUtc().slice(0, 10)` — UTC 日付を返す、 JST 早朝に「昨日」 化
+- ❌ `(nowUtc() as string).slice(0, 10)` — 同上 (Branded Type unwrap だけで本質は同じ)
+- ❌ `new Date().toISOString().slice(0, 10)` — UTC 日付 + ESLint `no-restricted-syntax` 違反
+
+### 正しい pattern
+
+```typescript
+import { nowUtc, getTzOffsetMin } from '@/src/core/datetime';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
+
+// ✅ ローカル日付キーを取得
+const todayLocal = toLocalDateKey(nowUtc() as string, getTzOffsetMin());
+```
+
+### 自動化 (R-9 昇華、 Sess36 PR-9 連動)
+
+- `scripts/check-utc-date-slice.mjs` 新規 (Sess36 PR-9): `nowUtc.*slice|new Date().*slice` を `src/` 配下で grep → 違反検出時 exit 1
+- 例外: `app/export/*` (機械処理用 = ファイル名 / 表示ラベル、 user 体感「日付」 ではない)
+- `pnpm verify:utc-date-slice` 経由で `pnpm verify` chain に組込予定 (PR-9)
+
+### 修正実績 (Sess36 PR-7)
+
+| file:line                      | 旧                                                    | 新                                                                       |
+| ------------------------------ | ----------------------------------------------------- | ------------------------------------------------------------------------ |
+| `BulkLogConfirmScreen.tsx:128` | `(nowUtc() as string).slice(0, 10)` + 直書き default  | `params.date ?? toLocalDateKey(nowUtc() as string, getTzOffsetMin())`    |
+| `BulkWorkPickerScreen.tsx:59`  | `scheduleDate \|\| (nowUtc() as string).slice(0, 10)` | `scheduleDate \|\| toLocalDateKey(nowUtc() as string, getTzOffsetMin())` |
+| `WorkLogConfirmScreen.tsx:87`  | `(nowUtc() as string).slice(0, 10)`                   | `toLocalDateKey(nowUtc() as string, getTzOffsetMin())`                   |
+
+### 関連
+
+- 本 Notes Amended の親 PR: Sess36 PR-8 (本 file 改訂)
+- 修正 PR: Sess36 PR-7 #816 (3 file fix + 副次 bug fix = date URL param 伝搬)
+- lint 自動化: Sess36 PR-9 (`scripts/check-utc-date-slice.mjs`)
+- 既存 fn 出典: `src/features/watering/dateUtils.ts` `toLocalDateKey` (watering 由来、 notification 系で使用済の信頼実装)
+- R-55 (CLAUDE.md §2 関連項目網羅調査) の適用例 1 号: 1 件発覚 → 同 pattern 全件 grep で 3 件修正 + 副次 bug 1 件発見
