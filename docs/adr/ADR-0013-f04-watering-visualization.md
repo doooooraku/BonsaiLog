@@ -3,7 +3,7 @@
 
 # ADR-0013: F-04 水やり履歴の可視化（ヒートマップ単独構成 + Apple Health 風 BottomSheet）
 
-- Status: Amended by [ADR-0020](./ADR-0020-claude-design-full-adoption.md) (2026-05-05、集約モード K2 達成率 廃止 + 個別ヒートマップを盆栽詳細画面に移動)
+- Status: **Superseded by [ADR-0039](./ADR-0039-watering-heatmap-removal.md)** (2026-05-22、 F-04 水やり履歴ヒートマップ機能の撤廃 — user 判断「履歴可視化は意思決定価値なし」)
 - Date: 2026-04-30
 - Deciders: @doooooraku
 - Related:
@@ -12,6 +12,14 @@
   - 連動: ADR-0008（F-02 events STI + Drizzle + ULID + status）/ ADR-0009（F-13 Pro メリット）/ ADR-0010（F-14 広告）/ ADR-0011（記録のみ哲学）/ ADR-0020 (Claude Design 全面採用、F-04 改訂元)
   - 影響先: ADR-0011 オンボーディング Step 4 — ヒートマップ凡例説明を統合
   - Issue: #29 (本 ADR-0020 で close 解除、集約モード廃止)
+  - Superseded by: ADR-0039 (Sess31 PR-B、 F-04 完全撤廃)
+
+> **2026-05-22 追記 (ADR-0039 連動、Superseded)**:
+> ADR-0039 で F-04 水やり履歴ヒートマップ機能を **完全撤廃**。 user 判断「水やりは土の湿り気・天気・気温・湿度依存で履歴可視化は意思決定価値なし」 + ADR-0011 (記録のみ哲学) 整合強化 + 保守コスト削減 (Skia 依存 / i18n 684 文字列 / Maestro 2 flow / Issue #502 一括解消)。
+> - 削除: `WateringHeatmap.tsx` / `heatmapA11y.ts` / `CrossWateringCalendar.tsx` / `WateringDayDetailScreen.tsx` / `wateringHeatmap.ts` / `watering-day-detail` route / `watering-history` 画面 / CareHub「水やり履歴」 card (4→3 card) / 関連 i18n 36 keys × 19 言語 / 関連テスト + Maestro flow
+> - 維持: `LastWateredText` (盆栽カード「最後の水やりから N 日」 事実表示) + `dateUtils.ts` (PR-A #773 で shared util 分離済)
+> - DB schema 変更ゼロ (既存 watering events は無影響で保持)
+> 詳細経緯は ADR-0039 参照。 本 ADR の本文は履歴維持 (R-2) のため改訂しない。
 
 > **2026-05-05 追記 (ADR-0020 連動、Amended)**:
 > ADR-0020 で Claude Design 全面採用に伴い、本 ADR は以下の点で改訂:

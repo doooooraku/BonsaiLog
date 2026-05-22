@@ -313,6 +313,17 @@
 
 ---
 
+### R-50. 機能削除前に cross-feature import 検査 (Sess31 ADR-0039 由来)
+
+- **ルール**: 機能 (feature) フォルダの中身を削除する PR を起こす前に、 削除対象フォルダ内の **export を `grep -rn '<exportName>' --include='*.ts*'` で他機能利用検査** すること。 1 件でも越境ヒット (cross-feature import) があれば、 **shared util を別 module に分離する PR を先行** させ、 削除 PR は「削除のみ」 の安全 diff に保つ。
+  - 違反例 (Sess31): `src/features/watering/wateringHeatmap.ts` に `toLocalDateKey` 等 shared util が同居していた状態。 `dotsByDay` / `groupContinuousEvents` / `cardDataBuilder` / `CalendarTabScreen` / `notification/*` の **10 箇所が cross-feature import** していた → ヒートマップ削除を 1 PR でやると予定タブ / 記録タブ / 盆栽カード / カレンダー / 通知が **連鎖崩壊** する構造リスク。
+  - 正しい対応 (Sess31 採用): PR-A (#773) で `dateUtils.ts` に shared util を分離 + 後方互換 re-export + import 切替 (挙動変更ゼロ refactor) → PR-B で機械的削除のみ。
+- **根拠**: Sess31 計画議論で QA / テックリード両者が「リスク #1 cross-feature 連鎖崩壊」 を最重大判定 (発生確率: 中、 影響度: 高、 リスクレベル: 🔴 高)。 「機能フォルダ = 機能境界」 だが「フォルダ内ファイル = 機能内サブ責務」 という暗黙ルールが曖昧で、 汎用 util が機能フォルダに残置されることが構造的に発生する。
+- **自動化**: 当面 review 時の手動 grep。 3 回再発したら `scripts/check-cross-feature-imports.mjs` を作成し、 機能削除時に `pnpm lint:cross-feature-imports <path>` で feature フォルダ外への import を検出して exit 1 (ESLint custom rule 化候補)。
+- **関連**: ADR-0039 (本ルール由来) / `docs/reference/tasks/lessons/feature-removal-cross-import.md` (詳細 lesson) / Sess31 PR-A #773 (shared util 分離成功事例) / Sess31 PR-B (削除のみの安全 diff 事例)
+
+---
+
 ## 関連
 
 - 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-41 索引 + 運用ルール)

@@ -256,6 +256,40 @@
 
 合計 19〜22 PR、約 8〜10 セッション (連続稼働モード)。
 
+### Notes Amended (2026-05-22): F-04 水やり履歴ヒートマップ完全撤廃 (ADR-0039 連動)
+
+#### 改訂内容
+
+- ADR-0039 (Sess31 PR-B) で F-04 水やり履歴可視化 (ヒートマップ + 月別カレンダー + 日別詳細 modal) を **完全撤廃**。
+- 本 ADR §画面マップ row 13 (`care-screens-v2.jsx HeatmapScreen` / 07 水やり履歴 HEATMAP) は実装側削除済、 mockup HTML は下書き扱い (R-16 棄却後の F 案運用)。
+- 本 ADR §画面マップ row 16 の「Issue #361 横断水やり履歴は暫定 Alert 残」 注記は本 Amended で **解消** (横断画面ごと削除のため Alert 不要、 CareHub 4→3 card)。
+- user 判断「水やりは土の湿り気・天気・気温・湿度依存で履歴可視化は意思決定価値なし」 + ADR-0011 (記録のみ哲学) 整合強化。
+
+#### 削除されたもの (詳細は ADR-0039)
+
+- 画面: `look-back/watering-history.tsx` / `(modals)/watering-day-detail.tsx`
+- コンポーネント: `WateringHeatmap.tsx` / `heatmapA11y.ts` / `CrossWateringCalendar.tsx` / `WateringDayDetailScreen.tsx`
+- pure 関数: `wateringHeatmap.ts` (heatmap 専用関数、 shared util は PR-A #773 で `dateUtils.ts` に分離済)
+- pickerStore slice: `wateringDayDetailContext` / `wateringDayDetailEntry`
+- i18n: 36 keys × 19 言語 = 684 文字列
+- テスト: `wateringHeatmap.test.ts` / `heatmapA11y.test.ts`
+- Maestro: `watering-filter.yml` / `look-back-watering-history.yml`
+- ui-diff config: `look-back-watering-history` entry + `skip-list.json` 該当 entry (Issue #502 解消)
+
+#### 維持されたもの
+
+- `LastWateredText` (盆栽カード「最後の水やりから N 日」 事実表示) + 関連 i18n 6 keys
+- `dateUtils.ts` (PR-A #773 で shared util 分離済、 5 cross-feature consumers 継続利用)
+- DB schema (events table、 既存 watering events は無変更で保持)
+
+#### 関連
+
+- ADR-0039 (Sess31 PR-B): F-04 撤廃の Decision / Drivers / Alternatives / Consequences 詳細
+- ADR-0013 (Superseded by ADR-0039): F-04 元設計
+- ADR-0011 (記録のみ哲学、 整合強化)
+
+---
+
 ### Notes Amended (2026-05-08)
 
 #### UI 表現は OpenDesign / 本 ADR は v1.0 整合点

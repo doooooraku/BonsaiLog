@@ -16,7 +16,7 @@
  * 実際の Notifications API 呼出は呼出側 (scheduler) の責務。
  */
 
-import { toLocalDateKey } from '@/src/features/watering/wateringHeatmap';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 
 import type { PlannedEventLike } from './dailySummary';
 

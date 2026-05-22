@@ -1,7 +1,7 @@
 /**
  * F-04 「最後から X 日」テキスト (Phase A、Issue #29 / ADR-0013 §15-18)。
  *
- * - 純関数 wateringHeatmap.classifyLastWatered の結果を i18n キーに変換して描画。
+ * - 純関数 dateUtils.classifyLastWatered の結果を i18n キーに変換して描画 (Sess31 PR-A で dateUtils 分離)。
  * - severalDays (1-30) は太字大表示、manyDays (31-365) は通常表示 (色は薄く)。
  * - constraints §5-2 禁止語 (診断 / 判定 / 推奨 / べき / reminder / tracker / alert) を含めない。
  * - ADR-0011 「記録のみ」哲学を厳守 (推奨・指示は出さない、事実のみ表示)。

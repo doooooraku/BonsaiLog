@@ -1,19 +1,24 @@
 /**
- * ふりかえりタブ index = CareHub Hub 画面 (4 カード)。
+ * ふりかえりタブ index = CareHub Hub 画面 (3 カード)。
  *
+ * ADR-0039 (Sess31 PR-B、 F-04 水やりヒートマップ撤廃) で「水やり履歴」 card 削除、 4→3 card。
  * ADR-0020 §Decision §7 (2026-05-10 改訂、T1-8c) + §Notes Amended (2026-05-18、 Sess9 PR-6) +
  * Sess23 ADR-0035 D9 (Sess22 PR-4-1 #714「カレンダー」 5 card 化を完全 revert、 5→4 card に戻し)。
  *
- * 4 カード (Sess23 状態):
- * 1. 水やり履歴 → /(tabs)/look-back/watering-history (Issue #361 で本実装)
- * 2. 針金がけ一覧 → /(tabs)/plan/wiring (既存)
- * 3. 盆栽を検索 → /(tabs)/look-back/search (T1-8c で sub-route 化)
- * 4. タグを管理 → /tags (Sess9 PR-6 新規追加、 設定 row も併存維持)
+ * 3 カード (Sess31 状態):
+ * 1. 針金がけ一覧 → /(tabs)/plan/wiring (既存)
+ * 2. 盆栽を検索 → /(tabs)/look-back/search (T1-8c で sub-route 化)
+ * 3. タグを管理 → /tags (Sess9 PR-6 新規追加、 設定 row も併存維持)
  *
  * 動線整合 (BonsaiLog-Flow.html v1.10):
  * - 経路 1 (高速): Home Header 検索 → /(tabs)/look-back/search (1 タップ)
  * - 経路 2 (Hub): TabBar ふりかえり → 本画面 → 盆栽を検索カード → search (3 タップ)
  * - 経路 3 (Sess9 PR-6 新規): TabBar ふりかえり → 本画面 → タグを管理カード → tags (3 タップ)
+ *
+ * Sess31 ADR-0039 削除済: 「水やり履歴」 card (横断 watering history 画面遷移)。
+ * user 判断「水やりは土の湿り気・天気・気温・湿度依存で履歴可視化は意思決定価値なし、 ADR-0011
+ * 『記録のみ』 哲学整合」、 同時に WateringHeatmap / CrossWateringCalendar / WateringDayDetail
+ * 経路の画面群を全削除。
  *
  * Sess23 ADR-0035 D9 削除済: 「カレンダー」 card (過去 30 日 default deep link)。
  * user 真意「別にタブバー記録から確認すればいいのだから不要」、 ADR-0035 D6 (記録タブ tap →
@@ -25,13 +30,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import {
-  ChevronRightIcon,
-  DropletIcon,
-  SearchIcon,
-  TagIcon,
-  WireIcon,
-} from '@/src/components/icons';
+import { ChevronRightIcon, SearchIcon, TagIcon, WireIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
@@ -45,10 +44,10 @@ import { useColors } from '@/src/core/theme/useColors';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 
 type CardDef = {
-  key: 'watering' | 'wiring' | 'search' | 'tags';
+  key: 'wiring' | 'search' | 'tags';
   title: string;
   desc: string;
-  Icon: typeof DropletIcon;
+  Icon: typeof WireIcon;
   onPress: () => void;
 };
 
@@ -58,13 +57,8 @@ export default function LookBackHubScreen() {
   const router = useRouter();
 
   const cards: readonly CardDef[] = [
-    {
-      key: 'watering',
-      title: t('lookBackCardWateringTitle'),
-      desc: t('lookBackCardWateringDesc'),
-      Icon: DropletIcon,
-      onPress: () => router.push('/(tabs)/look-back/watering-history' as Href),
-    },
+    // Sess31 ADR-0039: 「水やり履歴」 card 削除 (user 判断「履歴可視化に価値なし」、
+    // WateringHeatmap / CrossWateringCalendar / WateringDayDetail 画面群を全削除)。
     // Sess23 ADR-0035 D9: Sess22 PR-4-1 #714「カレンダー」 5 card 化を完全 revert
     // (user 真意「別にタブバー記録から確認すればいいのだから不要」)
     {

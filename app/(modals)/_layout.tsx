@@ -51,7 +51,6 @@ export default function ModalsLayout() {
         })}
       />
       <Stack.Screen name="bulk-log-confirm" options={{ title: t('stackBulkLogConfirmTitle') }} />
-      <Stack.Screen name="watering-day-detail" options={{ title: t('stackWateringDayTitle') }} />
       <Stack.Screen name="bonsai-new" options={{ title: t('stackBonsaiNewTitle') }} />
     </Stack>
   );

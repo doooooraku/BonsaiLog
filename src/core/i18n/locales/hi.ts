@@ -135,12 +135,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   photoLimitPartialAdded: 'Added {added} photos ({skipped} skipped due to limit)',
   photoDeletedBanner: 'Photo deleted',
   photoUndoLabel: 'Undo',
-  wateringCalendarSectionTitle: 'Monthly calendar',
-  wateringCalendarThisMonth: 'This month',
-  wateringCalendarMonthTotal: '{count} this month',
-  wateringDayDetailTitle: 'Watering on {date}',
-  wateringDayDetailCount: '{count} record(s)',
-  wateringDayDetailEmpty: 'No watering',
   photoPermissionTitle: 'Permission needed',
   photoPermissionDesc: 'Please allow camera and photo library access in Settings.',
   photoActionTitle: 'Photo actions',
@@ -345,28 +339,8 @@ const hi: Partial<Record<TranslationKey, string>> = {
   settingsAccountProInactiveDesc: 'See plans and upgrade.',
 
   // --- F-04 Watering heatmap (Phase B、English fallback) ---
-  wateringHeatmapLegendLabel: 'Watering counts (last 12 weeks)',
-  wateringHeatmapLegend0: '0',
-  wateringHeatmapLegend1: '1',
-  wateringHeatmapLegend2: '2',
-  wateringHeatmapLegend3: '3+',
-  wateringHeatmapDetailTitle: '{date}',
-  wateringHeatmapDetailCount: 'Watered {count} time(s)',
-
-  // --- F-04 stats tab + aggregate K2 legend (Phase G-2, Issue #29, ADR-0013) ---
   statsTabTitle: 'Stats',
   statsHeaderAllBonsai: 'All bonsai ({count})',
-  wateringHeatmapLegendLabelAggregate: 'Bonsai watered (last 12 weeks)',
-  wateringHeatmapLegendAgg0: '0%',
-  wateringHeatmapLegendAgg1: '1-33%',
-  wateringHeatmapLegendAgg2: '34-66%',
-  wateringHeatmapLegendAgg3: '67-100%',
-
-  // --- F-04 Phase G-3 summary (Issue #29, ADR-0013 §27-28) ---
-  wateringHeatmapSummaryRecordedDays: 'Recorded days: {days} / {total} ({percent}%)',
-  wateringHeatmapSummaryTotalEvents: 'Total events: {count}',
-
-  // --- F-04 Phase H-2 BonsaiFilterSheet (Issue #29, ADR-0013 §AC6) ---
   bonsaiFilterSelectAll: 'All bonsai',
   bonsaiFilterSearchPlaceholder: 'Search bonsai',
   bonsaiFilterRecentSection: 'Recently viewed',
@@ -469,20 +443,8 @@ const hi: Partial<Record<TranslationKey, string>> = {
   elapsedMonths: '{months}mo',
   elapsedYears: '{years}y',
   // --- ADR-0020 Phase 3: bonsai detail watering history (English fallback, SS 222921) ---
-  wateringHistoryLinkTitle: 'View watering history',
-  wateringRange30: '30 days',
-  wateringRange90: '90 days',
-  wateringRange365: '365 days',
-  wateringLastFromLabel: 'Time since last watering',
   wateringSummaryStreak: 'Current streak',
-  wateringSummaryRecorded30: 'Last 30 days',
-  wateringSummaryRecorded90: 'Last 90 days',
-  wateringSummaryRecorded365: 'Last 365 days',
-  wateringSummaryRecordedValue: '{days}d / {events} times',
   wateringSummaryDoubleDays: 'Twice-a-day',
-  wateringDisclaimerNoJudgement: 'This is a record display. We do not judge watering.',
-  wateringDisclaimerHeatmapMeaning: 'Shading shows record count (light: 0, mid: 1, dark: 2+).',
-  // --- ADR-0020 Phase 4: work picker bottom sheet (English fallback) ---
   workPickerTitle: 'Log a task',
   // --- ADR-0020 Phase 5: plan tab calendar (English fallback) ---
   planMonthYearSuffix: '',
@@ -588,15 +550,10 @@ const hi: Partial<Record<TranslationKey, string>> = {
   onboardingLanguageContinue: 'जारी रखें',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
-  lookBackCardWateringTitle: 'Watering history',
-  lookBackCardWateringDesc: 'Calendar & heatmap of past waterings',
   lookBackCardWiringTitle: 'Wiring list',
   lookBackCardWiringDesc: 'All wirings with planned removal dates',
   lookBackCardSearchTitle: 'Search bonsai',
   lookBackCardSearchDesc: 'By name, species, notes, tags',
-  wateringHistoryAllSubtitle: 'Across all bonsai',
-  wateringHistoryAllBonsaiCount: '{count} bonsai',
-  // --- T1-10 BonsaiCard 220+3 段構造 (English fallback) ---
   homeCardElapsedAgo: '{elapsed} ago',
   homeCardNoLog: 'No records yet',
   // --- T2-2-ui photo library permission ---
@@ -796,7 +753,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   stackStylePickerTitle: 'शैली चुनें',
   stackBonsaiMultiSelectTitle: 'बोनसाई चुनें',
   stackBulkLogConfirmTitle: 'एक साथ दर्ज करें',
-  stackWateringDayTitle: 'इस दिन की पानी देना',
   stackBonsaiNewTitle: 'बोनसाई पंजीकृत करें',
   stackBonsaiCreateModalTitle: 'नया',
   stackBonsaiDetailTitle: 'बोनसाई विवरण',

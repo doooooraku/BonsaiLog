@@ -2,16 +2,6 @@
   "version": 1,
   "skipped": [
     {
-      "flow": "look-back-watering-history",
-      "reason": "mockup HTML 不在: 実機は横断 watering 履歴画面 (Issue #361)、mockup は個別盆栽 watering heatmap (config 暫定流用)。横断版の mockup HTML 新規作成が user 領域として必要、Issue #502 で追跡中。Claude 側は mockup 完成後に再評価実施予定。",
-      "added_at": "2026-05-11T03:10:00Z",
-      "fail_count": 0,
-      "permanent": true,
-      "artifact": "scripts/ui-diff/out/20260510-2343/",
-      "needsHumanReview": true,
-      "trackingIssue": 502
-    },
-    {
       "flow": "bonsai-detail-edit-sheet",
       "reason": "Issue #439 で基本情報タブが inline 編集フォーム (BonsaiCreateSheet と同じ useBonsaiBasicForm フック共有) に統合された結果、『編集ボタン → sheet open』 設計は廃止 (e2e_detail_basic_edit_button は実装に存在せず、保存ボタン e2e_detail_basic_save_button に置換)。`bonsai-detail-basic.yml` (Sess2 で PASS) が同じ画面を撮影しているため重複。Sess4 で SCREEN_PAIRS から削除候補。",
       "added_at": "2026-05-17T13:10:00Z",
