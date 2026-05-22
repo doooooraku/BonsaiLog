@@ -256,6 +256,35 @@
 
 ---
 
+### R-47. Navigation 改修時の Material 3 / iOS HIG anti-pattern check (Sess29 ADR-0038 由来)
+
+- **ルール**: tab / stack navigation を改修する PR では、 以下 7 項目の anti-pattern を **議論段階で必須チェック**:
+  1. **タブハイライト整合**: tap したタブが必ずハイライト (preventDefault + router.push の anti-pattern 禁止)
+  2. **タブ名 ↔ タブ内 主要 CTA (FAB) 動作 整合**: タブ名が「記録」 なら FAB は「記録」 系 flow、 「予定」 なら「予定」 系 flow
+  3. **タブ tap の冪等性**: 同じタブ複数回 tap で挙動破綻なし
+  4. **戻る動作整合**: navigation back button + 画面端 swipe gesture 両方で意図通り
+  5. **deep link 整合**: URL から直接到達した時に正しい tab がハイライト
+  6. **state 復元**: タブ切替で前回 state が復元される (R-30 PoC pattern 整合)
+  7. **lazy mount 整合**: 初回 tap で mount される screen が他 tab に影響しない
+- **根拠**: Sess23 ADR-0035 D6 で「タブ名 ↔ FAB 動作 整合性」 (項目 2) を見落とし、 Sess29 で user 指摘「予定と記録 2 つ用意している意味が無い」 「疑問に思えよ」 で顕在化。 6 専門家評価で UX/UI デザイナー視点でも見落とされる pattern。
+- **自動化**: 当面 code review + 議論 template `/discuss` skill 拡張で必須 question 化。 Phase Future: ESLint custom rule で `<Tabs.Screen listeners={{ tabPress: handler }}>` の preventDefault + router.push を warning 化
+- **関連**: ADR-0038 (本ルール由来) / ADR-0025 §② / ADR-0035 D6 Notes Amended / Material 3 Navigation bar / iOS HIG Tab Bars / WAI-ARIA Tab Pattern
+
+---
+
+### R-48. CTA button design 整合 (Sess29 ADR-0038 由来)
+
+- **ルール**: CTA (Call-to-Action) button を実装する際、 `docs/reference/design_system.md` §22 (ボタン pattern SoT) の 4 階層 (Primary / Secondary / Tertiary / Destructive) のいずれかに従う。 ad-hoc な色・サイズ・配置を禁止:
+  1. **Primary**: BRAND_GREEN filled + ON_BRAND text (例: 保存 / アーカイブ)
+  2. **Secondary**: BUTTON_SECONDARY_BG filled + BUTTON_SECONDARY_TEXT (例: 作業を記録 / 全 N 件を記録)
+  3. **Tertiary**: text link 風 (透明背景 + BRAND_GREEN text、 例: 戻る)
+  4. **Destructive**: DANGER 系 (例: 削除 / アーカイブ ※破壊的)
+- **根拠**: Sess28 PR-5 で「×n バッジ」 は BADGE_SOFT に統一したが、 同じ世界観違反 (BRAND_GREEN ベタ + 白文字) を持つ「作業を記録」 button が射程外で取り残された。 Sess29 user 指摘「色合い的に強調しすぎ」 + 「アプリのデザインに合致するように」。 業界標準 (Material 3 filled) をそのまま和風 BonsaiLog に適用する固定観念が原因。
+- **自動化**: 当面 code review + design_system §22 整合 grep。 Phase Future: ESLint custom rule で `backgroundColor: BRAND_GREEN` + `color: ON_BRAND` の組合せを Primary CTA file (allow list) 以外で warning 化
+- **関連**: ADR-0038 (本ルール由来) / `docs/reference/design_system.md` §22 / `src/core/theme/colors.ts` (BUTTON_SECONDARY_BG/TEXT) / Material 3 Buttons / Apple HIG Buttons
+
+---
+
 ### R-46. キーボード回避は共通 hook 必須 (Sess28 ADR-0037 由来)
 
 - **ルール**: フォーム input を含む全 screen / modal で **`useKeyboardAvoidingProps()`** (`src/core/hooks/useKeyboardAvoidingProps.ts`) を必ず利用すること。 `KeyboardAvoidingView` を直接書く / Platform.OS 分岐で `behavior` を ad-hoc に決める実装を **禁止**。 hook の戻り値 (`behavior` / `keyboardVerticalOffset` / `style`) を `<KeyboardAvoidingView {...kavProps}>` で展開する。

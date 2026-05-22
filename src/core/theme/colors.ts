@@ -107,3 +107,20 @@ export const BADGE_SOFT_BG = '#E8F0EA';
 
 /** バッジ文字色 (= BRAND_GREEN、 token 統一参照のため re-export)。 */
 export const BADGE_SOFT_TEXT = BRAND_GREEN;
+
+// =========================================================================
+// Button (Sess29 ADR-0038: Secondary CTA button 統一トークン)
+// =========================================================================
+
+/**
+ * Secondary CTA button 背景 (薄緑、 washi 背景と調和、 design_system §22 ボタン階層の 2 段目)。
+ * 適用: EventRow actionButton (個別 row 「作業を記録」) / PlanScreen + RecordTabScreen の
+ * group header「全 N 件を記録」 button。
+ *
+ * 同色 (#E8F0EA) だが BADGE_SOFT_BG とは用途分離 (バッジ = 情報、 button = CTA)。
+ * dark mode 対応は次セッション候補。
+ */
+export const BUTTON_SECONDARY_BG = '#E8F0EA';
+
+/** Secondary CTA button 文字色 (= BRAND_GREEN、 token 統一参照のため re-export)。 */
+export const BUTTON_SECONDARY_TEXT = BRAND_GREEN;
