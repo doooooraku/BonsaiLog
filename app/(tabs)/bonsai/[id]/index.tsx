@@ -742,20 +742,44 @@ export default function BonsaiDetailScreen() {
                           </ThemedText>
                         </View>
                       </Pressable>
-                      {expanded &&
-                        entry.events.map((ev) => (
-                          <EventRow
-                            key={ev.id}
-                            ev={ev}
-                            eventsForBonsai={events}
-                            lang={lang}
-                            t={t}
-                            onLongPress={confirmDeleteEvent}
-                            onKebabPress={kebabDeleteEvent}
-                            kebabTestID={`e2e_bonsai_event_kebab_${ev.id}`}
-                            indent
-                          />
-                        ))}
+                      {expanded && (
+                        <View style={styles.historyExpandedContainer}>
+                          {entry.events.map((ev, idx) => {
+                            const isFirst = idx === 0;
+                            const isLast = idx === entry.events.length - 1;
+                            return (
+                              <View key={ev.id} style={styles.historyExpandedRow}>
+                                <View style={styles.historyExpandedLeft}>
+                                  <View
+                                    style={[
+                                      styles.historyExpandedLine,
+                                      isFirst && styles.historyExpandedLineHidden,
+                                    ]}
+                                  />
+                                  <View style={styles.historyExpandedDot} />
+                                  <View
+                                    style={[
+                                      styles.historyExpandedLine,
+                                      isLast && styles.historyExpandedLineHidden,
+                                    ]}
+                                  />
+                                </View>
+                                <View style={styles.historyExpandedRowContent}>
+                                  <EventRow
+                                    ev={ev}
+                                    eventsForBonsai={events}
+                                    lang={lang}
+                                    t={t}
+                                    onLongPress={confirmDeleteEvent}
+                                    onKebabPress={kebabDeleteEvent}
+                                    kebabTestID={`e2e_bonsai_event_kebab_${ev.id}`}
+                                  />
+                                </View>
+                              </View>
+                            );
+                          })}
+                        </View>
+                      )}
                     </View>
                   );
                 }
@@ -1112,6 +1136,27 @@ const styles = StyleSheet.create({
   },
   eventGroupToggle: { fontSize: 12, color: TEXT_SECONDARY, marginTop: 4 },
   eventRowIndent: { paddingLeft: 32 },
+  // Sess28 PR-7 (ADR-0037 P0-2): 連続日 group 展開時の timeline 風表示 (縦線 + ○ marker)。
+  // mockup `bonsai-detail-history-01.png` スクショ4 整合、 既存 timelineRow と同 pattern。
+  historyExpandedContainer: { marginLeft: 16, marginTop: 4, marginBottom: 4 },
+  historyExpandedRow: { flexDirection: 'row', alignItems: 'stretch' },
+  historyExpandedLeft: { width: 24, alignItems: 'center' },
+  historyExpandedLine: {
+    flex: 1,
+    width: 2,
+    backgroundColor: BRAND_GREEN,
+  },
+  historyExpandedLineHidden: { backgroundColor: 'transparent' },
+  historyExpandedDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: BRAND_GREEN,
+    backgroundColor: BG_SURFACE,
+    marginVertical: 2,
+  },
+  historyExpandedRowContent: { flex: 1, paddingLeft: 8 },
   // Issue #440 Phase 1: 緑円形 FAB (mockup right-bottom)
   historyFab: {
     position: 'absolute',
