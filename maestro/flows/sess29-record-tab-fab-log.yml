@@ -1,0 +1,55 @@
+# maestro/flows/sess29-record-tab-fab-log.yml
+# Sess29 PR-6 (ADR-0038 D1): 「記録」 タブ tap → RecordTabScreen 独立画面 → FAB tap → 5 ステップ動線。
+# user 報告「予定と記録 2 つ用意している意味」 + タブハイライト整合の検証。
+#
+# 経路:
+# 1. launchApp
+# 2. Dev Client URL list dismiss (初回)
+# 3. home list 表示確認
+# 4. 「記録」 タブ tap (e2e_tab_record)
+# 5. e2e_record_screen 表示確認 (タブハイライト整合 = タブ標準遵守)
+# 6. FAB tap (e2e_record_fab_action)
+# 7. e2e_bonsai_multi_select_screen 表示確認 (mode='log' で 5 ステップ動線開始)
+appId: 'com.doooooraku.bonsailog'
+---
+- launchApp:
+    clearState: false
+
+# Dev Client URL list (初回 launch時のみ): bundle 読込を tap で起動
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 30000
+
+# home list 表示確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_list'
+    timeout: 30000
+
+# 「記録」 タブ tap (Sess29 ADR-0038 D1、 独立画面遷移、 タブハイライト「記録」 整合)
+- tapOn:
+    id: 'e2e_tab_record'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# RecordTabScreen 表示確認 (独立画面、 タブハイライト整合)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_record_screen'
+    timeout: 10000
+
+# FAB tap (Sess29 ADR-0038 D1、 useBulkActionFlow('log') で「作業を記録」 5 ステップ flow 起動)
+- tapOn:
+    id: 'e2e_record_fab_action'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# bonsai-multi-select modal 表示確認 (mode='log'、 5 ステップの 1 ステップ目)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_multi_select_screen'
+    timeout: 10000

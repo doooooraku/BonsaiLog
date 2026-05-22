@@ -403,3 +403,28 @@ ADR-0036 (破壊的操作 UX 統一 pattern) を本日起票、 ADR-0035 D3「Pl
 - **R-45** (長押し UX 標準 = Haptics 必須 + delayLongPress 500ms): `.claude/recurrence-prevention/specialized.md`
 - **ADR テンプレ matrix 必須化**: `docs/adr/adr_template.md` の Decision Drivers に「粒度 (個別 / group / bulk) × 4 ペルソナ matrix」 必須化 (D3 個別 scope 限定で group 想定漏れ事例由来)
 - **design_system.md §18「長押し UX 標準」 新規**: delayLongPress 500ms + Haptics + ConfirmDialog 80ms フェードイン
+
+---
+
+### 2026-05-22 Sess29 PR-6 — D6 撤回 Notes Amended (ADR-0038 連動)
+
+**改訂内容**:
+
+- **D6「記録タブ tap → カレンダー画面 (今日 default) 遷移」 を撤回** (Sess23 確定 → Sess29 撤回)
+- 撤回理由: タブ名 ↔ FAB 動作 整合性違反 (記録タブ tap で予定タブハイライト + FAB が予定追加) が user 報告で顕在化、 タブ標準 (Material 3 / iOS HIG) 違反
+- 新動線 (ADR-0038 D1):
+  - 「記録」 タブ tap → **RecordTabScreen 独立画面** (PlanScreen と同等構造、 default 今日)
+  - FAB tap → **`useBulkActionFlow('log')` で「作業を記録」 5 ステップ flow** 起動
+  - タブハイライト「記録」 ⭕ (preventDefault 撤去、 通常 tab navigation)
+- **D9 (ふりかえり「カレンダー」 card 完全削除)** は **維持** (D6 撤回しても hub 経由は引き続き不要、 記録タブから直接記録できるため)
+- **D7 (予定→記録 atomic 変換動線)** は **維持** (RecordTabScreen でも planned section に「作業を記録」 button + group「全 N 件を記録」 button)
+
+**4 ペルソナ評価 (本 Notes Amended)**:
+
+| 項目                     | 高橋 62        | Marcus 35 | プロ 50          | ライト 28 |
+| ------------------------ | -------------- | --------- | ---------------- | --------- |
+| D6 撤回 (タブ別動線復活) | ◎ タブ標準整合 | ◎         | ◎ 業務 path 明確 | ◎         |
+
+→ 全項目 ◎、 R-10 クリア
+
+**関連**: ADR-0038 D1/D2 (本 Notes Amended の親 ADR) / Sess29 PR-2 (RecordTabScreen 実装) / R-47 (議論プロセス欠陥起源)
