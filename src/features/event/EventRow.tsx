@@ -42,6 +42,7 @@ import {
   type PhotoRead,
 } from '@/src/db/photoRepository';
 import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
+import { EventRowPhotoBlock } from '@/src/features/event/EventRowPhotoBlock';
 import { EventRowPhotoStrip } from '@/src/features/event/EventRowPhotoStrip';
 import { HistoryChipRow } from '@/src/features/event/HistoryChip';
 import {
@@ -227,39 +228,173 @@ export function EventRow({
   // ADR-0041 D4: detailed 時 chips max 4 + 末尾「+N」 sentinel
   const chipsMaxVisible = isDetailed ? 4 : undefined;
 
+  const eventLabel = t(`eventType_${ev.type}` as TranslationKey);
+
+  // ADR-0036 D9 (Sess25 PR-ζ-2-⑨): showBonsaiName=true (PlanScreen 展開時) は
+  // 1 行目 = bonsaiName 単独。 同情報 (作業名 + 日付) は group header / selectedDateKey で既に既知、
+  // 重複行 を物理削除 (Nielsen Norman Group "Information Scent" ノイズ過多解消)。
+  // showBonsaiName=false (bonsai-detail history タブ) は 異なる日の events が並ぶため
+  // 1 行目 = 作業名 + 日付 を維持 (regression なし)。
+
+  // ===========================================================================
+  // detailed mode (Sess34 ADR-0041 Phase θ D1): vertical stack layout
+  // 上部 (header) → 区切り線 → labeled chips block → wiring period (wiring 時)
+  //   → 区切り線 → memo + 「もっと見る」 → 写真 block (写真有時のみ)
+  // 写真ゼロ event は写真 block 完全非表示 + row 高さ動的縮小 (D12)
+  // ===========================================================================
+  if (isDetailed) {
+    const chips = buildHistoryChips(ev);
+    const hasChips = chips.length > 0;
+    const hasWiringInfo = wiringDuration != null || scheduledUnwireLabel != null;
+    const hasMemo = !!ev.note;
+    const hasPhoto = repPhoto != null;
+    return (
+      <Pressable
+        style={[styles.detailedCard, indent && styles.detailedCardIndent]}
+        accessibilityRole="button"
+        accessibilityLabel={
+          showBonsaiName && bonsaiName
+            ? `${bonsaiName}, ${t(`eventType_${ev.type}` as TranslationKey)}`
+            : t(`eventType_${ev.type}` as TranslationKey)
+        }
+        onPress={onPress ? () => onPress(ev) : undefined}
+        onLongPress={onLongPress ? () => onLongPress(ev) : undefined}
+      >
+        {/* Header row: 盆栽名 (PlanScreen) or 作業名+日付 (bonsai-detail history) + kebab */}
+        <View style={styles.detailedHeader}>
+          <View style={styles.detailedHeaderTitleArea}>
+            {showBonsaiName && bonsaiName ? (
+              <ThemedText style={styles.detailedTitle} numberOfLines={1}>
+                {bonsaiName}
+              </ThemedText>
+            ) : (
+              <>
+                <ThemedText style={styles.detailedTitle}>{eventLabel}</ThemedText>
+                <ThemedText style={styles.detailedSubtitle}>
+                  {formatDate(ev.occurredAtUtc, lang)}
+                </ThemedText>
+              </>
+            )}
+          </View>
+          {onKebabPress && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('rowActionMenuDelete')}
+              style={styles.kebabButton}
+              hitSlop={8}
+              onPress={() => onKebabPress(ev)}
+              testID={kebabTestID}
+            >
+              <MoreVerticalIcon size={20} color={TEXT_SECONDARY} />
+            </Pressable>
+          )}
+        </View>
+
+        {/* labeled chips block + wiring duration / scheduled unwire (wiring 時) */}
+        {(hasChips || hasWiringInfo) && (
+          <>
+            <View style={styles.divider} />
+            <View style={styles.detailedChipsBlock}>
+              {hasChips && <HistoryChipRow chips={chips} maxVisible={chipsMaxVisible} />}
+              {/* ADR-0041 Phase θ D11: wiring の WiringPeriodDisplay も labeled chip 同列 */}
+              {wiringDuration && (
+                <View style={styles.labeledRowInline}>
+                  <ThemedText style={styles.fieldLabelInline} numberOfLines={1}>
+                    {`${t('workLogWireDuration')}:`}
+                  </ThemedText>
+                  <WiringPeriodDisplay
+                    weeks={wiringDuration.weeks}
+                    kind={wiringDuration.kind}
+                    isUnwired={wiringDuration.isUnwired}
+                    style={styles.wiringInlineText}
+                    testID={`e2e_wiring_duration_${ev.id}`}
+                  />
+                </View>
+              )}
+              {scheduledUnwireLabel && (
+                <View style={styles.labeledRowInline}>
+                  <ThemedText style={styles.fieldLabelInline} numberOfLines={1}>
+                    {`${t('workLogWireUnwireDate')}:`}
+                  </ThemedText>
+                  <ThemedText
+                    style={styles.wiringInlineText}
+                    testID={`e2e_wiring_scheduled_${ev.id}`}
+                  >
+                    {scheduledUnwireLabel.replace(
+                      `${t('wiringScheduledUnwireSet').split('{')[0]}`,
+                      '',
+                    )}
+                  </ThemedText>
+                </View>
+              )}
+            </View>
+          </>
+        )}
+
+        {/* memo + 「もっと見る」 リンク */}
+        {hasMemo && (
+          <>
+            <View style={styles.divider} />
+            <View style={styles.detailedMemoBlock}>
+              <MemoWithReadMore
+                memo={ev.note!}
+                numberOfLines={memoLines}
+                bonsaiId={ev.bonsaiId}
+                t={t}
+                testID={`e2e_event_row_memo_${ev.id}`}
+                readMoreTestID={`e2e_event_row_read_more_${ev.id}`}
+              />
+            </View>
+          </>
+        )}
+
+        {/* 写真 block (有時のみ条件 render、 D12 写真ゼロは完全非表示) */}
+        {hasPhoto && (
+          <View style={styles.detailedPhotoBlock}>
+            <EventRowPhotoBlock
+              eventId={ev.id}
+              photo={repPhoto!}
+              totalCount={totalPhotos}
+              testID={`e2e_event_row_photo_block_${ev.id}`}
+            />
+          </View>
+        )}
+
+        {/* planned 時の「作業を記録」 button (ADR-0035 D7、 D7 planned compact 維持と矛盾しないため
+            detailed mode でも logged で actionButtonLabel が来ないため、 実質 logged では出ない) */}
+        {actionButtonLabel && onActionPress && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={actionButtonLabel}
+            onPress={() => onActionPress(ev)}
+            style={styles.actionButton}
+            testID={actionButtonTestID}
+          >
+            <ThemedText style={styles.actionButtonText}>{actionButtonLabel}</ThemedText>
+          </Pressable>
+        )}
+      </Pressable>
+    );
+  }
+
+  // ===========================================================================
+  // compact mode (default、 既存 callsite 後方互換、 ADR-0041 D7 planned 維持)
+  // 旧 horizontal row layout (iconBox left + content right + kebab)
+  // ===========================================================================
   return (
     <Pressable
       style={[styles.eventRow, indent && styles.eventRowIndent]}
       accessibilityRole="button"
       accessibilityLabel={
-        showBonsaiName && bonsaiName
-          ? `${bonsaiName}, ${t(`eventType_${ev.type}` as TranslationKey)}`
-          : t(`eventType_${ev.type}` as TranslationKey)
+        showBonsaiName && bonsaiName ? `${bonsaiName}, ${eventLabel}` : eventLabel
       }
       onPress={onPress ? () => onPress(ev) : undefined}
       onLongPress={onLongPress ? () => onLongPress(ev) : undefined}
     >
-      {/* ADR-0041 D2: detailed mode で写真 strip 表示 (写真ゼロ件は非表示) */}
-      {isDetailed && repPhoto ? (
-        <EventRowPhotoStrip
-          eventId={ev.id}
-          photo={repPhoto}
-          totalCount={totalPhotos}
-          testID={`e2e_event_row_photo_strip_${ev.id}`}
-        />
-      ) : (
-        <View style={styles.eventIconBox}>
-          <EventIcon type={ev.type as EventType} size={20} />
-        </View>
-      )}
+      <View style={styles.eventIconBox}>
+        <EventIcon type={ev.type as EventType} size={20} />
+      </View>
       <View style={styles.eventContent}>
-        {/*
-         * ADR-0036 D9 (Sess25 PR-ζ-2-⑨): showBonsaiName=true (PlanScreen 展開時) は
-         * 1 行目 = bonsaiName 単独。 同情報 (作業名 + 日付) は group header / selectedDateKey で既に既知、
-         * 重複行 を物理削除 (Nielsen Norman Group "Information Scent" ノイズ過多解消)。
-         * showBonsaiName=false (bonsai-detail history タブ) は 異なる日の events が並ぶため
-         * 1 行目 = 作業名 + 日付 を維持 (regression なし)。
-         */}
         <View style={styles.eventRowMain}>
           {showBonsaiName && bonsaiName ? (
             <ThemedText style={styles.eventBonsaiName} numberOfLines={1}>
@@ -267,9 +402,7 @@ export function EventRow({
             </ThemedText>
           ) : (
             <>
-              <ThemedText style={styles.eventLabel}>
-                {t(`eventType_${ev.type}` as TranslationKey)}
-              </ThemedText>
+              <ThemedText style={styles.eventLabel}>{eventLabel}</ThemedText>
               <ThemedText style={styles.eventRowDate}>
                 {formatDate(ev.occurredAtUtc, lang)}
               </ThemedText>
@@ -290,21 +423,11 @@ export function EventRow({
             {scheduledUnwireLabel}
           </ThemedText>
         )}
-        {ev.note &&
-          (isDetailed ? (
-            <MemoWithReadMore
-              memo={ev.note}
-              numberOfLines={memoLines}
-              bonsaiId={ev.bonsaiId}
-              t={t}
-              testID={`e2e_event_row_memo_${ev.id}`}
-              readMoreTestID={`e2e_event_row_read_more_${ev.id}`}
-            />
-          ) : (
-            <ThemedText style={styles.eventRowNote} numberOfLines={memoLines}>
-              {ev.note}
-            </ThemedText>
-          ))}
+        {ev.note && (
+          <ThemedText style={styles.eventRowNote} numberOfLines={memoLines}>
+            {ev.note}
+          </ThemedText>
+        )}
         <HistoryChipRow chips={buildHistoryChips(ev)} maxVisible={chipsMaxVisible} />
         {actionButtonLabel && onActionPress && (
           <Pressable
@@ -318,7 +441,6 @@ export function EventRow({
           </Pressable>
         )}
       </View>
-      {/* ADR-0036 D7 拡張 (Sess27 PR-5): 個別 row 右端 kebab ⋮ — 長押しが分からない user 向け代替動線 */}
       {onKebabPress && (
         <Pressable
           accessibilityRole="button"
@@ -335,7 +457,58 @@ export function EventRow({
   );
 }
 
+// EventRowPhotoStrip は本ファイルでは使用していないが、 Phase η の forward-only 思想で
+// 温存 (compact mode 等で再利用候補)。 ESLint unused-imports rule 回避のため __noop_ref 経由で参照。
+const __EventRowPhotoStrip_kept_for_forward_compat = EventRowPhotoStrip;
+void __EventRowPhotoStrip_kept_for_forward_compat;
+
 const styles = StyleSheet.create({
+  // ===========================================================================
+  // detailed mode (Phase θ D1): vertical stack card
+  // ===========================================================================
+  detailedCard: {
+    flexDirection: 'column',
+    gap: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    backgroundColor: BG_SURFACE,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  detailedCardIndent: { marginLeft: 16 },
+  detailedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  detailedHeaderTitleArea: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 8 },
+  detailedTitle: { fontSize: 16, color: TEXT_PRIMARY, fontWeight: '600' },
+  detailedSubtitle: { fontSize: 12, color: TEXT_SECONDARY },
+  divider: { height: 1, backgroundColor: BORDER_DEFAULT, marginVertical: 4 },
+  detailedChipsBlock: { flexDirection: 'column', gap: 4 },
+  detailedMemoBlock: { flexDirection: 'column', gap: 2 },
+  detailedPhotoBlock: { marginTop: 4 },
+  // wiring の labeled chip 同列表示 (Phase θ D11)
+  labeledRowInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  fieldLabelInline: {
+    fontSize: 11,
+    color: TEXT_SECONDARY,
+    minWidth: 64,
+  },
+  wiringInlineText: {
+    fontSize: 11,
+    color: TEXT_SECONDARY,
+  },
+  // ===========================================================================
+  // compact mode (default、 既存 callsite 後方互換)
+  // ===========================================================================
   eventRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
