@@ -73,12 +73,21 @@ export default function BulkLogConfirmScreen() {
   // Sess28 PR-3 (ADR-0037 D1 / R-46): キーボード回避 props 共通 hook 適用 (KAV、 container 縮小)。
   const kavProps = useKeyboardAvoidingProps();
   // Sess31 PR-1 (R-46 拡張): KAV 単体では ScrollView auto-scroll しないため、 ScrollView ref + メモ欄
-  // onFocus → scrollToEnd で IME 起動時のメモ欄可視性を確保。 KAV + auto-scroll 2 点セット必須化。
+  // onFocus → scrollTo で IME 起動時のメモ欄可視性を確保。 KAV + auto-scroll 2 点セット必須化。
   const scrollRef = React.useRef<ScrollView>(null);
+  // Sess31 PR-2 (P1): scrollToEnd は写真フィールド末尾までスクロール → メモ欄 (中盤位置) が IME に隠れる
+  // 問題 (Sess31 実機 SS sess31-04c) を `onLayout` で メモ欄 y 位置を保持 + `scrollTo({y: memoY - 20})`
+  // で精密 scroll に変更。 メモ欄が ScrollView 上端 ~20px 位置に来るよう調整。
+  const [memoY, setMemoY] = React.useState(0);
+  const handleMemoLayout = React.useCallback((e: { nativeEvent: { layout: { y: number } } }) => {
+    setMemoY(e.nativeEvent.layout.y);
+  }, []);
   const handleNoteFocus = React.useCallback(() => {
     // IME 起動アニメーション完了待ち (Android: 約 250-300ms、 iOS: 約 200ms) で安定 scroll。
-    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
-  }, []);
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({ y: Math.max(0, memoY - 20), animated: true });
+    }, 300);
+  }, [memoY]);
   const params = useLocalSearchParams<{ type?: string; fromPlannedIds?: string }>();
   const selectedType = React.useMemo(() => parseType(params.type), [params.type]);
   const fromPlannedIds = React.useMemo<string[]>(
@@ -259,8 +268,10 @@ export default function BulkLogConfirmScreen() {
 
           {/* Sess17 PR-H2: メモ入力 (atom 統一、 typography 整合)。
             Sess18 PR-10: placeholder を type-aware に (getWorkLogNotePlaceholderKey)。
-            Sess31 PR-1 (R-46 拡張): onFocus で auto-scroll、 IME 起動時にメモ欄を可視範囲に。 */}
-          <View style={styles.field}>
+            Sess31 PR-1 (R-46 拡張): onFocus で auto-scroll、 IME 起動時にメモ欄を可視範囲に。
+            Sess31 PR-2 (P1): onLayout で メモ欄 y 位置保持 → scrollTo で精密 scroll
+            (scrollToEnd は写真フィールド末尾までスクロールしてメモ欄を隠す問題を解消)。 */}
+          <View style={styles.field} onLayout={handleMemoLayout}>
             <LabeledTextInput
               label={t('workLogNote')}
               optional

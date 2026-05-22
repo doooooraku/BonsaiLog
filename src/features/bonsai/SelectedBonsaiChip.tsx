@@ -47,6 +47,10 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
+    // Sess31 PR-2 (P0): 親 ScrollView horizontal の default `alignItems: 'stretch'` で chip が縦方向に
+    // stretch される問題 (Sess31 実機 SS sess31-04a 〜 04c で chip 縦長約 600px) を `alignSelf: 'center'`
+    // で抑制。 chip 自体の natural height (padding + text ≈ 30px) で表示される。
+    alignSelf: 'center',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 16,
