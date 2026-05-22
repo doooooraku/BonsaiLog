@@ -867,5 +867,94 @@ const handleNoteFocus = React.useCallback(() => {
 
 ---
 
+## 25. タブアイコン SoT (ADR-0042 D1/D2 / Sess36 PR-4 由来)
+
+画面下部 4 タブの icon は **本セクションが SoT**。 icon 変更時は ADR-0042 D1 の 4 基準を満たすことを ADR 改訂で明文化する。
+
+### 4 タブ icon matrix
+
+| タブ index | route       | i18n key      | icon component              | 採用根拠                                                              | mockup 整合                                                                                                |
+| ---------- | ----------- | ------------- | --------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 1          | `bonsai`    | `tabBonsai`   | `LeafIcon` (葉)             | 盆栽 = 植物 = 葉、 4 ペルソナ全員 ◎                                   | mockup HI.Leaf 整合                                                                                        |
+| 2          | `plan`      | `tabPlan`     | `CalendarIcon` (カレンダー) | 予定 = 日付管理 = カレンダー、 4 ペルソナ全員 ◎                       | mockup HI.Cal 整合                                                                                         |
+| 3          | `record`    | `tabRecord`   | `NotebookIcon` (帳簿)       | 14 種別記録 = 帳簿、 4 ペルソナ全員 ◎/○、 BonsaiLog 和文化 brand 整合 | mockup HI.Droplet を ADR-0042 D2 で上書き (EventIcons watering 重複 + 機能誤認回避)                        |
+| 4          | `look-back` | `tabLookBack` | `PencilNavIcon` (鉛筆)      | ふりかえり = 過去整理 = 書く、 4 ペルソナ全員 ◎/○                     | mockup HI.Pencil 整合 (ADR-0020 §Notes Amended で「探す」→「ふりかえり」 rename 時にコンパス→鉛筆に差替済) |
+
+### タブ icon 選定 4 基準 (ADR-0042 D1)
+
+タブ icon を変更/追加する際は **以下 4 基準を全て満たす** ADR 改訂を必須化:
+
+1. **機能整合**: icon が表すメンタルモデルがタブの **全機能** を象徴 (例: 「記録」 = 14 種別記録 → 「水滴」 (1 種別 = watering のみ) は不可)
+2. **重複排除**: NavIcons と EventIcons / 他 icon library で **同名関数を作らない** (`scripts/check-icon-duplication.mjs` で CI 強制、 Sess36 PR-5)
+3. **4 ペルソナ ✕ なし**: `docs/reference/personas.md` 4 名全員で ✕ がない (1 名でも ✕ なら再検討、 R-10)
+4. **mockup 整合 or 上書き明示**: `docs/mockups/v1.0/wireframes/*.jsx` HI.\* との整合が原則、 上書き時は ADR で理由明示 (ADR-0042 D2 が該当)
+
+### 実装ファイル (SoT 参照先)
+
+- `src/components/icons/NavIcons.tsx` (LeafIcon / CalendarIcon / NotebookIcon / PencilNavIcon の SVG 実装、 size=28 default、 strokeWidth=1.5 統一)
+- `src/components/icons/index.ts` (barrel export)
+- `app/(tabs)/_layout.tsx` (Tab 配線、 `tabBarIcon` prop)
+
+### 関連 ADR
+
+- ADR-0020 (4 タブ構造)、 ADR-0020 §Notes Amended (icon 変更履歴 = タブ rename / icon 差替の記録、 Sess36 PR-6 で追記)
+- ADR-0042 D1/D2 (本 SoT の出典)
+
+---
+
+## 26. FAB SoT (ADR-0042 D3 / Sess36 PR-4 由来)
+
+画面右下 Floating Action Button (FAB) は **本セクションが SoT**、 全画面で共通 component `src/components/common/FAB.tsx` を使用。 inline 実装禁止 (将来 lint 自動化検討、 Sess36 PR-6 の R-X 候補)。
+
+### FAB 位置・サイズ token
+
+| 項目               | 値                                                                                 | 根拠                                                                                                          |
+| ------------------ | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `right`            | **20**                                                                             | 8px grid 整合 + 端からの誤タップ余裕 (旧 inline は 16、 高橋 62 歳ペルソナで「画面端から指 1 本分」 懸念解消) |
+| `bottom` (計算式)  | `tabBarHeight + (showAdBanner ? AD_BANNER_HEIGHT_APPROX : 0) + insets.bottom + 16` | tab bar 上 + AdBanner 上 + SafeArea (iOS Home Indicator 34pt / Android gesture nav) 反映                      |
+| `width` × `height` | **56 × 56dp**                                                                      | Material 3 FAB 標準、 WCAG 2.2 SC 2.5.8 minTarget 44dp を余裕クリア                                           |
+| `borderRadius`     | **28**                                                                             | 完全円 (size / 2)                                                                                             |
+| `position`         | `'absolute'`                                                                       | 画面右下固定                                                                                                  |
+| `zIndex`           | **10**                                                                             | 他 UI 上に表示                                                                                                |
+
+### FAB icon
+
+- **default**: `<PlusIcon size={28} color={ON_BRAND} />` (NavIcons.tsx)
+- 旧 bonsai-detail で `<ThemedText>+</ThemedText>` 文字列実装の不整合 → Sess36 PR-3 で PlusIcon に統一済
+- カスタム icon が必要な画面は `icon` prop で override 可
+
+### FAB 色 token
+
+| state    | bg            | icon color           | shadow                             |
+| -------- | ------------- | -------------------- | ---------------------------------- |
+| 通常     | `BRAND_GREEN` | `ON_BRAND` (#FFFFFF) | shadow + elevation 6               |
+| disabled | `TEXT_MUTED`  | `ON_BRAND`           | opacity 0.5、 shadow + elevation 0 |
+
+### FAB 適用画面 (Sess36 PR-3 時点)
+
+| 画面                                       | testID                  | a11y label key    | showAdBanner               | disabled 条件           |
+| ------------------------------------------ | ----------------------- | ----------------- | -------------------------- | ----------------------- |
+| 盆栽 tab                                   | `e2e_home_fab_create`   | `bonsaiCreateNew` | **true** (AdBanner と併用) | なし                    |
+| 予定 tab (CalendarTabScreen mode='plan')   | `e2e_plan_fab_action`   | `planFabLabel`    | false                      | 過去日選択時 true       |
+| 記録 tab (CalendarTabScreen mode='record') | `e2e_record_fab_action` | `recordFabLabel`  | false                      | なし (記録は過去日有効) |
+| bonsai-detail history タブ                 | `e2e_history_fab`       | `eventLogCta`     | false                      | なし                    |
+| bonsai-detail timeline タブ                | `e2e_timeline_fab`      | `addScheduleCta`  | false                      | なし                    |
+
+### §22 (4 階層 CTA) との整合
+
+§22 の 4 階層 CTA (Primary / Secondary / Tertiary / Destructive) は **画面内固定配置** の button pattern。 FAB は **floating CTA カテゴリ** として独立 (画面外 absolute 配置)、 §22 の Primary と同色 BRAND_GREEN bg + ON_BRAND text/icon で視覚一貫性を維持。
+
+### 実装ファイル (SoT 参照先)
+
+- `src/components/common/FAB.tsx` (component 実装)
+- 使用箇所: `app/(tabs)/bonsai/index.tsx` / `src/features/calendar/CalendarTabScreen.tsx` / `app/(tabs)/bonsai/[id]/index.tsx` (history + timeline 2 箇所)
+
+### 関連 ADR
+
+- ADR-0042 D3 (本 SoT の出典)
+- 過去 issue: #440 / #441 (Phase 1 で初期実装、 Sess36 で SoT 化)
+
+---
+
 _このドキュメントは `src/core/theme/colors.ts` として TypeScript 定数にも反映される。_
 _変更時は ADR `docs/adr/YYYY-MM-DD-design-tokens.md` を作成。_
