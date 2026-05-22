@@ -25,8 +25,8 @@ import { nowUtc } from '@/src/core/datetime';
 import {
   BG_SURFACE,
   BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
+  BUTTON_SECONDARY_BG,
+  BUTTON_SECONDARY_TEXT,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
@@ -241,16 +241,17 @@ const styles = StyleSheet.create({
   eventBonsaiName: { fontSize: 15, color: TEXT_PRIMARY, fontWeight: '500' },
   eventRowDate: { fontSize: 12, color: TEXT_SECONDARY },
   eventRowNote: { fontSize: 12, color: TEXT_SECONDARY, marginTop: 2 },
-  // ADR-0035 D7 (Sess23): planned section の「作業を記録」 button
+  // Sess29 ADR-0038 D4 / R-48: BUTTON_SECONDARY token 参照 (薄緑 + 濃緑文字、 design_system §22 Secondary CTA)。
+  // 旧 BRAND_GREEN ベタ + ON_BRAND (Sess23 ADR-0035 D7) は強調過剰で washi 世界観と不調和、 §22 階層で Secondary に降格。
   actionButton: {
     marginTop: 8,
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: BRAND_GREEN,
+    backgroundColor: BUTTON_SECONDARY_BG,
   },
-  actionButtonText: { fontSize: 12, fontWeight: '600', color: ON_BRAND },
+  actionButtonText: { fontSize: 12, fontWeight: '600', color: BUTTON_SECONDARY_TEXT },
   // ADR-0036 D7 拡張 (Sess27 PR-5): 個別 row 右端 kebab ⋮ button
   kebabButton: {
     width: 32,
