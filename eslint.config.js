@@ -21,6 +21,21 @@ module.exports = defineConfig([
       'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }],
     },
   },
+  // R-52 (Sess34 PR-13): EventType switch case 漏れ silent bug 防止 (2 段階防御)。
+  //
+  // 段階 1: 型システム — buildHistoryChips / EventIcons は switch default で
+  //         `const _exhaustive: never = type` assertion を実装済 (Phase η PR-2 / Phase θ PR-8b)。
+  //         新規 EventType 追加時に default case で type 'string' を never 代入できず compile error。
+  //
+  // 段階 2: exhaustive 走査 unit test — `__tests__/components/icons/EventIcons.test.tsx` で
+  //         `test.each(EVENT_TYPES)` パターンで 14 種別すべてが non-null React element を返す
+  //         assertion を実行。 silent miss を runtime 検出。
+  //
+  // ESLint `@typescript-eslint/switch-exhaustiveness-check` rule は parserOptions.project
+  // (typed linting) 設定が必要で導入コスト大。 既に上記 2 段階防御で十分強固な検出力があるため、
+  // 本 PR では rule 導入を見送り、 必要に応じて将来 typed linting 移行時に追加検討。
+  //
+  // 関連: ADR-0041 Phase η/θ / R-52 (specialized.md) / Sess16 PR-E silent bug 起点
   // app.config.ts uses dynamic env var access by design (required/optional helpers)
   {
     files: ['app.config.ts'],

@@ -383,9 +383,37 @@
 
 ---
 
+## R-52. EventType 追加時 4 同期確認チェックリスト (silent bug 連鎖防止、 Sess34 ADR-0041 由来)
+
+- **適用範囲**: `src/db/schema.ts` の `EVENT_TYPES` に新規 type を追加する時 (例: Sess16 PR-E で `leaf_first_aid` 追加時の変更)。 既存 EventType の payload field 名変更時も同様。
+- **必須 4 同期**:
+  1. **WorkLogTypeFormFields** (`src/features/event/WorkLogTypeFormFields.tsx`) — form rendering + state schema + `buildWorkLogPayload` の case 追加
+  2. **payloadValidator** (`src/features/event/payloadValidator.ts`) — `<EventType>Payload = v.object({...})` schema 追加 + `PAYLOAD_SCHEMAS` mapping 追加。 **新 field 名を schema に必ず記載** (valibot v.object は default で unknown props を **discard** するため、 schema 漏れは silent bug 化、 PR-Q-fix #799 由来)
+  3. **buildHistoryChips** (`src/features/event/buildHistoryChips.ts`) — switch case 追加 + fieldLabelKey (`workLog*` 流用) 設定。 exhaustive switch with `never` assertion で compile error 化
+  4. **EventIcon** (`src/components/icons/EventIcons.tsx`) — switch case 追加 + 必要に応じて新規 Icon component (Sess34 PR-8b LeafAidIcon 例)
+- **任意 同期 (該当時)**:
+  - i18n locales — 新規 enum 値ラベル追加 (workLog\* 流用で多くの場合は追加翻訳ゼロ)
+  - test 群 — buildHistoryChips.test.ts + payloadValidator.test.ts + EventIcons.test.tsx に新 case 追加 (exhaustive 走査 test で missed sync を build error 化)
+- **silent bug 連鎖履歴** (Sess16 PR-E `leaf_first_aid` 追加時 → Sess34 で 3 回連鎖発覚):
+  1. buildHistoryChips switch case 欠落 → Phase η PR-2 で fix (chip ゼロ silent bug)
+  2. EventIcon switch case 欠落 → Phase θ PR-8b で fix (iconBox 空白 silent bug)
+  3. payloadValidator schema 漏れ → PR-Q-fix #799 で fix (valibot strip による payload 消失 silent bug、 5 種別同時発覚: watering / pruning / repotting / pest_control / candle_cut)
+  - user 質問「鉢サイズ単位表示」 検証で 3 件目連鎖が発覚、 構造防止必須化
+- **構造防止**:
+  1. ESLint `@typescript-eslint/switch-exhaustiveness-check` rule (Sess34 PR-13 で有効化) で buildHistoryChips + EventIcon の switch case 漏れを build error 化
+  2. exhaustive 走査 unit test (EventIcons.test.tsx の `test.each(EVENT_TYPES)` pattern) で runtime 確認
+  3. payloadValidator は valibot v.object 挙動 (default strip) を明示コメント化、 schema 拡張漏れを review で catch
+- **検証手順** (新規 EventType 追加 PR レビュー時):
+  - [ ] `grep -rn '<new_type>' src/` で 4 file (WorkLogTypeFormFields / payloadValidator / buildHistoryChips / EventIcons) すべてに hit するか
+  - [ ] `pnpm test` で exhaustive 走査 test 全 PASS
+  - [ ] 実機検証で「row 展開時 chip + iconBox + form 入力 + 保存 / 表示」 すべて動作
+- **関連**: ADR-0041 Phase η/θ (Sess34) / Sess16 PR-E (silent bug 起点) / PR-Q-fix #799 (schema 漏れ修正) / design_system §24-5 (EventIcon mapping SoT) / PR テンプレ §7.5 R-25 5 項目目「EventRow 表示モード + sub-layout」
+
+---
+
 ## 関連
 
-- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-41 索引 + 運用ルール)
+- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-52 索引 + 運用ルール)
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
