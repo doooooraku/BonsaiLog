@@ -294,11 +294,24 @@ Sess23 PR-3-1 (#724) で「PlanScreen 個別 EventRow long-press → `Alert.aler
 - R-25 構造系 4 項目: タブ名 / セクション label / dot 順序 / button 配置 (Sess23 既評価 PASS) + 本 ADR 追加: ConfirmDialog 種別 / kebab menu items / UndoSnackbar 表示 / wiring cascade 整合
 - 動線系 4 項目: long-press 削除 / kebab menu 動線 / Undo 復元 / wiring cascade 通知 cancel
 
+### Sess27 (2026-05-22) Notes Amended — D5/D6 撤回 + D7 拡張
+
+**実機検証 (Claude Code 主導、 PlanScreen + bonsai-detail 両画面)** で以下を発見 + user 判断で本 ADR を以下 4 点修正:
+
+1. **D5 `<UndoSnackbar>` 撤回**: 実機検証で Critical bug 2 件確証:
+   - **bug ①**: `actionButton` hit area 約 86×22px → WCAG 2.2 SC 2.5.8 (Target Size Minimum 24×24) 縦違反
+   - **bug ②**: `pointerEvents="box-none"` で Snackbar の text 領域が背後貫通 → Undo button 微妙外 tap で背後の row が反応 → 別画面遷移 → Snackbar 4s timeout 経過 → Undo 機会喪失 → データ永続削除
+   - user 真意「Undo は不要、 ただの通知 Toast『記録 N 件を削除しました』 のみで OK」 → D5 → 通知 Toast (action なし) に簡素化、 R-44 緩和 (本 ADR + R-44 Sess27 緩和参照)
+   - DB 上の 30 日 soft delete は維持 (誤削除保険として機能)、 ゴミ箱 UI は v1.x 以降も着手しない (user 判断)
+2. **D6 Haptics の削除実行時 `notificationAsync(Warning)` 維持**、 ただし「Undo button 押下時」 の Haptics は撤回 (D5 廃止に伴う)
+3. **D7 RowActionMenu 拡張**: 個別 row にも kebab ⋮ 追加 (Sess25 では group row のみ → Sess26 PR-η-1 で groupRecordButton 廃止 → Sess27 で個別 row にも kebab 配置で動線統一)。 長押しが分からない user 向けの代替動線として明示
+4. **D3 文言**: count=1 case (group row だが 1 件のみ展開可能な場面) で「N 件をまとめて」 は日本語として不自然 → titleKey 選択 logic に `count === 1 ? SingleTitle : GroupTitle` 分岐追加 (i18n key 既存 `planEventDeleteConfirmLoggedSingleTitle` 再利用、 追加翻訳不要)
+
 ### Future Work (Phase ζ-3 + v1.x)
 
-1. `scripts/eslint-rules/destructive-undo.mjs` で R-44 違反 AST 自動検出 (delete/archive/clear/purge callsite が Snackbar wrap なしを検出)
+1. `scripts/eslint-rules/destructive-undo.mjs` で R-44 違反 AST 自動検出 (delete/archive/clear/purge callsite が Toast wrap なしを検出、 Sess26 PR-η-3 の lint script を AST 化 + 検証対象 `showUndoToast` → `Toast.show` に変更済)
 2. `Alert.alert` 他 callsite (bonsai-detail handleArchive / 日付エラー / 写真権限) の ConfirmDialog 移行
-3. kebab menu「全 N 件を別日に移動」 3rd item (業務プロ要望)
-4. 30 日復元 UI 動線整備 (ふりかえりタブ 「ゴミ箱」 card 等)
+3. ~~kebab menu「全 N 件を別日に移動」 3rd item (業務プロ要望)~~ **Sess27 user 判断で対応見送り (シンプル維持優先)**
+4. ~~30 日復元 UI 動線整備 (ふりかえりタブ 「ゴミ箱」 card 等)~~ **Sess27 user 判断で対応見送り (DB の 30 日 soft delete は維持、 UI は不要)**
 5. SUMMARY 通知 identifier 最適化 (ADR-0035 Phase η Future Work 整合)
 6. accessibilityActions に「削除」 action 追加 (VoiceOver swipe up/down で 長押しできない user 対応、 R-45 拡張)
