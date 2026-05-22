@@ -108,3 +108,73 @@ describe('safeParsePayloadJson', () => {
     expect(safeParsePayloadJson('invalid_type', '{}')).toBeNull();
   });
 });
+
+// =============================================================================
+// Sess34 ADR-0041 Phase θ PR-Q-fix: schema 漏れ silent bug 再発防止
+// 各 type の form 実保存 (buildWorkLogPayload) field が valibot で strip されない確認
+// =============================================================================
+describe('Phase θ PR-Q-fix: form 新 field strip 防止', () => {
+  test('watering: amount (string) を保持', () => {
+    const result = serializeEventPayload('watering', { amount: 'plenty' });
+    expect(result).not.toBeNull();
+    expect(JSON.parse(result!)).toEqual({ amount: 'plenty' });
+  });
+
+  test('pruning: parts[] + amount を保持', () => {
+    const result = serializeEventPayload('pruning', { parts: ['eda', 'ha'], amount: 'some' });
+    expect(result).not.toBeNull();
+    const parsed = JSON.parse(result!);
+    expect(parsed.parts).toEqual(['eda', 'ha']);
+    expect(parsed.amount).toBe('some');
+  });
+
+  test('repotting: pot_size_cm (number) + root_pruning + soil_mix を保持 (user 質問 fix)', () => {
+    const result = serializeEventPayload('repotting', {
+      pot_size_cm: 18,
+      root_pruning: 'light',
+      soil_mix: '赤玉土',
+    });
+    expect(result).not.toBeNull();
+    const parsed = JSON.parse(result!);
+    expect(parsed.pot_size_cm).toBe(18);
+    expect(parsed.root_pruning).toBe('light');
+    expect(parsed.soil_mix).toBe('赤玉土');
+  });
+
+  test('repotting: mm 180 入力 → cm 18 canonical 保存 (lengthToCanonical 整合)', () => {
+    // buildWorkLogPayload で lengthToCanonical('180', 'mm') = 18 を pot_size_cm に設定する想定
+    const result = serializeEventPayload('repotting', { pot_size_cm: 18 });
+    expect(result).not.toBeNull();
+    expect(JSON.parse(result!)).toEqual({ pot_size_cm: 18 });
+  });
+
+  test('pest_control: target + agent + dilution_ratio (number) を保持', () => {
+    const result = serializeEventPayload('pest_control', {
+      target: 'prevention',
+      agent: 'ベニカ',
+      dilution_ratio: 1000,
+    });
+    expect(result).not.toBeNull();
+    const parsed = JSON.parse(result!);
+    expect(parsed.dilution_ratio).toBe(1000);
+    expect(parsed.target).toBe('prevention');
+  });
+
+  test('candle_cut: count (number) を保持', () => {
+    const result = serializeEventPayload('candle_cut', { body_part: 'moderate', count: 5 });
+    expect(result).not.toBeNull();
+    const parsed = JSON.parse(result!);
+    expect(parsed.count).toBe(5);
+  });
+
+  test('leaf_first_aid: symptom + treatment を保持 (Sess16 PR-E 既存)', () => {
+    const result = serializeEventPayload('leaf_first_aid', {
+      symptom: 'burn',
+      treatment: '半日陰移動',
+    });
+    expect(result).not.toBeNull();
+    const parsed = JSON.parse(result!);
+    expect(parsed.symptom).toBe('burn');
+    expect(parsed.treatment).toBe('半日陰移動');
+  });
+});

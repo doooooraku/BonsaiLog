@@ -36,13 +36,22 @@ import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 // 各種別 payload schema (各 field optional)
 // ---------------------------------------------------------------------------
 
+// Sess34 ADR-0041 Phase θ PR-Q-fix: 14 種別 schema を form 実保存 (buildWorkLogPayload) 整合に拡張。
+// 旧 schema は古い field 名 (Sess16 PR-E 前) で、 valibot v.object が unknown props を default discard
+// するため、 buildWorkLogPayload で保存する新 field がすべて strip → chip 表示ゼロ silent bug。
+// ADR-0027 §Implementation の「v.object 非 strict、 追加 prop 通過」 は valibot 挙動誤解の訂正。
+// 旧 field 名も併記 (forward-only 思想、 旧 SEED data の互換維持)。
+
 const WateringPayload = v.object({
-  amount_ml: v.optional(v.number()),
+  amount: v.optional(v.string()), // Sess16+ form 保存 ('normal' | 'plenty' | 'light')
+  amount_ml: v.optional(v.number()), // 旧 field、 互換維持
   weather: v.optional(v.string()),
 });
 
 const PruningPayload = v.object({
-  body_part: v.optional(v.string()),
+  parts: v.optional(v.array(v.string())), // Sess16+ form 保存 (multi: 'eda'/'ha'/'shinme'/'ne')
+  amount: v.optional(v.string()), // Sess16+ form 保存 ('few' | 'some' | 'lot')
+  body_part: v.optional(v.string()), // 旧 field、 互換維持
 });
 
 const WiringPayload = v.object({
@@ -56,18 +65,21 @@ const UnwiringPayload = v.object({
 });
 
 const RepottingPayload = v.object({
-  pot_id: v.optional(v.string()),
+  pot_size_cm: v.optional(v.number()), // Sess16+ form 保存 (cm canonical、 mm/inch は lengthToCanonical で変換)
+  root_pruning: v.optional(v.string()), // Sess16+ form 保存 ('none' | 'light' | 'third' | 'half')
   soil_mix: v.optional(v.string()),
+  pot_id: v.optional(v.string()), // 旧 field、 互換維持
 });
 
 const FertilizingPayload = v.object({
   kind: v.optional(v.string()),
-  amount: v.optional(v.string()),
+  amount: v.optional(v.string()), // form 保存は product 銘柄 (free text)
 });
 
 const PestControlPayload = v.object({
   agent: v.optional(v.string()),
   target: v.optional(v.string()),
+  dilution_ratio: v.optional(v.number()), // Sess16+ form 保存
 });
 
 const LeafTrimmingPayload = v.object({
@@ -84,6 +96,7 @@ const DeshootPayload = v.object({
 
 const CandleCutPayload = v.object({
   body_part: v.optional(v.string()),
+  count: v.optional(v.number()), // Sess16+ form 保存 (本数)
 });
 
 const MossCarePayload = v.object({
