@@ -34,6 +34,11 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import {
+  eventRowMemo,
+  eventRowMemoSectionLabel,
+  eventRowReadMoreLink,
+} from '@/src/core/theme/typography';
 import { type Event, type EventType } from '@/src/db/schema';
 import {
   getAllPhotosByEventId,
@@ -344,11 +349,14 @@ export function EventRow({
           </>
         )}
 
-        {/* memo + 「もっと見る」 リンク */}
+        {/* memo セクション (Sess37 PR-1 C6): 「メモ」 ヘッダー + memo 本文 + 「もっと見る」 リンク。
+            ヘッダー i18n key は form の memo field label `workLogNote` を流用 (整合性 ◎、 追加翻訳 0)。
+            左 border は付けない (user 指摘で確定、 視覚ノイズ防止)。 */}
         {hasMemo && (
           <>
             <View style={styles.divider} />
             <View style={styles.detailedMemoBlock}>
+              <ThemedText style={styles.memoSectionLabel}>{t('workLogNote')}</ThemedText>
               <MemoWithReadMore
                 memo={ev.note!}
                 numberOfLines={memoLines}
@@ -496,11 +504,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   detailedHeaderTitleArea: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 8 },
+  // Sess37 PR-1 C5: detailedTitle 16 維持 (盆栽名等)、 detailedSubtitle 12→13 (副情報強調)
   detailedTitle: { fontSize: 16, color: TEXT_PRIMARY, fontWeight: '600' },
-  detailedSubtitle: { fontSize: 12, color: TEXT_SECONDARY },
+  detailedSubtitle: { fontSize: 13, color: TEXT_SECONDARY },
   divider: { height: 1, backgroundColor: BORDER_DEFAULT, marginVertical: 4 },
   detailedChipsBlock: { flexDirection: 'column', gap: 4 },
   detailedMemoBlock: { flexDirection: 'column', gap: 2 },
+  // Sess37 PR-1 C6: memo セクションラベル「メモ」 (token 経由)
+  memoSectionLabel: { ...eventRowMemoSectionLabel, marginBottom: 2 },
   detailedPhotoBlock: { marginTop: 4 },
   // wiring の labeled chip 同列表示 (Phase θ D11)
   labeledRowInline: {
@@ -549,11 +560,12 @@ const styles = StyleSheet.create({
   eventLabel: { fontSize: 14, color: TEXT_PRIMARY, fontWeight: '500' },
   eventBonsaiName: { fontSize: 15, color: TEXT_PRIMARY, fontWeight: '500' },
   eventRowDate: { fontSize: 12, color: TEXT_SECONDARY },
-  eventRowNote: { fontSize: 12, color: TEXT_SECONDARY, marginTop: 2 },
-  // ADR-0041 D5: 「もっと見る」 リンク (TEXT_SECONDARY + fontSize 11 + ▶ icon は label に含む)
+  // Sess37 PR-1 C5: memo 本文 fontSize 12→15 (token 経由、 lineHeight 22 で可読性 ↑)
+  eventRowNote: { ...eventRowMemo, marginTop: 2 },
+  // Sess37 PR-1 C5: 「もっと見る ▶」 リンク fontSize 11→14 (token 経由、 chip と統一)
+  // ADR-0041 D5 + Sess35 PR-1 inline expand、 fontWeight 維持
   readMoreLink: {
-    fontSize: 11,
-    color: TEXT_SECONDARY,
+    ...eventRowReadMoreLink,
     marginTop: 2,
     fontWeight: '500',
   },

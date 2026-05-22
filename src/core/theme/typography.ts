@@ -103,3 +103,68 @@ export const formSegmentTextOn: TextStyle = {
   fontSize: 13,
   fontWeight: '500',
 };
+
+// ============================================================================
+// EventRow display typography tokens (Sess37 PR-1、 ADR-0041 Notes Amended)
+//
+// 盆栽 user (60-70 代高齢層) 視認性を WCAG AA 推奨 (本文 14sp 以上) に揃える + Material 3
+// body medium 相当の baseline を確保。 各 component の hardcoded fontSize を撤廃し、
+// EventRow scope の display 系 token として一元化 (eventRow* prefix で form* token と並列)。
+//
+// 関連: docs/reference/design_system.md §24 (EventRow contract、 Sess37 PR-2 改訂予定)
+// ============================================================================
+
+/**
+ * Chip 値テキスト (HistoryChip 内の値表示)。
+ * fontSize 14 / lineHeight 20 / color TEXT_SECONDARY。
+ * 旧 fontSize 11 から WCAG AA 推奨 + Material 3 body medium 相当に拡大。
+ */
+export const eventRowChipText: TextStyle = {
+  fontSize: 14,
+  lineHeight: 20,
+  color: TEXT_SECONDARY,
+};
+
+/**
+ * Chip field label (HistoryChip の「希釈倍率:」「症状:」 等)。
+ * fontSize 14 / lineHeight 20 / color TEXT_SECONDARY。
+ * chipText と同サイズで row 視覚整合。
+ */
+export const eventRowChipLabel: TextStyle = {
+  fontSize: 14,
+  lineHeight: 20,
+  color: TEXT_SECONDARY,
+};
+
+/**
+ * Memo 本文 (EventRow detailed mode の memo block 内)。
+ * fontSize 15 / lineHeight 22 / color TEXT_SECONDARY。
+ * 旧 fontSize 12 から長文本文の可読性を向上 (lineHeight 1.47)。
+ */
+export const eventRowMemo: TextStyle = {
+  fontSize: 15,
+  lineHeight: 22,
+  color: TEXT_SECONDARY,
+};
+
+/**
+ * 「もっと見る ▶」 / 「折りたたむ ▲」 link (MemoWithReadMore)。
+ * fontSize 14 / lineHeight 20 / color TEXT_SECONDARY。
+ * 旧 fontSize 11 から chip と統一。
+ */
+export const eventRowReadMoreLink: TextStyle = {
+  fontSize: 14,
+  lineHeight: 20,
+  color: TEXT_SECONDARY,
+};
+
+/**
+ * Memo セクションラベル「メモ」 (EventRow detailed mode、 C6 新規)。
+ * fontSize 12 / fontWeight '600' / color TEXT_MUTED。
+ * memo 本文より控えめにし、 section ラベルとしての視覚階層を作る。
+ */
+export const eventRowMemoSectionLabel: TextStyle = {
+  fontSize: 12,
+  fontWeight: '600',
+  color: TEXT_MUTED,
+};

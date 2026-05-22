@@ -738,7 +738,7 @@ const baseEn = {
   workLogTrimRange_moderate: 'Moderate',
   workLogTrimRange_heavy: 'Heavy',
   workLogCandleCount: 'Count',
-  workLogCandleCountUnit: 'count',
+  workLogCandleCountUnit: 'pcs',
   workLogCandleCountPlaceholder: 'e.g. 5',
   workLogMossAction: 'Action',
   workLogMossAction_attach: 'Re-attach',
