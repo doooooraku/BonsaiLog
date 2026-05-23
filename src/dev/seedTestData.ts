@@ -282,9 +282,7 @@ export const OTHER_EVENT_DEFS: readonly {
   // pruning: parts (string[]) + amount enum (Sess38 PR-1: body_part → parts + amount)
   { bonsaiIdx: 0, type: 'pruning', daysAgo: 30, payload: { parts: ['eda'], amount: 'some' } },
   { bonsaiIdx: 5, type: 'pruning', daysAgo: 45, payload: { parts: ['miki'], amount: 'some' } },
-  // wiring/unwiring は既存 payload なし (wiring 専用ループ 6-5 で payload 付き別建て生成)
-  { bonsaiIdx: 0, type: 'wiring', daysAgo: 98 },
-  { bonsaiIdx: 1, type: 'wiring', daysAgo: 70 },
+  // wiring events: payload 付き wiring は 6-5 専用ループで生成 (重複登録を防ぐため here には置かない)
   // unwiring: body_part enum (Sess38 PR-1: '枝' → 'eda')
   { bonsaiIdx: 4, type: 'unwiring', daysAgo: 60, payload: { body_part: 'eda' } },
   // repotting: pot_size_cm (number) + root_pruning enum (Sess38 PR-1: pot_id 文字列 → number)
