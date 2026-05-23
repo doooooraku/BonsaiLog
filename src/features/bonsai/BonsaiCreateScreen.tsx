@@ -26,6 +26,7 @@ import {
   ON_BRAND,
 } from '@/src/core/theme/colors';
 import { BonsaiBasicFormFields, useBonsaiBasicForm } from '@/src/features/bonsai/BonsaiBasicForm';
+import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
 export default function BonsaiCreateScreen() {
@@ -77,6 +78,18 @@ export default function BonsaiCreateScreen() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+      {/* Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog (新規作成 mode のみ) */}
+      <ConfirmDialog
+        visible={form.guardVisible}
+        title={t('discardChanges')}
+        description={t('discardChangesDesc')}
+        confirmLabel={t('discard')}
+        cancelLabel={t('keepEditing')}
+        destructive
+        onConfirm={form.confirmDiscard}
+        onCancel={form.cancelDiscard}
+        testID="e2e_discard_dialog_bonsai_create"
+      />
     </View>
   );
 }

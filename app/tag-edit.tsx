@@ -16,6 +16,8 @@ import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ConfirmDialog } from '@/src/components/ConfirmDialog';
+import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   BG_SURFACE,
@@ -52,6 +54,13 @@ export default function TagEditScreen() {
   const [busy, setBusy] = React.useState(false);
   // Sess9 PR-8: 影響範囲警告用、 編集モード時のみ fetch (新規追加時は count = 0 固定)
   const [usageCount, setUsageCount] = React.useState<number>(0);
+
+  // Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog (rename + 新規追加 両 mode 対応)
+  const isDirty = React.useMemo(() => input.trim() !== initialName.trim(), [input, initialName]);
+  const { guardVisible, confirmDiscard, cancelDiscard } = useUnsavedChangesGuard({
+    isDirty,
+    bypass: busy,
+  });
 
   React.useEffect(() => {
     if (!isEditMode || tagId == null) return;
@@ -225,6 +234,18 @@ export default function TagEditScreen() {
           </ThemedText>
         </Pressable>
       </View>
+      {/* Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog */}
+      <ConfirmDialog
+        visible={guardVisible}
+        title={t('discardChanges')}
+        description={t('discardChangesDesc')}
+        confirmLabel={t('discard')}
+        cancelLabel={t('keepEditing')}
+        destructive
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+        testID="e2e_discard_dialog_tag_edit"
+      />
     </ThemedView>
   );
 }

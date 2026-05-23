@@ -27,7 +27,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { CameraIcon, ChevronRightIcon, PlusIcon } from '@/src/components/icons';
+import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
 import { LabeledPickerRow } from '@/src/components/form/LabeledPickerRow';
@@ -136,6 +138,52 @@ export function useBonsaiBasicForm({
   const [recentTags, setRecentTags] = useState<TagRecord[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const originalTagIdsRef = useRef<Set<string>>(new Set());
+
+  // Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog (新規作成 mode のみ、 編集 mode は別 issue)
+  // 編集 mode (isEdit=true) では prefill data があるため diff 検出 logic が複雑 → 別途対応
+  const isDirty = useMemo(
+    () =>
+      !isEdit &&
+      (name.trim().length > 0 ||
+        speciesId !== null ||
+        customSpeciesId !== null ||
+        style !== null ||
+        acquiredAt.length > 0 ||
+        estimatedAgeText.length > 0 ||
+        ageUnknown ||
+        memo.length > 0 ||
+        purchaseDate.length > 0 ||
+        potInfoText.length > 0 ||
+        potWidth.length > 0 ||
+        potDepth.length > 0 ||
+        potMaterial.length > 0 ||
+        acquiredFrom.length > 0 ||
+        selectedTagIds.size > 0 ||
+        pendingPhotos.length > 0),
+    [
+      isEdit,
+      name,
+      speciesId,
+      customSpeciesId,
+      style,
+      acquiredAt,
+      estimatedAgeText,
+      ageUnknown,
+      memo,
+      purchaseDate,
+      potInfoText,
+      potWidth,
+      potDepth,
+      potMaterial,
+      acquiredFrom,
+      selectedTagIds,
+      pendingPhotos,
+    ],
+  );
+  const { guardVisible, confirmDiscard, cancelDiscard } = useUnsavedChangesGuard({
+    isDirty,
+    bypass: submitting,
+  });
 
   // Phase G1 (ADR-0024 Provisionally Accepted): @gorhom Sheet を `(modals)/{species,style}-picker`
   // route に置換、戻り値は usePickerStore 経由で受け取る。
@@ -580,6 +628,10 @@ export function useBonsaiBasicForm({
     // actions
     handleSubmit,
     resetToInitial,
+    // Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog (新規作成 mode のみ)
+    guardVisible,
+    confirmDiscard,
+    cancelDiscard,
   };
 }
 

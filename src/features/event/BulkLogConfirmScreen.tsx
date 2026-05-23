@@ -30,7 +30,9 @@ import {
 } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
+import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
 import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
@@ -143,6 +145,23 @@ export default function BulkLogConfirmScreen() {
   const [formState, setFormState] = React.useState<WorkLogTypeFormState>(() =>
     createWorkLogTypeFormInitialState(settingsPotUnit),
   );
+
+  // Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog (WorkLogConfirmScreen と同 pattern)
+  const initialNoteRef = React.useRef(note);
+  const initialOccurredAtDateRef = React.useRef(occurredAtDate);
+  const initialFormStateRef = React.useRef(formState);
+  const isDirty = React.useMemo(
+    () =>
+      note !== initialNoteRef.current ||
+      occurredAtDate !== initialOccurredAtDateRef.current ||
+      photos.length > 0 ||
+      JSON.stringify(formState) !== JSON.stringify(initialFormStateRef.current),
+    [note, occurredAtDate, photos, formState],
+  );
+  const { guardVisible, confirmDiscard, cancelDiscard } = useUnsavedChangesGuard({
+    isDirty,
+    bypass: isSubmitting,
+  });
 
   if (selectedType == null) return null;
 
@@ -364,6 +383,18 @@ export default function BulkLogConfirmScreen() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+      {/* Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog */}
+      <ConfirmDialog
+        visible={guardVisible}
+        title={t('discardChanges')}
+        description={t('discardChangesDesc')}
+        confirmLabel={t('discard')}
+        cancelLabel={t('keepEditing')}
+        destructive
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+        testID="e2e_discard_dialog_bulk_log_confirm"
+      />
     </View>
   );
 }
