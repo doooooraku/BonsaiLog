@@ -2,6 +2,10 @@ const baseEn = {
   // --- Common UI ---
   ok: 'OK',
   cancel: 'Cancel',
+  discardChanges: 'Discard changes?',
+  discardChangesDesc: 'Your edits will not be saved.',
+  discard: 'Discard',
+  keepEditing: 'Keep editing',
   save: 'Save',
   delete: 'Delete',
   create: 'Create',

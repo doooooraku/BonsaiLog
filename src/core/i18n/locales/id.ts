@@ -4,6 +4,10 @@ const id: Partial<Record<TranslationKey, string>> = {
   // --- Common UI ---
   ok: 'OK',
   cancel: 'Batal',
+  discardChanges: 'Buang perubahan?',
+  discardChangesDesc: 'Perubahan Anda tidak akan disimpan.',
+  discard: 'Buang',
+  keepEditing: 'Lanjut mengedit',
   save: 'Simpan',
   delete: 'Hapus',
   create: 'Buat',
