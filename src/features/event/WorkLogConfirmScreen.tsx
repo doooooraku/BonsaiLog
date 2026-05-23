@@ -26,8 +26,10 @@ import React from 'react';
 import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
+import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoField';
@@ -102,6 +104,27 @@ export default function WorkLogConfirmScreen() {
   const [wireUnwireDate, setWireUnwireDate] = React.useState('');
   // Sess19 PR-4: 重複 tap 防止 (await 中の submit lock)。
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  // Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog。
+  // mount 時の initial state を useRef で固定 → form state と diff 比較で isDirty 算出。
+  // navigation back 試行時に dialog 表示、 「破棄」 で navigation 完遂、 「編集を続ける」 で残留。
+  const initialNoteRef = React.useRef(note);
+  const initialOccurredAtDateRef = React.useRef(occurredAtDate);
+  const initialFormStateRef = React.useRef(formState);
+  const initialWireUnwireDateRef = React.useRef(wireUnwireDate);
+  const isDirty = React.useMemo(
+    () =>
+      note !== initialNoteRef.current ||
+      occurredAtDate !== initialOccurredAtDateRef.current ||
+      photos.length > 0 ||
+      JSON.stringify(formState) !== JSON.stringify(initialFormStateRef.current) ||
+      wireUnwireDate !== initialWireUnwireDateRef.current,
+    [note, occurredAtDate, photos, formState, wireUnwireDate],
+  );
+  const { guardVisible, confirmDiscard, cancelDiscard } = useUnsavedChangesGuard({
+    isDirty,
+    bypass: isSubmitting,
+  });
 
   // Sess19 PR-4 (ADR-0031 D3 + D4): 直接 await + router.replace でカレンダー遷移。
   // Sess23 PR-4-3 (ADR-0035 D7/D8): fromPlannedId 指定時 → atomic 変換、 通常 FAB 経路 → 同条件 planned auto-cancel。
@@ -305,6 +328,18 @@ export default function WorkLogConfirmScreen() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+      {/* Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog */}
+      <ConfirmDialog
+        visible={guardVisible}
+        title={t('discardChanges')}
+        description={t('discardChangesDesc')}
+        confirmLabel={t('discard')}
+        cancelLabel={t('keepEditing')}
+        destructive
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+        testID="e2e_discard_dialog_work_log_confirm"
+      />
     </View>
   );
 }
