@@ -35,6 +35,7 @@ import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
 import { createEvent, getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
 import type { Bonsai, Event } from '@/src/db/schema';
+import { getPayloadValueLabelKey } from '@/src/features/event/payloadLabels';
 import {
   classifyWiringDuration,
   getBodyPart,
@@ -231,10 +232,13 @@ export default function WiringListScreen() {
           </ThemedText>
         ) : (
           wiringRows.map((row) => {
+            const rawPart = row.part;
+            const partKey = rawPart != null ? getPayloadValueLabelKey(rawPart) : null;
+            const partLabel = rawPart != null ? (partKey != null ? t(partKey) : rawPart) : null;
             const gaugePart =
-              row.gauge && row.part
-                ? t('wiringRowGaugePart').replace('{gauge}', row.gauge).replace('{part}', row.part)
-                : (row.gauge ?? row.part);
+              row.gauge && partLabel
+                ? t('wiringRowGaugePart').replace('{gauge}', row.gauge).replace('{part}', partLabel)
+                : (row.gauge ?? partLabel);
             return (
               <Pressable
                 key={row.event.id}
@@ -355,16 +359,16 @@ const styles = StyleSheet.create({
   },
   // Issue #325: 「外す」アクションボタン (mockup v1.0 整合、rounded + border)
   unwireButton: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
+    borderColor: BRAND_GREEN,
+    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  unwireButtonText: { fontSize: 13, fontWeight: '600', color: BRAND_GREEN },
+  unwireButtonText: { fontSize: 13, fontWeight: '500', color: BRAND_GREEN },
   cardBody: { flex: 1, minWidth: 0, gap: 4 },
   cardHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   cardName: { fontSize: 16, fontWeight: '500', color: TEXT_PRIMARY, flex: 1 },
