@@ -4,6 +4,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- Common UI ---
   ok: 'OK',
   cancel: 'キャンセル',
+  discardChanges: '変更を破棄しますか?',
+  discardChangesDesc: '入力された内容は保存されません。',
+  discard: '破棄',
+  keepEditing: '編集を続ける',
   save: '保存',
   delete: '削除',
   create: '作成',

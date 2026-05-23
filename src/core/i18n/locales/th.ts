@@ -4,6 +4,10 @@ const th: Partial<Record<TranslationKey, string>> = {
   // --- Common UI ---
   ok: 'ตกลง',
   cancel: 'ยกเลิก',
+  discardChanges: 'ละทิ้งการเปลี่ยนแปลง?',
+  discardChangesDesc: 'การเปลี่ยนแปลงของคุณจะไม่ถูกบันทึก',
+  discard: 'ละทิ้ง',
+  keepEditing: 'แก้ไขต่อ',
   save: 'บันทึก',
   delete: 'ลบ',
   create: 'สร้าง',

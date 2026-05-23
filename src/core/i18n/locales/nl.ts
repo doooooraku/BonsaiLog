@@ -4,6 +4,10 @@ const nl: Partial<Record<TranslationKey, string>> = {
   // --- Common UI ---
   ok: 'OK',
   cancel: 'Annuleren',
+  discardChanges: 'Wijzigingen negeren?',
+  discardChangesDesc: 'Je wijzigingen worden niet opgeslagen.',
+  discard: 'Negeren',
+  keepEditing: 'Doorgaan met bewerken',
   save: 'Opslaan',
   delete: 'Verwijderen',
   create: 'Maken',

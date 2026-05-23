@@ -4,6 +4,10 @@ const ko: Partial<Record<TranslationKey, string>> = {
   // --- Common UI ---
   ok: '확인',
   cancel: '취소',
+  discardChanges: '변경 사항을 삭제하시겠습니까?',
+  discardChangesDesc: '입력한 내용은 저장되지 않습니다.',
+  discard: '삭제',
+  keepEditing: '편집 계속',
   save: '저장',
   delete: '삭제',
   create: '만들기',

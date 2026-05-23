@@ -4,6 +4,10 @@ const vi: Partial<Record<TranslationKey, string>> = {
   // --- Common UI ---
   ok: 'OK',
   cancel: 'Huỷ',
+  discardChanges: 'Hủy thay đổi?',
+  discardChangesDesc: 'Các thay đổi của bạn sẽ không được lưu.',
+  discard: 'Hủy',
+  keepEditing: 'Tiếp tục chỉnh sửa',
   save: 'Lưu',
   delete: 'Xoá',
   create: 'Tạo',

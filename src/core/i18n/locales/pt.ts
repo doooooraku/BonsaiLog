@@ -4,6 +4,10 @@ const pt: Partial<Record<TranslationKey, string>> = {
   // --- Common UI ---
   ok: 'OK',
   cancel: 'Cancelar',
+  discardChanges: 'Descartar alterações?',
+  discardChangesDesc: 'Suas alterações não serão salvas.',
+  discard: 'Descartar',
+  keepEditing: 'Continuar editando',
   save: 'Guardar',
   delete: 'Eliminar',
   create: 'Criar',

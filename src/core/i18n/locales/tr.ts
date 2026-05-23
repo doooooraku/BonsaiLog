@@ -4,6 +4,10 @@ const tr: Partial<Record<TranslationKey, string>> = {
   // --- Common UI ---
   ok: 'Tamam',
   cancel: 'İptal',
+  discardChanges: 'Değişiklikleri iptal et?',
+  discardChangesDesc: 'Değişiklikleriniz kaydedilmeyecek.',
+  discard: 'İptal et',
+  keepEditing: 'Düzenlemeye devam et',
   save: 'Kaydet',
   delete: 'Sil',
   create: 'Oluştur',

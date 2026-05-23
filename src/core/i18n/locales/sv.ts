@@ -4,6 +4,10 @@ const sv: Partial<Record<TranslationKey, string>> = {
   // --- Common UI ---
   ok: 'OK',
   cancel: 'Avbryt',
+  discardChanges: 'Kasta ändringar?',
+  discardChangesDesc: 'Dina ändringar kommer inte att sparas.',
+  discard: 'Kasta',
+  keepEditing: 'Fortsätt redigera',
   save: 'Spara',
   delete: 'Ta bort',
   create: 'Skapa',

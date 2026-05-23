@@ -4,6 +4,10 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   // --- Common UI ---
   ok: '确定',
   cancel: '取消',
+  discardChanges: '放弃更改?',
+  discardChangesDesc: '您的更改将不会保存。',
+  discard: '放弃',
+  keepEditing: '继续编辑',
   save: '保存',
   delete: '删除',
   create: '创建',
