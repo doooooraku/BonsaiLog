@@ -12,7 +12,7 @@
 import { Image } from 'expo-image';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -32,17 +32,18 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
-import { createEvent, getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
+import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
 import type { Bonsai, Event } from '@/src/db/schema';
-import { getPayloadValueLabelKey } from '@/src/features/event/payloadLabels';
+import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
+import { HistoryChipRow } from '@/src/features/event/HistoryChip';
+import { UNWIRE_PARTS } from '@/src/features/event/WorkLogTypeFormFields';
 import {
   classifyWiringDuration,
   getBodyPart,
   getDaysSinceWired,
   getScheduledUnwireAtWithFallback,
   getWeeksSinceWired,
-  getWireSize,
 } from '@/src/features/wiring/wiringDuration';
 
 /**
@@ -85,9 +86,7 @@ type WiringRow = {
   weeksUntilUnwire: number | null;
   /** 装着状態 3 段階 (Issue #459)。 */
   kind: WiringStatusKind;
-  /** payload から: "1mm" 等。null は表示省略。 */
-  gauge: string | null;
-  /** payload から: "枝" "幹" 等。null は表示省略。 */
+  /** payload から body_part 生値。work-log-confirm への initialBodyPart プリセット用。 */
   part: string | null;
 };
 
@@ -127,33 +126,19 @@ export default function WiringListScreen() {
     }, [reload]),
   );
 
-  // Issue #325: 「外す」アクション、Alert 確認 → unwiring event 作成 → reload。
-  // body_part は元の wiring event から引き継ぐ (mockup v1.0 整合)。
+  // 「外す」tap → work-log-confirm (type=unwiring) へ遷移。
+  // 元 wiring の body_part を initialBodyPart として渡しプリセット (Sess41 アプローチC)。
+  // 保存後は WorkLogConfirmScreen の既存動作で記録タブ (カレンダー) へ遷移。
   const handleUnwire = useCallback(
     (row: WiringRow) => {
       const bonsaiName = row.bonsai?.name ?? '';
-      Alert.alert(t('wiringUnwireConfirmTitle').replace('{name}', bonsaiName), undefined, [
-        { text: t('cancel'), style: 'cancel' as const },
-        {
-          text: t('wiringRowUnwireAction'),
-          style: 'destructive' as const,
-          onPress: async () => {
-            try {
-              await createEvent({
-                bonsaiId: row.event.bonsaiId,
-                type: 'unwiring',
-                status: 'logged',
-                payload: row.part ? { body_part: row.part } : {},
-              });
-              await reload();
-            } catch (err) {
-              Alert.alert(t('error'), String(err));
-            }
-          },
-        },
-      ]);
+      let url = `/work-log-confirm?bonsaiName=${encodeURIComponent(bonsaiName)}&bonsaiId=${row.event.bonsaiId}&type=unwiring`;
+      if (row.part && (UNWIRE_PARTS as readonly string[]).includes(row.part)) {
+        url += `&initialBodyPart=${row.part}`;
+      }
+      router.push(url as Href);
     },
-    [reload, t],
+    [router],
   );
 
   const today = useMemo(() => new Date(nowUtc() as string), []);
@@ -212,7 +197,6 @@ export default function WiringListScreen() {
         scheduledUnwireAt,
         weeksUntilUnwire,
         kind,
-        gauge: getWireSize(latestWiring),
         part: getBodyPart(latestWiring),
       });
     }
@@ -232,13 +216,7 @@ export default function WiringListScreen() {
           </ThemedText>
         ) : (
           wiringRows.map((row) => {
-            const rawPart = row.part;
-            const partKey = rawPart != null ? getPayloadValueLabelKey(rawPart) : null;
-            const partLabel = rawPart != null ? (partKey != null ? t(partKey) : rawPart) : null;
-            const gaugePart =
-              row.gauge && partLabel
-                ? t('wiringRowGaugePart').replace('{gauge}', row.gauge).replace('{part}', partLabel)
-                : (row.gauge ?? partLabel);
+            const chips = buildHistoryChips(row.event);
             return (
               <Pressable
                 key={row.event.id}
@@ -273,22 +251,11 @@ export default function WiringListScreen() {
                       <ThemedText style={styles.warnBadge}>{t('wiringOverdueBadge')}</ThemedText>
                     )}
                   </View>
-                  {gaugePart && (
-                    <View style={styles.cardMetaRow}>
-                      <WireIcon size={12} color={TEXT_MUTED} />
-                      <ThemedText style={styles.cardMeta}>{gaugePart}</ThemedText>
-                    </View>
-                  )}
+                  {chips.length > 0 && <HistoryChipRow chips={chips} />}
                   <ThemedText style={[styles.cardSchedule, { color: scheduleColor(row) }]}>
                     {scheduleText(row, t)}
                   </ThemedText>
                 </View>
-                {/* Issue #325: 「外す」 アクションボタン (mockup v1.0 整合)。
-                    Phase E (Pressable 階層問題対応): hitSlop 8 → 20 に拡張、
-                    accessibilityLabel に盆栽名併記で Maestro tap 精度向上。
-                    親 Pressable の onPress 伝播は stopPropagation で抑制 (React Native
-                    の Pressable は完全な event bubble 制御を持たないため、最終的解決は
-                    M 案 (外側 Pressable → View 構造変更) を v2 検討)。 */}
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`${row.bonsai?.name ?? ''} ${t('wiringRowUnwireAction')}`}
@@ -381,13 +348,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(139,46,46,0.1)',
     borderRadius: 4,
     letterSpacing: 0.6,
-  },
-  cardMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  cardMeta: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: TEXT_MUTED,
-    letterSpacing: 0.5,
   },
   cardSchedule: { fontSize: 13, color: TEXT_SECONDARY },
 });

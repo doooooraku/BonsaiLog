@@ -56,6 +56,7 @@ import { triggerSummaryReschedule } from '@/src/features/notification/triggerRes
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 import {
+  UNWIRE_PARTS,
   WorkLogTypeFormFields,
   buildWorkLogPayload,
   createWorkLogTypeFormInitialState,
@@ -77,6 +78,8 @@ export default function WorkLogConfirmScreen() {
     bonsaiId?: string;
     type?: EventType;
     fromPlannedId?: string;
+    /** wiring-list「外す」から渡す body_part 初期値 (Sess41 アプローチC プリセット) */
+    initialBodyPart?: string;
   }>();
   const bonsaiName = params.bonsaiName ?? '';
   const bonsaiId = params.bonsaiId ?? '';
@@ -96,9 +99,20 @@ export default function WorkLogConfirmScreen() {
   const [photos, setPhotos] = React.useState<readonly PhotoFieldItem[]>([]);
   // Sess17 PR-G1: 14 種別 form state を WorkLogTypeFormState union に集約 (controlled component)。
   const settingsPotUnit = useSettingsStore((s) => s.potUnit);
-  const [formState, setFormState] = React.useState<WorkLogTypeFormState>(() =>
-    createWorkLogTypeFormInitialState(settingsPotUnit),
-  );
+  const [formState, setFormState] = React.useState<WorkLogTypeFormState>(() => {
+    const initial = createWorkLogTypeFormInitialState(settingsPotUnit);
+    // wiring-list「外す」から initialBodyPart が渡された場合、unwireParts を事前選択 (Sess41)。
+    // UNWIRE_PARTS 検証により不正値は無視。initialFormStateRef もこの値を捕捉するため
+    // form を開いただけでは isDirty にならない (未保存ガード誤発火防止)。
+    if (
+      selectedType === 'unwiring' &&
+      params.initialBodyPart &&
+      (UNWIRE_PARTS as readonly string[]).includes(params.initialBodyPart)
+    ) {
+      initial.unwireParts = params.initialBodyPart as (typeof UNWIRE_PARTS)[number];
+    }
+    return initial;
+  });
   // Sess17 PR-G1: wiring 外し予定日は WorkLogTypeFormFields に含めず、 caller (本画面) で
   // LabeledDateRow を直接 render (Single 専用 / Bulk では別 UI、 ADR-0029 D5 §16-3 整合)。
   const [wireUnwireDate, setWireUnwireDate] = React.useState('');
