@@ -1260,28 +1260,28 @@ Share Sheet で Instagram / Twitter / メール等に共有可。
 
 #### §14.3.1 検索アルゴリズム
 
+> **改訂 (2026-05-24, ADR-0008 Notes Amended)**: 短文字メモ検索を `fts5vocab` から **`note` 列 LIKE 部分一致** に変更。**1〜2 文字も検索可能** (当初「1 文字不可」を撤回)。3 文字以上は従来どおり trigram 直接 MATCH。
+
 ```mermaid
 flowchart TD
   Input[ユーザー入力] --> Length{文字数}
-  Length -- 1文字 --> Too_short[UI「2文字以上で検索」]
-  Length -- 2文字 --> Vocab[fts5vocab で trigram 前方一致]
+  Length -- 1〜2文字 --> LikeFallback[note 列 LIKE '%query%' 部分一致]
   Length -- 3文字以上 --> DirectFTS[fts5 直接 MATCH]
-  Vocab --> Expand[OR 展開クエリ作成]
-  Expand --> FTS[fts5 MATCH 実行]
-  DirectFTS --> FTS
-  FTS --> Rank[bm25 でスコアリング]
-  Rank --> Display[上位 50 件表示]
+  LikeFallback --> JSHighlight[JS 側 HighlightQuery でハイライト]
+  DirectFTS --> Rank[bm25 でスコアリング + snippet 抜粋]
+  JSHighlight --> Display[上位 50 件表示]
+  Rank --> Display
 ```
 
 #### §14.3.2 検索カバー範囲（3 段組みグループ表示、ADR-0008 / リサーチ反映）
 
 検索クエリは以下 **3 ターゲット**を並列検索し、**Things 3 / Apple Notes 風の 3 段組みグループ表示**で結果を返す:
 
-| ターゲット                                           | 検索方式                                                       | 想定応答 (25 万行 events) |
-| ---------------------------------------------------- | -------------------------------------------------------------- | ------------------------- |
-| **盆栽名 (`bonsai.name`)**                           | LIKE 走査 (200 行レベル、index 不要)                           | ~1ms                      |
-| **樹種名 (`species_names.common_name` 19 言語通称)** | LIKE 走査 (1,000 行レベル)                                     | ~5ms                      |
-| **作業メモ (`events.note`)**                         | FTS5 trigram MATCH (2 文字 → vocab 展開、3 文字+ → 直接 MATCH) | ~50ms                     |
+| ターゲット                                           | 検索方式                                                              | 想定応答 (25 万行 events) |
+| ---------------------------------------------------- | --------------------------------------------------------------------- | ------------------------- |
+| **盆栽名 (`bonsai.name`)**                           | LIKE 走査 (200 行レベル、index 不要)                                  | ~1ms                      |
+| **樹種名 (`species_names.common_name` 19 言語通称)** | LIKE 走査 (1,000 行レベル)                                            | ~5ms                      |
+| **作業メモ (`events.note`)**                         | 1〜2 文字 → note 列 LIKE 部分一致 / 3 文字+ → FTS5 trigram 直接 MATCH | ~50ms                     |
 
 **結果表示**:
 
@@ -1451,9 +1451,9 @@ GROUP BY t.id ORDER BY cnt DESC LIMIT 3;
 | 項目                            | 境界     | 期待動作                                                             |
 | ------------------------------- | -------- | -------------------------------------------------------------------- |
 | クエリ 0 文字                   | 下限     | 検索履歴 + 「最近の検索」見出し表示                                  |
-| クエリ 1 文字                   | 下限未満 | ガイド表示、検索不実行                                               |
-| クエリ 2 文字                   | 下限     | vocab 展開で検索                                                     |
-| クエリ 3 文字                   | 下限超   | 3 段組み (盆栽名 LIKE + 樹種名 LIKE + メモ FTS5 MATCH)               |
+| クエリ 1 文字 (CJK)             | 下限     | 検索実行 (メモは note 列 LIKE 部分一致、盆栽名/樹種名も LIKE)        |
+| クエリ 2 文字                   | 下限     | 検索実行 (メモは note 列 LIKE 部分一致)                              |
+| クエリ 3 文字                   | 下限超   | 3 段組み (盆栽名 LIKE + 樹種名 LIKE + メモ FTS5 trigram MATCH)       |
 | クエリ 100 文字                 | 上限なし | 実行（結果は少数か 0）                                               |
 | クエリ前後空白 (例「 黒松 」)   | 正規化   | trim して検索 (Y4)                                                   |
 | クエリ大文字小文字混在          | 正規化   | LOWER() で case-insensitive (Y5)                                     |
@@ -1483,8 +1483,8 @@ GROUP BY t.id ORDER BY cnt DESC LIMIT 3;
 
 - [ ] 3 段組み表示「盆栽 N 件 / 樹種 N 件 / メモ N 件」、0 件セクションは非表示 (S1 / SE1)
 - [ ] 「黒松」で検索 → 樹種「黒松」+ 盆栽名「黒松「太郎」」+ メモ内「黒松」が各セクションに表示
-- [ ] 2 文字「水や」で検索 → vocab 展開で結果表示
-- [ ] 1 文字 → 「2 文字以上で検索」ガイド (1 文字 NG、SQL 実行しない)
+- [ ] 2 文字「水や」で検索 → note 列 LIKE 部分一致で結果表示
+- [ ] 1 文字 (CJK)「苔」で検索 → note 列 LIKE 部分一致でメモがヒット (ADR-0008 Notes Amended 2026-05-24)
 - [ ] 盆栽 1,000 本 + 作業 25 万件で検索 P95 < 150ms (リサーチ実測根拠、Andrew Mara ベンチ)
 - [ ] タグ複数選択で AND フィルタ動作 (junction COUNT(DISTINCT) = 選択数)
 - [ ] 検索履歴 20 件超で FIFO

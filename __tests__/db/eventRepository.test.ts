@@ -5,7 +5,11 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { TRASH_RETENTION_DAYS } from '../../src/db/eventRepository';
+import {
+  TRASH_RETENTION_DAYS,
+  SEARCH_TRIGRAM_MIN_CHARS,
+  escapeLikePattern,
+} from '../../src/db/eventRepository';
 
 describe('TRASH_RETENTION_DAYS', () => {
   test('30 日と確定 (ADR-0008、Issue #17 AC4)', () => {
@@ -87,6 +91,52 @@ describe('eventRepository file structure', () => {
     const fnMatch = source.match(/restoreEvent[\s\S]+?^}/m);
     expect(fnMatch).not.toBeNull();
     expect(fnMatch![0]).toMatch(/INSERT\s+INTO\s+events_fts/);
+  });
+});
+
+// 改善③ ハイブリッド検索 (1〜2 字 LIKE / 3 字〜 trigram)
+describe('SEARCH_TRIGRAM_MIN_CHARS', () => {
+  test('trigram 最小文字数は 3 (3 文字未満は LIKE フォールバック)', () => {
+    expect(SEARCH_TRIGRAM_MIN_CHARS).toBe(3);
+  });
+});
+
+describe('escapeLikePattern', () => {
+  test('メタ文字 % _ \\ を \\ でエスケープ', () => {
+    expect(escapeLikePattern('100%')).toBe('100\\%');
+    expect(escapeLikePattern('a_b')).toBe('a\\_b');
+    expect(escapeLikePattern('a\\b')).toBe('a\\\\b');
+  });
+
+  test('メタ文字を含まない日本語はそのまま', () => {
+    expect(escapeLikePattern('苔')).toBe('苔');
+    expect(escapeLikePattern('苔の')).toBe('苔の');
+  });
+
+  test('複数メタ文字を全てエスケープ', () => {
+    expect(escapeLikePattern('50%_off\\x')).toBe('50\\%\\_off\\\\x');
+  });
+});
+
+describe('searchEventsWithSnippet ハイブリッド分岐 (静的解析)', () => {
+  const source = fs.readFileSync(
+    path.resolve(__dirname, '../../src/db/eventRepository.ts'),
+    'utf-8',
+  );
+
+  test('searchEventsByNoteLike を export', () => {
+    expect(source).toMatch(/export\s+async\s+function\s+searchEventsByNoteLike/);
+  });
+
+  test('searchEventsWithSnippet は 3 文字未満で LIKE フォールバックに委譲', () => {
+    expect(source).toMatch(/length\s*<\s*SEARCH_TRIGRAM_MIN_CHARS/);
+    expect(source).toMatch(/return\s+searchEventsByNoteLike\(trimmed,\s*bonsaiId\)/);
+  });
+
+  test('LIKE フォールバックは ESCAPE + deleted_at IS NULL + occurred_at_utc DESC', () => {
+    expect(source).toMatch(/e\.note\s+LIKE\s+\?\s+ESCAPE\s+'\\\\'/);
+    expect(source).toMatch(/e\.deleted_at\s+IS\s+NULL/);
+    expect(source).toMatch(/ORDER\s+BY\s+e\.occurred_at_utc\s+DESC/);
   });
 });
 

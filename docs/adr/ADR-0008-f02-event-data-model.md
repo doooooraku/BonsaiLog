@@ -392,3 +392,29 @@ const todayLocal = toLocalDateKey(nowUtc() as string, getTzOffsetMin());
 - lint 自動化: Sess36 PR-9 (`scripts/check-utc-date-slice.mjs`)
 - 既存 fn 出典: `src/features/watering/dateUtils.ts` `toLocalDateKey` (watering 由来、 notification 系で使用済の信頼実装)
 - R-55 (CLAUDE.md §2 関連項目網羅調査) の適用例 1 号: 1 件発覚 → 同 pattern 全件 grep で 3 件修正 + 副次 bug 1 件発見
+
+## Notes Amended (2026-05-24): §決定 9 — 短文字メモ検索を fts5vocab から「note 列 LIKE 部分一致」フォールバックに変更
+
+### 背景
+
+§決定 9 は「fts5vocab + LIKE 'query%' OR 展開で 2 文字検索対応、1 文字は trigram 仕様上不可」と定めたが、実装は trigram 直接 MATCH のみで止まり、vocab 展開は未実装のままだった (`eventRepository.ts` に「PR-D で実装予定」コメントが残存)。結果、検索画面のゲート (`minChars = CJK ? 1 : 2`) が短文字で検索を実行するのに必ず 0 件となり、データがあるのに「見つかりません」と誤表示する不整合が実機検証で顕在化した。
+
+### 改訂後の決定 (§決定 9 を上書き)
+
+メモ検索 (`searchEventsWithSnippet`) を**文字数ハイブリッド**にする:
+
+- **3 文字以上** (`SEARCH_TRIGRAM_MIN_CHARS = 3`): 従来どおり events_fts の trigram MATCH + `snippet()` 抜粋 (高速・関連度ソート)。
+- **1〜2 文字**: `searchEventsByNoteLike` に委譲し、`events.note LIKE '%query%' ESCAPE '\'` の部分一致 (全件走査) で返す。snippet は `null`、UI 側で `HighlightQuery` によりハイライト。ソートは `occurred_at_utc DESC`。
+
+これにより **1 文字検索も可能**になる (当初「1 文字は不可」を撤回)。LIKE 全件走査は個人規模データ前提で実用上問題なし。盆栽名 (LIKE) との挙動チグハグも解消。`fts5vocab` 採用は見送り (実装・保守コストに対し、ローカル小規模では直接 LIKE で十分)。
+
+### 恒久策
+
+- 字数閾値を `SEARCH_TRIGRAM_MIN_CHARS` として単一 SoT 化 (`eventRepository.ts` で export)。
+- 短文字検索の純関数単体テスト (`__tests__/db/eventRepository.test.ts` の `escapeLikePattern` / ハイブリッド分岐の静的解析) を追加し、drift 再発を CI で検出。
+
+### 関連
+
+- 親 PR: 検索画面 3 改善 PR-1 (改善③)
+- 出典 (LIKE エスケープ): `bonsaiRepository.ts` `searchBonsai`
+- functional_spec §14 を同改訂 (短文字経路を LIKE に統一)
