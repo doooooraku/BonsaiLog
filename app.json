@@ -36,7 +36,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#F7F3E8",
           "dark": {
-            "backgroundColor": "#000000"
+            "image": "./assets/images/splash-icon-dark.png",
+            "backgroundColor": "#121212"
           }
         }
       ],
