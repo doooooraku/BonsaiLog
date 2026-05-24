@@ -29,6 +29,7 @@ import { Asset } from 'expo-asset';
 
 import { nowUtc } from '@/src/core/datetime';
 import { archiveBonsai, createBonsai, getAllActiveBonsai } from '@/src/db/bonsaiRepository';
+import { createOrFindCustomSpecies } from '@/src/db/bonsaiSpeciesCustomRepository';
 import { getDb } from '@/src/db/db';
 import { createEvent, softDeleteEvent } from '@/src/db/eventRepository';
 import type { EventType } from '@/src/db/schema';
@@ -63,6 +64,12 @@ type SeedLangPack = {
   };
   /** 盆栽 11 件分の名前 (index 0-10、 idx 10 = archived) */
   bonsaiNames: readonly string[];
+  /**
+   * 盆栽 11 件分のカスタム樹種名 (index 0-10、 null = master speciesId を使用)。
+   * master 5 種 (黒松/真柏/モミジ/イチョウ/梅) に無い樹種 (五葉松/ハナカイドウ/杜松/ツバキ) を
+   * カスタム樹種として登録し、名前と樹種の名実一致を保つ (ADR-0026 で species を 5 種化した名残の是正)。
+   */
+  customSpeciesNames: readonly (string | null)[];
   /** 盆栽 11 件分のメモ */
   bonsaiMemos: readonly string[];
   /** 最初の watering 10 件の note (idx 0-9 = active 盆栽 10 件) */
@@ -100,6 +107,20 @@ const SEED_PACK_JA: SeedLangPack = {
     '双幹の杜松',
     '思い出のツバキ',
     '老梅',
+  ],
+  // idx 1=五葉松, 3=ハナカイドウ, 8=杜松, 9=ツバキ は master 5 種に無いためカスタム樹種
+  customSpeciesNames: [
+    null,
+    '五葉松',
+    null,
+    'ハナカイドウ',
+    null,
+    null,
+    null,
+    null,
+    '杜松',
+    'ツバキ',
+    null,
   ],
   bonsaiMemos: [
     '父から譲り受けた一本。 樹冠の動きを大切にしたい。',
@@ -175,6 +196,20 @@ const SEED_PACK_EN: SeedLangPack = {
     'Twin-Trunk Juniper',
     "Grandma's Camellia",
     'The Old Plum',
+  ],
+  // idx 1/3/8/9 は master 5 種に無いためカスタム樹種 (名前と樹種の名実一致)
+  customSpeciesNames: [
+    null,
+    'Japanese White Pine',
+    null,
+    'Crabapple',
+    null,
+    null,
+    null,
+    null,
+    'Tosho Juniper',
+    'Camellia',
+    null,
   ],
   bonsaiMemos: [
     'Inherited from Dad. Cherish the elegant crown movement.',
@@ -366,7 +401,6 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
   const blackPine = await getSpeciesByScientificName('Pinus thunbergii', 'ja');
   const juniper = await getSpeciesByScientificName('Juniperus chinensis', 'ja');
   const momiji = await getSpeciesByScientificName('Acer palmatum', 'ja');
-  const ichou = await getSpeciesByScientificName('Ginkgo biloba', 'ja');
   const ume = await getSpeciesByScientificName('Prunus mume', 'ja');
 
   // 3. 写真 asset → localUri (失敗しても seed は継続) — 提供 5 + 既存 2 = 7 枚
@@ -437,7 +471,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       tagIds: [tagShow.id, tagBalcony.id],
     },
     {
-      speciesId: blackPine?.id ?? null,
+      speciesId: null, // idx1: 五葉松 (master 5 種に無いため custom 樹種、 customSpeciesNames で名実一致)
       style: 'moyogi',
       acquiredAt: toIsoUtc('2020-06-03'),
       estimatedAge: 18,
@@ -454,7 +488,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
     },
     // 新規 7 件 active
     {
-      speciesId: ichou?.id ?? null,
+      speciesId: null, // idx3: ハナカイドウ (custom 樹種)
       style: 'moyogi',
       acquiredAt: toIsoUtc('2023-03-15'),
       estimatedAge: 12,
@@ -494,7 +528,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       tagIds: [tagWatch.id],
     },
     {
-      speciesId: juniper?.id ?? null,
+      speciesId: null, // idx8: 杜松 (custom 樹種)
       style: 'kabudachi',
       acquiredAt: toIsoUtc('2021-11-12'),
       estimatedAge: 30,
@@ -502,7 +536,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       tagIds: [tagShow.id],
     },
     {
-      speciesId: ume?.id ?? null,
+      speciesId: null, // idx9: ツバキ (custom 樹種)
       style: 'moyogi',
       acquiredAt: toIsoUtc('2010-02-28'),
       estimatedAge: 80,
@@ -527,9 +561,15 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
   const archivedBonsaiIds: string[] = [];
 
   for (const [idx, spec] of bonsaiSpec.entries()) {
+    // master 5 種に無い樹種はカスタム樹種として登録 (名前と樹種の名実一致、 千差万別の自由入力を再現)
+    const customSpeciesName = pack.customSpeciesNames[idx];
+    const customSpeciesId = customSpeciesName
+      ? (await createOrFindCustomSpecies(customSpeciesName)).id
+      : null;
     const bonsai = await createBonsai({
       name: pack.bonsaiNames[idx],
       speciesId: spec.speciesId,
+      customSpeciesId,
       style: spec.style,
       acquiredAt: spec.acquiredAt,
       estimatedAge: spec.estimatedAge,
