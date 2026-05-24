@@ -147,15 +147,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   //       Maestro ui-diff 撮影は Preview Build (dev-client なし) を使用 (Sess2 PR-4)。
   // 関連: ADR-0021 / docs/handoff/sess3-progress-2026-05-17.md / PR #535 (Sess2 で revert された Edit を本 PR で再修正)
   plugins = ensurePlugin(plugins, 'expo-dev-client', { toolsButton: false });
-  // PR #186 で追加した Splash 制御プラグイン (Phase APK rebuild B-1d)
-  // ADR-0020 §Notes §画面マップ row 1 整合 (B1 PR、mockup v1.0 screens.jsx SplashScreen):
-  // backgroundColor=washi (#F7F3E8、BG_PRIMARY) で mockup の和紙背景に整合、
-  // 画像は既存 assets/images/splash-icon.png 維持 (画像 mockup 完全整合は v1.x 別 Issue)。
-  plugins = ensurePlugin(plugins, 'expo-splash-screen', {
-    image: './assets/images/splash-icon.png',
-    resizeMode: 'contain',
-    backgroundColor: '#F7F3E8',
-  });
+  // expo-splash-screen は app.json の plugins[] が SoT。
+  // ensurePlugin はすでに存在するプラグインを上書きしないため、ここに書いても効かない。
+  // → app.json 側で dark/light 2 枚構成を管理 (ADR-0018:91 / ADR-0015:97 準拠)。
 
   plugins = ensurePlugin(plugins, 'expo-image-picker', {
     cameraPermission: 'BonsaiLog uses your camera to take photos of your bonsai.',
