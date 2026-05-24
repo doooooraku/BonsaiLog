@@ -48,10 +48,12 @@ describe('useUnsavedChangesGuard — Sess39 PR-1 (issue #822)', () => {
         guardVisible: false,
         confirmDiscard: () => {},
         cancelDiscard: () => {},
+        allowNavigation: () => {},
       };
       expect(result.guardVisible).toBe(false);
       expect(typeof result.confirmDiscard).toBe('function');
       expect(typeof result.cancelDiscard).toBe('function');
+      expect(typeof result.allowNavigation).toBe('function');
     });
   });
 
@@ -186,6 +188,53 @@ describe('useUnsavedChangesGuard — Sess39 PR-1 (issue #822)', () => {
       });
       expect(mockDispatch).toHaveBeenCalledWith(mockAction);
       expect(result.current.guardVisible).toBe(false);
+    });
+
+    test('Sess42 バグ2 fix: allowNavigation() 後は isDirty=true でも preventDefault せず通過', () => {
+      let capturedHandler:
+        | ((e: { preventDefault: jest.Mock; data: { action: object } }) => void)
+        | undefined;
+      const mockAddListener = jest.fn((event, handler) => {
+        if (event === 'beforeRemove') capturedHandler = handler;
+        return jest.fn();
+      });
+      (useNavigation as jest.Mock).mockReturnValue({
+        addListener: mockAddListener,
+        dispatch: jest.fn(),
+      });
+      // bypass=false (submitting state 未反映を模す) + isDirty=true でも、
+      // allowNavigation() を同期的に呼んだ後は guard が通過する (競合回避の核心)。
+      const { result } = renderHook(() => useUnsavedChangesGuard({ isDirty: true, bypass: false }));
+      act(() => {
+        result.current.allowNavigation();
+      });
+      const mockEvent = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
+      act(() => {
+        capturedHandler?.(mockEvent);
+      });
+      expect(mockEvent.preventDefault).not.toHaveBeenCalled();
+      expect(result.current.guardVisible).toBe(false);
+    });
+
+    test('allowNavigation() 前は isDirty=true で通常通り preventDefault される (回帰防止)', () => {
+      let capturedHandler:
+        | ((e: { preventDefault: jest.Mock; data: { action: object } }) => void)
+        | undefined;
+      const mockAddListener = jest.fn((event, handler) => {
+        if (event === 'beforeRemove') capturedHandler = handler;
+        return jest.fn();
+      });
+      (useNavigation as jest.Mock).mockReturnValue({
+        addListener: mockAddListener,
+        dispatch: jest.fn(),
+      });
+      const { result } = renderHook(() => useUnsavedChangesGuard({ isDirty: true, bypass: false }));
+      const mockEvent = { preventDefault: jest.fn(), data: { action: { type: 'GO_BACK' } } };
+      act(() => {
+        capturedHandler?.(mockEvent);
+      });
+      expect(mockEvent.preventDefault).toHaveBeenCalled();
+      expect(result.current.guardVisible).toBe(true);
     });
 
     test('isDirty=true で beforeRemove → cancelDiscard で pending action は dispatch されない', () => {

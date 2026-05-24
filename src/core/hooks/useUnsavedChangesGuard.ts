@@ -59,6 +59,14 @@ export type UseUnsavedChangesGuardResult = {
   confirmDiscard: () => void;
   /** dialog 「編集を続ける」 button onPress (dialog 閉じる、 form 残留) */
   cancelDiscard: () => void;
+  /**
+   * Sess42 バグ2 fix: 保存成功 → 画面遷移する **直前に同期的に** 呼ぶと、以降の navigation を
+   * 無条件で許可する (dialog を出さない)。`bypass: submitting` は React state 反映 (再レンダ +
+   * effect 再購読) のタイミングに依存し、保存処理が速い / カメラ Activity 再生成が絡む場合に
+   * `router.back()` が「bypass=true 反映前」に発火して dialog が出てしまう競合があった。
+   * 本関数は ref を同期更新するため、closure の bypass 値に関係なく確実に bypass できる。
+   */
+  allowNavigation: () => void;
 };
 
 export function useUnsavedChangesGuard({
@@ -70,6 +78,9 @@ export function useUnsavedChangesGuard({
   // beforeRemove event の pending action を保持 (confirm 時に dispatch)
   // 型: NavigationAction (React Navigation の navigation.dispatch に渡せる object)
   const pendingActionRef = useRef<Parameters<typeof navigation.dispatch>[0] | null>(null);
+  // Sess42 バグ2 fix: allowNavigation() で同期 ON にする無条件許可フラグ。
+  // ref なので listener closure が古い render の値でも常に最新を読める (競合回避)。
+  const forceAllowRef = useRef(false);
 
   useEffect(() => {
     // beforeRemove は React Navigation 経由の **全 navigation back** を hook:
@@ -77,8 +88,8 @@ export function useUnsavedChangesGuard({
     // - iOS swipe back gesture
     // - router.back() / navigation.goBack() 等プログラム navigation
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      if (bypass || !isDirty) {
-        // 未変更 or bypass: そのまま navigation 許可 (preventDefault 呼ばない)
+      if (forceAllowRef.current || bypass || !isDirty) {
+        // 無条件許可 (保存後) or 未変更 or bypass: そのまま navigation 許可 (preventDefault 呼ばない)
         return;
       }
       // 未保存 changes あり: preventDefault で navigation 阻止 + dialog 表示
@@ -88,6 +99,10 @@ export function useUnsavedChangesGuard({
     });
     return unsubscribe;
   }, [isDirty, bypass, navigation]);
+
+  const allowNavigation = useCallback(() => {
+    forceAllowRef.current = true;
+  }, []);
 
   const confirmDiscard = useCallback(() => {
     setGuardVisible(false);
@@ -105,5 +120,5 @@ export function useUnsavedChangesGuard({
     pendingActionRef.current = null;
   }, []);
 
-  return { guardVisible, confirmDiscard, cancelDiscard };
+  return { guardVisible, confirmDiscard, cancelDiscard, allowNavigation };
 }

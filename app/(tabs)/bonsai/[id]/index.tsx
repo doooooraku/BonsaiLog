@@ -63,7 +63,7 @@ import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { useToastStore } from '@/src/components/Toast';
 import * as Haptics from 'expo-haptics';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
-import { type Event, type EventType } from '@/src/db/schema';
+import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
 import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
 import {
   groupContinuousEvents,
@@ -241,9 +241,11 @@ export default function BonsaiDetailScreen() {
     },
   });
 
-  // Issue #440 Phase 1: 作業履歴タブのフィルタ chip (すべて / 水やり / 剪定 / 針金 / 植替え)。
-  // mockup `bonsai-detail-history-01.png` 整合、横並び single row。
-  type HistoryFilter = 'all' | 'watering' | 'pruning' | 'wiring' | 'repotting';
+  // Issue #440 Phase 1 / Sess42 バグ3: 作業履歴タブのフィルタ chip。
+  // 旧: 5 種固定 ('all'|watering|pruning|wiring|repotting、剪定系 5 種を 1 chip に集約)。
+  // 新: 'all' + その盆栽に記録のある event type のみ動的生成 (全 14 種別個別フィルタ可能)。
+  //     chip 過多を避けるため記録のある種別のみ表示 + 横スクロール single row。
+  type HistoryFilter = 'all' | EventType;
   // ADR-0036 D1-D4 (Sess25 PR-ζ-2-⑧、 Sess27 PR-4 で D5 撤回): event 削除 ConfirmDialog state + 通知 Toast のみ
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const handleConfirmDelete = useCallback(async () => {
@@ -270,27 +272,34 @@ export default function BonsaiDetailScreen() {
     });
   }, []);
 
-  // フィルタ chip → event.type 集合への対応 (剪定系 5 種、針金 2 種を集約)。
-  const FILTER_TO_TYPES: Record<HistoryFilter, readonly EventType[]> = {
-    all: [],
-    watering: ['watering'],
-    pruning: ['pruning', 'leaf_trimming', 'defoliation', 'deshoot', 'candle_cut'],
-    wiring: ['wiring', 'unwiring'],
-    repotting: ['repotting'],
-  };
+  // Sess42 バグ3: この盆栽に記録 (logged) のある event type を EVENT_TYPES のカノニカル順で抽出。
+  // フィルタ chip は 'all' + これらのみ表示 (記録のない種別の chip は出さず、chip 過多を回避)。
+  const presentEventTypes = React.useMemo<EventType[]>(() => {
+    const set = new Set<EventType>();
+    for (const ev of events) {
+      if (ev.status === 'logged') set.add(ev.type as EventType);
+    }
+    return EVENT_TYPES.filter((ty) => set.has(ty));
+  }, [events]);
 
-  // logged event のみ + フィルタ適用 + occurredAtUtc 降順 + 連続日グルーピング。
+  // 選択中フィルタの種別が記録 0 件になった場合 (削除等) は 'all' に戻す (chip が消えて
+  // 選択解除できなくなるのを防ぐ)。
+  React.useEffect(() => {
+    if (historyFilter !== 'all' && !presentEventTypes.includes(historyFilter)) {
+      setHistoryFilter('all');
+    }
+  }, [historyFilter, presentEventTypes]);
+
+  // logged event のみ + フィルタ適用 (個別 event type 一致) + occurredAtUtc 降順 + 連続日グルーピング。
   const historyGroups = React.useMemo<EventGroupEntry[]>(() => {
-    const types = FILTER_TO_TYPES[historyFilter];
     const filtered = events.filter((ev) => {
       if (ev.status !== 'logged') return false;
-      if (types.length === 0) return true;
-      return types.includes(ev.type as EventType);
+      if (historyFilter === 'all') return true;
+      return ev.type === historyFilter;
     });
     // 既存 events は updated_at 順なので occurredAtUtc 降順に並び替える。
     const sorted = [...filtered].sort((a, b) => b.occurredAtUtc.localeCompare(a.occurredAtUtc));
     return groupContinuousEvents(sorted, getTzOffsetMin());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events, historyFilter]);
 
   const handleArchive = useCallback(() => {
@@ -670,20 +679,18 @@ export default function BonsaiDetailScreen() {
             に absolute 配置 (画面右下、tab bar の上)。 */}
           {activeTab === 'history' && (
             <View style={styles.section}>
-              {/* フィルタ chip 行 (横並び、すべて / 水やり / 剪定 / 針金 / 植替え) */}
-              <View style={styles.historyFilterRow}>
-                {(['all', 'watering', 'pruning', 'wiring', 'repotting'] as const).map((f) => {
+              {/* Sess42 バグ3: フィルタ chip = 'all' + この盆栽に記録のある event type のみ動的生成。
+                  横スクロール single row (chip が増えても横スライドで 1 行表示、折り返さない)。 */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.historyFilterRow}
+                style={styles.historyFilterScroll}
+              >
+                {(['all', ...presentEventTypes] as const).map((f) => {
                   const on = historyFilter === f;
                   const labelKey: TranslationKey =
-                    f === 'all'
-                      ? 'historyFilterAll'
-                      : f === 'watering'
-                        ? 'eventType_watering'
-                        : f === 'pruning'
-                          ? 'eventType_pruning'
-                          : f === 'wiring'
-                            ? 'eventType_wiring'
-                            : 'eventType_repotting';
+                    f === 'all' ? 'historyFilterAll' : (`eventType_${f}` as TranslationKey);
                   return (
                     <Pressable
                       key={f}
@@ -702,7 +709,7 @@ export default function BonsaiDetailScreen() {
                     </Pressable>
                   );
                 })}
-              </View>
+              </ScrollView>
 
               {historyGroups.length === 0 && (
                 <ThemedText style={styles.emptyPhotos}>{t('eventEmpty')}</ThemedText>
@@ -1103,13 +1110,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   archiveText: { color: DANGER, fontSize: 15, fontWeight: '500' },
-  // Issue #440 Phase 1: 作業履歴フィルタ chip (mockup `bonsai-detail-history-01.png` 整合)
+  // Issue #440 Phase 1 / Sess42 バグ3: 作業履歴フィルタ chip。
+  // 横スクロール ScrollView の contentContainerStyle (flexWrap せず single row、gap 8)。
   historyFilterRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: 8,
-    marginBottom: 4,
+    paddingVertical: 2,
+    paddingRight: 8,
   },
+  // 縦親 ScrollView 内で横 ScrollView が縦に伸びないよう flexGrow: 0 で content 高さに固定。
+  historyFilterScroll: { flexGrow: 0, marginBottom: 4 },
   historyFilterChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
