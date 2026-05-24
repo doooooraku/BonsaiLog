@@ -31,14 +31,10 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
-import { searchBonsaiByName } from '@/src/db/bonsaiRepository';
-import {
-  searchEventsByBonsaiTags,
-  searchEventsWithSnippet,
-  type EventWithSnippet,
-} from '@/src/db/eventRepository';
+import { getBonsaiByTag, searchBonsaiByName } from '@/src/db/bonsaiRepository';
+import { searchEventsWithSnippet, type EventWithSnippet } from '@/src/db/eventRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
-import type { Bonsai, Event, EventType } from '@/src/db/schema';
+import type { Bonsai, EventType } from '@/src/db/schema';
 import { getSpeciesById, type SpeciesWithName } from '@/src/db/speciesRepository';
 import { getMostUsedTags, type TagRecord } from '@/src/db/tagRepository';
 import { BonsaiPlaceholder } from '@/src/features/bonsai/BonsaiPlaceholder';
@@ -132,7 +128,7 @@ export default function LookBackSearchScreen() {
   const [eventResults, setEventResults] = useState<EventWithSnippet[]>([]);
   const [searched, setSearched] = useState(false);
   const [recentTags, setRecentTags] = useState<TagRecord[]>([]);
-  const [selectedTagIds, setSelectedTagIds] = useState<readonly string[]>([]);
+  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const searchHistory = useSearchHistoryStore((s) => s.history);
   const removeHistory = useSearchHistoryStore((s) => s.remove);
   const minChars = CJK_LANGS.includes(lang) ? 1 : 2;
@@ -149,21 +145,33 @@ export default function LookBackSearchScreen() {
     async (raw: string) => {
       const trimmed = raw.trim();
       const hasText = trimmed.length >= minChars;
-      const hasTags = selectedTagIds.length > 0;
-      if (!hasText && !hasTags) {
+      const hasTag = selectedTagId != null;
+      if (!hasText && !hasTag) {
         setBonsaiResults([]);
         setEventResults([]);
         setSearched(false);
         return;
       }
       try {
-        const [bonsaiList, textEvents, tagEvents] = await Promise.all([
+        // ADR-0008: タグは盆栽単位。タグ選択時は getBonsaiByTag で「盆栽」を返す
+        // (searchEventsByBonsaiTags は作業を返すため検索画面では使わない)。
+        // 作業履歴セクションはテキスト検索 (メモ全文) のみで表示する。
+        const [textBonsai, tagBonsai, textEvents] = await Promise.all([
           hasText ? searchBonsaiByName(trimmed, 50) : Promise.resolve<Bonsai[]>([]),
+          hasTag ? getBonsaiByTag(selectedTagId) : Promise.resolve<Bonsai[]>([]),
           hasText ? searchEventsWithSnippet(trimmed) : Promise.resolve<EventWithSnippet[]>([]),
-          hasTags
-            ? searchEventsByBonsaiTags(selectedTagIds)
-            : Promise.resolve<(Event & { bonsaiName: string })[]>([]),
         ]);
+
+        // 盆栽リスト確定: text+tag は積集合 (AND)、text のみ / tag のみはそのまま
+        let bonsaiList: Bonsai[];
+        if (hasText && hasTag) {
+          const tagIdSet = new Set(tagBonsai.map((b) => b.id));
+          bonsaiList = textBonsai.filter((b) => tagIdSet.has(b.id));
+        } else if (hasText) {
+          bonsaiList = textBonsai;
+        } else {
+          bonsaiList = tagBonsai;
+        }
 
         // カバー写真 + 樹種を並列 prefetch
         const uniqueSpeciesIds = [
@@ -190,16 +198,8 @@ export default function LookBackSearchScreen() {
           })),
         );
 
-        let mergedEvents: EventWithSnippet[];
-        if (hasText && hasTags) {
-          const tagIdSet = new Set(tagEvents.map((e) => e.id));
-          mergedEvents = textEvents.filter((e) => tagIdSet.has(e.id));
-        } else if (hasText) {
-          mergedEvents = textEvents;
-        } else {
-          mergedEvents = tagEvents.map((e) => ({ ...e, snippet: null }));
-        }
-        setEventResults(mergedEvents.slice(0, 50));
+        // 作業履歴はテキスト検索のみ (タグからは作業を出さない)
+        setEventResults(hasText ? textEvents.slice(0, 50) : []);
         setSearched(true);
         if (hasText) {
           useSearchHistoryStore.getState().push(trimmed);
@@ -208,14 +208,14 @@ export default function LookBackSearchScreen() {
         // 検索失敗は無視
       }
     },
-    [lang, selectedTagIds, minChars],
+    [lang, selectedTagId, minChars],
   );
 
   React.useEffect(() => {
     const trimmed = query.trim();
     const hasText = trimmed.length >= minChars;
-    const hasTags = selectedTagIds.length > 0;
-    if (!hasText && !hasTags) {
+    const hasTag = selectedTagId != null;
+    if (!hasText && !hasTag) {
       setBonsaiResults([]);
       setEventResults([]);
       setSearched(false);
@@ -225,18 +225,14 @@ export default function LookBackSearchScreen() {
       void runSearchWith(trimmed);
     }, 300);
     return () => clearTimeout(timer);
-  }, [query, selectedTagIds, runSearchWith, minChars]);
+  }, [query, selectedTagId, runSearchWith, minChars]);
 
   const runSearch = () => void runSearchWith(query);
 
-  const toggleTagFilter = (tagId: string) => {
-    setSelectedTagIds((prev) =>
-      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId],
-    );
-  };
+  const selectTag = (tagId: string) => setSelectedTagId((prev) => (prev === tagId ? null : tagId));
 
-  const hasTags = selectedTagIds.length > 0;
-  const showMinCharsHint = !hasTags && !searched;
+  const hasTag = selectedTagId != null;
+  const showMinCharsHint = !hasTag && !searched;
   const highlightQuery = query.trim();
 
   return (
@@ -297,19 +293,8 @@ export default function LookBackSearchScreen() {
             testID="e2e_find_filter_row"
             style={{ borderBottomWidth: 1, borderBottomColor: BORDER_DEFAULT }}
           >
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ selected: !hasTags }}
-              testID="e2e_find_filter_all"
-              style={[styles.filterChip, !hasTags && styles.filterChipSel]}
-              onPress={() => setSelectedTagIds([])}
-            >
-              <ThemedText style={[styles.filterChipText, !hasTags && styles.filterChipTextSel]}>
-                {t('homeFilterAll')}
-              </ThemedText>
-            </Pressable>
             {recentTags.map((tg) => {
-              const selected = selectedTagIds.includes(tg.id);
+              const selected = selectedTagId === tg.id;
               return (
                 <Pressable
                   key={tg.id}
@@ -318,7 +303,7 @@ export default function LookBackSearchScreen() {
                   accessibilityLabel={tg.name}
                   testID={`e2e_find_tag_chip_${tg.id}`}
                   style={[styles.filterChip, selected && styles.filterChipSel]}
-                  onPress={() => toggleTagFilter(tg.id)}
+                  onPress={() => selectTag(tg.id)}
                 >
                   <ThemedText style={[styles.filterChipText, selected && styles.filterChipTextSel]}>
                     {tg.name}
