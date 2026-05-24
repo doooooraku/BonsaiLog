@@ -263,7 +263,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   notificationWateringTitle: '水やり',
   notificationWateringBody: '盆栽の水やりの時間です',
   searchDesc: '盆栽の名前と作業ログのメモを検索します。',
-  searchPlaceholder: '盆栽名・樹種・メモで検索',
+  searchPlaceholder: '盆栽名・樹種・樹形・メモで検索',
   searchMinChars: '{count}文字以上で検索できます',
   searchEmpty: '見つかりませんでした。',
   searchBonsaiSection: '盆栽',

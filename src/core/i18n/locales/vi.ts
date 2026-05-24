@@ -246,7 +246,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   notificationWateringTitle: 'Watering time',
   notificationWateringBody: 'Time to water your bonsai',
   searchDesc: 'Search bonsai by name and care logs by note text.',
-  searchPlaceholder: 'Tìm theo tên, loài hoặc ghi chú',
+  searchPlaceholder: 'Tìm theo tên, loài, dáng hoặc ghi chú',
   searchMinChars: 'Nhập ít nhất {count} ký tự để tìm kiếm',
   searchEmpty: 'Không có kết quả.',
   searchBonsaiSection: 'Bonsai',

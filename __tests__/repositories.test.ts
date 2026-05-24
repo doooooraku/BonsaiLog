@@ -90,6 +90,7 @@ describe('Repository file structure', () => {
       'deleteBonsaiHard',
       'parsePotInfo',
       'getBonsaiByTag',
+      'searchBonsai',
     ];
     for (const name of requiredExports) {
       expect(source).toMatch(new RegExp(`export\\s+(async\\s+)?function\\s+${name}`));
