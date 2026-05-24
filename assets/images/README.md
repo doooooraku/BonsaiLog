@@ -9,14 +9,14 @@ Replace them with your app's icons before submitting to the store.
 
 ## Required files
 
-| File                          | Size                 | Used by                            | Notes                                      |
-| ----------------------------- | -------------------- | ---------------------------------- | ------------------------------------------ |
-| `icon.png`                    | 1024×1024            | iOS / Android adaptive icon source | **Square**. No transparency for App Store. |
-| `splash-icon.png`             | 200×200+             | Splash screen logo                 | Centered on background.                    |
-| `android-icon-foreground.png` | 432×432 (108dp @ 4x) | Android adaptive icon foreground   | Drawable layer.                            |
-| `android-icon-background.png` | 432×432              | Android adaptive icon background   | Solid color or gradient.                   |
-| `android-icon-monochrome.png` | 432×432              | Android themed icon (Android 13+)  | Single color (will be tinted).             |
-| `favicon.png`                 | 48×48                | Web favicon                        | For Expo Web build.                        |
+| File                          | Size      | Used by                            | Notes                                                                              |
+| ----------------------------- | --------- | ---------------------------------- | ---------------------------------------------------------------------------------- |
+| `icon.png`                    | 1024×1024 | iOS / Android adaptive icon source | **Square**. No transparency for App Store.                                         |
+| `splash-icon.png`             | 200×200+  | Splash screen logo                 | Centered on background.                                                            |
+| `android-icon-foreground.png` | 1024×1024 | Android adaptive icon foreground   | Transparent bg. Keep logo in center ~60%. Safe zone = center 66dp of 108dp canvas. |
+| `android-icon-background.png` | 1024×1024 | Android adaptive icon background   | Opaque. Same size as foreground.                                                   |
+| `android-icon-monochrome.png` | 1024×1024 | Android themed icon (Android 13+)  | White silhouette on transparent (system tints). Same safe-zone rule.               |
+| `favicon.png`                 | 48×48     | Web favicon                        | For Expo Web build.                                                                |
 
 ## Generate from a single source
 
