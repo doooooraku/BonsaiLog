@@ -444,16 +444,21 @@ export async function searchEventsWithSnippet(
   if (!trimmed) return [];
 
   const db = await getDb();
+  // 検索対象は note (メモ) 列のみに限定する (events_fts 列順: event_id=0, bonsai_id=1, note=2, payload_text=3)。
+  // payload_text は ULID 等を含む技術 JSON のため、検索すると誤ヒット + snippet が ULID になる。
+  // FTS5 列フィルタ `note : "phrase"` で限定。phrase を二重引用で wrap し FTS5 演算子/特殊文字を無害化。
+  const ftsQuery = `note : "${trimmed.replace(/"/g, '""')}"`;
+  // snippet も列 2 (note) を抜粋 → ヒットしたメモ本文を «» ハイライト付きで返す。
   // bm25(events_fts) は MATCH 行に対して関連度スコアを返す (FTS5 §5.1.1)。
-  // 値が小さいほど関連度高 (Boltor の標準)。同 score 時の tiebreaker は本体取得後の JS 側で実施。
+  // 値が小さいほど関連度高。同 score 時の tiebreaker は本体取得後の JS 側で実施。
   const rows = bonsaiId
     ? await db.getAllAsync<{ event_id: string; snippet: string; rank: number }>(
-        "SELECT event_id, snippet(events_fts, 0, '«', '»', '...', 8) AS snippet, bm25(events_fts) AS rank FROM events_fts WHERE events_fts MATCH ? AND bonsai_id = ?;",
-        [trimmed, bonsaiId],
+        "SELECT event_id, snippet(events_fts, 2, '«', '»', '...', 8) AS snippet, bm25(events_fts) AS rank FROM events_fts WHERE events_fts MATCH ? AND bonsai_id = ?;",
+        [ftsQuery, bonsaiId],
       )
     : await db.getAllAsync<{ event_id: string; snippet: string; rank: number }>(
-        "SELECT event_id, snippet(events_fts, 0, '«', '»', '...', 8) AS snippet, bm25(events_fts) AS rank FROM events_fts WHERE events_fts MATCH ?;",
-        [trimmed],
+        "SELECT event_id, snippet(events_fts, 2, '«', '»', '...', 8) AS snippet, bm25(events_fts) AS rank FROM events_fts WHERE events_fts MATCH ?;",
+        [ftsQuery],
       );
 
   if (rows.length === 0) return [];
