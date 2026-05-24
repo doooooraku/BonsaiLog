@@ -34,8 +34,9 @@ import { useColors } from '@/src/core/theme/useColors';
 import { getBonsaiByTag, searchBonsaiByName } from '@/src/db/bonsaiRepository';
 import { searchEventsWithSnippet, type EventWithSnippet } from '@/src/db/eventRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
-import type { Bonsai, EventType } from '@/src/db/schema';
-import { getSpeciesById, type SpeciesWithName } from '@/src/db/speciesRepository';
+import { getCustomSpeciesById } from '@/src/db/bonsaiSpeciesCustomRepository';
+import { BONSAI_STYLES, type Bonsai, type EventType } from '@/src/db/schema';
+import { getSpeciesById } from '@/src/db/speciesRepository';
 import { getMostUsedTags, type TagRecord } from '@/src/db/tagRepository';
 import { BonsaiPlaceholder } from '@/src/features/bonsai/BonsaiPlaceholder';
 import { useSearchHistoryStore } from '@/src/features/search/searchHistoryStore';
@@ -43,7 +44,8 @@ import { useSearchHistoryStore } from '@/src/features/search/searchHistoryStore'
 type BonsaiResult = {
   bonsai: Bonsai;
   coverUri: string | null;
-  species: SpeciesWithName | null;
+  /** 樹種ラベル (master 通称 or カスタム樹種名)。未設定なら null。 */
+  speciesLabel: string | null;
 };
 
 /** FTS5 snippet の `«match»` 部分をインライン highlight で強調表示する pure inline component。 */
@@ -173,28 +175,47 @@ export default function LookBackSearchScreen() {
           bonsaiList = tagBonsai;
         }
 
-        // カバー写真 + 樹種を並列 prefetch
+        // カバー写真 + 樹種 (master 通称 / カスタム名) を並列 prefetch
         const uniqueSpeciesIds = [
           ...new Set(bonsaiList.filter((b) => b.speciesId).map((b) => b.speciesId!)),
         ];
-        const [coverEntries, speciesEntries] = await Promise.all([
+        const uniqueCustomSpeciesIds = [
+          ...new Set(
+            bonsaiList
+              .filter((b) => !b.speciesId && b.customSpeciesId)
+              .map((b) => b.customSpeciesId!),
+          ),
+        ];
+        const [coverEntries, speciesEntries, customSpeciesEntries] = await Promise.all([
           Promise.all(
             bonsaiList.map((b) =>
               getCoverPhoto(b.id).then((p) => [b.id, p?.absoluteUri ?? null] as const),
             ),
           ),
           Promise.all(
-            uniqueSpeciesIds.map((id) => getSpeciesById(id, lang).then((s) => [id, s] as const)),
+            uniqueSpeciesIds.map((id) =>
+              getSpeciesById(id, lang).then((s) => [id, s?.commonName ?? null] as const),
+            ),
+          ),
+          Promise.all(
+            uniqueCustomSpeciesIds.map((id) =>
+              getCustomSpeciesById(id).then((c) => [id, c?.name ?? null] as const),
+            ),
           ),
         ]);
         const coverMap = new Map(coverEntries);
         const speciesMap = new Map(speciesEntries);
+        const customSpeciesMap = new Map(customSpeciesEntries);
 
         setBonsaiResults(
           bonsaiList.map((b) => ({
             bonsai: b,
             coverUri: coverMap.get(b.id) ?? null,
-            species: b.speciesId ? (speciesMap.get(b.speciesId) ?? null) : null,
+            speciesLabel: b.speciesId
+              ? (speciesMap.get(b.speciesId) ?? null)
+              : b.customSpeciesId
+                ? (customSpeciesMap.get(b.customSpeciesId) ?? null)
+                : null,
           })),
         );
 
@@ -234,6 +255,14 @@ export default function LookBackSearchScreen() {
   const hasTag = selectedTagId != null;
   const showMinCharsHint = !hasTag && !searched;
   const highlightQuery = query.trim();
+
+  // 樹形ラベル: 標準5種は i18n、カスタムは bonsai.style に入る生テキストをそのまま表示。
+  const styleToLabel = (style: string | null): string | null => {
+    if (!style) return null;
+    return (BONSAI_STYLES as readonly string[]).includes(style)
+      ? t(`bonsaiStyle_${style}` as TranslationKey)
+      : style;
+  };
 
   return (
     <ThemedView
@@ -325,7 +354,7 @@ export default function LookBackSearchScreen() {
             {searchHistory.length > 0 && (
               <View testID="e2e_find_recent_history">
                 <ThemedText style={styles.sectionLabel}>{t('searchRecentTitle')}</ThemedText>
-                {searchHistory.map((q) => (
+                {searchHistory.slice(0, 3).map((q) => (
                   <View key={q} style={styles.historyRow}>
                     <SearchIcon size={16} color={TEXT_SECONDARY} />
                     <Pressable
@@ -370,39 +399,40 @@ export default function LookBackSearchScreen() {
               {' · '}
               {bonsaiResults.length}
             </ThemedText>
-            {bonsaiResults.map(({ bonsai: b, coverUri, species }) => (
-              <Pressable
-                key={b.id}
-                accessibilityRole="button"
-                accessibilityLabel={b.name}
-                style={styles.bonsaiRow}
-                onPress={() => router.push(`/(tabs)/bonsai/${b.id}` as Href)}
-              >
-                <View style={styles.thumbWrap}>
-                  {coverUri != null ? (
-                    <Image source={{ uri: coverUri }} style={styles.thumb} contentFit="cover" />
-                  ) : (
-                    <BonsaiPlaceholder size={56} radius={10} />
-                  )}
-                </View>
-                <View style={styles.bonsaiTextCol}>
-                  <ThemedText style={styles.bonsaiName} numberOfLines={1}>
-                    <HighlightQuery text={b.name} query={highlightQuery} />
-                  </ThemedText>
-                  {species != null && (
-                    <ThemedText style={styles.speciesLine} numberOfLines={1}>
-                      <HighlightQuery text={species.commonName} query={highlightQuery} />
-                      {species.scientificName ? (
-                        <ThemedText style={styles.scientificName}>
-                          {' '}
-                          {species.scientificName}
-                        </ThemedText>
-                      ) : null}
+            {bonsaiResults.map(({ bonsai: b, coverUri, speciesLabel }) => {
+              const stl = styleToLabel(b.style);
+              return (
+                <Pressable
+                  key={b.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={b.name}
+                  style={styles.bonsaiRow}
+                  onPress={() => router.push(`/(tabs)/bonsai/${b.id}` as Href)}
+                >
+                  <View style={styles.thumbWrap}>
+                    {coverUri != null ? (
+                      <Image source={{ uri: coverUri }} style={styles.thumb} contentFit="cover" />
+                    ) : (
+                      <BonsaiPlaceholder size={56} radius={10} />
+                    )}
+                  </View>
+                  <View style={styles.bonsaiTextCol}>
+                    <ThemedText style={styles.bonsaiName} numberOfLines={1}>
+                      <HighlightQuery text={b.name} query={highlightQuery} />
                     </ThemedText>
-                  )}
-                </View>
-              </Pressable>
-            ))}
+                    {(speciesLabel || stl) && (
+                      <ThemedText style={styles.speciesLine} numberOfLines={1}>
+                        {speciesLabel ? (
+                          <HighlightQuery text={speciesLabel} query={highlightQuery} />
+                        ) : null}
+                        {speciesLabel && stl ? ' · ' : ''}
+                        {stl ? <HighlightQuery text={stl} query={highlightQuery} /> : null}
+                      </ThemedText>
+                    )}
+                  </View>
+                </Pressable>
+              );
+            })}
           </View>
         )}
 
@@ -580,7 +610,6 @@ const styles = StyleSheet.create({
   bonsaiTextCol: { flex: 1, minWidth: 0, gap: 2 },
   bonsaiName: { fontFamily: 'NotoSerifJP_500Medium', fontSize: 17, color: TEXT_PRIMARY },
   speciesLine: { fontSize: 12, color: TEXT_SECONDARY },
-  scientificName: { fontStyle: 'italic' },
   // 作業履歴行
   eventRow: {
     flexDirection: 'row',
