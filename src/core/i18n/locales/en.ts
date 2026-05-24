@@ -358,7 +358,7 @@ const baseEn = {
   tabPlanComingSoon: 'Coming soon',
 
   // --- ADR-0020 Phase 2: bonsai tab = Claude Design HomeScreen ---
-  bonsaiBookTitle: 'Bonsai book',
+  appName: 'BonsaiLog',
   homeFilterAll: 'All',
   homeCardLastWatering: 'Watered {elapsed} ago',
   homeCardLastPruning: 'Pruned {elapsed} ago',

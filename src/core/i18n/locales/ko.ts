@@ -437,7 +437,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   tabSettings: 'Settings',
   tabPlanComingSoon: 'Coming soon',
   // --- ADR-0020 Phase 2: bonsai tab Claude Design HomeScreen (English fallback) ---
-  bonsaiBookTitle: '분재 수첩',
+  appName: 'BonsaiLog',
   homeFilterAll: 'All',
   homeCardLastWatering: 'Watered {elapsed} ago',
   homeCardLastPruning: 'Pruned {elapsed} ago',

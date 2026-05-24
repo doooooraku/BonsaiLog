@@ -360,7 +360,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tabPlanComingSoon: '準備中',
 
   // --- ADR-0020 Phase 2: 盆栽タブ Claude Design HomeScreen 整合 ---
-  bonsaiBookTitle: '盆栽手帳',
+  appName: 'BonsaiLog',
   homeFilterAll: 'すべて',
   homeCardLastWatering: '最後の水やりから{elapsed}',
   homeCardLastPruning: '最後の剪定から{elapsed}',
