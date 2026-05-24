@@ -337,6 +337,27 @@ export async function searchBonsaiByName(query: string, limit = 50): Promise<Bon
   return snakeToCamelRows<Bonsai>(rows);
 }
 
+/**
+ * F-09: 指定タグが付いた盆栽カードを返す (検索画面のタグチップ用)。
+ *
+ * ADR-0008: タグは盆栽単位 (作業 event には付かない)。タグ起点の検索は必ず「盆栽」を返す。
+ * 検索画面では本関数を使い、searchEventsByBonsaiTags (作業を返す) は使わない。
+ * archived_at IS NULL のアクティブ盆栽のみ、更新が新しい順。
+ */
+export async function getBonsaiByTag(tagId: string, limit = 50): Promise<Bonsai[]> {
+  if (!tagId) return [];
+  const db = await getDb();
+  const rows = await db.getAllAsync<Record<string, unknown>>(
+    `SELECT b.* FROM bonsai b
+     INNER JOIN bonsai_tags bt ON bt.bonsai_id = b.id
+     WHERE bt.tag_id = ? AND b.archived_at IS NULL
+     ORDER BY b.updated_at DESC
+     LIMIT ?;`,
+    [tagId, limit],
+  );
+  return snakeToCamelRows<Bonsai>(rows);
+}
+
 // ---------------------------------------------------------------------------
 // JSON helper (pot_info のパース、UI で使用)
 // ---------------------------------------------------------------------------
