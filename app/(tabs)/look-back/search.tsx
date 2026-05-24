@@ -31,7 +31,7 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
-import { getBonsaiByTag, searchBonsaiByName } from '@/src/db/bonsaiRepository';
+import { getBonsaiByTag, searchBonsai } from '@/src/db/bonsaiRepository';
 import { searchEventsWithSnippet, type EventWithSnippet } from '@/src/db/eventRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
 import { getCustomSpeciesById } from '@/src/db/bonsaiSpeciesCustomRepository';
@@ -154,12 +154,17 @@ export default function LookBackSearchScreen() {
         setSearched(false);
         return;
       }
+      // 樹形ラベル→enum 逆引き: 標準5種のうち、現在ロケールの表示ラベルが query を含むものを集める。
+      // (カスタム樹形は repository 側で style LIKE により別途一致)
+      const styleEnums = hasText
+        ? BONSAI_STYLES.filter((s) => t(`bonsaiStyle_${s}` as TranslationKey).includes(trimmed))
+        : [];
       try {
         // ADR-0008: タグは盆栽単位。タグ選択時は getBonsaiByTag で「盆栽」を返す
         // (searchEventsByBonsaiTags は作業を返すため検索画面では使わない)。
         // 作業履歴セクションはテキスト検索 (メモ全文) のみで表示する。
         const [textBonsai, tagBonsai, textEvents] = await Promise.all([
-          hasText ? searchBonsaiByName(trimmed, 50) : Promise.resolve<Bonsai[]>([]),
+          hasText ? searchBonsai(trimmed, styleEnums, 50) : Promise.resolve<Bonsai[]>([]),
           hasTag ? getBonsaiByTag(selectedTagId) : Promise.resolve<Bonsai[]>([]),
           hasText ? searchEventsWithSnippet(trimmed) : Promise.resolve<EventWithSnippet[]>([]),
         ]);
@@ -229,7 +234,7 @@ export default function LookBackSearchScreen() {
         // 検索失敗は無視
       }
     },
-    [lang, selectedTagId, minChars],
+    [lang, selectedTagId, minChars, t],
   );
 
   React.useEffect(() => {

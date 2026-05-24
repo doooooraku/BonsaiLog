@@ -258,7 +258,7 @@ const baseEn = {
   notificationWateringTitle: 'Watering time',
   notificationWateringBody: 'Time to water your bonsai',
   searchDesc: 'Search bonsai by name and care logs by note text.',
-  searchPlaceholder: 'Search by name, species, or notes',
+  searchPlaceholder: 'Search by name, species, style, or notes',
   searchMinChars: 'Enter at least {count} characters to search',
   searchEmpty: 'No results found.',
   searchBonsaiSection: 'Bonsai',

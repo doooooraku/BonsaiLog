@@ -338,6 +338,49 @@ export async function searchBonsaiByName(query: string, limit = 50): Promise<Bon
 }
 
 /**
+ * F-09: 盆栽を「名前 / 樹種 / 樹形」横断で検索 (検索画面のテキスト検索用)。
+ *
+ * 対象 (OR、いずれか一致でヒット、archived_at IS NULL):
+ * - name: 盆栽名 LIKE
+ * - 樹種(master): species_names.common_name (全locale) / species.scientific_name LIKE
+ * - 樹種(custom): bonsai_species_custom.name LIKE
+ * - 樹形(custom): bonsai.style は標準は enum、カスタムは生テキスト → style LIKE で custom 名一致
+ * - 樹形(master): 呼び出し側で「ラベル→enum」逆引きした styleEnums を style IN で一致
+ *   (i18n ラベル解決は UI 層でしかできないため引数で受ける)
+ *
+ * DISTINCT で species_names の locale 複数行による重複を排除。
+ */
+export async function searchBonsai(
+  query: string,
+  styleEnums: readonly string[] = [],
+  limit = 50,
+): Promise<Bonsai[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  const db = await getDb();
+  const escaped = trimmed.replace(/[\\%_]/g, (c) => '\\' + c);
+  const like = `%${escaped}%`;
+  const stylePlaceholders = styleEnums.map(() => '?').join(',');
+  const styleInClause = styleEnums.length ? ` OR b.style IN (${stylePlaceholders})` : '';
+  const rows = await db.getAllAsync<Record<string, unknown>>(
+    `SELECT DISTINCT b.* FROM bonsai b
+     LEFT JOIN species_names sn ON sn.species_id = b.species_id
+     LEFT JOIN species sp ON sp.id = b.species_id
+     LEFT JOIN bonsai_species_custom bsc ON bsc.id = b.custom_species_id
+     WHERE b.archived_at IS NULL AND (
+       b.name LIKE ? ESCAPE '\\'
+       OR sn.common_name LIKE ? ESCAPE '\\'
+       OR sp.scientific_name LIKE ? ESCAPE '\\'
+       OR bsc.name LIKE ? ESCAPE '\\'
+       OR b.style LIKE ? ESCAPE '\\'${styleInClause}
+     )
+     ORDER BY b.name LIMIT ?;`,
+    [like, like, like, like, like, ...styleEnums, limit],
+  );
+  return snakeToCamelRows<Bonsai>(rows);
+}
+
+/**
  * F-09: 指定タグが付いた盆栽カードを返す (検索画面のタグチップ用)。
  *
  * ADR-0008: タグは盆栽単位 (作業 event には付かない)。タグ起点の検索は必ず「盆栽」を返す。

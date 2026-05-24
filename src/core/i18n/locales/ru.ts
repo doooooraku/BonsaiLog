@@ -247,7 +247,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   notificationWateringTitle: 'Watering time',
   notificationWateringBody: 'Time to water your bonsai',
   searchDesc: 'Search bonsai by name and care logs by note text.',
-  searchPlaceholder: 'Поиск по названию, виду или заметкам',
+  searchPlaceholder: 'Поиск по названию, виду, стилю или заметкам',
   searchMinChars: 'Введите не менее {count} символов для поиска',
   searchEmpty: 'Ничего не найдено.',
   searchBonsaiSection: 'Бонсай',
