@@ -6,10 +6,12 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 /**
  * Bonsai タブ内 Stack ナビゲーション (ADR-0020 Phase 2 改修、 Sess20 PR-H1 i18n 化)。
  *
- * Routes:
+ * Routes (実在するもののみ宣言する):
  * - index: 一覧画面 (Claude Design HomeScreen 整合、SearchHeader 自前で持つので headerShown=false)
- * - new: 新規登録画面 (modal、Phase 3 で create-screens.jsx 整合に改修予定)
- * - [id]: 詳細画面 (Phase 3 で detail-screens.jsx Hero + 3 Tabs 整合に改修予定)
+ * - [id]/index: 詳細画面
+ *
+ * 新規登録は (modals)/bonsai-new、watering 履歴は ADR-0039 で廃止済のため、
+ * かつて宣言していた "new" / "[id]/watering" の Stack.Screen は削除 (起動時 extraneous 警告を解消)。
  */
 export default function BonsaiStackLayout() {
   const { t } = useTranslation();
@@ -17,20 +19,8 @@ export default function BonsaiStackLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
-        name="new"
-        options={{
-          title: t('stackBonsaiCreateModalTitle'),
-          presentation: 'modal',
-          headerShown: true,
-        }}
-      />
-      <Stack.Screen
         name="[id]/index"
         options={{ title: t('stackBonsaiDetailTitle'), headerShown: true }}
-      />
-      <Stack.Screen
-        name="[id]/watering"
-        options={{ title: t('stackBonsaiWateringHistoryTitle'), headerShown: true }}
       />
     </Stack>
   );
