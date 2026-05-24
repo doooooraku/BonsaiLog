@@ -1,1 +1,1 @@
-https://doooooraku.github.io/{{APP_SLUG}}/privacy-policy
+https://doooooraku.github.io/BonsaiLog/privacy/
