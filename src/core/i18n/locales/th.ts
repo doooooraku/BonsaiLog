@@ -251,6 +251,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   searchBonsaiSection: 'บอนไซ',
   searchSpeciesSection: 'พันธุ์',
   searchEventSection: 'บันทึกการดูแล',
+  searchWorkLabel: 'Work',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
   settingsExportSection: 'ส่งออก',

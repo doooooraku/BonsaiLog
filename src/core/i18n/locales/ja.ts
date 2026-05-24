@@ -269,6 +269,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   searchBonsaiSection: '盆栽',
   searchSpeciesSection: '樹種',
   searchEventSection: '作業履歴',
+  searchWorkLabel: '作業',
 
   // --- F-15 テーマ設定 (Phase A、ADR-0015) ---
   settingsThemeSection: '表示',

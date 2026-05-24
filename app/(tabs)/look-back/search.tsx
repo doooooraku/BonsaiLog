@@ -450,8 +450,10 @@ export default function LookBackSearchScreen() {
               {eventResults.length}
             </ThemedText>
             {eventResults.map((e) => {
-              const desc = e.snippet ?? e.note;
               const typeLabel = t(`eventType_${e.type}` as TranslationKey);
+              // メモ表示: trigram 経路は snippet(«»)、LIKE 経路 (snippet=null) は note 全文を query ハイライト。
+              const memoText = e.snippet ?? e.note ?? '';
+              const hasMemo = memoText.length > 0;
               return (
                 <Pressable
                   key={e.id}
@@ -464,26 +466,48 @@ export default function LookBackSearchScreen() {
                     <EventIcon type={e.type as EventType} size={18} />
                   </View>
                   <View style={styles.eventTextCol}>
+                    {/* 作業 (作業名) + 日付 */}
                     <View style={styles.eventTopRow}>
-                      <ThemedText
-                        type="defaultSemiBold"
-                        style={styles.eventLabel}
-                        numberOfLines={1}
-                      >
-                        {typeLabel}
-                      </ThemedText>
+                      <View style={styles.eventLabelGroup}>
+                        <ThemedText style={styles.eventFieldLabel}>
+                          {t('searchWorkLabel')}
+                        </ThemedText>
+                        <ThemedText
+                          type="defaultSemiBold"
+                          style={styles.eventLabel}
+                          numberOfLines={1}
+                        >
+                          {typeLabel}
+                        </ThemedText>
+                      </View>
                       <ThemedText style={styles.eventDate}>
                         {formatMonthDay(e.occurredAtUtc, lang)}
                       </ThemedText>
                     </View>
-                    {(e.bonsaiName || (desc != null && desc.length > 0)) && (
-                      <ThemedText style={styles.eventDesc} numberOfLines={2}>
-                        {e.bonsaiName ? (
-                          <ThemedText style={styles.bonsaiNameInline}>{e.bonsaiName} </ThemedText>
-                        ) : null}
-                        {desc != null && desc.length > 0 ? <SnippetSpans text={desc} /> : null}
-                      </ThemedText>
-                    )}
+                    {/* 盆栽 (盆栽名) */}
+                    {e.bonsaiName ? (
+                      <View style={styles.eventFieldRow}>
+                        <ThemedText style={styles.eventFieldLabel}>
+                          {t('searchBonsaiSection')}
+                        </ThemedText>
+                        <ThemedText style={styles.eventFieldValue} numberOfLines={1}>
+                          <HighlightQuery text={e.bonsaiName} query={highlightQuery} />
+                        </ThemedText>
+                      </View>
+                    ) : null}
+                    {/* メモ */}
+                    {hasMemo ? (
+                      <View style={styles.eventFieldRow}>
+                        <ThemedText style={styles.eventFieldLabel}>{t('workLogNote')}</ThemedText>
+                        <ThemedText style={styles.eventMemoValue} numberOfLines={2}>
+                          {e.snippet != null ? (
+                            <SnippetSpans text={e.snippet} />
+                          ) : (
+                            <HighlightQuery text={memoText} query={highlightQuery} />
+                          )}
+                        </ThemedText>
+                      </View>
+                    ) : null}
                   </View>
                 </Pressable>
               );
@@ -642,15 +666,35 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 8,
   },
-  eventLabel: { fontSize: 15, flex: 1 },
+  eventLabelGroup: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    flex: 1,
+    minWidth: 0,
+    gap: 6,
+  },
+  eventLabel: { fontSize: 15, flexShrink: 1, minWidth: 0 },
   eventDate: {
     fontSize: 11,
     color: TEXT_SECONDARY,
     letterSpacing: 0.6,
     flexShrink: 0,
   },
-  bonsaiNameInline: { fontSize: 13, color: TEXT_SECONDARY, fontWeight: '500' },
-  eventDesc: { fontSize: 13, color: TEXT_SECONDARY, lineHeight: 18 },
+  // 改善② セクションラベル (作業 / 盆栽 / メモ): 小さめ灰色ラベル + 本文の縦並び
+  eventFieldRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+  },
+  eventFieldLabel: {
+    fontSize: 11,
+    color: TEXT_SECONDARY,
+    letterSpacing: 0.4,
+    minWidth: 30,
+    lineHeight: 18,
+  },
+  eventFieldValue: { flex: 1, minWidth: 0, fontSize: 14, color: TEXT_PRIMARY, lineHeight: 18 },
+  eventMemoValue: { flex: 1, minWidth: 0, fontSize: 13, color: TEXT_SECONDARY, lineHeight: 18 },
   // Issue #339 Phase 3: FTS5 snippet match highlight (#EDE7D8 系 washi 背景)
   snippetMatch: {
     backgroundColor: '#EDE7D8',

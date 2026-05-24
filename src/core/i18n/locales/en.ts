@@ -264,6 +264,7 @@ const baseEn = {
   searchBonsaiSection: 'Bonsai',
   searchSpeciesSection: 'Species',
   searchEventSection: 'Care logs',
+  searchWorkLabel: 'Work',
 
   // --- F-15 Theme settings (Phase A: system/light/dark, ADR-0015) ---
   settingsThemeSection: 'Appearance',
