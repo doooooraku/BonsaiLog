@@ -544,60 +544,70 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
                           onLongPress={() => confirmDeleteGroup('planned', type, events)}
                           testID={`e2e_${testIdPrefix}_group_planned_${type}`}
                         >
-                          <View style={styles.groupIconBox}>
-                            {type === 'watering' ? (
-                              <DropletIcon size={18} />
-                            ) : (
-                              <EventIcon type={type} size={18} />
-                            )}
+                          {/* Sess42 バグ4 (案C+B): 2 段組み。1 段目 = アイコン + 種類名 (長言語は…省略) +
+                              件数バッジ + kebab。2 段目 = 「全 N 件を記録」 button (タップ領域拡大) + 開くトグル。
+                              groupLeftCluster (flex:1 + minWidth:0) で label を読める幅に保ちつつ長言語は省略。 */}
+                          <View style={styles.groupLine}>
+                            <View style={styles.groupIconBox}>
+                              {type === 'watering' ? (
+                                <DropletIcon size={18} />
+                              ) : (
+                                <EventIcon type={type} size={18} />
+                              )}
+                            </View>
+                            <View style={styles.groupLeftCluster}>
+                              <ThemedText
+                                style={[styles.groupLabel, hasOverdue && styles.groupLabelOverdue]}
+                                numberOfLines={1}
+                              >
+                                {groupLabel}
+                              </ThemedText>
+                              <View style={styles.groupCountBadge}>
+                                <ThemedText style={styles.groupCountBadgeText}>
+                                  {formatGroupCount(events)}
+                                </ThemedText>
+                              </View>
+                            </View>
+                            <Pressable
+                              accessibilityRole="button"
+                              accessibilityLabel={t('rowActionMenuDelete')}
+                              style={styles.kebabButton}
+                              hitSlop={8}
+                              onPress={() => handleKebabPress('planned', type, events)}
+                              testID={`e2e_${testIdPrefix}_group_kebab_planned_${type}`}
+                            >
+                              <MoreVerticalIcon size={20} color={TEXT_SECONDARY} />
+                            </Pressable>
                           </View>
-                          <ThemedText
-                            style={[styles.groupLabel, hasOverdue && styles.groupLabelOverdue]}
-                            numberOfLines={1}
-                          >
-                            {groupLabel}
-                          </ThemedText>
-                          <View style={styles.groupCountBadge}>
-                            <ThemedText style={styles.groupCountBadgeText}>
-                              {formatGroupCount(events)}
-                            </ThemedText>
-                          </View>
-                          <View style={styles.groupSpacer} />
-                          {/* Sess29 ADR-0038 D3: group header「全 N 件を記録」 button (kebab 併存、 案 B-2) */}
-                          <Pressable
-                            accessibilityRole="button"
-                            accessibilityLabel={t('rowActionMenuRecordAll').replace(
-                              '{count}',
-                              String(events.length),
-                            )}
-                            style={styles.groupRecordButton}
-                            hitSlop={6}
-                            onPress={(e) => {
-                              e.stopPropagation();
-                              handleBulkConvert(type, events);
-                            }}
-                            testID={`e2e_${testIdPrefix}_group_record_button_${type}`}
-                          >
-                            <ThemedText style={styles.groupRecordButtonText}>
-                              {t('rowActionMenuRecordAll').replace(
+                          <View style={styles.groupLine2}>
+                            {/* Sess29 ADR-0038 D3: group header「全 N 件を記録」 button (kebab 併存、 案 B-2) */}
+                            <Pressable
+                              accessibilityRole="button"
+                              accessibilityLabel={t('rowActionMenuRecordAll').replace(
                                 '{count}',
                                 String(events.length),
                               )}
+                              style={styles.groupRecordButton}
+                              onPress={(e) => {
+                                e.stopPropagation();
+                                handleBulkConvert(type, events);
+                              }}
+                              testID={`e2e_${testIdPrefix}_group_record_button_${type}`}
+                            >
+                              <ThemedText style={styles.groupRecordButtonText}>
+                                {t('rowActionMenuRecordAll').replace(
+                                  '{count}',
+                                  String(events.length),
+                                )}
+                              </ThemedText>
+                            </Pressable>
+                            <ThemedText
+                              style={[styles.groupToggleText, styles.groupTogglePush]}
+                              numberOfLines={1}
+                            >
+                              {toggleText} {isExpanded ? '▲' : '▼'}
                             </ThemedText>
-                          </Pressable>
-                          <ThemedText style={styles.groupToggleText}>
-                            {toggleText} {isExpanded ? '▲' : '▼'}
-                          </ThemedText>
-                          <Pressable
-                            accessibilityRole="button"
-                            accessibilityLabel={t('rowActionMenuDelete')}
-                            style={styles.kebabButton}
-                            hitSlop={8}
-                            onPress={() => handleKebabPress('planned', type, events)}
-                            testID={`e2e_${testIdPrefix}_group_kebab_planned_${type}`}
-                          >
-                            <MoreVerticalIcon size={20} color={TEXT_SECONDARY} />
-                          </Pressable>
+                          </View>
                         </Pressable>
                         {isExpanded && (
                           <View style={styles.expandedContainer}>
@@ -671,35 +681,46 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
                           onLongPress={() => confirmDeleteGroup('logged', type, events)}
                           testID={`e2e_${testIdPrefix}_group_logged_${type}`}
                         >
-                          <View style={styles.groupIconBox}>
-                            {type === 'watering' ? (
-                              <DropletIcon size={18} />
-                            ) : (
-                              <EventIcon type={type} size={18} />
-                            )}
+                          {/* Sess42 バグ4 (案C+B): 記録カードも 2 段組み (予定カードと統一)。
+                              1 段目 = アイコン + 種類名 (長言語は…省略) + 件数 + kebab、
+                              2 段目 = 開くトグル (record ボタンなし、右寄せ)。 */}
+                          <View style={styles.groupLine}>
+                            <View style={styles.groupIconBox}>
+                              {type === 'watering' ? (
+                                <DropletIcon size={18} />
+                              ) : (
+                                <EventIcon type={type} size={18} />
+                              )}
+                            </View>
+                            <View style={styles.groupLeftCluster}>
+                              <ThemedText style={styles.groupLabel} numberOfLines={1}>
+                                {groupLabel}
+                              </ThemedText>
+                              <View style={styles.groupCountBadge}>
+                                <ThemedText style={styles.groupCountBadgeText}>
+                                  {formatGroupCount(events)}
+                                </ThemedText>
+                              </View>
+                            </View>
+                            <Pressable
+                              accessibilityRole="button"
+                              accessibilityLabel={t('rowActionMenuDelete')}
+                              style={styles.kebabButton}
+                              hitSlop={8}
+                              onPress={() => handleKebabPress('logged', type, events)}
+                              testID={`e2e_${testIdPrefix}_group_kebab_logged_${type}`}
+                            >
+                              <MoreVerticalIcon size={20} color={TEXT_SECONDARY} />
+                            </Pressable>
                           </View>
-                          <ThemedText style={styles.groupLabel} numberOfLines={1}>
-                            {groupLabel}
-                          </ThemedText>
-                          <View style={styles.groupCountBadge}>
-                            <ThemedText style={styles.groupCountBadgeText}>
-                              {formatGroupCount(events)}
+                          <View style={styles.groupLine2}>
+                            <ThemedText
+                              style={[styles.groupToggleText, styles.groupTogglePush]}
+                              numberOfLines={1}
+                            >
+                              {toggleText} {isExpanded ? '▲' : '▼'}
                             </ThemedText>
                           </View>
-                          <View style={styles.groupSpacer} />
-                          <ThemedText style={styles.groupToggleText}>
-                            {toggleText} {isExpanded ? '▲' : '▼'}
-                          </ThemedText>
-                          <Pressable
-                            accessibilityRole="button"
-                            accessibilityLabel={t('rowActionMenuDelete')}
-                            style={styles.kebabButton}
-                            hitSlop={8}
-                            onPress={() => handleKebabPress('logged', type, events)}
-                            testID={`e2e_${testIdPrefix}_group_kebab_logged_${type}`}
-                          >
-                            <MoreVerticalIcon size={20} color={TEXT_SECONDARY} />
-                          </Pressable>
                         </Pressable>
                         {isExpanded && (
                           <View style={styles.expandedContainer}>
@@ -878,16 +899,23 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptyText: { fontSize: 14, color: TEXT_SECONDARY, textAlign: 'center', paddingVertical: 24 },
+  // Sess42 バグ4 (案C+B): 2 段組みカード。縦に line1 (種類名行) / line2 (操作行) を積む。
   groupRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: 8,
     padding: 14,
     backgroundColor: BG_SURFACE,
     borderWidth: 1,
     borderColor: BORDER_DEFAULT,
     borderRadius: 12,
   },
+  // 1 段目: アイコン + 種類名クラスタ + kebab (横並び)。
+  groupLine: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  // 種類名 + 件数バッジを flex:1 + minWidth:0 の塊にし、長言語名は label 側で… 省略 (案B)。
+  groupLeftCluster: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0 },
+  // 2 段目: 操作ボタン行 (予定=記録button+toggle / 記録=toggleのみ)。
+  groupLine2: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   groupIconBox: {
     width: 36,
     height: 36,
@@ -898,7 +926,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  groupLabel: { fontSize: 15, fontWeight: '500', color: TEXT_PRIMARY },
+  // flexShrink: 1 で画面が狭い時はラベルが縮んで省略 (…) され、右側の操作 (記録ボタン /
+  // 個別に開く / kebab) が枠外に押し出されない (Sess42 バグ4 はみ出し修正)。
+  groupLabel: { fontSize: 15, fontWeight: '500', color: TEXT_PRIMARY, flexShrink: 1 },
   groupCountBadge: {
     backgroundColor: BADGE_SOFT_BG,
     borderRadius: 10,
@@ -909,20 +939,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   groupCountBadgeText: { color: BADGE_SOFT_TEXT, fontSize: 12, fontWeight: '600' },
-  groupSpacer: { flex: 1 },
-  groupToggleText: { fontSize: 12, color: TEXT_SECONDARY },
+  // Sess42 バグ4: groupSpacer (flex:1) 廃止。右寄せは marginLeft:'auto' で行う
+  // (flex:1 spacer と groupLabel の flexShrink 競合で label が過剰に潰れるのを回避)。
+  // flexShrink: 0 で「個別に開く ▼」は縮まず保持 (縮むのは groupLabel 側、Sess42 バグ4)。
+  groupToggleText: { fontSize: 12, color: TEXT_SECONDARY, flexShrink: 0 },
+  // 記録カード (record ボタンなし) で toggle を右端へ寄せる。
+  groupTogglePush: { marginLeft: 'auto' },
   // Sess29 ADR-0038 D3 / R-48: Secondary CTA、 design_system §22
+  // Sess42 バグ4: 2 段組み化に伴い line2 に配置。タップ領域を minHeight 44 (WCAG 2.5.5 /
+  // Material 48dp 準拠、シニア誤タップ防止) に拡大、fontSize 11→13 (§22 の 12-14 準拠)。
   groupRecordButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    minHeight: 44,
     borderRadius: 8,
     backgroundColor: BUTTON_SECONDARY_BG,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 6,
   },
   groupRecordButtonText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '600',
     color: BUTTON_SECONDARY_TEXT,
     letterSpacing: 0.3,

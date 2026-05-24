@@ -180,7 +180,7 @@ export function useBonsaiBasicForm({
       pendingPhotos,
     ],
   );
-  const { guardVisible, confirmDiscard, cancelDiscard } = useUnsavedChangesGuard({
+  const { guardVisible, confirmDiscard, cancelDiscard, allowNavigation } = useUnsavedChangesGuard({
     isDirty,
     bypass: submitting,
   });
@@ -524,6 +524,9 @@ export function useBonsaiBasicForm({
         } catch (err) {
           console.warn('[BonsaiBasicForm] tag diff update failed (continuing):', err);
         }
+        // Sess42 バグ2 fix: 保存成功、これから router.back() するので同期的に guard を bypass
+        // (bypass: submitting だけだと再レンダ反映前に back() が発火し dialog が出る競合を回避)。
+        allowNavigation();
         onAfterSubmit?.();
         onUpdated?.(editingBonsai.id);
       } else {
@@ -545,6 +548,8 @@ export function useBonsaiBasicForm({
             console.warn('[BonsaiBasicForm] tag attach failed (continuing):', err);
           }
         }
+        // Sess42 バグ2 fix: 保存成功、これから router.back() するので同期的に guard を bypass。
+        allowNavigation();
         onAfterSubmit?.();
         onCreated?.(bonsai.id);
       }
@@ -573,6 +578,7 @@ export function useBonsaiBasicForm({
     onAfterSubmit,
     onCreated,
     onUpdated,
+    allowNavigation,
   ]);
 
   return {

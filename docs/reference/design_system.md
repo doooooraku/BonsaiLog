@@ -980,5 +980,46 @@ const handleNoteFocus = React.useCallback(() => {
 
 ---
 
+## 27. グループカード レイアウト pattern (Sess42 バグ4 由来)
+
+カレンダー (`CalendarTabScreen` の予定/記録セクション) の連続日まとめ「グループカード」 のように、
+**1 行に複数の操作 (記録 button / 展開 toggle / kebab) + 種類名 + 件数バッジ** を詰める行 layout の標準。
+
+### 27-1. 原則 — 横並び 1 行に詰め込まず「2 段組み + 伸縮塊」
+
+- 種類名 (i18n、 19 言語で長さが大きく異なる。 例: 防除・消毒=5 字 / 独語 pest_control=20 字級) と、
+  右側の操作群を**同一行に固定で並べると、狭幅端末 (360dp) で破綻**する。
+- **解決 (案C+B)**:
+  1. **2 段組み** — 1 段目 = アイコン + 種類名 + 件数バッジ + kebab、 2 段目 = 操作 button + toggle。
+  2. **種類名 + バッジを `flex: 1` + `minWidth: 0` の塊 (cluster)** にし、 label は `flexShrink: 1` +
+     `numberOfLines={1}` で**長言語名のみ「…」省略**、 短い言語はフル表示。
+
+### 27-2. 禁止パターン (Sess42 バグ4 の失敗から)
+
+- ❌ 同一 row に `flex: 1` の伸びる spacer と `flexShrink: 1` の label を同居 →
+  flexbox の縮め配分 (`flexShrink × flexBasis`) で label に縮めが集中し、 **label が過剰潰れ (「··」)**。
+  〔出典: React Native Flexbox 公式 / CSS-Tricks "Flexbox and Truncated Text"〕
+- ❌ label に `minWidth: 0` 相当 (= cluster の `flex:1`+`minWidth:0`) なしで `numberOfLines` →
+  中身幅以下に縮まず、 兄弟要素を画面外へ押し出す (はみ出し)。
+
+### 27-3. タップ領域 (シニア誤タップ防止)
+
+- 行内の操作 button (例: 「全 N 件を記録」) は **`minHeight: 44`** を確保 (WCAG 2.5.5 AAA / Apple 44pt /
+  Material 48dp 準拠)。 44px 未満は誤操作率が約 3 倍 (高橋 62 歳ペルソナ = 老眼 + 誤タップ恐怖)。
+- fontSize は §22 Secondary CTA の 12-14 に合わせる (Sess42 で 11→13)。
+
+### 27-4. 実装ファイル (SoT 参照先)
+
+- `src/features/calendar/CalendarTabScreen.tsx` (`groupRow` / `groupLine` / `groupLeftCluster` /
+  `groupLine2` / `groupRecordButton`)
+
+### 27-5. 関連
+
+- ADR-0038 D3 (「全 N 件を記録」 button + kebab 併存、 本カードの操作要素の出典)
+- §20 (バッジ) / §22 (CTA Button、 Secondary)
+- Sess42 バグ4 (本セクション由来、 実機 720×1520 で「防除・消毒」 が「··」 潰れ → 2 段化で解消)
+
+---
+
 _このドキュメントは `src/core/theme/colors.ts` として TypeScript 定数にも反映される。_
 _変更時は ADR `docs/adr/YYYY-MM-DD-design-tokens.md` を作成。_
