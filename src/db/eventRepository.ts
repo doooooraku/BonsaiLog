@@ -391,8 +391,8 @@ export async function searchEvents(query: string, bonsaiId?: string): Promise<Ev
   return snakeToCamelRows<Event>(rows);
 }
 
-/** {@link searchEventsWithSnippet} の戻り値: Event + マッチ箇所の前後抜粋 (snippet)。 */
-export type EventWithSnippet = Event & { snippet: string | null };
+/** {@link searchEventsWithSnippet} の戻り値: Event + マッチ箇所の前後抜粋 (snippet) + 盆栽名。 */
+export type EventWithSnippet = Event & { snippet: string | null; bonsaiName: string };
 
 /**
  * Sess9 PR-1 (ADR-0008 §Notes Amended 2026-05-18): bonsai_tags 経路でタグ AND フィルタした events を返す。
@@ -407,12 +407,14 @@ export type EventWithSnippet = Event & { snippet: string | null };
  * - e.deleted_at IS NULL かつ b.archived_at IS NULL
  * - tagIds が空の場合は [] を返す
  */
-export async function searchEventsByBonsaiTags(tagIds: readonly string[]): Promise<Event[]> {
+export async function searchEventsByBonsaiTags(
+  tagIds: readonly string[],
+): Promise<(Event & { bonsaiName: string })[]> {
   if (tagIds.length === 0) return [];
   const db = await getDb();
   const placeholders = tagIds.map(() => '?').join(',');
   const rows = await db.getAllAsync<Record<string, unknown>>(
-    `SELECT e.* FROM events e
+    `SELECT e.*, b.name AS bonsai_name FROM events e
      INNER JOIN bonsai b ON b.id = e.bonsai_id
      INNER JOIN bonsai_tags bt ON bt.bonsai_id = b.id
      WHERE bt.tag_id IN (${placeholders})
@@ -423,7 +425,7 @@ export async function searchEventsByBonsaiTags(tagIds: readonly string[]): Promi
      ORDER BY e.occurred_at_utc DESC;`,
     [...tagIds, tagIds.length],
   );
-  return snakeToCamelRows<Event>(rows);
+  return snakeToCamelRows<Event & { bonsaiName: string }>(rows);
 }
 
 /**
@@ -461,10 +463,12 @@ export async function searchEventsWithSnippet(
   const idList = rows.map((r) => r.event_id);
   const placeholders = idList.map(() => '?').join(',');
   const eventRows = await db.getAllAsync<Record<string, unknown>>(
-    `SELECT * FROM events WHERE id IN (${placeholders}) AND deleted_at IS NULL;`,
+    `SELECT e.*, b.name AS bonsai_name FROM events e
+     JOIN bonsai b ON b.id = e.bonsai_id
+     WHERE e.id IN (${placeholders}) AND e.deleted_at IS NULL;`,
     idList,
   );
-  const events = snakeToCamelRows<Event>(eventRows);
+  const events = snakeToCamelRows<Event & { bonsaiName: string }>(eventRows);
   return events
     .map((ev) => ({ ...ev, snippet: snippetMap.get(ev.id) ?? null }))
     .sort((a, b) => {

@@ -263,11 +263,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   notificationWateringTitle: '水やり',
   notificationWateringBody: '盆栽の水やりの時間です',
   searchDesc: '盆栽の名前と作業ログのメモを検索します。',
-  searchPlaceholder: '検索...',
+  searchPlaceholder: '盆栽名・樹種・メモで検索',
+  searchMinChars: '{count}文字以上で検索できます',
   searchEmpty: '見つかりませんでした。',
   searchBonsaiSection: '盆栽',
   searchSpeciesSection: '樹種',
-  searchEventSection: '作業ログ',
+  searchEventSection: '作業履歴',
 
   // --- F-15 テーマ設定 (Phase A、ADR-0015) ---
   settingsThemeSection: '表示',
