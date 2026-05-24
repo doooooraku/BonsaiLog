@@ -110,6 +110,27 @@ export async function getRecentTags(limit: number = 3): Promise<TagRecord[]> {
 }
 
 /**
+ * よく使われているタグを N 件返す (検索画面のフィルタチップ用)。
+ *
+ * - bonsai_tags の attach 件数 (usageCount) 降順 → 同数なら created_at DESC
+ * - HAVING で実際に使われている (>0) タグのみ (未使用タグで絞っても結果ゼロのため除外)
+ * - idx_bonsai_tags_tag_id (schema v9) で 1000 タグ規模でも 100ms 未満
+ */
+export async function getMostUsedTags(limit: number = 6): Promise<TagRecord[]> {
+  const db = await getDb();
+  return db.getAllAsync<TagRecord>(
+    `SELECT t.id, t.name, t.name_normalized AS nameNormalized, t.created_at AS createdAt
+     FROM tags t
+     INNER JOIN bonsai_tags bt ON bt.tag_id = t.id
+     GROUP BY t.id, t.name, t.name_normalized, t.created_at
+     HAVING COUNT(bt.bonsai_id) > 0
+     ORDER BY COUNT(bt.bonsai_id) DESC, t.created_at DESC
+     LIMIT ?;`,
+    [limit],
+  );
+}
+
+/**
  * 全タグの件数を返す (Sess9 PR-5、 設定画面 row right value 表示用)。
  *
  * - tags table 全行数

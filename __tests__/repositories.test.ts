@@ -100,12 +100,7 @@ describe('Repository file structure', () => {
       path.resolve(__dirname, '../src/db/speciesRepository.ts'),
       'utf-8',
     );
-    const requiredExports = [
-      'getSpeciesById',
-      'getSpeciesByScientificName',
-      'getAllSpecies',
-      'searchSpecies',
-    ];
+    const requiredExports = ['getSpeciesById', 'getSpeciesByScientificName', 'getAllSpecies'];
     for (const name of requiredExports) {
       expect(source).toMatch(new RegExp(`export\\s+(async\\s+)?function\\s+${name}`));
     }

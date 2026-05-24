@@ -32,7 +32,7 @@ type Props = {
   showSearch?: boolean;
   /** 設定タブ遷移ボタン (Cog) を表示するか (default true、設定タブ自身では false) */
   showSettings?: boolean;
-  /** 検索ボタン押下時の遷移先 (default '/search') */
+  /** 検索ボタン押下時の遷移先 (default '/(tabs)/look-back/search') */
   searchHref?: Href;
   style?: ViewStyle;
   testIdSuffix?: string;
@@ -42,7 +42,7 @@ export function SearchHeader({
   title,
   showSearch = true,
   showSettings = true,
-  searchHref = '/search' as Href,
+  searchHref = '/(tabs)/look-back/search' as Href,
   style,
   testIdSuffix = 'header',
 }: Props) {
