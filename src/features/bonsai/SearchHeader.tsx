@@ -1,7 +1,7 @@
 /**
  * 共通 Header (Claude Design `home-screens.jsx HomeHeader` 整合)。
  *
- * - 左: タイトル「盆栽手帳」(NotoSerifJP 22pt、または任意のタイトル)
+ * - 左: タイトル「BonsaiLog」(NotoSerifJP 22pt、または任意のタイトル)
  * - 右: 検索ボタン (44×44) + 設定タブ遷移ボタン (Cog 44×44)
  * - 高さ 56、border-bottom 1px
  * - 各タブのヘッダーで利用 (盆栽 / 予定 / 記録 / ふりかえり)

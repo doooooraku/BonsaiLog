@@ -129,7 +129,7 @@ export default function BonsaiHomeScreen() {
         style={[styles.container, { backgroundColor: c.background }]}
         testID="e2e_bonsai_home_loading"
       >
-        <SearchHeader title={t('bonsaiBookTitle')} testIdSuffix="bonsai_home" />
+        <SearchHeader title={t('appName')} testIdSuffix="bonsai_home" />
         <View style={styles.loadingBox}>
           <ThemedText>{t('loading')}</ThemedText>
         </View>
@@ -147,7 +147,7 @@ export default function BonsaiHomeScreen() {
           style={[styles.container, { backgroundColor: c.background }]}
           testID="e2e_bonsai_home_filter_empty_wrap"
         >
-          <SearchHeader title={t('bonsaiBookTitle')} testIdSuffix="bonsai_home" />
+          <SearchHeader title={t('appName')} testIdSuffix="bonsai_home" />
           <HomeFilterTabs
             chips={filterChips}
             selectedId={selectedFilter}
@@ -167,7 +167,7 @@ export default function BonsaiHomeScreen() {
         style={[styles.container, { backgroundColor: c.background }]}
         testID="e2e_bonsai_home_empty"
       >
-        <SearchHeader title={t('bonsaiBookTitle')} testIdSuffix="bonsai_home" />
+        <SearchHeader title={t('appName')} testIdSuffix="bonsai_home" />
         <View style={styles.emptyContent}>
           <PotIcon size={200} color={c.tint} />
           <ThemedText style={[styles.emptyTitle, { color: c.text }]}>
@@ -203,7 +203,7 @@ export default function BonsaiHomeScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_bonsai_home_list"
     >
-      <SearchHeader title={t('bonsaiBookTitle')} testIdSuffix="bonsai_home" />
+      <SearchHeader title={t('appName')} testIdSuffix="bonsai_home" />
       <HomeFilterTabs
         chips={filterChips}
         selectedId={selectedFilter}
