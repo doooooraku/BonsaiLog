@@ -3,7 +3,15 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  InteractionManager,
+  KeyboardAvoidingView,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -66,6 +74,7 @@ import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
 import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
 import {
+  findGroupKeyForEvent,
   groupContinuousEvents,
   groupContinuousEventsAsc,
   type EventGroupEntry,
@@ -93,7 +102,7 @@ import { useSettingsStore } from '@/src/stores/settingsStore';
  * - アーカイブ (Issue #14 AC4)
  */
 export default function BonsaiDetailScreen() {
-  const params = useLocalSearchParams<{ id: string; tab?: string }>();
+  const params = useLocalSearchParams<{ id: string; tab?: string; focusEventId?: string }>();
   const { id } = params;
   const { t, lang } = useTranslation();
   const router = useRouter();
@@ -104,6 +113,10 @@ export default function BonsaiDetailScreen() {
   const kavProps = useKeyboardAvoidingProps();
   // Sess31 PR-1 (R-46 拡張): ScrollView ref + 基本情報タブ メモ欄 onFocus → scrollToEnd で可視性確保。
   const scrollRef = React.useRef<ScrollView>(null);
+  // 改善① measureLayout 基準: ScrollView 直下の content wrapper View ref。
+  // Fabric では measureLayout の relativeTo に数値ハンドル不可・ホスト View の ref が必要なため、
+  // 全 content を包む collapsable=false の View を基準にして対象行の content 内 Y を実測する。
+  const scrollContentRef = React.useRef<View>(null);
   const handleMemoFocus = React.useCallback(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
   }, []);
@@ -272,6 +285,42 @@ export default function BonsaiDetailScreen() {
     });
   }, []);
 
+  // 改善① 検索結果タップ → 該当作業へジャンプ + 一時ハイライト。
+  // event.id をキーに row の wrapper View ref を登録 (measureLayout 用)。
+  const [highlightedEventId, setHighlightedEventId] = useState<string | null>(null);
+  const rowRefs = React.useRef<Map<string, View>>(new Map());
+  const registerRow = useCallback((eventId: string, node: View | null) => {
+    if (node) rowRefs.current.set(eventId, node);
+    else rowRefs.current.delete(eventId);
+  }, []);
+  // 対象行を ScrollView 内の実 Y 座標 (measureLayout) までスクロール。
+  // 展開アニメ・写真の非同期 fetch でレイアウトが後から伸びるため ref 未取得時はリトライ。
+  const scrollToEvent = useCallback((eventId: string, attempt = 0) => {
+    InteractionManager.runAfterInteractions(() => {
+      requestAnimationFrame(() => {
+        const node = rowRefs.current.get(eventId);
+        const scroll = scrollRef.current;
+        const content = scrollContentRef.current;
+        if ((!node || !scroll || !content) && attempt < 8) {
+          setTimeout(() => scrollToEvent(eventId, attempt + 1), 120);
+          return;
+        }
+        if (!node || !scroll || !content) return;
+        // Fabric 対応: relativeTo は数値ハンドル不可、ホスト View の ref (content wrapper) を渡す。
+        // 対象行の content 内 Y を実測 → ヘッダ余白 80px 分上にオフセットしてスクロール。
+        node.measureLayout(
+          content as never,
+          (_x: number, y: number) => {
+            scroll.scrollTo({ y: Math.max(0, y - 80), animated: true });
+            setHighlightedEventId(eventId);
+            setTimeout(() => setHighlightedEventId((cur) => (cur === eventId ? null : cur)), 2500);
+          },
+          () => {},
+        );
+      });
+    });
+  }, []);
+
   // Sess42 バグ3: この盆栽に記録 (logged) のある event type を EVENT_TYPES のカノニカル順で抽出。
   // フィルタ chip は 'all' + これらのみ表示 (記録のない種別の chip は出さず、chip 過多を回避)。
   const presentEventTypes = React.useMemo<EventType[]>(() => {
@@ -301,6 +350,31 @@ export default function BonsaiDetailScreen() {
     const sorted = [...filtered].sort((a, b) => b.occurredAtUtc.localeCompare(a.occurredAtUtc));
     return groupContinuousEvents(sorted, getTzOffsetMin());
   }, [events, historyFilter]);
+
+  // 改善① focusEventId param 受領 → 履歴タブ表示 + フィルタ all + (group 内なら展開) + スクロール。
+  // events ロード後に発火 (初回マウント / 既マウント画面への再遷移の両対応)。処理後 param クリア。
+  React.useEffect(() => {
+    const fid = params.focusEventId;
+    if (!fid || events.length === 0) return;
+    const target = events.find((e) => e.id === fid && e.status === 'logged');
+    if (!target) {
+      router.setParams({ focusEventId: undefined });
+      return;
+    }
+    setActiveTab('history');
+    setHistoryFilter('all');
+    // フィルタ非依存で全 logged を grouping し、対象が連続日 group 内なら展開する。
+    const allLoggedDesc = events
+      .filter((e) => e.status === 'logged')
+      .sort((a, b) => b.occurredAtUtc.localeCompare(a.occurredAtUtc));
+    const groupKey = findGroupKeyForEvent(
+      groupContinuousEvents(allLoggedDesc, getTzOffsetMin()),
+      fid,
+    );
+    if (groupKey) setExpandedGroupIds((prev) => new Set(prev).add(groupKey));
+    scrollToEvent(fid);
+    router.setParams({ focusEventId: undefined });
+  }, [params.focusEventId, events, router, scrollToEvent]);
 
   const handleArchive = useCallback(() => {
     if (!item) return;
@@ -591,304 +665,321 @@ export default function BonsaiDetailScreen() {
           ]}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Sess28 PR-4 (ADR-0037 D2): Hero は盆栽名のみ表示 (180px、 樹種・樹形 = 基本情報タブで参照)。 */}
-          <BonsaiHero coverUri={coverUri} bonsaiName={item.name} />
+          {/* 改善① measureLayout 基準 wrapper (collapsable=false で Android view flattening 回避)。 */}
+          <View ref={scrollContentRef} collapsable={false}>
+            {/* Sess28 PR-4 (ADR-0037 D2): Hero は盆栽名のみ表示 (180px、 樹種・樹形 = 基本情報タブで参照)。 */}
+            <BonsaiHero coverUri={coverUri} bonsaiName={item.name} />
 
-          {/* Issue #440 Phase 1: 旧 水やり概要セクション (LastWateredText + 水やり履歴を見るボタン)
+            {/* Issue #440 Phase 1: 旧 水やり概要セクション (LastWateredText + 水やり履歴を見るボタン)
             は削除。横断 watering 履歴は CareHub (ふりかえりタブ) 経由で到達可能。 */}
 
-          {/* Sess15 PR-SS: 基本情報タブ = BonsaiBasicFormFields (edit モード)。
+            {/* Sess15 PR-SS: 基本情報タブ = BonsaiBasicFormFields (edit モード)。
             photoSection は customPhotoBlock prop 経由で BonsaiBasicFormFields の「タグ後・メモ前」 slot に挿入。
             新規 modal (PR-CC 案 P) と field 順序を完全 1:1 一致。 */}
-          {activeTab === 'basic' && (
-            <BonsaiBasicSection
-              form={basicForm}
-              onArchive={handleArchive}
-              onMemoFocus={handleMemoFocus}
-              customPhotoBlock={
-                <View style={styles.section}>
-                  <View style={styles.photoSectionLabelRow}>
-                    <ThemedText type="defaultSemiBold">
-                      {t('bonsaiFieldPhotos')} ({photoCount})
-                    </ThemedText>
-                    <ThemedText style={styles.photoSectionOptionalLabel}>
-                      {t('fieldOptionalLabel')}
-                    </ThemedText>
-                  </View>
-                  <View style={styles.photoSourceRow}>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={t('photoSourceCamera')}
-                      style={styles.photoSourceButton}
-                      onPress={() => void pickAndSavePhoto('camera')}
-                      testID="e2e_detail_photo_camera"
-                    >
-                      <CameraIcon size={20} />
-                      <ThemedText style={styles.photoSourceText}>
-                        {t('photoSourceCamera')}
+            {activeTab === 'basic' && (
+              <BonsaiBasicSection
+                form={basicForm}
+                onArchive={handleArchive}
+                onMemoFocus={handleMemoFocus}
+                customPhotoBlock={
+                  <View style={styles.section}>
+                    <View style={styles.photoSectionLabelRow}>
+                      <ThemedText type="defaultSemiBold">
+                        {t('bonsaiFieldPhotos')} ({photoCount})
                       </ThemedText>
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={t('photoSourceLibrary')}
-                      style={styles.photoSourceButton}
-                      onPress={() => void pickAndSavePhoto('library')}
-                      testID="e2e_detail_photo_library"
-                    >
-                      <ThemedText style={styles.photoSourceText}>
-                        {t('photoSourceLibrary')}
+                      <ThemedText style={styles.photoSectionOptionalLabel}>
+                        {t('fieldOptionalLabel')}
                       </ThemedText>
-                    </Pressable>
+                    </View>
+                    <View style={styles.photoSourceRow}>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={t('photoSourceCamera')}
+                        style={styles.photoSourceButton}
+                        onPress={() => void pickAndSavePhoto('camera')}
+                        testID="e2e_detail_photo_camera"
+                      >
+                        <CameraIcon size={20} />
+                        <ThemedText style={styles.photoSourceText}>
+                          {t('photoSourceCamera')}
+                        </ThemedText>
+                      </Pressable>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={t('photoSourceLibrary')}
+                        style={styles.photoSourceButton}
+                        onPress={() => void pickAndSavePhoto('library')}
+                        testID="e2e_detail_photo_library"
+                      >
+                        <ThemedText style={styles.photoSourceText}>
+                          {t('photoSourceLibrary')}
+                        </ThemedText>
+                      </Pressable>
+                    </View>
+
+                    {photos.length === 0 && (
+                      <ThemedText style={styles.emptyPhotos}>{t('photoEmpty')}</ThemedText>
+                    )}
+
+                    {photos.map((photo, idx) => (
+                      <PhotoCard
+                        key={photo.id}
+                        photo={photo}
+                        index={idx}
+                        total={photos.length}
+                        caption={captions[photo.id] ?? ''}
+                        onCaptionChange={(text) => handleCaptionChange(photo.id, text)}
+                        onCaptionBlur={() => void handleCaptionBlur(photo.id)}
+                        onMoveUp={() => void handleMovePhoto(idx, idx - 1)}
+                        onMoveDown={() => void handleMovePhoto(idx, idx + 1)}
+                        onDelete={() => handleDeletePhoto(photo)}
+                        onSetCover={() => void handleSetCover(photo.id)}
+                      />
+                    ))}
+
+                    {/* 削除 undo Banner (Repolog 流用、5 秒以内に「元に戻す」で復元)。 */}
+                    {pendingDeletion != null && (
+                      <PhotoUndoBanner
+                        text={t('photoDeletedBanner')}
+                        actionLabel={t('photoUndoLabel')}
+                        onUndo={handleUndoDeletion}
+                      />
+                    )}
                   </View>
+                }
+              />
+            )}
 
-                  {photos.length === 0 && (
-                    <ThemedText style={styles.emptyPhotos}>{t('photoEmpty')}</ThemedText>
-                  )}
-
-                  {photos.map((photo, idx) => (
-                    <PhotoCard
-                      key={photo.id}
-                      photo={photo}
-                      index={idx}
-                      total={photos.length}
-                      caption={captions[photo.id] ?? ''}
-                      onCaptionChange={(text) => handleCaptionChange(photo.id, text)}
-                      onCaptionBlur={() => void handleCaptionBlur(photo.id)}
-                      onMoveUp={() => void handleMovePhoto(idx, idx - 1)}
-                      onMoveDown={() => void handleMovePhoto(idx, idx + 1)}
-                      onDelete={() => handleDeletePhoto(photo)}
-                      onSetCover={() => void handleSetCover(photo.id)}
-                    />
-                  ))}
-
-                  {/* 削除 undo Banner (Repolog 流用、5 秒以内に「元に戻す」で復元)。 */}
-                  {pendingDeletion != null && (
-                    <PhotoUndoBanner
-                      text={t('photoDeletedBanner')}
-                      actionLabel={t('photoUndoLabel')}
-                      onUndo={handleUndoDeletion}
-                    />
-                  )}
-                </View>
-              }
-            />
-          )}
-
-          {/* Issue #440 Phase 1: 作業履歴 Tab — フィルタ chip + 連続日まとめ events 一覧。
+            {/* Issue #440 Phase 1: 作業履歴 Tab — フィルタ chip + 連続日まとめ events 一覧。
             mockup `bonsai-detail-history-01/02/03.png` 整合。FAB は ScrollView の外 (root)
             に absolute 配置 (画面右下、tab bar の上)。 */}
-          {activeTab === 'history' && (
-            <View style={styles.section}>
-              {/* Sess42 バグ3: フィルタ chip = 'all' + この盆栽に記録のある event type のみ動的生成。
+            {activeTab === 'history' && (
+              <View style={styles.section}>
+                {/* Sess42 バグ3: フィルタ chip = 'all' + この盆栽に記録のある event type のみ動的生成。
                   横スクロール single row (chip が増えても横スライドで 1 行表示、折り返さない)。 */}
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.historyFilterRow}
-                style={styles.historyFilterScroll}
-              >
-                {(['all', ...presentEventTypes] as const).map((f) => {
-                  const on = historyFilter === f;
-                  const labelKey: TranslationKey =
-                    f === 'all' ? 'historyFilterAll' : (`eventType_${f}` as TranslationKey);
-                  return (
-                    <Pressable
-                      key={f}
-                      accessibilityRole="tab"
-                      accessibilityState={{ selected: on }}
-                      accessibilityLabel={t(labelKey)}
-                      style={[styles.historyFilterChip, on && styles.historyFilterChipOn]}
-                      onPress={() => setHistoryFilter(f)}
-                      testID={`e2e_history_filter_${f}`}
-                    >
-                      <ThemedText
-                        style={[styles.historyFilterChipText, on && styles.historyFilterChipTextOn]}
-                      >
-                        {t(labelKey)}
-                      </ThemedText>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-
-              {historyGroups.length === 0 && (
-                <ThemedText style={styles.emptyPhotos}>{t('eventEmpty')}</ThemedText>
-              )}
-
-              {historyGroups.map((entry) => {
-                // 連続日 group: 「水やり ×3  4月20日 ～ 4月22日  3回まとめて表示 個別に開く ▼」
-                if (entry.kind === 'group') {
-                  const key = entry.events[0].id;
-                  const expanded = expandedGroupIds.has(key);
-                  const startLabel = formatDate(`${entry.startDate}T00:00:00.000Z`, lang);
-                  const endLabel = formatDate(`${entry.endDate}T00:00:00.000Z`, lang);
-                  return (
-                    <View key={key}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.historyFilterRow}
+                  style={styles.historyFilterScroll}
+                >
+                  {(['all', ...presentEventTypes] as const).map((f) => {
+                    const on = historyFilter === f;
+                    const labelKey: TranslationKey =
+                      f === 'all' ? 'historyFilterAll' : (`eventType_${f}` as TranslationKey);
+                    return (
                       <Pressable
-                        style={styles.eventRow}
-                        accessibilityRole="button"
-                        accessibilityLabel={t(`eventType_${entry.type}` as TranslationKey)}
-                        onPress={() => toggleGroupExpand(key)}
-                        testID={`e2e_history_group_toggle_${key}`}
+                        key={f}
+                        accessibilityRole="tab"
+                        accessibilityState={{ selected: on }}
+                        accessibilityLabel={t(labelKey)}
+                        style={[styles.historyFilterChip, on && styles.historyFilterChipOn]}
+                        onPress={() => setHistoryFilter(f)}
+                        testID={`e2e_history_filter_${f}`}
                       >
-                        <View style={styles.eventIconBox}>
-                          <EventIcon type={entry.type} size={20} />
-                        </View>
-                        <View style={styles.eventContent}>
-                          <View style={styles.eventRowMain}>
-                            <View style={styles.eventLabelWithCount}>
-                              <ThemedText style={styles.eventLabel}>
-                                {t(`eventType_${entry.type}` as TranslationKey)}
-                              </ThemedText>
-                              <View style={styles.eventCountBadge}>
-                                <ThemedText style={styles.eventCountBadgeText}>
-                                  ×{entry.events.length}
+                        <ThemedText
+                          style={[
+                            styles.historyFilterChipText,
+                            on && styles.historyFilterChipTextOn,
+                          ]}
+                        >
+                          {t(labelKey)}
+                        </ThemedText>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+
+                {historyGroups.length === 0 && (
+                  <ThemedText style={styles.emptyPhotos}>{t('eventEmpty')}</ThemedText>
+                )}
+
+                {historyGroups.map((entry) => {
+                  // 連続日 group: 「水やり ×3  4月20日 ～ 4月22日  3回まとめて表示 個別に開く ▼」
+                  if (entry.kind === 'group') {
+                    const key = entry.events[0].id;
+                    const expanded = expandedGroupIds.has(key);
+                    const startLabel = formatDate(`${entry.startDate}T00:00:00.000Z`, lang);
+                    const endLabel = formatDate(`${entry.endDate}T00:00:00.000Z`, lang);
+                    return (
+                      <View key={key}>
+                        <Pressable
+                          style={styles.eventRow}
+                          accessibilityRole="button"
+                          accessibilityLabel={t(`eventType_${entry.type}` as TranslationKey)}
+                          onPress={() => toggleGroupExpand(key)}
+                          testID={`e2e_history_group_toggle_${key}`}
+                        >
+                          <View style={styles.eventIconBox}>
+                            <EventIcon type={entry.type} size={20} />
+                          </View>
+                          <View style={styles.eventContent}>
+                            <View style={styles.eventRowMain}>
+                              <View style={styles.eventLabelWithCount}>
+                                <ThemedText style={styles.eventLabel}>
+                                  {t(`eventType_${entry.type}` as TranslationKey)}
                                 </ThemedText>
+                                <View style={styles.eventCountBadge}>
+                                  <ThemedText style={styles.eventCountBadgeText}>
+                                    ×{entry.events.length}
+                                  </ThemedText>
+                                </View>
                               </View>
+                              <ThemedText style={styles.eventRowDate}>
+                                {startLabel} ～ {endLabel}
+                              </ThemedText>
                             </View>
-                            <ThemedText style={styles.eventRowDate}>
-                              {startLabel} ～ {endLabel}
+                            <ThemedText style={styles.eventGroupToggle}>
+                              {t('historyGroupToggle')
+                                .replace('{count}', String(entry.events.length))
+                                .replace('{caret}', expanded ? '▲' : '▼')}
                             </ThemedText>
                           </View>
-                          <ThemedText style={styles.eventGroupToggle}>
-                            {t('historyGroupToggle')
-                              .replace('{count}', String(entry.events.length))
-                              .replace('{caret}', expanded ? '▲' : '▼')}
-                          </ThemedText>
-                        </View>
-                      </Pressable>
-                      {expanded && (
-                        <View style={styles.historyExpandedContainer}>
-                          {entry.events.map((ev, idx) => {
-                            const isFirst = idx === 0;
-                            const isLast = idx === entry.events.length - 1;
-                            return (
-                              <View key={ev.id} style={styles.historyExpandedRow}>
-                                <View style={styles.historyExpandedLeft}>
+                        </Pressable>
+                        {expanded && (
+                          <View style={styles.historyExpandedContainer}>
+                            {entry.events.map((ev, idx) => {
+                              const isFirst = idx === 0;
+                              const isLast = idx === entry.events.length - 1;
+                              return (
+                                <View key={ev.id} style={styles.historyExpandedRow}>
+                                  <View style={styles.historyExpandedLeft}>
+                                    <View
+                                      style={[
+                                        styles.historyExpandedLine,
+                                        isFirst && styles.historyExpandedLineHidden,
+                                      ]}
+                                    />
+                                    <View style={styles.historyExpandedDot} />
+                                    <View
+                                      style={[
+                                        styles.historyExpandedLine,
+                                        isLast && styles.historyExpandedLineHidden,
+                                      ]}
+                                    />
+                                  </View>
                                   <View
-                                    style={[
-                                      styles.historyExpandedLine,
-                                      isFirst && styles.historyExpandedLineHidden,
-                                    ]}
-                                  />
-                                  <View style={styles.historyExpandedDot} />
-                                  <View
-                                    style={[
-                                      styles.historyExpandedLine,
-                                      isLast && styles.historyExpandedLineHidden,
-                                    ]}
-                                  />
+                                    style={styles.historyExpandedRowContent}
+                                    ref={(node) => registerRow(ev.id, node)}
+                                    collapsable={false}
+                                  >
+                                    <EventRow
+                                      ev={ev}
+                                      eventsForBonsai={events}
+                                      lang={lang}
+                                      t={t}
+                                      onLongPress={confirmDeleteEvent}
+                                      onKebabPress={kebabDeleteEvent}
+                                      kebabTestID={`e2e_bonsai_event_kebab_${ev.id}`}
+                                      displayMode="detailed"
+                                      highlighted={highlightedEventId === ev.id}
+                                    />
+                                  </View>
                                 </View>
-                                <View style={styles.historyExpandedRowContent}>
-                                  <EventRow
-                                    ev={ev}
-                                    eventsForBonsai={events}
-                                    lang={lang}
-                                    t={t}
-                                    onLongPress={confirmDeleteEvent}
-                                    onKebabPress={kebabDeleteEvent}
-                                    kebabTestID={`e2e_bonsai_event_kebab_${ev.id}`}
-                                    displayMode="detailed"
-                                  />
-                                </View>
-                              </View>
-                            );
-                          })}
-                        </View>
-                      )}
-                    </View>
-                  );
-                }
-                return (
-                  <EventRow
-                    key={entry.event.id}
-                    ev={entry.event}
-                    eventsForBonsai={events}
-                    lang={lang}
-                    t={t}
-                    onLongPress={confirmDeleteEvent}
-                    onKebabPress={kebabDeleteEvent}
-                    kebabTestID={`e2e_bonsai_event_kebab_${entry.event.id}`}
-                    displayMode="detailed"
-                  />
-                );
-              })}
-            </View>
-          )}
-
-          {/* Sess15 PR-NN: 旧 basic Tab 末尾アーカイブボタンを BonsaiBasicSection 内に移動 (保存 / アーカイブ同 height 56 統一)。 */}
-
-          {/*
-           * Issue #441 Phase 1: 予定タブを timeline 縦線 + 連続日 mark + 詳細メモに改修。
-           * mockup `bonsai-detail-timeline-01/02.png` 整合。FAB は ScrollView の外 (root)
-           * に absolute 配置。
-           */}
-          {activeTab === 'timeline' && (
-            <View style={styles.section}>
-              {/* Issue #441 Phase 2: 「これからの予定」 + 右側 secondary label
-                「過去水やりは折りたたみ」 (mockup `bonsai-detail-timeline-01/02.png` 整合)。
-                過去水やりは作業履歴タブ + ふりかえりタブ CrossWateringHistory で参照可能。 */}
-              <View style={styles.timelineHeader}>
-                <ThemedText type="subtitle">{t('detailTimelineSectionTitle')}</ThemedText>
-                <ThemedText style={styles.timelineHeaderSecondary}>
-                  {t('detailTimelinePastCollapsed')}
-                </ThemedText>
-              </View>
-              {(() => {
-                const plannedEvents = events
-                  .filter((e) => e.status === 'planned')
-                  .sort((a, b) => a.occurredAtUtc.localeCompare(b.occurredAtUtc));
-                // Sess12 PR-J: 「今日」 緑大円 row を先頭に追加 (mockup bonsai-detail-timeline-01/02 整合)
-                // events 0 件でも「今日」 ヘッダー表示で「これからの予定の起点」 を明示
-                const todayLabel = t('detailTimelineToday');
-                const todayDate = formatDate(nowUtc() as string, lang);
-                const todayRow = (
-                  <View key="__today__" style={styles.timelineRow} testID="e2e_timeline_today">
-                    <View style={styles.timelineLeft}>
-                      <View style={[styles.timelineLine, styles.timelineLineHidden]} />
-                      <View style={[styles.timelineDot, styles.timelineDotToday]} />
-                      <View
-                        style={[
-                          styles.timelineLine,
-                          plannedEvents.length === 0 && styles.timelineLineHidden,
-                        ]}
+                              );
+                            })}
+                          </View>
+                        )}
+                      </View>
+                    );
+                  }
+                  return (
+                    <View
+                      key={entry.event.id}
+                      ref={(node) => registerRow(entry.event.id, node)}
+                      collapsable={false}
+                    >
+                      <EventRow
+                        ev={entry.event}
+                        eventsForBonsai={events}
+                        lang={lang}
+                        t={t}
+                        onLongPress={confirmDeleteEvent}
+                        onKebabPress={kebabDeleteEvent}
+                        kebabTestID={`e2e_bonsai_event_kebab_${entry.event.id}`}
+                        displayMode="detailed"
+                        highlighted={highlightedEventId === entry.event.id}
                       />
                     </View>
-                    <View style={styles.timelineContent}>
-                      <ThemedText style={styles.timelineTodayLabel}>{todayLabel}</ThemedText>
-                      <ThemedText style={styles.timelineTodayDate}>{todayDate}</ThemedText>
+                  );
+                })}
+              </View>
+            )}
+
+            {/* Sess15 PR-NN: 旧 basic Tab 末尾アーカイブボタンを BonsaiBasicSection 内に移動 (保存 / アーカイブ同 height 56 統一)。 */}
+
+            {/*
+             * Issue #441 Phase 1: 予定タブを timeline 縦線 + 連続日 mark + 詳細メモに改修。
+             * mockup `bonsai-detail-timeline-01/02.png` 整合。FAB は ScrollView の外 (root)
+             * に absolute 配置。
+             */}
+            {activeTab === 'timeline' && (
+              <View style={styles.section}>
+                {/* Issue #441 Phase 2: 「これからの予定」 + 右側 secondary label
+                「過去水やりは折りたたみ」 (mockup `bonsai-detail-timeline-01/02.png` 整合)。
+                過去水やりは作業履歴タブ + ふりかえりタブ CrossWateringHistory で参照可能。 */}
+                <View style={styles.timelineHeader}>
+                  <ThemedText type="subtitle">{t('detailTimelineSectionTitle')}</ThemedText>
+                  <ThemedText style={styles.timelineHeaderSecondary}>
+                    {t('detailTimelinePastCollapsed')}
+                  </ThemedText>
+                </View>
+                {(() => {
+                  const plannedEvents = events
+                    .filter((e) => e.status === 'planned')
+                    .sort((a, b) => a.occurredAtUtc.localeCompare(b.occurredAtUtc));
+                  // Sess12 PR-J: 「今日」 緑大円 row を先頭に追加 (mockup bonsai-detail-timeline-01/02 整合)
+                  // events 0 件でも「今日」 ヘッダー表示で「これからの予定の起点」 を明示
+                  const todayLabel = t('detailTimelineToday');
+                  const todayDate = formatDate(nowUtc() as string, lang);
+                  const todayRow = (
+                    <View key="__today__" style={styles.timelineRow} testID="e2e_timeline_today">
+                      <View style={styles.timelineLeft}>
+                        <View style={[styles.timelineLine, styles.timelineLineHidden]} />
+                        <View style={[styles.timelineDot, styles.timelineDotToday]} />
+                        <View
+                          style={[
+                            styles.timelineLine,
+                            plannedEvents.length === 0 && styles.timelineLineHidden,
+                          ]}
+                        />
+                      </View>
+                      <View style={styles.timelineContent}>
+                        <ThemedText style={styles.timelineTodayLabel}>{todayLabel}</ThemedText>
+                        <ThemedText style={styles.timelineTodayDate}>{todayDate}</ThemedText>
+                      </View>
                     </View>
-                  </View>
-                );
-                if (plannedEvents.length === 0) {
+                  );
+                  if (plannedEvents.length === 0) {
+                    return (
+                      <>
+                        {todayRow}
+                        <ThemedText style={styles.emptyPhotos} testID="e2e_timeline_empty">
+                          {t('detailTimelineEmpty')}
+                        </ThemedText>
+                      </>
+                    );
+                  }
+                  const groups = groupContinuousEventsAsc(plannedEvents, getTzOffsetMin());
                   return (
                     <>
                       {todayRow}
-                      <ThemedText style={styles.emptyPhotos} testID="e2e_timeline_empty">
-                        {t('detailTimelineEmpty')}
-                      </ThemedText>
+                      {groups.map((entry, idx) => (
+                        <TimelineRow
+                          key={entry.kind === 'group' ? entry.events[0].id : entry.event.id}
+                          entry={entry}
+                          isFirst={false}
+                          isLast={idx === groups.length - 1}
+                          lang={lang}
+                          t={t}
+                        />
+                      ))}
                     </>
                   );
-                }
-                const groups = groupContinuousEventsAsc(plannedEvents, getTzOffsetMin());
-                return (
-                  <>
-                    {todayRow}
-                    {groups.map((entry, idx) => (
-                      <TimelineRow
-                        key={entry.kind === 'group' ? entry.events[0].id : entry.event.id}
-                        entry={entry}
-                        isFirst={false}
-                        isLast={idx === groups.length - 1}
-                        lang={lang}
-                        t={t}
-                      />
-                    ))}
-                  </>
-                );
-              })()}
-            </View>
-          )}
+                })()}
+              </View>
+            )}
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
 

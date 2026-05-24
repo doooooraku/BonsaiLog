@@ -2,6 +2,7 @@
  * Issue #440 Phase 1: 連続日 event グルーピングの純関数 test。
  */
 import {
+  findGroupKeyForEvent,
   groupContinuousEvents,
   groupContinuousEventsAsc,
   prevDay,
@@ -170,5 +171,32 @@ describe('groupContinuousEventsAsc', () => {
     if (result[2].kind === 'group') {
       expect(result[2].events).toEqual([e3, e4]);
     }
+  });
+});
+
+describe('findGroupKeyForEvent (改善① 検索ジャンプ用)', () => {
+  const tz = 0;
+  // e3 (5/13) + e4 (5/12) = 連続 group (events[0]=e3 が先頭 key)、e1/e2 は単独。
+  const e1 = makeEvent('e1', 'pruning', '2026-05-20T08:00:00');
+  const e2 = makeEvent('e2', 'watering', '2026-05-18T08:00:00');
+  const e3 = makeEvent('e3', 'fertilizing', '2026-05-13T08:00:00');
+  const e4 = makeEvent('e4', 'fertilizing', '2026-05-12T08:00:00');
+  const groups = groupContinuousEvents([e1, e2, e3, e4], tz);
+
+  it('group 内の先頭 event → group key (events[0].id) を返す', () => {
+    expect(findGroupKeyForEvent(groups, 'e3')).toBe('e3');
+  });
+
+  it('group 内の 2 番目以降の event でも group key (先頭 id) を返す', () => {
+    expect(findGroupKeyForEvent(groups, 'e4')).toBe('e3');
+  });
+
+  it('単独 (single) event は null を返す', () => {
+    expect(findGroupKeyForEvent(groups, 'e1')).toBeNull();
+    expect(findGroupKeyForEvent(groups, 'e2')).toBeNull();
+  });
+
+  it('存在しない id は null を返す', () => {
+    expect(findGroupKeyForEvent(groups, 'nope')).toBeNull();
   });
 });

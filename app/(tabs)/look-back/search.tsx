@@ -460,7 +460,11 @@ export default function LookBackSearchScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={e.note ?? typeLabel}
                   style={styles.eventRow}
-                  onPress={() => router.push(`/(tabs)/bonsai/${e.bonsaiId}` as Href)}
+                  onPress={() =>
+                    router.push(
+                      `/(tabs)/bonsai/${e.bonsaiId}?tab=history&focusEventId=${e.id}` as Href,
+                    )
+                  }
                 >
                   <View style={styles.eventIconBox}>
                     <EventIcon type={e.type as EventType} size={18} />
