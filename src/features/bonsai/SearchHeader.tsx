@@ -118,6 +118,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'NotoSerifJP_500Medium',
     fontSize: 22,
+    lineHeight: 32,
     letterSpacing: 0.9,
     color: TEXT_PRIMARY,
     flex: 1,
