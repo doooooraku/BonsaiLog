@@ -18,16 +18,32 @@
 | `terms-of-use.html`            | **公開用 (日本語)** — GitHub Pages で配信中            |
 | `terms-of-use.en.html`         | **公開用 (English)** — GitHub Pages で配信中           |
 
-## 公開先 (GitHub Pages、有効化済 2026-05-02)
+## 公開先 (GitHub Pages、2026-05-25 更新)
 
-- 日本語:
-  - <https://doooooraku.github.io/BonsaiLog/legal/privacy-policy.html>
-  - <https://doooooraku.github.io/BonsaiLog/legal/terms-of-use.html>
-- English:
-  - <https://doooooraku.github.io/BonsaiLog/legal/privacy-policy.en.html>
-  - <https://doooooraku.github.io/BonsaiLog/legal/terms-of-use.en.html>
+- English (主):
+  - <https://doooooraku.github.io/BonsaiLog/privacy/>
+  - <https://doooooraku.github.io/BonsaiLog/terms/>
+- 日本語 (言語切替リンクあり):
+  - <https://doooooraku.github.io/BonsaiLog/privacy/ja/>
+  - <https://doooooraku.github.io/BonsaiLog/terms/ja/>
+- ルート: <https://doooooraku.github.io/BonsaiLog/>
 
-`app.config.ts` の `LEGAL_PRIVACY_URL` / `LEGAL_TERMS_URL` extras にデフォルト値として設定済 (env で上書き可)。GitHub Pages の Source は `main` ブランチの `/docs` フォルダ。
+`app.config.ts` の `LEGAL_PRIVACY_URL` / `LEGAL_TERMS_URL` extras に反映済 (env で上書き可)。
+GitHub Pages の Source は `main` ブランチの `/docs` フォルダ。`docs/.nojekyll` で Jekyll ビルドを無効化し、静的ファイルをそのまま配信。
+
+### ソースファイル (正規の配信元)
+
+| ファイル                                  | 用途                              |
+| ----------------------------------------- | --------------------------------- |
+| `docs/privacy/index.html`                 | **プライバシーポリシー (英語)**   |
+| `docs/privacy/ja/index.html`              | **プライバシーポリシー (日本語)** |
+| `docs/terms/index.html`                   | **利用規約 (英語)**               |
+| `docs/terms/ja/index.html`                | **利用規約 (日本語)**             |
+| `docs/index.html`                         | ルート案内ページ                  |
+| `docs/legal/privacy-policy.template.html` | テンプレート (雛形保管用)         |
+| `docs/legal/terms-of-use.template.html`   | テンプレート (雛形保管用)         |
+
+> 旧 `docs/legal/privacy-policy.html` / `privacy-policy.en.html` / `terms-of-use.html` / `terms-of-use.en.html` は 2026-05-25 に削除 (上記 docs/privacy, docs/terms に統合)。
 
 ## 使い方 (ユーザー手動)
 
