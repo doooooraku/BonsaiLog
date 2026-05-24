@@ -361,8 +361,26 @@ export async function purgeOldTrash(now?: Date): Promise<number> {
 // ---------------------------------------------------------------------------
 
 /**
+ * メモ検索で trigram MATCH を使う最小文字数。これ未満は LIKE 部分一致にフォールバックする。
+ *
+ * 背景: events_fts は trigram tokenizer (3 文字単位索引) のため 3 文字未満は構造上 MATCH 不可。
+ * 検索画面のゲート文字数 (search.tsx) もこの定数を SoT として参照し、ゲートと検索エンジンの
+ * 最低文字数のズレ (1〜2 文字で「見つかりません」誤表示) を構造的に防ぐ。
+ */
+export const SEARCH_TRIGRAM_MIN_CHARS = 3;
+
+/**
+ * LIKE 検索のメタ文字 (`%` `_` `\`) を `\` でエスケープした純パターンを返す (前後の `%` は付けない)。
+ * SQL 側で `... LIKE '%' || ? || '%' ESCAPE '\'` ではなく `LIKE ? ESCAPE '\'` に `%...%` を渡す運用。
+ * bonsaiRepository.searchBonsai と同パターン。
+ */
+export function escapeLikePattern(query: string): string {
+  return query.replace(/[\\%_]/g, (c) => '\\' + c);
+}
+
+/**
  * FTS5 で events を検索。3 文字以上推奨 (trigram の特性)。
- * 1〜2 文字検索は PR-D で `fts5vocab + LIKE` フォールバックを実装予定。
+ * 1〜2 文字検索は {@link searchEventsByNoteLike} (LIKE 部分一致) を使う。
  */
 export async function searchEvents(query: string, bonsaiId?: string): Promise<Event[]> {
   const trimmed = query.trim();
@@ -443,6 +461,11 @@ export async function searchEventsWithSnippet(
   const trimmed = query.trim();
   if (!trimmed) return [];
 
+  // 改善③ ハイブリッド: 3 文字未満は trigram MATCH 不可のため LIKE 部分一致にフォールバック。
+  if (trimmed.length < SEARCH_TRIGRAM_MIN_CHARS) {
+    return searchEventsByNoteLike(trimmed, bonsaiId);
+  }
+
   const db = await getDb();
   // 検索対象は note (メモ) 列のみに限定する (events_fts 列順: event_id=0, bonsai_id=1, note=2, payload_text=3)。
   // payload_text は ULID 等を含む技術 JSON のため、検索すると誤ヒット + snippet が ULID になる。
@@ -483,6 +506,43 @@ export async function searchEventsWithSnippet(
       if (ra !== rb) return ra - rb;
       return a.occurredAtUtc < b.occurredAtUtc ? 1 : -1;
     });
+}
+
+/**
+ * 改善③ ハイブリッド: 1〜2 文字メモ検索フォールバック。
+ *
+ * trigram は 3 文字未満ヒット不可のため、events.note を `LIKE '%query%'` で部分一致検索する。
+ * - snippet は生成せず `null` で返す (UI 側で query を {@link HighlightQuery} でハイライト)。
+ * - ソートは occurred_at_utc DESC (LIKE 経路は bm25 関連度スコアが使えないため)。
+ * - 全件走査になるが個人規模データ前提で実用上問題なし (functional_spec §14 / ADR-0008 §9)。
+ */
+export async function searchEventsByNoteLike(
+  query: string,
+  bonsaiId?: string,
+): Promise<EventWithSnippet[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  const db = await getDb();
+  const like = `%${escapeLikePattern(trimmed)}%`;
+  const rows = bonsaiId
+    ? await db.getAllAsync<Record<string, unknown>>(
+        `SELECT e.*, b.name AS bonsai_name FROM events e
+         JOIN bonsai b ON b.id = e.bonsai_id
+         WHERE e.note LIKE ? ESCAPE '\\' AND e.bonsai_id = ? AND e.deleted_at IS NULL
+         ORDER BY e.occurred_at_utc DESC;`,
+        [like, bonsaiId],
+      )
+    : await db.getAllAsync<Record<string, unknown>>(
+        `SELECT e.*, b.name AS bonsai_name FROM events e
+         JOIN bonsai b ON b.id = e.bonsai_id
+         WHERE e.note LIKE ? ESCAPE '\\' AND e.deleted_at IS NULL
+         ORDER BY e.occurred_at_utc DESC;`,
+        [like],
+      );
+
+  const events = snakeToCamelRows<Event & { bonsaiName: string }>(rows);
+  return events.map((ev) => ({ ...ev, snippet: null }));
 }
 
 // ---------------------------------------------------------------------------

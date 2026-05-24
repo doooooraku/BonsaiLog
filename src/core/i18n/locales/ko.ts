@@ -252,6 +252,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   searchBonsaiSection: '분재',
   searchSpeciesSection: '수종',
   searchEventSection: '관리 기록',
+  searchWorkLabel: 'Work',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
   settingsExportSection: '내보내기',

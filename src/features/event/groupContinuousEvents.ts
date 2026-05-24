@@ -97,3 +97,19 @@ export function groupContinuousEventsAsc(events: Event[], tzOffsetMin: number): 
     .reverse()
     .map((g) => (g.kind === 'group' ? { ...g, events: [...g.events].reverse() } : g));
 }
+
+/**
+ * 指定 eventId が連続日まとめ group 内に含まれる場合、その group の展開 key (events[0].id) を返す。
+ * 単独 (kind 'single') or 見つからない場合は null。
+ *
+ * 改善① (検索結果タップ → 該当作業へジャンプ): 対象が畳まれた group 内にいるとき、先に
+ * その group を展開してからスクロールする必要があるため、展開対象の key を算出する純関数。
+ */
+export function findGroupKeyForEvent(groups: EventGroupEntry[], eventId: string): string | null {
+  for (const g of groups) {
+    if (g.kind === 'group' && g.events.some((e) => e.id === eventId)) {
+      return g.events[0].id;
+    }
+  }
+  return null;
+}

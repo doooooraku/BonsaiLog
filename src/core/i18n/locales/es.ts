@@ -253,6 +253,7 @@ const es: Partial<Record<TranslationKey, string>> = {
   searchBonsaiSection: 'Bonsáis',
   searchSpeciesSection: 'Especies',
   searchEventSection: 'Registros de cuidado',
+  searchWorkLabel: 'Work',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
   settingsExportSection: 'Exportar',

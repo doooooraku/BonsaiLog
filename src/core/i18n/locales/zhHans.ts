@@ -244,6 +244,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   searchBonsaiSection: '盆栽',
   searchSpeciesSection: '树种',
   searchEventSection: '养护记录',
+  searchWorkLabel: 'Work',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
   settingsExportSection: '导出',

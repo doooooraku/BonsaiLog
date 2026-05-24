@@ -173,6 +173,11 @@ export type EventRowProps = {
    * - 'detailed': ADR-0041 D2/D4/D5 — 写真 strip + chips max 4 + memo 3 行 + 「もっと見る」 リンク
    */
   displayMode?: EventRowDisplayMode;
+  /**
+   * 改善① (検索結果タップ → 該当作業へジャンプ): true の間、 row を一時的に強調背景にする。
+   * 呼び出し側で数秒後に false に戻す想定。 default false (後方互換)。
+   */
+  highlighted?: boolean;
 };
 
 export function EventRow({
@@ -191,6 +196,7 @@ export function EventRow({
   onKebabPress,
   kebabTestID,
   displayMode = 'compact',
+  highlighted = false,
 }: EventRowProps) {
   const isDetailed = displayMode === 'detailed';
 
@@ -268,7 +274,11 @@ export function EventRow({
     const hasPhoto = repPhoto != null;
     return (
       <Pressable
-        style={[styles.detailedCard, indent && styles.detailedCardIndent]}
+        style={[
+          styles.detailedCard,
+          indent && styles.detailedCardIndent,
+          highlighted && styles.rowHighlighted,
+        ]}
         accessibilityRole="button"
         accessibilityLabel={
           showBonsaiName && bonsaiName
@@ -403,7 +413,11 @@ export function EventRow({
   // ===========================================================================
   return (
     <Pressable
-      style={[styles.eventRow, indent && styles.eventRowIndent]}
+      style={[
+        styles.eventRow,
+        indent && styles.eventRowIndent,
+        highlighted && styles.rowHighlighted,
+      ]}
       accessibilityRole="button"
       accessibilityLabel={
         showBonsaiName && bonsaiName ? `${bonsaiName}, ${eventLabel}` : eventLabel
@@ -483,6 +497,11 @@ const __EventRowPhotoStrip_kept_for_forward_compat = EventRowPhotoStrip;
 void __EventRowPhotoStrip_kept_for_forward_compat;
 
 const styles = StyleSheet.create({
+  // 改善① 検索ジャンプ時の一時ハイライト (washi 系・薄め。 数秒後に解除)。
+  rowHighlighted: {
+    backgroundColor: '#F5EEDD',
+    borderColor: BUTTON_SECONDARY_TEXT,
+  },
   // ===========================================================================
   // detailed mode (Phase θ D1): vertical stack card
   // ===========================================================================
