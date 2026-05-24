@@ -477,7 +477,7 @@ export default function LookBackSearchScreen() {
                       </ThemedText>
                     </View>
                     {(e.bonsaiName || (desc != null && desc.length > 0)) && (
-                      <ThemedText style={styles.eventDesc} numberOfLines={1}>
+                      <ThemedText style={styles.eventDesc} numberOfLines={2}>
                         {e.bonsaiName ? (
                           <ThemedText style={styles.bonsaiNameInline}>{e.bonsaiName} </ThemedText>
                         ) : null}
