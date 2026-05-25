@@ -12,8 +12,13 @@
  * @see src/dev/seedTestData.ts OTHER_EVENT_DEFS
  * @see issue #806 Phase ι-2 完遂、 Sess35 PR-5 (#807) Phase ι-1 影響範囲調査結果
  */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { OTHER_EVENT_DEFS } from '@/src/dev/seedTestData';
 import { validateEventPayload } from '@/src/features/event/payloadValidator';
+
+const SEED_SRC = readFileSync(resolve(__dirname, '../../src/dev/seedTestData.ts'), 'utf8');
 
 describe('SEED data payload integrity (Sess38 PR-1、 Phase ι-2)', () => {
   describe('OTHER_EVENT_DEFS 全件 payloadValidator pass', () => {
@@ -41,5 +46,23 @@ describe('SEED data payload integrity (Sess38 PR-1、 Phase ι-2)', () => {
         }).not.toThrow();
       });
     }
+  });
+
+  // Sess44: clearAllData が events_fts (FTS5 手動同期索引) も掃除し孤児索引蓄積を防ぐ
+  describe('clearAllData の events_fts 掃除 (Sess44 孤児索引防止)', () => {
+    const FN = SEED_SRC.match(/export\s+async\s+function\s+clearAllData[\s\S]*?\n\}/);
+
+    test('clearAllData が定義されている', () => {
+      expect(FN).not.toBeNull();
+    });
+
+    test('events_fts を含む全テーブルを明示削除する', () => {
+      expect(FN).not.toBeNull();
+      if (FN) {
+        for (const t of ['events_fts', 'events', 'bonsai_tags', 'photos', 'tags', 'bonsai']) {
+          expect(FN[0]).toMatch(new RegExp(`DELETE FROM ${t}`));
+        }
+      }
+    });
   });
 });
