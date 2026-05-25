@@ -750,6 +750,39 @@ export default function SettingsScreen() {
                 overflow 事前検出
               </ThemedText>
             </Pressable>
+            {/* 課金状態 ON/OFF 切替 (__DEV__ 限定、本番では枝刈り)。
+                RevenueCat Sandbox 購入 (レシート反映最大5分、ADR-0009) を介さず isPro を手動注入し、
+                広告非表示 / 写真無制限 / CSV 解放 など Pro 限定機能の見え方を実機で即確認する。 */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="set pro state"
+              testID="e2e_dev_set_pro"
+              style={styles.entry}
+              onPress={async () => {
+                await useProStore.getState().devSetPro(true);
+                Alert.alert('課金状態', 'Pro 状態にしました (広告非表示 / 写真無制限 / CSV 解放)');
+              }}
+            >
+              <ThemedText type="defaultSemiBold">Pro 状態にする</ThemedText>
+              <ThemedText style={styles.entryDesc}>
+                課金済み (isPro=true) として扱う。現在: {isPro ? 'Pro' : '無料'}
+              </ThemedText>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="clear pro state"
+              testID="e2e_dev_clear_pro"
+              style={styles.entry}
+              onPress={async () => {
+                await useProStore.getState().devSetPro(false);
+                Alert.alert('課金状態', '無料状態に戻しました');
+              }}
+            >
+              <ThemedText type="defaultSemiBold">無料に戻す</ThemedText>
+              <ThemedText style={styles.entryDesc}>
+                未課金 (isPro=false) として扱う。現在: {isPro ? 'Pro' : '無料'}
+              </ThemedText>
+            </Pressable>
           </SettingsSection>
         )}
       </ScrollView>

@@ -256,6 +256,11 @@ export const proService = {
     }
   },
 
+  /** 開発専用 (__DEV__ 限定): 課金状態を手動注入してローカル金庫に保存する。 */
+  async devSaveState(state: ProState): Promise<void> {
+    await saveState(state);
+  },
+
   async refreshCustomerInfo(): Promise<ProState | null> {
     if (!isNative) return null;
     await ensureConfigured();
