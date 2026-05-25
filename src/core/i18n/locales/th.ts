@@ -811,5 +811,13 @@ const th: Partial<Record<TranslationKey, string>> = {
   photoStripAccessibility: 'ภาพ {count} ภาพ แตะเพื่อขยาย',
   eventRowCollapse: 'ย่อ ▲',
   eventRowCollapseAccessibility: 'ย่อบันทึก',
+  bonsaiRestore: 'Restore',
+  bonsaiRestoreConfirmTitle: 'Restore this bonsai?',
+  archivedEmptyTitle: 'No archived bonsai',
+  bonsaiArchivedAtLabel: 'Archived on {date}',
+  bonsaiDeleteForever: 'Delete permanently',
+  bonsaiDeleteForeverConfirmTitle: 'Permanently delete this bonsai?',
+  bonsaiDeleteForeverConfirmDesc:
+    'Photos and records will also be deleted and cannot be recovered.',
 };
 export default th;

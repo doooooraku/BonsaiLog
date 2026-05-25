@@ -383,9 +383,7 @@ export default function SettingsScreen() {
             accessibilityHint={t('settingsArchiveDesc')}
             testID="e2e_open_archive"
             style={styles.entry}
-            onPress={() => {
-              Alert.alert(t('settingsArchiveTitle'), t('settingsArchiveDesc'));
-            }}
+            onPress={() => router.push('/settings/archived' as Href)}
           >
             <View style={styles.rowInner}>
               <ThemedText type="defaultSemiBold">{t('settingsArchiveTitle')}</ThemedText>

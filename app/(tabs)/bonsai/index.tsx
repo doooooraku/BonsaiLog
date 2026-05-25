@@ -12,25 +12,30 @@
  * Phase 9 で AdBanner を本ファイル末尾に配置済 (ADR-0010「ホーム下部のみ」、 Repolog 同等構成)。
  *
  * ADR-0025 案 X 後 Sess8 PR-5 追補 (2026-05-18、 user 真意「bonsai-select-mode 実機上不要」 反映):
- * - 盆栽カード長押し → selectMode 経路 **完全廃止** (mockup v1.0 02-Home.html `initialSelectMode` 経路撤回)
+ * - 盆栽カード長押し → selectMode (一括選択) 経路 **完全廃止** (mockup v1.0 02-Home.html `initialSelectMode` 経路撤回)
  * - SelectionToolbar component **完全削除**
  * - 一括予定追加 / 一括記録は **予定タブ FAB / 記録タブ tap → bonsai-multi-select modal** に集約
  * - 盆栽タブの責務は「一覧表示 + 新規登録 (FAB)」 のみに simplify
+ *
+ * 長押し → アーカイブ確認 (ADR-0025 Notes Amended): 廃止したのは「一括選択モード」であり、
+ * 単一カードの長押し → カスタム ConfirmDialog 直行 → archiveBonsai は別動線として再導入 (ADR-0036 D1 整合)。
  */
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { PlusIcon, PotIcon } from '@/src/components/icons';
 import { FAB } from '@/src/components/common/FAB';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
-import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
+import { archiveBonsai, getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
 import { AdBanner } from '@/src/features/ads/AdBanner';
 import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCard';
@@ -60,6 +65,8 @@ export default function BonsaiHomeScreen() {
   const [tags, setTags] = useState<TagRecord[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<string>(ALL_FILTER_ID);
   const [loading, setLoading] = useState(true);
+  // 長押し → アーカイブ確認 (ADR-0036 D1 カスタム ConfirmDialog 直行、メニュー非経由)。
+  const [pendingArchiveId, setPendingArchiveId] = useState<string | null>(null);
 
   const openCreateSheet = useCallback(() => {
     router.push('/bonsai-new' as Href);
@@ -111,6 +118,19 @@ export default function BonsaiHomeScreen() {
     },
     [router],
   );
+
+  const handleCardLongPress = useCallback((id: string) => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // R-45 長押し成功 fb
+    setPendingArchiveId(id);
+  }, []);
+
+  const handleConfirmArchive = useCallback(async () => {
+    if (pendingArchiveId == null) return;
+    const id = pendingArchiveId;
+    setPendingArchiveId(null);
+    await archiveBonsai(id);
+    await reload();
+  }, [pendingArchiveId, reload]);
 
   // Sess15 PR-LL: bonsai-new modal から戻った時、 reload のみで Home に留まる
   // (user 真意「保存後は Home 画面に戻ってほしい」、 旧 router.push で詳細画面遷移は廃止)。
@@ -215,7 +235,12 @@ export default function BonsaiHomeScreen() {
         keyExtractor={(it) => it.id}
         contentContainerStyle={[styles.listContent, { paddingBottom: listPaddingBottom }]}
         renderItem={({ item }) => (
-          <BonsaiCard data={item} onPress={handleCardPress} testID={`e2e_bonsai_card_${item.id}`} />
+          <BonsaiCard
+            data={item}
+            onPress={handleCardPress}
+            onLongPress={handleCardLongPress}
+            testID={`e2e_bonsai_card_${item.id}`}
+          />
         )}
       />
       <FAB
@@ -225,6 +250,19 @@ export default function BonsaiHomeScreen() {
         showAdBanner
       />
       <AdBanner />
+
+      {/* 長押し → アーカイブ確認 (ADR-0036 D1、詳細画面と同一のカスタム確認窓) */}
+      <ConfirmDialog
+        visible={pendingArchiveId !== null}
+        title={t('bonsaiArchiveConfirmTitle')}
+        description={t('bonsaiArchiveConfirmDesc')}
+        confirmLabel={t('bonsaiArchive')}
+        cancelLabel={t('cancel')}
+        destructive
+        onConfirm={handleConfirmArchive}
+        onCancel={() => setPendingArchiveId(null)}
+        testID="e2e_home_confirm_archive"
+      />
     </ThemedView>
   );
 }

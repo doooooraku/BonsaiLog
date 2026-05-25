@@ -376,20 +376,18 @@ export default function BonsaiDetailScreen() {
     router.setParams({ focusEventId: undefined });
   }, [params.focusEventId, events, router, scrollToEvent]);
 
+  // ADR-0036 D1: アーカイブ確認も OS 標準 Alert → カスタム ConfirmDialog に統一 (Home 長押しと見た目統一)
+  const [archiveConfirmVisible, setArchiveConfirmVisible] = useState(false);
   const handleArchive = useCallback(() => {
     if (!item) return;
-    Alert.alert(t('bonsaiArchiveConfirmTitle'), t('bonsaiArchiveConfirmDesc'), [
-      { text: t('cancel'), style: 'cancel' },
-      {
-        text: t('bonsaiArchive'),
-        style: 'destructive',
-        onPress: async () => {
-          await archiveBonsai(item.id);
-          router.back();
-        },
-      },
-    ]);
-  }, [item, router, t]);
+    setArchiveConfirmVisible(true);
+  }, [item]);
+  const handleConfirmArchive = useCallback(async () => {
+    if (!item) return;
+    setArchiveConfirmVisible(false);
+    await archiveBonsai(item.id);
+    router.back();
+  }, [item, router]);
 
   const isPro = useProStore((s) => s.isPro);
   // A9 PR: ProLockModal 整合 (Free ユーザーが PDF 等の Pro 限定機能をタップした際の Paywall 遷移)
@@ -1051,6 +1049,19 @@ export default function BonsaiDetailScreen() {
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
         testID="e2e_bonsai_detail_confirm_delete"
+      />
+
+      {/* ADR-0036 D1: アーカイブ確認 (基本情報タブの「アーカイブ」ボタン → カスタム ConfirmDialog) */}
+      <ConfirmDialog
+        visible={archiveConfirmVisible}
+        title={t('bonsaiArchiveConfirmTitle')}
+        description={t('bonsaiArchiveConfirmDesc')}
+        confirmLabel={t('bonsaiArchive')}
+        cancelLabel={t('cancel')}
+        destructive
+        onConfirm={handleConfirmArchive}
+        onCancel={() => setArchiveConfirmVisible(false)}
+        testID="e2e_bonsai_detail_confirm_archive"
       />
     </ThemedView>
   );

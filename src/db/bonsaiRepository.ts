@@ -14,8 +14,10 @@
 import { ulid } from 'ulid';
 
 import { nowUtc } from '@/src/core/datetime';
+import { deletePhotoFile } from '@/src/services/photoFileService';
 
 import { getDb } from './db';
+import { getPhotosByBonsai } from './photoRepository';
 import { snakeToCamelRow, snakeToCamelRows } from './rowMapper';
 import type { Bonsai, BonsaiStyle } from './schema';
 import { getSpeciesById, type SpeciesWithName } from './speciesRepository';
@@ -308,12 +310,45 @@ export async function restoreBonsai(id: string): Promise<void> {
 }
 
 /**
- * 盆栽を物理削除 (UI からは通常呼ばない、テスト用)。
- * 関連 events / photos も将来 ON DELETE CASCADE で連動 (PR-D 以降)。
+ * 盆栽を物理削除 (低レベル、bonsai 行のみ DELETE)。
+ * photos / events / bonsai_tags は schema の ON DELETE CASCADE で DB 行が連動削除される。
+ * ただし (1) 写真の実ファイル (2) events_fts (トリガ無し手動同期) は連動しないため、
+ * UI からの完全削除は必ず purgeBonsaiCompletely を使うこと。
  */
 export async function deleteBonsaiHard(id: string): Promise<void> {
   const db = await getDb();
   await db.runAsync('DELETE FROM bonsai WHERE id = ?;', [id]);
+}
+
+/**
+ * 盆栽を完全削除 (写真ファイル + 全 DB 行 + 検索索引)。アーカイブ画面の「完全に削除」用。
+ *
+ * ON DELETE CASCADE には依存しない: PRAGMA foreign_keys は接続毎に設定が必要で、
+ * expo-sqlite の runtime 接続では OFF になる場合があり CASCADE が発火しない (実機検証で
+ * events / bonsai_tags の孤児を確認、Sess44)。そのため全子テーブルを明示削除する。
+ *
+ * 順序:
+ * 1. 削除前に写真の絶対 URI を収集し、実ファイルを削除 (DB 行削除では消えない)
+ * 2. 1 トランザクションで events_fts (FTS5 トリガ無し手動同期) / events / photos /
+ *    bonsai_tags / bonsai を明示削除 (atomic、孤児ゼロ)
+ */
+export async function purgeBonsaiCompletely(id: string): Promise<void> {
+  const db = await getDb();
+
+  // 1. 写真の実ファイルを削除 (DB 行削除より先に URI を収集)。
+  const photos = await getPhotosByBonsai(id);
+  for (const p of photos) {
+    await deletePhotoFile(p.absoluteUri);
+  }
+
+  // 2. 全子テーブル + bonsai を明示削除 (CASCADE 非依存、atomic)。
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM events_fts WHERE bonsai_id = ?;', [id]);
+    await db.runAsync('DELETE FROM events WHERE bonsai_id = ?;', [id]);
+    await db.runAsync('DELETE FROM photos WHERE bonsai_id = ?;', [id]);
+    await db.runAsync('DELETE FROM bonsai_tags WHERE bonsai_id = ?;', [id]);
+    await db.runAsync('DELETE FROM bonsai WHERE id = ?;', [id]);
+  });
 }
 
 /**
