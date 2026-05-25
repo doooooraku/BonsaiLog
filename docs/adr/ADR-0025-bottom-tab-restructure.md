@@ -399,3 +399,17 @@ ADR-0035 D6 + D9 (Phase ε) で本 ADR の 2 § を改訂:
 - 本 ADR §① (4 タブ構成) / §③ / §④ は **引き続き有効**
 
 **関連**: ADR-0038 D1/D2 / Sess29 PR-2 (RecordTabScreen 実装) / ADR-0035 D6 Sess29 Notes Amended (連動)
+
+---
+
+### 2026-05-25 Sess44 — §③ 盆栽カード長押し動線の再導入 (Notes Amended)
+
+**改訂内容**:
+
+- §③ item 10 で完全廃止したのは「カード長押し → **selectMode (一括選択モード)**」 であり、 一括予定追加 / 一括記録への入口を撤廃する判断だった (user 真意「bonsai-select-mode 実機上不要」)。
+- 本 Notes で再導入するのは **別動線**: 「単一カード長押し → カスタム ConfirmDialog 直行 → archiveBonsai (アーカイブ確認)」。 一括選択は復活させない。
+- 根拠: アーカイブ動線が `カード→詳細→基本情報タブ→最下部→ボタン→Alert` の 5-6 操作で深く、 Home 長押し 2-3 操作に短縮 (ADR-0036 D1 カスタム確認窓と整合)。
+- 盆栽タブの責務 simplify (一覧 + 新規登録) は維持。 長押しは破壊的操作の近道のみで、 selectMode UI は復活しない。
+- 本 ADR §① / §③ (一括選択廃止) / §④ は **引き続き有効**。
+
+**関連**: ADR-0036 D1 (ConfirmDialog 統一) / Sess44 PR-1 (Home 長押しアーカイブ + 詳細画面 Alert→ConfirmDialog 統一)

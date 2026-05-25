@@ -816,5 +816,13 @@ const es: Partial<Record<TranslationKey, string>> = {
   photoStripAccessibility: '{count} foto(s), tocar para ampliar',
   eventRowCollapse: 'Contraer ▲',
   eventRowCollapseAccessibility: 'Contraer nota',
+  bonsaiRestore: 'Restore',
+  bonsaiRestoreConfirmTitle: 'Restore this bonsai?',
+  archivedEmptyTitle: 'No archived bonsai',
+  bonsaiArchivedAtLabel: 'Archived on {date}',
+  bonsaiDeleteForever: 'Delete permanently',
+  bonsaiDeleteForeverConfirmTitle: 'Permanently delete this bonsai?',
+  bonsaiDeleteForeverConfirmDesc:
+    'Photos and records will also be deleted and cannot be recovered.',
 };
 export default es;

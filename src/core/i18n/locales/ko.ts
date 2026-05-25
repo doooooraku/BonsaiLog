@@ -811,5 +811,13 @@ const ko: Partial<Record<TranslationKey, string>> = {
   photoStripAccessibility: '사진 {count}장, 탭하여 확대',
   eventRowCollapse: '접기 ▲',
   eventRowCollapseAccessibility: '메모 접기',
+  bonsaiRestore: 'Restore',
+  bonsaiRestoreConfirmTitle: 'Restore this bonsai?',
+  archivedEmptyTitle: 'No archived bonsai',
+  bonsaiArchivedAtLabel: 'Archived on {date}',
+  bonsaiDeleteForever: 'Delete permanently',
+  bonsaiDeleteForeverConfirmTitle: 'Permanently delete this bonsai?',
+  bonsaiDeleteForeverConfirmDesc:
+    'Photos and records will also be deleted and cannot be recovered.',
 };
 export default ko;

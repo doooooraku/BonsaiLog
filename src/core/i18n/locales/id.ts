@@ -813,5 +813,13 @@ const id: Partial<Record<TranslationKey, string>> = {
   photoStripAccessibility: '{count} foto, ketuk untuk perbesar',
   eventRowCollapse: 'Ciutkan ▲',
   eventRowCollapseAccessibility: 'Ciutkan catatan',
+  bonsaiRestore: 'Restore',
+  bonsaiRestoreConfirmTitle: 'Restore this bonsai?',
+  archivedEmptyTitle: 'No archived bonsai',
+  bonsaiArchivedAtLabel: 'Archived on {date}',
+  bonsaiDeleteForever: 'Delete permanently',
+  bonsaiDeleteForeverConfirmTitle: 'Permanently delete this bonsai?',
+  bonsaiDeleteForeverConfirmDesc:
+    'Photos and records will also be deleted and cannot be recovered.',
 };
 export default id;

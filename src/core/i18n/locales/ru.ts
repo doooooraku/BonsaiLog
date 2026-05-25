@@ -814,5 +814,13 @@ const ru: Partial<Record<TranslationKey, string>> = {
   photoStripAccessibility: 'Фото: {count}, нажмите для увеличения',
   eventRowCollapse: 'Свернуть ▲',
   eventRowCollapseAccessibility: 'Свернуть заметку',
+  bonsaiRestore: 'Restore',
+  bonsaiRestoreConfirmTitle: 'Restore this bonsai?',
+  archivedEmptyTitle: 'No archived bonsai',
+  bonsaiArchivedAtLabel: 'Archived on {date}',
+  bonsaiDeleteForever: 'Delete permanently',
+  bonsaiDeleteForeverConfirmTitle: 'Permanently delete this bonsai?',
+  bonsaiDeleteForeverConfirmDesc:
+    'Photos and records will also be deleted and cannot be recovered.',
 };
 export default ru;

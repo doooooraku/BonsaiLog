@@ -315,3 +315,15 @@ Sess23 PR-3-1 (#724) で「PlanScreen 個別 EventRow long-press → `Alert.aler
 4. ~~30 日復元 UI 動線整備 (ふりかえりタブ 「ゴミ箱」 card 等)~~ **Sess27 user 判断で対応見送り (DB の 30 日 soft delete は維持、 UI は不要)**
 5. SUMMARY 通知 identifier 最適化 (ADR-0035 Phase η Future Work 整合)
 6. accessibilityActions に「削除」 action 追加 (VoiceOver swipe up/down で 長押しできない user 対応、 R-45 拡張)
+
+---
+
+### 2026-05-25 Sess44 — D1 archive Alert 例外の解消 (Notes Amended)
+
+**改訂内容**:
+
+- D1 影響欄で「archive は scope 外 (別 PR or v1.x)」 としていた `Alert.alert` 例外 (`app/(tabs)/bonsai/[id]/index.tsx` のアーカイブ確認) を **本セッションで ConfirmDialog に統一**、 D1 の唯一の残存例外を解消。
+- 併せて Home 盆栽カード長押し → アーカイブ確認も同一 ConfirmDialog で実装 (ADR-0025 Sess44 Notes Amended 連動)。 archive は復元可能 (restoreBonsai) だが破壊的操作扱いで `destructive` 赤 + 確認必須。
+- D7 RowActionMenu は今回不使用 (user 決定: 長押し → 確認窓直行、 メニュー非経由)。
+
+**関連**: ADR-0025 Sess44 Notes Amended / Sess44 PR-1

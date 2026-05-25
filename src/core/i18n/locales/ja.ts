@@ -821,6 +821,13 @@ const ja: Partial<Record<TranslationKey, string>> = {
   photoStripAccessibility: '写真 {count} 枚、 タップで拡大',
   eventRowCollapse: '折りたたむ ▲',
   eventRowCollapseAccessibility: 'メモを折りたたむ',
+  bonsaiRestore: '元に戻す',
+  bonsaiRestoreConfirmTitle: 'この盆栽を元に戻しますか?',
+  archivedEmptyTitle: 'アーカイブした盆栽はありません',
+  bonsaiArchivedAtLabel: '{date} にアーカイブ',
+  bonsaiDeleteForever: '完全に削除',
+  bonsaiDeleteForeverConfirmTitle: 'この盆栽を完全に削除しますか?',
+  bonsaiDeleteForeverConfirmDesc: '写真や記録もすべて消え、元に戻せません。',
 };
 
 export default ja;

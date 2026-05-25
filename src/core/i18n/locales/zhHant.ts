@@ -802,5 +802,13 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   photoStripAccessibility: '照片 {count} 張，點擊放大',
   eventRowCollapse: '收起 ▲',
   eventRowCollapseAccessibility: '收起備忘',
+  bonsaiRestore: 'Restore',
+  bonsaiRestoreConfirmTitle: 'Restore this bonsai?',
+  archivedEmptyTitle: 'No archived bonsai',
+  bonsaiArchivedAtLabel: 'Archived on {date}',
+  bonsaiDeleteForever: 'Delete permanently',
+  bonsaiDeleteForeverConfirmTitle: 'Permanently delete this bonsai?',
+  bonsaiDeleteForeverConfirmDesc:
+    'Photos and records will also be deleted and cannot be recovered.',
 };
 export default zhHant;
