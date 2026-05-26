@@ -15,6 +15,7 @@ import { ThemedText } from '@/components/themed-text';
 import { BackIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { type ExportOptions, loadListPdfHtml } from '@/src/features/export/exportFlow';
+import { GeneratingOverlay } from '@/src/features/export/GeneratingOverlay';
 import { generateAndShareListPdf } from '@/src/features/export/pdfExport';
 
 const READER_BG = '#3A3833';
@@ -111,6 +112,8 @@ export default function ExportListPreviewScreen() {
           <ActivityIndicator color="#F7F3E8" />
         </View>
       )}
+
+      <GeneratingOverlay visible={sharing} onCancel={() => setSharing(false)} />
     </View>
   );
 }
