@@ -9,6 +9,7 @@
  * - 生成は exportFlow.runExport に委譲。Pro 判定は Hub 側で実施済み。
  */
 import * as LegacyFileSystem from 'expo-file-system/legacy';
+import { useRouter, type Href } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -69,6 +70,7 @@ type Props = {
 
 export function ExportOptionsSheet({ visible, type, onClose }: Props) {
   const { t, lang } = useTranslation();
+  const router = useRouter();
   const [period, setPeriod] = useState<ExportPeriod>('all');
   const [scope, setScope] = useState<ExportScope>('all');
   const [includeArchived, setIncludeArchived] = useState(false);
@@ -137,22 +139,27 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
     } catch {
       // チェックスキップ (AC7-2)
     }
+    const opts = {
+      type,
+      period: showPeriod ? period : 'all',
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+      scope: showScope ? scope : 'all',
+      selectedBonsaiIds: scope === 'selected' ? selectedIds : undefined,
+      tagId: scope === 'tag' ? tagId : undefined,
+      includeArchived: showArchived ? includeArchived : false,
+    };
+
+    // list_pdf は生成前に WebView プレビューを挟む (AC11 PDF List Preview)
+    if (type === 'list_pdf') {
+      onClose();
+      router.push(`/export/list-preview?opts=${encodeURIComponent(JSON.stringify(opts))}` as Href);
+      return;
+    }
+
     setBusy(true);
     try {
-      const result = await runExport(
-        {
-          type,
-          period: showPeriod ? period : 'all',
-          dateFrom: dateFrom || undefined,
-          dateTo: dateTo || undefined,
-          scope: showScope ? scope : 'all',
-          selectedBonsaiIds: scope === 'selected' ? selectedIds : undefined,
-          tagId: scope === 'tag' ? tagId : undefined,
-          includeArchived: showArchived ? includeArchived : false,
-          lang,
-        },
-        t,
-      );
+      const result = await runExport({ ...opts, lang }, t);
       onClose();
       Alert.alert(
         t('exportGenericSuccess'),
@@ -307,7 +314,9 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
               {busy ? (
                 <ActivityIndicator color={ON_BRAND} />
               ) : (
-                <ThemedText style={styles.ctaText}>{t('exportOptGenerate')}</ThemedText>
+                <ThemedText style={styles.ctaText}>
+                  {type === 'list_pdf' ? t('exportOptPreview') : t('exportOptGenerate')}
+                </ThemedText>
               )}
             </Pressable>
           </View>

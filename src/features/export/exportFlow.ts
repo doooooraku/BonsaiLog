@@ -19,8 +19,10 @@ import {
   getAllActiveBonsai,
   getAllArchivedBonsai,
   getBonsaiByTag,
+  getBonsaiWithSpecies,
 } from '@/src/db/bonsaiRepository';
-import { getEventsInRange } from '@/src/db/eventRepository';
+import { getActiveEventsByBonsai, getEventsInRange } from '@/src/db/eventRepository';
+import { getPhotosByBonsai } from '@/src/db/photoRepository';
 import type { Bonsai } from '@/src/db/schema';
 import { getAllSpecies, getSpeciesById } from '@/src/db/speciesRepository';
 import {
@@ -32,7 +34,7 @@ import {
 } from './csvExport';
 import { buildExportFileName, type ExportKind } from './exportFileName';
 import { type BonsaiListRow, buildBonsaiListPdfHtml, type ListPdfStats } from './listPdfExport';
-import { generateAndShareListPdf } from './pdfExport';
+import { buildBonsaiPdfHtml, generateAndShareListPdf, readPhotoAsBase64 } from './pdfExport';
 
 export type ExportTypeKey = 'bonsai_csv' | 'events_csv' | 'species_csv' | 'list_pdf';
 export type ExportPeriod = 'all' | '30d' | '1y' | 'custom';
@@ -189,7 +191,22 @@ export async function runExport(opts: ExportOptions, t: Tfn): Promise<ExportResu
     return { kind: opts.type, count: events.length };
   }
 
-  // list_pdf
+  // list_pdf — プレビューと共用の HTML を生成して共有
+  const { html, count } = await loadListPdfHtml(opts, t);
+  await generateAndShareListPdf(html, t('exportListPdfShareTitle'));
+  return { kind: opts.type, count };
+}
+
+/**
+ * list_pdf の HTML + 件数を生成 (list-preview 画面と runExport で共用)。
+ * 共有はしない (呼出側が generateAndShareListPdf する)。
+ */
+export async function loadListPdfHtml(
+  opts: ExportOptions,
+  t: Tfn,
+): Promise<{ html: string; count: number }> {
+  const bonsai = await resolveBonsaiSet(opts);
+  const { fromIso, toIso } = resolvePeriodRange(opts);
   const eventsByBonsai = await Promise.all(
     bonsai.map((b) => getEventsInRange({ bonsaiIds: [b.id], fromIso, toIso })),
   );
@@ -223,7 +240,7 @@ export async function runExport(opts: ExportOptions, t: Tfn): Promise<ExportResu
       listColumnName: t('bonsaiFieldName'),
       listColumnSpecies: t('bonsaiFieldSpecies'),
       listColumnAcquiredAt: t('bonsaiFieldAcquiredAt'),
-      listColumnEventCount: t('exportListPdfAction'),
+      listColumnEventCount: t('exportListPdfRecordCount'),
       statsSectionTitle: t('exportListPdfStatsSection'),
       statsTotalLabel: t('exportListPdfTotal'),
       statsTypeBreakdownTitle: t('exportListPdfTypeBreakdown'),
@@ -231,6 +248,40 @@ export async function runExport(opts: ExportOptions, t: Tfn): Promise<ExportResu
       footerNote: t('exportListPdfFooter'),
     },
   });
-  await generateAndShareListPdf(html, t('exportListPdfShareTitle'));
-  return { kind: opts.type, count: rows.length };
+  return { html, count: rows.length };
+}
+
+/**
+ * bonsai_pdf の HTML を生成 (pdf-preview 画面と共有で共用)。
+ * 写真は base64 inline (iOS WKWebView 制約、ADR-0016)。
+ */
+export async function loadBonsaiPdfHtml(
+  bonsaiId: string,
+  lang: string,
+  t: Tfn,
+): Promise<{ html: string; photoCount: number; name: string }> {
+  const detail = await getBonsaiWithSpecies(bonsaiId, lang);
+  const events = await getActiveEventsByBonsai(bonsaiId);
+  const photos = await getPhotosByBonsai(bonsaiId);
+  const photoDataUris = (
+    await Promise.all(photos.map((p) => readPhotoAsBase64(p.absoluteUri)))
+  ).filter((uri): uri is string => uri !== null);
+  const name = detail?.name ?? '';
+  const html = buildBonsaiPdfHtml({
+    bonsai: { name, style: detail?.style ?? null, acquiredAt: detail?.acquiredAt ?? null },
+    speciesCommonName: detail?.species?.commonName ?? null,
+    events,
+    photoDataUris,
+    labelPhotosTitle: t('bonsaiFieldPhotos'),
+    title: t('exportPdfTitle'),
+    labelSpecies: t('bonsaiFieldSpecies'),
+    labelStyle: t('bonsaiFieldStyle'),
+    labelAcquiredAt: t('bonsaiFieldAcquiredAt'),
+    labelEventsTitle: t('eventsTitle'),
+    labelEventDate: t('exportPdfHeaderDate'),
+    labelEventType: t('exportPdfHeaderType'),
+    labelEventNote: t('exportPdfHeaderNote'),
+    footerNote: t('exportPdfFooterNote'),
+  });
+  return { html, photoCount: photoDataUris.length, name };
 }
