@@ -83,10 +83,10 @@ describe('Export Options Sheet (ADR-0016 AC11 Options / AC12 Y4)', () => {
 describe('exportFlow orchestration', () => {
   test('9. runExport が 4 種を分岐 + 既存ロジック関数を使用', () => {
     expect(FLOW).toMatch(/export async function runExport/);
-    expect(FLOW).toMatch(/speciesToCsvString/);
-    // bonsai/events は人間可読再設計: buildBonsaiCsvRow / buildEventCsvRow + cellsToCsvString
+    // CSV 3 種は人間可読再設計: 各 buildXxxRow / buildSpeciesSummaryRows + cellsToCsvString
     expect(FLOW).toMatch(/buildBonsaiCsvRow/);
     expect(FLOW).toMatch(/buildEventCsvRow/);
+    expect(FLOW).toMatch(/buildSpeciesSummaryRows/);
     expect(FLOW).toMatch(/cellsToCsvString/);
     expect(FLOW).toMatch(/buildBonsaiListPdfHtml/);
     expect(FLOW).toMatch(/generateAndShareListPdf/);

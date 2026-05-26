@@ -17,6 +17,7 @@ import { nowUtc } from '@/src/core/datetime/clock';
 import type { TranslationKey } from '@/src/core/i18n/i18n';
 import {
   getAllActiveBonsai,
+  getAllActiveBonsaiWithSpecies,
   getAllArchivedBonsai,
   getBonsaiByTag,
   getBonsaiWithSpecies,
@@ -24,13 +25,14 @@ import {
 import { getActiveEventsByBonsai, getEventsInRange } from '@/src/db/eventRepository';
 import { getPhotosByBonsai } from '@/src/db/photoRepository';
 import type { Bonsai } from '@/src/db/schema';
-import { getAllSpecies, getSpeciesById } from '@/src/db/speciesRepository';
-import { cellsToCsvString, type SpeciesForCsv, speciesToCsvString } from './csvExport';
+import { getSpeciesById } from '@/src/db/speciesRepository';
+import { cellsToCsvString } from './csvExport';
 import { buildBonsaiCsvRow, BONSAI_CSV_HEADER_KEYS } from './bonsaiCsvRow';
 import { buildEventCsvRow, EVENT_CSV_HEADER_KEYS } from './eventCsvRow';
 import { buildExportFileName, type ExportKind } from './exportFileName';
 import { type BonsaiListRow, buildBonsaiListPdfHtml, type ListPdfStats } from './listPdfExport';
 import { buildBonsaiPdfHtml, generateAndShareListPdf, readPhotoAsBase64 } from './pdfExport';
+import { buildSpeciesSummaryRows, SPECIES_CSV_HEADER_KEYS } from './speciesSummary';
 
 export type ExportTypeKey = 'bonsai_csv' | 'events_csv' | 'species_csv' | 'list_pdf';
 export type ExportPeriod = 'all' | '30d' | '1y' | 'custom';
@@ -163,9 +165,19 @@ export async function loadCsvForPreview(
   });
 
   if (opts.type === 'species_csv') {
-    const species = await getAllSpecies(opts.lang);
-    const rows: SpeciesForCsv[] = species.map((s) => ({ ...s, commonName: s.commonName ?? '' }));
-    return { csv: speciesToCsvString(rows), fileName, count: rows.length };
+    // 保有樹種ごとの集計 (保有数 + 種別別最終作業日)。対象は active 盆栽。
+    const withSpecies = await getAllActiveBonsaiWithSpecies(opts.lang);
+    const summaryBonsai = withSpecies.map((b) => ({
+      id: b.id,
+      speciesName: b.species?.commonName ?? null,
+    }));
+    // 「最終◯◯」は実施済 (logged) のみ。予定 (planned、未来日) は最終作業日に含めない。
+    const events = (await getEventsInRange({ bonsaiIds: summaryBonsai.map((b) => b.id) })).filter(
+      (e) => e.status === 'logged',
+    );
+    const dataRows = buildSpeciesSummaryRows(summaryBonsai, events, t, t('csvSpeciesUnset'));
+    const header = SPECIES_CSV_HEADER_KEYS.map((k) => t(k));
+    return { csv: cellsToCsvString([header, ...dataRows]), fileName, count: dataRows.length };
   }
 
   const bonsai = await resolveBonsaiSet(opts);

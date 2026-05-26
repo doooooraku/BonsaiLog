@@ -900,6 +900,13 @@ const ja: Partial<Record<TranslationKey, string>> = {
   csvColBonsaiId: '盆栽ID',
   csvBonsaiStatusActive: '現役',
   csvBonsaiStatusArchived: 'アーカイブ',
+  csvColSpeciesName: '樹種',
+  csvColSpeciesCount: '保有数',
+  csvColSpeciesLastWatering: '最終水やり',
+  csvColSpeciesLastPruning: '最終剪定',
+  csvColSpeciesLastRepotting: '最終植替え',
+  csvColSpeciesLastFertilizing: '最終施肥',
+  csvSpeciesUnset: '（未設定）',
 };
 
 export default ja;
