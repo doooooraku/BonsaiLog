@@ -348,7 +348,32 @@ v1.0 UI を実装完了。**実装は本 ADR の計画パスと一部異なる**
 - **フォント埋込なし**（system 委譲）/ 写真 base64 inline / A4 縦 / 3 段階フォールバック / 動的タイムアウト / 100MB チェックは `pdfExport.ts` / `pdfReliability.ts` に実装済（流用元 Repolog 教訓を反映）。
 - **Pro 限定維持**（`useGoToPaywall` → `/pro`）。検証用に開発トグル `e2e_dev_set_pro`（PR #843）。
 - **検証**: 全 7 画面を実機 (Pixel, Dev Build) で目視確認。ui-diff 自動キャプチャは export-hub / export-options を SCREEN_PAIRS 登録。WebView / 非同期描画のプレビュー系は Maestro が描画完了を検知できないため手動検証で確定。
-- テスト: `__tests__/features/export/` に csvExport / pdfExport / listPdfExport / pdfReliability / exportFileName + exportHub / exportPreview / exportCsvPreview / exportGeneratingOverlay の静的解析 test。
+- テスト: `__tests__/features/export/` に csvExport / pdfExport / listPdfExport / pdfReliability / exportFileName + exportHub / exportPreview / exportGeneratingOverlay の静的解析 test。
+
+### Amended（2026-05-26 Sess47、CSV 出力の人間可読再設計 + 動線 PR-A〜D）
+
+実機検証で CSV が生 DB ダンプ (ULID / UTC ミリ秒 / 英語 style コード / created_updated) で
+4 ペルソナ全員が読めない (AC3「ロケール対応」も未達) と判明。**AC2 列定義 / AC3 を以下へ Amend**:
+
+- **動線**: CSV は中間プレビュー画面を廃止し「出力する」で即生成 → 共有 (csv-preview.tsx 削除)。
+  PDF (個別/一覧) は WebView プレビューを維持。
+- **events_csv (作業履歴)**: 旧 11 列生ダンプ → **盆栽名 / 作業 / 状態 / 日時(ローカル) /
+  部位 / 詳細 / メモ / 盆栽ID / 作業ID**。作業・状態は i18n、日時は端末 tz でローカル化、
+  部位・量(詳細)は payload から `buildHistoryChips` で人間可読化 (履歴 UI と同表現)。
+- **bonsai_csv (盆栽一覧)**: 旧 9 列生ダンプ → **名前 / 樹種 / 樹形(日本語) / 入手日(日付) /
+  鉢(整形) / 状態(現役・アーカイブ) / 盆栽ID**。created_at / updated_at / 先頭 ULID を撤去。
+- **species_csv (樹種別サマリ)**: 旧「樹種マスタ辞書(学名/科/耐寒ゾーン)」ダンプ → **保有樹種の
+  集計**に作り替え (樹種 / 保有数 / 最終水やり / 最終剪定 / 最終植替え / 最終施肥)。最終日は
+  実施済(logged)のみ、ローカル日付。
+- **AC3 改定**: 「日時 ISO8601 UTC」→ **端末ローカル日付**、ヘッダ + 値を i18n ローカライズ
+  (CSV の言語 = アプリ表示言語)。ID 列は末尾にトレース用として残置。BOM/CRLF/RFC4180 quote は維持。
+- **アーキテクチャ**: csvExport.ts は `cellsToCsvString` (整形済セル→CSV) に純化、ローカライズ/
+  日付/payload 抽出/名前解決は eventCsvRow.ts / bonsaiCsvRow.ts / speciesSummary.ts +
+  exportFlow.ts (t・repo 利用層) に集約。旧 \*ToCsvRows/String は撤去。
+- **恒久策**: 「出力できる」でなく「実利用者が読めるか」を検証基準化。PR テンプレ §6-4 に
+  「CSV/PDF はペルソナ別サンプル目視 (高橋=意味が分かる / Marcus=Excel集計可)」を必須追加。
+- テスト: eventCsvRow / bonsaiCsvRow / speciesSummary の純関数 test + csvExport(cellsToCsvString)。
+  実機裏取り (run-as cat) で 3 種 CSV の人間可読性を確認。
 
 ### Follow-ups（後でやる宿題）
 
