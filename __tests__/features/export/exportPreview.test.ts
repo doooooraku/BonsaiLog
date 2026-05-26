@@ -47,8 +47,7 @@ describe('PDF List Preview (list-preview)', () => {
 
   test('6. Sheet は list_pdf で preview へ遷移 (opts を JSON で渡す)', () => {
     expect(SHEET).toMatch(/type === 'list_pdf'/);
-    expect(SHEET).toMatch(/'\/export\/list-preview'/);
-    expect(SHEET).toMatch(/\?opts=\$\{encodeURIComponent/);
+    expect(SHEET).toMatch(/\/export\/list-preview\?opts=\$\{encodeURIComponent/);
     expect(SHEET).toMatch(/exportOptPreview/);
   });
 });

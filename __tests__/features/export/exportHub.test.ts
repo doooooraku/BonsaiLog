@@ -69,10 +69,14 @@ describe('Export Options Sheet (ADR-0016 AC11 Options / AC12 Y4)', () => {
     expect(SHEET).toMatch(/exportOptTagEmptyBody/);
   });
 
-  test('8. ストレージ事前チェック + プレビュー画面へ遷移 (全種 preview-first)', () => {
+  test('8. ストレージ事前チェック / CSVは即出力 (runExport) / list_pdfのみプレビュー遷移', () => {
     expect(SHEET).toMatch(/isStorageSufficient/);
+    // list_pdf のみ WebView プレビューへ遷移
     expect(SHEET).toMatch(/\/export\/list-preview/);
-    expect(SHEET).toMatch(/\/export\/csv-preview/);
+    // CSV 3 種は中間画面なしで runExport 直呼び (即出力 → 共有)
+    expect(SHEET).toMatch(/await runExport\(/);
+    // csv-preview 中間画面は撤去済み
+    expect(SHEET).not.toContain('/export/csv-preview');
   });
 });
 
