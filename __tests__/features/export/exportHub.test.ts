@@ -84,8 +84,8 @@ describe('exportFlow orchestration', () => {
   test('9. runExport が 4 種を分岐 + 既存ロジック関数を使用', () => {
     expect(FLOW).toMatch(/export async function runExport/);
     expect(FLOW).toMatch(/speciesToCsvString/);
-    expect(FLOW).toMatch(/bonsaiToCsvString/);
-    // events は人間可読再設計: buildEventCsvRow + cellsToCsvString
+    // bonsai/events は人間可読再設計: buildBonsaiCsvRow / buildEventCsvRow + cellsToCsvString
+    expect(FLOW).toMatch(/buildBonsaiCsvRow/);
     expect(FLOW).toMatch(/buildEventCsvRow/);
     expect(FLOW).toMatch(/cellsToCsvString/);
     expect(FLOW).toMatch(/buildBonsaiListPdfHtml/);

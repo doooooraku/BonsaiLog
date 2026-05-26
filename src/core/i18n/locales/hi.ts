@@ -883,5 +883,14 @@ const hi: Partial<Record<TranslationKey, string>> = {
   csvColEventNote: 'Note',
   csvColEventBonsaiId: 'Bonsai ID',
   csvColEventId: 'Event ID',
+  csvColBonsaiName: 'Name',
+  csvColBonsaiSpecies: 'Species',
+  csvColBonsaiStyle: 'Style',
+  csvColBonsaiAcquiredAt: 'Acquired',
+  csvColBonsaiPot: 'Pot',
+  csvColBonsaiStatus: 'Status',
+  csvColBonsaiId: 'Bonsai ID',
+  csvBonsaiStatusActive: 'Active',
+  csvBonsaiStatusArchived: 'Archived',
 };
 export default hi;

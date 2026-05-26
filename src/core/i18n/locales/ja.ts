@@ -891,6 +891,15 @@ const ja: Partial<Record<TranslationKey, string>> = {
   csvColEventNote: 'メモ',
   csvColEventBonsaiId: '盆栽ID',
   csvColEventId: '作業ID',
+  csvColBonsaiName: '名前',
+  csvColBonsaiSpecies: '樹種',
+  csvColBonsaiStyle: '樹形',
+  csvColBonsaiAcquiredAt: '入手日',
+  csvColBonsaiPot: '鉢',
+  csvColBonsaiStatus: '状態',
+  csvColBonsaiId: '盆栽ID',
+  csvBonsaiStatusActive: '現役',
+  csvBonsaiStatusArchived: 'アーカイブ',
 };
 
 export default ja;

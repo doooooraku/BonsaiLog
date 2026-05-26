@@ -25,13 +25,8 @@ import { getActiveEventsByBonsai, getEventsInRange } from '@/src/db/eventReposit
 import { getPhotosByBonsai } from '@/src/db/photoRepository';
 import type { Bonsai } from '@/src/db/schema';
 import { getAllSpecies, getSpeciesById } from '@/src/db/speciesRepository';
-import {
-  type BonsaiForCsv,
-  bonsaiToCsvString,
-  cellsToCsvString,
-  type SpeciesForCsv,
-  speciesToCsvString,
-} from './csvExport';
+import { cellsToCsvString, type SpeciesForCsv, speciesToCsvString } from './csvExport';
+import { buildBonsaiCsvRow, BONSAI_CSV_HEADER_KEYS } from './bonsaiCsvRow';
 import { buildEventCsvRow, EVENT_CSV_HEADER_KEYS } from './eventCsvRow';
 import { buildExportFileName, type ExportKind } from './exportFileName';
 import { type BonsaiListRow, buildBonsaiListPdfHtml, type ListPdfStats } from './listPdfExport';
@@ -176,11 +171,9 @@ export async function loadCsvForPreview(
   const bonsai = await resolveBonsaiSet(opts);
 
   if (opts.type === 'bonsai_csv') {
-    const rows: BonsaiForCsv[] = bonsai.map((b) => ({
-      ...b,
-      speciesName: b.speciesCommonName ?? '',
-    }));
-    return { csv: bonsaiToCsvString(rows), fileName, count: rows.length };
+    const header = BONSAI_CSV_HEADER_KEYS.map((k) => t(k));
+    const dataRows = bonsai.map((b) => buildBonsaiCsvRow(b, t));
+    return { csv: cellsToCsvString([header, ...dataRows]), fileName, count: bonsai.length };
   }
 
   // events_csv — 人間可読 (盆栽名 / 作業 / 状態 / 日時 / 部位 / 詳細 / メモ / 盆栽ID / 作業ID)
