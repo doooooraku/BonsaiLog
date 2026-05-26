@@ -36,17 +36,39 @@ type PhotoRecord = {
   bonsaiId: string;
 };
 
+type TagRecord = {
+  id: string;
+  /** name_normalized: tags テーブルで UNIQUE。id とは別に重複判定する。 */
+  nameNormalized: string;
+};
+
+type BonsaiTagRecord = {
+  bonsaiId: string;
+  tagId: string;
+};
+
+/** bonsai_tags の複合主キーを Set 用キーに変換 (区切りに tag/bonsai id に出現しない `\t` を使用)。 */
+export function bonsaiTagKey(bonsaiId: string, tagId: string): string {
+  return `${bonsaiId}\t${tagId}`;
+}
+
 export type AppendImportPlan<
   TBonsai extends BonsaiRecord,
   TEvent extends EventRecord,
   TPhoto extends PhotoRecord,
+  TTag extends TagRecord,
+  TBonsaiTag extends BonsaiTagRecord,
 > = {
   bonsaiToInsert: TBonsai[];
   eventsToInsert: TEvent[];
   photosToInsert: TPhoto[];
+  tagsToInsert: TTag[];
+  bonsaiTagsToInsert: TBonsaiTag[];
   skippedBonsai: number;
   skippedEvents: number;
   skippedPhotos: number;
+  skippedTags: number;
+  skippedBonsaiTags: number;
   /** bonsai_id が manifest にも DB にも無い photo / event。BackupError('invalid') で拒否対象。 */
   invalidPhotoRefs: TPhoto[];
   invalidEventRefs: TEvent[];
@@ -68,34 +90,53 @@ export function buildAppendImportPlan<
   TBonsai extends BonsaiRecord,
   TEvent extends EventRecord,
   TPhoto extends PhotoRecord,
+  TTag extends TagRecord,
+  TBonsaiTag extends BonsaiTagRecord,
 >({
   bonsai,
   events,
   photos,
+  tags = [],
+  bonsaiTags = [],
   existingBonsaiIds,
   existingEventIds,
   existingPhotoIds,
+  existingTagIds = new Set<string>(),
+  existingTagNormalized = new Set<string>(),
+  existingBonsaiTagKeys = new Set<string>(),
 }: {
   bonsai: TBonsai[];
   events: TEvent[];
   photos: TPhoto[];
+  tags?: TTag[];
+  bonsaiTags?: TBonsaiTag[];
   existingBonsaiIds: ReadonlySet<string>;
   existingEventIds: ReadonlySet<string>;
   existingPhotoIds: ReadonlySet<string>;
-}): AppendImportPlan<TBonsai, TEvent, TPhoto> {
+  existingTagIds?: ReadonlySet<string>;
+  existingTagNormalized?: ReadonlySet<string>;
+  existingBonsaiTagKeys?: ReadonlySet<string>;
+}): AppendImportPlan<TBonsai, TEvent, TPhoto, TTag, TBonsaiTag> {
   const knownBonsaiIds = new Set(existingBonsaiIds);
   const knownEventIds = new Set(existingEventIds);
   const knownPhotoIds = new Set(existingPhotoIds);
+  const knownTagIds = new Set(existingTagIds);
+  const knownTagNormalized = new Set(existingTagNormalized);
+  const knownBonsaiTagKeys = new Set(existingBonsaiTagKeys);
 
   const bonsaiToInsert: TBonsai[] = [];
   const eventsToInsert: TEvent[] = [];
   const photosToInsert: TPhoto[] = [];
+  const tagsToInsert: TTag[] = [];
+  const bonsaiTagsToInsert: TBonsaiTag[] = [];
   const invalidEventRefs: TEvent[] = [];
   const invalidPhotoRefs: TPhoto[] = [];
 
   let skippedBonsai = 0;
   let skippedEvents = 0;
   let skippedPhotos = 0;
+  let skippedTags = 0;
+  let skippedBonsaiTags = 0;
 
   for (const tree of bonsai) {
     if (knownBonsaiIds.has(tree.id)) {
@@ -104,6 +145,32 @@ export function buildAppendImportPlan<
     }
     knownBonsaiIds.add(tree.id);
     bonsaiToInsert.push(tree);
+  }
+
+  // tags は id 既存 OR name_normalized 既存なら skip (name_normalized は UNIQUE のため衝突回避)。
+  for (const tag of tags) {
+    if (knownTagIds.has(tag.id) || knownTagNormalized.has(tag.nameNormalized)) {
+      skippedTags += 1;
+      continue;
+    }
+    knownTagIds.add(tag.id);
+    knownTagNormalized.add(tag.nameNormalized);
+    tagsToInsert.push(tag);
+  }
+
+  // bonsai_tags は bonsai と tag が共に既知、かつ複合キー未存在なら insert。
+  for (const link of bonsaiTags) {
+    const key = bonsaiTagKey(link.bonsaiId, link.tagId);
+    if (
+      !knownBonsaiIds.has(link.bonsaiId) ||
+      !knownTagIds.has(link.tagId) ||
+      knownBonsaiTagKeys.has(key)
+    ) {
+      skippedBonsaiTags += 1;
+      continue;
+    }
+    knownBonsaiTagKeys.add(key);
+    bonsaiTagsToInsert.push(link);
   }
 
   for (const event of events) {
@@ -136,9 +203,13 @@ export function buildAppendImportPlan<
     bonsaiToInsert,
     eventsToInsert,
     photosToInsert,
+    tagsToInsert,
+    bonsaiTagsToInsert,
     skippedBonsai,
     skippedEvents,
     skippedPhotos,
+    skippedTags,
+    skippedBonsaiTags,
     invalidEventRefs,
     invalidPhotoRefs,
   };

@@ -8,7 +8,7 @@
  * - events を新規追加 (Repolog には存在しない、F-02 由来)
  * - reportId → bonsaiId
  */
-import { buildAppendImportPlan } from '@/src/features/backup/backupImportPlanner';
+import { buildAppendImportPlan, bonsaiTagKey } from '@/src/features/backup/backupImportPlanner';
 
 describe('backupImportPlanner', () => {
   test('buildAppendImportPlan appends only missing records and skips duplicates', () => {
@@ -100,5 +100,66 @@ describe('backupImportPlanner', () => {
     expect(plan.photosToInsert).toHaveLength(1);
     expect(plan.invalidEventRefs).toEqual([]);
     expect(plan.invalidPhotoRefs).toEqual([]);
+  });
+
+  test('tags: skip by existing id and by existing name_normalized, insert new', () => {
+    const plan = buildAppendImportPlan({
+      bonsai: [],
+      events: [],
+      photos: [],
+      tags: [
+        { id: 't1', nameNormalized: 'matsu' }, // id 既存 → skip
+        { id: 't-new', nameNormalized: 'momiji' }, // normalized 既存 → skip
+        { id: 't3', nameNormalized: 'shimpaku' }, // 新規 → insert
+      ],
+      existingBonsaiIds: new Set<string>(),
+      existingEventIds: new Set<string>(),
+      existingPhotoIds: new Set<string>(),
+      existingTagIds: new Set(['t1']),
+      existingTagNormalized: new Set(['matsu', 'momiji']),
+    });
+
+    expect(plan.tagsToInsert.map((t) => t.id)).toEqual(['t3']);
+    expect(plan.skippedTags).toBe(2);
+  });
+
+  test('bonsai_tags: insert when bonsai+tag known and pair new, skip otherwise', () => {
+    const plan = buildAppendImportPlan({
+      bonsai: [{ id: 'b1' }],
+      events: [],
+      photos: [],
+      tags: [{ id: 't1', nameNormalized: 'matsu' }],
+      bonsaiTags: [
+        { bonsaiId: 'b1', tagId: 't1' }, // 共に新規・ペア未存在 → insert
+        { bonsaiId: 'b1', tagId: 't-missing' }, // tag 未知 → skip
+        { bonsaiId: 'b-missing', tagId: 't1' }, // bonsai 未知 → skip
+        { bonsaiId: 'b-existing', tagId: 't-existing' }, // ペア既存 → skip
+      ],
+      existingBonsaiIds: new Set(['b-existing']),
+      existingEventIds: new Set<string>(),
+      existingPhotoIds: new Set<string>(),
+      existingTagIds: new Set(['t-existing']),
+      existingTagNormalized: new Set(['existing']),
+      existingBonsaiTagKeys: new Set([bonsaiTagKey('b-existing', 't-existing')]),
+    });
+
+    expect(plan.bonsaiTagsToInsert).toEqual([{ bonsaiId: 'b1', tagId: 't1' }]);
+    expect(plan.skippedBonsaiTags).toBe(3);
+  });
+
+  test('tags/bonsaiTags default to empty when omitted (旧 ZIP 後方互換)', () => {
+    const plan = buildAppendImportPlan({
+      bonsai: [{ id: 'b1' }],
+      events: [],
+      photos: [],
+      existingBonsaiIds: new Set<string>(),
+      existingEventIds: new Set<string>(),
+      existingPhotoIds: new Set<string>(),
+    });
+
+    expect(plan.tagsToInsert).toEqual([]);
+    expect(plan.bonsaiTagsToInsert).toEqual([]);
+    expect(plan.skippedTags).toBe(0);
+    expect(plan.skippedBonsaiTags).toBe(0);
   });
 });
