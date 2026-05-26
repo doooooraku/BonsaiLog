@@ -158,6 +158,9 @@ export default function RootLayout() {
           <Stack.Screen name="tag-edit" options={{ title: '' }} />
           {/* Sess9 PR-10 (user 真意確認、 PR-9 置換): tag-bonsai-list 全画面廃止、
               タグ管理画面で inline 展開 (▶/▼ 左端 toggle) に置換。 重複機能削除。 */}
+          {/* F-10 (Issue #33 / ADR-0016): エクスポートは独自 _layout (FormScreenHeader) を持つので
+              Stack header 非表示。未登録だと default header が route path ("export/csv") を表示する。 */}
+          <Stack.Screen name="export" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style={effectiveScheme === 'dark' ? 'light' : 'dark'} />
         {/* Sess12 PR-B+C: 一括予定/記録追加完了の Toast (root mount で全画面に表示可) */}
