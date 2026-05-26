@@ -78,3 +78,7 @@ tmp-captures/
 
 # Sess25 PR-ζ-2-② で誤コミット防止 (out/ は ui-diff / 検証 SS 用 ローカル output、 commit 不要)
 out/
+
+# Python bytecode cache (store-automation スクリプト)
+__pycache__/
+*.pyc
