@@ -48,3 +48,13 @@
 - **根本原因 (実例 Sess16 PR-G #639)**: Phase γ (PR-E #638) で EVENT_TYPES に `leaf_first_aid` 追加した時、 ALL_WORK_TYPES / BULK_WORK_TYPES (手動 list) には **追加し忘れ** → 実機 SS 検証で「葉の手当」 が work-picker grid に表示されない bug 発覚。 緊急 fix で 1 行追加。
 - **恒久対応 (Sess16 PR-J #642)**: 両 list を `EVENT_TYPES.filter(...)` で動的生成に refactor。 将来 EventType 追加時に schema.ts の EVENT_TYPES に追加するだけで自動的に grid 反映。
 - **一般化**: enum の派生 list (subset / 除外 / フィルタ) は手動コピペ禁止、 enum 原典を source of truth とする動的生成を default。 例外は「順序を変えたい」 等の理由がある時のみ (その場合も map による mapping 経由)。
+
+### バックアップ網羅性は「件数一致」 でなく「全テーブル×全列」 で検証 (Sess46)
+
+- **何が起きたか**: F-11 バックアップ (お引っ越し) に **tags / カスタム樹種 (bonsai_species_custom) / カスタム樹形 (bonsai_styles_custom) / bonsai 付加6列 (memo・estimated_age・purchase_date・acquired_from・estimated_age_unknown・custom_species_id) / 設定** の欠落があり、 機種変更の復元でこれらが消失していた。 いずれもユーザー指摘まで気づけなかった。
+- **根本原因**: 検証が「export→import が動く」「bonsai/events/photos の**件数が一致**」 という**動作ベース**に偏り、 manifest が DB スキーマ全体を覆うかの**網羅監査をしなかった**。 `SELECT * FROM bonsai` で読んでも `BackupBonsai` が 9 列しかマップせず残り 6 列を破棄していた (件数は一致するので検出不能)。 タグ欠落発見時に R-55 (関連項目網羅調査) を適用せず症状反応型で 1 件ずつ潰したのも一因。
+- **ルール**:
+  - バックアップ系を変更/レビューする時は **schema の全テーブル × 全列を manifest と突合**する (件数一致 ≠ 完全)。
+  - 1 つの欠落を見つけたら R-55 で「同種の漏れが他に無いか」 を全件 inventory する。
+  - seed マスタ (species / species_names) と派生 (events_fts) のみ対象外、 それ以外のユーザーデータは全て backup 対象。
+- **恒久策 (自動化)**: `__tests__/backupCoverage.test.ts` が `src/db/schema.ts` を SoT に「全テーブル / bonsai 全列がバックアップ対象 or 意図的除外に分類済み」 を assert。 新テーブル / ALTER 列を追加して backup 更新を忘れると **CI で fail** (fail-closed)。 fail したら BackupBonsai / buildManifestFromDb / importBackup を更新する。
