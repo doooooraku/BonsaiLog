@@ -891,6 +891,15 @@ const baseEn = {
   csvColEventNote: 'Note',
   csvColEventBonsaiId: 'Bonsai ID',
   csvColEventId: 'Event ID',
+  csvColBonsaiName: 'Name',
+  csvColBonsaiSpecies: 'Species',
+  csvColBonsaiStyle: 'Style',
+  csvColBonsaiAcquiredAt: 'Acquired',
+  csvColBonsaiPot: 'Pot',
+  csvColBonsaiStatus: 'Status',
+  csvColBonsaiId: 'Bonsai ID',
+  csvBonsaiStatusActive: 'Active',
+  csvBonsaiStatusArchived: 'Archived',
 };
 
 export type TranslationKey = keyof typeof baseEn;

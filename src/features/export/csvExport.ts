@@ -12,7 +12,7 @@
  *   (deleted_at / payload_json は除外、ゴミ箱対象は呼出側でフィルタ)
  */
 
-import type { Bonsai, Species } from '@/src/db/schema';
+import type { Species } from '@/src/db/schema';
 
 /** UTF-8 BOM (Excel が UTF-8 を認識するため、CSV 先頭に付与)。 */
 export const CSV_BOM = '﻿';
@@ -43,57 +43,9 @@ export function cellsToCsvString(
 // `src/features/export/eventCsvRow.ts` の buildEventCsvRow + cellsToCsvString で生成する
 // (旧 eventsToCsvRows/eventsToCsvString = 生 DB ダンプは撤去)。
 
-// ---------------------------------------------------------------------------
-// Phase D-3: bonsai_csv 9 列 (Issue #33 / ADR-0016 AC2)
-// ---------------------------------------------------------------------------
-
-/**
- * Bonsai を CSV 出力するための 9 列拡張型。
- *
- * `species_name` は species join 後の名前 (呼出側で speciesRepository から解決)。
- * Bonsai schema 自体には species_id しか持たないため、呼出側で展開する。
- */
-export type BonsaiForCsv = Bonsai & {
-  /** species join 後の表示名 (なければ空文字)。 */
-  speciesName?: string | null;
-};
-
-/** bonsai を CSV 行配列 (header 含む) に変換する純関数。 */
-export function bonsaiToCsvRows(bonsai: readonly BonsaiForCsv[]): string[] {
-  const header = [
-    'id',
-    'name',
-    'species',
-    'acquired_at',
-    'style',
-    'pot_info',
-    'archived_at',
-    'created_at',
-    'updated_at',
-  ].join(',');
-
-  const rows = bonsai.map((b) =>
-    [
-      escapeCsvField(b.id),
-      escapeCsvField(b.name),
-      escapeCsvField(b.speciesName ?? ''),
-      escapeCsvField(b.acquiredAt),
-      escapeCsvField(b.style),
-      escapeCsvField(b.potInfo),
-      escapeCsvField(b.archivedAt),
-      escapeCsvField(b.createdAt),
-      escapeCsvField(b.updatedAt),
-    ].join(','),
-  );
-
-  return [header, ...rows];
-}
-
-/** bonsai を完全な CSV 文字列に変換 (UTF-8 BOM + CRLF 改行)。 */
-export function bonsaiToCsvString(bonsai: readonly BonsaiForCsv[]): string {
-  const rows = bonsaiToCsvRows(bonsai);
-  return CSV_BOM + rows.join('\r\n');
-}
+// bonsai_csv は人間可読再設計 (Sess47 / ADR-0016 Amended) のため
+// `src/features/export/bonsaiCsvRow.ts` の buildBonsaiCsvRow + cellsToCsvString で生成する
+// (旧 bonsaiToCsvRows/bonsaiToCsvString = 生 DB ダンプ + 英語 style コードは撤去)。
 
 // ---------------------------------------------------------------------------
 // Phase D-4: species_csv 8 列 (Issue #33 / ADR-0016 AC2)
