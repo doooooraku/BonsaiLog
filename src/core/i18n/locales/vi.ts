@@ -869,5 +869,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   exportOptPreview: 'Preview',
   exportListPdfRecordCount: 'Records',
   exportGeneratingTitle: 'Generating…',
+  exportOptExport: 'Export',
 };
 export default vi;

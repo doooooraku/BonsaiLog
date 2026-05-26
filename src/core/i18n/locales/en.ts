@@ -878,6 +878,7 @@ const baseEn = {
   exportOptPreview: 'Preview',
   exportListPdfRecordCount: 'Records',
   exportGeneratingTitle: 'Generating…',
+  exportOptExport: 'Export',
 };
 
 export type TranslationKey = keyof typeof baseEn;
