@@ -473,14 +473,14 @@ export async function importBackup(): Promise<BackupImportResult | null> {
   }
 
   // 1. ファイル選択 (新 API、expo-document-picker は使わない)
-  let pickedUri: string;
+  let pickedFile: File;
   try {
     const picked = await File.pickFileAsync(undefined, 'application/zip');
-    const pickedFile = Array.isArray(picked) ? picked[0] : picked;
-    if (!pickedFile?.uri) {
+    const file = Array.isArray(picked) ? picked[0] : picked;
+    if (!file?.uri) {
       return null;
     }
-    pickedUri = pickedFile.uri;
+    pickedFile = file;
   } catch {
     // ユーザがキャンセルした場合は null を返す (例外型はプラットフォームで揺れるため try/catch で吸収)
     return null;
@@ -490,7 +490,22 @@ export async function importBackup(): Promise<BackupImportResult | null> {
 
   try {
     // 2. unzip
-    await unzip(stripFileScheme(pickedUri), stripFileScheme(importRoot.uri));
+    // File.pickFileAsync は選択ファイルの content:// スキームをそのまま返す
+    // (expo-file-system 公式: "preserves its scheme — file:// or content://")。
+    // react-native-zip-archive の unzip は実ファイルパスしか読めず、content:// を
+    // 渡すとネイティブで NullPointerException クラッシュする。また File.copy() も
+    // content:// ソースを reject するため、bytes() で読み出して cache 配下の実ファイルへ
+    // 書き出してから解凍する (importRoot は finally で削除される)。
+    let zipPathForUnzip: string;
+    if (pickedFile.uri.startsWith('file://')) {
+      zipPathForUnzip = stripFileScheme(pickedFile.uri);
+    } else {
+      const localZip = new File(importRoot, 'source.zip');
+      localZip.create();
+      localZip.write(await pickedFile.bytes());
+      zipPathForUnzip = stripFileScheme(localZip.uri);
+    }
+    await unzip(zipPathForUnzip, stripFileScheme(importRoot.uri));
 
     const manifestRoot = findManifestRoot(importRoot);
     if (!manifestRoot) {

@@ -489,31 +489,18 @@ export default function SettingsScreen() {
           </Pressable>
         </SettingsSection>
 
-        {/* --- 6. F-11 バックアップ (Phase 1.6-T3 で位置変更、お引っ越し → バックアップ) --- */}
+        {/* --- 6. F-11 お引っ越し (作成/復元を 1 画面 /backup に統合) --- */}
         <SettingsSection title={t('settingsBackupSection')}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('backupExportTitle')}
+            accessibilityLabel={t('backupTitle')}
             accessibilityHint={t('backupExportDesc')}
-            testID="e2e_open_backup_export"
+            testID="e2e_open_backup"
             style={styles.entry}
-            onPress={() => router.push('/backup/export' as Href)}
+            onPress={() => router.push('/backup' as Href)}
           >
             <View style={styles.rowInner}>
-              <ThemedText type="defaultSemiBold">{t('backupExportTitle')}</ThemedText>
-              <ThemedText style={styles.chevron}>›</ThemedText>
-            </View>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('backupImportTitle')}
-            accessibilityHint={t('backupImportDesc')}
-            testID="e2e_open_backup_import"
-            style={styles.entry}
-            onPress={() => router.push('/backup/import' as Href)}
-          >
-            <View style={styles.rowInner}>
-              <ThemedText type="defaultSemiBold">{t('backupImportTitle')}</ThemedText>
+              <ThemedText type="defaultSemiBold">{t('backupTitle')}</ThemedText>
               <ThemedText style={styles.chevron}>›</ThemedText>
             </View>
           </Pressable>

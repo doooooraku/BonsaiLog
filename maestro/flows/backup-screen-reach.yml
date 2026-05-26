@@ -36,42 +36,29 @@ tags:
     id: 'e2e_settings_screen'
     label: '設定画面を確認'
 
-# Settings → Backup Export
+# Settings → お引っ越し (作成/復元 統合画面)
 - tapOn:
-    id: 'e2e_open_backup_export'
-    label: 'バックアップ作成画面を開く'
+    id: 'e2e_open_backup'
+    label: 'お引っ越し画面を開く'
 
 - extendedWaitUntil:
     visible:
-      id: 'e2e_backup_export_screen'
+      id: 'e2e_backup_screen'
     timeout: 30000
-    label: 'バックアップ作成画面を待機'
+    label: 'お引っ越し画面を待機'
 
 - assertVisible:
-    id: 'e2e_backup_export_screen'
-    label: 'バックアップ作成画面に到達'
+    id: 'e2e_backup_screen'
+    label: 'お引っ越し画面に到達'
 
-- back:
-    label: '設定へ戻る'
+# 1 画面に作成/復元の両ボタンが存在する
+- assertVisible:
+    id: 'e2e_backup_export_action'
+    label: 'バックアップ作成ボタンを確認'
 
 - assertVisible:
-    id: 'e2e_settings_screen'
-    label: '設定画面へ復帰'
-
-# Settings → Backup Import
-- tapOn:
-    id: 'e2e_open_backup_import'
-    label: 'バックアップ復元画面を開く'
-
-- extendedWaitUntil:
-    visible:
-      id: 'e2e_backup_import_screen'
-    timeout: 30000
-    label: 'バックアップ復元画面を待機'
-
-- assertVisible:
-    id: 'e2e_backup_import_screen'
-    label: 'バックアップ復元画面に到達'
+    id: 'e2e_backup_import_action'
+    label: 'バックアップ復元ボタンを確認'
 
 - back:
     label: '設定へ戻る'
