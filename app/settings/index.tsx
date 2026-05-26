@@ -13,6 +13,7 @@
  * - 将来 (F-12 言語切替 / F-15 テーマ等) のエントリ追加は別 Issue
  * - 既存 Tab UI を弄らないために app/(tabs) の外に配置 (router.push('/settings') で開く)
  */
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
@@ -27,6 +28,7 @@ import { countArchivedBonsai } from '@/src/db/bonsaiRepository';
 import { countAllTags } from '@/src/db/tagRepository';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { clearAllData, seedTestData, seedTestDataEn } from '@/src/dev/seedTestData';
+import { formatDateToHhmm, parseHhmmToDate } from '@/src/features/notification/notificationTime';
 import { requestNotificationPermission } from '@/src/features/notification/scheduler';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { showAdPrivacyOptionsForm } from '@/src/services/adService';
@@ -68,6 +70,9 @@ export default function SettingsScreen() {
   const notifSummaryEnabled = useSettingsStore((s) => s.notificationDailySummaryEnabled);
   const setNotifSummaryEnabled = useSettingsStore((s) => s.setNotificationDailySummaryEnabled);
   const notifSummaryTime = useSettingsStore((s) => s.notificationDailySummaryTime);
+  const setNotifSummaryTime = useSettingsStore((s) => s.setNotificationDailySummaryTime);
+  // 通知時刻ピッカーを設定画面でインライン表示 (中間サブ画面 notifications.tsx 廃止)
+  const [showTimePicker, setShowTimePicker] = React.useState(false);
   const isPro = useProStore((s) => s.isPro);
   const planType = useProStore((s) => s.planType);
 
@@ -347,7 +352,8 @@ export default function SettingsScreen() {
         {/* --- 3. F-16 通知設定 (Issue #30、ADR-0014 Amended) ---
             通知は当日まとめ 1 系統に集約。トグルも 1 つ (旧 master + summary 統合)。
             行 1: 「通知 [Switch]」 — ON 時に OS 許可をリクエスト (デフォルト OFF)
-            行 2: 「通知時刻 [HH:MM] ›」 — ON 時のみ表示、タップでサブ画面 /settings/notifications。 */}
+            行 2: 「通知時刻を変更 [HH:MM]」 — ON 時のみ表示、タップでその場に OS 時刻ピッカーを開く
+                  (中間サブ画面 notifications.tsx は廃止、画面遷移なし)。 */}
         <SettingsSection title={t('settingsNotificationSection')}>
           {/* 行 1: 通知トグル */}
           <View
@@ -366,7 +372,7 @@ export default function SettingsScreen() {
               />
             </View>
           </View>
-          {/* 行 2: 通知時刻 (サブ画面遷移)、通知 ON 時のみ表示 */}
+          {/* 行 2: 通知時刻を変更 (通知 ON 時のみ表示)。タップでその場に OS 時刻ピッカーを開く。 */}
           {notifSummaryEnabled && (
             <Pressable
               accessibilityRole="button"
@@ -374,16 +380,29 @@ export default function SettingsScreen() {
               accessibilityValue={{ text: notificationTimeRangeLabel }}
               testID="e2e_settings_notifications_row"
               style={styles.entry}
-              onPress={() => router.push('/settings/notifications' as Href)}
+              onPress={() => setShowTimePicker(true)}
             >
               <View style={styles.rowInner}>
                 <ThemedText type="defaultSemiBold">{t('settingsNotifSummaryEditTime')}</ThemedText>
-                <View style={styles.rowRight}>
-                  <ThemedText style={styles.rowValue}>{notificationTimeRangeLabel}</ThemedText>
-                  <ThemedText style={styles.chevron}>›</ThemedText>
-                </View>
+                <ThemedText style={styles.rowValue}>{notificationTimeRangeLabel}</ThemedText>
               </View>
             </Pressable>
+          )}
+          {showTimePicker && (
+            <DateTimePicker
+              testID="e2e_notif_summary_time_picker"
+              value={parseHhmmToDate(notifSummaryTime, new Date(Date.now()))}
+              mode="time"
+              is24Hour
+              onChange={(event: DateTimePickerEvent, date?: Date) => {
+                setShowTimePicker(false);
+                if (event.type === 'set' && date) {
+                  setNotifSummaryTime(formatDateToHhmm(date));
+                  // 時刻変更を当日まとめ通知に即時反映 (再予約)
+                  void triggerSummaryReschedule(t);
+                }
+              }}
+            />
           )}
         </SettingsSection>
 
