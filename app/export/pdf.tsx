@@ -1,54 +1,33 @@
 /**
- * F-10 Phase B — 個別盆栽 PDF エクスポート画面 (Issue #33 / ADR-0016)。
+ * F-10 個別盆栽 PDF — 盆栽 picker 画面 (Issue #33 / ADR-0016)。
+ *
+ * 「1 本ずつの 1 ページレポート」は per-bonsai 選択が本質のため、Hub からは
+ * Options Sheet ではなくこの picker へ遷移する。
  *
  * フロー:
- * 1. Pro 判定 (`useProStore.isPro`) — Free は Paywall 案内 Alert
- * 2. 盆栽選択 (簡易リスト)
- * 3. 選択 → events 取得 → buildBonsaiPdfHtml → generateAndShareBonsaiPdf
- * 4. 二重実行防止 (busy)
- *
- * Phase C 以降スコープ:
- * - 全盆栽リスト PDF (表紙 + リスト + 統計)
- * - 写真 base64 inline
- * - 3 段階フォールバック (full → reduced → tiny)
- * - 進捗バー
- * - 詳細選択 UI (期間 / 樹種フィルタ)
+ * 1. Pro 判定 (useProStore.isPro) — Free は Paywall 案内
+ * 2. 盆栽を選ぶ → pdf-preview 画面 (WebView プレビュー + 共有) へ遷移
  */
-import * as LegacyFileSystem from 'expo-file-system/legacy';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { getAllActiveBonsai, getBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
-import { getActiveEventsByBonsai } from '@/src/db/eventRepository';
-import { getPhotosByBonsai } from '@/src/db/photoRepository';
+import { BG_PRIMARY, BORDER_DEFAULT, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
 import type { Bonsai } from '@/src/db/schema';
-import {
-  buildBonsaiPdfHtml,
-  generateAndShareBonsaiPdf,
-  readPhotoAsBase64,
-} from '@/src/features/export/pdfExport';
-import {
-  BG_PRIMARY,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  DISABLED_BG,
-  ON_BRAND,
-} from '@/src/core/theme/colors';
-import { isStorageSufficient } from '@/src/features/export/pdfReliability';
 import { useGoToPaywall } from '@/src/features/pro/useGoToPaywall';
 import { useProStore } from '@/src/stores/proStore';
 
 export default function ExportPdfScreen() {
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
+  const router = useRouter();
   const isPro = useProStore((s) => s.isPro);
   const goToPaywall = useGoToPaywall();
   const [bonsaiList, setBonsaiList] = React.useState<Bonsai[]>([]);
-  const [busyId, setBusyId] = React.useState<string | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -58,55 +37,12 @@ export default function ExportPdfScreen() {
     }, []),
   );
 
-  const handleExport = async (bonsai: Bonsai) => {
-    if (busyId !== null) return;
+  const handlePick = (bonsai: Bonsai) => {
     if (!isPro) {
       goToPaywall(t('exportProRequiredTitle'), t('exportProRequiredBody'));
       return;
     }
-    // F-10 Phase L (Issue #33, ADR-0016 AC7): ストレージ事前チェック
-    // getFreeDiskStorageAsync 失敗時はチェックスキップ (AC7-2 仕様)
-    try {
-      const freeBytes = await LegacyFileSystem.getFreeDiskStorageAsync();
-      if (!isStorageSufficient(freeBytes)) {
-        Alert.alert(t('exportStorageLowTitle'), t('exportStorageLowBody'));
-        return;
-      }
-    } catch {
-      // チェックスキップ
-    }
-    setBusyId(bonsai.id);
-    try {
-      const detail = await getBonsaiWithSpecies(bonsai.id, lang);
-      const events = await getActiveEventsByBonsai(bonsai.id);
-      // Phase C: 写真を base64 inline で取得 (iOS WKWebView 制約、ADR-0016)。
-      // 失敗した写真は配列から除外、HTML テンプレート側は空配列なら写真セクション非表示。
-      const photos = await getPhotosByBonsai(bonsai.id);
-      const photoDataUris = (
-        await Promise.all(photos.map((p) => readPhotoAsBase64(p.absoluteUri)))
-      ).filter((uri): uri is string => uri !== null);
-      const html = buildBonsaiPdfHtml({
-        bonsai: { name: bonsai.name, style: bonsai.style, acquiredAt: bonsai.acquiredAt },
-        speciesCommonName: detail?.species?.commonName ?? null,
-        events,
-        photoDataUris,
-        labelPhotosTitle: t('bonsaiFieldPhotos'),
-        title: t('exportPdfTitle'),
-        labelSpecies: t('bonsaiFieldSpecies'),
-        labelStyle: t('bonsaiFieldStyle'),
-        labelAcquiredAt: t('bonsaiFieldAcquiredAt'),
-        labelEventsTitle: t('eventsTitle'),
-        labelEventDate: t('exportPdfHeaderDate'),
-        labelEventType: t('exportPdfHeaderType'),
-        labelEventNote: t('exportPdfHeaderNote'),
-        footerNote: t('exportPdfFooterNote'),
-      });
-      await generateAndShareBonsaiPdf(html, t('exportPdfShareTitle'));
-    } catch {
-      Alert.alert(t('error'), t('exportPdfFailedBody'));
-    } finally {
-      setBusyId(null);
-    }
+    router.push(`/export/pdf-preview?bonsaiId=${bonsai.id}` as Href);
   };
 
   return (
@@ -128,15 +64,10 @@ export default function ExportPdfScreen() {
               accessibilityRole="button"
               accessibilityLabel={t('exportPdfAction')}
               testID={`e2e_export_pdf_${b.id}`}
-              style={[styles.action, busyId === b.id && styles.actionBusy]}
-              disabled={busyId !== null}
-              onPress={() => void handleExport(b)}
+              style={styles.action}
+              onPress={() => handlePick(b)}
             >
-              {busyId === b.id ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <ThemedText style={styles.actionText}>{t('exportPdfAction')}</ThemedText>
-              )}
+              <ThemedText style={styles.actionText}>{t('exportPdfAction')}</ThemedText>
             </Pressable>
           </View>
         ))}
@@ -170,6 +101,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actionBusy: { backgroundColor: DISABLED_BG },
   actionText: { color: ON_BRAND, fontWeight: '600' },
 });

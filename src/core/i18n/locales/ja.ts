@@ -874,6 +874,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportOptTagEmptyBody: 'タグを1つ選んでください。',
   exportGenericSuccess: '書き出しました',
   exportGenericSuccessDetail: '{count} 件を書き出しました。',
+  exportPreviewShare: '共有',
+  exportOptPreview: 'プレビュー',
+  exportListPdfRecordCount: '記録数',
 };
 
 export default ja;
