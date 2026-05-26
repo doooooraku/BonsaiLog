@@ -878,6 +878,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportOptPreview: 'プレビュー',
   exportListPdfRecordCount: '記録数',
   exportGeneratingTitle: '生成中…',
+  exportCsvPreviewGrid: '表',
+  exportCsvPreviewText: '生テキスト',
 };
 
 export default ja;

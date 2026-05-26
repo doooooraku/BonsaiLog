@@ -11,15 +11,7 @@
 import * as LegacyFileSystem from 'expo-file-system/legacy';
 import { useRouter, type Href } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
@@ -44,7 +36,6 @@ import {
   type ExportScope,
   type ExportTypeKey,
   OPTION_APPLIES,
-  runExport,
 } from './exportFlow';
 import { isStorageSufficient } from './pdfReliability';
 
@@ -69,7 +60,7 @@ type Props = {
 };
 
 export function ExportOptionsSheet({ visible, type, onClose }: Props) {
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const [period, setPeriod] = useState<ExportPeriod>('all');
   const [scope, setScope] = useState<ExportScope>('all');
@@ -80,7 +71,6 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
   const [tagId, setTagId] = useState<string | undefined>(undefined);
   const [bonsaiList, setBonsaiList] = useState<Bonsai[]>([]);
   const [tags, setTags] = useState<TagRecord[]>([]);
-  const [busy, setBusy] = useState(false);
 
   const showPeriod = OPTION_APPLIES.period.has(type);
   const showScope = OPTION_APPLIES.scope.has(type);
@@ -121,7 +111,6 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
   };
 
   const handleGenerate = async () => {
-    if (busy) return;
     if (showScope && scope === 'selected' && selectedIds.length === 0) {
       Alert.alert(t('exportOptScopeEmptyTitle'), t('exportOptScopeEmptyBody'));
       return;
@@ -150,26 +139,10 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
       includeArchived: showArchived ? includeArchived : false,
     };
 
-    // list_pdf は生成前に WebView プレビューを挟む (AC11 PDF List Preview)
-    if (type === 'list_pdf') {
-      onClose();
-      router.push(`/export/list-preview?opts=${encodeURIComponent(JSON.stringify(opts))}` as Href);
-      return;
-    }
-
-    setBusy(true);
-    try {
-      const result = await runExport({ ...opts, lang }, t);
-      onClose();
-      Alert.alert(
-        t('exportGenericSuccess'),
-        t('exportGenericSuccessDetail').replace('{count}', String(result.count)),
-      );
-    } catch (error) {
-      Alert.alert(t('exportCsvFailed'), String(error));
-    } finally {
-      setBusy(false);
-    }
+    // 全種類とも生成前にプレビューを挟む (AC11 Preview)。CSV → csv-preview / list_pdf → list-preview
+    onClose();
+    const route = type === 'list_pdf' ? '/export/list-preview' : '/export/csv-preview';
+    router.push(`${route}?opts=${encodeURIComponent(JSON.stringify(opts))}` as Href);
   };
 
   return (
@@ -305,19 +278,12 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
           <View style={styles.footer}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t('exportOptGenerate')}
+              accessibilityLabel={t('exportOptPreview')}
               testID="e2e_export_options_generate"
-              style={[styles.cta, busy && styles.ctaBusy]}
+              style={styles.cta}
               onPress={handleGenerate}
-              disabled={busy}
             >
-              {busy ? (
-                <ActivityIndicator color={ON_BRAND} />
-              ) : (
-                <ThemedText style={styles.ctaText}>
-                  {type === 'list_pdf' ? t('exportOptPreview') : t('exportOptGenerate')}
-                </ThemedText>
-              )}
+              <ThemedText style={styles.ctaText}>{t('exportOptPreview')}</ThemedText>
             </Pressable>
           </View>
         </Pressable>
@@ -417,6 +383,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ctaBusy: { opacity: 0.6 },
   ctaText: { color: ON_BRAND, fontSize: 17, fontWeight: '600' },
 });
