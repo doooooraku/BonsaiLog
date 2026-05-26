@@ -47,6 +47,12 @@ type BonsaiTagRecord = {
   tagId: string;
 };
 
+/** bonsai_species_custom / bonsai_styles_custom 共通: id + name (name は UNIQUE)。 */
+type NamedRecord = {
+  id: string;
+  name: string;
+};
+
 /** bonsai_tags の複合主キーを Set 用キーに変換 (区切りに tag/bonsai id に出現しない `\t` を使用)。 */
 export function bonsaiTagKey(bonsaiId: string, tagId: string): string {
   return `${bonsaiId}\t${tagId}`;
@@ -58,17 +64,23 @@ export type AppendImportPlan<
   TPhoto extends PhotoRecord,
   TTag extends TagRecord,
   TBonsaiTag extends BonsaiTagRecord,
+  TCustomSpecies extends NamedRecord,
+  TCustomStyle extends NamedRecord,
 > = {
   bonsaiToInsert: TBonsai[];
   eventsToInsert: TEvent[];
   photosToInsert: TPhoto[];
   tagsToInsert: TTag[];
   bonsaiTagsToInsert: TBonsaiTag[];
+  customSpeciesToInsert: TCustomSpecies[];
+  customStylesToInsert: TCustomStyle[];
   skippedBonsai: number;
   skippedEvents: number;
   skippedPhotos: number;
   skippedTags: number;
   skippedBonsaiTags: number;
+  skippedCustomSpecies: number;
+  skippedCustomStyles: number;
   /** bonsai_id が manifest にも DB にも無い photo / event。BackupError('invalid') で拒否対象。 */
   invalidPhotoRefs: TPhoto[];
   invalidEventRefs: TEvent[];
@@ -92,43 +104,63 @@ export function buildAppendImportPlan<
   TPhoto extends PhotoRecord,
   TTag extends TagRecord,
   TBonsaiTag extends BonsaiTagRecord,
+  TCustomSpecies extends NamedRecord,
+  TCustomStyle extends NamedRecord,
 >({
   bonsai,
   events,
   photos,
   tags = [],
   bonsaiTags = [],
+  customSpecies = [],
+  customStyles = [],
   existingBonsaiIds,
   existingEventIds,
   existingPhotoIds,
   existingTagIds = new Set<string>(),
   existingTagNormalized = new Set<string>(),
   existingBonsaiTagKeys = new Set<string>(),
+  existingCustomSpeciesIds = new Set<string>(),
+  existingCustomSpeciesNames = new Set<string>(),
+  existingCustomStyleIds = new Set<string>(),
+  existingCustomStyleNames = new Set<string>(),
 }: {
   bonsai: TBonsai[];
   events: TEvent[];
   photos: TPhoto[];
   tags?: TTag[];
   bonsaiTags?: TBonsaiTag[];
+  customSpecies?: TCustomSpecies[];
+  customStyles?: TCustomStyle[];
   existingBonsaiIds: ReadonlySet<string>;
   existingEventIds: ReadonlySet<string>;
   existingPhotoIds: ReadonlySet<string>;
   existingTagIds?: ReadonlySet<string>;
   existingTagNormalized?: ReadonlySet<string>;
   existingBonsaiTagKeys?: ReadonlySet<string>;
-}): AppendImportPlan<TBonsai, TEvent, TPhoto, TTag, TBonsaiTag> {
+  existingCustomSpeciesIds?: ReadonlySet<string>;
+  existingCustomSpeciesNames?: ReadonlySet<string>;
+  existingCustomStyleIds?: ReadonlySet<string>;
+  existingCustomStyleNames?: ReadonlySet<string>;
+}): AppendImportPlan<TBonsai, TEvent, TPhoto, TTag, TBonsaiTag, TCustomSpecies, TCustomStyle> {
   const knownBonsaiIds = new Set(existingBonsaiIds);
   const knownEventIds = new Set(existingEventIds);
   const knownPhotoIds = new Set(existingPhotoIds);
   const knownTagIds = new Set(existingTagIds);
   const knownTagNormalized = new Set(existingTagNormalized);
   const knownBonsaiTagKeys = new Set(existingBonsaiTagKeys);
+  const knownCustomSpeciesIds = new Set(existingCustomSpeciesIds);
+  const knownCustomSpeciesNames = new Set(existingCustomSpeciesNames);
+  const knownCustomStyleIds = new Set(existingCustomStyleIds);
+  const knownCustomStyleNames = new Set(existingCustomStyleNames);
 
   const bonsaiToInsert: TBonsai[] = [];
   const eventsToInsert: TEvent[] = [];
   const photosToInsert: TPhoto[] = [];
   const tagsToInsert: TTag[] = [];
   const bonsaiTagsToInsert: TBonsaiTag[] = [];
+  const customSpeciesToInsert: TCustomSpecies[] = [];
+  const customStylesToInsert: TCustomStyle[] = [];
   const invalidEventRefs: TEvent[] = [];
   const invalidPhotoRefs: TPhoto[] = [];
 
@@ -137,6 +169,29 @@ export function buildAppendImportPlan<
   let skippedPhotos = 0;
   let skippedTags = 0;
   let skippedBonsaiTags = 0;
+  let skippedCustomSpecies = 0;
+  let skippedCustomStyles = 0;
+
+  // カスタム樹種/樹形は id 既存 OR name 既存(UNIQUE)なら skip。
+  for (const sp of customSpecies) {
+    if (knownCustomSpeciesIds.has(sp.id) || knownCustomSpeciesNames.has(sp.name)) {
+      skippedCustomSpecies += 1;
+      continue;
+    }
+    knownCustomSpeciesIds.add(sp.id);
+    knownCustomSpeciesNames.add(sp.name);
+    customSpeciesToInsert.push(sp);
+  }
+
+  for (const st of customStyles) {
+    if (knownCustomStyleIds.has(st.id) || knownCustomStyleNames.has(st.name)) {
+      skippedCustomStyles += 1;
+      continue;
+    }
+    knownCustomStyleIds.add(st.id);
+    knownCustomStyleNames.add(st.name);
+    customStylesToInsert.push(st);
+  }
 
   for (const tree of bonsai) {
     if (knownBonsaiIds.has(tree.id)) {
@@ -205,11 +260,15 @@ export function buildAppendImportPlan<
     photosToInsert,
     tagsToInsert,
     bonsaiTagsToInsert,
+    customSpeciesToInsert,
+    customStylesToInsert,
     skippedBonsai,
     skippedEvents,
     skippedPhotos,
     skippedTags,
     skippedBonsaiTags,
+    skippedCustomSpecies,
+    skippedCustomStyles,
     invalidEventRefs,
     invalidPhotoRefs,
   };

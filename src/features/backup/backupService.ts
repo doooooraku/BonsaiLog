@@ -31,7 +31,10 @@ import { unzip, zip } from 'react-native-zip-archive';
 import { getDb } from '@/src/db/db';
 import { toAbsolutePath, toRelativePath } from '@/src/db/filePathUtils';
 import { nowUtc } from '@/src/core/datetime';
-import { getLang, setLang, type Lang } from '@/src/core/i18n/i18n';
+import { getLang, setLang, t, type Lang } from '@/src/core/i18n/i18n';
+import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
+import { useSettingsStore, type PotUnit } from '@/src/stores/settingsStore';
+import { type ThemeMode } from '@/src/core/theme/themeResolver';
 import { buildAppendImportPlan, bonsaiTagKey } from './backupImportPlanner';
 
 // ---------------------------------------------------------------------------
@@ -65,6 +68,12 @@ export type BackupBonsai = {
   acquiredAt: string | null;
   style: string | null;
   potInfo: string | null;
+  estimatedAge: number | null;
+  memo: string | null;
+  purchaseDate: string | null;
+  acquiredFrom: string | null;
+  estimatedAgeUnknown: number;
+  customSpeciesId: string | null;
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -113,8 +122,20 @@ export type BackupBonsaiTag = {
   createdAt: string;
 };
 
+/** bonsai_species_custom / bonsai_styles_custom 共通形 (id + name + created_at)。 */
+export type BackupNamed = {
+  id: string;
+  name: string;
+  createdAt: string;
+};
+
 export type BackupSettings = {
   language: string;
+  /** 後付けの任意設定 (旧 ZIP には無い → import 時に存在分のみ適用)。 */
+  themeMode?: string;
+  potUnit?: string;
+  notificationDailySummaryEnabled?: boolean;
+  notificationDailySummaryTime?: string;
 };
 
 export type BackupManifest = {
@@ -127,6 +148,8 @@ export type BackupManifest = {
   /** schema_version 1 後付けの任意フィールド (旧 ZIP には存在しない → import 時 ?? [] で吸収)。 */
   tags?: BackupTag[];
   bonsaiTags?: BackupBonsaiTag[];
+  customSpecies?: BackupNamed[];
+  customStyles?: BackupNamed[];
   settings: BackupSettings;
 };
 
@@ -219,6 +242,12 @@ async function buildManifestFromDb(): Promise<{
     acquired_at: string | null;
     style: string | null;
     pot_info: string | null;
+    estimated_age: number | null;
+    memo: string | null;
+    purchase_date: string | null;
+    acquired_from: string | null;
+    estimated_age_unknown: number;
+    custom_species_id: string | null;
     archived_at: string | null;
     created_at: string;
     updated_at: string;
@@ -267,11 +296,19 @@ async function buildManifestFromDb(): Promise<{
     created_at: string;
   };
 
+  type NamedRow = {
+    id: string;
+    name: string;
+    created_at: string;
+  };
+
   const bonsaiRows = await db.getAllAsync<BonsaiRow>('SELECT * FROM bonsai;');
   const eventRows = await db.getAllAsync<EventRow>('SELECT * FROM events;');
   const photoRows = await db.getAllAsync<PhotoRow>('SELECT * FROM photos;');
   const tagRows = await db.getAllAsync<TagRow>('SELECT * FROM tags;');
   const bonsaiTagRows = await db.getAllAsync<BonsaiTagRow>('SELECT * FROM bonsai_tags;');
+  const customSpeciesRows = await db.getAllAsync<NamedRow>('SELECT * FROM bonsai_species_custom;');
+  const customStyleRows = await db.getAllAsync<NamedRow>('SELECT * FROM bonsai_styles_custom;');
 
   const bonsai: BackupBonsai[] = bonsaiRows.map((row) => ({
     id: row.id,
@@ -280,6 +317,12 @@ async function buildManifestFromDb(): Promise<{
     acquiredAt: row.acquired_at,
     style: row.style,
     potInfo: row.pot_info,
+    estimatedAge: row.estimated_age,
+    memo: row.memo,
+    purchaseDate: row.purchase_date,
+    acquiredFrom: row.acquired_from,
+    estimatedAgeUnknown: row.estimated_age_unknown,
+    customSpeciesId: row.custom_species_id,
     archivedAt: row.archived_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -334,6 +377,17 @@ async function buildManifestFromDb(): Promise<{
     createdAt: row.created_at,
   }));
 
+  const mapNamed = (row: NamedRow): BackupNamed => ({
+    id: row.id,
+    name: row.name,
+    createdAt: row.created_at,
+  });
+  const customSpecies: BackupNamed[] = customSpeciesRows.map(mapNamed);
+  const customStyles: BackupNamed[] = customStyleRows.map(mapNamed);
+
+  // 設定 (好み) も「完全なお引っ越し」のため含める。
+  const settingsState = useSettingsStore.getState();
+
   const manifest: BackupManifest = {
     schemaVersion: BACKUP_SCHEMA_VERSION,
     exportedAt: nowUtc() as string,
@@ -343,8 +397,14 @@ async function buildManifestFromDb(): Promise<{
     photos,
     tags,
     bonsaiTags,
+    customSpecies,
+    customStyles,
     settings: {
       language: getLang(),
+      themeMode: settingsState.themeMode,
+      potUnit: settingsState.potUnit,
+      notificationDailySummaryEnabled: settingsState.notificationDailySummaryEnabled,
+      notificationDailySummaryTime: settingsState.notificationDailySummaryTime,
     },
   };
 
@@ -596,6 +656,12 @@ export async function importBackup(): Promise<BackupImportResult | null> {
     const bonsaiTagRows = await db.getAllAsync<{ bonsai_id: string; tag_id: string }>(
       'SELECT bonsai_id, tag_id FROM bonsai_tags;',
     );
+    const customSpeciesRows = await db.getAllAsync<{ id: string; name: string }>(
+      'SELECT id, name FROM bonsai_species_custom;',
+    );
+    const customStyleRows = await db.getAllAsync<{ id: string; name: string }>(
+      'SELECT id, name FROM bonsai_styles_custom;',
+    );
 
     const plan = buildAppendImportPlan({
       bonsai: manifest.bonsai,
@@ -603,12 +669,18 @@ export async function importBackup(): Promise<BackupImportResult | null> {
       photos: manifest.photos,
       tags: manifest.tags ?? [],
       bonsaiTags: manifest.bonsaiTags ?? [],
+      customSpecies: manifest.customSpecies ?? [],
+      customStyles: manifest.customStyles ?? [],
       existingBonsaiIds: new Set(bonsaiRows.map((r) => r.id)),
       existingEventIds: new Set(eventRows.map((r) => r.id)),
       existingPhotoIds: new Set(photoRows.map((r) => r.id)),
       existingTagIds: new Set(tagRows.map((r) => r.id)),
       existingTagNormalized: new Set(tagRows.map((r) => r.name_normalized)),
       existingBonsaiTagKeys: new Set(bonsaiTagRows.map((r) => bonsaiTagKey(r.bonsai_id, r.tag_id))),
+      existingCustomSpeciesIds: new Set(customSpeciesRows.map((r) => r.id)),
+      existingCustomSpeciesNames: new Set(customSpeciesRows.map((r) => r.name)),
+      existingCustomStyleIds: new Set(customStyleRows.map((r) => r.id)),
+      existingCustomStyleNames: new Set(customStyleRows.map((r) => r.name)),
     });
 
     if (plan.invalidEventRefs.length > 0 || plan.invalidPhotoRefs.length > 0) {
@@ -627,11 +699,27 @@ export async function importBackup(): Promise<BackupImportResult | null> {
     const copiedPhotoPaths: string[] = [];
     try {
       await db.withTransactionAsync(async () => {
+        // カスタム樹種/樹形を bonsai より先に (bonsai.custom_species_id が参照)。
+        for (const sp of plan.customSpeciesToInsert) {
+          await db.runAsync(
+            'INSERT INTO bonsai_species_custom (id, name, created_at) VALUES (?, ?, ?);',
+            [sp.id, sp.name, sp.createdAt],
+          );
+        }
+        for (const st of plan.customStylesToInsert) {
+          await db.runAsync(
+            'INSERT INTO bonsai_styles_custom (id, name, created_at) VALUES (?, ?, ?);',
+            [st.id, st.name, st.createdAt],
+          );
+        }
+
         for (const tree of plan.bonsaiToInsert) {
           await db.runAsync(
             `INSERT INTO bonsai
-               (id, name, species_id, acquired_at, style, pot_info, archived_at, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+               (id, name, species_id, acquired_at, style, pot_info, estimated_age, memo,
+                purchase_date, acquired_from, estimated_age_unknown, custom_species_id,
+                archived_at, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
             [
               tree.id,
               tree.name,
@@ -639,6 +727,12 @@ export async function importBackup(): Promise<BackupImportResult | null> {
               tree.acquiredAt ?? null,
               tree.style ?? null,
               tree.potInfo ?? null,
+              tree.estimatedAge ?? null,
+              tree.memo ?? null,
+              tree.purchaseDate ?? null,
+              tree.acquiredFrom ?? null,
+              tree.estimatedAgeUnknown ?? 0,
+              tree.customSpeciesId ?? null,
               tree.archivedAt ?? null,
               tree.createdAt,
               tree.updatedAt,
@@ -745,12 +839,32 @@ export async function importBackup(): Promise<BackupImportResult | null> {
       throw error;
     }
 
-    // 7. 言語設定の引き継ぎ (任意、Repolog 流儀)
-    if (manifest.settings?.language) {
+    // 7. 設定 (好み) の引き継ぎ — 「完全なお引っ越し」。存在する項目のみ適用 (旧 ZIP 後方互換)。
+    const s = manifest.settings;
+    if (s?.language) {
       try {
-        setLang(manifest.settings.language as Lang);
+        setLang(s.language as Lang);
       } catch {
         // 不正な言語コードは無視 (現在の言語のまま)
+      }
+    }
+    if (s) {
+      try {
+        const store = useSettingsStore.getState();
+        if (s.themeMode != null) store.setThemeMode(s.themeMode as ThemeMode);
+        if (s.potUnit != null) store.setPotUnit(s.potUnit as PotUnit);
+        if (s.notificationDailySummaryTime != null) {
+          store.setNotificationDailySummaryTime(s.notificationDailySummaryTime);
+        }
+        if (s.notificationDailySummaryEnabled != null) {
+          store.setNotificationDailySummaryEnabled(s.notificationDailySummaryEnabled);
+          // 通知 ON の場合は新しい時刻で再スケジュール (設定画面と同じ流儀、t は復元後言語)。
+          if (s.notificationDailySummaryEnabled) {
+            void triggerSummaryReschedule(t);
+          }
+        }
+      } catch {
+        // 設定適用失敗は致命的でない (データ復元は完了済み)
       }
     }
 
