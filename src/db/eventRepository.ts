@@ -136,6 +136,43 @@ export async function getActiveEventsByBonsai(bonsaiId: string): Promise<Event[]
 }
 
 /**
+ * F-10 エクスポート (Issue #33 / ADR-0016): 期間 + 対象でフィルタした active events を取得。
+ *
+ * - deleted_at IS NULL は常に適用 (ゴミ箱は出力しない)
+ * - bonsaiIds 指定時は WHERE bonsai_id IN (...) で絞り込み (scope=selected / tag)
+ * - fromIso / toIso 指定時は occurred_at_utc BETWEEN で期間絞り込み (occurred_at_utc は索引済 ADR-0008)
+ * - occurred_at_utc 降順 (CSV は新しい順)
+ */
+export async function getEventsInRange(opts: {
+  bonsaiIds?: readonly string[];
+  fromIso?: string;
+  toIso?: string;
+}): Promise<Event[]> {
+  const db = await getDb();
+  const where: string[] = ['deleted_at IS NULL'];
+  const params: (string | number)[] = [];
+
+  if (opts.bonsaiIds && opts.bonsaiIds.length > 0) {
+    where.push(`bonsai_id IN (${opts.bonsaiIds.map(() => '?').join(',')})`);
+    params.push(...opts.bonsaiIds);
+  }
+  if (opts.fromIso) {
+    where.push('occurred_at_utc >= ?');
+    params.push(opts.fromIso);
+  }
+  if (opts.toIso) {
+    where.push('occurred_at_utc <= ?');
+    params.push(opts.toIso);
+  }
+
+  const rows = await db.getAllAsync<Record<string, unknown>>(
+    `SELECT * FROM events WHERE ${where.join(' AND ')} ORDER BY occurred_at_utc DESC;`,
+    params,
+  );
+  return snakeToCamelRows<Event>(rows);
+}
+
+/**
  * 全盆栽の水やり events (status='logged') を取得 (F-04 stats タブ集約モード用)。
  *
  * - bonsaiId フィルタなし (全 active 盆栽の events を返す)
