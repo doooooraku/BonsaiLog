@@ -244,8 +244,11 @@ const fr: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: "Aujourd'hui",
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'Recevoir des notifications pour vos plans ?',
+  softAskNotifBody:
+    'Nous envoyons une notification par jour avec les tâches prévues du jour. Vous pourrez changer l’heure dans les réglages.',
+  softAskNotifConfirm: 'Activer',
+  softAskNotifCancel: 'Pas maintenant',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Rechercher par nom, espèce, style ou notes',
   searchMinChars: 'Saisissez au moins {count} caractères pour rechercher',
@@ -299,8 +302,6 @@ const fr: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'Recevez un résumé unique à {time} quand des événements sont prévus ce jour-là.',
   settingsNotifSummaryEditTime: 'Heure de notification',
-  settingsNotifWateringToggle: "Rappels d'arrosage",
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -415,8 +416,8 @@ const fr: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'Quand vous ajoutez un plan, vous pouvez choisir d’être notifié. Vous pouvez changer cela à tout moment dans les réglages.',
+  onboardingTut5Cta: 'Commencer',
   onboardingTutNext: 'Suivant',
   skipForLater: 'Passer pour plus tard',
   settingsHelpSection: 'Aide',

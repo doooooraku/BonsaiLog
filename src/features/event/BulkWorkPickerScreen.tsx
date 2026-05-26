@@ -26,6 +26,7 @@ import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
 import { bulkScheduleEvents } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
+import { maybePromptNotificationOptIn } from '@/src/features/notification/optInPrompt';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
@@ -63,6 +64,9 @@ export default function BulkWorkPickerScreen() {
         try {
           await bulkScheduleEvents({ bonsaiIds, type, occurredAtUtc });
           useToastStore.getState().show(t('bulkScheduleDoneToast').replace('{count}', '1'));
+          // ADR-0014 Amended: 初回予定登録時の通知 soft-ask 判定 (通知 OFF かつ未提示なら生涯 1 回表示)。
+          // 表示自体は root の NotificationOptInHost が行う (本画面は遷移で unmount するため)。
+          maybePromptNotificationOptIn();
         } catch (error) {
           console.warn('[bulk-schedule] failed:', error);
         }

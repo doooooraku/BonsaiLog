@@ -243,8 +243,11 @@ const ko: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: '오늘',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: '예정 알림을 받으시겠어요?',
+  softAskNotifBody:
+    '그날 예정된 작업을 하루 한 번 알려드립니다. 시간은 나중에 설정에서 바꿀 수 있어요.',
+  softAskNotifConfirm: '받기',
+  softAskNotifCancel: '나중에',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: '이름, 수종, 수형 또는 메모로 검색',
   searchMinChars: '검색하려면 {count}자 이상 입력하세요',
@@ -296,8 +299,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggle: '일일 요약',
   settingsNotifSummaryToggleDesc: '그날 예정된 일정이 있으면 {time}에 하나의 요약 알림을 받습니다.',
   settingsNotifSummaryEditTime: '알림 시간',
-  settingsNotifWateringToggle: '물주기 알림',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -412,8 +413,8 @@ const ko: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    '예정을 추가할 때 알림 받기를 선택할 수 있어요. 설정에서 언제든 바꿀 수 있습니다.',
+  onboardingTut5Cta: '시작하기',
   onboardingTutNext: '다음',
   skipForLater: '나중에 하기',
   settingsHelpSection: '도움말',

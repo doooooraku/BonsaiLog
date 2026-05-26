@@ -244,8 +244,11 @@ const pl: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: 'Dziś',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'Otrzymywać powiadomienia o planach?',
+  softAskNotifBody:
+    'Raz dziennie wyślemy powiadomienie z zaplanowanymi zadaniami na ten dzień. Godzinę zmienisz później w Ustawieniach.',
+  softAskNotifConfirm: 'Włącz',
+  softAskNotifCancel: 'Nie teraz',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Szukaj po nazwie, gatunku, stylu lub notatkach',
   searchMinChars: 'Wpisz co najmniej {count} znaki, aby wyszukać',
@@ -298,8 +301,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'Otrzymaj jedno podsumowanie o {time}, gdy masz zaplanowane wydarzenia tego dnia.',
   settingsNotifSummaryEditTime: 'Czas powiadomienia',
-  settingsNotifWateringToggle: 'Przypomnienia o podlewaniu',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -414,8 +415,8 @@ const pl: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'Dodając plan, możesz włączyć powiadomienia. Zmienisz to w każdej chwili w Ustawieniach.',
+  onboardingTut5Cta: 'Zaczynaj',
   onboardingTutNext: 'Dalej',
   skipForLater: 'Pomiń na razie',
   settingsHelpSection: 'Pomoc',

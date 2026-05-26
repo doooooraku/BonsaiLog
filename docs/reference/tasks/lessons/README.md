@@ -6,16 +6,17 @@
 
 ## 領域別ファイル
 
-| ファイル                     | 内容                                                                                   | 想定読者                 |
-| ---------------------------- | -------------------------------------------------------------------------------------- | ------------------------ |
-| [`docs.md`](./docs.md)       | ドキュメント管理 / 棚卸 / 索引更新 / 参照整合性                                        | docs 編集時              |
-| [`db.md`](./db.md)           | SQLite マイグレ冪等性 / Drizzle / バックアップフィールド / i18n キー管理               | DB / i18n 実装時         |
-| [`build.md`](./build.md)     | EAS local build / 環境変数 / API キー / 画像相対パス / CI/CD 検証スクリプト            | ビルド・CI 作業時        |
-| [`runtime.md`](./runtime.md) | デバッグワークフロー / logcat False Positive / Android predictive back / 開発環境 PATH | デバッグ・Android 実装時 |
-| [`store.md`](./store.md)     | App Store / Google Play 申請 / メタデータ / UX 文言 / 法的リンク                       | リリース作業時           |
-| [`billing.md`](./billing.md) | RevenueCat / Pro 状態管理 / Champion 方式 / 別アプリ踏襲時のペルソナ再評価             | 課金実装時               |
-| [`design.md`](./design.md)   | Claude Design 作成時の ADR 添付 / テンプレ残骸検査 / design_system.md 整合確認         | UI 改修・Design 作成時   |
-| [`discuss.md`](./discuss.md) | 議論プロセス (R-34 認識ギャップ防止 / R-35 alternative 提示 / 業界事例)                | /discuss 起動時          |
+| ファイル                               | 内容                                                                                      | 想定読者                 |
+| -------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------ |
+| [`docs.md`](./docs.md)                 | ドキュメント管理 / 棚卸 / 索引更新 / 参照整合性                                           | docs 編集時              |
+| [`db.md`](./db.md)                     | SQLite マイグレ冪等性 / Drizzle / バックアップフィールド / i18n キー管理                  | DB / i18n 実装時         |
+| [`build.md`](./build.md)               | EAS local build / 環境変数 / API キー / 画像相対パス / CI/CD 検証スクリプト               | ビルド・CI 作業時        |
+| [`runtime.md`](./runtime.md)           | デバッグワークフロー / logcat False Positive / Android predictive back / 開発環境 PATH    | デバッグ・Android 実装時 |
+| [`store.md`](./store.md)               | App Store / Google Play 申請 / メタデータ / UX 文言 / 法的リンク                          | リリース作業時           |
+| [`billing.md`](./billing.md)           | RevenueCat / Pro 状態管理 / Champion 方式 / 別アプリ踏襲時のペルソナ再評価                | 課金実装時               |
+| [`design.md`](./design.md)             | Claude Design 作成時の ADR 添付 / テンプレ残骸検査 / design_system.md 整合確認            | UI 改修・Design 作成時   |
+| [`discuss.md`](./discuss.md)           | 議論プロセス (R-34 認識ギャップ防止 / R-35 alternative 提示 / 業界事例)                   | /discuss 起動時          |
+| [`notification.md`](./notification.md) | 通知 F-16 (未配線デッドコード検出 / 許可取得タイミング soft-ask / 単一トグル起動時副作用) | 通知・権限実装時         |
 
 ## 運用ルール
 

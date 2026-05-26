@@ -260,8 +260,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: '今日',
   notificationSummaryTitle: '今日の予定',
   notificationSummaryBody: '{count} 件の作業予定があります',
-  notificationWateringTitle: '水やり',
-  notificationWateringBody: '盆栽の水やりの時間です',
+  softAskNotifTitle: '予定の通知を受け取りますか？',
+  softAskNotifBody:
+    'その日の作業予定を、1日1回まとめてお知らせします。通知の時刻はあとで設定から変えられます。',
+  softAskNotifConfirm: '受け取る',
+  softAskNotifCancel: '受け取らない',
   searchDesc: '盆栽の名前と作業ログのメモを検索します。',
   searchPlaceholder: '盆栽名・樹種・樹形・メモで検索',
   searchMinChars: '{count}文字以上で検索できます',
@@ -309,8 +312,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggle: '当日まとめ通知',
   settingsNotifSummaryToggleDesc: '予定がある日に {time} に 1 件のまとめ通知を受け取ります。',
   settingsNotifSummaryEditTime: '通知時刻を変更',
-  settingsNotifWateringToggle: '水やり通知',
-  settingsNotifWateringToggleDesc: '{times} に水やり通知を受け取ります。',
   settingsNotifPermissionDeniedTitle: '通知の許可が必要です',
   settingsNotifPermissionDeniedBody:
     '端末の設定で通知が無効になっています。設定から許可してください。',
@@ -542,8 +543,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   onboardingTut4Body:
     '色が濃いほどその日の水やり回数が多いです。セルをタップで詳細表示。「最後の水やり」は経過日数を示します。',
   onboardingTut5Title: 'あなたが決めた予定をお知らせ',
-  onboardingTut5Body: 'いつでも設定からオン/オフできます。',
-  onboardingTut5Cta: '通知を有効にする',
+  onboardingTut5Body:
+    '予定を登録するときに、通知を受け取るか選べます。いつでも設定から変更できます。',
+  onboardingTut5Cta: '始める',
   onboardingTutNext: '次へ',
   skipForLater: 'あとで',
   settingsHelpSection: 'ヘルプ',

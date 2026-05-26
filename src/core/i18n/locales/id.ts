@@ -244,8 +244,11 @@ const id: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: 'Hari ini',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'Terima notifikasi untuk rencana Anda?',
+  softAskNotifBody:
+    'Kami mengirim satu notifikasi per hari berisi tugas terjadwal hari itu. Anda dapat mengubah waktunya nanti di Pengaturan.',
+  softAskNotifConfirm: 'Aktifkan',
+  softAskNotifCancel: 'Nanti saja',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Cari nama, jenis, gaya, atau catatan',
   searchMinChars: 'Masukkan minimal {count} karakter untuk mencari',
@@ -298,8 +301,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'Terima satu ringkasan pada {time} saat ada acara terjadwal hari itu.',
   settingsNotifSummaryEditTime: 'Waktu notifikasi',
-  settingsNotifWateringToggle: 'Pengingat penyiraman',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -414,8 +415,8 @@ const id: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'Saat menambahkan rencana, Anda dapat memilih menerima notifikasi. Ubah kapan saja di Pengaturan.',
+  onboardingTut5Cta: 'Mulai',
   onboardingTutNext: 'Berikutnya',
   skipForLater: 'Lewati untuk nanti',
   settingsHelpSection: 'Bantuan',

@@ -27,6 +27,7 @@ import { resolveEffectiveScheme } from '@/src/core/theme/themeResolver';
 import { isOnboardingFinished } from '@/src/features/onboarding/onboardingFlow';
 import { ensureNotificationChannels } from '@/src/features/notification/scheduler';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
+import { NotificationOptInHost } from '@/src/features/notification/NotificationOptInHost';
 import { initializeAds } from '@/src/services/adService';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
 import { useProStore } from '@/src/stores/proStore';
@@ -84,15 +85,15 @@ export default function RootLayout() {
     initPro();
   }, [initPro]);
 
-  // F-16 Phase A (Issue #30, ADR-0014): Android 通知チャネル (WATERING / DAILY_SUMMARY) を起動時に確保。
+  // F-16 (Issue #30, ADR-0014 Amended): Android 通知チャネル (DAILY_SUMMARY) を起動時に確保。
   useEffect(() => {
     ensureNotificationChannels().catch(() => {
       // チャネル作成失敗は致命的ではない (iOS は no-op)
     });
   }, []);
 
-  // Sess12 PR-I: 起動時に当日まとめ通知を reschedule (master/summary toggle 状態反映)。
-  // ADR-0011 維持: master OFF default、 user が設定 ON にした時のみ動作。
+  // Sess12 PR-I: 起動時に当日まとめ通知を reschedule (通知 toggle 状態反映)。
+  // ADR-0014 Amended: 通知 OFF default、 user が ON にした時のみ動作 (OFF 時は permission 要求しない)。
   const { t } = useTranslation();
   useEffect(() => {
     void triggerSummaryReschedule(t);
@@ -161,6 +162,8 @@ export default function RootLayout() {
         <StatusBar style={effectiveScheme === 'dark' ? 'light' : 'dark'} />
         {/* Sess12 PR-B+C: 一括予定/記録追加完了の Toast (root mount で全画面に表示可) */}
         <Toast />
+        {/* ADR-0014 Amended: 初回予定登録時の通知 soft-ask モーダル (root mount で画面遷移後も表示可) */}
+        <NotificationOptInHost />
       </ThemeProvider>
     </GestureHandlerRootView>
   );

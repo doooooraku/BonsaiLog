@@ -255,8 +255,11 @@ const baseEn = {
   detailTimelineToday: 'Today',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'Get notified about your plans?',
+  softAskNotifBody:
+    "We'll send one notification a day with that day's planned tasks. You can change the time later in Settings.",
+  softAskNotifConfirm: 'Turn on',
+  softAskNotifCancel: 'Not now',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Search by name, species, style, or notes',
   searchMinChars: 'Enter at least {count} characters to search',
@@ -305,8 +308,6 @@ const baseEn = {
   settingsNotifSummaryToggleDesc:
     'Receive a single summary at {time} when you have planned events on that day.',
   settingsNotifSummaryEditTime: 'Notification time',
-  settingsNotifWateringToggle: 'Watering notifications',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -541,8 +542,8 @@ const baseEn = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Notifications for plans you have set',
   onboardingTut5Body:
-    'You will only receive notifications for the plans you set yourself. You can turn them off anytime; everything is configurable in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'When you add a plan, you can choose to get notified. You can change this anytime in Settings.',
+  onboardingTut5Cta: 'Get started',
   onboardingTutNext: 'Next',
   skipForLater: 'Skip for later',
   settingsHelpSection: 'Help',
