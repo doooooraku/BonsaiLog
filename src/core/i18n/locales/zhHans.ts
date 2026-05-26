@@ -172,15 +172,14 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: '设置',
   settingsBackupSection: '备份',
-  backupTitle: '搬家',
+  backupTitle: '备份与恢复',
   backupExportTitle: '创建备份',
-  backupExportDesc:
-    '将盆栽记录、照片和养护日志保存为单个 ZIP 文件。可通过共享菜单发送到 iCloud Drive、Google Drive、邮件或聊天应用。',
+  backupExportDesc: '将盆景记录、照片和养护历史导出为一个 ZIP 文件。可从共享菜单选择保存位置。',
   backupExportAction: '创建备份',
   backupExportSuccess: '已创建备份。',
   backupExportFailed: '创建备份失败。',
   backupImportTitle: '从备份恢复',
-  backupImportDesc: '从先前创建的 ZIP 文件恢复。新记录会被添加，现有记录不会被修改。',
+  backupImportDesc: '从之前创建的 ZIP 文件恢复。',
   backupImportAction: '恢复',
   backupImportWarningTitle: '从备份恢复？',
   backupImportWarningBody: '新记录将被添加到现有数据中。现有记录不会被覆盖或删除。',
@@ -197,7 +196,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   backupShareUnavailableBody: '此设备无法使用共享功能。请更新操作系统后重试。',
   backupUnsupportedTitle: '暂不支持',
   backupUnsupportedBody: '此平台不支持备份功能。',
-  backupEncryptionWarning: '备份未加密。保存到云服务时，请保管在您控制的安全文件夹内。',
+  backupEncryptionWarning: '注意：备份不会加密，请自行妥善保管保存位置。',
 
   // --- F-04 Watering history (Phase A、English fallback for now) ---
   wateringSectionTitle: 'Watering',

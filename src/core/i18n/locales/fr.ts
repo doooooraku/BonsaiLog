@@ -174,16 +174,15 @@ const fr: Partial<Record<TranslationKey, string>> = {
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: 'Settings',
   settingsBackupSection: 'Sauvegarde',
-  backupTitle: 'Move data',
+  backupTitle: 'Sauvegarde et restauration',
   backupExportTitle: 'Create a backup',
   backupExportDesc:
-    'Save all your bonsai records, photos, and care log to a single ZIP file. Use the Share Sheet to send it to iCloud Drive, Google Drive, email, or messaging apps.',
+    "Enregistre vos fiches de bonsaï, photos et historiques d'entretien dans un seul fichier ZIP. Choisissez l'emplacement via le menu de partage.",
   backupExportAction: 'Create backup',
   backupExportSuccess: 'Backup created.',
   backupExportFailed: 'Failed to create the backup.',
   backupImportTitle: 'Restore from a backup',
-  backupImportDesc:
-    'Restore from a previously created ZIP file. New records are added; existing records are not changed.',
+  backupImportDesc: "Restaurez à partir d'un fichier ZIP créé précédemment.",
   backupImportAction: 'Restore',
   backupImportWarningTitle: 'Restore from backup?',
   backupImportWarningBody:
@@ -206,7 +205,7 @@ const fr: Partial<Record<TranslationKey, string>> = {
   backupUnsupportedTitle: 'Not supported',
   backupUnsupportedBody: 'Backup is not available on this platform.',
   backupEncryptionWarning:
-    'Backups are not encrypted. When you save them to a cloud service, please keep them in a secure folder under your control.',
+    'Remarque : les sauvegardes ne sont pas chiffrées. Conservez-les dans un endroit sûr que vous gérez.',
 
   // --- F-04 Watering history (Phase A、English fallback for now) ---
   wateringSectionTitle: 'Watering',

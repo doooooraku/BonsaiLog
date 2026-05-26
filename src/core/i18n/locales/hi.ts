@@ -174,16 +174,15 @@ const hi: Partial<Record<TranslationKey, string>> = {
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: 'Settings',
   settingsBackupSection: 'बैकअप',
-  backupTitle: 'Move data',
+  backupTitle: 'बैकअप और पुनर्स्थापना',
   backupExportTitle: 'Create a backup',
   backupExportDesc:
-    'Save all your bonsai records, photos, and care log to a single ZIP file. Use the Share Sheet to send it to iCloud Drive, Google Drive, email, or messaging apps.',
+    'आपके बोनसाई रिकॉर्ड, फ़ोटो और देखभाल लॉग को एक ही ZIP फ़ाइल में सहेजता है। शेयर मेनू से सहेजने का स्थान चुनें।',
   backupExportAction: 'Create backup',
   backupExportSuccess: 'Backup created.',
   backupExportFailed: 'Failed to create the backup.',
   backupImportTitle: 'Restore from a backup',
-  backupImportDesc:
-    'Restore from a previously created ZIP file. New records are added; existing records are not changed.',
+  backupImportDesc: 'पहले बनाई गई ZIP फ़ाइल से पुनर्स्थापित करें।',
   backupImportAction: 'Restore',
   backupImportWarningTitle: 'Restore from backup?',
   backupImportWarningBody:
@@ -206,7 +205,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   backupUnsupportedTitle: 'Not supported',
   backupUnsupportedBody: 'Backup is not available on this platform.',
   backupEncryptionWarning:
-    'Backups are not encrypted. When you save them to a cloud service, please keep them in a secure folder under your control.',
+    'नोट: बैकअप एन्क्रिप्टेड नहीं होते। इन्हें अपनी प्रबंधित सुरक्षित जगह पर रखें।',
 
   // --- F-04 Watering history (Phase A、English fallback for now) ---
   wateringSectionTitle: 'Watering',

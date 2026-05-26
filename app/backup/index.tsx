@@ -18,7 +18,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } fro
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { BRAND_GREEN, ON_BRAND, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import { BackupError, exportBackup, importBackup } from '@/src/features/backup/backupService';
 
 export default function BackupScreen() {
@@ -117,10 +117,8 @@ export default function BackupScreen() {
           </ThemedText>
           <ThemedText style={styles.body}>{t('backupExportDesc')}</ThemedText>
 
-          {/* 暗号化なし警告 (constraints §5-1) */}
-          <View style={styles.warningBox}>
-            <ThemedText style={styles.warningText}>{t('backupEncryptionWarning')}</ThemedText>
-          </View>
+          {/* 暗号化なし注記 (constraints §5-1: クラウド保存は自己責任を明示)。枠なし 1 行 */}
+          <ThemedText style={styles.note}>{t('backupEncryptionWarning')}</ThemedText>
 
           <Pressable
             accessibilityRole="button"
@@ -147,10 +145,6 @@ export default function BackupScreen() {
             {t('backupImportTitle')}
           </ThemedText>
           <ThemedText style={styles.body}>{t('backupImportDesc')}</ThemedText>
-
-          <View style={styles.warningBox}>
-            <ThemedText style={styles.warningText}>{t('backupImportWarningBody')}</ThemedText>
-          </View>
 
           <Pressable
             accessibilityRole="button"
@@ -179,14 +173,7 @@ const styles = StyleSheet.create({
   section: { gap: 12 },
   title: { marginBottom: 4 },
   body: { lineHeight: 22 },
-  warningBox: {
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 193, 7, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 193, 7, 0.4)',
-  },
-  warningText: { fontSize: 13, lineHeight: 18 },
+  note: { fontSize: 12, lineHeight: 17, color: TEXT_SECONDARY },
   divider: { height: 1, backgroundColor: 'rgba(0, 0, 0, 0.08)', marginVertical: 4 },
   primaryButton: {
     marginTop: 4,
