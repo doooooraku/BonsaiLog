@@ -162,4 +162,49 @@ describe('backupImportPlanner', () => {
     expect(plan.skippedTags).toBe(0);
     expect(plan.skippedBonsaiTags).toBe(0);
   });
+
+  test('customSpecies/customStyles: skip by existing id or name, insert new', () => {
+    const plan = buildAppendImportPlan({
+      bonsai: [],
+      events: [],
+      photos: [],
+      customSpecies: [
+        { id: 'cs1', name: '実生のクロマツ' }, // id 既存 → skip
+        { id: 'cs-new', name: '挿し木のモミジ' }, // name 既存 → skip
+        { id: 'cs3', name: '山採りのシンパク' }, // 新規 → insert
+      ],
+      customStyles: [
+        { id: 'st1', name: '吹き流し' }, // id 既存 → skip
+        { id: 'st2', name: '文人木' }, // 新規 → insert
+      ],
+      existingBonsaiIds: new Set<string>(),
+      existingEventIds: new Set<string>(),
+      existingPhotoIds: new Set<string>(),
+      existingCustomSpeciesIds: new Set(['cs1']),
+      existingCustomSpeciesNames: new Set(['実生のクロマツ', '挿し木のモミジ']),
+      existingCustomStyleIds: new Set(['st1']),
+      existingCustomStyleNames: new Set(['吹き流し']),
+    });
+
+    expect(plan.customSpeciesToInsert.map((s) => s.id)).toEqual(['cs3']);
+    expect(plan.skippedCustomSpecies).toBe(2);
+    expect(plan.customStylesToInsert.map((s) => s.id)).toEqual(['st2']);
+    expect(plan.skippedCustomStyles).toBe(1);
+  });
+
+  test('customSpecies/customStyles default to empty when omitted (旧 ZIP 後方互換)', () => {
+    const plan = buildAppendImportPlan({
+      bonsai: [{ id: 'b1' }],
+      events: [],
+      photos: [],
+      existingBonsaiIds: new Set<string>(),
+      existingEventIds: new Set<string>(),
+      existingPhotoIds: new Set<string>(),
+    });
+
+    expect(plan.customSpeciesToInsert).toEqual([]);
+    expect(plan.customStylesToInsert).toEqual([]);
+    expect(plan.skippedCustomSpecies).toBe(0);
+    expect(plan.skippedCustomStyles).toBe(0);
+  });
 });
