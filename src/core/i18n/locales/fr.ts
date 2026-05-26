@@ -872,5 +872,6 @@ const fr: Partial<Record<TranslationKey, string>> = {
   exportPreviewShare: 'Share',
   exportOptPreview: 'Preview',
   exportListPdfRecordCount: 'Records',
+  exportGeneratingTitle: 'Generating…',
 };
 export default fr;

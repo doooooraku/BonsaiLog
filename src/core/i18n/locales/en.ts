@@ -877,6 +877,7 @@ const baseEn = {
   exportPreviewShare: 'Share',
   exportOptPreview: 'Preview',
   exportListPdfRecordCount: 'Records',
+  exportGeneratingTitle: 'Generating…',
 };
 
 export type TranslationKey = keyof typeof baseEn;
