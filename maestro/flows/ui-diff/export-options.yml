@@ -1,0 +1,112 @@
+# UI diff: エクスポート Options Sheet (F-10 / ADR-0016 AC11 Options)
+# Pro 化 → Hub → 作業履歴(events_csv) 行 tap で期間/対象/アーカイブの下シートを表示。
+#
+# 前提: Metro 起動済 + adb reverse tcp:8081 tcp:8081
+appId: 'com.doooooraku.bonsailog'
+name: 'UI diff capture: export-options'
+tags:
+  - ui-diff
+---
+- launchApp:
+    clearState: true
+
+- runFlow:
+    when:
+      visible:
+        text: 'http://localhost:8081'
+    commands:
+      - tapOn:
+          text: 'http://localhost:8081'
+          retryTapIfNoChange: true
+      - waitForAnimationToEnd
+      - pressKey: 'Back'
+      - waitForAnimationToEnd
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 90000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_tut_skip_tut5'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# 設定 → seed + Pro 化
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_bonsai_home_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    text: 'OK'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_set_pro'
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: 'e2e_dev_set_pro'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    text: 'OK'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# Hub → 作業履歴 行 → Options Sheet
+- scrollUntilVisible:
+    element:
+      id: 'e2e_open_export_hub'
+    direction: UP
+    timeout: 15000
+- tapOn:
+    id: 'e2e_open_export_hub'
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_export_hub_screen'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_export_hub_row_events_csv'
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_export_options_sheet'
+    timeout: 30000
+- waitForAnimationToEnd

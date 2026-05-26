@@ -255,6 +255,29 @@ export const SCREEN_PAIRS: Record<string, ScreenPair> = {
     notes:
       'ADR-0020 §画面マップ row 4 / create-screens.jsx CreateBonsaiScreen prefill モード / src/features/bonsai/BonsaiCreateSheet.tsx editingBonsai prop (PR #378) / mockups v1.0 「03 新規登録 / 編集」 (create / edit 兼用、mockup PNG は create と同じ) / 前提: テスト盆栽 1 件以上登録済 + 詳細画面 → 基本情報タブ → 編集ボタン (e2e_detail_basic_edit_button) で sheet open。',
   },
+  'export-hub': {
+    id: 'export-hub',
+    description: 'エクスポート Hub (5 種類集約、CSV/PDF セクション + PRO バッジ)',
+    appFlow: 'maestro/flows/ui-diff/export-hub.yml',
+    designHtml: '04-Export.html',
+    designSelector: '[data-screen-label="01 Export Hub"]',
+    mockupFile: 'export-hub.png',
+    notes:
+      'F-10 Issue #33 / ADR-0016 AC11 Hub / export-screens.jsx ExportHubScreen / app/export/index.tsx。前提: onboarding + seed 後、設定 → エクスポート (e2e_open_export_hub)。Pro 限定は ADR-0009/0011/0016 が正 (mockup「全件 Free」注記は不採用)。',
+  },
+  'export-options': {
+    id: 'export-options',
+    description: 'エクスポート Options Sheet (期間 / 対象 / アーカイブ)',
+    appFlow: 'maestro/flows/ui-diff/export-options.yml',
+    designHtml: '04-Export.html',
+    designSelector: '[data-screen-label="02 Options Sheet"]',
+    mockupFile: 'export-options.png',
+    notes:
+      'F-10 Issue #33 / ADR-0016 AC11 Options + AC12 Y4 / export-screens.jsx ExportOptionsSheet / src/features/export/ExportOptionsSheet.tsx。前提: Pro 化 (e2e_dev_set_pro) 後、Hub → 作業履歴行 (e2e_export_hub_row_events_csv) で下シート表示。',
+  },
+  // export-pdf-single / export-pdf-list / export-csv-preview は WebView / 非同期描画で
+  // Maestro が描画完了を検知できず自動キャプチャが不安定なため、SCREEN_PAIRS 未登録。
+  // 実機手動検証で整合確認済 (Sess47、screenshots/export-pdf-single.png 等と目視照合)。
   // PoC 安定後にユーザーと相談して順次追加 (ADR-0020 §Decision §3-§10):
   // 'work-log-confirm':   care-screens.jsx WorkLogConfirmSheet
 };

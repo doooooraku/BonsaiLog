@@ -332,6 +332,24 @@ F-10 を以下の構成で実装する。
 - **Pro 加入率モニタリング**: F-04 / F-09 / F-15 が全機能 Free の中で F-10 / F-13 / F-08 写真∞ / F-14 広告無の 4 つが Pro 訴求 → 半年後にレビュー
 - **PDF レイアウトはダークモード非対応**: 印刷物として light モード固定、F-15 で確定 → 受信側で印刷 / メール添付するため問題なし
 
+### Amended（2026-05-26 Sess47、UI 7 画面完遂 PR #853-857）
+
+v1.0 UI を実装完了。**実装は本 ADR の計画パスと一部異なる**ため、実態を以下に記録（Follow-ups の旧パスは参考）:
+
+- **画面実装パス**: `src/screens/*` ではなく **expo-router の `app/export/`** に配置:
+  - Hub = `app/export/index.tsx`（5 種類集約、CSV/PDF セクション + PRO バッジ + FormScreenHeader。設定からは単一エントリ `e2e_open_export_hub` → Hub に集約。従来 default header が route path を表示する不具合も解消）
+  - Options Sheet = `src/features/export/ExportOptionsSheet.tsx`（RN `<Modal>`、期間/対象(全部/選択/タグ)/アーカイブ、ファイル名 live preview、AC12 バリデーション）
+  - PDF 個別/一覧プレビュー = `app/export/pdf-preview.tsx` / `list-preview.tsx`（**react-native-webview** で印刷同一 HTML を表示）
+  - CSV プレビュー = `app/export/csv-preview.tsx`（Excel 風表 / 生テキスト切替、RFC4180 行パーサ）
+  - 生成中オーバーレイ = `src/features/export/GeneratingOverlay.tsx`（PDF 共有時に表示。CSV は即時のためインライン）
+  - bonsai_pdf picker = `app/export/pdf.tsx`（1 本 1 ページの個別選択が本質のため Sheet 統合せず専用 picker 維持）
+  - Share = OS 委譲（`expo-sharing`、独自画面なし）
+- **ロジック統合**: 計画の `csvWriter/csvBonsai/csvEvents/csvSpecies` 分割ではなく既存 `src/features/export/csvExport.ts`（events/bonsai/species CSV 関数）に集約済。`exportFlow.ts` は `runExport` + `loadCsvForPreview` / `loadListPdfHtml` / `loadBonsaiPdfHtml` / `shareExportFile` を提供し、**全種プレビュー先行**フロー（生成前に preview → 共有）に統一。`eventRepository.getEventsInRange()` を新設（期間/対象フィルタ）。
+- **フォント埋込なし**（system 委譲）/ 写真 base64 inline / A4 縦 / 3 段階フォールバック / 動的タイムアウト / 100MB チェックは `pdfExport.ts` / `pdfReliability.ts` に実装済（流用元 Repolog 教訓を反映）。
+- **Pro 限定維持**（`useGoToPaywall` → `/pro`）。検証用に開発トグル `e2e_dev_set_pro`（PR #843）。
+- **検証**: 全 7 画面を実機 (Pixel, Dev Build) で目視確認。ui-diff 自動キャプチャは export-hub / export-options を SCREEN_PAIRS 登録。WebView / 非同期描画のプレビュー系は Maestro が描画完了を検知できないため手動検証で確定。
+- テスト: `__tests__/features/export/` に csvExport / pdfExport / listPdfExport / pdfReliability / exportFileName + exportHub / exportPreview / exportCsvPreview / exportGeneratingOverlay の静的解析 test。
+
 ### Follow-ups（後でやる宿題）
 
 - [ ] `docs/reference/functional_spec.md` §15 全面補強 (Repolog 流用 + 7 画面構成 + 5 種類詳細 + フォールバック仕様 + ファイル名規則 + Android SAF + Y4 個別選択機能)
