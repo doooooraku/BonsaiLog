@@ -879,6 +879,18 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportListPdfRecordCount: '記録数',
   exportGeneratingTitle: '生成中…',
   exportOptExport: '出力する',
+  eventStatus_planned: '予定',
+  eventStatus_logged: '記録',
+  eventStatus_cancelled: '取消',
+  csvColEventBonsaiName: '盆栽名',
+  csvColEventWork: '作業',
+  csvColEventStatus: '状態',
+  csvColEventDateTime: '日時',
+  csvColEventBodyPart: '部位',
+  csvColEventDetail: '詳細',
+  csvColEventNote: 'メモ',
+  csvColEventBonsaiId: '盆栽ID',
+  csvColEventId: '作業ID',
 };
 
 export default ja;

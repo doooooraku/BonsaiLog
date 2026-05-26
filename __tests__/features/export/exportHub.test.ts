@@ -85,7 +85,9 @@ describe('exportFlow orchestration', () => {
     expect(FLOW).toMatch(/export async function runExport/);
     expect(FLOW).toMatch(/speciesToCsvString/);
     expect(FLOW).toMatch(/bonsaiToCsvString/);
-    expect(FLOW).toMatch(/eventsToCsvString/);
+    // events は人間可読再設計: buildEventCsvRow + cellsToCsvString
+    expect(FLOW).toMatch(/buildEventCsvRow/);
+    expect(FLOW).toMatch(/cellsToCsvString/);
     expect(FLOW).toMatch(/buildBonsaiListPdfHtml/);
     expect(FLOW).toMatch(/generateAndShareListPdf/);
   });

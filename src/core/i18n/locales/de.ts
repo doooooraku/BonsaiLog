@@ -873,5 +873,17 @@ const de: Partial<Record<TranslationKey, string>> = {
   exportListPdfRecordCount: 'Records',
   exportGeneratingTitle: 'Generating…',
   exportOptExport: 'Export',
+  eventStatus_planned: 'Planned',
+  eventStatus_logged: 'Logged',
+  eventStatus_cancelled: 'Cancelled',
+  csvColEventBonsaiName: 'Bonsai',
+  csvColEventWork: 'Work',
+  csvColEventStatus: 'Status',
+  csvColEventDateTime: 'Date/Time',
+  csvColEventBodyPart: 'Body part',
+  csvColEventDetail: 'Detail',
+  csvColEventNote: 'Note',
+  csvColEventBonsaiId: 'Bonsai ID',
+  csvColEventId: 'Event ID',
 };
 export default de;
