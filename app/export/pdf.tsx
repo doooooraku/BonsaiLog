@@ -21,6 +21,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } fro
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { getAllActiveBonsai, getBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getActiveEventsByBonsai } from '@/src/db/eventRepository';
@@ -110,10 +111,8 @@ export default function ExportPdfScreen() {
 
   return (
     <ThemedView style={styles.container} testID="e2e_export_pdf_screen">
+      <FormScreenHeader title={t('exportHubBonsaiPdfTitle')} testID="e2e_export_pdf_header" />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <ThemedText type="title" style={styles.title}>
-          {t('exportPdfTitle')}
-        </ThemedText>
         <ThemedText style={styles.desc}>{t('exportPdfDesc')}</ThemedText>
 
         {bonsaiList.length === 0 && (
@@ -149,7 +148,6 @@ export default function ExportPdfScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG_PRIMARY },
   scroll: { padding: 16, gap: 12 },
-  title: { marginBottom: 8 },
   desc: { fontSize: 13, opacity: 0.7, marginBottom: 12, lineHeight: 18 },
   empty: { textAlign: 'center', opacity: 0.7, paddingVertical: 24 },
   row: {

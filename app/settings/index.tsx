@@ -428,57 +428,20 @@ export default function SettingsScreen() {
           </Pressable>
         </SettingsSection>
 
-        {/* --- 5. F-10 書き出し Phase A (Issue #33、ADR-0016) ---
-            mockup v1.0「CSV エクスポート PRO」「PDF エクスポート PRO」整合の
-            label + PRO badge + chevron 構造。Pro 制限ロジックは export/* 各画面側 */}
+        {/* --- 5. F-10 エクスポート (Issue #33、ADR-0016 7 画面構成) ---
+            mockup v1.0 整合: 設定からは単一エントリで Hub (5 種類集約) へ遷移。
+            旧 3 行 (csv/pdf/list-pdf) は Hub に集約。Pro 制限は遷移先各画面側 */}
         <SettingsSection title={t('settingsExportSection')}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('exportCsvTitle')}
-            accessibilityHint={t('exportCsvDesc')}
-            testID="e2e_open_export_csv"
+            accessibilityLabel={t('settingsExportSection')}
+            accessibilityHint={t('exportHubHeroBody')}
+            testID="e2e_open_export_hub"
             style={styles.entry}
-            onPress={() => router.push('/export/csv' as Href)}
+            onPress={() => router.push('/export' as Href)}
           >
             <View style={styles.rowInner}>
-              <ThemedText type="defaultSemiBold">{t('exportCsvTitle')}</ThemedText>
-              <View style={styles.rowRight}>
-                <View style={styles.proBadgeRow}>
-                  <ThemedText style={styles.proBadgeRowText}>{t('proBadgeShort')}</ThemedText>
-                </View>
-                <ThemedText style={styles.chevron}>›</ThemedText>
-              </View>
-            </View>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('exportPdfTitle')}
-            accessibilityHint={t('exportPdfDesc')}
-            testID="e2e_open_export_pdf"
-            style={styles.entry}
-            onPress={() => router.push('/export/pdf' as Href)}
-          >
-            <View style={styles.rowInner}>
-              <ThemedText type="defaultSemiBold">{t('exportPdfTitle')}</ThemedText>
-              <View style={styles.rowRight}>
-                <View style={styles.proBadgeRow}>
-                  <ThemedText style={styles.proBadgeRowText}>{t('proBadgeShort')}</ThemedText>
-                </View>
-                <ThemedText style={styles.chevron}>›</ThemedText>
-              </View>
-            </View>
-          </Pressable>
-          {/* F-10 Phase K (Issue #33, ADR-0016 AC2 list_pdf): 全盆栽リスト PDF 導線 */}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('settingsExportListPdfTitle')}
-            accessibilityHint={t('settingsExportListPdfDesc')}
-            testID="e2e_open_export_list_pdf"
-            style={styles.entry}
-            onPress={() => router.push('/export/list-pdf' as Href)}
-          >
-            <View style={styles.rowInner}>
-              <ThemedText type="defaultSemiBold">{t('settingsExportListPdfTitle')}</ThemedText>
+              <ThemedText type="defaultSemiBold">{t('settingsExportSection')}</ThemedText>
               <View style={styles.rowRight}>
                 <View style={styles.proBadgeRow}>
                   <ThemedText style={styles.proBadgeRowText}>{t('proBadgeShort')}</ThemedText>
