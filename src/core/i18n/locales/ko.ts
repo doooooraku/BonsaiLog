@@ -172,16 +172,15 @@ const ko: Partial<Record<TranslationKey, string>> = {
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: '설정',
   settingsBackupSection: '백업',
-  backupTitle: '이사',
+  backupTitle: '백업 및 복원',
   backupExportTitle: '백업 만들기',
   backupExportDesc:
-    '분재 기록, 사진, 관리 기록을 하나의 ZIP 파일로 저장합니다. 공유 메뉴를 사용하여 iCloud Drive, Google Drive, 이메일 또는 메신저로 보낼 수 있습니다.',
+    '분재 기록, 사진, 관리 기록을 하나의 ZIP 파일로 출력합니다. 공유 메뉴에서 저장 위치를 선택하세요.',
   backupExportAction: '백업 만들기',
   backupExportSuccess: '백업이 생성되었습니다.',
   backupExportFailed: '백업 생성에 실패했습니다.',
   backupImportTitle: '백업에서 복원',
-  backupImportDesc:
-    '이전에 만든 ZIP 파일에서 복원합니다. 새 기록은 추가되며 기존 기록은 변경되지 않습니다.',
+  backupImportDesc: '이전에 만든 ZIP 파일에서 복원합니다.',
   backupImportAction: '복원',
   backupImportWarningTitle: '백업에서 복원하시겠습니까?',
   backupImportWarningBody:
@@ -205,7 +204,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   backupUnsupportedTitle: '지원되지 않음',
   backupUnsupportedBody: '이 플랫폼에서는 백업 기능을 사용할 수 없습니다.',
   backupEncryptionWarning:
-    '백업은 암호화되지 않습니다. 클라우드 서비스에 저장할 때는 사용자가 관리할 수 있는 안전한 폴더에 보관하세요.',
+    '참고: 백업은 암호화되지 않습니다. 직접 관리하는 안전한 곳에 보관하세요.',
 
   // --- F-04 Watering history (Phase A、English fallback for now) ---
   wateringSectionTitle: 'Watering',

@@ -183,16 +183,15 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: '設定',
   settingsBackupSection: 'お引っ越し',
-  backupTitle: 'お引っ越し',
+  backupTitle: 'バックアップと復元',
   backupExportTitle: 'バックアップを作成',
   backupExportDesc:
-    '盆栽の記録・写真・作業履歴をひとつの ZIP ファイルにまとめます。共有メニューから iCloud Drive / Google Drive / メール / メッセージアプリへ送れます。',
+    '盆栽の記録・写真・作業履歴を、ひとつの ZIP ファイルに出力します。共有メニューから保存先を選べます。',
   backupExportAction: 'バックアップを作成',
   backupExportSuccess: 'バックアップを作成しました。',
   backupExportFailed: 'バックアップの作成に失敗しました。',
   backupImportTitle: 'バックアップから復元',
-  backupImportDesc:
-    '以前作成した ZIP ファイルから復元します。新しい記録は追加されますが、既存の記録は変更されません。',
+  backupImportDesc: '以前作成した ZIP ファイルから復元します。',
   backupImportAction: '復元する',
   backupImportWarningTitle: 'バックアップから復元しますか?',
   backupImportWarningBody:
@@ -215,8 +214,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
     'この端末では共有機能を利用できません。OS を最新にしてお試しください。',
   backupUnsupportedTitle: 'ご利用いただけません',
   backupUnsupportedBody: 'このプラットフォームではバックアップ機能はご利用いただけません。',
-  backupEncryptionWarning:
-    'バックアップは暗号化されません。クラウドに保存する場合は、ご自身で管理できる安全なフォルダに保管してください。',
+  backupEncryptionWarning: '※ 暗号化されません。保存先はご自身で管理してください。',
 
   // --- F-07 針金がけ装着期間 (Phase A、純関数出力文言、ADR-0011) ---
   // 将来用途: しきい値超過時の事実通知文言 (推奨/命令禁止、constraints §5-2)
