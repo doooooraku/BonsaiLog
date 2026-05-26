@@ -41,11 +41,16 @@
 
 F-13 を以下の構成で実装する。
 
+> **Amended 2026-05-26 (Sess47)**:
+> ① **Product ID を `_yearly` → `_annual` に統一**。`proService.ts` / Repolog 実商品 (`repolog_pro_annual`) / 本 ADR 281-283 行の `derivePlanType` は文字列 **`annual`** でマッチするため、`_yearly` は文字列マッチ不一致となる誤記だった。
+> ② **価格を USD 基準に変更**: 月 $3.99 / 年 $29.99 / 買切 $69.99（各国はストアが自動換算、日本 ≈ ¥600 / ¥3,980 / ¥9,800）。元の ¥ 値は目安だった。
+> ③ **ストア課金商品の作成を API 自動化**（Apple ASC API + Google Android Publisher API、RevenueCat MCP はストア商品作成不可のため）。詳細は ADR-0043。
+
 ### コア設計
 
-1. **3 プラン構成**: 月額 ¥500 / 年額 ¥3,980 / Lifetime 買切 ¥9,800（v1.0 固定、A/B テストは v1.x 再評価）
+1. **3 プラン構成**: 月額 $3.99 / 年額 $29.99 / Lifetime 買切 $69.99（**USD 基準・各国自動換算** ≈ ¥600 / ¥3,980 / ¥9,800。v1.0 固定、A/B テストは v1.x 再評価）
 2. **Entitlement / Offering**: `premium` 1 つ + `default` 1 つ
-3. **Product ID 命名規則**: `bonsailog_pro_monthly` / `bonsailog_pro_yearly` / `bonsailog_pro_lifetime`（Repolog の `derivePlanType` 文字列マッチ依存に合わせる、短縮命名 `pro_y1` 等は禁止）
+3. **Product ID 命名規則**: `bonsailog_pro_monthly` / `bonsailog_pro_annual` / `bonsailog_pro_lifetime`（Repolog の `derivePlanType` は文字列 `annual` でマッチするため `_annual` を採用。`_yearly` は不一致となるため不可。短縮命名 `pro_y1` 等も禁止）
 4. **App User ID**: 匿名 UUID v4（`$RCAnonymousID:` プレフィックス）。メアド・氏名等の PII は送信しない（Local-first 哲学と整合）
 
 ### Repolog 踏襲（95% コピペ）
@@ -279,7 +284,7 @@ F-13 を以下の構成で実装する。
 ### Phase 0 PoC 必須項目（F-13 着手の最初に実施）
 
 1. **Hermes V1 + New Arch + react-native-purchases 10.x の動作確認**: Sandbox で月額購入 → Restore の 1 サイクルが成功すること
-2. **Repolog `derivePlanType` の文字列マッチ動作**: `bonsailog_pro_yearly` 等の単語形式 Product ID で `lifetime` / `annual` / `monthly` 文字列マッチが機能すること
+2. **Repolog `derivePlanType` の文字列マッチ動作**: `bonsailog_pro_annual` 等の単語形式 Product ID で `lifetime` / `annual` / `monthly` 文字列マッチが機能すること
 3. **App User ID の永続性**: アプリ再インストールで `$RCAnonymousID:` が変わるが、Restore で復元可能なこと
 
 ### Repolog → BonsaiLog 命名変更マッピング
@@ -289,7 +294,7 @@ F-13 を以下の構成で実装する。
 | `ENTITLEMENT_ID = 'Pro_Plan'`                             | `ENTITLEMENT_ID = 'premium'`                                        |
 | `dotchain_pro_state_v1` (legacy) → `repolog_pro_state_v1` | `bonsailog_pro_state_v1` (新規 SecureStore key)                     |
 | `dooooraku.repolog.pro.monthly`                           | `bonsailog_pro_monthly`                                             |
-| `dooooraku.repolog.pro.yearly`                            | `bonsailog_pro_yearly`                                              |
+| `dooooraku.repolog.pro.yearly`                            | `bonsailog_pro_annual`                                              |
 | `dooooraku.repolog.pro.lifetime`                          | `bonsailog_pro_lifetime`                                            |
 | `paywallFeature*` (Photos / Pdf / Watermark / Ads)        | `paywallFeature*` (写真無制限 / 樹種計算 / CSV/PDF / 広告非表示 等) |
 | `MAX_FREE_PHOTOS_PER_REPORT = 10`                         | `MAX_FREE_PHOTOS_PER_BONSAI = 3`                                    |

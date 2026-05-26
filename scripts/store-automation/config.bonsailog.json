@@ -1,0 +1,109 @@
+{
+  "appName": "BonsaiLog",
+  "_note": "ADR-0009 / ADR-0043 準拠。製品IDは作成後 変更不可。価格は USD 基準・各国自動換算。秘密鍵はこのファイルに書かない(パス参照のみ)。",
+  "apple": {
+    "appId": "6763495229",
+    "bundleId": "com.dooooraku.bonsailog",
+    "p8KeyId": "6768KZU85A",
+    "p8PathEnv": "ASC_P8_PATH",
+    "p8PathDefault": "/home/doooo/04_app-factory/docs/01_key/01_AppStore/App Store Connect API/AuthKey_6768KZU85A.p8",
+    "issuerIdEnv": "ASC_API_KEY_ISSUER_ID",
+    "issuerIdFromEasJson": "/home/doooo/04_app-factory/apps/Repolog/eas.json",
+    "subscriptionGroupReferenceName": "BonsaiLog_Pro_Plan",
+    "baseTerritory": "USA",
+    "subscriptions": [
+      {
+        "productId": "bonsailog_pro_monthly",
+        "referenceName": "BonsaiLog Pro Monthly",
+        "subscriptionPeriod": "ONE_MONTH",
+        "priceUsd": 3.99,
+        "localizations": {
+          "en-US": {
+            "name": "BonsaiLog Pro Monthly",
+            "description": "Unlimited photos, CSV/PDF export, ad-free."
+          },
+          "ja": {
+            "name": "BonsaiLog Pro 月額",
+            "description": "写真無制限・CSV/PDF出力・広告非表示。"
+          }
+        }
+      },
+      {
+        "productId": "bonsailog_pro_annual",
+        "referenceName": "BonsaiLog Pro Annual",
+        "subscriptionPeriod": "ONE_YEAR",
+        "priceUsd": 29.99,
+        "localizations": {
+          "en-US": {
+            "name": "BonsaiLog Pro Annual",
+            "description": "Unlimited photos, CSV/PDF export, ad-free."
+          },
+          "ja": {
+            "name": "BonsaiLog Pro 年額",
+            "description": "写真無制限・CSV/PDF出力・広告非表示。"
+          }
+        }
+      }
+    ],
+    "iaps": [
+      {
+        "productId": "bonsailog_pro_lifetime",
+        "referenceName": "BonsaiLog Pro Lifetime",
+        "inAppPurchaseType": "NON_CONSUMABLE",
+        "priceUsd": 69.99,
+        "localizations": {
+          "en-US": {
+            "name": "BonsaiLog Pro Lifetime",
+            "description": "One-time purchase. All Pro features forever."
+          },
+          "ja": {
+            "name": "BonsaiLog Pro 買い切り",
+            "description": "一度の購入で全Pro機能を永久に。"
+          }
+        }
+      }
+    ]
+  },
+  "google": {
+    "packageName": "com.dooooraku.bonsailog",
+    "serviceAccountPathEnv": "GOOGLE_SA_PATH",
+    "serviceAccountPathDefault": "/home/doooo/04_app-factory/docs/01_key/02_PlayStore/spry-catcher-482116-c4-5ca425301daf.json",
+    "subscriptionId": "bonsailog_pro",
+    "basePlans": [
+      { "basePlanId": "monthly", "billingPeriodDuration": "P1M", "priceUsd": 3.99 },
+      { "basePlanId": "annual", "billingPeriodDuration": "P1Y", "priceUsd": 29.99 }
+    ],
+    "subscriptionListings": {
+      "en-US": {
+        "title": "BonsaiLog Pro",
+        "benefit1": "Unlimited photos",
+        "benefit2": "CSV/PDF export",
+        "description": "Unlock all Pro features for BonsaiLog."
+      },
+      "ja-JP": {
+        "title": "BonsaiLog Pro",
+        "benefit1": "写真無制限",
+        "benefit2": "CSV/PDF出力",
+        "description": "BonsaiLog の全Pro機能を解放します。"
+      }
+    },
+    "lifetime": {
+      "productId": "bonsailog_pro_lifetime",
+      "priceUsd": 69.99,
+      "listings": {
+        "en-US": {
+          "title": "BonsaiLog Pro Lifetime",
+          "description": "One-time purchase. All Pro features forever."
+        },
+        "ja-JP": {
+          "title": "BonsaiLog Pro 買い切り",
+          "description": "一度の購入で全Pro機能を永久に。"
+        }
+      }
+    },
+    "regionPrices": {
+      "_note": "USD 基準。Google は地域別に明示指定。最低限 US を設定し、他は autoConvert/otherRegions に委ねる。",
+      "US": { "currency": "USD" }
+    }
+  }
+}
