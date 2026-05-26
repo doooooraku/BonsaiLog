@@ -244,8 +244,11 @@ const ru: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: 'Сегодня',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'Получать уведомления о планах?',
+  softAskNotifBody:
+    'Раз в день мы пришлём уведомление с задачами, запланированными на этот день. Время можно изменить позже в настройках.',
+  softAskNotifConfirm: 'Включить',
+  softAskNotifCancel: 'Не сейчас',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Поиск по названию, виду, стилю или заметкам',
   searchMinChars: 'Введите не менее {count} символов для поиска',
@@ -299,8 +302,6 @@ const ru: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'Получайте одну сводку в {time}, когда на этот день запланированы события.',
   settingsNotifSummaryEditTime: 'Время уведомления',
-  settingsNotifWateringToggle: 'Напоминания о поливе',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -415,8 +416,8 @@ const ru: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'Когда вы добавляете план, можно включить уведомления. Это можно изменить в любой момент в настройках.',
+  onboardingTut5Cta: 'Начать',
   onboardingTutNext: 'Далее',
   skipForLater: 'Пропустить',
   settingsHelpSection: 'Помощь',

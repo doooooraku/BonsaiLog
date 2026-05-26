@@ -235,8 +235,10 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: '今天',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: '接收日程通知嗎？',
+  softAskNotifBody: '我們每天發送一則通知，彙整當天的計畫作業。通知時間稍後可在設定中更改。',
+  softAskNotifConfirm: '開啟',
+  softAskNotifCancel: '暫不',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: '按名稱、樹種、樹形或備註搜尋',
   searchMinChars: '請輸入至少 {count} 個字元進行搜尋',
@@ -288,8 +290,6 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggle: '每日摘要',
   settingsNotifSummaryToggleDesc: '當天有計畫事件時，於 {time} 收到一則彙總通知。',
   settingsNotifSummaryEditTime: '通知時間',
-  settingsNotifWateringToggle: '澆水提醒',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -403,9 +403,8 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   onboardingTut4Body:
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
-  onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+  onboardingTut5Body: '新增日程時，你可以選擇接收通知。隨時可在設定中更改。',
+  onboardingTut5Cta: '開始',
   onboardingTutNext: '下一步',
   skipForLater: '稍後再說',
   settingsHelpSection: '說明',

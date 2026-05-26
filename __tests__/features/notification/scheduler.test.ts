@@ -8,9 +8,15 @@
  * 検証範囲:
  * - rescheduleDailySummaryNotifications: enabled=false で全キャンセル
  * - rescheduleDailySummaryNotifications: enabled=true で正しい trigger を組み立てる
- * - rescheduleWateringNotifications: 水やり時刻 ≦ 5 件で DAILY trigger 予約
  * - cancelAllManagedNotifications: prefix 一致のものだけ削除
+ *
+ * ADR-0014 Amended: ②水やり繰り返し通知は廃止 (rescheduleWateringNotifications 削除)。
  */
+
+import {
+  cancelAllManagedNotifications,
+  rescheduleDailySummaryNotifications,
+} from '../../../src/features/notification/scheduler';
 
 const mockGetAll = jest.fn();
 const mockCancel = jest.fn();
@@ -34,15 +40,8 @@ jest.mock('react-native', () => ({
   Platform: { OS: 'ios' },
 }));
 
-import {
-  cancelAllManagedNotifications,
-  rescheduleDailySummaryNotifications,
-  rescheduleWateringNotifications,
-} from '../../../src/features/notification/scheduler';
-
 const copy = {
   summary: (count: number) => ({ title: 'BonsaiLog', body: `${count} 件` }),
-  watering: () => ({ title: 'BonsaiLog', body: '水やりの時間です' }),
 };
 
 beforeEach(() => {
@@ -118,61 +117,15 @@ describe('rescheduleDailySummaryNotifications', () => {
   });
 });
 
-describe('rescheduleWateringNotifications', () => {
-  test('enabled=true で 1 件登録', async () => {
-    const scheduled = await rescheduleWateringNotifications({
-      enabled: true,
-      times: [{ hour: 7, minute: 0 }],
-      copy,
-    });
-    expect(scheduled).toBe(1);
-    expect(mockSchedule).toHaveBeenCalledTimes(1);
-    const arg = mockSchedule.mock.calls[0][0];
-    expect(arg.identifier).toBe('daily_watering_07_00');
-    expect(arg.trigger).toMatchObject({
-      type: 'daily',
-      hour: 7,
-      minute: 0,
-      channelId: 'bonsai_watering',
-    });
-    expect(arg.content.body).toBe('水やりの時間です');
-  });
-
-  test('5 件超過は wateringRepeat.buildWateringSchedules で切り捨て', async () => {
-    const times = Array.from({ length: 7 }, (_, i) => ({ hour: 6 + i, minute: 0 }));
-    const scheduled = await rescheduleWateringNotifications({
-      enabled: true,
-      times,
-      copy,
-    });
-    expect(scheduled).toBe(5);
-    expect(mockSchedule).toHaveBeenCalledTimes(5);
-  });
-
-  test('enabled=false で全キャンセルのみ', async () => {
-    mockGetAll.mockResolvedValue([{ identifier: 'daily_watering_07_00' }]);
-    const scheduled = await rescheduleWateringNotifications({
-      enabled: false,
-      times: [{ hour: 7, minute: 0 }],
-      copy,
-    });
-    expect(scheduled).toBe(0);
-    expect(mockCancel).toHaveBeenCalledWith('daily_watering_07_00');
-    expect(mockSchedule).not.toHaveBeenCalled();
-  });
-});
-
 describe('cancelAllManagedNotifications', () => {
-  test('F-16 prefix のみ削除、他系は保持', async () => {
+  test('当日まとめ prefix のみ削除、他系は保持', async () => {
     mockGetAll.mockResolvedValue([
       { identifier: 'daily_summary_2026-05-02' },
-      { identifier: 'daily_watering_07_00' },
-      { identifier: 'event_overload_alert' }, // F-05 系 (仮)
+      { identifier: 'other_keep' },
     ]);
     await cancelAllManagedNotifications();
     const cancelled = mockCancel.mock.calls.map((c) => c[0]);
     expect(cancelled).toContain('daily_summary_2026-05-02');
-    expect(cancelled).toContain('daily_watering_07_00');
-    expect(cancelled).not.toContain('event_overload_alert');
+    expect(cancelled).not.toContain('other_keep');
   });
 });

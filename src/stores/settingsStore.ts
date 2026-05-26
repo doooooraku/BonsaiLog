@@ -2,8 +2,8 @@
  * アプリ全体の設定 store (Zustand + AsyncStorage 永続化)。
  *
  * Related:
- * - Issue #30 F-16 ローカル通知 (notificationDailySummary* / notificationWateringRepeat*、ADR-0014)
- * - ADR-0014 §通知設定の既定値 (デフォルト 1 回 / 朝 07:00、当日まとめ 07:00、K1 = OFF 初期化)
+ * - Issue #30 F-16 ローカル通知 (notificationDailySummary*、ADR-0014 Amended)
+ * - ADR-0014 Amended: 通知は当日まとめの 1 系統に集約 (②水やり通知廃止)、トグル 1 つ、デフォルト OFF
  *
  * Sess19-3 (user 真意「F-05 不要」): eventOverloadEnabled 削除済。
  */
@@ -24,18 +24,11 @@ type SettingsState = {
   setThemeMode: (mode: ThemeMode) => void;
   // ADR-0015 Notes Amended (2026-05-10、PR #312): outdoor mode 削除済 (E4 PR、本セッション)
   /**
-   * F-16 通知マスタートグル (ADR-0014 §30、Issue #423 / Issue #330 A2b)。
-   * - デフォルト true (有効)、AsyncStorage キー 'myapp-settings.notificationMasterEnabled'
-   * - OFF 時、scheduler.ts は通知予約を全停止 (個別 toggle の状態に関わらず)
-   * - OFF → ON 復帰時、個別 toggle (summary / watering / event overload) は永続化された
-   *   前回値で復元 (本 state は独立)
-   */
-  notificationMasterEnabled: boolean;
-  setNotificationMasterEnabled: (enabled: boolean) => void;
-  /**
-   * F-16 当日まとめ通知の有効/無効 (ADR-0014 §30 / §K1、Issue #30)。
-   * - デフォルト OFF (チュートリアル「あとで」/スキップ時の K1 既定)
-   * - ON 時のみ `notificationDailySummaryTime` の時刻で発火
+   * F-16 通知の有効/無効 (ADR-0014 Amended: 当日まとめ通知の 1 系統に集約。
+   * かつての notificationMasterEnabled + notificationDailySummaryEnabled の 2 段は本フラグ 1 つに統合)。
+   * - **デフォルト OFF** (起動時に requestNotificationPermission を呼ばない = OS 許可ダイアログ暴発防止)
+   * - ON は「初回予定登録時の soft-ask で受け取る」または「設定で手動 ON」のユーザー明示操作時のみ
+   * - ON 時のみ `notificationDailySummaryTime` の時刻で当日まとめ通知が発火
    */
   notificationDailySummaryEnabled: boolean;
   setNotificationDailySummaryEnabled: (enabled: boolean) => void;
@@ -45,15 +38,11 @@ type SettingsState = {
   notificationDailySummaryTime: NotificationTimeString;
   setNotificationDailySummaryTime: (time: NotificationTimeString) => void;
   /**
-   * F-16 水やり繰り返し通知の有効/無効 (ADR-0014 §水やり通知の最大数、Issue #30)。
+   * F-16 contextual soft-ask モーダルを既に提示したか (ADR-0014 Amended、生涯 1 回制御)。
+   * - デフォルト false、初回予定登録時に soft-ask を出したら true に固定 (再表示しない)
    */
-  notificationWateringRepeatEnabled: boolean;
-  setNotificationWateringRepeatEnabled: (enabled: boolean) => void;
-  /**
-   * F-16 水やり繰り返し通知時刻リスト (ADR-0014 §H3、最大 5 件、デフォルト ['07:00'])。
-   */
-  notificationWateringRepeatTimes: NotificationTimeString[];
-  setNotificationWateringRepeatTimes: (times: NotificationTimeString[]) => void;
+  notificationOptInPrompted: boolean;
+  setNotificationOptInPrompted: (prompted: boolean) => void;
   /**
    * Sess13 PR-I: 鉢サイズ単位 (cm / mm / inch、 user preference)。
    * - 内部 DB 保存は常に cm 数値、 表示・入力時に単位変換
@@ -78,20 +67,14 @@ export const useSettingsStore = create<SettingsState>()(
       // ユーザーは設定タブで auto / light / dark に切替可能。
       themeMode: 'light',
       setThemeMode: (mode) => set({ themeMode: mode }),
-      // ADR-0014 §30 / §32: master = ON 既定、AsyncStorage 永続化 ('myapp-settings')
-      notificationMasterEnabled: true,
-      setNotificationMasterEnabled: (enabled) => set({ notificationMasterEnabled: enabled }),
+      // ADR-0014 Amended: 通知は当日まとめ 1 系統に集約、デフォルト OFF (起動時 OS 許可暴発防止)
       notificationDailySummaryEnabled: false,
       setNotificationDailySummaryEnabled: (enabled) =>
         set({ notificationDailySummaryEnabled: enabled }),
       notificationDailySummaryTime: '07:00',
       setNotificationDailySummaryTime: (time) => set({ notificationDailySummaryTime: time }),
-      notificationWateringRepeatEnabled: false,
-      setNotificationWateringRepeatEnabled: (enabled) =>
-        set({ notificationWateringRepeatEnabled: enabled }),
-      notificationWateringRepeatTimes: ['07:00'],
-      setNotificationWateringRepeatTimes: (times) =>
-        set({ notificationWateringRepeatTimes: times }),
+      notificationOptInPrompted: false,
+      setNotificationOptInPrompted: (prompted) => set({ notificationOptInPrompted: prompted }),
       // Sess13 PR-I: 鉢サイズ単位 default cm
       // Sess15 PR-KK: 実際は起動時に lang-defaults.ts から lang 別 default で強制上書きされる
       // (ADR-0026 案 α: 過去 user なし前提で AsyncStorage persist 値を reset、 src/core/i18n/lang-defaults.ts 参照)。

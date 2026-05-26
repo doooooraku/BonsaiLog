@@ -242,8 +242,11 @@ const th: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: 'วันนี้',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'รับการแจ้งเตือนสำหรับแผนของคุณไหม?',
+  softAskNotifBody:
+    'เราจะส่งการแจ้งเตือนวันละครั้งพร้อมงานที่วางแผนไว้ของวันนั้น คุณเปลี่ยนเวลาได้ภายหลังในการตั้งค่า',
+  softAskNotifConfirm: 'เปิด',
+  softAskNotifCancel: 'ไว้ก่อน',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'ค้นหาตามชื่อ สายพันธุ์ ทรงพุ่ม หรือบันทึก',
   searchMinChars: 'ป้อนอย่างน้อย {count} ตัวอักษรเพื่อค้นหา',
@@ -296,8 +299,6 @@ const th: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'รับสรุปครั้งเดียวเมื่อ {time} เมื่อมีกิจกรรมที่วางแผนไว้ในวันนั้น',
   settingsNotifSummaryEditTime: 'เวลาแจ้งเตือน',
-  settingsNotifWateringToggle: 'การแจ้งเตือนรดน้ำ',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -412,8 +413,8 @@ const th: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'เมื่อเพิ่มแผน คุณสามารถเลือกรับการแจ้งเตือนได้ เปลี่ยนได้ทุกเมื่อในการตั้งค่า',
+  onboardingTut5Cta: 'เริ่มต้น',
   onboardingTutNext: 'ถัดไป',
   skipForLater: 'ข้ามไปก่อน',
   settingsHelpSection: 'ความช่วยเหลือ',

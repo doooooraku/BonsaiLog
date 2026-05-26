@@ -244,8 +244,11 @@ const pt: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: 'Hoje',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'Receber notificações dos seus planos?',
+  softAskNotifBody:
+    'Enviaremos uma notificação por dia com as tarefas planejadas do dia. Você pode mudar o horário depois nas configurações.',
+  softAskNotifConfirm: 'Ativar',
+  softAskNotifCancel: 'Agora não',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Pesquisar por nome, espécie, estilo ou notas',
   searchMinChars: 'Digite pelo menos {count} caracteres para pesquisar',
@@ -299,8 +302,6 @@ const pt: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'Receba um resumo único às {time} quando tiver eventos planeados nesse dia.',
   settingsNotifSummaryEditTime: 'Hora da notificação',
-  settingsNotifWateringToggle: 'Lembretes de rega',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -415,8 +416,8 @@ const pt: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'Ao adicionar um plano, você pode optar por receber notificações. Pode mudar isso quando quiser nas configurações.',
+  onboardingTut5Cta: 'Começar',
   onboardingTutNext: 'Próximo',
   skipForLater: 'Saltar para depois',
   settingsHelpSection: 'Ajuda',

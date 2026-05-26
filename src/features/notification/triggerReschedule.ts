@@ -2,15 +2,15 @@
  * 通知 reschedule trigger wrapper (Sess12 PR-I MVP)。
  *
  * 起動時 + bulk write 後に呼び出して `rescheduleDailySummaryNotifications` を実行する。
- * settingsStore の master / summary toggle + 通知許可確認を集約。
+ * settingsStore の通知 toggle + 通知許可確認を集約。
  *
- * 設計方針 (ADR-0011 整合):
- * - master OFF or summary OFF → reschedule(enabled: false) で既存通知 cancel
+ * 設計方針 (ADR-0011 / ADR-0014 Amended 整合):
+ * - 通知 OFF → reschedule(enabled: false) で既存通知 cancel (この分岐では permission を要求しない
+ *   = デフォルト OFF の起動時に OS 許可ダイアログが暴発しない)
  * - permission denied → no-op (user が設定 OS で許可拒否済)
  * - 例外は console.warn のみ、 起動 / write は継続
  */
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
-import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/i18n';
 import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
 import { useSettingsStore } from '@/src/stores/settingsStore';
@@ -42,17 +42,12 @@ function parseTime(timeStr: string): { hour: number; minute: number } {
 export async function triggerSummaryReschedule(t: TFunc): Promise<void> {
   try {
     const state = useSettingsStore.getState();
-    const masterEnabled = state.notificationMasterEnabled;
-    const summaryEnabled = state.notificationDailySummaryEnabled;
+    const enabled = state.notificationDailySummaryEnabled;
 
     const copy: NotificationCopy = {
       summary: (count: number) => ({
         title: t('notificationSummaryTitle'),
         body: t('notificationSummaryBody').replace('{count}', String(count)),
-      }),
-      watering: () => ({
-        title: t('notificationWateringTitle'),
-        body: t('notificationWateringBody'),
       }),
     };
 
@@ -60,8 +55,8 @@ export async function triggerSummaryReschedule(t: TFunc): Promise<void> {
     const todayKey = toLocalDateKey(nowUtc() as string, tzOffsetMin);
     const time = parseTime(state.notificationDailySummaryTime);
 
-    // master or summary OFF → cancel only (enabled: false で scheduler が既存を全 cancel)
-    if (!masterEnabled || !summaryEnabled) {
+    // 通知 OFF → cancel only (enabled: false で scheduler が既存を全 cancel、permission は要求しない)
+    if (!enabled) {
       await rescheduleDailySummaryNotifications({
         enabled: false,
         time,

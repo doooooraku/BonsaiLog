@@ -244,8 +244,11 @@ const nl: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: 'Vandaag',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'Meldingen voor je plannen ontvangen?',
+  softAskNotifBody:
+    'We sturen één melding per dag met de geplande taken van die dag. Je kunt de tijd later in Instellingen wijzigen.',
+  softAskNotifConfirm: 'Inschakelen',
+  softAskNotifCancel: 'Niet nu',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Zoek op naam, soort, stijl of notities',
   searchMinChars: 'Voer minimaal {count} tekens in om te zoeken',
@@ -298,8 +301,6 @@ const nl: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'Ontvang één samenvatting om {time} wanneer er gebeurtenissen voor die dag zijn gepland.',
   settingsNotifSummaryEditTime: 'Meldingstijd',
-  settingsNotifWateringToggle: 'Watergeefherinneringen',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -414,8 +415,8 @@ const nl: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'Wanneer je een plan toevoegt, kun je kiezen om meldingen te ontvangen. Je kunt dit altijd in Instellingen wijzigen.',
+  onboardingTut5Cta: 'Aan de slag',
   onboardingTutNext: 'Volgende',
   skipForLater: 'Overslaan voor later',
   settingsHelpSection: 'Help',

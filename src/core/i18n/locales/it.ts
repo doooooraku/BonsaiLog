@@ -244,8 +244,11 @@ const it: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: 'Oggi',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'Ricevere notifiche per i tuoi piani?',
+  softAskNotifBody:
+    'Invieremo una notifica al giorno con le attività pianificate del giorno. Potrai cambiare l’orario nelle impostazioni.',
+  softAskNotifConfirm: 'Attiva',
+  softAskNotifCancel: 'Non ora',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Cerca per nome, specie, stile o note',
   searchMinChars: 'Inserisci almeno {count} caratteri per cercare',
@@ -299,8 +302,6 @@ const it: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'Ricevi un unico riepilogo alle {time} quando hai eventi pianificati per quel giorno.',
   settingsNotifSummaryEditTime: 'Orario notifica',
-  settingsNotifWateringToggle: 'Promemoria di annaffiatura',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -415,8 +416,8 @@ const it: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'Quando aggiungi un piano, puoi scegliere di ricevere notifiche. Puoi cambiarlo quando vuoi nelle impostazioni.',
+  onboardingTut5Cta: 'Inizia',
   onboardingTutNext: 'Avanti',
   skipForLater: 'Salta per ora',
   settingsHelpSection: 'Aiuto',

@@ -532,3 +532,37 @@ F-16 を以下の構成で実装する。
 - 「集約方式（1 日 1 通知）はシニア UX とパフォーマンスを両立、盆栽数・作業数を考慮しないシンプル設計」
 - 「装着期間経過通知のような『事実通知』も鬱陶しいフィードバックがあれば削除し、アプリ内表示で代替する判断もあり得る」
 - 「通知タップ後の動線は『直接遷移 + 戻るでホーム復帰』がシニア UX◎、画面スタックにホーム事前 push で実現」
+
+---
+
+## Notes Amended (2026-05-26): 通知リニューアル — ②水やり削除 + contextual soft-ask opt-in + トグル統合
+
+Status は Accepted 維持。 user 討議 (2026-05-26) で以下を確定し実装。 Decision 本体の「当日まとめ通知 / 7 日ローリング / Deep Link / 通知タップ動線」は不変、 opt-in 動線と②水やり通知の扱いのみ変更。
+
+### 決定 1: ②水やり繰り返し通知を全廃 (§57-2 / §H3 / §11 WATERING チャネル / §44 を撤回)
+
+- **背景**: 実装調査で `rescheduleWateringNotifications` が定義のみ・どこからも未呼び出し = デッドコードと判明。 設定にトグルはあったが通知は 1 通も発火していなかった。 user 判断で水やり通知は不要 → 全廃。
+- **影響**: `wateringRepeat.ts` 削除 / `scheduler.ts` の watering 関連削除 / `NOTIFICATION_CHANNELS.WATERING` 削除 / settingsStore の watering 4 項目削除 / i18n 水やり 4 キー削除 (19 言語) / watering テスト・Maestro 削除。 通知は**当日まとめの 1 系統のみ**。
+
+### 決定 2: opt-in を contextual soft-ask に一本化 (§41-47 オンボーディング Step 5 の OS 許可動線を撤回)
+
+- **背景 (1 次情報)**: iOS の通知許可ダイアログは自動表示が**生涯 1 回のみ** (拒否されると設定アプリ誘導しか手がない)。 文脈起点の soft-ask は opt-in 率 **約 89%**、 初回起動一律 prompt は **40〜45%** ([Apple Developer](https://developer.apple.com/documentation/usernotifications/asking-permission-to-use-notifications) / [expo/expo #20072](https://github.com/expo/expo/issues/20072) / 業界事例)。 旧 §41-47 は「最も価値の伝わらない初回起動時」に一発勝負を撃つ設計だった。
+- **新動線**:
+  - オンボーディング tut5 は通知を「予告」するだけ (CTA「始める」、OS 許可は撃たない)。
+  - **初めて作業予定を登録した瞬間** に soft-ask モーダル「予定の通知を受け取りますか?」 (受け取る / 受け取らない、生涯 1 回、通知 OFF 時のみ)。
+  - 「受け取る」 → ここで初めて `requestNotificationPermission` → granted で当日まとめ通知 ON + 再予約。
+  - モーダルに時刻入力は含めない (デフォルト 07:00 開始、設定で変更)。
+  - 実装: `src/features/notification/optInPrompt.ts` (判定 + 揮発 store) + `NotificationOptInHost.tsx` (app/\_layout.tsx root mount、 予定登録画面が遷移で unmount するため root で表示)。 配線点は `BulkWorkPickerScreen` の `bulkScheduleEvents` 成功後。
+
+### 決定 3: 通知トグルを 1 つに統合 (§30-32 の master + summary 2 段を 1 段化)
+
+- **背景**: 通知が当日まとめ 1 系統だけになり、 master + summary の 2 トグルは「同じものに 2 スイッチ」で混乱を招く。 1 つに統合。
+- **重要な設計上の落とし穴**: 単一トグルは**デフォルト OFF** (`notificationDailySummaryEnabled`) を残し、 `notificationMasterEnabled` (デフォルト true) を削除する。 master (true) を残すと起動時 `triggerSummaryReschedule` が `requestNotificationPermission` に到達し**起動時に OS 許可ダイアログが暴発**する。 OFF default なら起動時は cancel 分岐に入り permission を要求しない。
+
+### 恒久策
+
+- 通知/権限系 ADR テンプレに必須検討項目を追加: 「OS 許可ダイアログのタイミング」「soft-ask (pre-permission) の有無」「iOS 再プロンプト不可制約への対応」。 旧 §41-47 はこの観点が欠落していた (opt-in 率最適化を論点化しなかった)。
+
+### 残存する未使用 i18n キー (follow-up)
+
+- `settingsNotifSummaryToggle` / `settingsNotifSummaryToggleDesc` / `settingsNotifMasterOffBanner` / `settingsNotifTimeRangeRowLabel` はトグル統合で未参照化 (19 言語に存在は維持、 i18n:check は unused WARN のみで通過)。 既存 709 unused と同様、 別途一括掃除の follow-up 候補。

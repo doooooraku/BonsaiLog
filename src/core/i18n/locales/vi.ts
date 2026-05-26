@@ -243,8 +243,11 @@ const vi: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: 'Hôm nay',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'Nhận thông báo cho lịch của bạn?',
+  softAskNotifBody:
+    'Mỗi ngày chúng tôi gửi một thông báo về các công việc đã lên lịch trong ngày. Bạn có thể đổi giờ sau trong Cài đặt.',
+  softAskNotifConfirm: 'Bật',
+  softAskNotifCancel: 'Để sau',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Tìm theo tên, loài, dáng hoặc ghi chú',
   searchMinChars: 'Nhập ít nhất {count} ký tự để tìm kiếm',
@@ -297,8 +300,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'Nhận một bản tóm tắt vào {time} khi có sự kiện được lên lịch trong ngày đó.',
   settingsNotifSummaryEditTime: 'Giờ thông báo',
-  settingsNotifWateringToggle: 'Nhắc tưới nước',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -413,8 +414,8 @@ const vi: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'Khi thêm lịch, bạn có thể chọn nhận thông báo. Bạn có thể thay đổi bất cứ lúc nào trong Cài đặt.',
+  onboardingTut5Cta: 'Bắt đầu',
   onboardingTutNext: 'Tiếp',
   skipForLater: 'Bỏ qua tạm',
   settingsHelpSection: 'Trợ giúp',

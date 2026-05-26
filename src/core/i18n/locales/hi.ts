@@ -244,8 +244,11 @@ const hi: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: 'आज',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'अपनी योजनाओं की सूचनाएं पाएं?',
+  softAskNotifBody:
+    'हम हर दिन एक सूचना भेजेंगे जिसमें उस दिन के नियोजित कार्य होंगे। समय बाद में सेटिंग में बदला जा सकता है।',
+  softAskNotifConfirm: 'चालू करें',
+  softAskNotifCancel: 'अभी नहीं',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'नाम, प्रजाति, शैली या नोट्स से खोजें',
   searchMinChars: 'खोज के लिए कम से कम {count} अक्षर दर्ज करें',
@@ -298,8 +301,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'जिस दिन योजनाबद्ध कार्यक्रम हों, उस दिन {time} पर एक संक्षेप सूचना प्राप्त करें।',
   settingsNotifSummaryEditTime: 'सूचना समय',
-  settingsNotifWateringToggle: 'पानी देने की सूचना',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -414,8 +415,8 @@ const hi: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'जब आप कोई योजना जोड़ते हैं, तो सूचनाएं पाने का विकल्प चुन सकते हैं। इसे सेटिंग में कभी भी बदला जा सकता है।',
+  onboardingTut5Cta: 'शुरू करें',
   onboardingTutNext: 'अगला',
   skipForLater: 'बाद के लिए छोड़ें',
   settingsHelpSection: 'सहायता',

@@ -244,8 +244,11 @@ const es: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: 'Hoy',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: '¿Recibir notificaciones de tus planes?',
+  softAskNotifBody:
+    'Enviaremos una notificación al día con las tareas previstas de ese día. Puedes cambiar la hora luego en Ajustes.',
+  softAskNotifConfirm: 'Activar',
+  softAskNotifCancel: 'Ahora no',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Buscar por nombre, especie, estilo o notas',
   searchMinChars: 'Ingresa al menos {count} caracteres para buscar',
@@ -299,8 +302,6 @@ const es: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'Recibe un resumen único a las {time} cuando tengas eventos planeados ese día.',
   settingsNotifSummaryEditTime: 'Hora de notificación',
-  settingsNotifWateringToggle: 'Recordatorios de riego',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -415,8 +416,8 @@ const es: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'Cuando agregues un plan, podrás elegir recibir notificaciones. Puedes cambiarlo cuando quieras en Ajustes.',
+  onboardingTut5Cta: 'Empezar',
   onboardingTutNext: 'Siguiente',
   skipForLater: 'Omitir por ahora',
   settingsHelpSection: 'Ayuda',

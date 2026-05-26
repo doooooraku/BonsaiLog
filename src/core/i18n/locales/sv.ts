@@ -244,8 +244,11 @@ const sv: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: 'Idag',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'Få aviseringar om dina planer?',
+  softAskNotifBody:
+    'Vi skickar en avisering om dagen med dagens planerade uppgifter. Du kan ändra tiden senare i Inställningar.',
+  softAskNotifConfirm: 'Aktivera',
+  softAskNotifCancel: 'Inte nu',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Sök på namn, art, stil eller anteckningar',
   searchMinChars: 'Ange minst {count} tecken för att söka',
@@ -299,8 +302,6 @@ const sv: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'Få en enda sammanfattning kl. {time} när du har planerade händelser den dagen.',
   settingsNotifSummaryEditTime: 'Aviseringstid',
-  settingsNotifWateringToggle: 'Vattningspåminnelser',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -415,8 +416,8 @@ const sv: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'När du lägger till en plan kan du välja att få aviseringar. Du kan ändra detta när som helst i Inställningar.',
+  onboardingTut5Cta: 'Kom igång',
   onboardingTutNext: 'Nästa',
   skipForLater: 'Hoppa över för senare',
   settingsHelpSection: 'Hjälp',

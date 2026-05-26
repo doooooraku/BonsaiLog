@@ -244,8 +244,11 @@ const tr: Partial<Record<TranslationKey, string>> = {
   detailTimelineToday: 'Bugün',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
-  notificationWateringTitle: 'Watering time',
-  notificationWateringBody: 'Time to water your bonsai',
+  softAskNotifTitle: 'Planların için bildirim al?',
+  softAskNotifBody:
+    'O günün planlanan işlerini içeren günde bir bildirim göndeririz. Saati daha sonra Ayarlar’dan değiştirebilirsin.',
+  softAskNotifConfirm: 'Aç',
+  softAskNotifCancel: 'Şimdi değil',
   searchDesc: 'Search bonsai by name and care logs by note text.',
   searchPlaceholder: 'Ada, türe, stile veya notlara göre ara',
   searchMinChars: 'Aramak için en az {count} karakter girin',
@@ -298,8 +301,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   settingsNotifSummaryToggleDesc:
     'O gün için planlanmış etkinlik olduğunda {time} saatinde tek bir özet alın.',
   settingsNotifSummaryEditTime: 'Bildirim saati',
-  settingsNotifWateringToggle: 'Sulama hatırlatıcısı',
-  settingsNotifWateringToggleDesc: 'Receive a notification at {times}.',
   settingsNotifPermissionDeniedTitle: 'Notification permission needed',
   settingsNotifPermissionDeniedBody:
     'Notifications are disabled in your device settings. Enable them to use this feature.',
@@ -414,8 +415,8 @@ const tr: Partial<Record<TranslationKey, string>> = {
     'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
-    'Get a daily summary and watering notifications so you never miss a beat. You can change this anytime in Settings.',
-  onboardingTut5Cta: 'Enable notifications',
+    'Bir plan eklediğinde bildirim almayı seçebilirsin. Bunu istediğin zaman Ayarlar’dan değiştirebilirsin.',
+  onboardingTut5Cta: 'Başla',
   onboardingTutNext: 'İleri',
   skipForLater: 'Şimdilik atla',
   settingsHelpSection: 'Yardım',

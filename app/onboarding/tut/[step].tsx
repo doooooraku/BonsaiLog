@@ -7,21 +7,20 @@
  * - Phase D `getNextOnboardingStep` (#105) で次画面決定
  * - 「次へ」: markDismissed(step) → 次 step へ navigate
  * - 「あとで」: 残り全 step を dismissed 化 → completed=true → ホームへ
- * - **Step 5 (tut5)** (F-16 ADR-0014 §41-47): CTA を「通知を有効にする」に切替、
- *   OS permission リクエスト → 許可で通知 ON、拒否で Alert、いずれも step 完了。
+ * - **Step 5 (tut5)** (F-16 ADR-0014 Amended): 通知の「予告」のみ。OS permission は撃たず
+ *   「次へ」 と同じく step を進めるだけ。実際の通知 opt-in は初回予定登録時の soft-ask で行う。
  *
  * 不正な step (welcome/language/未知) は welcome へリダイレクト。
  */
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { BG_PRIMARY, BRAND_GREEN, ON_BRAND, TEXT_SECONDARY } from '@/src/core/theme/colors';
-import { requestNotificationPermission } from '@/src/features/notification/scheduler';
 import { getNextOnboardingStep } from '@/src/features/onboarding/onboardingFlow';
 import {
   TUTORIAL_STEPS,
@@ -29,7 +28,6 @@ import {
   isTutorialStep,
 } from '@/src/features/onboarding/tutorialSteps';
 import { useOnboardingStore, type OnboardingStep } from '@/src/stores/onboardingStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
 
 export default function OnboardingTutScreen() {
   const { t } = useTranslation();
@@ -42,9 +40,6 @@ export default function OnboardingTutScreen() {
   const markDismissed = useOnboardingStore((s) => s.markDismissed);
   const setCompleted = useOnboardingStore((s) => s.setCompleted);
   const dismissed = useOnboardingStore((s) => s.dismissed);
-  // F-16 Step 5 用: 通知許可後にデフォルト値で ON にする (ADR-0014 §47)
-  const setNotifSummaryEnabled = useSettingsStore((s) => s.setNotificationDailySummaryEnabled);
-  const setNotifWateringEnabled = useSettingsStore((s) => s.setNotificationWateringRepeatEnabled);
 
   // 不正な step → welcome に戻す (Phase B が表示)
   React.useEffect(() => {
@@ -69,22 +64,9 @@ export default function OnboardingTutScreen() {
     router.replace(`/onboarding/tut/${next}` as Href);
   };
 
-  // 「次へ」: 通常 step (tut1-4)
+  // 「次へ」/「始める」: 全 step 共通。tut5 (通知予告) も OS permission は撃たず step を進めるだけ。
+  // 実際の通知 opt-in は初回予定登録時の soft-ask で行う (ADR-0014 Amended)。
   const handleNext = () => {
-    advanceStep();
-  };
-
-  // 「通知を有効にする」: Step 5 専用 (ADR-0014 §43)
-  // OS permission を要求 → granted なら summary + watering 通知をデフォルト値で ON 化、
-  // denied なら案内 Alert を出して step 完了 (K1 通り、押し付けがましさ排除)。
-  const handleEnableNotifications = async () => {
-    const granted = await requestNotificationPermission();
-    if (granted) {
-      setNotifSummaryEnabled(true);
-      setNotifWateringEnabled(true);
-    } else {
-      Alert.alert(t('settingsNotifPermissionDeniedTitle'), t('settingsNotifPermissionDeniedBody'));
-    }
     advanceStep();
   };
 
@@ -98,8 +80,9 @@ export default function OnboardingTutScreen() {
   };
 
   const isStep5 = meta.step === 'tut5';
+  // tut5 は最終 step なので CTA を「始める」、それ以外は「次へ」。どちらも handleNext (advanceStep)。
   const ctaLabel = isStep5 ? t('onboardingTut5Cta') : t('onboardingTutNext');
-  const ctaHandler = isStep5 ? () => void handleEnableNotifications() : handleNext;
+  const ctaHandler = handleNext;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']} testID="e2e_onboarding_tut">
