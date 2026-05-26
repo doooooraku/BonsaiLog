@@ -28,10 +28,11 @@ import { getAllSpecies, getSpeciesById } from '@/src/db/speciesRepository';
 import {
   type BonsaiForCsv,
   bonsaiToCsvString,
-  eventsToCsvString,
+  cellsToCsvString,
   type SpeciesForCsv,
   speciesToCsvString,
 } from './csvExport';
+import { buildEventCsvRow, EVENT_CSV_HEADER_KEYS } from './eventCsvRow';
 import { buildExportFileName, type ExportKind } from './exportFileName';
 import { type BonsaiListRow, buildBonsaiListPdfHtml, type ListPdfStats } from './listPdfExport';
 import { buildBonsaiPdfHtml, generateAndShareListPdf, readPhotoAsBase64 } from './pdfExport';
@@ -182,11 +183,20 @@ export async function loadCsvForPreview(
     return { csv: bonsaiToCsvString(rows), fileName, count: rows.length };
   }
 
-  // events_csv
+  // events_csv — 人間可読 (盆栽名 / 作業 / 状態 / 日時 / 部位 / 詳細 / メモ / 盆栽ID / 作業ID)
   const { fromIso, toIso } = resolvePeriodRange(opts);
   const bonsaiIds = opts.scope === 'all' ? undefined : bonsai.map((b) => b.id);
   const events = await getEventsInRange({ bonsaiIds, fromIso, toIso });
-  return { csv: eventsToCsvString(events), fileName, count: events.length };
+  const nameMap = await buildBonsaiNameMap();
+  const header = EVENT_CSV_HEADER_KEYS.map((k) => t(k));
+  const dataRows = events.map((e) => buildEventCsvRow(e, nameMap[e.bonsaiId] ?? '', t));
+  return { csv: cellsToCsvString([header, ...dataRows]), fileName, count: events.length };
+}
+
+/** 全盆栽 (active + archived) の id → name マップ (events CSV の盆栽名解決用)。 */
+async function buildBonsaiNameMap(): Promise<Record<string, string>> {
+  const all = [...(await getAllActiveBonsai()), ...(await getAllArchivedBonsai())];
+  return Object.fromEntries(all.map((b) => [b.id, b.name]));
 }
 
 /**

@@ -12,7 +12,7 @@
  *   (deleted_at / payload_json は除外、ゴミ箱対象は呼出側でフィルタ)
  */
 
-import type { Bonsai, Event, Species } from '@/src/db/schema';
+import type { Bonsai, Species } from '@/src/db/schema';
 
 /** UTF-8 BOM (Excel が UTF-8 を認識するため、CSV 先頭に付与)。 */
 export const CSV_BOM = '﻿';
@@ -28,46 +28,20 @@ export function escapeCsvField(value: string | number | null | undefined): strin
   return str;
 }
 
-/** events を CSV 行配列に変換 (header 含まず、配列のまま返す純関数)。 */
-export function eventsToCsvRows(events: readonly Event[]): string[] {
-  const header = [
-    'id',
-    'bonsai_id',
-    'type',
-    'status',
-    'occurred_at_utc',
-    'tz_offset_min',
-    'tz_iana',
-    'duration_min',
-    'note',
-    'created_at',
-    'updated_at',
-  ].join(',');
-
-  const rows = events.map((e) =>
-    [
-      escapeCsvField(e.id),
-      escapeCsvField(e.bonsaiId),
-      escapeCsvField(e.type),
-      escapeCsvField(e.status),
-      escapeCsvField(e.occurredAtUtc),
-      escapeCsvField(e.tzOffsetMin),
-      escapeCsvField(e.tzIana),
-      escapeCsvField(e.durationMin),
-      escapeCsvField(e.note),
-      escapeCsvField(e.createdAt),
-      escapeCsvField(e.updatedAt),
-    ].join(','),
-  );
-
-  return [header, ...rows];
+/**
+ * 整形済みセル配列 (1 行目 = ヘッダ、以降 = データ) を UTF-8 BOM + CRLF の CSV 文字列へ。
+ * ローカライズ/日付整形/payload 抽出は呼出側 (exportFlow) で済ませ、本関数は escape + 連結のみ。
+ */
+export function cellsToCsvString(
+  rows: readonly (readonly (string | number | null | undefined)[])[],
+): string {
+  const lines = rows.map((cells) => cells.map(escapeCsvField).join(','));
+  return CSV_BOM + lines.join('\r\n');
 }
 
-/** events を完全な CSV 文字列に変換 (UTF-8 BOM + CRLF 改行)。 */
-export function eventsToCsvString(events: readonly Event[]): string {
-  const rows = eventsToCsvRows(events);
-  return CSV_BOM + rows.join('\r\n');
-}
+// events_csv は人間可読再設計 (Sess47 / ADR-0016 Amended) のため
+// `src/features/export/eventCsvRow.ts` の buildEventCsvRow + cellsToCsvString で生成する
+// (旧 eventsToCsvRows/eventsToCsvString = 生 DB ダンプは撤去)。
 
 // ---------------------------------------------------------------------------
 // Phase D-3: bonsai_csv 9 列 (Issue #33 / ADR-0016 AC2)
