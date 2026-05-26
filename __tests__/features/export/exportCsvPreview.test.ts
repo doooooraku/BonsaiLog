@@ -9,11 +9,8 @@ const CSV_PREVIEW = r('../../../app/export/csv-preview.tsx');
 const FLOW = r('../../../src/features/export/exportFlow.ts');
 
 describe('CSV Preview (csv-preview)', () => {
-  test('1. loadCsvForPreview で生成し、表 / 生テキスト 切替表示', () => {
+  test('1. loadCsvForPreview で生成し、生テキストで表示', () => {
     expect(CSV_PREVIEW).toMatch(/loadCsvForPreview/);
-    expect(CSV_PREVIEW).toMatch(/exportCsvPreviewGrid/);
-    expect(CSV_PREVIEW).toMatch(/exportCsvPreviewText/);
-    expect(CSV_PREVIEW).toContain('e2e_export_csv_preview_grid_view');
     expect(CSV_PREVIEW).toContain('e2e_export_csv_preview_text_view');
   });
 
@@ -23,9 +20,9 @@ describe('CSV Preview (csv-preview)', () => {
     expect(CSV_PREVIEW).toContain('e2e_export_csv_preview_share');
   });
 
-  test('3. RFC4180 行パーサで BOM 除去 + cell 分解', () => {
-    expect(CSV_PREVIEW).toMatch(/function parseCsvLine/);
-    expect(CSV_PREVIEW).toMatch(/CSV_BOM/);
+  test('3. 表(grid)表示は撤去済み (ユーザー指示で不要)', () => {
+    expect(CSV_PREVIEW).not.toContain('e2e_export_csv_preview_grid_view');
+    expect(CSV_PREVIEW).not.toMatch(/function parseCsvLine/);
   });
 });
 
