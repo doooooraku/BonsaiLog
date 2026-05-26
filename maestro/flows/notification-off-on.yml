@@ -17,31 +17,27 @@ steps:
       text: '設定'
       label: '設定タブ or ヘッダーから設定画面へ遷移'
       optional: true
-  # Phase 1.6-T6 A2a (Issue #330): 通知 toggle はサブ画面 /settings/notifications に集約済
+  # ADR-0014 Amended: 通知トグルは設定画面本体に統合。通知時刻は設定画面で直接ピッカーを開く。
+  # 通知 ON (master toggle)
   - tapOn:
-      id: 'e2e_settings_notifications_row'
-      label: '「通知設定 ›」 行タップで通知設定サブ画面へ遷移'
-      optional: true
-  # 通知 ON
-  - tapOn:
-      id: 'e2e_notif_summary_toggle'
-      label: '当日まとめ通知トグルを ON に (1 回目)'
+      id: 'e2e_settings_notification_master_toggle'
+      label: '通知トグルを ON に (1 回目)'
       optional: true
   - assertVisible:
-      id: 'e2e_notif_summary_edit_time'
-      label: 'ON 時のみ表示される時刻編集ボタンが見える'
+      id: 'e2e_settings_notifications_row'
+      label: 'ON 時のみ表示される「通知時刻を変更」行が見える'
       optional: true
   # 通知 OFF
   - tapOn:
-      id: 'e2e_notif_summary_toggle'
+      id: 'e2e_settings_notification_master_toggle'
       label: 'もう一度タップで OFF に'
       optional: true
   # 通知 ON (2 回目、設定保持確認)
   - tapOn:
-      id: 'e2e_notif_summary_toggle'
+      id: 'e2e_settings_notification_master_toggle'
       label: 'もう一度 ON にして時刻保持確認'
       optional: true
   - assertVisible:
-      id: 'e2e_notif_summary_edit_time'
-      label: '時刻編集ボタンが復活 (前回設定が保持されている)'
+      id: 'e2e_settings_notifications_row'
+      label: '「通知時刻を変更」行が復活 (前回設定が保持されている)'
       optional: true

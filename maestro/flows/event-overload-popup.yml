@@ -23,10 +23,11 @@ steps:
       id: 'e2e_settings_screen'
       label: '設定画面が表示されることを確認 (testID)'
       optional: true
-  # Phase 1.6-T6 A2a (Issue #330): 通知 toggle はサブ画面 /settings/notifications に集約済
-  - tapOn:
-      id: 'e2e_settings_notifications_row'
-      label: '「通知設定 ›」 行タップで通知設定サブ画面へ遷移'
+  # ADR-0014 Amended: 通知トグルは設定画面本体に統合 (旧サブ画面 /settings/notifications は廃止)。
+  # 注: F-05 気遣い型ポップアップは Sess19-3 で廃止済、以降の step は obsolete (optional skip)。
+  - assertVisible:
+      id: 'e2e_settings_notification_master_toggle'
+      label: '通知トグルが表示されることを確認'
       optional: true
   - assertVisible:
       id: 'e2e_event_overload_toggle'
