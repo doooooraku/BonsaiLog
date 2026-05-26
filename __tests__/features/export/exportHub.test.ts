@@ -1,87 +1,110 @@
 /**
- * F-10 エクスポート Hub + 欠落 CSV 配線 静的解析 test (Issue #33 / ADR-0016 AC2 / AC11)。
+ * F-10 エクスポート Hub + Options Sheet + exportFlow 静的解析 test
+ * (Issue #33 / ADR-0016 AC2 / AC11 / AC12)。
  *
  * ConfirmDialog.test.tsx 等で確立した静的解析 pattern (fs.readFileSync + regex) を踏襲。
- * expo-sqlite / RN 環境不要で、Hub が 5 種類を露出し各 CSV 画面が Pro gate + 正しい
- * ロジック関数を呼ぶことを構造保証する。
+ * Hub が 5 種類を露出し、リスト系はシート → runExport、bonsai_pdf は picker へ分岐し、
+ * Sheet が期間/対象/アーカイブを持ち、exportFlow が 4 種を扱うことを構造保証する。
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const HUB = readFileSync(resolve(__dirname, '../../../app/export/index.tsx'), 'utf8');
-const BONSAI_CSV = readFileSync(resolve(__dirname, '../../../app/export/bonsai-csv.tsx'), 'utf8');
-const SPECIES_CSV = readFileSync(resolve(__dirname, '../../../app/export/species-csv.tsx'), 'utf8');
-const SETTINGS = readFileSync(resolve(__dirname, '../../../app/settings/index.tsx'), 'utf8');
-const LAYOUT = readFileSync(resolve(__dirname, '../../../app/export/_layout.tsx'), 'utf8');
+const r = (p: string) => readFileSync(resolve(__dirname, p), 'utf8');
+const HUB = r('../../../app/export/index.tsx');
+const SHEET = r('../../../src/features/export/ExportOptionsSheet.tsx');
+const FLOW = r('../../../src/features/export/exportFlow.ts');
+const SETTINGS = r('../../../app/settings/index.tsx');
+const LAYOUT = r('../../../app/export/_layout.tsx');
+const EVENT_REPO = r('../../../src/db/eventRepository.ts');
 
 describe('Export Hub (ADR-0016 AC11)', () => {
-  test('1. 5 種類すべてを catalog に持つ (AC2: bonsai_csv/events_csv/species_csv/bonsai_pdf/list_pdf)', () => {
+  test('1. 5 種類すべてを catalog に持つ', () => {
     for (const k of ['bonsai_csv', 'events_csv', 'species_csv', 'bonsai_pdf', 'list_pdf']) {
       expect(HUB).toContain(`k: '${k}'`);
     }
   });
 
-  test('2. CSV 行は 3 種 / PDF 行は 2 種で section 分け', () => {
-    expect(HUB).toMatch(/fmt === 'CSV'/);
-    expect(HUB).toMatch(/fmt === 'PDF'/);
+  test('2. CSV/PDF section 分け + FormScreenHeader (raw route header 回避)', () => {
     expect(HUB).toMatch(/exportHubCsvSection/);
     expect(HUB).toMatch(/exportHubPdfSection/);
-  });
-
-  test('3. 5 種の遷移先 route が揃っている', () => {
-    for (const r of [
-      '/export/bonsai-csv',
-      '/export/csv',
-      '/export/species-csv',
-      '/export/pdf',
-      '/export/list-pdf',
-    ]) {
-      expect(HUB).toContain(`'${r}'`);
-    }
-  });
-
-  test('4. Hub screen + row testID + PRO バッジ', () => {
-    expect(HUB).toContain('e2e_export_hub_screen');
-    expect(HUB).toMatch(/e2e_export_hub_row_\$\{def\.k\}/);
-    expect(HUB).toMatch(/proBadgeShort/);
-  });
-
-  test('5. FormScreenHeader を使う (raw route header 不具合の回避)', () => {
     expect(HUB).toMatch(/FormScreenHeader/);
     expect(LAYOUT).toMatch(/headerShown:\s*false/);
   });
-});
 
-describe('bonsai_csv / species_csv 画面配線 (ADR-0016 AC2 UI)', () => {
-  test('6. bonsai_csv は Pro gate + bonsaiToCsvString + getAllActiveBonsaiWithSpecies', () => {
-    expect(BONSAI_CSV).toMatch(/if\s*\(!isPro\)/);
-    expect(BONSAI_CSV).toMatch(/goToPaywall/);
-    expect(BONSAI_CSV).toMatch(/bonsaiToCsvString/);
-    expect(BONSAI_CSV).toMatch(/getAllActiveBonsaiWithSpecies/);
-    expect(BONSAI_CSV).toContain('e2e_export_bonsai_csv_action');
+  test('3. Free は Paywall / bonsai_pdf は picker / 他はシートを開く分岐', () => {
+    expect(HUB).toMatch(/if\s*\(!isPro\)/);
+    expect(HUB).toMatch(/goToPaywall/);
+    expect(HUB).toMatch(/router\.push\('\/export\/pdf' as Href\)/);
+    expect(HUB).toMatch(/setSheetType\(k as ExportTypeKey\)/);
   });
 
-  test('7. species_csv は Pro gate + speciesToCsvString + getAllSpecies', () => {
-    expect(SPECIES_CSV).toMatch(/if\s*\(!isPro\)/);
-    expect(SPECIES_CSV).toMatch(/goToPaywall/);
-    expect(SPECIES_CSV).toMatch(/speciesToCsvString/);
-    expect(SPECIES_CSV).toMatch(/getAllSpecies/);
-    expect(SPECIES_CSV).toContain('e2e_export_species_csv_action');
-  });
-
-  test('8. 両画面ともストレージ事前チェック (AC7)', () => {
-    expect(BONSAI_CSV).toMatch(/isStorageSufficient/);
-    expect(SPECIES_CSV).toMatch(/isStorageSufficient/);
+  test('4. Hub screen + row testID + PRO バッジ + シート埋め込み', () => {
+    expect(HUB).toContain('e2e_export_hub_screen');
+    expect(HUB).toMatch(/e2e_export_hub_row_\$\{def\.k\}/);
+    expect(HUB).toMatch(/proBadgeShort/);
+    expect(HUB).toMatch(/<ExportOptionsSheet/);
   });
 });
 
-describe('設定エントリ集約 (mockup: 単一エントリ → Hub)', () => {
-  test('9. 設定は単一の e2e_open_export_hub 行で /export へ', () => {
+describe('Export Options Sheet (ADR-0016 AC11 Options / AC12 Y4)', () => {
+  test('5. RN Modal transparent slide + 生成 testID', () => {
+    expect(SHEET).toMatch(/<Modal[\s\S]*transparent[\s\S]*animationType="slide"/);
+    expect(SHEET).toMatch(/onRequestClose=\{onClose\}/);
+    expect(SHEET).toContain('e2e_export_options_generate');
+    expect(SHEET).toContain('e2e_export_options_sheet');
+  });
+
+  test('6. 期間/対象/アーカイブ 3 種のオプション', () => {
+    expect(SHEET).toMatch(/exportOptPeriodLabel/);
+    expect(SHEET).toMatch(/exportOptScopeLabel/);
+    expect(SHEET).toMatch(/exportOptIncludeArchived/);
+    // 対象=選択/タグ の picker
+    expect(SHEET).toMatch(/e2e_export_opt_bonsai_\$\{b\.id\}/);
+    expect(SHEET).toMatch(/e2e_export_opt_tag_\$\{tg\.id\}/);
+  });
+
+  test('7. 0 件選択 / タグ未選択のバリデーション (AC12)', () => {
+    expect(SHEET).toMatch(/selectedIds\.length === 0/);
+    expect(SHEET).toMatch(/exportOptScopeEmptyBody/);
+    expect(SHEET).toMatch(/exportOptTagEmptyBody/);
+  });
+
+  test('8. ストレージ事前チェック + runExport 委譲', () => {
+    expect(SHEET).toMatch(/isStorageSufficient/);
+    expect(SHEET).toMatch(/runExport\(/);
+  });
+});
+
+describe('exportFlow orchestration', () => {
+  test('9. runExport が 4 種を分岐 + 既存ロジック関数を使用', () => {
+    expect(FLOW).toMatch(/export async function runExport/);
+    expect(FLOW).toMatch(/speciesToCsvString/);
+    expect(FLOW).toMatch(/bonsaiToCsvString/);
+    expect(FLOW).toMatch(/eventsToCsvString/);
+    expect(FLOW).toMatch(/buildBonsaiListPdfHtml/);
+    expect(FLOW).toMatch(/generateAndShareListPdf/);
+  });
+
+  test('10. resolvePeriodRange + OPTION_APPLIES + scope/archived 解決', () => {
+    expect(FLOW).toMatch(/export function resolvePeriodRange/);
+    expect(FLOW).toMatch(/export const OPTION_APPLIES/);
+    expect(FLOW).toMatch(/getEventsInRange/);
+    expect(FLOW).toMatch(/getAllArchivedBonsai/);
+    expect(FLOW).toMatch(/getBonsaiByTag/);
+  });
+
+  test('11. eventRepository.getEventsInRange は deleted 除外 + 期間/対象フィルタ', () => {
+    expect(EVENT_REPO).toMatch(/export async function getEventsInRange/);
+    expect(EVENT_REPO).toMatch(/deleted_at IS NULL/);
+    expect(EVENT_REPO).toMatch(/occurred_at_utc >= \?/);
+    expect(EVENT_REPO).toMatch(/bonsai_id IN/);
+  });
+});
+
+describe('設定エントリ集約', () => {
+  test('12. 設定は単一 e2e_open_export_hub 行で /export へ、旧 3 行 testID は撤去済み', () => {
     expect(SETTINGS).toContain('e2e_open_export_hub');
     expect(SETTINGS).toMatch(/router\.push\('\/export' as Href\)/);
-  });
-
-  test('10. 旧 3 行 testID は撤去済み', () => {
     expect(SETTINGS).not.toContain('e2e_open_export_csv');
     expect(SETTINGS).not.toContain('e2e_open_export_pdf');
     expect(SETTINGS).not.toContain('e2e_open_export_list_pdf');

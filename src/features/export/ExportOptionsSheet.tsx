@@ -1,0 +1,413 @@
+/**
+ * F-10 エクスポート Options Sheet (Issue #33 / ADR-0016 AC11 Options + AC12 Y4)。
+ *
+ * Hub のリスト系 (bonsai_csv / events_csv / species_csv / list_pdf) 行 tap で開く
+ * 下からせり出す Modal。期間 / 対象 (全部/選択/タグ) / アーカイブを選び「生成して共有」。
+ *
+ * - RN <Modal transparent animationType="slide"> (RowActionMenu パターン、@gorhom 不使用)
+ * - 種類別に意味のあるオプションだけ表示 (exportFlow.OPTION_APPLIES)
+ * - 生成は exportFlow.runExport に委譲。Pro 判定は Hub 側で実施済み。
+ */
+import * as LegacyFileSystem from 'expo-file-system/legacy';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
+
+import { ThemedText } from '@/components/themed-text';
+import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
+import { nowUtc } from '@/src/core/datetime/clock';
+import { LabeledSegmented } from '@/src/components/form/LabeledSegmented';
+import { type TranslationKey, useTranslation } from '@/src/core/i18n/i18n';
+import {
+  BG_PRIMARY,
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  ON_BRAND,
+  TEXT_MUTED,
+  TEXT_SECONDARY,
+} from '@/src/core/theme/colors';
+import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
+import type { Bonsai } from '@/src/db/schema';
+import { getMostUsedTags, type TagRecord } from '@/src/db/tagRepository';
+import { buildExportFileName, type ExportKind } from './exportFileName';
+import {
+  type ExportPeriod,
+  type ExportScope,
+  type ExportTypeKey,
+  OPTION_APPLIES,
+  runExport,
+} from './exportFlow';
+import { isStorageSufficient } from './pdfReliability';
+
+const KIND_MAP: Record<ExportTypeKey, ExportKind> = {
+  bonsai_csv: 'bonsai-csv',
+  events_csv: 'events-csv',
+  species_csv: 'species-csv',
+  list_pdf: 'list-pdf',
+};
+
+const TITLE_KEY: Record<ExportTypeKey, TranslationKey> = {
+  bonsai_csv: 'exportHubBonsaiCsvTitle',
+  events_csv: 'exportHubEventsCsvTitle',
+  species_csv: 'exportHubSpeciesCsvTitle',
+  list_pdf: 'exportHubListPdfTitle',
+};
+
+type Props = {
+  visible: boolean;
+  type: ExportTypeKey;
+  onClose: () => void;
+};
+
+export function ExportOptionsSheet({ visible, type, onClose }: Props) {
+  const { t, lang } = useTranslation();
+  const [period, setPeriod] = useState<ExportPeriod>('all');
+  const [scope, setScope] = useState<ExportScope>('all');
+  const [includeArchived, setIncludeArchived] = useState(false);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
+  const [tagId, setTagId] = useState<string | undefined>(undefined);
+  const [bonsaiList, setBonsaiList] = useState<Bonsai[]>([]);
+  const [tags, setTags] = useState<TagRecord[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  const showPeriod = OPTION_APPLIES.period.has(type);
+  const showScope = OPTION_APPLIES.scope.has(type);
+  const showArchived = OPTION_APPLIES.includeArchived.has(type);
+
+  // sheet が開くたびに条件をリセット (前回の選択を持ち越さない)
+  useEffect(() => {
+    if (visible) {
+      setPeriod('all');
+      setScope('all');
+      setIncludeArchived(false);
+      setDateFrom('');
+      setDateTo('');
+      setSelectedIds([]);
+      setTagId(undefined);
+    }
+  }, [visible, type]);
+
+  useEffect(() => {
+    if (visible && showScope) {
+      getAllActiveBonsai()
+        .then(setBonsaiList)
+        .catch(() => setBonsaiList([]));
+      getMostUsedTags(50)
+        .then(setTags)
+        .catch(() => setTags([]));
+    }
+  }, [visible, showScope]);
+
+  const fileName = buildExportFileName({
+    kind: KIND_MAP[type],
+    ext: type === 'list_pdf' ? 'pdf' : 'csv',
+    date: new Date(nowUtc() as string),
+  });
+
+  const toggleBonsai = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const handleGenerate = async () => {
+    if (busy) return;
+    if (showScope && scope === 'selected' && selectedIds.length === 0) {
+      Alert.alert(t('exportOptScopeEmptyTitle'), t('exportOptScopeEmptyBody'));
+      return;
+    }
+    if (showScope && scope === 'tag' && !tagId) {
+      Alert.alert(t('exportOptScopeEmptyTitle'), t('exportOptTagEmptyBody'));
+      return;
+    }
+    try {
+      const freeBytes = await LegacyFileSystem.getFreeDiskStorageAsync();
+      if (!isStorageSufficient(freeBytes)) {
+        Alert.alert(t('exportStorageLowTitle'), t('exportStorageLowBody'));
+        return;
+      }
+    } catch {
+      // チェックスキップ (AC7-2)
+    }
+    setBusy(true);
+    try {
+      const result = await runExport(
+        {
+          type,
+          period: showPeriod ? period : 'all',
+          dateFrom: dateFrom || undefined,
+          dateTo: dateTo || undefined,
+          scope: showScope ? scope : 'all',
+          selectedBonsaiIds: scope === 'selected' ? selectedIds : undefined,
+          tagId: scope === 'tag' ? tagId : undefined,
+          includeArchived: showArchived ? includeArchived : false,
+          lang,
+        },
+        t,
+      );
+      onClose();
+      Alert.alert(
+        t('exportGenericSuccess'),
+        t('exportGenericSuccessDetail').replace('{count}', String(result.count)),
+      );
+    } catch (error) {
+      Alert.alert(t('exportCsvFailed'), String(error));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={styles.backdrop} onPress={onClose} testID="e2e_export_options_backdrop">
+        <Pressable
+          style={styles.sheet}
+          onPress={(e) => e.stopPropagation()}
+          testID="e2e_export_options_sheet"
+        >
+          <View style={styles.grabber} />
+          <ThemedText type="defaultSemiBold" style={styles.sheetTitle}>
+            {t(TITLE_KEY[type])}
+          </ThemedText>
+
+          <ScrollView contentContainerStyle={styles.scroll}>
+            {showPeriod && (
+              <View style={styles.field}>
+                <LabeledSegmented
+                  label={t('exportOptPeriodLabel')}
+                  items={[
+                    { v: 'all', l: t('exportOptPeriodAll') },
+                    { v: '30d', l: t('exportOptPeriod30d') },
+                    { v: '1y', l: t('exportOptPeriod1y') },
+                    { v: 'custom', l: t('exportOptPeriodCustom') },
+                  ]}
+                  value={period}
+                  onChange={(v) => setPeriod(v as ExportPeriod)}
+                />
+                {period === 'custom' && (
+                  <View style={styles.dateRange}>
+                    <LabeledDateRow
+                      label={t('exportOptDateFrom')}
+                      value={dateFrom}
+                      onChangeText={setDateFrom}
+                      maxToday
+                    />
+                    <LabeledDateRow
+                      label={t('exportOptDateTo')}
+                      value={dateTo}
+                      onChangeText={setDateTo}
+                      maxToday
+                    />
+                  </View>
+                )}
+              </View>
+            )}
+
+            {showScope && (
+              <View style={styles.field}>
+                <LabeledSegmented
+                  label={t('exportOptScopeLabel')}
+                  items={[
+                    { v: 'all', l: t('exportOptScopeAll') },
+                    { v: 'selected', l: t('exportOptScopeSelected') },
+                    { v: 'tag', l: t('exportOptScopeTag') },
+                  ]}
+                  value={scope}
+                  onChange={(v) => setScope(v as ExportScope)}
+                />
+                {scope === 'selected' && (
+                  <View style={styles.pickList}>
+                    <ThemedText style={styles.pickHint}>
+                      {t('exportOptSelectedCount').replace('{count}', String(selectedIds.length))}
+                    </ThemedText>
+                    {bonsaiList.map((b) => {
+                      const on = selectedIds.includes(b.id);
+                      return (
+                        <Pressable
+                          key={b.id}
+                          style={[styles.pickRow, on && styles.pickRowOn]}
+                          onPress={() => toggleBonsai(b.id)}
+                          testID={`e2e_export_opt_bonsai_${b.id}`}
+                        >
+                          <ThemedText style={styles.pickCheck}>{on ? '☑' : '☐'}</ThemedText>
+                          <ThemedText style={styles.pickName}>{b.name}</ThemedText>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                )}
+                {scope === 'tag' && (
+                  <View style={styles.tagWrap}>
+                    {tags.length === 0 ? (
+                      <ThemedText style={styles.pickHint}>{t('exportOptNoTags')}</ThemedText>
+                    ) : (
+                      tags.map((tg) => {
+                        const on = tagId === tg.id;
+                        return (
+                          <Pressable
+                            key={tg.id}
+                            style={[styles.tagChip, on && styles.tagChipOn]}
+                            onPress={() => setTagId(on ? undefined : tg.id)}
+                            testID={`e2e_export_opt_tag_${tg.id}`}
+                          >
+                            <ThemedText style={[styles.tagChipText, on && styles.tagChipTextOn]}>
+                              {tg.name}
+                            </ThemedText>
+                          </Pressable>
+                        );
+                      })
+                    )}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {showArchived && (
+              <View style={styles.field}>
+                <Pressable
+                  style={styles.toggle}
+                  onPress={() => setIncludeArchived((v) => !v)}
+                  testID="e2e_export_opt_archived"
+                >
+                  <ThemedText style={styles.toggleLabel}>
+                    {t('exportOptIncludeArchived')}
+                  </ThemedText>
+                  <View style={[styles.switch, includeArchived && styles.switchOn]}>
+                    <View style={[styles.knob, includeArchived && styles.knobOn]} />
+                  </View>
+                </Pressable>
+              </View>
+            )}
+
+            <View style={styles.field}>
+              <ThemedText style={styles.fieldLabel}>{t('exportOptFilenameLabel')}</ThemedText>
+              <View style={styles.filenameBox}>
+                <ThemedText style={styles.filenameText}>{fileName}</ThemedText>
+              </View>
+            </View>
+          </ScrollView>
+
+          <View style={styles.footer}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('exportOptGenerate')}
+              testID="e2e_export_options_generate"
+              style={[styles.cta, busy && styles.ctaBusy]}
+              onPress={handleGenerate}
+              disabled={busy}
+            >
+              {busy ? (
+                <ActivityIndicator color={ON_BRAND} />
+              ) : (
+                <ThemedText style={styles.ctaText}>{t('exportOptGenerate')}</ThemedText>
+              )}
+            </Pressable>
+          </View>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  backdrop: { flex: 1, backgroundColor: 'rgba(26,26,26,0.4)', justifyContent: 'flex-end' },
+  sheet: {
+    maxHeight: '82%',
+    backgroundColor: BG_PRIMARY,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 34,
+  },
+  grabber: {
+    width: 36,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: BORDER_DEFAULT,
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  sheetTitle: { textAlign: 'center', fontSize: 18, paddingHorizontal: 24, paddingBottom: 8 },
+  scroll: { paddingHorizontal: 16, paddingBottom: 16 },
+  field: { marginBottom: 18 },
+  fieldLabel: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY, marginBottom: 8 },
+  dateRange: { marginTop: 10, gap: 8 },
+  pickList: { marginTop: 8, gap: 4 },
+  pickHint: { fontSize: 12, color: TEXT_MUTED, marginBottom: 4 },
+  pickRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 44,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+  },
+  pickRowOn: { borderColor: BRAND_GREEN },
+  pickCheck: { fontSize: 16, color: BRAND_GREEN },
+  pickName: { flex: 1, fontSize: 14 },
+  tagWrap: { marginTop: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  tagChip: {
+    minHeight: 36,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+  },
+  tagChipOn: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN },
+  tagChipText: { fontSize: 13, color: TEXT_SECONDARY },
+  tagChipTextOn: { color: ON_BRAND },
+  toggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 48,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+  },
+  toggleLabel: { fontSize: 14 },
+  switch: { width: 36, height: 22, borderRadius: 11, backgroundColor: BORDER_DEFAULT, padding: 2 },
+  switchOn: { backgroundColor: BRAND_GREEN },
+  knob: { width: 18, height: 18, borderRadius: 9, backgroundColor: ON_BRAND },
+  knobOn: { alignSelf: 'flex-end' },
+  filenameBox: {
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    backgroundColor: BG_SURFACE,
+  },
+  filenameText: { fontSize: 13, color: TEXT_SECONDARY },
+  footer: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: BORDER_DEFAULT,
+  },
+  cta: {
+    minHeight: 56,
+    borderRadius: 12,
+    backgroundColor: BRAND_GREEN,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ctaBusy: { opacity: 0.6 },
+  ctaText: { color: ON_BRAND, fontSize: 17, fontWeight: '600' },
+});

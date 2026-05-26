@@ -3,14 +3,18 @@
  *
  * 役割: 5 種類のエクスポート (CSV×3 / PDF×2) を 1 画面に集約した「玄関」。
  * CSV セクション (盆栽一覧 / 作業履歴 / 樹種別サマリ) と PDF セクション
- * (個別盆栽レポート / 全盆栽リスト) に分けて表示し、各行 tap で種類別画面へ遷移。
+ * (個別盆栽レポート / 全盆栽リスト) に分けて表示。
  *
- * Pro 制限ロジックは遷移先の各画面側 (useProStore.isPro + useGoToPaywall)。
- * mockup v1.0 (04-Export.html ExportHubScreen) 整合。Design は下書き、Pro 限定は
- * ADR-0009 / 0011 / 0016 が正 (mockup の「全件 Free」注記は不採用)。
+ * 行 tap の挙動:
+ * - Free: Paywall へ (useGoToPaywall)
+ * - bonsai_pdf: 個別選択が本質なので専用 picker (app/export/pdf.tsx) へ遷移
+ * - それ以外 (リスト系 4 種): Options Sheet を開く (期間 / 対象 / アーカイブ → runExport)
+ *
+ * mockup v1.0 (04-Export.html) 整合。Pro 限定は ADR-0009 / 0011 / 0016 が正
+ * (mockup の「全件 Free」注記は下書きとして不採用)。
  */
 import { useRouter, type Href } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -28,13 +32,16 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { ExportOptionsSheet } from '@/src/features/export/ExportOptionsSheet';
+import type { ExportTypeKey } from '@/src/features/export/exportFlow';
+import { useGoToPaywall } from '@/src/features/pro/useGoToPaywall';
+import { useProStore } from '@/src/stores/proStore';
 
 type ExportFmt = 'CSV' | 'PDF';
 
 type ExportTypeDef = {
   k: string;
   fmt: ExportFmt;
-  route: string;
   titleKey: TranslationKey;
   subKey: TranslationKey;
 };
@@ -43,38 +50,28 @@ const EXPORT_TYPES: readonly ExportTypeDef[] = [
   {
     k: 'bonsai_csv',
     fmt: 'CSV',
-    route: '/export/bonsai-csv',
     titleKey: 'exportHubBonsaiCsvTitle',
     subKey: 'exportHubBonsaiCsvSub',
   },
   {
     k: 'events_csv',
     fmt: 'CSV',
-    route: '/export/csv',
     titleKey: 'exportHubEventsCsvTitle',
     subKey: 'exportHubEventsCsvSub',
   },
   {
     k: 'species_csv',
     fmt: 'CSV',
-    route: '/export/species-csv',
     titleKey: 'exportHubSpeciesCsvTitle',
     subKey: 'exportHubSpeciesCsvSub',
   },
   {
     k: 'bonsai_pdf',
     fmt: 'PDF',
-    route: '/export/pdf',
     titleKey: 'exportHubBonsaiPdfTitle',
     subKey: 'exportHubBonsaiPdfSub',
   },
-  {
-    k: 'list_pdf',
-    fmt: 'PDF',
-    route: '/export/list-pdf',
-    titleKey: 'exportHubListPdfTitle',
-    subKey: 'exportHubListPdfSub',
-  },
+  { k: 'list_pdf', fmt: 'PDF', titleKey: 'exportHubListPdfTitle', subKey: 'exportHubListPdfSub' },
 ];
 
 function FormatBadge({ fmt }: { fmt: ExportFmt }) {
@@ -126,6 +123,21 @@ function ExportRow({ def, onPress }: { def: ExportTypeDef; onPress: () => void }
 export default function ExportHubScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const isPro = useProStore((s) => s.isPro);
+  const goToPaywall = useGoToPaywall();
+  const [sheetType, setSheetType] = useState<ExportTypeKey | null>(null);
+
+  const handlePick = (k: string) => {
+    if (!isPro) {
+      goToPaywall(t('exportProRequiredTitle'), t('exportProRequiredBody'));
+      return;
+    }
+    if (k === 'bonsai_pdf') {
+      router.push('/export/pdf' as Href);
+      return;
+    }
+    setSheetType(k as ExportTypeKey);
+  };
 
   const csvTypes = EXPORT_TYPES.filter((d) => d.fmt === 'CSV');
   const pdfTypes = EXPORT_TYPES.filter((d) => d.fmt === 'PDF');
@@ -141,16 +153,22 @@ export default function ExportHubScreen() {
 
         <ThemedText style={styles.sectionLabel}>{t('exportHubCsvSection')}</ThemedText>
         {csvTypes.map((def) => (
-          <ExportRow key={def.k} def={def} onPress={() => router.push(def.route as Href)} />
+          <ExportRow key={def.k} def={def} onPress={() => handlePick(def.k)} />
         ))}
 
         <ThemedText style={[styles.sectionLabel, styles.sectionLabelPdf]}>
           {t('exportHubPdfSection')}
         </ThemedText>
         {pdfTypes.map((def) => (
-          <ExportRow key={def.k} def={def} onPress={() => router.push(def.route as Href)} />
+          <ExportRow key={def.k} def={def} onPress={() => handlePick(def.k)} />
         ))}
       </ScrollView>
+
+      <ExportOptionsSheet
+        visible={sheetType !== null}
+        type={sheetType ?? 'events_csv'}
+        onClose={() => setSheetType(null)}
+      />
     </ThemedView>
   );
 }
