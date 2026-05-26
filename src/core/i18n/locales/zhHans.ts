@@ -879,5 +879,12 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   csvColBonsaiId: 'Bonsai ID',
   csvBonsaiStatusActive: 'Active',
   csvBonsaiStatusArchived: 'Archived',
+  csvColSpeciesName: 'Species',
+  csvColSpeciesCount: 'Count',
+  csvColSpeciesLastWatering: 'Last watering',
+  csvColSpeciesLastPruning: 'Last pruning',
+  csvColSpeciesLastRepotting: 'Last repotting',
+  csvColSpeciesLastFertilizing: 'Last fertilizing',
+  csvSpeciesUnset: '(unset)',
 };
 export default zhHans;
