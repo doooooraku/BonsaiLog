@@ -32,7 +32,7 @@ import { getDb } from '@/src/db/db';
 import { toAbsolutePath, toRelativePath } from '@/src/db/filePathUtils';
 import { nowUtc } from '@/src/core/datetime';
 import { getLang, setLang, type Lang } from '@/src/core/i18n/i18n';
-import { buildAppendImportPlan } from './backupImportPlanner';
+import { buildAppendImportPlan, bonsaiTagKey } from './backupImportPlanner';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -100,6 +100,19 @@ export type BackupPhoto = {
   createdAt: string;
 };
 
+export type BackupTag = {
+  id: string;
+  name: string;
+  nameNormalized: string;
+  createdAt: string;
+};
+
+export type BackupBonsaiTag = {
+  bonsaiId: string;
+  tagId: string;
+  createdAt: string;
+};
+
 export type BackupSettings = {
   language: string;
 };
@@ -111,6 +124,9 @@ export type BackupManifest = {
   bonsai: BackupBonsai[];
   events: BackupEvent[];
   photos: BackupPhoto[];
+  /** schema_version 1 後付けの任意フィールド (旧 ZIP には存在しない → import 時 ?? [] で吸収)。 */
+  tags?: BackupTag[];
+  bonsaiTags?: BackupBonsaiTag[];
   settings: BackupSettings;
 };
 
@@ -238,9 +254,24 @@ async function buildManifestFromDb(): Promise<{
     created_at: string;
   };
 
+  type TagRow = {
+    id: string;
+    name: string;
+    name_normalized: string;
+    created_at: string;
+  };
+
+  type BonsaiTagRow = {
+    bonsai_id: string;
+    tag_id: string;
+    created_at: string;
+  };
+
   const bonsaiRows = await db.getAllAsync<BonsaiRow>('SELECT * FROM bonsai;');
   const eventRows = await db.getAllAsync<EventRow>('SELECT * FROM events;');
   const photoRows = await db.getAllAsync<PhotoRow>('SELECT * FROM photos;');
+  const tagRows = await db.getAllAsync<TagRow>('SELECT * FROM tags;');
+  const bonsaiTagRows = await db.getAllAsync<BonsaiTagRow>('SELECT * FROM bonsai_tags;');
 
   const bonsai: BackupBonsai[] = bonsaiRows.map((row) => ({
     id: row.id,
@@ -290,6 +321,19 @@ async function buildManifestFromDb(): Promise<{
     photoSourceUris.push({ id: row.id, absoluteUri: toAbsolutePath(row.relative_path) });
   }
 
+  const tags: BackupTag[] = tagRows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    nameNormalized: row.name_normalized,
+    createdAt: row.created_at,
+  }));
+
+  const bonsaiTags: BackupBonsaiTag[] = bonsaiTagRows.map((row) => ({
+    bonsaiId: row.bonsai_id,
+    tagId: row.tag_id,
+    createdAt: row.created_at,
+  }));
+
   const manifest: BackupManifest = {
     schemaVersion: BACKUP_SCHEMA_VERSION,
     exportedAt: nowUtc() as string,
@@ -297,6 +341,8 @@ async function buildManifestFromDb(): Promise<{
     bonsai,
     events,
     photos,
+    tags,
+    bonsaiTags,
     settings: {
       language: getLang(),
     },
@@ -544,14 +590,25 @@ export async function importBackup(): Promise<BackupImportResult | null> {
     const bonsaiRows = await db.getAllAsync<{ id: string }>('SELECT id FROM bonsai;');
     const eventRows = await db.getAllAsync<{ id: string }>('SELECT id FROM events;');
     const photoRows = await db.getAllAsync<{ id: string }>('SELECT id FROM photos;');
+    const tagRows = await db.getAllAsync<{ id: string; name_normalized: string }>(
+      'SELECT id, name_normalized FROM tags;',
+    );
+    const bonsaiTagRows = await db.getAllAsync<{ bonsai_id: string; tag_id: string }>(
+      'SELECT bonsai_id, tag_id FROM bonsai_tags;',
+    );
 
     const plan = buildAppendImportPlan({
       bonsai: manifest.bonsai,
       events: manifest.events,
       photos: manifest.photos,
+      tags: manifest.tags ?? [],
+      bonsaiTags: manifest.bonsaiTags ?? [],
       existingBonsaiIds: new Set(bonsaiRows.map((r) => r.id)),
       existingEventIds: new Set(eventRows.map((r) => r.id)),
       existingPhotoIds: new Set(photoRows.map((r) => r.id)),
+      existingTagIds: new Set(tagRows.map((r) => r.id)),
+      existingTagNormalized: new Set(tagRows.map((r) => r.name_normalized)),
+      existingBonsaiTagKeys: new Set(bonsaiTagRows.map((r) => bonsaiTagKey(r.bonsai_id, r.tag_id))),
     });
 
     if (plan.invalidEventRefs.length > 0 || plan.invalidPhotoRefs.length > 0) {
@@ -586,6 +643,21 @@ export async function importBackup(): Promise<BackupImportResult | null> {
               tree.createdAt,
               tree.updatedAt,
             ],
+          );
+        }
+
+        // tags → bonsai_tags の順 (bonsai_tags は bonsai/tags を参照)。
+        for (const tag of plan.tagsToInsert) {
+          await db.runAsync(
+            'INSERT INTO tags (id, name, name_normalized, created_at) VALUES (?, ?, ?, ?);',
+            [tag.id, tag.name, tag.nameNormalized, tag.createdAt],
+          );
+        }
+
+        for (const link of plan.bonsaiTagsToInsert) {
+          await db.runAsync(
+            'INSERT INTO bonsai_tags (bonsai_id, tag_id, created_at) VALUES (?, ?, ?);',
+            [link.bonsaiId, link.tagId, link.createdAt],
           );
         }
 

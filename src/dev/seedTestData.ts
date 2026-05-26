@@ -26,6 +26,7 @@
  * Related: docs/how-to/development/test-data-seed.md、 Issue #355
  */
 import { Asset } from 'expo-asset';
+import { Directory, Paths } from 'expo-file-system';
 
 import { nowUtc } from '@/src/core/datetime';
 import { archiveBonsai, createBonsai, getAllActiveBonsai } from '@/src/db/bonsaiRepository';
@@ -794,6 +795,9 @@ export async function seedTestDataEn(): Promise<SeedResult> {
  *
  * Sess9 PR-1 で event_tags を廃止 (ADR-0008 §Notes Amended 2026-05-18)、
  * DELETE 文も除去。 species / species_names は seed マスタなので残す。
+ *
+ * DB 行削除だけでは写真の実ファイルが残り孤児化するため (Sess46 実機検証で発見、
+ * 238 個残存)、 document/bonsailog/photos ディレクトリも削除する (best-effort)。
  */
 export async function clearAllData(): Promise<void> {
   const db = await getDb();
@@ -805,4 +809,14 @@ export async function clearAllData(): Promise<void> {
     DELETE FROM tags;
     DELETE FROM bonsai;
   `);
+
+  // 写真の実ファイル掃除 (DB 行削除では消えないため孤児化を防ぐ)。
+  try {
+    const photosDir = new Directory(Paths.document, 'bonsailog', 'photos');
+    if (photosDir.exists) {
+      photosDir.delete();
+    }
+  } catch {
+    // best-effort: ファイル掃除失敗は致命的でない (DB は既にクリア済み)
+  }
 }
