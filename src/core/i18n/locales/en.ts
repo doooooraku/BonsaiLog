@@ -878,6 +878,8 @@ const baseEn = {
   exportOptPreview: 'Preview',
   exportListPdfRecordCount: 'Records',
   exportGeneratingTitle: 'Generating…',
+  exportCsvPreviewGrid: 'Table',
+  exportCsvPreviewText: 'Raw text',
 };
 
 export type TranslationKey = keyof typeof baseEn;

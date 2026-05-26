@@ -125,8 +125,8 @@ async function resolveBonsaiSet(opts: ExportOptions): Promise<ResolvedBonsai[]> 
   return resolved;
 }
 
-/** CSV/テキストを cacheDirectory に書き出し → Share Sheet。 */
-async function writeAndShareText(fileName: string, content: string, t: Tfn): Promise<void> {
+/** CSV/テキストを cacheDirectory に書き出し → Share Sheet (preview 画面からも利用)。 */
+export async function shareExportFile(fileName: string, content: string, t: Tfn): Promise<void> {
   const file = new File(Paths.cache, fileName);
   if (file.exists) {
     file.delete();
@@ -153,22 +153,23 @@ export class ExportShareUnavailableError extends Error {
 }
 
 /**
- * Options に基づき 1 種類をエクスポート (生成 → 共有)。
- * @returns 出力件数 (Sheet が成功 Alert に件数表示)
+ * CSV 種類の CSV 文字列 + ファイル名 + 件数を生成 (csv-preview と runExport で共用)。
+ * 共有はしない。list_pdf には使わない (CSV 3 種専用)。
  */
-export async function runExport(opts: ExportOptions, t: Tfn): Promise<ExportResult> {
-  const ext = opts.type === 'list_pdf' ? 'pdf' : 'csv';
+export async function loadCsvForPreview(
+  opts: ExportOptions,
+  t: Tfn,
+): Promise<{ csv: string; fileName: string; count: number }> {
   const fileName = buildExportFileName({
     kind: KIND_MAP[opts.type],
-    ext,
+    ext: 'csv',
     date: new Date(nowUtc() as string),
   });
 
   if (opts.type === 'species_csv') {
     const species = await getAllSpecies(opts.lang);
     const rows: SpeciesForCsv[] = species.map((s) => ({ ...s, commonName: s.commonName ?? '' }));
-    await writeAndShareText(fileName, speciesToCsvString(rows), t);
-    return { kind: opts.type, count: rows.length };
+    return { csv: speciesToCsvString(rows), fileName, count: rows.length };
   }
 
   const bonsai = await resolveBonsaiSet(opts);
@@ -178,22 +179,29 @@ export async function runExport(opts: ExportOptions, t: Tfn): Promise<ExportResu
       ...b,
       speciesName: b.speciesCommonName ?? '',
     }));
-    await writeAndShareText(fileName, bonsaiToCsvString(rows), t);
-    return { kind: opts.type, count: rows.length };
+    return { csv: bonsaiToCsvString(rows), fileName, count: rows.length };
   }
 
+  // events_csv
   const { fromIso, toIso } = resolvePeriodRange(opts);
+  const bonsaiIds = opts.scope === 'all' ? undefined : bonsai.map((b) => b.id);
+  const events = await getEventsInRange({ bonsaiIds, fromIso, toIso });
+  return { csv: eventsToCsvString(events), fileName, count: events.length };
+}
 
-  if (opts.type === 'events_csv') {
-    const bonsaiIds = opts.scope === 'all' ? undefined : bonsai.map((b) => b.id);
-    const events = await getEventsInRange({ bonsaiIds, fromIso, toIso });
-    await writeAndShareText(fileName, eventsToCsvString(events), t);
-    return { kind: opts.type, count: events.length };
+/**
+ * Options に基づき 1 種類をエクスポート (生成 → 共有)。
+ * @returns 出力件数 (Sheet が成功 Alert に件数表示)
+ */
+export async function runExport(opts: ExportOptions, t: Tfn): Promise<ExportResult> {
+  if (opts.type === 'list_pdf') {
+    const { html, count } = await loadListPdfHtml(opts, t);
+    await generateAndShareListPdf(html, t('exportListPdfShareTitle'));
+    return { kind: opts.type, count };
   }
 
-  // list_pdf — プレビューと共用の HTML を生成して共有
-  const { html, count } = await loadListPdfHtml(opts, t);
-  await generateAndShareListPdf(html, t('exportListPdfShareTitle'));
+  const { csv, fileName, count } = await loadCsvForPreview(opts, t);
+  await shareExportFile(fileName, csv, t);
   return { kind: opts.type, count };
 }
 

@@ -871,5 +871,7 @@ const pl: Partial<Record<TranslationKey, string>> = {
   exportOptPreview: 'Preview',
   exportListPdfRecordCount: 'Records',
   exportGeneratingTitle: 'Generating…',
+  exportCsvPreviewGrid: 'Table',
+  exportCsvPreviewText: 'Raw text',
 };
 export default pl;
