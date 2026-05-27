@@ -328,7 +328,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   exportPdfHeaderDate: '날짜',
   exportPdfHeaderType: '유형',
   exportPdfHeaderNote: '메모',
-  exportPdfFooterNote: 'BonsaiLog에서 생성됨',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'PDF 생성에 실패했습니다.',
 

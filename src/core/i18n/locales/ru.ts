@@ -331,7 +331,6 @@ const ru: Partial<Record<TranslationKey, string>> = {
   exportPdfHeaderDate: 'Дата',
   exportPdfHeaderType: 'Тип',
   exportPdfHeaderNote: 'Заметка',
-  exportPdfFooterNote: 'Создано BonsaiLog',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'Не удалось создать PDF.',
 

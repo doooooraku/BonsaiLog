@@ -66,8 +66,6 @@ export type BonsaiPdfTexts = {
   worklogEmpty: string;
   /** その他写真ギャラリー見出し。 */
   photosTitle: string;
-  /** フッタ (ページ番号無、生成元アプリ名等)。 */
-  footerNote: string;
 };
 
 /**
@@ -200,7 +198,10 @@ ${timeline.map(entryHtml).join('\n')}
     margin: 0; padding: 20px 22px;
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
-  .brand { font-size: 8pt; letter-spacing: 0.12em; color: #7A7460; text-transform: uppercase; border-bottom: 1px solid #C9C2AE; padding-bottom: 5px; margin-bottom: 10px; }
+  /* ランニングヘッダー: table の thead を使い印刷時に各ページ先頭で自動繰り返し (iOS/Android 両対応) */
+  table.doc { width: 100%; border-collapse: collapse; }
+  .rhead { font-size: 8pt; letter-spacing: 0.12em; color: #7A7460; text-transform: uppercase; border-bottom: 1px solid #C9C2AE; padding: 0 0 5px; text-align: left; }
+  .doc-body { padding-top: 10px; }
   h1 { font-size: 22pt; margin: 0 0 2pt; font-weight: 600; }
   .subline { font-size: 9.5pt; color: #5A5A5A; margin-bottom: 14px; }
   h2 { font-size: 12pt; margin: 16pt 0 7pt; padding-bottom: 2pt; border-bottom: 0.5px solid #1A1A1A; color: #5A4637; page-break-after: avoid; -webkit-column-break-after: avoid; }
@@ -224,19 +225,25 @@ ${timeline.map(entryHtml).join('\n')}
   .entry-date { flex: 0 0 5.5em; font-size: 9pt; font-weight: 600; padding-top: 2px; }
   .entry-main { flex: 1; min-width: 0; }
   .badge { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 9pt; font-weight: 500; }
-  .chips { margin-top: 4px; }
-  .chip { display: inline-block; background: rgba(31,58,46,0.06); border-radius: 3px; padding: 1px 6px; margin: 0 3px 3px 0; font-size: 8.5pt; }
+  /* チップは縦 1 列 (1 行 1 チップ、各チップは内容幅) */
+  .chips { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; margin-top: 4px; }
+  .chip { display: inline-block; background: rgba(31,58,46,0.06); border-radius: 3px; padding: 1px 6px; font-size: 8.5pt; }
   .entry-note { font-size: 9pt; color: #1A1A1A; margin-top: 4px; line-height: 1.5; }
   .entry-photos { flex: 0 0 auto; display: flex; gap: 4px; }
   .entry-photos img { width: 56px; height: 56px; object-fit: cover; border-radius: 3px; border: 1px solid #C9C2AE; }
-  .photos { display: flex; flex-wrap: wrap; gap: 8px; }
-  .photos img { width: 30%; max-width: 200px; height: auto; border-radius: 4px; border: 1px solid #C9C2AE; }
+  /* ギャラリー写真は縦 1 列・幅いっぱい (縦横比保持・切り抜きなし、A4 幅はみ出し防止に上限) */
+  .photos { display: flex; flex-direction: column; gap: 10px; }
+  .photos img { width: 100%; max-width: 480px; height: auto; border-radius: 4px; border: 1px solid #C9C2AE; }
   .empty { color: #7A7460; }
-  .footer { margin-top: 22pt; font-size: 8pt; color: #7A7460; border-top: 0.5px solid #C9C2AE; padding-top: 6pt; }
 </style>
 </head>
 <body>
-  <div class="brand">BonsaiLog</div>
+  <table class="doc">
+  <thead>
+    <tr><td class="rhead">BonsaiLog · ${esc(meta.name)}</td></tr>
+  </thead>
+  <tbody>
+    <tr><td class="doc-body">
   <h1>${esc(meta.name)}</h1>
   ${sublineHtml}
   ${heroHtml}
@@ -244,7 +251,9 @@ ${timeline.map(entryHtml).join('\n')}
   ${pestHtml}
   ${worklogHtml}
   ${galleryHtml}
-  <p class="footer">${esc(texts.footerNote)}</p>
+    </td></tr>
+  </tbody>
+  </table>
 </body>
 </html>`;
 }

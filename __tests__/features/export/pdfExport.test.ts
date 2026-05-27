@@ -45,7 +45,6 @@ const texts = {
   worklogTitle: '作業ログ',
   worklogEmpty: '―',
   photosTitle: '写真',
-  footerNote: 'BonsaiLog で生成',
 };
 
 function makeReport(overrides: Partial<BonsaiPdfReportData> = {}): BonsaiPdfReportData {
@@ -90,10 +89,17 @@ describe('buildBonsaiPdfHtml — 骨格 (ADR-0016 互換)', () => {
     expect(html).toContain('-webkit-column-break-inside: avoid');
   });
 
-  test('盆栽名 / フッタを出力', () => {
+  test('盆栽名を出力 / フッタ「BonsaiLog で生成」は削除済', () => {
     const html = buildBonsaiPdfHtml(makeReport(), texts);
     expect(html).toContain('<h1>父の黒松</h1>');
-    expect(html).toContain('BonsaiLog で生成');
+    expect(html).not.toContain('BonsaiLog で生成');
+    expect(html).not.toContain('class="footer"');
+  });
+
+  test('ランニングヘッダー: thead に「BonsaiLog · 盆栽名」(各ページ先頭で繰り返す)', () => {
+    const html = buildBonsaiPdfHtml(makeReport(), texts);
+    expect(html).toContain('<thead>');
+    expect(html).toContain('class="rhead">BonsaiLog · 父の黒松');
   });
 });
 
@@ -190,6 +196,8 @@ describe('buildBonsaiPdfHtml — メモ / 病害虫 / 作業ログ (適応型)',
     expect(filled).toContain('主幹矯正');
     // バッジに薄地色が style で入る
     expect(filled).toContain('background:#E9F0EC');
+    // チップは縦 1 列 (flex column)
+    expect(filled).toContain('.chips { display: flex; flex-direction: column');
   });
 
   test('タイムラインのインライン写真を <img> 出力', () => {
@@ -226,6 +234,9 @@ describe('buildBonsaiPdfHtml — 写真 (cover / gallery)', () => {
     const withG = buildBonsaiPdfHtml(makeReport({ gallery: ['data:image/jpeg;base64,G1'] }), texts);
     expect(withG).toContain('<h2>写真</h2>');
     expect(withG).toContain('<img src="data:image/jpeg;base64,G1"');
+    // ギャラリーは縦 1 列・幅いっぱい (縮小しない)
+    expect(withG).toContain('.photos { display: flex; flex-direction: column');
+    expect(withG).toContain('max-width: 480px');
 
     const noG = buildBonsaiPdfHtml(makeReport(), texts);
     expect(noG).not.toContain('<h2>写真</h2>');

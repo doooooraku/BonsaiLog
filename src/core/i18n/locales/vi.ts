@@ -329,7 +329,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   exportPdfHeaderDate: 'Ngày',
   exportPdfHeaderType: 'Loại',
   exportPdfHeaderNote: 'Ghi chú',
-  exportPdfFooterNote: 'Tạo bởi BonsaiLog',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'Không tạo được PDF.',
 

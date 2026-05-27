@@ -330,7 +330,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   exportPdfHeaderDate: 'तारीख',
   exportPdfHeaderType: 'प्रकार',
   exportPdfHeaderNote: 'नोट',
-  exportPdfFooterNote: 'BonsaiLog द्वारा निर्मित',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'PDF बनाने में विफल।',
 
