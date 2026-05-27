@@ -62,6 +62,7 @@ describe('exportFlow HTML ローダー切り出し', () => {
 
   test('8. 写真は base64 inline (WKWebView file:// 制約回避)', () => {
     expect(FLOW).toMatch(/readPhotoAsBase64/);
-    expect(FLOW).toMatch(/photoDataUris/);
+    // Sess49: 写真は cover / event 紐付き / gallery に振り分けて base64 inline
+    expect(FLOW).toMatch(/photoUrisByEventId/);
   });
 });

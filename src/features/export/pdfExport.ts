@@ -18,8 +18,7 @@ import * as LegacyFileSystem from 'expo-file-system/legacy';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
-import type { Bonsai, Event } from '@/src/db/schema';
-
+import type { BonsaiPdfReportData } from './bonsaiPdfReport';
 import {
   PdfHangError,
   assertPdfLooksValid,
@@ -40,30 +39,35 @@ export function escapeHtml(value: string | null | undefined): string {
     .replace(/'/g, '&#39;');
 }
 
+/**
+ * 個別盆栽 PDF レポートの表示ラベル群 (すべてローカライズ済み文字列)。
+ * 値そのもの (樹種名 / チップ等) は BonsaiPdfReportData 側に入る (bonsaiPdfReport.ts)。
+ */
 export type BonsaiPdfTexts = {
-  /** PDF タイトル (例: 「盆栽記録」)。 */
+  /** PDF ドキュメントの <title>。 */
   title: string;
-  /** ラベル: 樹種 / 樹形 / 取得日 / 作業履歴 (table header)。 */
+  /** 個票メタの field 名ラベル。 */
   labelSpecies: string;
   labelStyle: string;
+  labelAge: string;
   labelAcquiredAt: string;
-  labelEventsTitle: string;
-  /** 作業履歴ヘッダ。 */
-  labelEventDate: string;
-  labelEventType: string;
-  labelEventNote: string;
+  labelAcquiredFrom: string;
+  labelPot: string;
+  labelTags: string;
+  /** メモ (来歴) セクション見出し。 */
+  memoTitle: string;
+  /** 病害虫・対処セクション見出し + 表ヘッダ。 */
+  pestSectionTitle: string;
+  pestColDate: string;
+  pestColSymptom: string;
+  pestColNote: string;
+  /** 作業ログ セクション見出し + 0 件表示。 */
+  worklogTitle: string;
+  worklogEmpty: string;
+  /** その他写真ギャラリー見出し。 */
+  photosTitle: string;
   /** フッタ (ページ番号無、生成元アプリ名等)。 */
   footerNote: string;
-};
-
-export type BonsaiPdfData = {
-  bonsai: Pick<Bonsai, 'name' | 'style' | 'acquiredAt'>;
-  speciesCommonName?: string | null;
-  events: readonly Pick<Event, 'occurredAtUtc' | 'type' | 'note'>[];
-  /** Phase C: 写真の data: URI 配列 (base64 inline)。空 / 未指定なら写真セクション非表示。 */
-  photoDataUris?: readonly string[];
-  /** Phase C: 写真セクションのラベル (H2 見出し)。 */
-  labelPhotosTitle?: string;
 };
 
 /**
@@ -87,104 +91,160 @@ export async function readPhotoAsBase64(absoluteUri: string): Promise<string | n
 }
 
 /**
- * 個別盆栽 PDF の HTML 純関数。
+ * 個別盆栽 PDF の HTML 純関数 (Sess49 適応型エンリッチ、ADR-0016)。
  *
- * - DOCTYPE 必須 (iOS WKWebView 制約、ADR-0016)
- * - CJK フォント明示 (フォント埋込なし、Repolog Issue #292 教訓)
- * - Phase C: 写真は base64 inline (data: URI) で <img> 描画
- * - page-break: WebKit プレフィクス併記
+ * - 入力は事前ローカライズ済の構造化データ (bonsaiPdfReport.buildBonsaiPdfReport) + ラベル
+ * - DOCTYPE 必須 (iOS WKWebView 制約) / CJK フォント明示 (フォント埋込なし、Issue #292)
+ * - 写真は base64 inline (data: URI) / light 固定 (印刷物)
+ * - multi-page 固定でなく 1 ドキュメントフロー + section の page-break-inside:avoid で iOS 分断回避
+ * - 適応型: 値の無い meta 行・セクションは出力しない (空欄/「―」だらけ回避)
  */
-export function buildBonsaiPdfHtml(input: BonsaiPdfData & BonsaiPdfTexts): string {
-  const {
-    bonsai,
-    speciesCommonName,
-    events,
-    photoDataUris,
-    labelPhotosTitle,
-    title,
-    labelSpecies,
-    labelStyle,
-    labelAcquiredAt,
-    labelEventsTitle,
-    labelEventDate,
-    labelEventType,
-    labelEventNote,
-    footerNote,
-  } = input;
+export function buildBonsaiPdfHtml(report: BonsaiPdfReportData, texts: BonsaiPdfTexts): string {
+  const { meta, coverPhotoUri, coverPhotoCaption, pestEvents, timeline, gallery } = report;
+  const esc = escapeHtml;
+  const multiline = (s: string) => esc(s).replace(/\n/g, '<br/>');
 
-  const photosHtml =
-    photoDataUris && photoDataUris.length > 0 && labelPhotosTitle
-      ? `<h2>${escapeHtml(labelPhotosTitle)}</h2>
-  <div class="photos">
-${photoDataUris.map((uri) => `    <img src="${uri}" alt="" />`).join('\n')}
-  </div>`
+  const sublineParts = [meta.speciesName, meta.styleLabel, meta.ageText].filter(
+    (s): s is string => !!s,
+  );
+  const sublineHtml = sublineParts.length
+    ? `<div class="subline">${sublineParts.map(esc).join(' · ')}</div>`
+    : '';
+
+  const metaRow = (label: string, value?: string) =>
+    value
+      ? `<div class="m-row"><span class="m-key">${esc(label)}</span><span class="m-val">${esc(value)}</span></div>`
       : '';
 
-  const eventRows = events
-    .map(
-      (e) =>
-        `<tr>
-          <td>${escapeHtml(e.occurredAtUtc.slice(0, 10))}</td>
-          <td>${escapeHtml(e.type)}</td>
-          <td>${escapeHtml(e.note ?? '')}</td>
-        </tr>`,
-    )
-    .join('\n');
+  const tagsHtml = meta.tags.length
+    ? `<div class="m-row"><span class="m-key">${esc(texts.labelTags)}</span><span class="m-val">${meta.tags
+        .map((tg) => `<span class="tag">${esc(tg)}</span>`)
+        .join(' ')}</span></div>`
+    : '';
+
+  const metaHtml = `<div class="meta">
+    ${metaRow(texts.labelSpecies, meta.speciesName)}
+    ${metaRow(texts.labelStyle, meta.styleLabel)}
+    ${metaRow(texts.labelAge, meta.ageText)}
+    ${metaRow(texts.labelAcquiredAt, meta.acquiredText)}
+    ${metaRow(texts.labelAcquiredFrom, meta.acquiredFrom)}
+    ${metaRow(texts.labelPot, meta.potText)}
+    ${tagsHtml}
+  </div>`;
+
+  const coverHtml = coverPhotoUri
+    ? `<div class="cover"><img src="${coverPhotoUri}" alt="" />${
+        coverPhotoCaption ? `<div class="cover-cap">${esc(coverPhotoCaption)}</div>` : ''
+      }</div>`
+    : '';
+
+  const heroHtml = `<section class="hero${coverPhotoUri ? '' : ' no-cover'}">${coverHtml}${metaHtml}</section>`;
+
+  const memoHtml = meta.memo
+    ? `<section class="block"><h2>${esc(texts.memoTitle)}</h2><div class="memo">${multiline(meta.memo)}</div></section>`
+    : '';
+
+  const pestHtml = pestEvents.length
+    ? `<section class="block"><h2>${esc(texts.pestSectionTitle)}</h2>
+  <table class="pest"><thead><tr><th>${esc(texts.pestColDate)}</th><th>${esc(texts.pestColSymptom)}</th><th>${esc(texts.pestColNote)}</th></tr></thead><tbody>
+${pestEvents
+  .map(
+    (p) =>
+      `    <tr><td class="nowrap">${esc(p.date)}</td><td>${esc(p.symptomBodyPart)}</td><td>${esc(p.note ?? '')}</td></tr>`,
+  )
+  .join('\n')}
+  </tbody></table></section>`
+    : '';
+
+  const entryHtml = (e: BonsaiPdfReportData['timeline'][number]) => {
+    const chips = e.chips.length
+      ? `<div class="chips">${e.chips.map((c) => `<span class="chip">${esc(c)}</span>`).join('')}</div>`
+      : '';
+    const note = e.note ? `<div class="entry-note">${multiline(e.note)}</div>` : '';
+    const photos = e.photoUris.length
+      ? `<div class="entry-photos">${e.photoUris.map((u) => `<img src="${u}" alt="" />`).join('')}</div>`
+      : '';
+    return `<div class="entry">
+      <div class="entry-date">${esc(e.date)}</div>
+      <div class="entry-main"><span class="badge" style="background:${e.badgeBg};color:${e.badgeFg}">${esc(e.typeLabel)}</span>${chips}${note}</div>
+      ${photos}
+    </div>`;
+  };
+
+  const worklogHtml = `<section class="block"><h2>${esc(texts.worklogTitle)}</h2>${
+    timeline.length
+      ? `<div class="timeline">
+${timeline.map(entryHtml).join('\n')}
+  </div>`
+      : `<p class="empty">―</p>`
+  }</section>`;
+
+  const galleryHtml = gallery.length
+    ? `<section class="block"><h2>${esc(texts.photosTitle)}</h2><div class="photos">${gallery
+        .map((u) => `<img src="${u}" alt="" />`)
+        .join('')}</div></section>`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="utf-8" />
-<title>${escapeHtml(title)}</title>
+<title>${esc(texts.title)}</title>
 <style>
+  @page { size: A4 portrait; margin: 14mm 12mm 16mm; }
+  * { box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans CJK JP", "Yu Gothic", Meiryo, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans CJK JP", "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
     color: #1A1A1A;
-    margin: 24px;
-    -webkit-print-color-adjust: exact;
+    background: #FBFAF6;
+    margin: 0; padding: 20px 22px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
-  h1 { font-size: 20pt; margin: 0 0 12pt; }
-  h2 { font-size: 14pt; margin: 16pt 0 8pt; page-break-after: avoid; -webkit-column-break-after: avoid; }
-  table { border-collapse: collapse; width: 100%; font-size: 10pt; }
-  th, td { border: 1px solid #E0E0E0; padding: 6px 8px; text-align: left; vertical-align: top; }
-  th { background: #F5F8F5; font-weight: 600; }
-  .meta { font-size: 11pt; line-height: 1.6; }
-  .meta dt { font-weight: 600; float: left; width: 5em; }
-  .meta dd { margin: 0 0 4pt 5em; }
-  .photos { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8pt; page-break-inside: avoid; -webkit-column-break-inside: avoid; }
-  .photos img { width: 30%; max-width: 200px; height: auto; border-radius: 4px; border: 1px solid #E0E0E0; }
-  .footer { margin-top: 24pt; font-size: 9pt; color: #666; border-top: 1px solid #E0E0E0; padding-top: 6pt; }
+  .brand { font-size: 8pt; letter-spacing: 0.12em; color: #7A7460; text-transform: uppercase; border-bottom: 1px solid #C9C2AE; padding-bottom: 5px; margin-bottom: 10px; }
+  h1 { font-size: 22pt; margin: 0 0 2pt; font-weight: 600; }
+  .subline { font-size: 9.5pt; color: #5A5A5A; margin-bottom: 14px; }
+  h2 { font-size: 12pt; margin: 16pt 0 7pt; padding-bottom: 2pt; border-bottom: 0.5px solid #1A1A1A; color: #5A4637; page-break-after: avoid; -webkit-column-break-after: avoid; }
+  .block { page-break-inside: avoid; -webkit-column-break-inside: avoid; }
+  .hero { display: flex; gap: 16px; align-items: flex-start; page-break-inside: avoid; -webkit-column-break-inside: avoid; }
+  .cover { flex: 0 0 40%; }
+  .cover img { width: 100%; height: auto; border-radius: 4px; border: 1px solid #C9C2AE; }
+  .cover-cap { font-size: 8pt; color: #7A7460; margin-top: 4px; }
+  .meta { flex: 1; font-size: 10pt; line-height: 1.5; }
+  .m-row { display: flex; gap: 8px; padding: 2px 0; border-bottom: 1px dotted #D9D1BF; }
+  .m-key { color: #7A7460; flex: 0 0 5.5em; }
+  .m-val { color: #1A1A1A; font-weight: 500; flex: 1; }
+  .tag { display: inline-block; background: #EDEADF; border-radius: 3px; padding: 0 5px; margin: 0 2px 2px 0; font-size: 9pt; }
+  .memo { font-size: 9.5pt; line-height: 1.7; }
+  table.pest { border-collapse: collapse; width: 100%; font-size: 9pt; }
+  table.pest th, table.pest td { border: 1px solid #E0E0E0; padding: 5px 7px; text-align: left; vertical-align: top; }
+  table.pest th { background: #F2EBD6; font-weight: 600; }
+  td.nowrap { white-space: nowrap; }
+  .timeline { display: flex; flex-direction: column; }
+  .entry { display: flex; gap: 10px; padding: 7px 0; border-bottom: 0.5px solid #E8E2D2; align-items: flex-start; page-break-inside: avoid; -webkit-column-break-inside: avoid; }
+  .entry-date { flex: 0 0 5.5em; font-size: 9pt; font-weight: 600; padding-top: 2px; }
+  .entry-main { flex: 1; min-width: 0; }
+  .badge { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 9pt; font-weight: 500; }
+  .chips { margin-top: 4px; }
+  .chip { display: inline-block; background: rgba(31,58,46,0.06); border-radius: 3px; padding: 1px 6px; margin: 0 3px 3px 0; font-size: 8.5pt; }
+  .entry-note { font-size: 9pt; color: #1A1A1A; margin-top: 4px; line-height: 1.5; }
+  .entry-photos { flex: 0 0 auto; display: flex; gap: 4px; }
+  .entry-photos img { width: 56px; height: 56px; object-fit: cover; border-radius: 3px; border: 1px solid #C9C2AE; }
+  .photos { display: flex; flex-wrap: wrap; gap: 8px; }
+  .photos img { width: 30%; max-width: 200px; height: auto; border-radius: 4px; border: 1px solid #C9C2AE; }
+  .empty { color: #7A7460; }
+  .footer { margin-top: 22pt; font-size: 8pt; color: #7A7460; border-top: 0.5px solid #C9C2AE; padding-top: 6pt; }
 </style>
 </head>
 <body>
-  <h1>${escapeHtml(bonsai.name)}</h1>
-  <dl class="meta">
-    ${speciesCommonName ? `<dt>${escapeHtml(labelSpecies)}</dt><dd>${escapeHtml(speciesCommonName)}</dd>` : ''}
-    ${bonsai.style ? `<dt>${escapeHtml(labelStyle)}</dt><dd>${escapeHtml(bonsai.style)}</dd>` : ''}
-    ${bonsai.acquiredAt ? `<dt>${escapeHtml(labelAcquiredAt)}</dt><dd>${escapeHtml(bonsai.acquiredAt.slice(0, 10))}</dd>` : ''}
-  </dl>
-
-  ${photosHtml}
-
-  <h2>${escapeHtml(labelEventsTitle)}</h2>
-  ${
-    events.length === 0
-      ? '<p>―</p>'
-      : `<table>
-    <thead>
-      <tr>
-        <th>${escapeHtml(labelEventDate)}</th>
-        <th>${escapeHtml(labelEventType)}</th>
-        <th>${escapeHtml(labelEventNote)}</th>
-      </tr>
-    </thead>
-    <tbody>
-${eventRows}
-    </tbody>
-  </table>`
-  }
-
-  <p class="footer">${escapeHtml(footerNote)}</p>
+  <div class="brand">BonsaiLog</div>
+  <h1>${esc(meta.name)}</h1>
+  ${sublineHtml}
+  ${heroHtml}
+  ${memoHtml}
+  ${pestHtml}
+  ${worklogHtml}
+  ${galleryHtml}
+  <p class="footer">${esc(texts.footerNote)}</p>
 </body>
 </html>`;
 }
