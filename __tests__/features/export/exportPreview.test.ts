@@ -1,8 +1,9 @@
 /**
- * F-10 PDF プレビュー 2 画面 静的解析 test (Issue #33 / ADR-0016 AC11 PDF Preview)。
+ * F-10 PDF プレビュー/出力 静的解析 test (Issue #33 / ADR-0016)。
  *
- * pdf-preview / list-preview が WebView で印刷同一 HTML を表示し、共有を既存 generator に
- * 委譲することを構造保証する。exportFlow の HTML ローダー切り出しも検証。
+ * Sess50: 個別 PDF (pdf-preview) は WebView プレビューを廃止し、prepareBonsaiPdf +
+ * generateBonsaiPdfWithFallback (3 段階フォールバック) → OS 共有に一本化したことを構造保証。
+ * list-preview はテキストのみで tile memory 問題が無いため WebView プレビューを維持。
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -14,19 +15,21 @@ const FLOW = r('../../../src/features/export/exportFlow.ts');
 const PDF_PICKER = r('../../../app/export/pdf.tsx');
 const SHEET = r('../../../src/features/export/ExportOptionsSheet.tsx');
 
-describe('PDF Bonsai Preview (pdf-preview)', () => {
-  test('1. WebView で印刷同一 HTML (loadBonsaiPdfHtml) を表示', () => {
-    expect(PDF_PREVIEW).toMatch(/from 'react-native-webview'/);
-    expect(PDF_PREVIEW).toMatch(/loadBonsaiPdfHtml/);
-    expect(PDF_PREVIEW).toContain('e2e_export_pdf_preview_webview');
+describe('PDF Bonsai 出力確認 (pdf-preview)', () => {
+  test('1. WebView を廃止し prepareBonsaiPdf で生成準備 (多写真 tile memory 対策、Sess50)', () => {
+    expect(PDF_PREVIEW).not.toMatch(/from 'react-native-webview'/);
+    expect(PDF_PREVIEW).not.toContain('e2e_export_pdf_preview_webview');
+    expect(PDF_PREVIEW).toMatch(/prepareBonsaiPdf/);
   });
 
-  test('2. 出力は下部「出力する」CTA → generateAndShareBonsaiPdf (photoCount 連携)', () => {
-    expect(PDF_PREVIEW).toMatch(/generateAndShareBonsaiPdf\(html,[\s\S]*?photoCount/);
-    // Sess49 追補2: 右上「共有」廃止 → 下部 CTA (exportOptExport)、標準 FormScreenHeader
+  test('2. 出力は generateBonsaiPdfWithFallback (3 段階) 経由 → 単発直呼び禁止 (構造ガード)', () => {
+    expect(PDF_PREVIEW).toMatch(/generateBonsaiPdfWithFallback/);
+    expect(PDF_PREVIEW).toMatch(/buildHtmlForAttempt/);
     expect(PDF_PREVIEW).toContain('e2e_export_pdf_preview_generate');
     expect(PDF_PREVIEW).toMatch(/FormScreenHeader/);
     expect(PDF_PREVIEW).toMatch(/exportOptExport/);
+    // Sess50: 単発 generateAndShareBonsaiPdf 直呼びを禁止 (必ずフォールバック経由)
+    expect(PDF_PREVIEW).not.toMatch(/generateAndShareBonsaiPdf/);
     expect(PDF_PREVIEW).not.toContain('e2e_export_pdf_preview_share');
   });
 
@@ -60,16 +63,19 @@ describe('PDF List Preview (list-preview)', () => {
 });
 
 describe('exportFlow HTML ローダー切り出し', () => {
-  test('7. loadBonsaiPdfHtml / loadListPdfHtml を export し runExport と共用', () => {
-    expect(FLOW).toMatch(/export async function loadBonsaiPdfHtml/);
+  test('7. prepareBonsaiPdf (ファクトリ) / loadListPdfHtml を export し runExport と共用', () => {
+    expect(FLOW).toMatch(/export async function prepareBonsaiPdf/);
     expect(FLOW).toMatch(/export async function loadListPdfHtml/);
     // runExport(list_pdf) も loadListPdfHtml を再利用
     expect(FLOW).toMatch(/await loadListPdfHtml\(opts, t\)/);
+    // Sess50: attempt 別画質で再生成するファクトリを返す
+    expect(FLOW).toMatch(/buildHtmlForAttempt/);
   });
 
-  test('8. 写真は base64 inline (WKWebView file:// 制約回避)', () => {
+  test('8. 写真は base64 inline + attempt 別画質 (thumb/photo spec、Sess50)', () => {
     expect(FLOW).toMatch(/readPhotoAsBase64/);
-    // Sess49: 写真は cover / event 紐付き / gallery に振り分けて base64 inline
+    // 写真は cover / event 紐付き (thumb) / gallery (photo) に振り分けて base64 inline
     expect(FLOW).toMatch(/photoUrisByEventId/);
+    expect(FLOW).toMatch(/getPhotoResizeSpec/);
   });
 });

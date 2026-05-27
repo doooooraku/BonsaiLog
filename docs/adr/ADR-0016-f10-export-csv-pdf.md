@@ -670,3 +670,31 @@ v1.0 では非採用。running header で「ぶつ切り」感を解消する方
 - 「3 段階フォールバック (full → reduced → tiny) で OOM / blank / hang 自動回復、シニア UX 向上」
 - 「ストレージ事前チェック 100MB で失敗前にユーザー警告、フォールバック不可エラー」
 - 「Design はあくまで下書き、ビジネス仕様は議論済 ADR が正、認識をはき違えない」
+
+### Amended（2026-05-27 Sess50、個別 PDF の多写真破綻修正）
+
+実機検証で「全作業に写真 2 枚 = 28 枚」の盆栽で個別 PDF が破綻すると確証:
+①プレビュー WebView が真っ白（Android Chromium の tile memory 上限超過、react-native-webview #2683。
+これはアプリ heap とは別のレンダラ内部上限で largeHeap では直らない）、②「出力する」が
+「PDF の生成に失敗しました」（単発 attempt=1 の 10s キャップ + 3 段階フォールバック未配線）。
+原因はサムネ（56px 表示）に原寸 base64 を inline していた payload 肥大。**AC48 を以下へ Amend**:
+
+- **AC48（個別 PDF Bonsai Preview）廃止 → 出力確認画面に変更**: アプリ内 WebView プレビューは
+  多写真で技術的に破綻するため撤去。`app/export/pdf-preview.tsx` は cover サムネ + 説明 +
+  「出力する」のみの軽量確認画面とし、**生成 → OS 共有 (Share Sheet) で内容確認**する
+  （AC46 Share Sheet = OS 委譲に集約）。`§15` 7 画面構成の「PDF 個別プレビュー」を出力確認画面に置換。
+- **AC49（一覧 PDF List Preview）は維持**: list_pdf は写真なし（テキストのみ）で tile memory 問題が
+  起きないため `list-preview.tsx` の WebView プレビューを存置（影響最小化）。
+- **3 段階フォールバックを「枚数削り」→「画質ダウン・全枚数維持」に変更**: `reducePhotoCountForAttempt`
+  （attempt2 で 5 枚 / attempt3 で 0 枚）を廃止し `getPhotoResizeSpec(role, attempt)` を新設。
+  写真の枚数は減らさず長辺 px / JPEG q を full→reduced→tiny で下げる（フル装備の盆栽でも写真欠落なし）。
+  サムネ（thumb role）は 56px 表示なので 260/200/150px に強く縮小＝payload 削減の主役。
+- **`loadBonsaiPdfHtml`（完成 HTML 1 本返し）を `prepareBonsaiPdf`（attempt→HTML の async ファクトリ）に置換**:
+  WebView/出力で同一巨大 HTML を共用する設計をやめ、出力時に attempt 別画質で再生成。
+  UI は `generateBonsaiPdfWithFallback` 経由のみ（単発直呼び禁止、構造ガード test）。
+- **`withLargeHeap` plugin を `app.config.ts` に登録**: 既存ファイルはあったが未登録だった
+  （Repolog は登録済）。printToFileAsync の OOM 余地を縮小（ネイティブ設定のためリビルド必須）。
+- **生成中オーバーレイに「お待ちください」エスカレーション**: `GeneratingOverlay` が
+  生成開始 4s 経過後に `exportPdfSlowHint` を追加表示（すぐ終わる時は出さない）。
+- **検証 fixture**: 検証用「フル装備の松」（全 14 作業 × 写真 2 枚 = 28 枚）を seed に常備
+  （`FULL_BONSAI_EVENT_DEFS`）。多写真 PDF の実機検証を恒久化。

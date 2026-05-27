@@ -8,6 +8,12 @@ import 'dotenv/config';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const withCmakeArgs = require('./plugins/withCmakeArgs');
 
+// Sess50: PDF 生成 (多写真の base64 inline + printToFileAsync) は WebView/レンダラのメモリを
+// 大量消費し、Android 既定の 256MB heap で OOM しうる。largeHeap="true" で 512MB に引き上げ
+// (Repolog 整合)。詳細: plugins/withLargeHeap.js docstring 参照。
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const withLargeHeap = require('./plugins/withLargeHeap');
+
 // ---------------------------------------------------------------------------
 // Env helpers — fail fast on missing identity vars
 // ---------------------------------------------------------------------------
@@ -166,82 +172,87 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'This identifier will be used to deliver relevant ads to Free plan users.',
   });
 
-  return withCmakeArgs({
-    ...config,
-    name: APP_NAME,
-    slug: APP_SLUG,
-    ios: {
-      ...config.ios,
-      bundleIdentifier: IOS_BUNDLE_IDENTIFIER,
-      config: {
-        usesNonExemptEncryption: false,
+  return withLargeHeap(
+    withCmakeArgs({
+      ...config,
+      name: APP_NAME,
+      slug: APP_SLUG,
+      ios: {
+        ...config.ios,
+        bundleIdentifier: IOS_BUNDLE_IDENTIFIER,
+        config: {
+          usesNonExemptEncryption: false,
+        },
+        privacyManifests: {
+          // ADR-0017 §⑤ 21 — iOS 17+ Privacy Manifest required reasons + AdMob tracking
+          NSPrivacyAccessedAPITypes: [
+            {
+              NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryDiskSpace',
+              NSPrivacyAccessedAPITypeReasons: ['E174.1'],
+            },
+            {
+              NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryFileTimestamp',
+              NSPrivacyAccessedAPITypeReasons: ['C617.1'],
+            },
+            {
+              NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategorySystemBootTime',
+              NSPrivacyAccessedAPITypeReasons: ['35F9.1'],
+            },
+            {
+              NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults',
+              NSPrivacyAccessedAPITypeReasons: ['CA92.1'],
+            },
+          ],
+          // ADR-0017 §⑤ 21 — AdMob 利用のため tracking 有効、UMP 同意で最終的に on/off が決まる
+          NSPrivacyTracking: true,
+          // AdMob / Google Mobile Ads SDK が接続するトラッキングドメイン
+          // SDK 同梱の PrivacyInfo.xcprivacy は app 側にマージされない仕様のため、アプリで明示宣言する必要がある
+          // (Apple Developer Documentation: each bundle declares its own domains)
+          NSPrivacyTrackingDomains: [
+            'doubleclick.net',
+            'googleadservices.com',
+            'googlesyndication.com',
+            'google-analytics.com',
+            'googletagmanager.com',
+            'app-measurement.com',
+            '2mdn.net',
+          ],
+        },
       },
-      privacyManifests: {
-        // ADR-0017 §⑤ 21 — iOS 17+ Privacy Manifest required reasons + AdMob tracking
-        NSPrivacyAccessedAPITypes: [
-          {
-            NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryDiskSpace',
-            NSPrivacyAccessedAPITypeReasons: ['E174.1'],
-          },
-          {
-            NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryFileTimestamp',
-            NSPrivacyAccessedAPITypeReasons: ['C617.1'],
-          },
-          {
-            NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategorySystemBootTime',
-            NSPrivacyAccessedAPITypeReasons: ['35F9.1'],
-          },
-          {
-            NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults',
-            NSPrivacyAccessedAPITypeReasons: ['CA92.1'],
-          },
+      android: {
+        ...config.android,
+        package: ANDROID_PACKAGE,
+        permissions: nextPermissions,
+        blockedPermissions: [
+          'android.permission.RECORD_AUDIO',
+          'android.permission.SYSTEM_ALERT_WINDOW',
         ],
-        // ADR-0017 §⑤ 21 — AdMob 利用のため tracking 有効、UMP 同意で最終的に on/off が決まる
-        NSPrivacyTracking: true,
-        // AdMob / Google Mobile Ads SDK が接続するトラッキングドメイン
-        // SDK 同梱の PrivacyInfo.xcprivacy は app 側にマージされない仕様のため、アプリで明示宣言する必要がある
-        // (Apple Developer Documentation: each bundle declares its own domains)
-        NSPrivacyTrackingDomains: [
-          'doubleclick.net',
-          'googleadservices.com',
-          'googlesyndication.com',
-          'google-analytics.com',
-          'googletagmanager.com',
-          'app-measurement.com',
-          '2mdn.net',
-        ],
       },
-    },
-    android: {
-      ...config.android,
-      package: ANDROID_PACKAGE,
-      permissions: nextPermissions,
-      blockedPermissions: [
-        'android.permission.RECORD_AUDIO',
-        'android.permission.SYSTEM_ALERT_WINDOW',
-      ],
-    },
-    extra: {
-      ...config.extra,
-      eas: {
-        ...(EAS_PROJECT_ID ? { projectId: EAS_PROJECT_ID } : {}),
+      extra: {
+        ...config.extra,
+        eas: {
+          ...(EAS_PROJECT_ID ? { projectId: EAS_PROJECT_ID } : {}),
+        },
+        REVENUECAT_IOS_API_KEY: optional('REVENUECAT_IOS_API_KEY'),
+        REVENUECAT_ANDROID_API_KEY: optional('REVENUECAT_ANDROID_API_KEY'),
+        IAP_DEBUG: optional('IAP_DEBUG', '0'),
+        ADMOB_ANDROID_BANNER_ID: optional('ADMOB_ANDROID_BANNER_ID'),
+        ADMOB_IOS_BANNER_ID: optional('ADMOB_IOS_BANNER_ID'),
+        ADMOB_CONSENT_DEBUG_GEOGRAPHY: optional('ADMOB_CONSENT_DEBUG_GEOGRAPHY'),
+        ADMOB_CONSENT_TEST_DEVICE_IDS: optional('ADMOB_CONSENT_TEST_DEVICE_IDS'),
+        LEGAL_PRIVACY_URL: optional(
+          'LEGAL_PRIVACY_URL',
+          'https://doooooraku.github.io/BonsaiLog/privacy/',
+        ),
+        LEGAL_TERMS_URL: optional(
+          'LEGAL_TERMS_URL',
+          'https://doooooraku.github.io/BonsaiLog/terms/',
+        ),
+        supportsRTL,
+        forcesRTL,
       },
-      REVENUECAT_IOS_API_KEY: optional('REVENUECAT_IOS_API_KEY'),
-      REVENUECAT_ANDROID_API_KEY: optional('REVENUECAT_ANDROID_API_KEY'),
-      IAP_DEBUG: optional('IAP_DEBUG', '0'),
-      ADMOB_ANDROID_BANNER_ID: optional('ADMOB_ANDROID_BANNER_ID'),
-      ADMOB_IOS_BANNER_ID: optional('ADMOB_IOS_BANNER_ID'),
-      ADMOB_CONSENT_DEBUG_GEOGRAPHY: optional('ADMOB_CONSENT_DEBUG_GEOGRAPHY'),
-      ADMOB_CONSENT_TEST_DEVICE_IDS: optional('ADMOB_CONSENT_TEST_DEVICE_IDS'),
-      LEGAL_PRIVACY_URL: optional(
-        'LEGAL_PRIVACY_URL',
-        'https://doooooraku.github.io/BonsaiLog/privacy/',
-      ),
-      LEGAL_TERMS_URL: optional('LEGAL_TERMS_URL', 'https://doooooraku.github.io/BonsaiLog/terms/'),
-      supportsRTL,
-      forcesRTL,
-    },
-    owner: EAS_OWNER || undefined,
-    plugins,
-  });
+      owner: EAS_OWNER || undefined,
+      plugins,
+    }),
+  );
 };

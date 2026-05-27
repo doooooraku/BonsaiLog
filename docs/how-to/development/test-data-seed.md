@@ -6,6 +6,8 @@
 
 > **Notes Amended (本 PR、Phase 2)**: 当初推奨は **案 3 (Maestro flow 経由)** だったが、`expo-image-picker` の OS picker 自動化が困難 (アプリ外画面で Maestro 制御不可) と判明したため、**案 1 (アプリ内 dev シードボタン) に方針変更**。`src/dev/seedTestData.ts` で実装、設定タブの `__DEV__` 限定セクションから 1 タップ実行。Maestro flow は seed 投入を行わず、UI 整合検証のみに専念する。
 
+> **Notes Amended (2026-05-27、Sess49 追補4)**: 検証用に**フル装備盆栽 1 本**を seed 末尾に追加 (`FULL_BONSAI_EVENT_DEFS` + `SeedLangPack.fullBonsai`、日英両 pack)。全基本情報 (樹種/樹形/樹齢/取得日/購入日/入手元/鉢/メモ/タグ) + **全 14 作業種別を各フル payload** + **各作業に写真 2 枚** (`addPhotoFromUri` の `eventId` 紐付け) を持つ。目的: ①作業記録 (EventRow) の写真表示確認、②PDF 個別レポートの複数ページ・セクション継続の確認。seed は idempotent (既存 active 盆栽ありで skip) のため、再投入は「全データ削除 → テストデータ投入」の順で行う。
+
 ---
 
 ## 背景

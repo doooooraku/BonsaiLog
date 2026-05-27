@@ -15,7 +15,8 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { OTHER_EVENT_DEFS } from '@/src/dev/seedTestData';
+import { FULL_BONSAI_EVENT_DEFS, OTHER_EVENT_DEFS } from '@/src/dev/seedTestData';
+import { EVENT_TYPES } from '@/src/db/schema';
 import { validateEventPayload } from '@/src/features/event/payloadValidator';
 
 const SEED_SRC = readFileSync(resolve(__dirname, '../../src/dev/seedTestData.ts'), 'utf8');
@@ -46,6 +47,23 @@ describe('SEED data payload integrity (Sess38 PR-1、 Phase ι-2)', () => {
         }).not.toThrow();
       });
     }
+  });
+
+  // Sess49 追補4: 検証用フル盆栽 — 全 14 種別を各フル payload で網羅
+  describe('FULL_BONSAI_EVENT_DEFS 全件 payloadValidator pass + 14 種別網羅', () => {
+    for (const def of FULL_BONSAI_EVENT_DEFS) {
+      test(`${def.type} の payload が validator を pass`, () => {
+        expect(() => {
+          validateEventPayload(def.type, def.payload);
+        }).not.toThrow();
+      });
+    }
+
+    test('全 14 作業種別を網羅 (重複なし)', () => {
+      const types = FULL_BONSAI_EVENT_DEFS.map((d) => d.type);
+      expect(new Set(types).size).toBe(EVENT_TYPES.length);
+      expect(types).toHaveLength(EVENT_TYPES.length);
+    });
   });
 
   // Sess44: clearAllData が events_fts (FTS5 手動同期索引) も掃除し孤児索引蓄積を防ぐ

@@ -1,45 +1,55 @@
 /**
- * F-10 個別盆栽 PDF プレビュー画面 (Issue #33 / ADR-0016 AC11 PDF Bonsai Preview)。
+ * F-10 個別盆栽 PDF 出力確認画面 (Issue #33 / ADR-0016)。
  *
- * pdf.tsx の picker で盆栽を選ぶと遷移。印刷と同一の HTML (buildBonsaiPdfHtml) を
- * react-native-webview で表示し、下部の「出力する」ボタンで generateAndShareBonsaiPdf。
- * 写真は base64 inline 済みなので WKWebView の file:// 制約は発生しない (ADR-0016)。
+ * pdf.tsx の picker で盆栽を選ぶと遷移。下部の「出力する」で PDF を生成し OS 共有 (Share Sheet) で開く。
  *
- * Sess49 追補2: 独自ダークバー + 右上「共有」を廃止し、他画面と同じ FormScreenHeader +
- * 下部「出力する」CTA (CSV 動線と一貫) に統一。
+ * Sess50: アプリ内 WebView プレビューを廃止 (多写真で Android WebView の tile memory 上限により
+ * 真っ白になる実機バグ、react-native-webview #2683)。生成 → OS 共有に一本化し、出力は 3 段階
+ * フォールバック (generateBonsaiPdfWithFallback、画質ダウン・全枚数維持) で確実に成功させる。
+ * ADR-0016 AC48 を「OS ビューア (Share Sheet) で確認」に amend。
  */
+import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
 
 import { ThemedText } from '@/components/themed-text';
 import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BG_PRIMARY, BORDER_DEFAULT, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
-import { loadBonsaiPdfHtml } from '@/src/features/export/exportFlow';
+import {
+  BG_PRIMARY,
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  ON_BRAND,
+  TEXT_SECONDARY,
+} from '@/src/core/theme/colors';
+import { prepareBonsaiPdf } from '@/src/features/export/exportFlow';
 import { GeneratingOverlay } from '@/src/features/export/GeneratingOverlay';
-import { generateAndShareBonsaiPdf } from '@/src/features/export/pdfExport';
+import { generateBonsaiPdfWithFallback } from '@/src/features/export/pdfExport';
+import type { AttemptNumber } from '@/src/features/export/pdfReliability';
+
+type Prep = {
+  name: string;
+  photoCount: number;
+  coverUri: string | null;
+  buildHtmlForAttempt: (attempt: AttemptNumber) => Promise<string>;
+};
 
 export default function ExportPdfPreviewScreen() {
   const { t, lang } = useTranslation();
   const insets = useSafeAreaInsets();
   const { bonsaiId } = useLocalSearchParams<{ bonsaiId: string }>();
-  const [html, setHtml] = useState<string | null>(null);
-  const [name, setName] = useState('');
-  const [photoCount, setPhotoCount] = useState(0);
+  const [prep, setPrep] = useState<Prep | null>(null);
   const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     let alive = true;
     if (!bonsaiId) return;
-    loadBonsaiPdfHtml(bonsaiId, lang, t)
+    prepareBonsaiPdf(bonsaiId, lang, t)
       .then((r) => {
-        if (!alive) return;
-        setHtml(r.html);
-        setName(r.name);
-        setPhotoCount(r.photoCount);
+        if (alive) setPrep(r);
       })
       .catch(() => {
         if (alive) Alert.alert(t('error'), t('exportPdfFailedBody'));
@@ -50,10 +60,14 @@ export default function ExportPdfPreviewScreen() {
   }, [bonsaiId, lang, t]);
 
   const handleExport = async () => {
-    if (sharing || !html) return;
+    if (sharing || !prep) return;
     setSharing(true);
     try {
-      await generateAndShareBonsaiPdf(html, t('exportPdfShareTitle'), { photoCount });
+      await generateBonsaiPdfWithFallback({
+        buildHtmlForAttempt: prep.buildHtmlForAttempt,
+        photoCount: prep.photoCount,
+        shareDialogTitle: t('exportPdfShareTitle'),
+      });
     } catch {
       Alert.alert(t('error'), t('exportPdfFailedBody'));
     } finally {
@@ -63,16 +77,15 @@ export default function ExportPdfPreviewScreen() {
 
   return (
     <View style={styles.container} testID="e2e_export_pdf_preview_screen">
-      <FormScreenHeader title={name || 'PDF'} testID="e2e_export_pdf_preview_header" />
+      <FormScreenHeader title={prep?.name || 'PDF'} testID="e2e_export_pdf_preview_header" />
 
-      {html ? (
-        <WebView
-          originWhitelist={['*']}
-          source={{ html }}
-          style={styles.web}
-          javaScriptEnabled={false}
-          testID="e2e_export_pdf_preview_webview"
-        />
+      {prep ? (
+        <View style={styles.body}>
+          {prep.coverUri ? (
+            <Image source={{ uri: prep.coverUri }} style={styles.cover} contentFit="cover" />
+          ) : null}
+          <ThemedText style={styles.desc}>{t('exportPdfConfirmBody')}</ThemedText>
+        </View>
       ) : (
         <View style={styles.loading}>
           <ActivityIndicator color={BRAND_GREEN} />
@@ -84,9 +97,9 @@ export default function ExportPdfPreviewScreen() {
           accessibilityRole="button"
           accessibilityLabel={t('exportOptExport')}
           testID="e2e_export_pdf_preview_generate"
-          style={[styles.cta, (sharing || !html) && styles.ctaBusy]}
+          style={[styles.cta, (sharing || !prep) && styles.ctaBusy]}
           onPress={handleExport}
-          disabled={sharing || !html}
+          disabled={sharing || !prep}
         >
           {sharing ? (
             <ActivityIndicator color={ON_BRAND} />
@@ -103,7 +116,16 @@ export default function ExportPdfPreviewScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG_PRIMARY },
-  web: { flex: 1, backgroundColor: '#FFFFFF' },
+  body: { flex: 1, padding: 24, alignItems: 'center', gap: 20 },
+  cover: {
+    width: '100%',
+    aspectRatio: 4 / 3,
+    borderRadius: 12,
+    backgroundColor: BG_SURFACE,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+  },
+  desc: { fontSize: 14, lineHeight: 21, color: TEXT_SECONDARY, textAlign: 'center' },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   footer: {
     paddingHorizontal: 16,

@@ -10,15 +10,13 @@ import {
   PDF_TIMEOUT_PER_PHOTO_MS,
   PdfHangError,
   PdfStorageLowError,
-  REDUCED_PHOTO_LIMIT,
   REQUIRED_STORAGE_MB,
-  TINY_PHOTO_LIMIT,
   assertPdfLooksValid,
   calculatePdfTimeout,
   getAttemptKind,
+  getPhotoResizeSpec,
   isFallbackableError,
   isStorageSufficient,
-  reducePhotoCountForAttempt,
   runWithFallback,
 } from '@/src/features/export/pdfReliability';
 
@@ -218,90 +216,53 @@ describe('AC5+6+7+8 統合シナリオ', () => {
   });
 });
 
-describe('Phase F: reducePhotoCountForAttempt (3 段階フォールバック)', () => {
-  test('REDUCED_PHOTO_LIMIT = 5 (Attempt 2 上限)', () => {
-    expect(REDUCED_PHOTO_LIMIT).toBe(5);
+describe('Sess50: getPhotoResizeSpec (画質ダウン・全枚数維持フォールバック)', () => {
+  test('thumb は attempt が進むほど px / quality が下がる (全件維持)', () => {
+    const a1 = getPhotoResizeSpec('thumb', 1);
+    const a2 = getPhotoResizeSpec('thumb', 2);
+    const a3 = getPhotoResizeSpec('thumb', 3);
+    expect(a1.maxWidth).toBeGreaterThan(a2.maxWidth);
+    expect(a2.maxWidth).toBeGreaterThan(a3.maxWidth);
+    expect(a1.quality).toBeGreaterThanOrEqual(a2.quality);
+    expect(a2.quality).toBeGreaterThanOrEqual(a3.quality);
   });
 
-  test('TINY_PHOTO_LIMIT = 0 (Attempt 3 = 写真なし)', () => {
-    expect(TINY_PHOTO_LIMIT).toBe(0);
+  test('photo (gallery/cover) も attempt が進むほど px / quality が下がる', () => {
+    const a1 = getPhotoResizeSpec('photo', 1);
+    const a2 = getPhotoResizeSpec('photo', 2);
+    const a3 = getPhotoResizeSpec('photo', 3);
+    expect(a1.maxWidth).toBeGreaterThan(a2.maxWidth);
+    expect(a2.maxWidth).toBeGreaterThan(a3.maxWidth);
   });
 
-  test('attempt 1 (full) → 全件返す', () => {
-    const photos = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10'];
-    expect(reducePhotoCountForAttempt(photos, 1)).toEqual(photos);
+  test('thumb は同 attempt の photo より小さい (56px 表示なので payload 削減の主役)', () => {
+    for (const attempt of [1, 2, 3] as const) {
+      expect(getPhotoResizeSpec('thumb', attempt).maxWidth).toBeLessThan(
+        getPhotoResizeSpec('photo', attempt).maxWidth,
+      );
+    }
   });
 
-  test('attempt 1 (full) で 0 件 → 0 件', () => {
-    expect(reducePhotoCountForAttempt([], 1)).toEqual([]);
-  });
-
-  test('attempt 2 (reduced) → 先頭 5 件', () => {
-    const photos = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10'];
-    expect(reducePhotoCountForAttempt(photos, 2)).toEqual(['p1', 'p2', 'p3', 'p4', 'p5']);
-  });
-
-  test('attempt 2 (reduced) で 3 件 → 全件 (制限内)', () => {
-    expect(reducePhotoCountForAttempt(['p1', 'p2', 'p3'], 2)).toEqual(['p1', 'p2', 'p3']);
-  });
-
-  test('attempt 3 (tiny) → 0 件 (写真完全除外)', () => {
-    const photos = ['p1', 'p2', 'p3', 'p4', 'p5'];
-    expect(reducePhotoCountForAttempt(photos, 3)).toEqual([]);
-  });
-
-  test('attempt 3 (tiny) で 0 件入力 → 0 件', () => {
-    expect(reducePhotoCountForAttempt([], 3)).toEqual([]);
-  });
-
-  test('元配列を変更しない (immutable)', () => {
-    const original = ['p1', 'p2', 'p3'];
-    const result = reducePhotoCountForAttempt(original, 1);
-    expect(original).toEqual(['p1', 'p2', 'p3']);
-    expect(result).not.toBe(original);
-  });
-
-  test('複雑な型 (data URI 文字列) でも動作', () => {
-    const photos = [
-      'data:image/jpeg;base64,abc',
-      'data:image/jpeg;base64,def',
-      'data:image/jpeg;base64,ghi',
-      'data:image/jpeg;base64,jkl',
-      'data:image/jpeg;base64,mno',
-      'data:image/jpeg;base64,pqr',
-    ];
-    expect(reducePhotoCountForAttempt(photos, 2).length).toBe(5);
-    expect(reducePhotoCountForAttempt(photos, 3).length).toBe(0);
+  test('attempt 1 (full) の基準値', () => {
+    expect(getPhotoResizeSpec('photo', 1)).toEqual({ maxWidth: 1000, quality: 0.6 });
+    expect(getPhotoResizeSpec('thumb', 1)).toEqual({ maxWidth: 260, quality: 0.6 });
   });
 });
 
-describe('AC5 3 段階フォールバック統合', () => {
-  test('シナリオ: 10 枚 → attempt 1 失敗 → 5 枚 (attempt 2) → さらに失敗 → 0 枚 (attempt 3)', () => {
-    const photos = Array.from({ length: 10 }, (_, i) => `p${i}`);
-
-    // attempt 1: full
-    const a1 = reducePhotoCountForAttempt(photos, 1);
-    expect(a1.length).toBe(10);
+describe('AC5 3 段階フォールバック統合 (Sess50 画質ダウン方式)', () => {
+  test('attempt の kind は full → reduced → tiny', () => {
     expect(getAttemptKind(1)).toBe('full');
-
-    // attempt 2: reduced
-    const a2 = reducePhotoCountForAttempt(photos, 2);
-    expect(a2.length).toBe(REDUCED_PHOTO_LIMIT);
     expect(getAttemptKind(2)).toBe('reduced');
-
-    // attempt 3: tiny
-    const a3 = reducePhotoCountForAttempt(photos, 3);
-    expect(a3.length).toBe(TINY_PHOTO_LIMIT);
     expect(getAttemptKind(3)).toBe('tiny');
   });
 
-  test('シナリオ: BlankPdfError → 次 attempt 可能 → 写真件数を減らして再試行', () => {
-    const photos = Array.from({ length: 10 }, (_, i) => `p${i}`);
+  test('シナリオ: BlankPdfError → 次 attempt 可能 → 画質を下げて再試行 (枚数は維持)', () => {
     const error = new BlankPdfError(500);
     expect(isFallbackableError(error)).toBe(true);
-    // 上位層で attempt+1 → reducePhotoCountForAttempt で件数縮小
-    const next = reducePhotoCountForAttempt(photos, 2);
-    expect(next.length).toBe(5);
+    // 上位層で attempt+1 → getPhotoResizeSpec で px/quality を下げる (件数は減らさない)
+    expect(getPhotoResizeSpec('photo', 2).maxWidth).toBeLessThan(
+      getPhotoResizeSpec('photo', 1).maxWidth,
+    );
   });
 
   test('シナリオ: PdfStorageLowError → 次 attempt 不可 → エラー throw', () => {
@@ -390,17 +351,18 @@ describe('Phase G: runWithFallback (AC5-3 attempt loop)', () => {
     expect(factory).toHaveBeenNthCalledWith(2, 3);
   });
 
-  test('AC5-3 統合: 10 枚 → attempt 1 失敗 → reduced (5 枚) で成功', async () => {
-    const photoUris = Array.from({ length: 10 }, (_, i) => `p${i}`);
+  test('AC5-3 統合: 10 枚 → attempt 1 失敗 → reduced 画質 (全 10 枚維持) で成功', async () => {
+    const photoCount = 10;
     const factory = jest.fn(async (attempt: 1 | 2 | 3) => {
-      const photos = reducePhotoCountForAttempt(photoUris, attempt);
+      const spec = getPhotoResizeSpec('photo', attempt);
       if (attempt === 1) throw new BlankPdfError(500);
-      return { kind: getAttemptKind(attempt), count: photos.length };
+      // 画質ダウン方式: 枚数は減らさず px のみ下がる
+      return { kind: getAttemptKind(attempt), count: photoCount, maxWidth: spec.maxWidth };
     });
 
     const result = await runWithFallback([1, 2, 3], factory);
     expect(result.attemptUsed).toBe(2);
-    expect(result.result).toEqual({ kind: 'reduced', count: REDUCED_PHOTO_LIMIT });
+    expect(result.result).toEqual({ kind: 'reduced', count: 10, maxWidth: 700 });
   });
 
   test('AC5-3 統合: 全 attempt 失敗で最終エラー (BlankPdfError)', async () => {

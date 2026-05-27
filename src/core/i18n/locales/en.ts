@@ -910,6 +910,9 @@ const baseEn = {
   exportPdfPestColSymptom: 'Symptom / Part',
   lookBackCardExportTitle: 'Export',
   lookBackCardExportDesc: 'Save your records as CSV or PDF',
+  exportPdfConfirmBody:
+    'Tap Export to generate this bonsai PDF report and open it in the share sheet.',
+  exportPdfSlowHint: 'Generating the PDF is taking a while. Please wait.',
 };
 
 export type TranslationKey = keyof typeof baseEn;

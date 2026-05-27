@@ -109,6 +109,23 @@ describe('buildBonsaiPdfHtml — 骨格 (ADR-0016 互換)', () => {
       '.rhead-bar { font-size: 8pt; letter-spacing: 0.12em; color: #7A7460; text-transform: uppercase; border-bottom',
     );
   });
+
+  test('セクション継続: 各セクションは thead=見出しの表 (頁またぎで見出し継続)', () => {
+    const html = buildBonsaiPdfHtml(
+      makeReport({
+        meta: { name: 'T', tags: [], memo: 'memo' },
+        timeline: [makeEntry({})],
+        gallery: ['data:image/jpeg;base64,G1'],
+      }),
+      texts,
+    );
+    // 各セクション見出しが thead セル (sec-head) 内の h2 として出力される
+    expect(html).toContain('<table class="sec"><thead><tr><td class="sec-head"><h2>メモ</h2>');
+    expect(html).toContain('<table class="sec"><thead><tr><td class="sec-head"><h2>作業ログ</h2>');
+    expect(html).toContain('<table class="sec"><thead><tr><td class="sec-head"><h2>写真</h2>');
+    // 印刷時に thead が各ページ先頭で繰り返す前提の table 構造
+    expect(html).toContain('table.sec { width: 100%; border-collapse: collapse;');
+  });
 });
 
 describe('buildBonsaiPdfHtml — 個票メタ (適応型)', () => {

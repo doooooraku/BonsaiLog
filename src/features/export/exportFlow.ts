@@ -35,6 +35,7 @@ import { buildEventCsvRow, EVENT_CSV_HEADER_KEYS } from './eventCsvRow';
 import { buildExportFileName, type ExportKind } from './exportFileName';
 import { type BonsaiListRow, buildBonsaiListPdfHtml, type ListPdfStats } from './listPdfExport';
 import { buildBonsaiPdfHtml, generateAndShareListPdf, readPhotoAsBase64 } from './pdfExport';
+import { getPhotoResizeSpec, type AttemptNumber } from './pdfReliability';
 import { buildSpeciesSummaryRows, SPECIES_CSV_HEADER_KEYS } from './speciesSummary';
 
 export type ExportTypeKey = 'bonsai_csv' | 'events_csv' | 'species_csv' | 'list_pdf';
@@ -278,14 +279,30 @@ export async function loadListPdfHtml(
 }
 
 /**
- * bonsai_pdf の HTML を生成 (pdf-preview 画面と共有で共用)。
- * 写真は base64 inline (iOS WKWebView 制約、ADR-0016)。
+ * bonsai_pdf の生成準備 (Sess50)。DB 読み込みは 1 回だけ行い、attempt 別に写真を再縮小して
+ * HTML を組み立てる async ファクトリ `buildHtmlForAttempt` を返す。
+ *
+ * 旧 loadBonsaiPdfHtml (完成 HTML 文字列を 1 本返し WebView/出力で共用) を廃止 (Sess50):
+ * - WebView プレビューは tile memory 上限で多写真時に真っ白 → 画面を廃止し OS 共有に一本化。
+ * - 出力は 3 段階フォールバック (generateBonsaiPdfWithFallback) で attempt 別画質を再生成するため、
+ *   完成済み文字列ではなく「attempt → HTML」のファクトリが必要。
+ *
+ * 写真は base64 inline (iOS WKWebView 制約、ADR-0016)。作業ログのインライン写真 (56px 表示) は
+ * thumb spec で強く縮小、ギャラリー/カバーは photo spec。これが payload 削減の主役。
+ *
+ * @returns name / photoCount (タイムアウト用) / coverUri (確認画面のサムネ表示用 raw file URI) /
+ *          buildHtmlForAttempt (attempt 別画質で写真 inline 済み HTML を返す)
  */
-export async function loadBonsaiPdfHtml(
+export async function prepareBonsaiPdf(
   bonsaiId: string,
   lang: string,
   t: Tfn,
-): Promise<{ html: string; photoCount: number; name: string }> {
+): Promise<{
+  name: string;
+  photoCount: number;
+  coverUri: string | null;
+  buildHtmlForAttempt: (attempt: AttemptNumber) => Promise<string>;
+}> {
   const detail = await getBonsaiWithSpecies(bonsaiId, lang);
   const events = await getActiveEventsByBonsai(bonsaiId);
   const photos = await getPhotosByBonsai(bonsaiId);
@@ -299,44 +316,12 @@ export async function loadBonsaiPdfHtml(
     speciesName = (await getCustomSpeciesById(detail.customSpeciesId))?.name ?? null;
   }
 
-  // 写真を base64 化し cover / event 紐付き / その他 (gallery) に振り分け。
   const coverId = coverPhoto?.id ?? null;
-  const coverPhotoUri = coverPhoto ? await readPhotoAsBase64(coverPhoto.absoluteUri) : null;
-  const photoUrisByEventId: Record<string, string[]> = {};
-  const galleryUris: string[] = [];
-  for (const p of photos) {
-    if (p.id === coverId) continue; // cover は個票で表示済
-    const uri = await readPhotoAsBase64(p.absoluteUri);
-    if (!uri) continue;
-    if (p.eventId) {
-      (photoUrisByEventId[p.eventId] ??= []).push(uri);
-    } else {
-      galleryUris.push(uri);
-    }
-  }
+  const nonCoverPhotos = photos.filter((p) => p.id !== coverId); // cover は個票で表示済
+  const photoCount = (coverPhoto ? 1 : 0) + nonCoverPhotos.length;
 
-  const report = buildBonsaiPdfReport({
-    bonsai: {
-      name,
-      style: detail?.style ?? null,
-      acquiredAt: detail?.acquiredAt ?? null,
-      estimatedAge: detail?.estimatedAge ?? null,
-      estimatedAgeUnknown: detail?.estimatedAgeUnknown ?? 0,
-      memo: detail?.memo ?? null,
-      acquiredFrom: detail?.acquiredFrom ?? null,
-      potInfo: detail?.potInfo ?? null,
-    },
-    speciesName,
-    events,
-    coverPhotoUri,
-    coverPhotoTakenAt: coverPhoto?.takenAt ?? null,
-    photoUrisByEventId,
-    galleryUris,
-    tags: tags.map((tg) => tg.name),
-    t,
-  });
-
-  const html = buildBonsaiPdfHtml(report, {
+  // ラベル群は attempt 非依存なので 1 回だけ確定。
+  const texts = {
     title: t('exportPdfTitle'),
     labelSpecies: t('bonsaiFieldSpecies'),
     labelStyle: t('bonsaiFieldStyle'),
@@ -353,11 +338,51 @@ export async function loadBonsaiPdfHtml(
     worklogTitle: t('eventsTitle'),
     worklogEmpty: '―',
     photosTitle: t('bonsaiFieldPhotos'),
-  });
+  };
 
-  const photoCount =
-    (coverPhotoUri ? 1 : 0) +
-    Object.values(photoUrisByEventId).reduce((n, arr) => n + arr.length, 0) +
-    galleryUris.length;
-  return { html, photoCount, name };
+  const buildHtmlForAttempt = async (attempt: AttemptNumber): Promise<string> => {
+    const photoSpec = getPhotoResizeSpec('photo', attempt);
+    const thumbSpec = getPhotoResizeSpec('thumb', attempt);
+
+    // 写真を attempt 別画質で base64 化し cover / event 紐付き (thumb) / その他 gallery に振り分け。
+    const coverPhotoUri = coverPhoto
+      ? await readPhotoAsBase64(coverPhoto.absoluteUri, photoSpec)
+      : null;
+    const photoUrisByEventId: Record<string, string[]> = {};
+    const galleryUris: string[] = [];
+    for (const p of nonCoverPhotos) {
+      const uri = await readPhotoAsBase64(p.absoluteUri, p.eventId ? thumbSpec : photoSpec);
+      if (!uri) continue;
+      if (p.eventId) {
+        (photoUrisByEventId[p.eventId] ??= []).push(uri);
+      } else {
+        galleryUris.push(uri);
+      }
+    }
+
+    const report = buildBonsaiPdfReport({
+      bonsai: {
+        name,
+        style: detail?.style ?? null,
+        acquiredAt: detail?.acquiredAt ?? null,
+        estimatedAge: detail?.estimatedAge ?? null,
+        estimatedAgeUnknown: detail?.estimatedAgeUnknown ?? 0,
+        memo: detail?.memo ?? null,
+        acquiredFrom: detail?.acquiredFrom ?? null,
+        potInfo: detail?.potInfo ?? null,
+      },
+      speciesName,
+      events,
+      coverPhotoUri,
+      coverPhotoTakenAt: coverPhoto?.takenAt ?? null,
+      photoUrisByEventId,
+      galleryUris,
+      tags: tags.map((tg) => tg.name),
+      t,
+    });
+
+    return buildBonsaiPdfHtml(report, texts);
+  };
+
+  return { name, photoCount, coverUri: coverPhoto?.absoluteUri ?? null, buildHtmlForAttempt };
 }

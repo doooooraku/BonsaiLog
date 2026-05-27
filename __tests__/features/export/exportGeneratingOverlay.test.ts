@@ -22,4 +22,12 @@ describe('GeneratingOverlay (ADR-0016 AC11 / Y2)', () => {
     expect(PDF_PREVIEW).toMatch(/<GeneratingOverlay visible=\{sharing\}/);
     expect(LIST_PREVIEW).toMatch(/<GeneratingOverlay visible=\{sharing\}/);
   });
+
+  test('3. 一定時間経過後に「お待ちください」ヒント (exportPdfSlowHint) を表示 (Sess50)', () => {
+    expect(OVERLAY).toMatch(/exportPdfSlowHint/);
+    expect(OVERLAY).toContain('e2e_export_generating_slow_hint');
+    // すぐ終わる時は出さない (タイマー経過後のみ)
+    expect(OVERLAY).toMatch(/SLOW_HINT_DELAY_MS/);
+    expect(OVERLAY).toMatch(/setTimeout/);
+  });
 });
