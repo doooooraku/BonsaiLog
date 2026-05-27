@@ -899,9 +899,10 @@ const pt: Partial<Record<TranslationKey, string>> = {
   csvColSpeciesLastRepotting: 'Last repotting',
   csvColSpeciesLastFertilizing: 'Last fertilizing',
   csvSpeciesUnset: '(unset)',
-  exportPdfHoldingYears: '{years} yr owned',
   exportPdfPhotoTakenAt: 'Taken {date}',
   exportPdfPestSection: 'Pests & Treatments',
   exportPdfPestColSymptom: 'Symptom / Part',
+  lookBackCardExportTitle: 'Export',
+  lookBackCardExportDesc: 'Save your records as CSV or PDF',
 };
 export default pt;

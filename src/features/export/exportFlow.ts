@@ -333,7 +333,6 @@ export async function loadBonsaiPdfHtml(
     photoUrisByEventId,
     galleryUris,
     tags: tags.map((tg) => tg.name),
-    nowIso: nowUtc() as string,
     t,
   });
 

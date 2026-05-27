@@ -30,7 +30,13 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ChevronRightIcon, SearchIcon, TagIcon, WireIcon } from '@/src/components/icons';
+import {
+  ChevronRightIcon,
+  DownloadIcon,
+  SearchIcon,
+  TagIcon,
+  WireIcon,
+} from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
@@ -38,17 +44,20 @@ import {
   BORDER_DEFAULT,
   BRAND_GREEN,
   TEXT_MUTED,
+  TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 
 type CardDef = {
-  key: 'wiring' | 'search' | 'tags';
+  key: 'wiring' | 'search' | 'tags' | 'export';
   title: string;
   desc: string;
   Icon: typeof WireIcon;
   onPress: () => void;
+  /** Pro 限定機能の card に PRO バッジを出す (押下後 Paywall の混乱防止)。 */
+  pro?: boolean;
 };
 
 export default function LookBackHubScreen() {
@@ -85,6 +94,15 @@ export default function LookBackHubScreen() {
       Icon: TagIcon,
       onPress: () => router.push('/tags' as Href),
     },
+    // Sess49 追補3: エクスポート動線 (設定からのみ → 発見性向上)。Pro 限定のため PRO バッジ。
+    {
+      key: 'export',
+      title: t('lookBackCardExportTitle'),
+      desc: t('lookBackCardExportDesc'),
+      Icon: DownloadIcon,
+      onPress: () => router.push('/export' as Href),
+      pro: true,
+    },
   ];
 
   return (
@@ -112,9 +130,16 @@ export default function LookBackHubScreen() {
               <card.Icon size={22} color={BRAND_GREEN} />
             </View>
             <View style={styles.cardBody}>
-              <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
-                {card.title}
-              </ThemedText>
+              <View style={styles.titleRow}>
+                <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
+                  {card.title}
+                </ThemedText>
+                {card.pro ? (
+                  <View style={styles.proBadge}>
+                    <ThemedText style={styles.proBadgeText}>{t('proBadgeShort')}</ThemedText>
+                  </View>
+                ) : null}
+              </View>
               <ThemedText style={styles.cardDesc}>{card.desc}</ThemedText>
             </View>
             <ChevronRightIcon size={20} color={TEXT_MUTED} />
@@ -157,6 +182,14 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   cardBody: { flex: 1, minWidth: 0, gap: 2 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   cardTitle: { fontSize: 17 },
   cardDesc: { fontSize: 13, color: TEXT_SECONDARY, lineHeight: 18 },
+  proBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: 'rgba(198,158,72,0.18)',
+  },
+  proBadgeText: { fontSize: 9, letterSpacing: 0.6, color: TEXT_PRIMARY, fontWeight: '600' },
 });

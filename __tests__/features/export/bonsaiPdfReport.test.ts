@@ -55,22 +55,20 @@ function makeInput(overrides: Partial<BonsaiPdfReportInput> = {}): BonsaiPdfRepo
     photoUrisByEventId: {},
     galleryUris: [],
     tags: [],
-    nowIso: '2026-05-27T00:00:00.000Z',
     t,
     ...overrides,
   };
 }
 
 describe('buildBonsaiPdfReport — meta (個票)', () => {
-  test('基本フィールドが揃う (樹種/樹形/樹齢/取得日+保有年数)', () => {
+  test('基本フィールドが揃う (樹種/樹形/樹齢/取得日)', () => {
     const r = buildBonsaiPdfReport(makeInput());
     expect(r.meta.name).toBe('父の黒松');
     expect(r.meta.speciesName).toBe('黒松');
     expect(r.meta.styleLabel).toBe('bonsaiStyle_moyogi'); // 標準樹形は i18n key
     expect(r.meta.ageText).toBe('elapsedYears'); // {years} を含む key (identity t)
-    // 取得日 + 保有年数: 2020-03-15 から 2026-05-27 ≒ 6.2年
-    expect(r.meta.acquiredText).toContain('2020-03-15');
-    expect(r.meta.acquiredText).toContain('exportPdfHoldingYears');
+    // 取得日のみ (保有年数は削除済 ④)
+    expect(r.meta.acquiredText).toBe('2020-03-15');
   });
 
   test('適応型: 空フィールドは undefined (出力しない)', () => {
@@ -128,9 +126,9 @@ describe('buildBonsaiPdfReport — meta (個票)', () => {
     expect(r.meta.tags).toEqual(['師匠の家', '紅葉']);
   });
 
-  test('保有年数: 取得日が未来 / 異常なら日付のみ', () => {
+  test('取得日は日付のみ (時刻部分は落とす)', () => {
     const r = buildBonsaiPdfReport(
-      makeInput({ bonsai: makeBonsai({ acquiredAt: '2030-01-01T00:00:00.000Z' }) }),
+      makeInput({ bonsai: makeBonsai({ acquiredAt: '2030-01-01T09:30:00.000Z' }) }),
     );
     expect(r.meta.acquiredText).toBe('2030-01-01');
   });

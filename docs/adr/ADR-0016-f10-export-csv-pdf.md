@@ -418,6 +418,20 @@ v1.0 では非採用。running header で「ぶつ切り」感を解消する方
 - **恒久策 (design ルール)**: 「**running header は下余白まで 1 セットで thead に含めて繰り返す**」
   (改ページ直後の margin 破棄対策)。PR テンプレ §6-4 の「複数ページ PDF を実機検証」を徹底。
 
+### Amended（2026-05-27 Sess49 追補3、picker 写真カード化 + ヘッダー簡素化 + 保有年数削除）
+
+- **個別 PDF picker の写真カード化** (`app/export/pdf.tsx`): 素テキスト行 → 予定/記録の
+  「盆栽を選ぶ」(`BonsaiMultiSelectScreen`) と同じ写真カード (サムネ + 名前 + 樹種) に統一。
+  `getAllActiveBonsaiWithSpecies` + `getCoverPhoto`(URI)、無写真は `BonsaiPlaceholder`。
+  **単一選択 = カードタップで即プレビュー遷移**(ラジオ/下部 CTA なし)。bulk flow は無変更
+  (カード視覚の複製、共通化は将来の負債)。
+- **running header 簡素化 (③)**: `.rhead-bar` を `BonsaiLog · {盆栽名}` → **`BonsaiLog` のみ**。
+- **2 本線解消 (⑤)**: `.rhead-bar` の `border-bottom` を除去。改ページ後は「BONSAILOG」+ 余白 +
+  見出し(下線1本)= 線 1 本に (実機 3 ページ確証)。`.rhead` の下余白 14px は維持。
+- **保有年数削除 (④)**: `buildAcquiredText` を取得日 (YYYY-MM-DD) のみに。`calcHoldingYears` /
+  `exportPdfHoldingYears` キー (19 言語) を削除。
+- **動線追加**: ふりかえり Hub にエクスポート card (ADR-0020 §Notes Amended 2026-05-27 参照)。
+
 ### Follow-ups（後でやる宿題）
 
 - [ ] `docs/reference/functional_spec.md` §15 全面補強 (Repolog 流用 + 7 画面構成 + 5 種類詳細 + フォールバック仕様 + ファイル名規則 + Android SAF + Y4 個別選択機能)

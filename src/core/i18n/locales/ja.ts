@@ -905,10 +905,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   csvColSpeciesLastRepotting: '最終植替え',
   csvColSpeciesLastFertilizing: '最終施肥',
   csvSpeciesUnset: '（未設定）',
-  exportPdfHoldingYears: '{years}年保有',
   exportPdfPhotoTakenAt: '{date} 撮影',
   exportPdfPestSection: '病害虫・対処',
   exportPdfPestColSymptom: '症状・部位',
+  lookBackCardExportTitle: 'エクスポート',
+  lookBackCardExportDesc: '記録を CSV / PDF で書き出す',
 };
 
 export default ja;
