@@ -1,12 +1,14 @@
 /**
- * F-10 Phase B pdfExport 純関数テスト (Issue #33 / ADR-0016)。
+ * F-10 pdfExport 純関数テスト (Issue #33 / ADR-0016 Sess49 適応型エンリッチ)。
  *
  * - escapeHtml: XSS / 特殊文字エスケープ
- * - buildBonsaiPdfHtml: テンプレート純関数 (DOCTYPE / CJK font / page-break / 写真は Phase C)
+ * - buildBonsaiPdfHtml: 構造化データ (BonsaiPdfReportData) + ラベル → HTML
+ *   (DOCTYPE / CJK font / 適応型セクション / page-break-inside:avoid / 写真振り分け)
  *
- * Print / Sharing 副作用は Phase C で実機検証。
+ * Print / Sharing 副作用は実機検証。
  */
 import { buildBonsaiPdfHtml, escapeHtml } from '@/src/features/export/pdfExport';
+import type { BonsaiPdfReportData } from '@/src/features/export/bonsaiPdfReport';
 
 describe('escapeHtml', () => {
   test('null / undefined → 空文字', () => {
@@ -26,127 +28,224 @@ describe('escapeHtml', () => {
   });
 });
 
-describe('buildBonsaiPdfHtml', () => {
-  const baseTexts = {
-    title: '盆栽記録',
-    labelSpecies: '樹種',
-    labelStyle: '樹形',
-    labelAcquiredAt: '取得日',
-    labelEventsTitle: '作業履歴',
-    labelEventDate: '日付',
-    labelEventType: '種類',
-    labelEventNote: 'メモ',
-    footerNote: 'BonsaiLog で生成',
-  };
+const texts = {
+  title: '盆栽記録',
+  labelSpecies: '樹種',
+  labelStyle: '樹形',
+  labelAge: '樹齢',
+  labelAcquiredAt: '取得日',
+  labelAcquiredFrom: '入手元',
+  labelPot: '鉢',
+  labelTags: 'タグ',
+  memoTitle: 'メモ',
+  pestSectionTitle: '病害虫・対処',
+  pestColDate: '日付',
+  pestColSymptom: '症状・部位',
+  pestColNote: 'メモ',
+  worklogTitle: '作業ログ',
+  worklogEmpty: '―',
+  photosTitle: '写真',
+  footerNote: 'BonsaiLog で生成',
+};
 
+function makeReport(overrides: Partial<BonsaiPdfReportData> = {}): BonsaiPdfReportData {
+  return {
+    meta: { name: '父の黒松', tags: [], ...overrides.meta },
+    coverPhotoUri: overrides.coverPhotoUri,
+    coverPhotoCaption: overrides.coverPhotoCaption,
+    pestEvents: overrides.pestEvents ?? [],
+    timeline: overrides.timeline ?? [],
+    gallery: overrides.gallery ?? [],
+  };
+}
+
+function makeEntry(
+  overrides: Partial<BonsaiPdfReportData['timeline'][number]> = {},
+): BonsaiPdfReportData['timeline'][number] {
+  return {
+    date: '2026-05-03',
+    typeLabel: '水やり',
+    badgeBg: '#E9F0EC',
+    badgeFg: '#1F3A2E',
+    chips: [],
+    photoUris: [],
+    ...overrides,
+  };
+}
+
+describe('buildBonsaiPdfHtml — 骨格 (ADR-0016 互換)', () => {
   test('DOCTYPE が html で始まる (iOS WKWebView 制約)', () => {
-    const html = buildBonsaiPdfHtml({
-      bonsai: { name: 'Test', style: null, acquiredAt: null },
-      events: [],
-      ...baseTexts,
-    });
-    expect(html.startsWith('<!DOCTYPE html>')).toBe(true);
+    expect(buildBonsaiPdfHtml(makeReport(), texts).startsWith('<!DOCTYPE html>')).toBe(true);
   });
 
   test('CJK フォント明示が含まれる (Repolog Issue #292 教訓)', () => {
-    const html = buildBonsaiPdfHtml({
-      bonsai: { name: 'Test', style: null, acquiredAt: null },
-      events: [],
-      ...baseTexts,
-    });
+    const html = buildBonsaiPdfHtml(makeReport(), texts);
     expect(html).toContain('Hiragino');
     expect(html).toContain('Noto Sans CJK');
   });
 
-  test('events 0 件は ― を表示', () => {
-    const html = buildBonsaiPdfHtml({
-      bonsai: { name: 'Test', style: null, acquiredAt: null },
-      events: [],
-      ...baseTexts,
-    });
-    expect(html).toContain('<p>―</p>');
-    expect(html).not.toContain('<table');
+  test('page-break-inside:avoid と -webkit- 併記 (iOS 分断回避)', () => {
+    const html = buildBonsaiPdfHtml(makeReport(), texts);
+    expect(html).toContain('page-break-inside: avoid');
+    expect(html).toContain('-webkit-column-break-inside: avoid');
   });
 
-  test('events 1 件以上で table を出力', () => {
-    const html = buildBonsaiPdfHtml({
-      bonsai: { name: 'Test', style: null, acquiredAt: null },
-      events: [{ occurredAtUtc: '2026-05-03T01:00:00.000Z', type: 'watering', note: 'メモ' }],
-      ...baseTexts,
-    });
-    expect(html).toContain('<table');
-    expect(html).toContain('2026-05-03');
-    expect(html).toContain('watering');
-    expect(html).toContain('メモ');
+  test('盆栽名 / フッタを出力', () => {
+    const html = buildBonsaiPdfHtml(makeReport(), texts);
+    expect(html).toContain('<h1>父の黒松</h1>');
+    expect(html).toContain('BonsaiLog で生成');
+  });
+});
+
+describe('buildBonsaiPdfHtml — 個票メタ (適応型)', () => {
+  test('値があるフィールドのみ行を出力', () => {
+    const html = buildBonsaiPdfHtml(
+      makeReport({
+        meta: {
+          name: '父の黒松',
+          speciesName: '黒松',
+          styleLabel: '模様木',
+          ageText: '35年',
+          acquiredText: '2020-03-15（6.1年保有）',
+          acquiredFrom: '父から継承',
+          potText: '18×6cm / 常滑',
+          tags: ['師匠の家', '紅葉'],
+          memo: undefined,
+        },
+      }),
+      texts,
+    );
+    expect(html).toContain('樹種');
+    expect(html).toContain('黒松');
+    expect(html).toContain('模様木');
+    expect(html).toContain('35年');
+    expect(html).toContain('6.1年保有');
+    expect(html).toContain('父から継承');
+    expect(html).toContain('18×6cm');
+    expect(html).toContain('師匠の家');
   });
 
-  test('XSS な name / note をエスケープ', () => {
-    const html = buildBonsaiPdfHtml({
-      bonsai: { name: '<script>x</script>', style: null, acquiredAt: null },
-      events: [
-        { occurredAtUtc: '2026-05-03T01:00:00.000Z', type: 'watering', note: '<img src=x>' },
-      ],
-      ...baseTexts,
-    });
+  test('空 meta は行を出さない (―だらけ回避)', () => {
+    const html = buildBonsaiPdfHtml(makeReport({ meta: { name: 'Test', tags: [] } }), texts);
+    expect(html).not.toContain('<span class="m-key">'); // 描画された meta 行が無い (CSS 定義は別)
+    expect(html).not.toContain('<div class="subline">');
+  });
+
+  test('subline は存在する meta のみ · で連結', () => {
+    const html = buildBonsaiPdfHtml(
+      makeReport({ meta: { name: 'Test', speciesName: '黒松', ageText: '35年', tags: [] } }),
+      texts,
+    );
+    expect(html).toContain('黒松 · 35年');
+  });
+});
+
+describe('buildBonsaiPdfHtml — メモ / 病害虫 / 作業ログ (適応型)', () => {
+  test('メモあり → セクション出力 + 改行は <br/>', () => {
+    const html = buildBonsaiPdfHtml(
+      makeReport({ meta: { name: 'T', tags: [], memo: '1行目\n2行目' } }),
+      texts,
+    );
+    expect(html).toContain('<h2>メモ</h2>');
+    expect(html).toContain('1行目<br/>2行目');
+  });
+
+  test('メモ無し → セクション非表示', () => {
+    const html = buildBonsaiPdfHtml(makeReport(), texts);
+    expect(html).not.toContain('<h2>メモ</h2>');
+  });
+
+  test('病害虫あり → 表出力、無し → 非表示', () => {
+    const withPest = buildBonsaiPdfHtml(
+      makeReport({
+        pestEvents: [{ date: '2023-07-12', symptomBodyPart: 'ハダニ・葉裏', note: '3回散布' }],
+      }),
+      texts,
+    );
+    expect(withPest).toContain('<h2>病害虫・対処</h2>');
+    expect(withPest).toContain('症状・部位');
+    expect(withPest).toContain('ハダニ・葉裏');
+
+    const noPest = buildBonsaiPdfHtml(makeReport(), texts);
+    expect(noPest).not.toContain('<h2>病害虫・対処</h2>');
+  });
+
+  test('作業ログ: 0 件は ― / 1 件以上はタイムライン', () => {
+    const empty = buildBonsaiPdfHtml(makeReport(), texts);
+    expect(empty).toContain('<h2>作業ログ</h2>');
+    expect(empty).toContain('class="empty"');
+    expect(empty).not.toContain('class="timeline"');
+
+    const filled = buildBonsaiPdfHtml(
+      makeReport({
+        timeline: [
+          makeEntry({ typeLabel: '針金がけ', chips: ['番手: 2mm', '部位: 幹'], note: '主幹矯正' }),
+        ],
+      }),
+      texts,
+    );
+    expect(filled).toContain('class="timeline"');
+    expect(filled).toContain('針金がけ');
+    expect(filled).toContain('番手: 2mm');
+    expect(filled).toContain('主幹矯正');
+    // バッジに薄地色が style で入る
+    expect(filled).toContain('background:#E9F0EC');
+  });
+
+  test('タイムラインのインライン写真を <img> 出力', () => {
+    const html = buildBonsaiPdfHtml(
+      makeReport({ timeline: [makeEntry({ photoUris: ['data:image/jpeg;base64,EV'] })] }),
+      texts,
+    );
+    expect(html).toContain('class="entry-photos"');
+    expect(html).toContain('<img src="data:image/jpeg;base64,EV"');
+  });
+});
+
+describe('buildBonsaiPdfHtml — 写真 (cover / gallery)', () => {
+  test('cover 写真 + キャプション', () => {
+    const html = buildBonsaiPdfHtml(
+      makeReport({
+        coverPhotoUri: 'data:image/jpeg;base64,COVER',
+        coverPhotoCaption: '2026-04-22 撮影',
+      }),
+      texts,
+    );
+    expect(html).toContain('class="cover"');
+    expect(html).toContain('<img src="data:image/jpeg;base64,COVER"');
+    expect(html).toContain('2026-04-22 撮影');
+  });
+
+  test('cover 無し → no-cover クラス + cover img 非表示', () => {
+    const html = buildBonsaiPdfHtml(makeReport(), texts);
+    expect(html).toContain('hero no-cover');
+    expect(html).not.toContain('class="cover"');
+  });
+
+  test('gallery あり → 写真セクション、無し → 非表示', () => {
+    const withG = buildBonsaiPdfHtml(makeReport({ gallery: ['data:image/jpeg;base64,G1'] }), texts);
+    expect(withG).toContain('<h2>写真</h2>');
+    expect(withG).toContain('<img src="data:image/jpeg;base64,G1"');
+
+    const noG = buildBonsaiPdfHtml(makeReport(), texts);
+    expect(noG).not.toContain('<h2>写真</h2>');
+  });
+});
+
+describe('buildBonsaiPdfHtml — XSS', () => {
+  test('name / memo / tag / note / chip をエスケープ', () => {
+    const html = buildBonsaiPdfHtml(
+      makeReport({
+        meta: { name: '<script>x</script>', tags: ['<b>tag</b>'], memo: '<img src=x>' },
+        timeline: [makeEntry({ note: '<i>note</i>', chips: ['<u>chip</u>'] })],
+      }),
+      texts,
+    );
     expect(html).not.toContain('<script>x</script>');
     expect(html).toContain('&lt;script&gt;');
+    expect(html).toContain('&lt;b&gt;tag&lt;/b&gt;');
     expect(html).toContain('&lt;img src=x&gt;');
-  });
-
-  test('species / style / acquiredAt が null/undefined ならその dt/dd を出さない', () => {
-    const html = buildBonsaiPdfHtml({
-      bonsai: { name: 'Test', style: null, acquiredAt: null },
-      events: [],
-      ...baseTexts,
-    });
-    expect(html).not.toContain('<dt>樹種</dt>');
-    expect(html).not.toContain('<dt>樹形</dt>');
-    expect(html).not.toContain('<dt>取得日</dt>');
-  });
-
-  test('Phase C: photoDataUris 0 件 / 未指定では <img> 非表示', () => {
-    const html = buildBonsaiPdfHtml({
-      bonsai: { name: 'Test', style: null, acquiredAt: null },
-      events: [],
-      ...baseTexts,
-    });
-    expect(html).not.toContain('<img');
-    expect(html).not.toContain('class="photos"');
-  });
-
-  test('Phase C: photoDataUris + labelPhotosTitle で <img> 出力', () => {
-    const html = buildBonsaiPdfHtml({
-      bonsai: { name: 'Test', style: null, acquiredAt: null },
-      events: [],
-      photoDataUris: ['data:image/jpeg;base64,AAAA', 'data:image/jpeg;base64,BBBB'],
-      labelPhotosTitle: '写真',
-      ...baseTexts,
-    });
-    expect(html).toContain('<h2>写真</h2>');
-    expect(html).toContain('<img src="data:image/jpeg;base64,AAAA"');
-    expect(html).toContain('<img src="data:image/jpeg;base64,BBBB"');
-    expect(html).toContain('class="photos"');
-  });
-
-  test('Phase C: labelPhotosTitle なしでは <img> 非表示', () => {
-    const html = buildBonsaiPdfHtml({
-      bonsai: { name: 'Test', style: null, acquiredAt: null },
-      events: [],
-      photoDataUris: ['data:image/jpeg;base64,AAAA'],
-      ...baseTexts,
-    });
-    expect(html).not.toContain('<img');
-  });
-
-  test('species 提供時は dt/dd 表示', () => {
-    const html = buildBonsaiPdfHtml({
-      bonsai: { name: 'Test', style: 'chokkan', acquiredAt: '2026-04-01T00:00:00.000Z' },
-      speciesCommonName: '黒松',
-      events: [],
-      ...baseTexts,
-    });
-    expect(html).toContain('<dt>樹種</dt><dd>黒松</dd>');
-    expect(html).toContain('<dt>樹形</dt><dd>chokkan</dd>');
-    expect(html).toContain('<dt>取得日</dt><dd>2026-04-01</dd>');
+    expect(html).toContain('&lt;i&gt;note&lt;/i&gt;');
+    expect(html).toContain('&lt;u&gt;chip&lt;/u&gt;');
   });
 });

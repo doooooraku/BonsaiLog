@@ -35,7 +35,7 @@ function parsePot(potInfoStr: string | null | undefined): Record<string, unknown
 }
 
 /** 鉢情報 {widthCm,depthCm,material,description} を「18×12cm / 釉薬 / 銘あり」風に整形。 */
-function formatPot(potInfoStr: string | null | undefined): string {
+export function formatPot(potInfoStr: string | null | undefined): string {
   const p = parsePot(potInfoStr);
   if (!p) return '';
   const parts: string[] = [];
@@ -52,7 +52,7 @@ function formatPot(potInfoStr: string | null | undefined): string {
 }
 
 /** 樹形コード → 表示文字列。標準 5 種は i18n、カスタムは生文字列。 */
-function formatStyle(style: string | null | undefined, t: Tfn): string {
+export function formatStyle(style: string | null | undefined, t: Tfn): string {
   if (!style) return '';
   return BONSAI_STYLES.includes(style as BonsaiStyle)
     ? t(`bonsaiStyle_${style}` as TranslationKey)

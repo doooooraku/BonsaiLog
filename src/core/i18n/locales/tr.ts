@@ -899,5 +899,9 @@ const tr: Partial<Record<TranslationKey, string>> = {
   csvColSpeciesLastRepotting: 'Last repotting',
   csvColSpeciesLastFertilizing: 'Last fertilizing',
   csvSpeciesUnset: '(unset)',
+  exportPdfHoldingYears: '{years} yr owned',
+  exportPdfPhotoTakenAt: 'Taken {date}',
+  exportPdfPestSection: 'Pests & Treatments',
+  exportPdfPestColSymptom: 'Symptom / Part',
 };
 export default tr;

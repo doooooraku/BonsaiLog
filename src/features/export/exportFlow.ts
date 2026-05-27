@@ -22,12 +22,15 @@ import {
   getBonsaiByTag,
   getBonsaiWithSpecies,
 } from '@/src/db/bonsaiRepository';
+import { getCustomSpeciesById } from '@/src/db/bonsaiSpeciesCustomRepository';
 import { getActiveEventsByBonsai, getEventsInRange } from '@/src/db/eventRepository';
-import { getPhotosByBonsai } from '@/src/db/photoRepository';
+import { getCoverPhoto, getPhotosByBonsai } from '@/src/db/photoRepository';
 import type { Bonsai } from '@/src/db/schema';
 import { getSpeciesById } from '@/src/db/speciesRepository';
+import { getTagsByBonsai } from '@/src/db/tagRepository';
 import { cellsToCsvString } from './csvExport';
 import { buildBonsaiCsvRow, BONSAI_CSV_HEADER_KEYS } from './bonsaiCsvRow';
+import { buildBonsaiPdfReport } from './bonsaiPdfReport';
 import { buildEventCsvRow, EVENT_CSV_HEADER_KEYS } from './eventCsvRow';
 import { buildExportFileName, type ExportKind } from './exportFileName';
 import { type BonsaiListRow, buildBonsaiListPdfHtml, type ListPdfStats } from './listPdfExport';
@@ -286,25 +289,77 @@ export async function loadBonsaiPdfHtml(
   const detail = await getBonsaiWithSpecies(bonsaiId, lang);
   const events = await getActiveEventsByBonsai(bonsaiId);
   const photos = await getPhotosByBonsai(bonsaiId);
-  const photoDataUris = (
-    await Promise.all(photos.map((p) => readPhotoAsBase64(p.absoluteUri)))
-  ).filter((uri): uri is string => uri !== null);
+  const coverPhoto = await getCoverPhoto(bonsaiId);
+  const tags = await getTagsByBonsai(bonsaiId);
   const name = detail?.name ?? '';
-  const html = buildBonsaiPdfHtml({
-    bonsai: { name, style: detail?.style ?? null, acquiredAt: detail?.acquiredAt ?? null },
-    speciesCommonName: detail?.species?.commonName ?? null,
+
+  // 樹種名: master 優先、無ければカスタム樹種 (β、getBonsaiWithSpecies は未解決のため別途)。
+  let speciesName = detail?.species?.commonName ?? null;
+  if (!speciesName && detail?.customSpeciesId) {
+    speciesName = (await getCustomSpeciesById(detail.customSpeciesId))?.name ?? null;
+  }
+
+  // 写真を base64 化し cover / event 紐付き / その他 (gallery) に振り分け。
+  const coverId = coverPhoto?.id ?? null;
+  const coverPhotoUri = coverPhoto ? await readPhotoAsBase64(coverPhoto.absoluteUri) : null;
+  const photoUrisByEventId: Record<string, string[]> = {};
+  const galleryUris: string[] = [];
+  for (const p of photos) {
+    if (p.id === coverId) continue; // cover は個票で表示済
+    const uri = await readPhotoAsBase64(p.absoluteUri);
+    if (!uri) continue;
+    if (p.eventId) {
+      (photoUrisByEventId[p.eventId] ??= []).push(uri);
+    } else {
+      galleryUris.push(uri);
+    }
+  }
+
+  const report = buildBonsaiPdfReport({
+    bonsai: {
+      name,
+      style: detail?.style ?? null,
+      acquiredAt: detail?.acquiredAt ?? null,
+      estimatedAge: detail?.estimatedAge ?? null,
+      estimatedAgeUnknown: detail?.estimatedAgeUnknown ?? 0,
+      memo: detail?.memo ?? null,
+      acquiredFrom: detail?.acquiredFrom ?? null,
+      potInfo: detail?.potInfo ?? null,
+    },
+    speciesName,
     events,
-    photoDataUris,
-    labelPhotosTitle: t('bonsaiFieldPhotos'),
+    coverPhotoUri,
+    coverPhotoTakenAt: coverPhoto?.takenAt ?? null,
+    photoUrisByEventId,
+    galleryUris,
+    tags: tags.map((tg) => tg.name),
+    nowIso: nowUtc() as string,
+    t,
+  });
+
+  const html = buildBonsaiPdfHtml(report, {
     title: t('exportPdfTitle'),
     labelSpecies: t('bonsaiFieldSpecies'),
     labelStyle: t('bonsaiFieldStyle'),
+    labelAge: t('bonsaiFieldEstimatedAge'),
     labelAcquiredAt: t('bonsaiFieldAcquiredAt'),
-    labelEventsTitle: t('eventsTitle'),
-    labelEventDate: t('exportPdfHeaderDate'),
-    labelEventType: t('exportPdfHeaderType'),
-    labelEventNote: t('exportPdfHeaderNote'),
+    labelAcquiredFrom: t('bonsaiFieldAcquiredFrom'),
+    labelPot: t('bonsaiFieldPotInfo'),
+    labelTags: t('bonsaiFieldTags'),
+    memoTitle: t('bonsaiFieldMemo'),
+    pestSectionTitle: t('exportPdfPestSection'),
+    pestColDate: t('exportPdfHeaderDate'),
+    pestColSymptom: t('exportPdfPestColSymptom'),
+    pestColNote: t('exportPdfHeaderNote'),
+    worklogTitle: t('eventsTitle'),
+    worklogEmpty: '―',
+    photosTitle: t('bonsaiFieldPhotos'),
     footerNote: t('exportPdfFooterNote'),
   });
-  return { html, photoCount: photoDataUris.length, name };
+
+  const photoCount =
+    (coverPhotoUri ? 1 : 0) +
+    Object.values(photoUrisByEventId).reduce((n, arr) => n + arr.length, 0) +
+    galleryUris.length;
+  return { html, photoCount, name };
 }
