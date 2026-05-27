@@ -21,9 +21,13 @@ describe('PDF Bonsai Preview (pdf-preview)', () => {
     expect(PDF_PREVIEW).toContain('e2e_export_pdf_preview_webview');
   });
 
-  test('2. 共有は generateAndShareBonsaiPdf に委譲 (photoCount 連携)', () => {
+  test('2. 出力は下部「出力する」CTA → generateAndShareBonsaiPdf (photoCount 連携)', () => {
     expect(PDF_PREVIEW).toMatch(/generateAndShareBonsaiPdf\(html,[\s\S]*?photoCount/);
-    expect(PDF_PREVIEW).toContain('e2e_export_pdf_preview_share');
+    // Sess49 追補2: 右上「共有」廃止 → 下部 CTA (exportOptExport)、標準 FormScreenHeader
+    expect(PDF_PREVIEW).toContain('e2e_export_pdf_preview_generate');
+    expect(PDF_PREVIEW).toMatch(/FormScreenHeader/);
+    expect(PDF_PREVIEW).toMatch(/exportOptExport/);
+    expect(PDF_PREVIEW).not.toContain('e2e_export_pdf_preview_share');
   });
 
   test('3. pdf picker は選択で preview へ遷移 (即共有しない)', () => {
@@ -40,9 +44,12 @@ describe('PDF List Preview (list-preview)', () => {
     expect(LIST_PREVIEW).toContain('e2e_export_list_preview_webview');
   });
 
-  test('5. 共有は generateAndShareListPdf に委譲', () => {
+  test('5. 出力は下部「出力する」CTA → generateAndShareListPdf', () => {
     expect(LIST_PREVIEW).toMatch(/generateAndShareListPdf/);
-    expect(LIST_PREVIEW).toContain('e2e_export_list_preview_share');
+    // Sess49 追補2: 右上「共有」廃止 → 下部 CTA (exportOptExport)、標準 FormScreenHeader
+    expect(LIST_PREVIEW).toContain('e2e_export_list_preview_generate');
+    expect(LIST_PREVIEW).toMatch(/FormScreenHeader/);
+    expect(LIST_PREVIEW).not.toContain('e2e_export_list_preview_share');
   });
 
   test('6. Sheet は list_pdf で preview へ遷移 (opts を JSON で渡す)', () => {

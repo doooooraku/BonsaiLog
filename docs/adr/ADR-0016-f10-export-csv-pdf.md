@@ -404,6 +404,20 @@ v1.0 では非採用。running header で「ぶつ切り」感を解消する方
 - テスト: `pdfExport.test.ts` に thead ランニングヘッダー / 縦チップ / 縦ギャラリー / フッタ非出力。
   実機 (run-as cat + gs でページ画像化) で 3 ページの running header を確証。
 
+### Amended（2026-05-27 Sess49 追補2、プレビュー動線統一 + running header 被り修正）
+
+- **プレビュー画面の動線統一** (`app/export/pdf-preview.tsx` / `list-preview.tsx`): 独自ダーク
+  バー (`#3A3833`) + 右上「共有」を廃止し、他画面と同じ `FormScreenHeader` (戻る + タイトル) +
+  **下部「出力する」CTA** (`exportOptExport`、CSV Options Sheet の `cta` スタイル流用) に統一。
+  生成・共有ロジック (`generateAndShareBonsaiPdf` / `generateAndShareListPdf`) は不変。
+  未使用化した `exportPreviewShare` キーは 19 言語から削除。
+- **running header 被り修正**: 改ページ直後は本文側の `margin-top`/`padding-top` が印刷時に
+  破棄される (W3C) ため、#866 の thead running header 直下に本文が密着する不具合が発生。
+  **余白を thead セル自体 (`.rhead { padding: 0 0 14px }` + 内側 `.rhead-bar` に border) に
+  内蔵**し、繰り返される各ページで間隔を確保 (実機 3 ページで確証)。
+- **恒久策 (design ルール)**: 「**running header は下余白まで 1 セットで thead に含めて繰り返す**」
+  (改ページ直後の margin 破棄対策)。PR テンプレ §6-4 の「複数ページ PDF を実機検証」を徹底。
+
 ### Follow-ups（後でやる宿題）
 
 - [ ] `docs/reference/functional_spec.md` §15 全面補強 (Repolog 流用 + 7 画面構成 + 5 種類詳細 + フォールバック仕様 + ファイル名規則 + Android SAF + Y4 個別選択機能)
