@@ -867,7 +867,6 @@ const pt: Partial<Record<TranslationKey, string>> = {
   exportOptTagEmptyBody: 'Please select a tag.',
   exportGenericSuccess: 'Export complete',
   exportGenericSuccessDetail: 'Exported {count} items.',
-  exportPreviewShare: 'Share',
   exportOptPreview: 'Preview',
   exportListPdfRecordCount: 'Records',
   exportGeneratingTitle: 'Generating…',

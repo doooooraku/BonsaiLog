@@ -99,7 +99,9 @@ describe('buildBonsaiPdfHtml — 骨格 (ADR-0016 互換)', () => {
   test('ランニングヘッダー: thead に「BonsaiLog · 盆栽名」(各ページ先頭で繰り返す)', () => {
     const html = buildBonsaiPdfHtml(makeReport(), texts);
     expect(html).toContain('<thead>');
-    expect(html).toContain('class="rhead">BonsaiLog · 父の黒松');
+    expect(html).toContain('class="rhead-bar">BonsaiLog · 父の黒松');
+    // 改ページ直後の被り対策: 余白を thead セル側に内蔵 (繰り返される側)
+    expect(html).toContain('.rhead { padding: 0 0 14px');
   });
 });
 

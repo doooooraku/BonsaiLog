@@ -200,8 +200,10 @@ ${timeline.map(entryHtml).join('\n')}
   }
   /* ランニングヘッダー: table の thead を使い印刷時に各ページ先頭で自動繰り返し (iOS/Android 両対応) */
   table.doc { width: 100%; border-collapse: collapse; }
-  .rhead { font-size: 8pt; letter-spacing: 0.12em; color: #7A7460; text-transform: uppercase; border-bottom: 1px solid #C9C2AE; padding: 0 0 5px; text-align: left; }
-  .doc-body { padding-top: 10px; }
+  /* 余白を thead セル自体 (繰り返される側) に内蔵し、改ページ直後でもヘッダーと本文が被らない */
+  .rhead { padding: 0 0 14px; text-align: left; }
+  .rhead-bar { font-size: 8pt; letter-spacing: 0.12em; color: #7A7460; text-transform: uppercase; border-bottom: 1px solid #C9C2AE; padding-bottom: 5px; }
+  .doc-body { padding-top: 2px; }
   h1 { font-size: 22pt; margin: 0 0 2pt; font-weight: 600; }
   .subline { font-size: 9.5pt; color: #5A5A5A; margin-bottom: 14px; }
   h2 { font-size: 12pt; margin: 16pt 0 7pt; padding-bottom: 2pt; border-bottom: 0.5px solid #1A1A1A; color: #5A4637; page-break-after: avoid; -webkit-column-break-after: avoid; }
@@ -240,7 +242,7 @@ ${timeline.map(entryHtml).join('\n')}
 <body>
   <table class="doc">
   <thead>
-    <tr><td class="rhead">BonsaiLog · ${esc(meta.name)}</td></tr>
+    <tr><td class="rhead"><div class="rhead-bar">BonsaiLog · ${esc(meta.name)}</div></td></tr>
   </thead>
   <tbody>
     <tr><td class="doc-body">
