@@ -121,8 +121,6 @@ export type BonsaiPdfReportInput = {
   /** タイムラインに紐づかない写真 base64 data URI[]。 */
   galleryUris: readonly string[];
   tags: readonly string[];
-  /** 保有年数計算の基準 (現在時刻 ISO UTC)。 */
-  nowIso: string;
   t: Tfn;
 };
 
@@ -148,15 +146,6 @@ function formatDate(occurredAtUtc: string, tzIana: string): string {
   }
 }
 
-/** acquiredAt から now までの保有年数を小数 1 桁で。負値や異常時は null。 */
-function calcHoldingYears(acquiredAtUtc: string, nowIso: string): number | null {
-  const start = Date.parse(acquiredAtUtc);
-  const now = Date.parse(nowIso);
-  if (Number.isNaN(start) || Number.isNaN(now) || now < start) return null;
-  const years = (now - start) / (365.25 * 24 * 60 * 60 * 1000);
-  return Math.round(years * 10) / 10;
-}
-
 /** 樹齢の表示文字列。不明フラグ優先、次に推定年数、どちらも無ければ undefined (適応型)。 */
 function buildAgeText(
   estimatedAge: number | null | undefined,
@@ -170,18 +159,10 @@ function buildAgeText(
   return undefined;
 }
 
-/** 取得日 + 保有年数 (例「2020-03-15（6.1年保有）」)。取得日無しなら undefined。 */
-function buildAcquiredText(
-  acquiredAtUtc: string | null | undefined,
-  nowIso: string,
-  t: Tfn,
-): string | undefined {
+/** 取得日 (YYYY-MM-DD)。取得日無しなら undefined。 */
+function buildAcquiredText(acquiredAtUtc: string | null | undefined): string | undefined {
   if (!acquiredAtUtc) return undefined;
-  const dateStr = acquiredAtUtc.slice(0, 10);
-  const years = calcHoldingYears(acquiredAtUtc, nowIso);
-  if (years == null) return dateStr;
-  const holding = t('exportPdfHoldingYears').replace('{years}', String(years));
-  return `${dateStr}（${holding}）`;
+  return acquiredAtUtc.slice(0, 10);
 }
 
 /**
@@ -189,14 +170,14 @@ function buildAcquiredText(
  * 表示文字列はすべてこの層で確定 (HTML 層はエスケープ + 配置のみ)。
  */
 export function buildBonsaiPdfReport(input: BonsaiPdfReportInput): BonsaiPdfReportData {
-  const { bonsai, speciesName, events, t, nowIso } = input;
+  const { bonsai, speciesName, events, t } = input;
 
   const meta: BonsaiPdfReportData['meta'] = {
     name: bonsai.name,
     speciesName: speciesName ?? undefined,
     styleLabel: bonsai.style ? formatStyle(bonsai.style, t) : undefined,
     ageText: buildAgeText(bonsai.estimatedAge, bonsai.estimatedAgeUnknown, t),
-    acquiredText: buildAcquiredText(bonsai.acquiredAt, nowIso, t),
+    acquiredText: buildAcquiredText(bonsai.acquiredAt),
     acquiredFrom: bonsai.acquiredFrom?.trim() || undefined,
     potText: formatPot(bonsai.potInfo) || undefined,
     tags: [...input.tags],

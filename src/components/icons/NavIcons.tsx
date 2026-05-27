@@ -121,6 +121,21 @@ export function PlusIcon({ size = 28, color = BG_PRIMARY }: IconProps) {
   );
 }
 
+/** 書き出し (Download / Export、トレイ + 下向き矢印)。ふりかえり Hub エクスポート card 用。 */
+export function DownloadIcon({ size = 24, color = TEXT_PRIMARY }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 3v11m0 0l-4-4m4 4l4-4M5 18v1a2 2 0 002 2h10a2 2 0 002-2v-1"
+        stroke={color}
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 /** 戻る (Back シェブロン)。Header Back ボタン 20px。 */
 export function BackIcon({ size = 20, color = TEXT_PRIMARY }: IconProps) {
   return (

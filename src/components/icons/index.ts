@@ -28,6 +28,7 @@ export {
   ChevronRightIcon,
   CloseIcon,
   CogIcon,
+  DownloadIcon,
   EditIcon,
   LeafIcon,
   MoreVerticalIcon,

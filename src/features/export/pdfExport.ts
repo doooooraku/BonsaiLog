@@ -202,7 +202,7 @@ ${timeline.map(entryHtml).join('\n')}
   table.doc { width: 100%; border-collapse: collapse; }
   /* 余白を thead セル自体 (繰り返される側) に内蔵し、改ページ直後でもヘッダーと本文が被らない */
   .rhead { padding: 0 0 14px; text-align: left; }
-  .rhead-bar { font-size: 8pt; letter-spacing: 0.12em; color: #7A7460; text-transform: uppercase; border-bottom: 1px solid #C9C2AE; padding-bottom: 5px; }
+  .rhead-bar { font-size: 8pt; letter-spacing: 0.12em; color: #7A7460; text-transform: uppercase; }
   .doc-body { padding-top: 2px; }
   h1 { font-size: 22pt; margin: 0 0 2pt; font-weight: 600; }
   .subline { font-size: 9.5pt; color: #5A5A5A; margin-bottom: 14px; }
@@ -242,7 +242,7 @@ ${timeline.map(entryHtml).join('\n')}
 <body>
   <table class="doc">
   <thead>
-    <tr><td class="rhead"><div class="rhead-bar">BonsaiLog · ${esc(meta.name)}</div></td></tr>
+    <tr><td class="rhead"><div class="rhead-bar">BonsaiLog</div></td></tr>
   </thead>
   <tbody>
     <tr><td class="doc-body">

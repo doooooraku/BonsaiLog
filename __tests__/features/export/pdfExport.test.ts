@@ -96,12 +96,18 @@ describe('buildBonsaiPdfHtml — 骨格 (ADR-0016 互換)', () => {
     expect(html).not.toContain('class="footer"');
   });
 
-  test('ランニングヘッダー: thead に「BonsaiLog · 盆栽名」(各ページ先頭で繰り返す)', () => {
+  test('ランニングヘッダー: thead に「BonsaiLog」のみ(各ページ先頭で繰り返す)', () => {
     const html = buildBonsaiPdfHtml(makeReport(), texts);
     expect(html).toContain('<thead>');
-    expect(html).toContain('class="rhead-bar">BonsaiLog · 父の黒松');
+    // ③ 盆栽名は付けず「BonsaiLog」のみ
+    expect(html).toContain('class="rhead-bar">BonsaiLog</div>');
+    expect(html).not.toContain('BonsaiLog · 父の黒松');
     // 改ページ直後の被り対策: 余白を thead セル側に内蔵 (繰り返される側)
     expect(html).toContain('.rhead { padding: 0 0 14px');
+    // ⑤ ヘッダー下線除去 → 2本線回避 (rhead-bar に border-bottom を付けない)
+    expect(html).not.toContain(
+      '.rhead-bar { font-size: 8pt; letter-spacing: 0.12em; color: #7A7460; text-transform: uppercase; border-bottom',
+    );
   });
 });
 
