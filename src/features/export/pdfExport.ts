@@ -15,6 +15,7 @@
  */
 
 import * as LegacyFileSystem from 'expo-file-system/legacy';
+import * as ImageManipulator from 'expo-image-manipulator';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
@@ -23,9 +24,9 @@ import {
   PdfHangError,
   assertPdfLooksValid,
   calculatePdfTimeout,
-  reducePhotoCountForAttempt,
   runWithFallback,
   type AttemptNumber,
+  type PhotoResizeSpec,
 } from './pdfReliability';
 
 /** HTML エスケープ純関数 (XSS 対策、PDF テンプレート用)。 */
@@ -68,18 +69,42 @@ export type BonsaiPdfTexts = {
   photosTitle: string;
 };
 
+/** PDF 埋め込み写真の既定の縮小指定 (長辺 px / JPEG 品質)。attempt 1 / photo 相当。 */
+export const PDF_PHOTO_DEFAULT_SPEC: PhotoResizeSpec = { maxWidth: 1000, quality: 0.6 };
+
 /**
  * Phase C: 写真ファイルを読み込んで data:image/jpeg;base64,... 形式の URI を返す。
  *
  * iOS WKWebView は file:// 直接参照で写真が表示されないため、base64 inline 必須 (ADR-0016)。
  * BonsaiLog の写真はすべて jpg (F-08 仕様、photoFileService) のため image/jpeg 固定。
  *
+ * base64 化の前に `spec` (長辺 px / JPEG q) に縮小する。原寸のまま inline すると写真の多い盆栽
+ * (例: 全作業に 2 枚 = 28 枚) で HTML が肥大化し、PDF 生成が失敗する (実機確認、Sess49/50)。
+ *
+ * Sess50: `spec` を引数化し、フォールバック (attempt) と用途 (thumb/photo) で縮小度を変える
+ * (getPhotoResizeSpec)。サムネ (56px 表示) を強く縮小するのが payload 削減の主役。
+ *
  * @param absoluteUri 写真の絶対 URI (PhotoRead.absoluteUri)
+ * @param spec 縮小指定 (省略時は PDF_PHOTO_DEFAULT_SPEC)
  * @returns 失敗時は null (UI 層で「写真が見つからない場合は無視」)
  */
-export async function readPhotoAsBase64(absoluteUri: string): Promise<string | null> {
+export async function readPhotoAsBase64(
+  absoluteUri: string,
+  spec: PhotoResizeSpec = PDF_PHOTO_DEFAULT_SPEC,
+): Promise<string | null> {
   try {
-    const base64 = await LegacyFileSystem.readAsStringAsync(absoluteUri, {
+    const result = await ImageManipulator.manipulateAsync(
+      absoluteUri,
+      [{ resize: { width: spec.maxWidth } }],
+      {
+        compress: spec.quality,
+        format: ImageManipulator.SaveFormat.JPEG,
+        base64: true,
+      },
+    );
+    if (result.base64) return `data:image/jpeg;base64,${result.base64}`;
+    // base64 が返らない端末向け fallback: 縮小後ファイルを読む
+    const base64 = await LegacyFileSystem.readAsStringAsync(result.uri, {
       encoding: LegacyFileSystem.EncodingType.Base64,
     });
     return `data:image/jpeg;base64,${base64}`;
@@ -101,6 +126,12 @@ export function buildBonsaiPdfHtml(report: BonsaiPdfReportData, texts: BonsaiPdf
   const { meta, coverPhotoUri, coverPhotoCaption, pestEvents, timeline, gallery } = report;
   const esc = escapeHtml;
   const multiline = (s: string) => esc(s).replace(/\n/g, '<br/>');
+
+  // 各セクションを「thead = セクション名」の表で包む。セクションが複数ページにまたがると
+  // thead が各ページ先頭で自動繰り返しされるため、続きページにもセクション名が継続表示される
+  // (外側 table.doc の thead = BONSAILOG と二段で繰り返し、「BONSAILOG + セクション名」になる)。
+  const sectionTable = (title: string, inner: string) =>
+    `<table class="sec"><thead><tr><td class="sec-head"><h2>${esc(title)}</h2></td></tr></thead><tbody><tr><td class="sec-body">${inner}</td></tr></tbody></table>`;
 
   const sublineParts = [meta.speciesName, meta.styleLabel, meta.ageText].filter(
     (s): s is string => !!s,
@@ -139,19 +170,21 @@ export function buildBonsaiPdfHtml(report: BonsaiPdfReportData, texts: BonsaiPdf
   const heroHtml = `<section class="hero${coverPhotoUri ? '' : ' no-cover'}">${coverHtml}${metaHtml}</section>`;
 
   const memoHtml = meta.memo
-    ? `<section class="block"><h2>${esc(texts.memoTitle)}</h2><div class="memo">${multiline(meta.memo)}</div></section>`
+    ? sectionTable(texts.memoTitle, `<div class="memo">${multiline(meta.memo)}</div>`)
     : '';
 
   const pestHtml = pestEvents.length
-    ? `<section class="block"><h2>${esc(texts.pestSectionTitle)}</h2>
-  <table class="pest"><thead><tr><th>${esc(texts.pestColDate)}</th><th>${esc(texts.pestColSymptom)}</th><th>${esc(texts.pestColNote)}</th></tr></thead><tbody>
+    ? sectionTable(
+        texts.pestSectionTitle,
+        `<table class="pest"><thead><tr><th>${esc(texts.pestColDate)}</th><th>${esc(texts.pestColSymptom)}</th><th>${esc(texts.pestColNote)}</th></tr></thead><tbody>
 ${pestEvents
   .map(
     (p) =>
       `    <tr><td class="nowrap">${esc(p.date)}</td><td>${esc(p.symptomBodyPart)}</td><td>${esc(p.note ?? '')}</td></tr>`,
   )
   .join('\n')}
-  </tbody></table></section>`
+  </tbody></table>`,
+      )
     : '';
 
   const entryHtml = (e: BonsaiPdfReportData['timeline'][number]) => {
@@ -169,18 +202,20 @@ ${pestEvents
     </div>`;
   };
 
-  const worklogHtml = `<section class="block"><h2>${esc(texts.worklogTitle)}</h2>${
+  const worklogHtml = sectionTable(
+    texts.worklogTitle,
     timeline.length
       ? `<div class="timeline">
 ${timeline.map(entryHtml).join('\n')}
   </div>`
-      : `<p class="empty">―</p>`
-  }</section>`;
+      : `<p class="empty">―</p>`,
+  );
 
   const galleryHtml = gallery.length
-    ? `<section class="block"><h2>${esc(texts.photosTitle)}</h2><div class="photos">${gallery
-        .map((u) => `<img src="${u}" alt="" />`)
-        .join('')}</div></section>`
+    ? sectionTable(
+        texts.photosTitle,
+        `<div class="photos">${gallery.map((u) => `<img src="${u}" alt="" />`).join('')}</div>`,
+      )
     : '';
 
   return `<!DOCTYPE html>
@@ -206,8 +241,11 @@ ${timeline.map(entryHtml).join('\n')}
   .doc-body { padding-top: 2px; }
   h1 { font-size: 22pt; margin: 0 0 2pt; font-weight: 600; }
   .subline { font-size: 9.5pt; color: #5A5A5A; margin-bottom: 14px; }
-  h2 { font-size: 12pt; margin: 16pt 0 7pt; padding-bottom: 2pt; border-bottom: 0.5px solid #1A1A1A; color: #5A4637; page-break-after: avoid; -webkit-column-break-after: avoid; }
-  .block { page-break-inside: avoid; -webkit-column-break-inside: avoid; }
+  /* 各セクション = thead に見出しを持つ表 (ページまたぎで見出しが各ページ先頭に継続) */
+  table.sec { width: 100%; border-collapse: collapse; margin-top: 16pt; }
+  .sec-head { padding: 0; text-align: left; }
+  .sec-head h2 { font-size: 12pt; margin: 0 0 7pt; padding-bottom: 2pt; border-bottom: 0.5px solid #1A1A1A; color: #5A4637; }
+  .sec-body { padding: 0; }
   .hero { display: flex; gap: 16px; align-items: flex-start; page-break-inside: avoid; -webkit-column-break-inside: avoid; }
   .cover { flex: 0 0 40%; }
   .cover img { width: 100%; height: auto; border-radius: 4px; border: 1px solid #C9C2AE; }
@@ -302,37 +340,39 @@ export async function generateAndShareBonsaiPdf(
 }
 
 /**
- * Phase H (Issue #33): 3 段階フォールバック付き PDF 生成 + 共有 (AC5 完全対応)。
+ * Phase H (Issue #33) / Sess50: 3 段階フォールバック付き PDF 生成 + 共有 (AC5 完全対応)。
  *
- * Phase E + F + G の純関数を統合した薄いラッパー:
- * 1. attempt 毎に reducePhotoCountForAttempt で写真件数を縮小
- * 2. buildHtml(photos) で attempt 専用 HTML を生成
- * 3. generateAndShareBonsaiPdf で印刷 + サイズ検証 + 共有
- * 4. BlankPdfError / PdfHangError なら次 attempt へ (runWithFallback)
- * 5. PdfStorageLowError 等 fallback 不可エラーは即時 throw
+ * Sess50 で「枚数削り」→「**画質ダウン・全枚数維持**」に方針変更 (ユーザー決定)。
+ * attempt 毎に写真を**再縮小して HTML を作り直す**ため、buildHtml を attempt を受ける
+ * async ファクトリ (`buildHtmlForAttempt`) に変更した。呼出側 (exportFlow.prepareBonsaiPdf)
+ * が attempt 別の getPhotoResizeSpec で写真を resize → report → HTML を組み立てる。
+ *
+ * 1. buildHtmlForAttempt(attempt) で attempt 専用画質の HTML を生成 (全写真維持)
+ * 2. generateAndShareBonsaiPdf で印刷 + サイズ検証 + 共有
+ * 3. BlankPdfError / PdfHangError なら次 attempt へ (runWithFallback)
+ * 4. PdfStorageLowError 等 fallback 不可エラーは即時 throw
  *
  * UI 層は本関数を 1 回呼ぶだけで AC5 全機能 (3 段階自動再試行 + エラー分岐) が動く。
  *
- * @param params.buildHtml attempt 別の写真配列を受け取り、HTML を返す関数
- * @param params.photoDataUris 全写真の data URI 配列 (attempt 1 で使用)
+ * @param params.buildHtmlForAttempt attempt を受け取り、その画質で写真を inline した HTML を返す async 関数
+ * @param params.photoCount 写真件数 (動的タイムアウト用、全 attempt 共通)
  * @param params.shareDialogTitle Share Sheet タイトル
  * @param params.attempts 試行 attempt 配列 (default [1, 2, 3])
  *
- * @returns 採用された attempt 番号 (UI 層で「写真を縮小して PDF を生成しました」等の表示に利用可)
+ * @returns 採用された attempt 番号
  */
 export async function generateBonsaiPdfWithFallback(params: {
-  buildHtml: (photoUris: readonly string[]) => string;
-  photoDataUris: readonly string[];
+  buildHtmlForAttempt: (attempt: AttemptNumber) => Promise<string>;
+  photoCount: number;
   shareDialogTitle: string;
   attempts?: readonly AttemptNumber[];
 }): Promise<{ attemptUsed: AttemptNumber }> {
   const attempts = params.attempts ?? ([1, 2, 3] as const);
 
   const result = await runWithFallback(attempts, async (attempt) => {
-    const photos = reducePhotoCountForAttempt(params.photoDataUris, attempt);
-    const html = params.buildHtml(photos);
+    const html = await params.buildHtmlForAttempt(attempt);
     await generateAndShareBonsaiPdf(html, params.shareDialogTitle, {
-      photoCount: photos.length,
+      photoCount: params.photoCount,
       attempt,
     });
     return undefined;

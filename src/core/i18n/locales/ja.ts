@@ -910,6 +910,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportPdfPestColSymptom: '症状・部位',
   lookBackCardExportTitle: 'エクスポート',
   lookBackCardExportDesc: '記録を CSV / PDF で書き出す',
+  exportPdfConfirmBody:
+    '「出力する」を押すと、この盆栽のレポート PDF を作成して共有メニューで開きます。',
+  exportPdfSlowHint: 'PDF 出力に時間がかかっています。お待ちください。',
 };
 
 export default ja;

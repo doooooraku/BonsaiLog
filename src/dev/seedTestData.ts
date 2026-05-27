@@ -79,6 +79,21 @@ type SeedLangPack = {
   otherEventNotes: readonly string[];
   /** ゴミ箱 events 2 件の note */
   trashNotes: readonly string[];
+  /**
+   * 検証用フル盆栽 1 本 (Sess49 追補4)。全基本情報 + 全 14 作業種別 (各フル payload) +
+   * 各作業に写真 2 枚を持つ。「作業写真の表示」「PDF 複数ページ」確認用の fixture。
+   */
+  fullBonsai: {
+    name: string;
+    memo: string;
+    acquiredFrom: string;
+    /** pot_info.description (自由記述、銘・メーカー等) */
+    potDescription: string;
+    /** pot_info.material (材質) */
+    potMaterial: string;
+    /** 14 作業の note (順序 = FULL_BONSAI_EVENT_DEFS) */
+    eventNotes: readonly string[];
+  };
 };
 
 // ---------------------------------------------------------------------------
@@ -172,6 +187,29 @@ const SEED_PACK_JA: SeedLangPack = {
     '日向 → 半日陰',
   ],
   trashNotes: ['誤って 2 回入力、 1 件削除', '入力ミスで削除'],
+  fullBonsai: {
+    name: '【検証用】フル装備の松',
+    memo: '全項目・全作業・各作業に写真 2 枚を入力した検証用の盆栽。作業写真の表示と PDF 複数ページの確認に使う。',
+    acquiredFrom: '師匠の鉢ごと譲り受け / 高崎盆栽市',
+    potDescription: '中野鉢 銘「萬古」',
+    potMaterial: '常滑・紫泥',
+    eventNotes: [
+      '朝夕たっぷり、 受け皿に残さない',
+      '徒長枝と忌み枝を整理',
+      '主幹を緩やかに矯正',
+      '定着確認のため針金を外す',
+      '根を 1/3 整理して新用土へ',
+      '春肥、 玉肥を 3 粒',
+      'ハダニ予防に散布',
+      '内ふところの混みを抜く',
+      '小葉化のため全葉刈り',
+      '不要な二番芽を摘む',
+      '5 月中旬、 強い芽から切る',
+      '化粧の苔を貼り直し',
+      '日照確保のため南窓辺へ',
+      '葉焼け跡を遮光強化で養生',
+    ],
+  },
 };
 
 const SEED_PACK_EN: SeedLangPack = {
@@ -261,6 +299,29 @@ const SEED_PACK_EN: SeedLangPack = {
     'Sun → partial shade',
   ],
   trashNotes: ['Duplicate entry, deleted one', 'Wrong entry, deleted'],
+  fullBonsai: {
+    name: '[Test] Fully-Loaded Pine',
+    memo: 'A test bonsai with every field, all work types, and 2 photos per record. Used to check work-photo display and multi-page PDF.',
+    acquiredFrom: 'Received with the pot from my mentor / Takasaki bonsai market',
+    potDescription: 'Nakano pot, signed "Banko"',
+    potMaterial: 'Tokoname, shidei (purple clay)',
+    eventNotes: [
+      'Watered thoroughly morning and evening',
+      'Trimmed long and unwanted branches',
+      'Gently shaped the main trunk',
+      'Removed wire after confirming set',
+      'Root-pruned 1/3 into fresh soil',
+      'Spring fertilizer, 3 solid pellets',
+      'Sprayed to prevent spider mites',
+      'Thinned the crowded interior',
+      'Full defoliation for smaller leaves',
+      'Pinched unwanted second buds',
+      'Mid-May, cut the strongest candles',
+      'Re-applied decorative moss',
+      'Moved to south window for light',
+      'Treated leaf burn with extra shade',
+    ],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -380,6 +441,45 @@ export const OTHER_EVENT_DEFS: readonly {
   // position_change: free text (修正不要、 payloadValidator は free text 許容)
   { bonsaiIdx: 3, type: 'position_change', daysAgo: 10, payload: { to: 'ベランダ南' } },
   { bonsaiIdx: 9, type: 'position_change', daysAgo: 12, payload: { to: '棚下' } },
+];
+
+/**
+ * 検証用フル盆栽の 14 作業定義 (Sess49 追補4)。全 14 種別を各フル payload で網羅。
+ * payload は言語非依存 (note のみ pack.fullBonsai.eventNotes[idx] から取得、OTHER_EVENT_DEFS と同方針)。
+ * 各作業に写真 2 枚を付ける (loop 側で asset を巡回割当)。
+ * @see src/features/event/buildHistoryChips.ts (payload 仕様 SoT)
+ */
+export const FULL_BONSAI_EVENT_DEFS: readonly {
+  type: EventType;
+  daysAgo: number;
+  payload: Record<string, unknown>;
+}[] = [
+  { type: 'watering', daysAgo: 2, payload: { amount: 'plenty' } },
+  { type: 'pruning', daysAgo: 6, payload: { parts: ['eda', 'miki'], amount: 'lot' } },
+  { type: 'wiring', daysAgo: 10, payload: { wire_size_mm: 2, body_part: 'miki' } },
+  { type: 'unwiring', daysAgo: 14, payload: { body_part: 'eda' } },
+  {
+    type: 'repotting',
+    daysAgo: 20,
+    payload: { pot_size_cm: 18, soil_mix: '赤玉土:鹿沼土=6:4', root_pruning: 'third' },
+  },
+  { type: 'fertilizing', daysAgo: 25, payload: { kind: 'solid', amount: 'バイオゴールド' } },
+  {
+    type: 'pest_control',
+    daysAgo: 30,
+    payload: { target: 'treatment', agent: 'オルトラン水和剤', dilution_ratio: 1000 },
+  },
+  { type: 'leaf_trimming', daysAgo: 35, payload: { body_part: 'moderate' } },
+  { type: 'defoliation', daysAgo: 40, payload: { body_part: 'heavy' } },
+  { type: 'deshoot', daysAgo: 45, payload: { body_part: 'moderate' } },
+  { type: 'candle_cut', daysAgo: 50, payload: { body_part: 'moderate', count: 5 } },
+  { type: 'moss_care', daysAgo: 55, payload: { action: 'attach' } },
+  { type: 'position_change', daysAgo: 60, payload: { from: '室内', to: 'ベランダ南' } },
+  {
+    type: 'leaf_first_aid',
+    daysAgo: 65,
+    payload: { symptom: 'burn', treatment: '遮光率 50% へ強化' },
+  },
 ];
 
 async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
@@ -726,6 +826,79 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
     }
   }
 
+  // 6-6. 検証用フル盆栽 1 本 (Sess49 追補4): 全基本情報 + 全 14 作業 (各フル payload) + 各作業写真 2 枚。
+  //      「作業写真の表示」「PDF 複数ページ」の確認 fixture。active 盆栽として末尾に追加。
+  let fullBonsaiCount = 0;
+  try {
+    const fullBonsai = await createBonsai({
+      name: pack.fullBonsai.name,
+      speciesId: blackPine?.id ?? null,
+      style: 'moyogi',
+      acquiredAt: toIsoUtc('2016-04-29'),
+      purchaseDate: toIsoUtc('2016-04-29'),
+      estimatedAge: 55,
+      memo: pack.fullBonsai.memo,
+      acquiredFrom: pack.fullBonsai.acquiredFrom,
+      potInfo: {
+        widthCm: 24,
+        depthCm: 7,
+        material: pack.fullBonsai.potMaterial,
+        description: pack.fullBonsai.potDescription,
+      },
+    });
+    fullBonsaiCount = 1;
+
+    // タグ (展示会候補 / 古木 / 師匠の家)
+    for (const tagId of [tagShow.id, tagOld.id, tagMaster.id]) {
+      try {
+        await attachTagToBonsai(fullBonsai.id, tagId);
+      } catch (err) {
+        console.warn('[seedTestData] full bonsai tag attach failed:', err);
+      }
+    }
+
+    // 写真 asset を巡回割当 (各作業 2 枚)
+    const assetPool = [
+      photoUris.sample1,
+      photoUris.sample2,
+      photoUris.shimpaku,
+      photoUris.balcony,
+      photoUris.momiji,
+      photoUris.pear,
+      photoUris.seedlings,
+    ].filter((u): u is string => !!u);
+
+    for (const [defIdx, def] of FULL_BONSAI_EVENT_DEFS.entries()) {
+      try {
+        const event = await createEvent({
+          bonsaiId: fullBonsai.id,
+          type: def.type,
+          status: 'logged',
+          occurredAtUtc: pastUtc(def.daysAgo, 8),
+          note: pack.fullBonsai.eventNotes[defIdx],
+          payload: def.payload,
+        });
+        eventCount += 1;
+        // 各作業に写真 2 枚 (eventId 紐付け)。asset を巡回。
+        if (assetPool.length > 0) {
+          for (let k = 0; k < 2; k++) {
+            const uri = assetPool[(defIdx * 2 + k) % assetPool.length];
+            try {
+              await addPhotoFromUri({ bonsaiId: fullBonsai.id, eventId: event.id, sourceUri: uri });
+              photoCount += 1;
+            } catch (err) {
+              console.warn('[seedTestData] full bonsai event photo attach failed:', err);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[seedTestData] full bonsai event create failed:', err);
+      }
+    }
+  } catch (err) {
+    console.warn('[seedTestData] full bonsai create failed:', err);
+  }
+
   // 7. ゴミ箱 events 2 件 (soft delete、 30 日ゴミ箱 UI テスト)
   let trashedCount = 0;
   const trashSpecs: { bonsaiIdx: number; type: EventType; daysAgo: number; noteIdx: number }[] = [
@@ -750,7 +923,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
   }
 
   return {
-    bonsaiCount: bonsaiSpec.length - archivedBonsaiIds.length,
+    bonsaiCount: bonsaiSpec.length - archivedBonsaiIds.length + fullBonsaiCount,
     photoCount,
     eventCount,
     archivedCount: archivedBonsaiIds.length,

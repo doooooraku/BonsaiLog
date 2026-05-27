@@ -7,7 +7,7 @@
  * - PdfStorageLowError: 100 MB 不足
  *
  * AC5 3 段階フォールバック (`AttemptKind`):
- * - full → reduced → tiny の順で写真サイズダウン
+ * - full → reduced → tiny の順で写真の画質 (長辺 px / JPEG q) をダウン (枚数は維持、Sess50)
  *
  * AC6 タイムアウト動的計算:
  * - 30s + photoCount × 1s、attempt 1 のみ 10s キャップ (素早く失敗 → fallback へ)
@@ -159,31 +159,43 @@ export function isFallbackableError(error: unknown): boolean {
   return false;
 }
 
-/** Attempt 2 (reduced) で許容する写真件数の上限。 */
-export const REDUCED_PHOTO_LIMIT = 5;
-
-/** Attempt 3 (tiny) で許容する写真件数の上限 (= 0、写真なし)。 */
-export const TINY_PHOTO_LIMIT = 0;
+/** PDF 埋め込み写真の縮小指定 (長辺 px + JPEG 品質)。 */
+export type PhotoResizeSpec = { maxWidth: number; quality: number };
 
 /**
- * Phase F: 3 段階フォールバックでの写真件数を計算する純関数。
+ * 写真の用途。表示サイズが違うので縮小目標も変える。
+ * - thumb: 作業ログのインライン写真 (画面 56px / 印刷も小さい) → 強く縮小、payload 削減の主役
+ * - photo: ギャラリー / カバー (最大 480px 表示) → thumb より大きめに残す
+ */
+export type PhotoRole = 'thumb' | 'photo';
+
+/**
+ * Sess50: 3 段階フォールバックの「写真縮小指定」を返す純関数。
  *
- * - attempt 1 (full) → 全件返す
- * - attempt 2 (reduced) → 先頭 5 件まで
- * - attempt 3 (tiny) → 0 件 (写真完全除外、テキストのみ PDF)
+ * 旧 reducePhotoCountForAttempt (枚数削り) を廃止し、**全写真を残したまま画質 (長辺 px / JPEG q)
+ * を段階的に下げる**方針へ変更 (ユーザー決定、Repolog IMAGE_SIZE_* 相当)。これにより
+ * 「フル装備の盆栽」を出力しても写真が欠落しない。
  *
- * 元配列を変更しない (immutable)。
+ * - attempt 1 (full)    → 通常画質
+ * - attempt 2 (reduced) → 中画質 (HTML 肥大 / printToFileAsync hang を回避)
+ * - attempt 3 (tiny)    → 最小画質 (最後の手段、それでも全枚数維持)
  *
- * @param photoUris 写真 data URI 配列
+ * thumb は 56px 表示なので元々小さくてよく、原寸 base64 inline が WebView/PDF 破綻の主因だった
+ * (実機確認、Sess50)。role で表示に見合った px を返すことが最大の payload 削減レバー。
+ *
+ * @param role 写真の用途 (thumb = 作業ログサムネ / photo = ギャラリー・カバー)
  * @param attempt 1 / 2 / 3
  */
-export function reducePhotoCountForAttempt<T>(
-  photoUris: readonly T[],
-  attempt: AttemptNumber,
-): T[] {
-  if (attempt === 1) return [...photoUris];
-  if (attempt === 2) return photoUris.slice(0, REDUCED_PHOTO_LIMIT);
-  return photoUris.slice(0, TINY_PHOTO_LIMIT);
+export function getPhotoResizeSpec(role: PhotoRole, attempt: AttemptNumber): PhotoResizeSpec {
+  if (role === 'thumb') {
+    if (attempt === 1) return { maxWidth: 260, quality: 0.6 };
+    if (attempt === 2) return { maxWidth: 200, quality: 0.5 };
+    return { maxWidth: 150, quality: 0.45 };
+  }
+  // photo (gallery / cover)
+  if (attempt === 1) return { maxWidth: 1000, quality: 0.6 };
+  if (attempt === 2) return { maxWidth: 700, quality: 0.5 };
+  return { maxWidth: 500, quality: 0.45 };
 }
 
 /**
@@ -210,9 +222,8 @@ export type RunWithFallbackResult<T> = {
  *
  * @example
  *   const { result, attemptUsed } = await runWithFallback([1, 2, 3], async (attempt) => {
- *     const photos = reducePhotoCountForAttempt(photoUris, attempt);
- *     const html = buildHtml(photos);
- *     return generateAndShareBonsaiPdf(html, title, { photoCount: photos.length, attempt });
+ *     const html = await buildHtmlForAttempt(attempt); // attempt 別の画質で再生成
+ *     return generateAndShareBonsaiPdf(html, title, { photoCount, attempt });
  *   });
  */
 export async function runWithFallback<T>(
