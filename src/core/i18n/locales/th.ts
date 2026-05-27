@@ -328,7 +328,6 @@ const th: Partial<Record<TranslationKey, string>> = {
   exportPdfHeaderDate: 'วันที่',
   exportPdfHeaderType: 'ประเภท',
   exportPdfHeaderNote: 'บันทึก',
-  exportPdfFooterNote: 'สร้างโดย BonsaiLog',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'ไม่สามารถสร้าง PDF',
 

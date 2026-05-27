@@ -330,7 +330,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   exportPdfHeaderDate: 'Tanggal',
   exportPdfHeaderType: 'Jenis',
   exportPdfHeaderNote: 'Catatan',
-  exportPdfFooterNote: 'Dihasilkan oleh BonsaiLog',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'Gagal membuat PDF.',
 

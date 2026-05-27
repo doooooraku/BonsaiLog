@@ -319,7 +319,6 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   exportPdfHeaderDate: '日期',
   exportPdfHeaderType: '類型',
   exportPdfHeaderNote: '備註',
-  exportPdfFooterNote: '由 BonsaiLog 產生',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'PDF 產生失敗。',
 

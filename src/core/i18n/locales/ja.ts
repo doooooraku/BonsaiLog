@@ -338,7 +338,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportPdfHeaderDate: '日付',
   exportPdfHeaderType: '種類',
   exportPdfHeaderNote: 'メモ',
-  exportPdfFooterNote: 'BonsaiLog で生成',
   exportPdfShareTitle: 'BonsaiLog 盆栽 PDF',
   exportPdfFailedBody: 'PDF の生成に失敗しました。',
 

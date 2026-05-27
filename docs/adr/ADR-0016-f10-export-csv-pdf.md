@@ -375,6 +375,35 @@ v1.0 UI を実装完了。**実装は本 ADR の計画パスと一部異なる**
 - テスト: eventCsvRow / bonsaiCsvRow / speciesSummary の純関数 test + csvExport(cellsToCsvString)。
   実機裏取り (run-as cat) で 3 種 CSV の人間可読性を確認。
 
+### Amended（2026-05-27 Sess49、bonsai_pdf 複数ページ体裁 + 印刷CSSエンジン対応表）
+
+実機で複数ページの bonsai_pdf を出力したところ、2 ページ目以降にヘッダーが無く「ぶつ切り」/
+チップ横並び / 写真縮小 / 不要フッタ が判明。`/discuss` で以下へ Amend (PR #<TBD>):
+
+- **ランニングヘッダー**: レポート全体を `<table class="doc">` で包み `<thead>` に
+  「BonsaiLog · 盆栽名」 を入れる → 印刷時に各ページ先頭で自動繰り返し (実機 Android で 3 ページ確証)。
+- **作業ログのチップ**: 横並び → **縦 1 列** (`.chips { flex-direction: column }`)。
+- **ギャラリー写真**: 横 2 列・幅 30% 縮小 → **縦 1 列・幅いっぱい** (縦横比保持・切り抜きなし、
+  A4 幅はみ出し防止に `max-width`)。タイムライン内サムネ (56×56) は据置。
+- **フッタ「BonsaiLog で生成」削除** (`exportPdfFooterNote` キーも 19 言語から除去)。
+
+**印刷CSSエンジン対応表 (PDF系新機能の設計時に必読、Sess49 一次情報調査で確定)**:
+
+| 機能                                                 | iOS WKWebView               | Android Chromium | 採否                       |
+| ---------------------------------------------------- | --------------------------- | ---------------- | -------------------------- |
+| `<thead>` の各ページ繰り返し                         | ✅                          | ✅               | **採用** (running header)  |
+| `position: fixed` の各ページ繰り返し                 | ✕ 不安定 (最終ページのみ等) | ✅               | 不採用                     |
+| `@page { @bottom-right { content: counter(page) } }` | ✕                           | ✕                | 不採用 (正確な n/n は不可) |
+| `page-break-inside: avoid` (+ `-webkit-`)            | ✅                          | ✅               | 採用済                     |
+
+→ **ページ番号 n/n は CSS 自動では実現不可** (手動ページ分割しか無く写真高さで崩れる) のため
+v1.0 では非採用。running header で「ぶつ切り」感を解消する方針。
+
+- **恒久策**: 本対応表を ADR に常設。PR テンプレ §6-4 に「PDF は**複数ページになる盆栽**でも
+  実機検証 (1 ページに収まるデータだけで判定しない)」を追加。
+- テスト: `pdfExport.test.ts` に thead ランニングヘッダー / 縦チップ / 縦ギャラリー / フッタ非出力。
+  実機 (run-as cat + gs でページ画像化) で 3 ページの running header を確証。
+
 ### Follow-ups（後でやる宿題）
 
 - [ ] `docs/reference/functional_spec.md` §15 全面補強 (Repolog 流用 + 7 画面構成 + 5 種類詳細 + フォールバック仕様 + ファイル名規則 + Android SAF + Y4 個別選択機能)

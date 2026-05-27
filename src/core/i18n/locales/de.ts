@@ -331,7 +331,6 @@ const de: Partial<Record<TranslationKey, string>> = {
   exportPdfHeaderDate: 'Datum',
   exportPdfHeaderType: 'Typ',
   exportPdfHeaderNote: 'Notiz',
-  exportPdfFooterNote: 'Erstellt mit BonsaiLog',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'PDF-Erstellung fehlgeschlagen.',
 

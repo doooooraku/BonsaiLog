@@ -330,7 +330,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   exportPdfHeaderDate: 'Tarih',
   exportPdfHeaderType: 'Tür',
   exportPdfHeaderNote: 'Not',
-  exportPdfFooterNote: 'BonsaiLog tarafından oluşturuldu',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'PDF oluşturulamadı.',
 

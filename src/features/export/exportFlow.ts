@@ -354,7 +354,6 @@ export async function loadBonsaiPdfHtml(
     worklogTitle: t('eventsTitle'),
     worklogEmpty: '―',
     photosTitle: t('bonsaiFieldPhotos'),
-    footerNote: t('exportPdfFooterNote'),
   });
 
   const photoCount =
