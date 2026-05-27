@@ -4,7 +4,7 @@
 #
 # 前提: Metro bundler 起動済 + adb reverse tcp:8081 tcp:8081
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: bonsai-tab'
 tags:
   - ui-diff

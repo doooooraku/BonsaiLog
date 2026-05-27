@@ -4,7 +4,7 @@
 #
 # 注: 実際の通知発火確認は実機検証 (Phase 0 PoC)。本フローは UI 配置 + トグルのみ。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'F-16 - notification settings reach'
 tags:
   - foundation

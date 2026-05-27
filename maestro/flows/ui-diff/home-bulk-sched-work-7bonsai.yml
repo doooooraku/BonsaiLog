@@ -1,7 +1,7 @@
 # UI diff: 一括予定追加・作業選択 BottomSheet — 盆栽 7 件選択時の chip 折り返し確認用
 # home-bulk-sched-work.yml の共通経路を踏襲し、多選択時の chip wrap を撮影する
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: home-bulk-sched-work-7bonsai'
 tags:
   - ui-diff

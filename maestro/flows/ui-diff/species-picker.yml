@@ -2,7 +2,7 @@
 ##
 ## 経路: clearState + Onboarding skip + 盆栽タブ Empty CTA → BonsaiCreate (modal) → 樹種 row tap → species-picker (modal) capture
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: species-picker'
 tags:
   - ui-diff

@@ -8,7 +8,7 @@
 # 3. 「作業を選ぶ」 tap → BulkWorkPicker 表示
 # 4. 作業 (水やり) tap → Toast「1件の予定を追加しました」 + 元タブ復帰
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'Sess12 PR-F bug 1 verify (bulkContext clear on new FAB flow)'
 tags:
   - sess12

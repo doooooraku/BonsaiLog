@@ -2,7 +2,7 @@
 # F-08 写真追加 + 削除動線 (P2-02 PR-C)
 # 注: カメラ・ライブラリの実機権限は Maestro 単体で完結しないため optional 中心。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'F-08 - photo add/delete flow'
 tags:
   - foundation

@@ -110,8 +110,8 @@ Google Play Console → 収益化 → 商品 → アプリ内アイテム
 1. RevenueCat (https://app.revenuecat.com) にログイン
 2. Project: `BonsaiLog` を新規作成
 3. Apps を 2 件追加:
-   - iOS: Bundle ID `com.doooooraku.bonsailog`
-   - Android: Package Name `com.doooooraku.bonsailog`
+   - iOS: Bundle ID `com.dooooraku.bonsailog`
+   - Android: Package Name `com.dooooraku.bonsailog`
 
 ### 3.2 ストア接続
 

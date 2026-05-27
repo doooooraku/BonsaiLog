@@ -2,7 +2,7 @@
 # ADR-0021 / ADR-0020 §Notes §画面マップ row 16 (CareHub Hub)
 # Sess1 PR-4 (2026-05-17): Onboarding 経由 + e2e_tab_look_back tap で統一構造に追従
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: look-back-tab'
 tags:
   - ui-diff

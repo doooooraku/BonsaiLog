@@ -94,8 +94,8 @@ When in doubt, follow this priority:
 
 - App name: `BonsaiLog`
 - Description: `樹種×地域気候×作業履歴を、鉢1本ずつ一生分記録する、オフライン完結の盆栽台帳アプリ。`
-- iOS bundle ID: `com.doooooraku.bonsailog`
-- Android package: `com.doooooraku.bonsailog`
+- iOS bundle ID: `com.dooooraku.bonsailog`
+- Android package: `com.dooooraku.bonsailog`
 
 ### 2.4 Project Paths
 

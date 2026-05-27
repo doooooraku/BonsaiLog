@@ -15,7 +15,7 @@
 ##
 ## 2 回反復 2/2 PASS 基準 (2026-05-13 user 指示)。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: plan-tab'
 tags:
   - ui-diff

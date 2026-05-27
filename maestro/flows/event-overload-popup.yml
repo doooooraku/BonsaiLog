@@ -6,7 +6,7 @@
 # 本 v1.0 フローでは画面到達 + UI 配置 + トグル ON/OFF までを担保する。
 # 実 DB 6 件目シナリオは v1.x で seed flow と組み合わせて拡張する。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'F-05 - event overload popup settings reach'
 tags:
   - foundation

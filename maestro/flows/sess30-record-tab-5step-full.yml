@@ -18,7 +18,7 @@
 #
 # 期待: 全 step PASS、 入力項目すべて充足 (盆栽 2 件 + 日付=今日 + 水量=いつも通り + メモ=Maestro flow test)。
 # 入力空欄ゼロ。 user 報告動線復活の最終 E2E 検証。
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 ---
 - launchApp:
     clearState: false

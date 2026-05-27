@@ -6,7 +6,7 @@
 # 本フローは AC4-1〜4 の動線フローを実機検証時に整える雛形として配置。
 # 実機検証は次セッション (Phase 0 PoC) で実施し、必要に応じてアサーションを拡張する。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'F-16 - notification summary tap reach'
 tags:
   - f-16

@@ -3,7 +3,7 @@
 # planned: 「削除」 (destructive) + 「全 {count} 件を記録」
 # logged: 「削除」 のみ
 # Dev Client 環境では URL list 経由で bundle 読込が必要 (Sess27 PR-7 改修)
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 ---
 - launchApp:
     clearState: false

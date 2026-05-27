@@ -15,7 +15,7 @@
 ##
 ## 実機実行コマンド (3 回反復、R-30 現基準):
 ##   for i in 1 2 3; do maestro test maestro/flows/g3a-bulk-log.yml; done
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 ---
 - launchApp:
     clearState: true

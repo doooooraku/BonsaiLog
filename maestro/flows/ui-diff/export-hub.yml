@@ -2,7 +2,7 @@
 # 設定 → エクスポート で 5 種類集約 Hub に到達。Free 状態でも PRO バッジ付きで描画される。
 #
 # 前提: Metro 起動済 + adb reverse tcp:8081 tcp:8081
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: export-hub'
 tags:
   - ui-diff

@@ -2,7 +2,7 @@
 # Sess27 PR-7 (ADR-0036 D2/D8): PlanScreen group 行 long-press → ConfirmDialog
 # (group まとめ削除、 wiring 含む場合 title 末尾 cascade note 補足)
 # Dev Client 環境では URL list 経由で bundle 読込が必要 (Sess27 PR-7 改修)
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 ---
 - launchApp:
     clearState: false

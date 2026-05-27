@@ -1,7 +1,7 @@
 # maestro/flows/log-event.yml
 # F-02 作業記録 → 一覧表示 → ゴミ箱動線 (P2-03 PR-D)
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'F-02 - log event flow'
 tags:
   - foundation

@@ -5,7 +5,7 @@
 # 設定永続化は AsyncStorage 経由で `settingsStore` が処理 (PR #168 までで実装済)。
 # 本フローはトグル 2 回切替後も時刻編集ボタンが復活する動線を確認。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'F-16 - notification off-on persistence'
 tags:
   - f-16

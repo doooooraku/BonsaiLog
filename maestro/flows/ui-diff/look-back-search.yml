@@ -2,7 +2,7 @@
 # ADR-0021 / ADR-0020 §Notes §画面マップ row 16 (検索画面)
 # Sess1 PR-4 (2026-05-17): Onboarding 経由 + seed 投入 + look_back tab → search card → @ベランダ chip
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: look-back-search'
 tags:
   - ui-diff

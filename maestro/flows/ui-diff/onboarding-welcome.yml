@@ -18,7 +18,7 @@
 ##   - 別途 Metro bundler (pnpm dev) 起動済 + adb reverse tcp:8081 tcp:8081
 ##   - 実機が __DEV__ ビルド (Expo Dev Client)
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: onboarding-welcome'
 tags:
   - ui-diff

@@ -5,7 +5,7 @@
 # 注: 実機データ依存のためアサーションは optional。実機検証 (PoC) で
 #     実データ条件下のアサーションを次セッションで拡張予定。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'F-09 - search 3-section flow'
 tags:
   - f-09

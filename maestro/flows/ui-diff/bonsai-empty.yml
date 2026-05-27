@@ -4,7 +4,7 @@
 # 前提: Metro bundler 起動済 + adb reverse tcp:8081 tcp:8081
 # Onboarding 完了直後の Empty 状態を取得 (seed 投入なし)。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: bonsai-empty'
 tags:
   - ui-diff

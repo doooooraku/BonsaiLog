@@ -1,7 +1,7 @@
 # maestro/flows/bonsai-list.yml
 # F-01 盆栽タブ到達 + 空一覧 + 新規登録 + 詳細閲覧 + アーカイブ確認
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'F-01 - bonsai CRUD flow'
 tags:
   - foundation

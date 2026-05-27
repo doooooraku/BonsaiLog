@@ -257,7 +257,7 @@ PR Template
 
 - [ ] `_template.yml` から派生 or 既存類似 flow をコピー (`cp maestro/flows/_template.yml maestro/flows/<new>.yml`)
 - [ ] **`tapOn: text: '...'` 不使用** (testID 経由 `id: 'e2e_xxx'` のみ、Developer Menu 誤起動防止)
-- [ ] `appId: 'com.doooooraku.bonsailog'` (誤 appId `app.bonsailog` 等は NG)
+- [ ] `appId: 'com.dooooraku.bonsailog'` (誤 appId `app.bonsailog` 等は NG)
 - [ ] `launchApp` 直後に `pressKey: 'Back'` (Continue dialog dismiss、毎回必須)
 - [ ] 全 `tapOn` 直後に `waitForAnimationToEnd` (ghost tap 防止)
 - [ ] 関連画面の testID 事前 grep 実施 (`grep -rn 'e2e_' app/<screen>/ src/features/<feature>/`)

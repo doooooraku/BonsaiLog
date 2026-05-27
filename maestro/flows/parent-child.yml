@@ -12,7 +12,7 @@
 # Run:
 #   pnpm test:e2e -- maestro/flows/parent-child.yml
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'Parent-Child CRUD flow'
 tags:
   - parent-child

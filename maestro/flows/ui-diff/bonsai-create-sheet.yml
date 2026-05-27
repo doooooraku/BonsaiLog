@@ -15,7 +15,7 @@
 ## R-31 適用済 (testID 事前 grep + _template.yml ベース + tapOn:text 禁止)。
 ## 注: scrollUntilVisible visibilityPercentage 30 は modal 内 keyboard dismiss の正解 (pressKey:Back / hideKeyboard は modal close リスク、PR #493 教訓)。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: bonsai-create-sheet (modal、PR #493 後)'
 tags:
   - ui-diff

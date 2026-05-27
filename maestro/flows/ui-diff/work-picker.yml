@@ -4,7 +4,7 @@
 ## g2-work-picker.yml ベースで ui-diff 用に書き直し (formSheet 表示中で stop + capture)。
 ## Issue #522 影響なし想定 (bonsai detail screen → formSheet、modal 親なし)。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: work-picker'
 tags:
   - ui-diff

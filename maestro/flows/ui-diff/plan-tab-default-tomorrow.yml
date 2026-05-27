@@ -11,7 +11,7 @@
 ## 5. e2e_plan_screen 表示 + e2e_plan_legend visible 確認
 ##    (具体 date 確認は flaky 抑制で skip、 動作確認のみ)
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: plan-tab-default-tomorrow'
 tags:
   - ui-diff

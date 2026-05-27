@@ -2,7 +2,7 @@
 # ADR-0021 / ADR-0020 §Notes §画面マップ row 18 (設定タブ ⟷ monetization-screens.jsx SettingsScreen)
 # Sess1 PR-4 (2026-05-17): Onboarding 経由 + e2e_bonsai_home_settings tap で統一構造に追従
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: settings-tab'
 tags:
   - ui-diff

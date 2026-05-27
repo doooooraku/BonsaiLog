@@ -19,7 +19,7 @@
 #   ADB_DEVICE_SERIAL=SX3LHMA362304722 bash scripts/dev/reload-app.sh
 set -euo pipefail
 
-PACKAGE="com.doooooraku.bonsailog"
+PACKAGE="com.dooooraku.bonsailog"
 METRO_PORT=8081
 DEVICE_FLAG=""
 if [ -n "${ADB_DEVICE_SERIAL:-}" ]; then

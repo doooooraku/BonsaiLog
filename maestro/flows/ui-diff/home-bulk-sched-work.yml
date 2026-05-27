@@ -2,7 +2,7 @@
 # ADR-0020 §Notes §画面マップ row 5、mockup v1.0 02-Home.html `01c 一括予定・作業選択`
 # Sess1 PR-4 (2026-05-17): Onboarding 経由 + seed 投入 + 盆栽カード長押し → 予定追加
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: home-bulk-sched-work'
 tags:
   - ui-diff

@@ -16,7 +16,7 @@
 ##
 ## 2 回反復 2/2 PASS 基準 (R-30、 user 指示)。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: plan-tab-fab'
 tags:
   - ui-diff

@@ -13,7 +13,7 @@
 ##
 ## 実機実行コマンド (3 回反復で 5/5 実証済、業界標準、retro 2026-05-13 update、ADR-0024 §Notes):
 ##   for i in 1 2 3; do maestro test maestro/flows/g1-species-picker.yml; done
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 ---
 - launchApp:
     clearState: true

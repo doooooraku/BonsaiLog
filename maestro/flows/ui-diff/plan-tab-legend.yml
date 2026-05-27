@@ -10,7 +10,7 @@
 ##
 ## R-31 整合: _template.yml 由来、 tapOn text 不使用、 3 回反復 3/3 PASS 基準。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: plan-tab-legend (Sess22)'
 tags:
   - ui-diff

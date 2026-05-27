@@ -2,7 +2,7 @@
 # Pro 化 → Hub → 作業履歴(events_csv) 行 tap で期間/対象/アーカイブの下シートを表示。
 #
 # 前提: Metro 起動済 + adb reverse tcp:8081 tcp:8081
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: export-options'
 tags:
   - ui-diff

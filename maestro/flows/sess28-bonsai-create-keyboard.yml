@@ -2,7 +2,7 @@
 # Sess28 PR-8 (ADR-0037 D1 / R-46): Home FAB → 盆栽新規作成 modal → メモ欄 focus 確認。
 # キーボード起動時もメモ欄が見える (useKeyboardAvoidingProps() 共通 hook の効果検証)。
 # Dev Client 環境では URL list 経由で bundle 読込が必要 (Sess27 PR-7 改修パターン整合)。
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 ---
 - launchApp:
     clearState: false

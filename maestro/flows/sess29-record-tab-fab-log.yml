@@ -10,7 +10,7 @@
 # 5. e2e_record_screen 表示確認 (タブハイライト整合 = タブ標準遵守)
 # 6. FAB tap (e2e_record_fab_action)
 # 7. e2e_bonsai_multi_select_screen 表示確認 (mode='log' で 5 ステップ動線開始)
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 ---
 - launchApp:
     clearState: false

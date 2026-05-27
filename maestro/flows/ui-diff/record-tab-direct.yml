@@ -18,7 +18,7 @@
 ##
 ## 2 回反復 2/2 PASS 基準 (R-30)。 user PoC 1/1 = 100% PASS 済 (実機 SS 20、 2026-05-18)。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: record-tab-direct'
 tags:
   - ui-diff

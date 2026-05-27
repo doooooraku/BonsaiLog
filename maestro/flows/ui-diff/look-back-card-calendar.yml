@@ -10,7 +10,7 @@
 ##
 ## R-31 整合: testID 命名は既存 pattern `e2e_look_back_card_<key>` に整合 (自動生成)。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: look-back-card-calendar (Sess22)'
 tags:
   - ui-diff

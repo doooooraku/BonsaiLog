@@ -4,7 +4,7 @@
 ## Welcome → Language → Next で tut5 (Notification) 画面到達 capture
 ## Closes #526 (tut1 / tut2 は Issue #531 で mockup HTML 作成待ち = 永続 skip)
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: onboarding-notification'
 tags:
   - ui-diff

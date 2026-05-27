@@ -3,7 +3,7 @@
 ## ADR-0021 / Issue #510 Phase 2 (bonsai-detail 他タブ R-25 評価)
 ## 対象: bonsai-detail.yml と同経路、末尾で e2e_detail_tab_timeline tap で 作業予定タブ切替 + capture
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: bonsai-detail-timeline'
 tags:
   - ui-diff

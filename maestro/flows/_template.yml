@@ -18,7 +18,7 @@
 ## - bundle load 待ち: 30000 → 20000 (33% 削減、bundle 初回 ~15s + margin 5s)
 ## - Continue dismiss 後: 3000 → 2000 (33% 削減、back キー直後 animation 300ms)
 ## - waitForAnimationToEnd: 5000 → 3000 (40% 削減、animation 500ms + margin)
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 ---
 - launchApp:
     # clearState: true は Onboarding 起動 + DB clean。

@@ -4,7 +4,7 @@
 #
 # 前提: 設定タブ → e2e_dev_seed_button で seed data 投入済、 予定タブに planned events が存在
 # Dev Client 環境では URL list 経由で bundle 読込が必要 (Sess27 PR-7 改修、 旧 pressKey Back を撤去)
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 ---
 - launchApp:
     clearState: false

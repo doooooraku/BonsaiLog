@@ -7,7 +7,7 @@
 # 注: OS 許可ダイアログは Maestro で操作不能、本フローは画面到達と CTA 表示の確認まで。
 # 実機検証 (granted / denied 両パス) は次セッションで実施。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'F-16 - onboarding tut5 enable notification'
 tags:
   - f-16

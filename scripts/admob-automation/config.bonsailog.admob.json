@@ -1,0 +1,25 @@
+{
+  "appName": "BonsaiLog",
+  "_note": "AdMob アプリ/バナー広告ユニットの API 自動作成用 (ADR-0044)。作成は取り消し不可。displayName は Repolog 命名踏襲。envPath は本ファイルからの相対 (=リポジトリ root の .env)。",
+  "apps": [
+    { "platform": "ANDROID", "displayName": "BonsaiLog_Android", "envKey": "ADMOB_ANDROID_APP_ID" },
+    { "platform": "IOS", "displayName": "BonsaiLog_iOS", "envKey": "ADMOB_IOS_APP_ID" }
+  ],
+  "adUnits": [
+    {
+      "platform": "ANDROID",
+      "displayName": "BonsaiLog_Android_Banner_Home_Bottom",
+      "adFormat": "BANNER",
+      "adTypes": ["RICH_MEDIA", "VIDEO"],
+      "envKey": "ADMOB_ANDROID_BANNER_ID"
+    },
+    {
+      "platform": "IOS",
+      "displayName": "BonsaiLog_iOS_Banner_Home_Bottom",
+      "adFormat": "BANNER",
+      "adTypes": ["RICH_MEDIA", "VIDEO"],
+      "envKey": "ADMOB_IOS_BANNER_ID"
+    }
+  ],
+  "envPath": "../../.env"
+}

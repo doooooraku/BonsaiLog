@@ -4,7 +4,7 @@
 ## work-picker.yml 経路 + 水やり tap → work-log-confirm formSheet capture。
 ## formSheet → formSheet (Issue #522 影響なし想定、親が modal ではない)。
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: work-log-confirm'
 tags:
   - ui-diff

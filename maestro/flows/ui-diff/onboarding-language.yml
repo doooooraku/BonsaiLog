@@ -3,7 +3,7 @@
 ## ADR-0018 Onboarding 6 画面の 1 つ (LanguagePicker)
 ## launchApp clearState → Welcome → 「はじめる」 tap → 言語選択画面 capture
 
-appId: 'com.doooooraku.bonsailog'
+appId: 'com.dooooraku.bonsailog'
 name: 'UI diff capture: onboarding-language'
 tags:
   - ui-diff
