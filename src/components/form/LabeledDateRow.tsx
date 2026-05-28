@@ -105,7 +105,7 @@ export function LabeledDateRow({
         <DateTimePicker
           value={value ? new Date(value) : new Date(nowUtc() as string)}
           mode="date"
-          maximumDate={maxToday ? new Date(nowUtc() as string) : undefined}
+          {...(maxToday ? { maximumDate: new Date(nowUtc() as string) } : {})}
           onChange={(event: DateTimePickerEvent, date?: Date) => {
             setShow(false);
             if (event.type === 'set' && date) {

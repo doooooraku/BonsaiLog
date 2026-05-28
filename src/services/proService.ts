@@ -23,9 +23,9 @@ export type PriceDetail = {
   subscriptionPeriod: string | null;
 };
 export type PriceDetails = {
-  monthly?: PriceDetail;
-  yearly?: PriceDetail;
-  lifetime?: PriceDetail;
+  monthly?: PriceDetail | undefined;
+  yearly?: PriceDetail | undefined;
+  lifetime?: PriceDetail | undefined;
 };
 
 // F-13 Phase 1a (Issue #20): ADR-0009 §44 / §289 命名マッピングに従い変更。
@@ -166,9 +166,9 @@ async function getPriceDetails(): Promise<PriceDetails | null> {
 }
 
 async function getPriceStrings(): Promise<{
-  monthly?: string;
-  yearly?: string;
-  lifetime?: string;
+  monthly?: string | undefined;
+  yearly?: string | undefined;
+  lifetime?: string | undefined;
 } | null> {
   const details = await getPriceDetails();
   if (!details) return null;

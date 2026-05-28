@@ -653,7 +653,7 @@ export type BonsaiBasicFormFieldsProps = {
    * Sess31 PR-1 (R-46 拡張): メモ欄 onFocus callback。 親 ScrollView 側で scrollToEnd を呼び、
    * IME 起動時の可視性を確保する用途。
    */
-  onMemoFocus?: () => void;
+  onMemoFocus?: (() => void) | undefined;
 };
 
 /**

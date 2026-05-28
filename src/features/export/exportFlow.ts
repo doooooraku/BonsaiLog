@@ -45,11 +45,11 @@ export type ExportScope = 'all' | 'selected' | 'tag';
 export type ExportOptions = {
   type: ExportTypeKey;
   period: ExportPeriod;
-  dateFrom?: string;
-  dateTo?: string;
+  dateFrom?: string | undefined;
+  dateTo?: string | undefined;
   scope: ExportScope;
-  selectedBonsaiIds?: readonly string[];
-  tagId?: string;
+  selectedBonsaiIds?: readonly string[] | undefined;
+  tagId?: string | undefined;
   includeArchived: boolean;
   lang: string;
 };
@@ -79,7 +79,7 @@ export const OPTION_APPLIES = {
 export function resolvePeriodRange(
   opts: Pick<ExportOptions, 'period' | 'dateFrom' | 'dateTo'>,
   now: Date = new Date(nowUtc() as string),
-): { fromIso?: string; toIso?: string } {
+): { fromIso?: string | undefined; toIso?: string | undefined } {
   switch (opts.period) {
     case 'all':
       return {};

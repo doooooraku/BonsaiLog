@@ -61,7 +61,7 @@ export type LabeledTextInputProps = {
    * 親 ScrollView で `scrollToEnd()` 等を呼び、 IME 起動時の input 可視性を確保する用途。
    * @see .claude/recurrence-prevention/specialized.md R-46 (KAV + auto-scroll 2 点セット必須)
    */
-  onFocus?: () => void;
+  onFocus?: (() => void) | undefined;
 };
 
 /**

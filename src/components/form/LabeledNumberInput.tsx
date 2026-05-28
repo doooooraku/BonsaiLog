@@ -37,14 +37,14 @@ export type LabeledNumberInputProps = {
   requiredText?: string;
   value: string;
   onChangeText: (text: string) => void;
-  placeholder?: string;
+  placeholder?: string | undefined;
   /** 表示単位 suffix (例: 'cm' / '年')。 input 右内側に灰色で表示。 */
-  suffix?: string;
+  suffix?: string | undefined;
   maxLength?: number;
   showCounter?: boolean;
   editable?: boolean;
   accessibilityLabel?: string;
-  testID?: string;
+  testID?: string | undefined;
 };
 
 export function LabeledNumberInput({

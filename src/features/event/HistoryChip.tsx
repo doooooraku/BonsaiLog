@@ -75,7 +75,7 @@ export type HistoryChipRowProps = {
    * undefined = 制限なし (旧挙動、 bonsai-detail 等の compact mode default)。
    * number = N 個表示 + 超過は末尾「+overflow」 chip で省略表示。
    */
-  maxVisible?: number;
+  maxVisible?: number | undefined;
 };
 
 /**

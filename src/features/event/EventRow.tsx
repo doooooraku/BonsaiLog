@@ -149,7 +149,7 @@ export type EventRowProps = {
   /** 該当 bonsai の全期間 events (wiring 期間判定用、 短絡防止) */
   eventsForBonsai: Event[];
   /** PlanScreen で使用 (showBonsaiName=true の時 title 行に表示) */
-  bonsaiName?: string;
+  bonsaiName?: string | undefined;
   lang: string;
   t: (key: TranslationKey) => string;
   /** bonsai-detail で削除確認 (long-press) */

@@ -47,11 +47,11 @@ import {
  */
 export type HistoryChip = {
   /** Field 名 i18n key (例: `historyFieldSymptom` = 「症状」)。 labeled 表示時のラベル部分。 */
-  fieldLabelKey?: TranslationKey;
+  fieldLabelKey?: TranslationKey | undefined;
   /** i18n key を解決して表示 (固定 enum 値用)。 chip の値部分。 */
-  labelKey?: TranslationKey;
+  labelKey?: TranslationKey | undefined;
   /** 生文字列をそのまま表示 (自由テキスト / 数値 / 単位付き値)。 chip の値部分。 */
-  text?: string;
+  text?: string | undefined;
   /**
    * 値の後ろに付与する単位の i18n key (Sess37 PR-1 C4 追加)。
    * 例: `workLogPestDilutionUnit` = 「倍」 / 「x」 / 「раз」 (form suffix と同 key 流用)。
