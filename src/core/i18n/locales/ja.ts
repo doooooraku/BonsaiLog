@@ -913,6 +913,14 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportPdfConfirmBody:
     '「出力する」を押すと、この盆栽のレポート PDF を作成して共有メニューで開きます。',
   exportPdfSlowHint: 'PDF 出力に時間がかかっています。お待ちください。',
+  exportListPdfSummaryBonsaiCount: '盆栽総数',
+  exportListPdfSummarySpeciesCount: '樹種数',
+  exportListPdfSummaryStyleCount: '樹形数',
+  exportListPdfSummaryTotalRecords: '通算記録',
+  exportListPdfChartPerBonsai: '盆栽別の記録数',
+  exportListPdfChartSpecies: '樹種構成',
+  exportListPdfChartPerMonth: '月別の記録数',
+  exportListPdfChartOthers: 'その他（{count}）',
 };
 
 export default ja;

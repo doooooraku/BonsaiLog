@@ -16,6 +16,7 @@
  */
 
 import { escapeHtml } from './pdfExport';
+import type { BarDatum, ListReportBars, ListReportSummary } from './listPdfReport';
 
 /** リスト 1 行分の盆栽データ。 */
 export type BonsaiListRow = {
@@ -66,6 +67,58 @@ export type ListPdfTexts = {
   footerNote: string;
 };
 
+/** リッチレポート (表紙サマリー + 棒グラフ) 用の i18n テキスト (Phase 1)。 */
+export type ListReportTextsP1 = {
+  summaryBonsaiCount: string;
+  summarySpeciesCount: string;
+  summaryStyleCount: string;
+  summaryTotalRecords: string;
+  chartPerBonsai: string;
+  chartSpecies: string;
+  chartPerMonth: string;
+};
+
+/**
+ * 表紙のリッチ化ブロック (Phase 1)。
+ * 省略時は従来どおり「タイトル + リスト表 + 統計」のみ (後方互換)。
+ */
+export type ListReportBlock = {
+  summary: ListReportSummary;
+  bars: ListReportBars;
+  texts: ListReportTextsP1;
+};
+
+/** サマリーカード 4 枚 (盆栽総数 / 樹種数 / 樹形数 / 通算記録)。 */
+function renderSummaryCards(summary: ListReportSummary, texts: ListReportTextsP1): string {
+  const card = (value: number, label: string): string =>
+    `<div class="sumcard"><div class="sumval">${value}</div><div class="sumlabel">${escapeHtml(label)}</div></div>`;
+  return `<div class="sumcards">
+    ${card(summary.bonsaiCount, texts.summaryBonsaiCount)}
+    ${card(summary.speciesCount, texts.summarySpeciesCount)}
+    ${card(summary.styleCount, texts.summaryStyleCount)}
+    ${card(summary.totalEvents, texts.summaryTotalRecords)}
+  </div>`;
+}
+
+/** CSS 棒グラフ 1 種 (データ無しは何も描かない)。バー幅は pct% をインライン指定 (JS 不要)。 */
+function renderBarChart(title: string, data: readonly BarDatum[]): string {
+  if (data.length === 0) return '';
+  const rows = data
+    .map(
+      (d) =>
+        `<div class="bar-row">
+        <span class="bar-label">${escapeHtml(d.label)}</span>
+        <span class="bar-track"><span class="bar-fill" style="width:${d.pct}%"></span></span>
+        <span class="bar-count">${d.count}</span>
+      </div>`,
+    )
+    .join('\n');
+  return `<div class="chart">
+    <h3 class="chart-title">${escapeHtml(title)}</h3>
+    ${rows}
+  </div>`;
+}
+
 /** 統計セクション用に { key: count } を ['key (count)', ...] 配列に変換する純関数。 */
 function formatBreakdown(breakdown: Readonly<Record<string, number>>): string[] {
   return Object.entries(breakdown)
@@ -85,8 +138,16 @@ export function buildBonsaiListPdfHtml(input: {
   bonsaiList: readonly BonsaiListRow[];
   stats: ListPdfStats;
   texts: ListPdfTexts;
+  /** 表紙のリッチ化 (サマリーカード + 棒グラフ)。省略時は従来の素レイアウト。 */
+  report?: ListReportBlock;
 }): string {
-  const { bonsaiList, stats, texts } = input;
+  const { bonsaiList, stats, texts, report } = input;
+  const coverExtra = report
+    ? renderSummaryCards(report.summary, report.texts) +
+      renderBarChart(report.texts.chartPerBonsai, report.bars.perBonsai) +
+      renderBarChart(report.texts.chartSpecies, report.bars.perSpecies) +
+      renderBarChart(report.texts.chartPerMonth, report.bars.perMonth)
+    : '';
   const subtitle = texts.coverSubtitleTemplate.replace('{count}', String(bonsaiList.length));
   const totalText = texts.statsTotalLabel.replace('{count}', String(stats.totalEvents));
   const typeBreakdownItems = formatBreakdown(stats.typeBreakdown);
@@ -119,10 +180,21 @@ export function buildBonsaiListPdfHtml(input: {
   h1 { font-size: 24pt; margin: 0 0 12pt; }
   h2 { font-size: 16pt; margin: 24pt 0 8pt; page-break-after: avoid; -webkit-column-break-after: avoid; }
   h3 { font-size: 12pt; margin: 12pt 0 4pt; page-break-after: avoid; }
-  .cover { text-align: center; padding: 60pt 0; page-break-after: always; -webkit-column-break-after: always; }
-  .cover h1 { font-size: 28pt; margin: 0 0 16pt; }
-  .cover .subtitle { font-size: 14pt; color: #666; margin: 0 0 24pt; }
-  .cover .meta { font-size: 11pt; color: #888; }
+  .cover { text-align: center; padding: 28pt 0 12pt; page-break-after: always; -webkit-column-break-after: always; }
+  .cover h1 { font-size: 28pt; margin: 0 0 12pt; }
+  .cover .subtitle { font-size: 14pt; color: #666; margin: 0 0 8pt; }
+  .cover .meta { font-size: 11pt; color: #888; margin: 0 0 20pt; }
+  .sumcards { display: flex; flex-wrap: wrap; gap: 8pt; text-align: left; margin: 0 0 18pt; }
+  .sumcard { flex: 1 1 44%; border: 1px solid #E0E0E0; border-radius: 6px; padding: 10pt 12pt; }
+  .sumval { font-size: 22pt; font-weight: 700; color: #1F3A2E; font-variant-numeric: tabular-nums; }
+  .sumlabel { font-size: 10pt; color: #666; margin-top: 2pt; }
+  .chart { text-align: left; margin: 0 0 14pt; page-break-inside: avoid; -webkit-column-break-inside: avoid; }
+  .chart-title { font-size: 12pt; margin: 0 0 6pt; }
+  .bar-row { display: flex; align-items: center; gap: 6pt; margin: 3pt 0; font-size: 9pt; }
+  .bar-label { width: 34%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-track { flex: 1; height: 10pt; background: #EFEAE4; border-radius: 2px; overflow: hidden; }
+  .bar-fill { display: block; height: 100%; background: #4F6B2A; border-radius: 2px; min-width: 1px; }
+  .bar-count { width: 46pt; text-align: right; font-variant-numeric: tabular-nums; color: #444; }
   table { border-collapse: collapse; width: 100%; font-size: 10pt; margin: 8pt 0; }
   th, td { border: 1px solid #E0E0E0; padding: 6px 8px; text-align: left; vertical-align: top; }
   th { background: #F5F8F5; font-weight: 600; }
@@ -138,6 +210,7 @@ export function buildBonsaiListPdfHtml(input: {
     <h1>${escapeHtml(texts.coverTitle)}</h1>
     <p class="subtitle">${escapeHtml(subtitle)}</p>
     <p class="meta">${escapeHtml(texts.generatedAtLabel)} ${escapeHtml(texts.generatedAtValue)}</p>
+    ${coverExtra}
   </div>
 
   <h2>${escapeHtml(texts.listSectionTitle)}</h2>

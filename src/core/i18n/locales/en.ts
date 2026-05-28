@@ -913,6 +913,14 @@ const baseEn = {
   exportPdfConfirmBody:
     'Tap Export to generate this bonsai PDF report and open it in the share sheet.',
   exportPdfSlowHint: 'Generating the PDF is taking a while. Please wait.',
+  exportListPdfSummaryBonsaiCount: 'Bonsai',
+  exportListPdfSummarySpeciesCount: 'Species',
+  exportListPdfSummaryStyleCount: 'Styles',
+  exportListPdfSummaryTotalRecords: 'Total records',
+  exportListPdfChartPerBonsai: 'Records by bonsai',
+  exportListPdfChartSpecies: 'Species composition',
+  exportListPdfChartPerMonth: 'Records by month',
+  exportListPdfChartOthers: 'Others ({count})',
 };
 
 export type TranslationKey = keyof typeof baseEn;

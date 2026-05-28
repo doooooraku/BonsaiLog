@@ -34,6 +34,13 @@ import { buildBonsaiPdfReport } from './bonsaiPdfReport';
 import { buildEventCsvRow, EVENT_CSV_HEADER_KEYS } from './eventCsvRow';
 import { buildExportFileName, type ExportKind } from './exportFileName';
 import { type BonsaiListRow, buildBonsaiListPdfHtml, type ListPdfStats } from './listPdfExport';
+import {
+  buildListReportBars,
+  buildListReportSummary,
+  type ListReportBonsaiInput,
+  type ListReportEventInput,
+  monthAxisFromEvents,
+} from './listPdfReport';
 import { buildBonsaiPdfHtml, generateAndShareListPdf, readPhotoAsBase64 } from './pdfExport';
 import { getPhotoResizeSpec, type AttemptNumber } from './pdfReliability';
 import { buildSpeciesSummaryRows, SPECIES_CSV_HEADER_KEYS } from './speciesSummary';
@@ -234,18 +241,26 @@ export async function loadListPdfHtml(
 ): Promise<{ html: string; count: number }> {
   const bonsai = await resolveBonsaiSet(opts);
   const { fromIso, toIso } = resolvePeriodRange(opts);
-  const eventsByBonsai = await Promise.all(
-    bonsai.map((b) => getEventsInRange({ bonsaiIds: [b.id], fromIso, toIso })),
-  );
-  const rows: BonsaiListRow[] = bonsai.map((b, i) => ({
+  const bonsaiIds = bonsai.map((b) => b.id);
+  // 1 クエリで対象盆栽の events を取得 (空集合なら全件取得を避けるため skip)。
+  const allEventsRaw =
+    bonsaiIds.length > 0 ? await getEventsInRange({ bonsaiIds, fromIso, toIso }) : [];
+  // 統計・グラフは実施済 (logged) のみを母数にする (planned/未来分は除外、species_csv と整合)。
+  const loggedEvents = allEventsRaw.filter((e) => e.status === 'logged');
+
+  const countByBonsai = new Map<string, number>();
+  for (const e of loggedEvents) {
+    countByBonsai.set(e.bonsaiId, (countByBonsai.get(e.bonsaiId) ?? 0) + 1);
+  }
+  const rows: BonsaiListRow[] = bonsai.map((b) => ({
     id: b.id,
     name: b.name,
     speciesName: b.speciesCommonName,
     acquiredAt: b.acquiredAt,
-    eventCount: (eventsByBonsai[i] ?? []).length, // i is always in-bounds (same-length arrays), but guard for type safety
+    eventCount: countByBonsai.get(b.id) ?? 0,
   }));
-  const allEvents = eventsByBonsai.flat();
-  const typeBreakdown = allEvents.reduce<Record<string, number>>((acc, e) => {
+
+  const typeBreakdown = loggedEvents.reduce<Record<string, number>>((acc, e) => {
     acc[e.type] = (acc[e.type] ?? 0) + 1;
     return acc;
   }, {});
@@ -253,7 +268,29 @@ export async function loadListPdfHtml(
     if (b.speciesCommonName) acc[b.speciesCommonName] = (acc[b.speciesCommonName] ?? 0) + 1;
     return acc;
   }, {});
-  const stats: ListPdfStats = { totalEvents: allEvents.length, typeBreakdown, speciesBreakdown };
+  const stats: ListPdfStats = { totalEvents: loggedEvents.length, typeBreakdown, speciesBreakdown };
+
+  // リッチレポート集計 (純関数: 表紙サマリー + 棒グラフ 3 種)。
+  const reportBonsai: ListReportBonsaiInput[] = bonsai.map((b) => ({
+    id: b.id,
+    name: b.name,
+    speciesName: b.speciesCommonName,
+    style: b.style,
+  }));
+  const reportEvents: ListReportEventInput[] = loggedEvents.map((e) => ({
+    bonsaiId: e.bonsaiId,
+    type: e.type,
+    occurredAtUtc: e.occurredAtUtc,
+    tzOffsetMin: e.tzOffsetMin,
+  }));
+  const months = monthAxisFromEvents(reportEvents);
+  const summary = buildListReportSummary(reportBonsai, reportEvents);
+  const bars = buildListReportBars(reportBonsai, reportEvents, {
+    topBonsai: 15,
+    months,
+    othersLabelTemplate: t('exportListPdfChartOthers'),
+  });
+
   const generatedAt = (nowUtc() as string).slice(0, 16).replace('T', ' ');
   const html = buildBonsaiListPdfHtml({
     bonsaiList: rows,
@@ -273,6 +310,19 @@ export async function loadListPdfHtml(
       statsTypeBreakdownTitle: t('exportListPdfTypeBreakdown'),
       statsSpeciesBreakdownTitle: t('exportListPdfSpeciesBreakdown'),
       footerNote: t('exportListPdfFooter'),
+    },
+    report: {
+      summary,
+      bars,
+      texts: {
+        summaryBonsaiCount: t('exportListPdfSummaryBonsaiCount'),
+        summarySpeciesCount: t('exportListPdfSummarySpeciesCount'),
+        summaryStyleCount: t('exportListPdfSummaryStyleCount'),
+        summaryTotalRecords: t('exportListPdfSummaryTotalRecords'),
+        chartPerBonsai: t('exportListPdfChartPerBonsai'),
+        chartSpecies: t('exportListPdfChartSpecies'),
+        chartPerMonth: t('exportListPdfChartPerMonth'),
+      },
     },
   });
   return { html, count: rows.length };

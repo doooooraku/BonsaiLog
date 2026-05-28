@@ -221,3 +221,94 @@ describe('AC2 シナリオ統合', () => {
     expect(html.match(/>―</g)?.length).toBeGreaterThanOrEqual(3); // list + 2 breakdown sections
   });
 });
+
+describe('report ブロック (Phase 1: サマリーカード + 棒グラフ)', () => {
+  const baseReport = {
+    summary: { bonsaiCount: 3, speciesCount: 2, styleCount: 2, totalEvents: 100 },
+    bars: {
+      perBonsai: [
+        { label: '黒松「太郎」', count: 60, pct: 100 },
+        { label: '赤松', count: 30, pct: 50 },
+      ],
+      perSpecies: [{ label: '黒松', count: 2, pct: 100 }],
+      perMonth: [
+        { label: '2026-04', count: 40, pct: 100 },
+        { label: '2026-05', count: 20, pct: 50 },
+      ],
+    },
+    texts: {
+      summaryBonsaiCount: '盆栽総数',
+      summarySpeciesCount: '樹種数',
+      summaryStyleCount: '樹形数',
+      summaryTotalRecords: '通算記録',
+      chartPerBonsai: '盆栽別の記録数',
+      chartSpecies: '樹種構成',
+      chartPerMonth: '月別の記録数',
+    },
+  };
+
+  test('report 省略時はカード / 棒グラフを描かない (後方互換)', () => {
+    const html = buildBonsaiListPdfHtml({ bonsaiList: [], stats: baseStats, texts: baseTexts });
+    expect(html).not.toContain('class="sumcards"');
+    expect(html).not.toContain('class="bar-fill"');
+  });
+
+  test('サマリーカード 4 枚: 値 + ラベル', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: baseReport,
+    });
+    expect(html).toContain('class="sumcards"');
+    expect(html).toContain('<div class="sumval">3</div>');
+    expect(html).toContain('<div class="sumval">100</div>');
+    expect(html).toContain('盆栽総数');
+    expect(html).toContain('樹種数');
+    expect(html).toContain('樹形数');
+    expect(html).toContain('通算記録');
+  });
+
+  test('棒グラフ: 幅 % をインライン指定 + 件数 + タイトル', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: baseReport,
+    });
+    expect(html).toContain('盆栽別の記録数');
+    expect(html).toContain('樹種構成');
+    expect(html).toContain('月別の記録数');
+    expect(html).toContain('width:100%');
+    expect(html).toContain('width:50%');
+    expect(html).toContain('黒松「太郎」');
+    expect(html).toContain('>60<'); // bar-count
+    expect(html).toContain('2026-04');
+  });
+
+  test('空の棒グラフ系列は描かない', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: { ...baseReport, bars: { perBonsai: [], perSpecies: [], perMonth: [] } },
+    });
+    // サマリーカードは出るが、バーは 1 本も出ない
+    expect(html).toContain('class="sumcards"');
+    expect(html).not.toContain('class="bar-fill"');
+  });
+
+  test('XSS 対策: バーラベルもエスケープ', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: {
+        ...baseReport,
+        bars: { ...baseReport.bars, perBonsai: [{ label: '<b>x</b>', count: 1, pct: 100 }] },
+      },
+    });
+    expect(html).toContain('&lt;b&gt;x&lt;/b&gt;');
+    expect(html).not.toContain('<b>x</b>');
+  });
+});
