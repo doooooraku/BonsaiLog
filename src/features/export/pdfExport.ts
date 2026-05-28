@@ -382,29 +382,6 @@ export async function generateBonsaiPdfWithFallback(params: {
 }
 
 /**
- * Phase J (Issue #33): list_pdf 用統合 API (Issue #33 AC2 list_pdf)。
- *
- * 写真なし (テキストのみ) のため 3 段階フォールバック不要、attempt 2 (30s ベース) で
- * 1 回だけ実行 (リスト件数多くてもテキストのみなので 30s で十分)。
- *
- * Sess51 Phase 3 以降、写真サムネ付きカタログを含む list_pdf は
- * `generateListPdfWithFallback` (下記、3 段階フォールバック) を使うこと。本関数は
- * 写真なし用途 (旧経路) で残置。
- *
- * @param html buildBonsaiListPdfHtml で生成した HTML
- * @param shareDialogTitle Share Sheet タイトル
- */
-export async function generateAndShareListPdf(
-  html: string,
-  shareDialogTitle: string,
-): Promise<void> {
-  await generateAndShareBonsaiPdf(html, shareDialogTitle, {
-    photoCount: 0,
-    attempt: 2, // attempt 1 は 10s キャップだが list は 100 本以上で時間かかる、安全のため 2
-  });
-}
-
-/**
  * list_pdf 用 3 段階フォールバック (Sess51 Phase 3、写真サムネ付きカタログ対応)。
  * 写真導入により単発生成では多本数で hang / blank PDF リスクがあるため、attempt 別に
  * 画質を落として再生成する (実装は `generateBonsaiPdfWithFallback` を流用)。

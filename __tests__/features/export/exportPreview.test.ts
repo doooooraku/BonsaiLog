@@ -3,14 +3,13 @@
  *
  * Sess50: 個別 PDF (pdf-preview) は WebView プレビューを廃止し、prepareBonsaiPdf +
  * generateBonsaiPdfWithFallback (3 段階フォールバック) → OS 共有に一本化したことを構造保証。
- * list-preview はテキストのみで tile memory 問題が無いため WebView プレビューを維持。
+ * Sess51: list-preview (WebView) も廃止し、list_pdf は Sheet → runExport 直接出力に統一。
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const r = (p: string) => readFileSync(resolve(__dirname, p), 'utf8');
 const PDF_PREVIEW = r('../../../app/export/pdf-preview.tsx');
-const LIST_PREVIEW = r('../../../app/export/list-preview.tsx');
 const FLOW = r('../../../src/features/export/exportFlow.ts');
 const PDF_PICKER = r('../../../app/export/pdf.tsx');
 const SHEET = r('../../../src/features/export/ExportOptionsSheet.tsx');
@@ -39,40 +38,32 @@ describe('PDF Bonsai 出力確認 (pdf-preview)', () => {
   });
 });
 
-describe('PDF List Preview (list-preview)', () => {
-  test('4. WebView で loadListPdfHtml を表示 + opts を JSON param で受領', () => {
-    expect(LIST_PREVIEW).toMatch(/from 'react-native-webview'/);
-    expect(LIST_PREVIEW).toMatch(/loadListPdfHtml/);
-    expect(LIST_PREVIEW).toMatch(/JSON\.parse/);
-    expect(LIST_PREVIEW).toContain('e2e_export_list_preview_webview');
+describe('list_pdf 直接出力 (Sess51: プレビュー画面廃止)', () => {
+  test('4. list-preview.tsx は削除済み (WebView プレビュー廃止)', () => {
+    expect(existsSync(resolve(__dirname, '../../../app/export/list-preview.tsx'))).toBe(false);
   });
 
-  test('5. 出力は下部「出力する」CTA → prepareListPdf + generateListPdfWithFallback', () => {
-    // Sess51 Phase 3: 写真サムネ付きカタログ → 出力は 3 段階フォールバック
-    // (プレビューの写真なし HTML は再利用せず prepareListPdf で再生成)
-    expect(LIST_PREVIEW).toMatch(/prepareListPdf/);
-    expect(LIST_PREVIEW).toMatch(/generateListPdfWithFallback/);
-    // Sess49 追補2: 右上「共有」廃止 → 下部 CTA (exportOptExport)、標準 FormScreenHeader
-    expect(LIST_PREVIEW).toContain('e2e_export_list_preview_generate');
-    expect(LIST_PREVIEW).toMatch(/FormScreenHeader/);
-    expect(LIST_PREVIEW).not.toContain('e2e_export_list_preview_share');
+  test('5. Sheet は list_pdf も中間画面なしで runExport 直呼び (list-preview 遷移なし)', () => {
+    expect(SHEET).not.toContain('/export/list-preview');
+    expect(SHEET).not.toMatch(/exportOptPreview/);
+    // 全種 (CSV 3 + list_pdf) を runExport で即出力 → OS 共有
+    expect(SHEET).toMatch(/await runExport\(/);
+    expect(SHEET).toContain('e2e_export_options_generate');
   });
 
-  test('6. Sheet は list_pdf で preview へ遷移 (opts を JSON で渡す)', () => {
-    expect(SHEET).toMatch(/type === 'list_pdf'/);
-    expect(SHEET).toMatch(/\/export\/list-preview\?opts=\$\{encodeURIComponent/);
-    expect(SHEET).toMatch(/exportOptPreview/);
+  test('6. 出力は generateListPdfWithFallback (写真 3 段階) 経由、旧単発 API は撤去', () => {
+    expect(FLOW).toMatch(/generateListPdfWithFallback/);
+    expect(FLOW).not.toMatch(/generateAndShareListPdf/);
   });
 });
 
 describe('exportFlow HTML ローダー切り出し', () => {
-  test('7. prepareBonsaiPdf / prepareListPdf (ファクトリ) / loadListPdfHtml を export', () => {
+  test('7. prepareBonsaiPdf / prepareListPdf (ファクトリ) を export', () => {
     expect(FLOW).toMatch(/export async function prepareBonsaiPdf/);
-    expect(FLOW).toMatch(/export async function loadListPdfHtml/);
     expect(FLOW).toMatch(/export async function prepareListPdf/);
-    // Sess51 Phase 3: runExport(list_pdf) は写真フォールバック用 prepareListPdf を使う
+    // Sess51: list_pdf もプレビュー廃止 → runExport は写真フォールバック用 prepareListPdf を使う
     expect(FLOW).toMatch(/await prepareListPdf\(opts, t\)/);
-    // Sess50: attempt 別画質で再生成するファクトリを返す
+    // attempt 別画質で再生成するファクトリを返す
     expect(FLOW).toMatch(/buildHtmlForAttempt/);
   });
 

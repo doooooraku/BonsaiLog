@@ -4,7 +4,7 @@
  * FS/Sharing 非依存の orchestration を凍結する:
  * - resolvePeriodRange: all / 30d / 1y / custom の ISO 範囲算出 (純関数)
  * - loadCsvForPreview: bonsai_csv / events_csv / species_csv の件数 + CSV 文字列生成
- * - loadListPdfHtml: 対象解決 + 集計 + HTML 生成 + 件数
+ * - prepareListPdf: 対象解決 + 集計 + attempt 別 HTML 生成ファクトリ + 件数
  *
  * runExport / shareExportFile (expo-file-system File/Paths + expo-sharing) は実機/手動検証。
  * t は key をそのまま返すスタブ (i18n テキストの正しさは別テストの責務)。
@@ -157,22 +157,8 @@ describe('loadCsvForPreview', () => {
   });
 });
 
-describe('loadListPdfHtml', () => {
-  test('対象盆栽数 = count、HTML に盆栽名を含む', async () => {
-    const { flow, bonsai, ev } = mods();
-    const b = await bonsai.createBonsai({ name: 'リスト盆栽' });
-    await ev.createEvent({ bonsaiId: b.id, type: 'watering' });
-    const res = await flow.loadListPdfHtml(
-      { type: 'list_pdf', period: 'all', scope: 'all', includeArchived: false, lang: 'ja' },
-      t,
-    );
-    expect(res.count).toBe(1);
-    expect(res.html).toContain('リスト盆栽');
-  });
-});
-
-describe('prepareListPdf (Phase 3: 写真フォールバック用ファクトリ)', () => {
-  test('count / photoCount / attempt 別 HTML 生成', async () => {
+describe('prepareListPdf (写真フォールバック用ファクトリ)', () => {
+  test('count / photoCount / attempt 別 HTML 生成 (盆栽名 + カタログ + 写真なしは placeholder)', async () => {
     const { flow, bonsai, ev } = mods();
     const b = await bonsai.createBonsai({ name: 'カタログ盆栽' });
     await ev.createEvent({ bonsaiId: b.id, type: 'watering' });
@@ -186,8 +172,8 @@ describe('prepareListPdf (Phase 3: 写真フォールバック用ファクトリ
     const html3 = await prep.buildHtmlForAttempt(3);
     // 写真なしでも attempt に依らず生成でき、カタログに盆栽名 + プレースホルダーが出る
     expect(html1).toContain('カタログ盆栽');
-    expect(html1).toContain('class="catalog"');
-    expect(html1).toContain('class="cat-ph"');
+    expect(html1).toContain('cat-card');
+    expect(html1).toContain('cat-ph');
     expect(html3).toContain('カタログ盆栽');
   });
 });

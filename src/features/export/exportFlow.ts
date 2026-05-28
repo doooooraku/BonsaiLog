@@ -34,10 +34,8 @@ import { buildBonsaiPdfReport } from './bonsaiPdfReport';
 import { buildEventCsvRow, EVENT_CSV_HEADER_KEYS } from './eventCsvRow';
 import { buildExportFileName, type ExportKind } from './exportFileName';
 import {
-  type BonsaiListRow,
   buildBonsaiListPdfHtml,
   type CatalogPhotoEntry,
-  type ListPdfStats,
   type ListPdfTexts,
   type ListReportBlock,
   type ListReportTextsCatalog,
@@ -254,13 +252,11 @@ async function resolveSpeciesName(b: ResolvedBonsai): Promise<string | null> {
   return null;
 }
 
-/** list_pdf の写真以外の全データ (preview と 出力フォールバックで共用)。 */
+/** list_pdf の写真以外の全データ (出力フォールバックの attempt 間で共用)。 */
 type ListPdfData = {
   count: number;
   /** カバー写真ありの盆栽数 (動的タイムアウト用)。 */
   photoCount: number;
-  bonsaiList: BonsaiListRow[];
-  stats: ListPdfStats;
   texts: ListPdfTexts;
   /** report (catalog 以外完成済み、catalog は compose 時に写真注入して付与)。 */
   report: ListReportBlock;
@@ -286,29 +282,6 @@ async function gatherListPdfData(opts: ExportOptions, t: Tfn): Promise<ListPdfDa
   // 樹種名 (master + custom) を 1 回解決し全集計で共有。
   const speciesNameById = new Map<string, string | null>();
   for (const b of bonsai) speciesNameById.set(b.id, await resolveSpeciesName(b));
-
-  const countByBonsai = new Map<string, number>();
-  for (const e of loggedEvents) {
-    countByBonsai.set(e.bonsaiId, (countByBonsai.get(e.bonsaiId) ?? 0) + 1);
-  }
-  const rows: BonsaiListRow[] = bonsai.map((b) => ({
-    id: b.id,
-    name: b.name,
-    speciesName: speciesNameById.get(b.id) ?? null,
-    acquiredAt: b.acquiredAt,
-    eventCount: countByBonsai.get(b.id) ?? 0,
-  }));
-
-  const typeBreakdown = loggedEvents.reduce<Record<string, number>>((acc, e) => {
-    acc[e.type] = (acc[e.type] ?? 0) + 1;
-    return acc;
-  }, {});
-  const speciesBreakdown = bonsai.reduce<Record<string, number>>((acc, b) => {
-    const s = speciesNameById.get(b.id);
-    if (s) acc[s] = (acc[s] ?? 0) + 1;
-    return acc;
-  }, {});
-  const stats: ListPdfStats = { totalEvents: loggedEvents.length, typeBreakdown, speciesBreakdown };
 
   const reportBonsai: ListReportBonsaiInput[] = bonsai.map((b) => ({
     id: b.id,
@@ -349,17 +322,7 @@ async function gatherListPdfData(opts: ExportOptions, t: Tfn): Promise<ListPdfDa
   const texts: ListPdfTexts = {
     coverTitle: t('exportListPdfCoverTitle'),
     coverSubtitleTemplate: t('exportListPdfCoverSubtitle'),
-    generatedAtLabel: t('exportListPdfGeneratedAt'),
     generatedAtValue: generatedAt,
-    listSectionTitle: t('exportListPdfListSection'),
-    listColumnName: t('bonsaiFieldName'),
-    listColumnSpecies: t('bonsaiFieldSpecies'),
-    listColumnAcquiredAt: t('bonsaiFieldAcquiredAt'),
-    listColumnEventCount: t('exportListPdfRecordCount'),
-    statsSectionTitle: t('exportListPdfStatsSection'),
-    statsTotalLabel: t('exportListPdfTotal'),
-    statsTypeBreakdownTitle: t('exportListPdfTypeBreakdown'),
-    statsSpeciesBreakdownTitle: t('exportListPdfSpeciesBreakdown'),
     footerNote: t('exportListPdfFooter'),
   };
   const report: ListReportBlock = {
@@ -394,10 +357,8 @@ async function gatherListPdfData(opts: ExportOptions, t: Tfn): Promise<ListPdfDa
   };
 
   return {
-    count: rows.length,
+    count: bonsai.length,
     photoCount,
-    bonsaiList: rows,
-    stats,
     texts,
     report,
     catalogEntries,
@@ -413,25 +374,9 @@ function composeListPdfHtml(data: ListPdfData, coverData: Map<string, string | n
     coverPhotoUri: coverData.get(e.bonsaiId) ?? null,
   }));
   return buildBonsaiListPdfHtml({
-    bonsaiList: data.bonsaiList,
-    stats: data.stats,
     texts: data.texts,
     report: { ...data.report, catalog: { entries, texts: data.catalogTexts } },
   });
-}
-
-/**
- * list_pdf プレビュー用 HTML + 件数 (list-preview 画面)。
- * プレビューは **写真なし** (多写真プレビューの WebView tile memory 上限で真っ白になる
- * Sess50 既知問題を回避、カタログは単色プレースホルダー表示)。出力時のみ写真を base64 化する。
- */
-export async function loadListPdfHtml(
-  opts: ExportOptions,
-  t: Tfn,
-): Promise<{ html: string; count: number }> {
-  const data = await gatherListPdfData(opts, t);
-  const html = composeListPdfHtml(data, new Map());
-  return { html, count: data.count };
 }
 
 /**

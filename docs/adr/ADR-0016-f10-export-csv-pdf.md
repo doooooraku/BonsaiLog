@@ -459,6 +459,29 @@ include トグル準拠)。グラフ / ヒートマップは純 CSS (WebView JS 
 恒久策: モック参照 PR は「モック要素 × 対応 ADR × 採否」の照合を必須化 (完成度の高い下書きを「正」と
 誤認する事故=本件ヒートマップ復活 / F-10 冒頭の全機能 Free 誤認の再発防止)。
 
+### Amended（2026-05-29 Sess51、list_pdf プレビュー廃止 + washi モックアップ忠実化）
+
+実機検証で「リッチ化したが ClaudeDesign モックアップ (washi 和紙デザイン) に全く似ず素朴」と判明。
+2 点を Amend:
+
+- **プレビュー画面廃止 (AC11 改定)**: `list_pdf` も中間プレビュー (`app/export/list-preview.tsx`) を廃止し、
+  Options Sheet「出力する」で即生成 → OS 共有に統一 (CSV 3 種 = 中間画面なし / `bonsai_pdf` = Sess50 で
+  WebView プレビュー廃止、と同パターン)。`list-preview.tsx` 削除、`generateAndShareListPdf` (単発・写真なし
+  旧経路) も削除し `generateListPdfWithFallback` (写真 3 段階フォールバック) に一本化。旧 7 画面構成のうち
+  「PDF List Preview」は撤去 (残プレビューは個別 `bonsai_pdf` の pdf-preview のみ)。
+- **washi モックアップ忠実化**: `listPdfExport.ts` の HTML/CSS を個別 PDF (`buildBonsaiPdfHtml`) と同じ
+  shell (`@page` / 和紙地 #FBFAF6 / `table.doc>thead` ランニングヘッダー) に載せ替え、tokens.css の SoT 値を
+  CSS で引く: 見出し/数値=明朝 (Hiragino Mincho 系 serif)、ラベル/件数/ブランド=mono、本文=sans。意匠は
+  ブランドバンド + 明朝タイトル + 4 タイル (1 枚目=深緑 #1F3A2E 塗り) + 横棒 (track #F0EBDB) + 月別縦棒 +
+  連続濃淡ヒートマップ (rgba(31,58,46,α)) + カタログ (カバー写真 + 明朝名 + 作業内訳 2 列ミニ棒)。
+  **モックに無い素の 4 列リスト表 + 箇条書き統計は撤去** (cover チャート + カタログと重複、データ欠落なし)。
+  孤立した i18n キー (exportListPdfListSection/StatsSection/Total/TypeBreakdown/SpeciesBreakdown/
+  GeneratedAt/RecordCount/exportOptPreview/exportListPdfFailedBody) は除去。
+
+恒久策: 純 CSS PDF でも **tokens.css の washi/明朝/mono を CSS で引く** (汎用 sans + 白地にしない)。
+モック参照 PR は「**画面実物 (スクショ) と生成物を必ず並べて目視**し配色/フォント/罫線/余白を照合」を
+PR テンプレ §7.5 に追記 (「最初からモックに寄せられなかった」 再発防止)。
+
 ### Follow-ups（後でやる宿題）
 
 - [ ] `docs/reference/functional_spec.md` §15 全面補強 (Repolog 流用 + 7 画面構成 + 5 種類詳細 + フォールバック仕様 + ファイル名規則 + Android SAF + Y4 個別選択機能)
