@@ -1,5 +1,4 @@
 import { Platform } from 'react-native';
-import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import Purchases, {
   LOG_LEVEL,
@@ -10,6 +9,7 @@ import Purchases, {
 } from 'react-native-purchases';
 
 import type { PlanKind, ProState } from '@/src/types/models';
+import { getAppExtra } from '@/src/core/appExtra';
 import { IAP_DEBUG } from '@/src/core/debug';
 
 export type PlanType = 'monthly' | 'yearly' | 'lifetime';
@@ -38,10 +38,9 @@ let configured = false;
 
 const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
 
-function getExtraValue(key: string) {
-  const expoConfig = Constants.expoConfig ?? Constants.manifest;
-  const extra = (expoConfig as any)?.extra ?? {};
-  return extra?.[key];
+function getExtraValue(key: string): string | undefined {
+  const value = getAppExtra()[key];
+  return typeof value === 'string' ? value : undefined;
 }
 
 function getApiKey(): string | null {

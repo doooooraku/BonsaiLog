@@ -1,5 +1,6 @@
 import { Linking } from 'react-native';
-import Constants from 'expo-constants';
+
+import { getAppExtra } from '@/src/core/appExtra';
 
 export type LegalLinks = {
   privacyUrl: string;
@@ -16,7 +17,7 @@ function resolveUrl(value: unknown, fallback: string): string {
 }
 
 export function getLegalLinks(extra?: Record<string, unknown>): LegalLinks {
-  const resolved = extra ?? (Constants.expoConfig ?? (Constants.manifest as any))?.extra ?? {};
+  const resolved = extra ?? getAppExtra();
   return {
     privacyUrl: resolveUrl(resolved['LEGAL_PRIVACY_URL'], 'https://example.com/privacy'),
     termsUrl: resolveUrl(resolved['LEGAL_TERMS_URL'], 'https://example.com/terms'),

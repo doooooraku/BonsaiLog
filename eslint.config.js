@@ -37,6 +37,13 @@ module.exports = defineConfig([
         'error',
         { checksVoidReturn: { attributes: false } },
       ],
+      // PR 3-1b: any 由来値の unsafe 操作(代入/メンバ参照/呼出/返却/引数)を error 化。
+      // any の伝播を境界で堰き止め、god 分割(Phase 4)時の型崩れを検出する。
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
+      '@typescript-eslint/no-unsafe-argument': 'error',
     },
   },
   // S3 (2026-05-13): import/no-cycle を error 化 (ADR-0024 Phase G retro より)。
