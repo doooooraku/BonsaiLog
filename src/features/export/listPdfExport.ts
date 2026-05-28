@@ -16,7 +16,12 @@
  */
 
 import { escapeHtml } from './pdfExport';
-import type { BarDatum, ListReportBars, ListReportSummary } from './listPdfReport';
+import type {
+  BarDatum,
+  ListReportBars,
+  ListReportHeatmap,
+  ListReportSummary,
+} from './listPdfReport';
 
 /** リスト 1 行分の盆栽データ。 */
 export type BonsaiListRow = {
@@ -78,6 +83,23 @@ export type ListReportTextsP1 = {
   chartPerMonth: string;
 };
 
+/** ヒートマップ用の i18n テキスト (Phase 2)。 */
+export type ListReportTextsHeatmap = {
+  title: string;
+  legend: string;
+  legendLess: string;
+  legendMore: string;
+  monthTotal: string;
+  topMonths: string;
+  noData: string;
+};
+
+/** ヒートマップ ブロック (Phase 2、省略可)。 */
+export type ListReportHeatmapBlock = {
+  data: ListReportHeatmap;
+  texts: ListReportTextsHeatmap;
+};
+
 /**
  * 表紙のリッチ化ブロック (Phase 1)。
  * 省略時は従来どおり「タイトル + リスト表 + 統計」のみ (後方互換)。
@@ -86,7 +108,68 @@ export type ListReportBlock = {
   summary: ListReportSummary;
   bars: ListReportBars;
   texts: ListReportTextsP1;
+  /** お世話ヒートマップ (Phase 2)。省略時は非表示。 */
+  heatmap?: ListReportHeatmapBlock;
 };
+
+/** ヒートマップ色 5 段階 (緑単色の明度、色相 1 系統で色覚多様性配慮 + 達成バッジ感回避)。 */
+const HEATMAP_LEVEL_COLOR: readonly string[] = [
+  '#F5F5F0', // 0: 記録なし (ほぼ無色)
+  '#DCE6DA', // 1: 少
+  '#B4CDB0', // 2: やや少
+  '#7FA877', // 3: やや多
+  '#4F6B2A', // 4: 多 (ブランド緑)
+];
+
+/** YYYY-MM → 月ラベル (MM のみ、列幅節約)。 */
+function monthLabelShort(month: string): string {
+  return month.slice(5, 7);
+}
+
+/**
+ * お世話ヒートマップ (木 × 月、色は件数の事実表示・凡例で明記、各マスに件数併記)。
+ * 月軸が空 (期間に記録なし) は NoData メッセージのみ。
+ */
+function renderHeatmap(block: ListReportHeatmapBlock): string {
+  const { data, texts } = block;
+  if (data.months.length === 0 || data.rows.length === 0) {
+    return `<h2>${escapeHtml(texts.title)}</h2>
+  <p>${escapeHtml(texts.noData)}</p>`;
+  }
+  const headCells = data.months
+    .map((m) => `<th class="hm-mon">${escapeHtml(monthLabelShort(m))}</th>`)
+    .join('');
+  const bodyRows = data.rows
+    .map((r) => {
+      const cells = r.cells
+        .map((c) => {
+          const color = HEATMAP_LEVEL_COLOR[c.level] ?? HEATMAP_LEVEL_COLOR[0];
+          const text = c.count > 0 ? String(c.count) : '';
+          return `<td class="hm-cell lv${c.level}" style="background:${color}">${text}</td>`;
+        })
+        .join('');
+      return `<tr><td class="hm-name">${escapeHtml(r.name)}</td>${cells}</tr>`;
+    })
+    .join('\n');
+  const totalCells = data.monthTotals.map((n) => `<td>${n}</td>`).join('');
+  const swatches = HEATMAP_LEVEL_COLOR.map(
+    (c) => `<span class="sw" style="background:${c}"></span>`,
+  ).join('');
+  const topMonthsText = data.topMonths
+    .map((x) => `${escapeHtml(x.month)} (${x.count})`)
+    .join(' · ');
+
+  return `<h2>${escapeHtml(texts.title)}</h2>
+  <table class="heatmap">
+    <thead><tr><th class="hm-name"></th>${headCells}</tr></thead>
+    <tbody>
+${bodyRows}
+      <tr class="hm-total"><td class="hm-name">${escapeHtml(texts.monthTotal)}</td>${totalCells}</tr>
+    </tbody>
+  </table>
+  <div class="hm-legend">${escapeHtml(texts.legendLess)} ${swatches} ${escapeHtml(texts.legendMore)}<span class="hm-legend-note">${escapeHtml(texts.legend)}</span></div>
+  ${topMonthsText ? `<p class="hm-top">${escapeHtml(texts.topMonths)}: ${topMonthsText}</p>` : ''}`;
+}
 
 /** サマリーカード 4 枚 (盆栽総数 / 樹種数 / 樹形数 / 通算記録)。 */
 function renderSummaryCards(summary: ListReportSummary, texts: ListReportTextsP1): string {
@@ -148,6 +231,7 @@ export function buildBonsaiListPdfHtml(input: {
       renderBarChart(report.texts.chartSpecies, report.bars.perSpecies) +
       renderBarChart(report.texts.chartPerMonth, report.bars.perMonth)
     : '';
+  const heatmapHtml = report?.heatmap ? renderHeatmap(report.heatmap) : '';
   const subtitle = texts.coverSubtitleTemplate.replace('{count}', String(bonsaiList.length));
   const totalText = texts.statsTotalLabel.replace('{count}', String(stats.totalEvents));
   const typeBreakdownItems = formatBreakdown(stats.typeBreakdown);
@@ -195,6 +279,17 @@ export function buildBonsaiListPdfHtml(input: {
   .bar-track { flex: 1; height: 10pt; background: #EFEAE4; border-radius: 2px; overflow: hidden; }
   .bar-fill { display: block; height: 100%; background: #4F6B2A; border-radius: 2px; min-width: 1px; }
   .bar-count { width: 46pt; text-align: right; font-variant-numeric: tabular-nums; color: #444; }
+  table.heatmap { border-collapse: collapse; width: 100%; font-size: 7pt; table-layout: fixed; margin: 8pt 0; }
+  table.heatmap th, table.heatmap td { border: 1px solid #FFFFFF; padding: 2pt 0; text-align: center; font-variant-numeric: tabular-nums; }
+  table.heatmap th.hm-mon { color: #888; font-weight: 500; background: transparent; }
+  table.heatmap .hm-name { width: 24%; text-align: left; font-size: 8pt; border: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 4pt; }
+  table.heatmap .hm-cell { color: #1A1A1A; }
+  table.heatmap .hm-cell.lv3, table.heatmap .hm-cell.lv4 { color: #FFFFFF; }
+  table.heatmap .hm-total td { font-weight: 600; background: #F5F5F0; color: #444; }
+  .hm-legend { display: flex; align-items: center; gap: 4pt; flex-wrap: wrap; font-size: 8pt; color: #666; margin-top: 6pt; }
+  .hm-legend .sw { width: 12pt; height: 12pt; border-radius: 2px; display: inline-block; }
+  .hm-legend-note { margin-left: 8pt; }
+  .hm-top { font-size: 9pt; color: #444; margin-top: 6pt; }
   table { border-collapse: collapse; width: 100%; font-size: 10pt; margin: 8pt 0; }
   th, td { border: 1px solid #E0E0E0; padding: 6px 8px; text-align: left; vertical-align: top; }
   th { background: #F5F8F5; font-weight: 600; }
@@ -212,6 +307,8 @@ export function buildBonsaiListPdfHtml(input: {
     <p class="meta">${escapeHtml(texts.generatedAtLabel)} ${escapeHtml(texts.generatedAtValue)}</p>
     ${coverExtra}
   </div>
+
+  ${heatmapHtml}
 
   <h2>${escapeHtml(texts.listSectionTitle)}</h2>
   ${

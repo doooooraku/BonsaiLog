@@ -915,5 +915,12 @@ const de: Partial<Record<TranslationKey, string>> = {
   exportListPdfChartSpecies: 'Species composition',
   exportListPdfChartPerMonth: 'Records by month',
   exportListPdfChartOthers: 'Others ({count})',
+  exportListPdfHeatmapTitle: 'Activity by month',
+  exportListPdfHeatmapLegend: 'Cell color shows the number of records (a fact, not a score).',
+  exportListPdfHeatmapLegendLess: 'Fewer',
+  exportListPdfHeatmapLegendMore: 'More',
+  exportListPdfHeatmapMonthTotal: 'Monthly total',
+  exportListPdfHeatmapTopMonths: 'Top months',
+  exportListPdfHeatmapNoData: 'No records in this period',
 };
 export default de;

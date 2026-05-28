@@ -3,8 +3,10 @@
  */
 import {
   buildListReportBars,
+  buildListReportHeatmap,
   buildListReportSummary,
   buildMonthAxis,
+  heatmapLevel,
   type ListReportBonsaiInput,
   type ListReportEventInput,
   monthAxisFromEvents,
@@ -173,5 +175,87 @@ describe('buildListReportBars', () => {
     const bars = buildListReportBars([bonsai({ id: 'b1' })], [], { ...opts, months: ['2026-01'] });
     expect(bars.perBonsai[0]).toMatchObject({ count: 0, pct: 0 });
     expect(bars.perMonth[0]).toMatchObject({ count: 0, pct: 0 });
+  });
+});
+
+describe('heatmapLevel', () => {
+  test('0 件は常に level 0', () => {
+    expect(heatmapLevel(0, 10)).toBe(0);
+  });
+  test('maxCell=0 は level 0 (ゼロ除算なし)', () => {
+    expect(heatmapLevel(5, 0)).toBe(0);
+  });
+  test('相対量子化 (max 基準で 4 段階)', () => {
+    expect(heatmapLevel(2, 8)).toBe(1); // 25%
+    expect(heatmapLevel(4, 8)).toBe(2); // 50%
+    expect(heatmapLevel(6, 8)).toBe(3); // 75%
+    expect(heatmapLevel(8, 8)).toBe(4); // 100%
+    expect(heatmapLevel(7, 8)).toBe(4); // >75%
+  });
+});
+
+describe('buildListReportHeatmap', () => {
+  const months = ['2026-01', '2026-02', '2026-03'];
+
+  test('木 × 月 のマトリクス + 行は件数合計の降順', () => {
+    const hm = buildListReportHeatmap(
+      [bonsai({ id: 'b1', name: 'A' }), bonsai({ id: 'b2', name: 'B' })],
+      [
+        ev({ bonsaiId: 'b1', occurredAtUtc: '2026-01-05T01:00:00.000Z' }),
+        ev({ bonsaiId: 'b1', occurredAtUtc: '2026-03-05T01:00:00.000Z' }),
+        ev({ bonsaiId: 'b1', occurredAtUtc: '2026-03-06T01:00:00.000Z' }),
+        ev({ bonsaiId: 'b2', occurredAtUtc: '2026-02-05T01:00:00.000Z' }),
+      ],
+      months,
+    );
+    expect(hm.months).toEqual(months);
+    // A(3件) が B(1件) より上
+    expect(hm.rows.map((r) => r.name)).toEqual(['A', 'B']);
+    expect(hm.rows[0]?.total).toBe(3);
+    expect(hm.rows[0]?.cells.map((c) => c.count)).toEqual([1, 0, 2]); // Jan/Feb/Mar
+  });
+
+  test('月別合計 + 上位月 (降順・最大3・0件除外)', () => {
+    const hm = buildListReportHeatmap(
+      [bonsai({ id: 'b1' })],
+      [
+        ev({ occurredAtUtc: '2026-01-05T01:00:00.000Z' }),
+        ev({ occurredAtUtc: '2026-03-05T01:00:00.000Z' }),
+        ev({ occurredAtUtc: '2026-03-06T01:00:00.000Z' }),
+      ],
+      months,
+    );
+    expect(hm.monthTotals).toEqual([1, 0, 2]);
+    expect(hm.topMonths).toEqual([
+      { month: '2026-03', count: 2 },
+      { month: '2026-01', count: 1 },
+    ]); // Feb(0)は除外
+  });
+
+  test('maxCell に応じた level 付与', () => {
+    const hm = buildListReportHeatmap(
+      [bonsai({ id: 'b1' })],
+      [
+        ev({ occurredAtUtc: '2026-01-05T01:00:00.000Z' }),
+        ev({ occurredAtUtc: '2026-03-05T01:00:00.000Z' }),
+        ev({ occurredAtUtc: '2026-03-06T01:00:00.000Z' }),
+        ev({ occurredAtUtc: '2026-03-07T01:00:00.000Z' }),
+        ev({ occurredAtUtc: '2026-03-08T01:00:00.000Z' }),
+      ],
+      months,
+    );
+    expect(hm.maxCell).toBe(4); // Mar=4
+    const marCell = hm.rows[0]?.cells[2];
+    const janCell = hm.rows[0]?.cells[0];
+    expect(marCell).toMatchObject({ count: 4, level: 4 });
+    expect(janCell).toMatchObject({ count: 1, level: 1 }); // 1/4=25%
+  });
+
+  test('月軸が空 → 空マトリクス (maxCell 0)', () => {
+    const hm = buildListReportHeatmap([bonsai({ id: 'b1' })], [], []);
+    expect(hm.months).toEqual([]);
+    expect(hm.maxCell).toBe(0);
+    expect(hm.rows[0]?.cells).toEqual([]);
+    expect(hm.topMonths).toEqual([]);
   });
 });

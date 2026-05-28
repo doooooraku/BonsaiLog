@@ -36,6 +36,7 @@ import { buildExportFileName, type ExportKind } from './exportFileName';
 import { type BonsaiListRow, buildBonsaiListPdfHtml, type ListPdfStats } from './listPdfExport';
 import {
   buildListReportBars,
+  buildListReportHeatmap,
   buildListReportSummary,
   type ListReportBonsaiInput,
   type ListReportEventInput,
@@ -290,6 +291,7 @@ export async function loadListPdfHtml(
     months,
     othersLabelTemplate: t('exportListPdfChartOthers'),
   });
+  const heatmap = buildListReportHeatmap(reportBonsai, reportEvents, months);
 
   const generatedAt = (nowUtc() as string).slice(0, 16).replace('T', ' ');
   const html = buildBonsaiListPdfHtml({
@@ -322,6 +324,18 @@ export async function loadListPdfHtml(
         chartPerBonsai: t('exportListPdfChartPerBonsai'),
         chartSpecies: t('exportListPdfChartSpecies'),
         chartPerMonth: t('exportListPdfChartPerMonth'),
+      },
+      heatmap: {
+        data: heatmap,
+        texts: {
+          title: t('exportListPdfHeatmapTitle'),
+          legend: t('exportListPdfHeatmapLegend'),
+          legendLess: t('exportListPdfHeatmapLegendLess'),
+          legendMore: t('exportListPdfHeatmapLegendMore'),
+          monthTotal: t('exportListPdfHeatmapMonthTotal'),
+          topMonths: t('exportListPdfHeatmapTopMonths'),
+          noData: t('exportListPdfHeatmapNoData'),
+        },
       },
     },
   });

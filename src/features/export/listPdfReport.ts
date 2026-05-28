@@ -183,3 +183,85 @@ export function buildListReportBars(
     perMonth: toBars(perMonth),
   };
 }
+
+// ---------------------------------------------------------------------------
+// Phase 2: お世話ヒートマップ (木 × 月の作業件数)
+// ---------------------------------------------------------------------------
+
+/** ヒートマップ 1 マス。count = 件数 (一次情報)、level = 色段階 (副次)。 */
+export type HeatmapCell = { count: number; level: 0 | 1 | 2 | 3 | 4 };
+
+/** 木 × 月 ヒートマップ (P2)。 */
+export type ListReportHeatmap = {
+  /** 列 = 月軸 (YYYY-MM)。 */
+  months: string[];
+  /** 行 = 盆栽 (件数合計の降順)。 */
+  rows: { bonsaiId: string; name: string; cells: HeatmapCell[]; total: number }[];
+  /** 月別合計 (列ごと、months と同順)。 */
+  monthTotals: number[];
+  /** 記録の多い月 (降順、最大 3、0 件は除外)。 */
+  topMonths: { month: string; count: number }[];
+  /** level 算出の基準となる全マス最大件数 (凡例表示用)。 */
+  maxCell: number;
+};
+
+/**
+ * 件数 → 色段階 (0-4)。達成判定ではなく「件数の多寡」の相対量子化。
+ * maxCell 基準の相対値 (各ユーザーの中での多寡を事実として示す。絶対閾値だと
+ * 水やり頻度の違うユーザー間で色が偏るため)。0 件は常に level 0。
+ */
+export function heatmapLevel(count: number, maxCell: number): 0 | 1 | 2 | 3 | 4 {
+  if (count <= 0 || maxCell <= 0) return 0;
+  const r = count / maxCell;
+  if (r <= 0.25) return 1;
+  if (r <= 0.5) return 2;
+  if (r <= 0.75) return 3;
+  return 4;
+}
+
+/**
+ * 木 × 月 のヒートマップを生成。行は件数合計の降順 (よく手をかけた木が上)。
+ * @param months 列の月軸 (呼出側が monthAxisFromEvents 等で確定、空なら空マトリクス)
+ */
+export function buildListReportHeatmap(
+  bonsai: readonly ListReportBonsaiInput[],
+  events: readonly ListReportEventInput[],
+  months: readonly string[],
+): ListReportHeatmap {
+  const monthIndex = new Map<string, number>(months.map((m, i) => [m, i]));
+  // bonsaiId → 月 index 別の件数配列。
+  const countsByBonsai = new Map<string, number[]>();
+  for (const b of bonsai) countsByBonsai.set(b.id, new Array<number>(months.length).fill(0));
+  for (const e of events) {
+    const arr = countsByBonsai.get(e.bonsaiId);
+    if (!arr) continue;
+    const mi = monthIndex.get(toLocalMonthKey(e.occurredAtUtc, e.tzOffsetMin));
+    if (mi !== undefined) arr[mi] = (arr[mi] ?? 0) + 1;
+  }
+
+  let maxCell = 0;
+  for (const arr of countsByBonsai.values()) {
+    for (const c of arr) maxCell = Math.max(maxCell, c);
+  }
+
+  const rows = bonsai
+    .map((b) => {
+      const counts = countsByBonsai.get(b.id) ?? new Array<number>(months.length).fill(0);
+      return {
+        bonsaiId: b.id,
+        name: b.name,
+        total: counts.reduce((s, c) => s + c, 0),
+        cells: counts.map((c) => ({ count: c, level: heatmapLevel(c, maxCell) })),
+      };
+    })
+    .sort((a, b) => b.total - a.total);
+
+  const monthTotals = months.map((_, i) => rows.reduce((s, r) => s + (r.cells[i]?.count ?? 0), 0));
+  const topMonths = months
+    .map((m, i) => ({ month: m, count: monthTotals[i] ?? 0 }))
+    .filter((x) => x.count > 0)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+
+  return { months: [...months], rows, monthTotals, topMonths, maxCell };
+}

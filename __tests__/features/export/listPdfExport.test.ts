@@ -7,6 +7,7 @@ import {
   type BonsaiListRow,
   type ListPdfStats,
   type ListPdfTexts,
+  type ListReportHeatmapBlock,
 } from '@/src/features/export/listPdfExport';
 
 function makeRow(overrides: Partial<BonsaiListRow> = {}): BonsaiListRow {
@@ -310,5 +311,129 @@ describe('report ブロック (Phase 1: サマリーカード + 棒グラフ)', 
     });
     expect(html).toContain('&lt;b&gt;x&lt;/b&gt;');
     expect(html).not.toContain('<b>x</b>');
+  });
+});
+
+describe('report.heatmap (Phase 2: 色ありヒートマップ)', () => {
+  const baseTextsP1 = {
+    summaryBonsaiCount: '盆栽総数',
+    summarySpeciesCount: '樹種数',
+    summaryStyleCount: '樹形数',
+    summaryTotalRecords: '通算記録',
+    chartPerBonsai: '盆栽別の記録数',
+    chartSpecies: '樹種構成',
+    chartPerMonth: '月別の記録数',
+  };
+  const heatmapTexts = {
+    title: '月別の作業件数',
+    legend: 'セルの色は記録件数を表します（達成度ではなく事実の表示です）',
+    legendLess: '少ない',
+    legendMore: '多い',
+    monthTotal: '月別合計',
+    topMonths: '記録の多い月',
+    noData: 'この期間の記録はありません',
+  };
+  const makeReport = (heatmap?: ListReportHeatmapBlock) => ({
+    summary: { bonsaiCount: 1, speciesCount: 1, styleCount: 1, totalEvents: 3 },
+    bars: { perBonsai: [], perSpecies: [], perMonth: [] },
+    texts: baseTextsP1,
+    // exactOptionalPropertyTypes: undefined を明示代入せず、ある時だけキーを含める
+    ...(heatmap ? { heatmap } : {}),
+  });
+
+  const filledHeatmap = {
+    data: {
+      months: ['2026-01', '2026-02', '2026-03'],
+      rows: [
+        {
+          bonsaiId: 'b1',
+          name: '黒松',
+          total: 3,
+          cells: [
+            { count: 1, level: 1 as const },
+            { count: 0, level: 0 as const },
+            { count: 2, level: 4 as const },
+          ],
+        },
+      ],
+      monthTotals: [1, 0, 2],
+      topMonths: [
+        { month: '2026-03', count: 2 },
+        { month: '2026-01', count: 1 },
+      ],
+      maxCell: 2,
+    },
+    texts: heatmapTexts,
+  };
+
+  test('ヒートマップ table + 背景色 + 件数併記 + 月ラベル(MM)', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: makeReport(filledHeatmap),
+    });
+    expect(html).toContain('月別の作業件数');
+    expect(html).toContain('class="heatmap"');
+    expect(html).toContain('background:#4F6B2A'); // level 4 の色
+    expect(html).toContain('>黒松<');
+    expect(html).toContain('>01<'); // 月ラベル MM
+    expect(html).toContain('>03<');
+    // 件数併記 (一次情報): level4 セルに 2 が入る
+    expect(html).toContain('lv4');
+  });
+
+  test('凡例: 少ない/多い + 「達成度ではなく事実」明記 (ADR-0039 配慮)', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: makeReport(filledHeatmap),
+    });
+    expect(html).toContain('class="hm-legend"');
+    expect(html).toContain('少ない');
+    expect(html).toContain('多い');
+    expect(html).toContain('達成度ではなく事実の表示です');
+  });
+
+  test('月別合計 + 上位月', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: makeReport(filledHeatmap),
+    });
+    expect(html).toContain('月別合計');
+    expect(html).toContain('記録の多い月');
+    expect(html).toContain('2026-03 (2)');
+  });
+
+  test('月軸が空 → NoData メッセージのみ (table なし)', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: makeReport({
+        data: { months: [], rows: [], monthTotals: [], topMonths: [], maxCell: 0 },
+        texts: heatmapTexts,
+      }),
+    });
+    expect(html).toContain('この期間の記録はありません');
+    expect(html).not.toContain('class="heatmap"');
+  });
+
+  test('heatmap 省略時はヒートマップを描かない (後方互換)', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: {
+        summary: makeReport(undefined).summary,
+        bars: makeReport(undefined).bars,
+        texts: baseTextsP1,
+      },
+    });
+    expect(html).not.toContain('class="heatmap"');
+    expect(html).not.toContain('月別の作業件数');
   });
 });

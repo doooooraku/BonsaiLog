@@ -432,6 +432,33 @@ v1.0 では非採用。running header で「ぶつ切り」感を解消する方
   `exportPdfHoldingYears` キー (19 言語) を削除。
 - **動線追加**: ふりかえり Hub にエクスポート card (ADR-0020 §Notes Amended 2026-05-27 参照)。
 
+### Amended（2026-05-28 Sess51、list_pdf リッチレポート化 3 フェーズ + ヒートマップ例外）
+
+`list_pdf` (全盆栽リスト PDF) を素レイアウト (タイトル + 4 列テーブル + 箇条書き統計) から、
+ClaudeDesign モック「PDF List Report」相当の俯瞰レポートへ強化 (Issue #33、`/discuss` 確定)。
+**今あるデータ + 純 CSS のみ**で実装し、写真導入フェーズだけ既存 3 段階フォールバックを配線する
+**段階導入 (3 フェーズ)**:
+
+- **Phase 1 (写真なし)**: 表紙にサマリーカード 4 枚 (盆栽総数 / 樹種数 / 樹形数 / 通算記録) +
+  CSS 棒グラフ 3 種 (盆栽別累計 / 樹種構成 / 月別)。集計は新規純関数 `listPdfReport.ts` に分離
+  (`bonsaiPdfReport.ts` と同パターン)。`buildBonsaiListPdfHtml` に optional `report` 追加で後方互換。
+  events を **status='logged' のみ**に絞り集計母数を確定 (species_csv と整合、旧コードは status 無視だった)。
+  月キーは `toLocalDateKey` (各 event の tzOffsetMin) 流用で TZ 整合。盆栽別棒は上位 15 +「その他」集約。
+- **Phase 2 (写真なし)**: 色ありヒートマップ (木 × 月の作業件数) + 月別合計 + 上位月 + 凡例。
+  **ヒートマップ採用は ADR-0039 (水やりヒートマップ撤廃) の例外**として ADR-0039 Notes に明文化
+  (常設 UI でない / 判定でない / 凡例で事実表示明記 + 件数併記)。色は緑単色明度 5 段階・相対量子化。
+- **Phase 3 (写真あり)**: カタログ (盆栽カード画像=`getCoverPhoto` 流用、無写真は CSS 単色プレースホルダー +
+  種別内訳 + 累計 + 入手日)。写真導入により `generateAndShareListPdf` を 3 段階フォールバック版へ、
+  `loadListPdfHtml` を attempt 別ファクトリ `prepareListPdf` 化 (`prepareBonsaiPdf` 踏襲)。プレビューは
+  写真なし (多写真プレビュー真っ白の Sess50 既知問題回避)。
+
+期間整合: 棒グラフ月別 / ヒートマップは選択 period の logged events から月軸を導出 (連続月・0 埋め・
+直近 24 ヶ月クランプ) し、両者で同一月軸を共有。母数は `resolveBonsaiSet` の同一母集合 (archived は
+include トグル準拠)。グラフ / ヒートマップは純 CSS (WebView JS 無効 + expo-print) で新規依存なし。
+
+恒久策: モック参照 PR は「モック要素 × 対応 ADR × 採否」の照合を必須化 (完成度の高い下書きを「正」と
+誤認する事故=本件ヒートマップ復活 / F-10 冒頭の全機能 Free 誤認の再発防止)。
+
 ### Follow-ups（後でやる宿題）
 
 - [ ] `docs/reference/functional_spec.md` §15 全面補強 (Repolog 流用 + 7 画面構成 + 5 種類詳細 + フォールバック仕様 + ファイル名規則 + Android SAF + Y4 個別選択機能)
