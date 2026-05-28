@@ -40,8 +40,8 @@ characterization テスト + **TS strict 4フラグ** + **ESLint `strict-type-ch
 - 拡充: `__tests__/db/eventRepository.test.ts` / `__tests__/db.test.ts` / `__tests__/db/tagRepository.test.ts`
 - 新規: `__tests__/db/bonsaiRepository.test.ts` / `photoRepository.test.ts` / `speciesRepository.test.ts` / `bonsaiSpeciesCustomRepository.test.ts` / `bonsaiStylesCustomRepository.test.ts`
 - 新規: `__tests__/features/backup/backupService.test.ts` / `__tests__/features/export/exportFlow.test.ts`
-- 新規(god 描画 smoke): `__tests__/screens/*.test.tsx`(10 god の render + 主要要素存在)
-- 新規(Maestro critical): `maestro/flows/characterization/*.yml`(god 正常系、既存flow で覆えるものは再利用)
+- ~~新規(god 描画 smoke): `__tests__/screens/*.test.tsx`~~ → **Maestro に統合**(RTL 基盤不在 + god は I/O 融合のため分割前 RTL は使い捨て。Phase 4 分割後に導入)
+- 新規(Maestro critical): `maestro/flows/characterization/*.yml`(god 正常系 + 「クラッシュ/主要要素」検証統合、既存flow で覆えるものは再利用)
 
 **Step 2(TS strict)**:
 
@@ -87,15 +87,15 @@ Before                                  After (Phase 3 完了)
 
 ### Step 1: characterization tests(PR 1-1 〜 1-5)
 
-| PR  | 内容                                                                                                                            |
-| --- | ------------------------------------------------------------------------------------------------------------------------------- |
-| 1-1 | db repo characterization(eventRepository 拡充、14種別 CRUD)                                                                     |
-| 1-2 | db.ts migration + bonsai/photo/tag/species repos                                                                                |
-| 1-3 | backupService + exportFlow characterization(round-trip + period/scope/tag)                                                      |
-| 1-4 | god 描画 smoke ×10(`@testing-library/react-native`)                                                                             |
-| 1-5 | Maestro critical flows(`maestro/flows/characterization/`、既存60本で覆えない god の正常系のみ。日本語 flow は en seed/既存流用) |
+| PR  | 内容                                                                                                                                                                                                                                                                                                                                            |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-1 | db repo characterization(eventRepository 拡充、14種別 CRUD)                                                                                                                                                                                                                                                                                     |
+| 1-2 | db.ts migration + bonsai/photo/tag/species repos                                                                                                                                                                                                                                                                                                |
+| 1-3 | backupService + exportFlow characterization(round-trip + period/scope/tag)                                                                                                                                                                                                                                                                      |
+| 1-4 | ~~god 描画 smoke ×10(RTL)~~ → **Maestro に統合**(2026-05-28 決定)。理由: repo に RTL screen render 基盤が無く、god screen は I/O 融合で**分割前のフル RTL は使い捨て**。RTL render-smoke は **Phase 4 で god を分割し prop 駆動 presentational が安く render できるようになってから**導入(同じ根本原因の 3 回目の再発 → P3-11 規約化の裏付け)。 |
+| 1-5 | Maestro critical flows(`maestro/flows/characterization/`、既存60本で覆えない god の正常系のみ。日本語 flow は en seed/既存流用)。**1-4 統合により god screen の「クラッシュしない/主要要素表示」検証もここに含める。**                                                                                                                          |
 
-合計 **characterization ≥ 30 本(jest)**+ Maestro critical ~10本。
+合計 **characterization 累計 ~107 本(jest、目標 ≥30 を大幅超過)** + Maestro critical(god screen 検証統合)。
 
 ### Step 2: TypeScript strict(PR 2-1 〜 2-3、フラグ別)
 
