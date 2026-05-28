@@ -1,6 +1,6 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Stack, useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useState } from 'react';
 import {
@@ -72,7 +72,6 @@ import { useToastStore } from '@/src/components/Toast';
 import * as Haptics from 'expo-haptics';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
-import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
 import {
   findGroupKeyForEvent,
   groupContinuousEvents,
@@ -80,19 +79,9 @@ import {
   type EventGroupEntry,
 } from '@/src/features/event/groupContinuousEvents';
 import { EventRow } from '@/src/features/event/EventRow';
-import { HistoryChipRow } from '@/src/features/event/HistoryChip';
 import { usePickerStore } from '@/src/stores/pickerStore';
-import { WiringPeriodDisplay } from '@/src/features/wiring/WiringPeriodDisplay';
-import {
-  classifyWiringDuration,
-  getDaysSinceWired,
-  getScheduledUnwireAtWithFallback,
-  getWeeksSinceWired,
-} from '@/src/features/wiring/wiringDuration';
 import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
-import { useGoToPaywall } from '@/src/features/pro/useGoToPaywall';
 import { useProStore } from '@/src/stores/proStore';
-import { useSettingsStore } from '@/src/stores/settingsStore';
 
 /**
  * 盆栽詳細画面 (P2-01 PR-D + P2-02 PR-C)。
@@ -390,8 +379,6 @@ export default function BonsaiDetailScreen() {
   }, [item, router]);
 
   const isPro = useProStore((s) => s.isPro);
-  // A9 PR: ProLockModal 整合 (Free ユーザーが PDF 等の Pro 限定機能をタップした際の Paywall 遷移)
-  const goToPaywall = useGoToPaywall();
 
   const pickAndSavePhoto = useCallback(
     async (source: 'camera' | 'library') => {
@@ -466,14 +453,6 @@ export default function BonsaiDetailScreen() {
     },
     [item, isPro, t, reload],
   );
-
-  const showAddPhotoMenu = useCallback(() => {
-    Alert.alert(t('photoAddTitle'), undefined, [
-      { text: t('photoAddCamera'), onPress: () => void pickAndSavePhoto('camera') },
-      { text: t('photoAddLibrary'), onPress: () => void pickAndSavePhoto('library') },
-      { text: t('cancel'), style: 'cancel' },
-    ]);
-  }, [pickAndSavePhoto, t]);
 
   // PhotoCard 並び替え (↑↓ ボタン): 即時 state 更新 + DB 反映 (reorderPhotos)。
   const handleMovePhoto = useCallback(
@@ -610,8 +589,6 @@ export default function BonsaiDetailScreen() {
       </ThemedView>
     );
   }
-
-  const remainingFreeSlots = isPro ? null : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - photoCount);
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: c.background }]}>

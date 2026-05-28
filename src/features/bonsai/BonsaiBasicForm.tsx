@@ -19,16 +19,14 @@
  *
  * Issue #439 で BonsaiCreateSheet から抽出。
  */
-import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { ConfirmDialog } from '@/src/components/ConfirmDialog';
-import { CameraIcon, ChevronRightIcon, PlusIcon } from '@/src/components/icons';
+import { CameraIcon, PlusIcon } from '@/src/components/icons';
 import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
@@ -691,10 +689,6 @@ export function BonsaiBasicFormFields({
     setAgeUnknown,
     memo,
     setMemo,
-    purchaseDate,
-    setPurchaseDate,
-    potInfoText,
-    setPotInfoText,
     potWidth,
     setPotWidth,
     potDepth,
@@ -715,7 +709,6 @@ export function BonsaiBasicFormFields({
     handleRemovePendingPhoto,
     handleMovePendingPhoto,
     handleTakePhotoCamera,
-    isPro,
   } = form;
 
   const showPhotoField = showPhotos && !isEdit;

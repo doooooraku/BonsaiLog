@@ -27,7 +27,6 @@ import {
   BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
-  TEXT_MUTED,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';

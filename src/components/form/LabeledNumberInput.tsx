@@ -15,7 +15,7 @@ import React from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, DANGER, OVERLIMIT } from '@/src/core/theme/colors';
+import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, DANGER } from '@/src/core/theme/colors';
 import {
   FORM_PLACEHOLDER_COLOR,
   formCounter,

@@ -50,7 +50,7 @@ function formatDate(occurredAtUtc: string, tzIana: string): string {
 export function buildSpeciesSummaryRows(
   bonsai: readonly SpeciesSummaryBonsai[],
   events: readonly SpeciesSummaryEvent[],
-  t: Tfn,
+  _t: Tfn,
   unsetLabel: string,
 ): string[][] {
   // bonsaiId → 樹種名 (未設定は unsetLabel)

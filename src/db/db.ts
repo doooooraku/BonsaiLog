@@ -35,7 +35,6 @@ import {
   schemaV11,
   schemaV12,
   schemaV13,
-  schemaV14,
 } from './schema';
 import { SPECIES_SEED, SPECIES_SEED_IDS } from './seedSpecies';
 

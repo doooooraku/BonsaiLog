@@ -42,7 +42,6 @@ import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
   BG_PRIMARY,
-  BG_SURFACE,
   BORDER_DEFAULT,
   ON_BRAND,
   TEXT_PRIMARY,
