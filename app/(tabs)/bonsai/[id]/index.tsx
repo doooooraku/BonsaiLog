@@ -24,6 +24,7 @@ import {
   useBonsaiBasicForm,
 } from '@/src/features/bonsai/BonsaiBasicForm';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
+import { formatDate } from '@/src/features/bonsai/detail/dateFormat';
 import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
 import { PhotoUndoBanner } from '@/src/features/bonsai/PhotoUndoBanner';
 import {
@@ -1068,15 +1069,6 @@ export default function BonsaiDetailScreen() {
   // Sess27 PR-5: kebab tap (Haptics なし、 個別 row 代替動線)
   function kebabDeleteEvent(ev: Event) {
     setPendingDeleteId(ev.id);
-  }
-}
-
-function formatDate(iso: string, locale: string): string {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString(locale === 'ja' ? 'ja-JP' : locale);
-  } catch {
-    return iso;
   }
 }
 
