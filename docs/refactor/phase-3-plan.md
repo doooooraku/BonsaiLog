@@ -141,8 +141,27 @@ Before                                  After (Phase 3 完了)
 - [ ] `pnpm knip`: **0**(偽陽性 ignore 込み)
 - [ ] `maestro test maestro/flows/characterization/`: critical flow 全 green(実機)
 - [ ] `.github/workflows/refactor-guard.yml` 設定済
-- [ ] **挙動不変**: `src/**` のロジック変更ゼロを git diff で確認
+- [ ] **挙動不変**: `src/**` の**ロジック**変更ゼロ。例外として「テスト容易化のための seam 露出」(挙動不変な `export` 追加 / 純粋関数抽出)は許容。これは根本原因対策(functional-core / imperative-shell 分離)であり対処療法ではない。実例: `backupService.buildManifestFromDb` を export 化(1語追加)。
 - [ ] `master-plan.md` の Phase 3 節を本拡張版に更新
+
+---
+
+## 根本原因対策 — backup/export の層分けテスト方針(2026-05-28 改訂)
+
+**なぜなぜ分析の結論**: 純粋ロジックが native I/O(zip/unzip/共有/picker/写真コピー)と monolithic 関数内で融合し、テスト容易性を要求する強制力が無かった(static+Maestro-only 戦略 + 実 DB harness 不在)ため「テスト不能な形」が既定化していた。backupService はその最も極端な症例。
+
+**恒久策(対処療法ではない)**:
+
+| 対象                                                                                       | テスト層                                                           | 理由                                                               |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `exportFlow` の DB orchestration(resolvePeriodRange / loadCsvForPreview / loadListPdfHtml) | **jest characterization(56.66%)**                                  | FS/Sharing 非依存、実 DB で高再現度                                |
+| `backupService.buildManifestFromDb`(DB→manifest シリアライズ核)                            | **jest characterization**                                          | export 化した functional core、実 DB で検証                        |
+| `backupService` の I/O shell(exportBackup/importBackup の zip/共有/picker/写真コピー)      | **Maestro 実機(PR 1-5)+ 既存 `backupCoverage` fail-closed ガード** | zip 往復・ファイル操作は mock では低再現度、実機が faithful        |
+| `importBackup` の DB-apply 核(現在は写真コピーと同一 transaction に融合)                   | **Phase 4 で functional-core 抽出 → その時 jest 化**               | 最高リスク(ユーザーデータ経路)を網無しに改修しない(Strangler 原則) |
+
+**規約化(再発防止、P3-11 で `docs/architecture.md` に明記)**: feature ロジックは I/O-free な functional-core として分離・export・単体テスト必須。native I/O は薄い imperative-shell に隔離し Maestro で検証。CI ガード起案も P3-11 で検討。
+
+> ゆえに「backupService ≥50% jest」は **層分け DoD** に置換: 核は jest、shell は Maestro + fail-closed ガード。mock で数字を作る(対処療法)も放置もしない。
 
 ---
 

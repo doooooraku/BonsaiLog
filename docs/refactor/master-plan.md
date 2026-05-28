@@ -136,7 +136,7 @@ Before (現状)                          After (Phase 3 完了時)
 **成功判定基準**:
 
 - [ ] `src/db/**` カバレッジ ≥ 60%
-- [ ] `backupService.ts` + `exportFlow.ts` カバレッジ ≥ 50%
+- [ ] `exportFlow.ts` カバレッジ ≥ 50% / `backupService` は **層分け**: 核(`buildManifestFromDb`)= jest、I/O shell = Maestro + fail-closed `backupCoverage` ガード(根本原因対策、`phase-3-plan.md` 参照)。import-apply 核の jest 化は Phase 4(下記 F5)。
 - [ ] `pnpm verify:dead`(knip)CI で green
 - [ ] `eslint-plugin-boundaries` が 7 violation すべて warning として出力
 - [ ] `docs/architecture.md` が main に存在(Rule 9 参照可能)
@@ -198,10 +198,11 @@ Before (現状)                          After (Phase 3 完了時)
 
 #### Phase 4c: 下位 2件(計 2 PR)
 
-| ID  | 対象                              | 行数 → 目標    | 抽出ポイント                                                              | ADR 制約                                                                 |
-| --- | --------------------------------- | -------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| C1  | `src/features/event/EventRow.tsx` | 609 → 各 ≤ 350 | `EventRowCompact` / `EventRowDetailed`(default export は thin dispatcher) | **ADR-0041 display mode matrix 厳守**、写真 strip + memo expand 仕様不変 |
-| C2  | `app/(tabs)/plan/wiring.tsx`      | 353 → ≤ 200    | `useWiringRows`(data + status 計算) / `WiringStatusBadge`                 | F-07 仕様準拠                                                            |
+| ID  | 対象                                          | 行数 → 目標            | 抽出ポイント                                                                                                                                                                                                            | ADR 制約                                                                                                                                          |
+| --- | --------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | `src/features/event/EventRow.tsx`             | 609 → 各 ≤ 350         | `EventRowCompact` / `EventRowDetailed`(default export は thin dispatcher)                                                                                                                                               | **ADR-0041 display mode matrix 厳守**、写真 strip + memo expand 仕様不変                                                                          |
+| C2  | `app/(tabs)/plan/wiring.tsx`                  | 353 → ≤ 200            | `useWiringRows`(data + status 計算) / `WiringStatusBadge`                                                                                                                                                               | F-07 仕様準拠                                                                                                                                     |
+| C3  | `src/features/backup/backupService.ts`(879行) | shell ≤ 300 + 核を分離 | **F5(Phase3 根本原因対策の続き)**: `importBackup` の DB-apply 核を写真ファイルコピーから分離し純粋な `applyImportPlan(db, plan)` として抽出 → jest characterize。zip/picker/share/photo-copy は imperative shell に残す | **ADR-0007 厳守(ユーザーデータ経路、最高リスク)**。Phase3 で張った `buildManifestFromDb` jest + `backupCoverage` fail-closed + Maestro を網に改修 |
 
 **Phase 4 想定変更行数**:
 
