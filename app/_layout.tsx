@@ -82,7 +82,7 @@ export default function RootLayout() {
   const proInitialized = useProStore((s) => s.initialized);
 
   useEffect(() => {
-    initPro();
+    void initPro();
   }, [initPro]);
 
   // F-16 (Issue #30, ADR-0014 Amended): Android 通知チャネル (DAILY_SUMMARY) を起動時に確保。

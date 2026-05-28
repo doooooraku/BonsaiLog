@@ -27,7 +27,7 @@ export const BONSAI_CSV_HEADER_KEYS: readonly TranslationKey[] = [
 function parsePot(potInfoStr: string | null | undefined): Record<string, unknown> | null {
   if (!potInfoStr) return null;
   try {
-    const v = JSON.parse(potInfoStr);
+    const v: unknown = JSON.parse(potInfoStr);
     return typeof v === 'object' && v !== null ? (v as Record<string, unknown>) : null;
   } catch {
     return null;

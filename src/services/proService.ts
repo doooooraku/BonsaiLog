@@ -1,5 +1,4 @@
 import { Platform } from 'react-native';
-import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import Purchases, {
   LOG_LEVEL,
@@ -10,6 +9,7 @@ import Purchases, {
 } from 'react-native-purchases';
 
 import type { PlanKind, ProState } from '@/src/types/models';
+import { getAppExtra } from '@/src/core/appExtra';
 import { IAP_DEBUG } from '@/src/core/debug';
 
 export type PlanType = 'monthly' | 'yearly' | 'lifetime';
@@ -38,10 +38,9 @@ let configured = false;
 
 const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
 
-function getExtraValue(key: string) {
-  const expoConfig = Constants.expoConfig ?? Constants.manifest;
-  const extra = (expoConfig as any)?.extra ?? {};
-  return extra?.[key];
+function getExtraValue(key: string): string | undefined {
+  const value = getAppExtra()[key];
+  return typeof value === 'string' ? value : undefined;
 }
 
 function getApiKey(): string | null {
@@ -103,7 +102,7 @@ async function ensureConfigured() {
     throw new Error('RevenueCat API key is missing.');
   }
 
-  Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+  void Purchases.setLogLevel(LOG_LEVEL.DEBUG);
   await Purchases.configure({ apiKey });
   if (IAP_DEBUG) {
     console.log('[RC] configured');
@@ -234,9 +233,14 @@ export const proService = {
       await saveState(state);
       onUpdate(state);
     };
-    Purchases.addCustomerInfoUpdateListener(handler);
+    // listener は void 返却を期待するため、async handler を void 包みで登録/解除する
+    // (add/remove で同一参照を渡す必要があるので wrapper を共有)。
+    const voidHandler = (info: CustomerInfo) => {
+      void handler(info);
+    };
+    Purchases.addCustomerInfoUpdateListener(voidHandler);
     return () => {
-      Purchases.removeCustomerInfoUpdateListener(handler);
+      Purchases.removeCustomerInfoUpdateListener(voidHandler);
     };
   },
 

@@ -13,6 +13,39 @@ module.exports = defineConfig([
       'docs/mockups/**', // OpenDesign 生成物 (凍結保管、BonsaiLog 規則の対象外)
     ],
   },
+  // Phase 3 Step 3 (PR 3-1a): typed-linting で async 安全ルールを error 化。
+  // god 分割(Phase 4)前の安全網。await 漏れ(floating promise)/ Promise 誤用を型情報で検出。
+  // projectService=高速 API(tsconfig 自動探索)。
+  // 注1: eslint-config-expo が既に @typescript-eslint プラグインを登録済みのため、プラグイン再登録
+  //      ("Cannot redefine plugin") を避け、rules のみ指定する(tseslint は parserOptions 用に require)。
+  // 注2: strict-type-checked プリセット全体は 597 errors(大半が整形系)で安全網の目的外のため不採用。
+  //      安全網に資する named rule のみを段階導入する(PR 3-1a=async / PR 3-1b=no-unsafe-*)。
+  {
+    files: ['src/**/*.{ts,tsx}', 'app/**/*.{ts,tsx}'],
+    languageOptions: {
+      // projectService=tsconfig 自動探索(tsconfigRootDir 省略時は cwd=リポジトリ root)。
+      parserOptions: {
+        projectService: true,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'error',
+      // checksVoidReturn.attributes=false: JSX 属性(onPress 等)の async handler は
+      // RN では fire-and-forget が慣例で安全。void 包みは実保護を足さず churn のみのため対象外化。
+      // property / argument / 条件式での Promise 誤用(実害が出やすい)は引き続き error 検出。
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        { checksVoidReturn: { attributes: false } },
+      ],
+      // PR 3-1b: any 由来値の unsafe 操作(代入/メンバ参照/呼出/返却/引数)を error 化。
+      // any の伝播を境界で堰き止め、god 分割(Phase 4)時の型崩れを検出する。
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
+      '@typescript-eslint/no-unsafe-argument': 'error',
+    },
+  },
   // S3 (2026-05-13): import/no-cycle を error 化 (ADR-0024 Phase G retro より)。
   // 型循環依存 (Store ↔ Screen) を静的に検出。型は Store 側で定義する規約は AGENTS.md。
   {

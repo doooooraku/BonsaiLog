@@ -1,0 +1,47 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["app/**/*.{ts,tsx}", "__tests__/**/*.{ts,tsx,js}"],
+  "project": [
+    "app/**/*.{ts,tsx}",
+    "src/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "hooks/**/*.{ts,tsx}",
+    "constants/**/*.{ts,tsx}"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "ignoreBinaries": ["adb", "wslpath", "python3", "maestro"],
+  "ignoreDependencies": [
+    "tamagui",
+    "@tamagui/babel-plugin",
+    "expo-web-browser",
+    "expo-asset",
+    "expo-updates",
+    "@react-native/eslint-config",
+    "@testing-library/jest-native",
+    "eslint-config-prettier",
+    "eslint-plugin-react",
+    "eslint-plugin-react-hooks",
+    "lint-staged",
+    "ts-jest",
+    "typescript-eslint"
+  ],
+  "ignore": [
+    "src/core/queries/**",
+    "src/core/structuredLog.ts",
+    "src/features/watering/LastWateredText.tsx",
+    "src/services/legalService.ts",
+    "src/services/reviewService.ts",
+    "components/external-link.tsx",
+    "components/ui/**",
+    "hooks/use-color-scheme.web.ts"
+  ],
+  "rules": {
+    "exports": "warn",
+    "types": "warn",
+    "nsExports": "warn",
+    "nsTypes": "warn",
+    "duplicates": "warn",
+    "enumMembers": "warn",
+    "classMembers": "warn"
+  }
+}

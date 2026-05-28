@@ -60,6 +60,14 @@ import {
 import { usePickerStore } from '@/src/stores/pickerStore';
 import { useProStore } from '@/src/stores/proStore';
 
+/** pot_info JSON 復元用 shape。JSON.parse の any を堰き止め、runtime は各 setter の typeof ガードで検証。 */
+type ParsedPotInfo = {
+  description?: string;
+  widthCm?: number;
+  depthCm?: number;
+  material?: string;
+};
+
 /** YYYY-MM-DD → ISO 8601 UTC TEXT (00:00:00Z)。ADR-0008 §TZ 整合で nowUtc 使用。 */
 function toIsoUtc(yyyymmdd: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(yyyymmdd);
@@ -277,7 +285,9 @@ export function useBonsaiBasicForm({
     // pot_info JSON から復元 (Sess13 PR-I: 新形式 { width, depth, material } 優先、
     // 旧 { description } も後方互換で保持表示)。
     try {
-      const parsed = editingBonsai.potInfo ? JSON.parse(editingBonsai.potInfo) : null;
+      const parsed: ParsedPotInfo | null = editingBonsai.potInfo
+        ? (JSON.parse(editingBonsai.potInfo) as ParsedPotInfo)
+        : null;
       setPotInfoText(typeof parsed?.description === 'string' ? parsed.description : '');
       // 新構造 (width / depth / material) は cm 単位で保存されている前提、
       // 表示は user 設定 potUnit で変換 (本実装は cm 固定表示で simplify、 単位切替は別 PR で表示変換追加)。
@@ -331,7 +341,9 @@ export function useBonsaiBasicForm({
       setMemo(editingBonsai.memo ?? '');
       setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
       try {
-        const parsed = editingBonsai.potInfo ? JSON.parse(editingBonsai.potInfo) : null;
+        const parsed: ParsedPotInfo | null = editingBonsai.potInfo
+          ? (JSON.parse(editingBonsai.potInfo) as ParsedPotInfo)
+          : null;
         setPotInfoText(typeof parsed?.description === 'string' ? parsed.description : '');
         const widthCm = typeof parsed?.widthCm === 'number' ? parsed.widthCm : null;
         const depthCm = typeof parsed?.depthCm === 'number' ? parsed.depthCm : null;

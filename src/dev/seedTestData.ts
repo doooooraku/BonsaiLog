@@ -506,31 +506,33 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
 
   // 3. 写真 asset → localUri (失敗しても seed は継続) — 提供 5 + 既存 2 = 7 枚
   const photoUris: Record<string, string | null> = {
-    sample1: await Asset.fromModule(require('@/assets/dev-seed/sample-1.jpg'))
+    sample1: await Asset.fromModule(require('@/assets/dev-seed/sample-1.jpg') as number)
       .downloadAsync()
       .then((a) => a.localUri ?? null)
       .catch(() => null),
-    sample2: await Asset.fromModule(require('@/assets/dev-seed/sample-2.jpg'))
+    sample2: await Asset.fromModule(require('@/assets/dev-seed/sample-2.jpg') as number)
       .downloadAsync()
       .then((a) => a.localUri ?? null)
       .catch(() => null),
-    balcony: await Asset.fromModule(require('@/assets/dev-seed/balcony-collection.jpg'))
+    balcony: await Asset.fromModule(require('@/assets/dev-seed/balcony-collection.jpg') as number)
       .downloadAsync()
       .then((a) => a.localUri ?? null)
       .catch(() => null),
-    seedlings: await Asset.fromModule(require('@/assets/dev-seed/black-pine-seedlings.jpg'))
+    seedlings: await Asset.fromModule(
+      require('@/assets/dev-seed/black-pine-seedlings.jpg') as number,
+    )
       .downloadAsync()
       .then((a) => a.localUri ?? null)
       .catch(() => null),
-    pear: await Asset.fromModule(require('@/assets/dev-seed/pear-blossom.jpg'))
+    pear: await Asset.fromModule(require('@/assets/dev-seed/pear-blossom.jpg') as number)
       .downloadAsync()
       .then((a) => a.localUri ?? null)
       .catch(() => null),
-    shimpaku: await Asset.fromModule(require('@/assets/dev-seed/shimpaku-large.jpg'))
+    shimpaku: await Asset.fromModule(require('@/assets/dev-seed/shimpaku-large.jpg') as number)
       .downloadAsync()
       .then((a) => a.localUri ?? null)
       .catch(() => null),
-    momiji: await Asset.fromModule(require('@/assets/dev-seed/momiji-autumn.jpg'))
+    momiji: await Asset.fromModule(require('@/assets/dev-seed/momiji-autumn.jpg') as number)
       .downloadAsync()
       .then((a) => a.localUri ?? null)
       .catch(() => null),

@@ -1,5 +1,4 @@
 import { Platform } from 'react-native';
-import Constants from 'expo-constants';
 import {
   getTrackingPermissionsAsync,
   requestTrackingPermissionsAsync,
@@ -14,6 +13,8 @@ import mobileAds, {
   TestIds,
 } from 'react-native-google-mobile-ads';
 
+import { getAppExtra } from '@/src/core/appExtra';
+
 let initialized = false;
 
 const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
@@ -21,9 +22,7 @@ const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
 type ExtraValues = Record<string, unknown>;
 
 function getExtraValues(): ExtraValues {
-  const expoConfig = Constants.expoConfig ?? Constants.manifest;
-  const extra = (expoConfig as any)?.extra ?? {};
-  return extra as ExtraValues;
+  return getAppExtra();
 }
 
 function getExtraValue(key: string) {
@@ -126,7 +125,7 @@ export async function initializeAds(): Promise<boolean> {
 
   // F-14 Phase C (Issue #22, ADR-0010 AC8-2): MaxAdContentRating を G → PG に変更
   // 配信カテゴリを「全年齢」から「保護者同伴可」相当に拡大、収益性とポリシー両立。
-  mobileAds().setRequestConfiguration({
+  void mobileAds().setRequestConfiguration({
     tagForChildDirectedTreatment: false,
     maxAdContentRating: MaxAdContentRating.PG,
   });
