@@ -2,6 +2,7 @@
  * F-10 list_pdf リッチレポート集計純関数テスト (Issue #33 / ADR-0016 Phase 1)。
  */
 import {
+  buildCatalogEntries,
   buildListReportBars,
   buildListReportHeatmap,
   buildListReportSummary,
@@ -14,7 +15,14 @@ import {
 } from '@/src/features/export/listPdfReport';
 
 function bonsai(over: Partial<ListReportBonsaiInput> = {}): ListReportBonsaiInput {
-  return { id: 'b1', name: '黒松', speciesName: '黒松', style: 'moyogi', ...over };
+  return {
+    id: 'b1',
+    name: '黒松',
+    speciesName: '黒松',
+    style: 'moyogi',
+    acquiredAt: null,
+    ...over,
+  };
 }
 function ev(over: Partial<ListReportEventInput> = {}): ListReportEventInput {
   return {
@@ -257,5 +265,49 @@ describe('buildListReportHeatmap', () => {
     expect(hm.maxCell).toBe(0);
     expect(hm.rows[0]?.cells).toEqual([]);
     expect(hm.topMonths).toEqual([]);
+  });
+});
+
+describe('buildCatalogEntries', () => {
+  const labels = {
+    typeLabelOf: (type: string) => `T:${type}`,
+    styleLabelOf: (style: string) => `S:${style}`,
+  };
+
+  test('件数合計の降順 + 種別内訳(降順) + 累計 + 入手日(YYYY-MM-DD) + 樹形ラベル', () => {
+    const entries = buildCatalogEntries(
+      [
+        bonsai({ id: 'b1', name: 'A', style: 'moyogi', acquiredAt: '2026-01-02T12:00:00.000Z' }),
+        bonsai({ id: 'b2', name: 'B', style: null, acquiredAt: null }),
+      ],
+      [
+        ev({ bonsaiId: 'b1', type: 'watering' }),
+        ev({ bonsaiId: 'b1', type: 'watering' }),
+        ev({ bonsaiId: 'b1', type: 'pruning' }),
+        ev({ bonsaiId: 'b2', type: 'watering' }),
+      ],
+      labels,
+    );
+    // A(3件) が B(1件) より上
+    expect(entries.map((e) => e.name)).toEqual(['A', 'B']);
+    expect(entries[0]?.totalCount).toBe(3);
+    expect(entries[0]?.styleLabel).toBe('S:moyogi');
+    expect(entries[0]?.acquiredAt).toBe('2026-01-02');
+    expect(entries[0]?.typeBreakdown).toEqual([
+      { typeLabel: 'T:watering', count: 2 },
+      { typeLabel: 'T:pruning', count: 1 },
+    ]);
+  });
+
+  test('style/acquiredAt が null → null', () => {
+    const entries = buildCatalogEntries(
+      [bonsai({ id: 'b2', name: 'B', style: null, acquiredAt: null })],
+      [],
+      labels,
+    );
+    expect(entries[0]?.styleLabel).toBeNull();
+    expect(entries[0]?.acquiredAt).toBeNull();
+    expect(entries[0]?.totalCount).toBe(0);
+    expect(entries[0]?.typeBreakdown).toEqual([]);
   });
 });

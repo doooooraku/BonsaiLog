@@ -20,6 +20,8 @@ export type ListReportBonsaiInput = {
   speciesName: string | null;
   /** 樹形 (raw style code or カスタム名、distinct 計数用、無ければ null)。 */
   style: string | null;
+  /** 取得日 (ISO UTC、カタログ表示用、無ければ null)。 */
+  acquiredAt: string | null;
 };
 
 /** 集計対象の作業イベント (呼出側で status='logged' に絞った後)。 */
@@ -264,4 +266,61 @@ export function buildListReportHeatmap(
     .slice(0, 3);
 
   return { months: [...months], rows, monthTotals, topMonths, maxCell };
+}
+
+// ---------------------------------------------------------------------------
+// Phase 3: 盆栽カタログ (木ごとのカード)
+// ---------------------------------------------------------------------------
+
+/** カタログ 1 件分 (写真 URI は持たない。写真は HTML 層直前で attempt 別に注入)。 */
+export type CatalogEntry = {
+  bonsaiId: string;
+  name: string;
+  /** master / custom 解決済みの樹種通称 (無ければ null)。 */
+  speciesName: string | null;
+  /** ローカライズ済み樹形ラベル (無ければ null)。 */
+  styleLabel: string | null;
+  /** 取得日 (YYYY-MM-DD、無ければ null)。 */
+  acquiredAt: string | null;
+  /** 作業種別の内訳 (ローカライズ済みラベル + 件数、降順)。 */
+  typeBreakdown: { typeLabel: string; count: number }[];
+  /** 累計作業件数。 */
+  totalCount: number;
+};
+
+/**
+ * 盆栽カタログのデータを生成 (件数合計の降順 = よく手をかけた木が上、mockup 整合)。
+ * @param opts.typeLabelOf  event.type → ローカライズ済み種別名 (eventType_{type})
+ * @param opts.styleLabelOf raw style → ローカライズ済み樹形名 (formatStyle)
+ */
+export function buildCatalogEntries(
+  bonsai: readonly ListReportBonsaiInput[],
+  events: readonly ListReportEventInput[],
+  opts: { typeLabelOf: (type: string) => string; styleLabelOf: (style: string) => string },
+): CatalogEntry[] {
+  const eventsByBonsai = new Map<string, ListReportEventInput[]>();
+  for (const e of events) {
+    const arr = eventsByBonsai.get(e.bonsaiId);
+    if (arr) arr.push(e);
+    else eventsByBonsai.set(e.bonsaiId, [e]);
+  }
+  return bonsai
+    .map((b) => {
+      const evs = eventsByBonsai.get(b.id) ?? [];
+      const counts = new Map<string, number>();
+      for (const e of evs) counts.set(e.type, (counts.get(e.type) ?? 0) + 1);
+      const typeBreakdown = [...counts.entries()]
+        .map(([type, count]) => ({ typeLabel: opts.typeLabelOf(type), count }))
+        .sort((a, b) => b.count - a.count);
+      return {
+        bonsaiId: b.id,
+        name: b.name,
+        speciesName: b.speciesName,
+        styleLabel: b.style ? opts.styleLabelOf(b.style) : null,
+        acquiredAt: b.acquiredAt ? b.acquiredAt.slice(0, 10) : null,
+        typeBreakdown,
+        totalCount: evs.length,
+      };
+    })
+    .sort((a, b) => b.totalCount - a.totalCount);
 }

@@ -928,6 +928,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportListPdfHeatmapMonthTotal: '月別合計',
   exportListPdfHeatmapTopMonths: '記録の多い月',
   exportListPdfHeatmapNoData: 'この期間の記録はありません',
+  exportListPdfCatalogTitle: '盆栽カタログ',
+  exportListPdfCatalogTotalRecords: '累計 {count} 件',
+  exportListPdfCatalogAcquired: '入手日',
 };
 
 export default ja;

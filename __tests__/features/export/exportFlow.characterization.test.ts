@@ -170,3 +170,24 @@ describe('loadListPdfHtml', () => {
     expect(res.html).toContain('リスト盆栽');
   });
 });
+
+describe('prepareListPdf (Phase 3: 写真フォールバック用ファクトリ)', () => {
+  test('count / photoCount / attempt 別 HTML 生成', async () => {
+    const { flow, bonsai, ev } = mods();
+    const b = await bonsai.createBonsai({ name: 'カタログ盆栽' });
+    await ev.createEvent({ bonsaiId: b.id, type: 'watering' });
+    const prep = await flow.prepareListPdf(
+      { type: 'list_pdf', period: 'all', scope: 'all', includeArchived: false, lang: 'ja' },
+      t,
+    );
+    expect(prep.count).toBe(1);
+    expect(prep.photoCount).toBe(0); // 写真なし (test DB)
+    const html1 = await prep.buildHtmlForAttempt(1);
+    const html3 = await prep.buildHtmlForAttempt(3);
+    // 写真なしでも attempt に依らず生成でき、カタログに盆栽名 + プレースホルダーが出る
+    expect(html1).toContain('カタログ盆栽');
+    expect(html1).toContain('class="catalog"');
+    expect(html1).toContain('class="cat-ph"');
+    expect(html3).toContain('カタログ盆栽');
+  });
+});

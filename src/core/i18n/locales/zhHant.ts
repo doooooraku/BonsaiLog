@@ -907,5 +907,8 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   exportListPdfHeatmapMonthTotal: 'Monthly total',
   exportListPdfHeatmapTopMonths: 'Top months',
   exportListPdfHeatmapNoData: 'No records in this period',
+  exportListPdfCatalogTitle: 'Bonsai catalog',
+  exportListPdfCatalogTotalRecords: '{count} records',
+  exportListPdfCatalogAcquired: 'Acquired',
 };
 export default zhHant;

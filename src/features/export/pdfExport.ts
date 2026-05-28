@@ -387,7 +387,9 @@ export async function generateBonsaiPdfWithFallback(params: {
  * 写真なし (テキストのみ) のため 3 段階フォールバック不要、attempt 2 (30s ベース) で
  * 1 回だけ実行 (リスト件数多くてもテキストのみなので 30s で十分)。
  *
- * UI 層は呼出側で `buildBonsaiListPdfHtml` で HTML を組み立て、本関数に渡す。
+ * Sess51 Phase 3 以降、写真サムネ付きカタログを含む list_pdf は
+ * `generateListPdfWithFallback` (下記、3 段階フォールバック) を使うこと。本関数は
+ * 写真なし用途 (旧経路) で残置。
  *
  * @param html buildBonsaiListPdfHtml で生成した HTML
  * @param shareDialogTitle Share Sheet タイトル
@@ -400,4 +402,22 @@ export async function generateAndShareListPdf(
     photoCount: 0,
     attempt: 2, // attempt 1 は 10s キャップだが list は 100 本以上で時間かかる、安全のため 2
   });
+}
+
+/**
+ * list_pdf 用 3 段階フォールバック (Sess51 Phase 3、写真サムネ付きカタログ対応)。
+ * 写真導入により単発生成では多本数で hang / blank PDF リスクがあるため、attempt 別に
+ * 画質を落として再生成する (実装は `generateBonsaiPdfWithFallback` を流用)。
+ *
+ * @param params.buildHtmlForAttempt attempt を受け取り、その画質で写真 inline した HTML を返す
+ * @param params.photoCount カバー写真数 (動的タイムアウト用)
+ * @param params.shareDialogTitle Share Sheet タイトル
+ */
+export function generateListPdfWithFallback(params: {
+  buildHtmlForAttempt: (attempt: AttemptNumber) => Promise<string>;
+  photoCount: number;
+  shareDialogTitle: string;
+  attempts?: readonly AttemptNumber[];
+}): Promise<{ attemptUsed: AttemptNumber }> {
+  return generateBonsaiPdfWithFallback(params);
 }

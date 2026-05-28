@@ -437,3 +437,137 @@ describe('report.heatmap (Phase 2: 色ありヒートマップ)', () => {
     expect(html).not.toContain('月別の作業件数');
   });
 });
+
+describe('report.catalog (Phase 3: 盆栽カタログ)', () => {
+  const baseTextsP1 = {
+    summaryBonsaiCount: '盆栽総数',
+    summarySpeciesCount: '樹種数',
+    summaryStyleCount: '樹形数',
+    summaryTotalRecords: '通算記録',
+    chartPerBonsai: '盆栽別の記録数',
+    chartSpecies: '樹種構成',
+    chartPerMonth: '月別の記録数',
+  };
+  const catalogTexts = {
+    title: '盆栽カタログ',
+    totalRecords: '累計 {count} 件',
+    acquired: '入手日',
+  };
+  const reportWithCatalog = (
+    entries: {
+      bonsaiId: string;
+      name: string;
+      speciesName: string | null;
+      styleLabel: string | null;
+      acquiredAt: string | null;
+      typeBreakdown: { typeLabel: string; count: number }[];
+      totalCount: number;
+      coverPhotoUri: string | null;
+    }[],
+  ) => ({
+    summary: { bonsaiCount: 1, speciesCount: 1, styleCount: 1, totalEvents: 3 },
+    bars: { perBonsai: [], perSpecies: [], perMonth: [] },
+    texts: baseTextsP1,
+    catalog: { entries, texts: catalogTexts },
+  });
+
+  test('カバー写真ありはサムネ img、無写真はプレースホルダー', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: reportWithCatalog([
+        {
+          bonsaiId: 'b1',
+          name: '黒松「太郎」',
+          speciesName: '黒松',
+          styleLabel: '模様木',
+          acquiredAt: '2026-01-02',
+          typeBreakdown: [
+            { typeLabel: '水やり', count: 5 },
+            { typeLabel: '剪定', count: 2 },
+          ],
+          totalCount: 7,
+          coverPhotoUri: 'data:image/jpeg;base64,AAAA',
+        },
+        {
+          bonsaiId: 'b2',
+          name: '真柏',
+          speciesName: null,
+          styleLabel: null,
+          acquiredAt: null,
+          typeBreakdown: [],
+          totalCount: 0,
+          coverPhotoUri: null,
+        },
+      ]),
+    });
+    expect(html).toContain('盆栽カタログ');
+    expect(html).toContain('class="catalog"');
+    expect(html).toContain('src="data:image/jpeg;base64,AAAA"'); // 写真あり
+    expect(html).toContain('class="cat-ph"'); // 無写真プレースホルダー
+    expect(html).toContain('黒松「太郎」');
+    expect(html).toContain('真柏');
+  });
+
+  test('メタ(樹種・樹形) + 累計 + 入手日 + 種別チップ', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: reportWithCatalog([
+        {
+          bonsaiId: 'b1',
+          name: '黒松「太郎」',
+          speciesName: '黒松',
+          styleLabel: '模様木',
+          acquiredAt: '2026-01-02',
+          typeBreakdown: [{ typeLabel: '水やり', count: 5 }],
+          totalCount: 5,
+          coverPhotoUri: null,
+        },
+      ]),
+    });
+    expect(html).toContain('黒松 · 模様木'); // メタ
+    expect(html).toContain('累計 5 件'); // {count} 置換
+    expect(html).toContain('入手日: 2026-01-02');
+    expect(html).toContain('水やり 5'); // チップ
+  });
+
+  test('XSS 対策: カタログ名/チップもエスケープ', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: reportWithCatalog([
+        {
+          bonsaiId: 'b1',
+          name: '<b>x</b>',
+          speciesName: null,
+          styleLabel: null,
+          acquiredAt: null,
+          typeBreakdown: [],
+          totalCount: 0,
+          coverPhotoUri: null,
+        },
+      ]),
+    });
+    expect(html).toContain('&lt;b&gt;x&lt;/b&gt;');
+    expect(html).not.toContain('<b>x</b>');
+  });
+
+  test('catalog 省略時はカタログを描かない (後方互換)', () => {
+    const html = buildBonsaiListPdfHtml({
+      bonsaiList: [makeRow()],
+      stats: baseStats,
+      texts: baseTexts,
+      report: {
+        summary: reportWithCatalog([]).summary,
+        bars: reportWithCatalog([]).bars,
+        texts: baseTextsP1,
+      },
+    });
+    expect(html).not.toContain('class="catalog"');
+    expect(html).not.toContain('盆栽カタログ');
+  });
+});

@@ -89,7 +89,8 @@ describe('exportFlow orchestration', () => {
     expect(FLOW).toMatch(/buildSpeciesSummaryRows/);
     expect(FLOW).toMatch(/cellsToCsvString/);
     expect(FLOW).toMatch(/buildBonsaiListPdfHtml/);
-    expect(FLOW).toMatch(/generateAndShareListPdf/);
+    // Sess51 Phase 3: list_pdf は写真サムネ付きカタログ → 3 段階フォールバック出力
+    expect(FLOW).toMatch(/generateListPdfWithFallback/);
   });
 
   test('10. resolvePeriodRange + OPTION_APPLIES + scope/archived 解決', () => {

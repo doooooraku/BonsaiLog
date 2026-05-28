@@ -29,20 +29,30 @@ import type { Bonsai } from '@/src/db/schema';
 import { getSpeciesById } from '@/src/db/speciesRepository';
 import { getTagsByBonsai } from '@/src/db/tagRepository';
 import { cellsToCsvString } from './csvExport';
-import { buildBonsaiCsvRow, BONSAI_CSV_HEADER_KEYS } from './bonsaiCsvRow';
+import { buildBonsaiCsvRow, BONSAI_CSV_HEADER_KEYS, formatStyle } from './bonsaiCsvRow';
 import { buildBonsaiPdfReport } from './bonsaiPdfReport';
 import { buildEventCsvRow, EVENT_CSV_HEADER_KEYS } from './eventCsvRow';
 import { buildExportFileName, type ExportKind } from './exportFileName';
-import { type BonsaiListRow, buildBonsaiListPdfHtml, type ListPdfStats } from './listPdfExport';
 import {
+  type BonsaiListRow,
+  buildBonsaiListPdfHtml,
+  type CatalogPhotoEntry,
+  type ListPdfStats,
+  type ListPdfTexts,
+  type ListReportBlock,
+  type ListReportTextsCatalog,
+} from './listPdfExport';
+import {
+  buildCatalogEntries,
   buildListReportBars,
   buildListReportHeatmap,
   buildListReportSummary,
+  type CatalogEntry,
   type ListReportBonsaiInput,
   type ListReportEventInput,
   monthAxisFromEvents,
 } from './listPdfReport';
-import { buildBonsaiPdfHtml, generateAndShareListPdf, readPhotoAsBase64 } from './pdfExport';
+import { buildBonsaiPdfHtml, generateListPdfWithFallback, readPhotoAsBase64 } from './pdfExport';
 import { getPhotoResizeSpec, type AttemptNumber } from './pdfReliability';
 import { buildSpeciesSummaryRows, SPECIES_CSV_HEADER_KEYS } from './speciesSummary';
 
@@ -222,8 +232,13 @@ async function buildBonsaiNameMap(): Promise<Record<string, string>> {
  */
 export async function runExport(opts: ExportOptions, t: Tfn): Promise<ExportResult> {
   if (opts.type === 'list_pdf') {
-    const { html, count } = await loadListPdfHtml(opts, t);
-    await generateAndShareListPdf(html, t('exportListPdfShareTitle'));
+    // 写真サムネ付きカタログを含むため 3 段階フォールバックで出力 (多本数でも確実生成)。
+    const { buildHtmlForAttempt, photoCount, count } = await prepareListPdf(opts, t);
+    await generateListPdfWithFallback({
+      buildHtmlForAttempt,
+      photoCount,
+      shareDialogTitle: t('exportListPdfShareTitle'),
+    });
     return { kind: opts.type, count };
   }
 
@@ -232,22 +247,45 @@ export async function runExport(opts: ExportOptions, t: Tfn): Promise<ExportResu
   return { kind: opts.type, count };
 }
 
+/** 樹種通称を master 優先・無ければ custom (β) で解決。 */
+async function resolveSpeciesName(b: ResolvedBonsai): Promise<string | null> {
+  if (b.speciesCommonName) return b.speciesCommonName;
+  if (b.customSpeciesId) return (await getCustomSpeciesById(b.customSpeciesId))?.name ?? null;
+  return null;
+}
+
+/** list_pdf の写真以外の全データ (preview と 出力フォールバックで共用)。 */
+type ListPdfData = {
+  count: number;
+  /** カバー写真ありの盆栽数 (動的タイムアウト用)。 */
+  photoCount: number;
+  bonsaiList: BonsaiListRow[];
+  stats: ListPdfStats;
+  texts: ListPdfTexts;
+  /** report (catalog 以外完成済み、catalog は compose 時に写真注入して付与)。 */
+  report: ListReportBlock;
+  catalogEntries: CatalogEntry[];
+  catalogTexts: ListReportTextsCatalog;
+  /** カバー写真の raw file URI (attempt 別 base64 化のため未変換で保持)。 */
+  coverUriByBonsai: { bonsaiId: string; uri: string | null }[];
+};
+
 /**
- * list_pdf の HTML + 件数を生成 (list-preview 画面と runExport で共用)。
- * 共有はしない (呼出側が generateAndShareListPdf する)。
+ * list_pdf の写真以外データを一括収集 (DB 読み込み 1 回)。
+ * 樹種は master + custom を解決し、サマリー/棒/ヒートマップ/カタログ全集計で共有 (母数一致)。
  */
-export async function loadListPdfHtml(
-  opts: ExportOptions,
-  t: Tfn,
-): Promise<{ html: string; count: number }> {
+async function gatherListPdfData(opts: ExportOptions, t: Tfn): Promise<ListPdfData> {
   const bonsai = await resolveBonsaiSet(opts);
   const { fromIso, toIso } = resolvePeriodRange(opts);
   const bonsaiIds = bonsai.map((b) => b.id);
-  // 1 クエリで対象盆栽の events を取得 (空集合なら全件取得を避けるため skip)。
   const allEventsRaw =
     bonsaiIds.length > 0 ? await getEventsInRange({ bonsaiIds, fromIso, toIso }) : [];
   // 統計・グラフは実施済 (logged) のみを母数にする (planned/未来分は除外、species_csv と整合)。
   const loggedEvents = allEventsRaw.filter((e) => e.status === 'logged');
+
+  // 樹種名 (master + custom) を 1 回解決し全集計で共有。
+  const speciesNameById = new Map<string, string | null>();
+  for (const b of bonsai) speciesNameById.set(b.id, await resolveSpeciesName(b));
 
   const countByBonsai = new Map<string, number>();
   for (const e of loggedEvents) {
@@ -256,7 +294,7 @@ export async function loadListPdfHtml(
   const rows: BonsaiListRow[] = bonsai.map((b) => ({
     id: b.id,
     name: b.name,
-    speciesName: b.speciesCommonName,
+    speciesName: speciesNameById.get(b.id) ?? null,
     acquiredAt: b.acquiredAt,
     eventCount: countByBonsai.get(b.id) ?? 0,
   }));
@@ -266,17 +304,18 @@ export async function loadListPdfHtml(
     return acc;
   }, {});
   const speciesBreakdown = bonsai.reduce<Record<string, number>>((acc, b) => {
-    if (b.speciesCommonName) acc[b.speciesCommonName] = (acc[b.speciesCommonName] ?? 0) + 1;
+    const s = speciesNameById.get(b.id);
+    if (s) acc[s] = (acc[s] ?? 0) + 1;
     return acc;
   }, {});
   const stats: ListPdfStats = { totalEvents: loggedEvents.length, typeBreakdown, speciesBreakdown };
 
-  // リッチレポート集計 (純関数: 表紙サマリー + 棒グラフ 3 種)。
   const reportBonsai: ListReportBonsaiInput[] = bonsai.map((b) => ({
     id: b.id,
     name: b.name,
-    speciesName: b.speciesCommonName,
+    speciesName: speciesNameById.get(b.id) ?? null,
     style: b.style,
+    acquiredAt: b.acquiredAt,
   }));
   const reportEvents: ListReportEventInput[] = loggedEvents.map((e) => ({
     bonsaiId: e.bonsaiId,
@@ -292,54 +331,132 @@ export async function loadListPdfHtml(
     othersLabelTemplate: t('exportListPdfChartOthers'),
   });
   const heatmap = buildListReportHeatmap(reportBonsai, reportEvents, months);
+  const catalogEntries = buildCatalogEntries(reportBonsai, reportEvents, {
+    typeLabelOf: (type) => t(`eventType_${type}` as TranslationKey),
+    styleLabelOf: (style) => formatStyle(style, t),
+  });
+
+  // カバー写真の raw URI (attempt 別に base64 化するため未変換で保持)。
+  const coverUriByBonsai = await Promise.all(
+    bonsai.map(async (b) => ({
+      bonsaiId: b.id,
+      uri: (await getCoverPhoto(b.id))?.absoluteUri ?? null,
+    })),
+  );
+  const photoCount = coverUriByBonsai.filter((c) => c.uri).length;
 
   const generatedAt = (nowUtc() as string).slice(0, 16).replace('T', ' ');
-  const html = buildBonsaiListPdfHtml({
+  const texts: ListPdfTexts = {
+    coverTitle: t('exportListPdfCoverTitle'),
+    coverSubtitleTemplate: t('exportListPdfCoverSubtitle'),
+    generatedAtLabel: t('exportListPdfGeneratedAt'),
+    generatedAtValue: generatedAt,
+    listSectionTitle: t('exportListPdfListSection'),
+    listColumnName: t('bonsaiFieldName'),
+    listColumnSpecies: t('bonsaiFieldSpecies'),
+    listColumnAcquiredAt: t('bonsaiFieldAcquiredAt'),
+    listColumnEventCount: t('exportListPdfRecordCount'),
+    statsSectionTitle: t('exportListPdfStatsSection'),
+    statsTotalLabel: t('exportListPdfTotal'),
+    statsTypeBreakdownTitle: t('exportListPdfTypeBreakdown'),
+    statsSpeciesBreakdownTitle: t('exportListPdfSpeciesBreakdown'),
+    footerNote: t('exportListPdfFooter'),
+  };
+  const report: ListReportBlock = {
+    summary,
+    bars,
+    texts: {
+      summaryBonsaiCount: t('exportListPdfSummaryBonsaiCount'),
+      summarySpeciesCount: t('exportListPdfSummarySpeciesCount'),
+      summaryStyleCount: t('exportListPdfSummaryStyleCount'),
+      summaryTotalRecords: t('exportListPdfSummaryTotalRecords'),
+      chartPerBonsai: t('exportListPdfChartPerBonsai'),
+      chartSpecies: t('exportListPdfChartSpecies'),
+      chartPerMonth: t('exportListPdfChartPerMonth'),
+    },
+    heatmap: {
+      data: heatmap,
+      texts: {
+        title: t('exportListPdfHeatmapTitle'),
+        legend: t('exportListPdfHeatmapLegend'),
+        legendLess: t('exportListPdfHeatmapLegendLess'),
+        legendMore: t('exportListPdfHeatmapLegendMore'),
+        monthTotal: t('exportListPdfHeatmapMonthTotal'),
+        topMonths: t('exportListPdfHeatmapTopMonths'),
+        noData: t('exportListPdfHeatmapNoData'),
+      },
+    },
+  };
+  const catalogTexts: ListReportTextsCatalog = {
+    title: t('exportListPdfCatalogTitle'),
+    totalRecords: t('exportListPdfCatalogTotalRecords'),
+    acquired: t('exportListPdfCatalogAcquired'),
+  };
+
+  return {
+    count: rows.length,
+    photoCount,
     bonsaiList: rows,
     stats,
-    texts: {
-      coverTitle: t('exportListPdfCoverTitle'),
-      coverSubtitleTemplate: t('exportListPdfCoverSubtitle'),
-      generatedAtLabel: t('exportListPdfGeneratedAt'),
-      generatedAtValue: generatedAt,
-      listSectionTitle: t('exportListPdfListSection'),
-      listColumnName: t('bonsaiFieldName'),
-      listColumnSpecies: t('bonsaiFieldSpecies'),
-      listColumnAcquiredAt: t('bonsaiFieldAcquiredAt'),
-      listColumnEventCount: t('exportListPdfRecordCount'),
-      statsSectionTitle: t('exportListPdfStatsSection'),
-      statsTotalLabel: t('exportListPdfTotal'),
-      statsTypeBreakdownTitle: t('exportListPdfTypeBreakdown'),
-      statsSpeciesBreakdownTitle: t('exportListPdfSpeciesBreakdown'),
-      footerNote: t('exportListPdfFooter'),
-    },
-    report: {
-      summary,
-      bars,
-      texts: {
-        summaryBonsaiCount: t('exportListPdfSummaryBonsaiCount'),
-        summarySpeciesCount: t('exportListPdfSummarySpeciesCount'),
-        summaryStyleCount: t('exportListPdfSummaryStyleCount'),
-        summaryTotalRecords: t('exportListPdfSummaryTotalRecords'),
-        chartPerBonsai: t('exportListPdfChartPerBonsai'),
-        chartSpecies: t('exportListPdfChartSpecies'),
-        chartPerMonth: t('exportListPdfChartPerMonth'),
-      },
-      heatmap: {
-        data: heatmap,
-        texts: {
-          title: t('exportListPdfHeatmapTitle'),
-          legend: t('exportListPdfHeatmapLegend'),
-          legendLess: t('exportListPdfHeatmapLegendLess'),
-          legendMore: t('exportListPdfHeatmapLegendMore'),
-          monthTotal: t('exportListPdfHeatmapMonthTotal'),
-          topMonths: t('exportListPdfHeatmapTopMonths'),
-          noData: t('exportListPdfHeatmapNoData'),
-        },
-      },
-    },
+    texts,
+    report,
+    catalogEntries,
+    catalogTexts,
+    coverUriByBonsai,
+  };
+}
+
+/** 収集済みデータ + (attempt 別) カバー写真 base64 マップ → 最終 HTML。 */
+function composeListPdfHtml(data: ListPdfData, coverData: Map<string, string | null>): string {
+  const entries: CatalogPhotoEntry[] = data.catalogEntries.map((e) => ({
+    ...e,
+    coverPhotoUri: coverData.get(e.bonsaiId) ?? null,
+  }));
+  return buildBonsaiListPdfHtml({
+    bonsaiList: data.bonsaiList,
+    stats: data.stats,
+    texts: data.texts,
+    report: { ...data.report, catalog: { entries, texts: data.catalogTexts } },
   });
-  return { html, count: rows.length };
+}
+
+/**
+ * list_pdf プレビュー用 HTML + 件数 (list-preview 画面)。
+ * プレビューは **写真なし** (多写真プレビューの WebView tile memory 上限で真っ白になる
+ * Sess50 既知問題を回避、カタログは単色プレースホルダー表示)。出力時のみ写真を base64 化する。
+ */
+export async function loadListPdfHtml(
+  opts: ExportOptions,
+  t: Tfn,
+): Promise<{ html: string; count: number }> {
+  const data = await gatherListPdfData(opts, t);
+  const html = composeListPdfHtml(data, new Map());
+  return { html, count: data.count };
+}
+
+/**
+ * list_pdf 出力準備 (Sess51 Phase 3)。DB 読み込みは 1 回だけ行い、attempt 別にカバー写真を
+ * 再縮小 (thumb spec) して HTML を組み立てる async ファクトリを返す。bonsai_pdf の
+ * prepareBonsaiPdf と同設計 (写真導入で 3 段階フォールバックが必須になったため)。
+ */
+export async function prepareListPdf(
+  opts: ExportOptions,
+  t: Tfn,
+): Promise<{
+  count: number;
+  photoCount: number;
+  buildHtmlForAttempt: (attempt: AttemptNumber) => Promise<string>;
+}> {
+  const data = await gatherListPdfData(opts, t);
+  const buildHtmlForAttempt = async (attempt: AttemptNumber): Promise<string> => {
+    const spec = getPhotoResizeSpec('thumb', attempt);
+    const coverData = new Map<string, string | null>();
+    for (const { bonsaiId, uri } of data.coverUriByBonsai) {
+      coverData.set(bonsaiId, uri ? await readPhotoAsBase64(uri, spec) : null);
+    }
+    return composeListPdfHtml(data, coverData);
+  };
+  return { count: data.count, photoCount: data.photoCount, buildHtmlForAttempt };
 }
 
 /**

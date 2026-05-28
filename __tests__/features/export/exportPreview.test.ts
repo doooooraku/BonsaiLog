@@ -47,8 +47,11 @@ describe('PDF List Preview (list-preview)', () => {
     expect(LIST_PREVIEW).toContain('e2e_export_list_preview_webview');
   });
 
-  test('5. 出力は下部「出力する」CTA → generateAndShareListPdf', () => {
-    expect(LIST_PREVIEW).toMatch(/generateAndShareListPdf/);
+  test('5. 出力は下部「出力する」CTA → prepareListPdf + generateListPdfWithFallback', () => {
+    // Sess51 Phase 3: 写真サムネ付きカタログ → 出力は 3 段階フォールバック
+    // (プレビューの写真なし HTML は再利用せず prepareListPdf で再生成)
+    expect(LIST_PREVIEW).toMatch(/prepareListPdf/);
+    expect(LIST_PREVIEW).toMatch(/generateListPdfWithFallback/);
     // Sess49 追補2: 右上「共有」廃止 → 下部 CTA (exportOptExport)、標準 FormScreenHeader
     expect(LIST_PREVIEW).toContain('e2e_export_list_preview_generate');
     expect(LIST_PREVIEW).toMatch(/FormScreenHeader/);
@@ -63,11 +66,12 @@ describe('PDF List Preview (list-preview)', () => {
 });
 
 describe('exportFlow HTML ローダー切り出し', () => {
-  test('7. prepareBonsaiPdf (ファクトリ) / loadListPdfHtml を export し runExport と共用', () => {
+  test('7. prepareBonsaiPdf / prepareListPdf (ファクトリ) / loadListPdfHtml を export', () => {
     expect(FLOW).toMatch(/export async function prepareBonsaiPdf/);
     expect(FLOW).toMatch(/export async function loadListPdfHtml/);
-    // runExport(list_pdf) も loadListPdfHtml を再利用
-    expect(FLOW).toMatch(/await loadListPdfHtml\(opts, t\)/);
+    expect(FLOW).toMatch(/export async function prepareListPdf/);
+    // Sess51 Phase 3: runExport(list_pdf) は写真フォールバック用 prepareListPdf を使う
+    expect(FLOW).toMatch(/await prepareListPdf\(opts, t\)/);
     // Sess50: attempt 別画質で再生成するファクトリを返す
     expect(FLOW).toMatch(/buildHtmlForAttempt/);
   });

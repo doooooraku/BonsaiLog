@@ -18,6 +18,7 @@
 import { escapeHtml } from './pdfExport';
 import type {
   BarDatum,
+  CatalogEntry,
   ListReportBars,
   ListReportHeatmap,
   ListReportSummary,
@@ -100,6 +101,24 @@ export type ListReportHeatmapBlock = {
   texts: ListReportTextsHeatmap;
 };
 
+/** カタログ用の i18n テキスト (Phase 3)。 */
+export type ListReportTextsCatalog = {
+  title: string;
+  /** 「累計 {count} 件」テンプレ。 */
+  totalRecords: string;
+  /** 「入手日」ラベル。 */
+  acquired: string;
+};
+
+/** カタログ 1 件 = 集計データ + attempt 別に注入されたカバー写真 (base64 data URI or null)。 */
+export type CatalogPhotoEntry = CatalogEntry & { coverPhotoUri: string | null };
+
+/** カタログ ブロック (Phase 3、省略可)。写真は呼出側で base64 化済み。 */
+export type ListReportCatalogBlock = {
+  entries: CatalogPhotoEntry[];
+  texts: ListReportTextsCatalog;
+};
+
 /**
  * 表紙のリッチ化ブロック (Phase 1)。
  * 省略時は従来どおり「タイトル + リスト表 + 統計」のみ (後方互換)。
@@ -110,6 +129,8 @@ export type ListReportBlock = {
   texts: ListReportTextsP1;
   /** お世話ヒートマップ (Phase 2)。省略時は非表示。 */
   heatmap?: ListReportHeatmapBlock;
+  /** 盆栽カタログ (Phase 3)。省略時は非表示。 */
+  catalog?: ListReportCatalogBlock;
 };
 
 /** ヒートマップ色 5 段階 (緑単色の明度、色相 1 系統で色覚多様性配慮 + 達成バッジ感回避)。 */
@@ -169,6 +190,47 @@ ${bodyRows}
   </table>
   <div class="hm-legend">${escapeHtml(texts.legendLess)} ${swatches} ${escapeHtml(texts.legendMore)}<span class="hm-legend-note">${escapeHtml(texts.legend)}</span></div>
   ${topMonthsText ? `<p class="hm-top">${escapeHtml(texts.topMonths)}: ${topMonthsText}</p>` : ''}`;
+}
+
+/**
+ * 盆栽カタログ (木ごとのカード)。カバー写真は base64 data URI (呼出側で注入済、信頼済)、
+ * 無写真は CSS 単色プレースホルダー。各カードは page-break-inside: avoid で分断防止。
+ */
+function renderCatalog(block: ListReportCatalogBlock): string {
+  if (block.entries.length === 0) return '';
+  const cards = block.entries
+    .map((e) => {
+      const thumb = e.coverPhotoUri
+        ? `<img src="${e.coverPhotoUri}" alt="" />`
+        : '<div class="cat-ph"></div>';
+      const metaParts = [e.speciesName, e.styleLabel]
+        .filter((x): x is string => !!x)
+        .map((x) => escapeHtml(x));
+      const meta =
+        metaParts.length > 0 ? `<div class="cat-meta">${metaParts.join(' · ')}</div>` : '';
+      const subParts: string[] = [];
+      if (e.acquiredAt) {
+        subParts.push(`${escapeHtml(block.texts.acquired)}: ${escapeHtml(e.acquiredAt)}`);
+      }
+      subParts.push(escapeHtml(block.texts.totalRecords.replace('{count}', String(e.totalCount))));
+      const chips = e.typeBreakdown
+        .map((c) => `<span class="cat-chip">${escapeHtml(c.typeLabel)} ${c.count}</span>`)
+        .join('');
+      return `<div class="cat-card">
+      <div class="cat-thumb">${thumb}</div>
+      <div class="cat-body">
+        <div class="cat-name">${escapeHtml(e.name)}</div>
+        ${meta}
+        <div class="cat-sub">${subParts.join(' · ')}</div>
+        ${chips ? `<div class="cat-chips">${chips}</div>` : ''}
+      </div>
+    </div>`;
+    })
+    .join('\n');
+  return `<h2>${escapeHtml(block.texts.title)}</h2>
+  <div class="catalog">
+${cards}
+  </div>`;
 }
 
 /** サマリーカード 4 枚 (盆栽総数 / 樹種数 / 樹形数 / 通算記録)。 */
@@ -232,6 +294,7 @@ export function buildBonsaiListPdfHtml(input: {
       renderBarChart(report.texts.chartPerMonth, report.bars.perMonth)
     : '';
   const heatmapHtml = report?.heatmap ? renderHeatmap(report.heatmap) : '';
+  const catalogHtml = report?.catalog ? renderCatalog(report.catalog) : '';
   const subtitle = texts.coverSubtitleTemplate.replace('{count}', String(bonsaiList.length));
   const totalText = texts.statsTotalLabel.replace('{count}', String(stats.totalEvents));
   const typeBreakdownItems = formatBreakdown(stats.typeBreakdown);
@@ -290,6 +353,17 @@ export function buildBonsaiListPdfHtml(input: {
   .hm-legend .sw { width: 12pt; height: 12pt; border-radius: 2px; display: inline-block; }
   .hm-legend-note { margin-left: 8pt; }
   .hm-top { font-size: 9pt; color: #444; margin-top: 6pt; }
+  .catalog { margin: 8pt 0; }
+  .cat-card { display: flex; gap: 10pt; border: 1px solid #E0E0E0; border-radius: 6px; padding: 8pt; margin: 0 0 8pt; page-break-inside: avoid; -webkit-column-break-inside: avoid; }
+  .cat-thumb { width: 64pt; height: 64pt; flex-shrink: 0; border-radius: 4px; overflow: hidden; background: #E0E0E0; }
+  .cat-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cat-ph { width: 100%; height: 100%; background: #E0E0E0; }
+  .cat-body { flex: 1; min-width: 0; }
+  .cat-name { font-size: 12pt; font-weight: 600; }
+  .cat-meta { font-size: 9pt; color: #666; margin-top: 1pt; }
+  .cat-sub { font-size: 9pt; color: #888; margin-top: 2pt; }
+  .cat-chips { margin-top: 4pt; }
+  .cat-chip { display: inline-block; font-size: 8pt; background: #EFEAE4; color: #5A4637; border-radius: 3px; padding: 1pt 5pt; margin: 0 3pt 3pt 0; }
   table { border-collapse: collapse; width: 100%; font-size: 10pt; margin: 8pt 0; }
   th, td { border: 1px solid #E0E0E0; padding: 6px 8px; text-align: left; vertical-align: top; }
   th { background: #F5F8F5; font-weight: 600; }
@@ -309,6 +383,8 @@ export function buildBonsaiListPdfHtml(input: {
   </div>
 
   ${heatmapHtml}
+
+  ${catalogHtml}
 
   <h2>${escapeHtml(texts.listSectionTitle)}</h2>
   ${
