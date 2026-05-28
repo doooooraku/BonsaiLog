@@ -18,7 +18,7 @@ import { resolveEffectiveScheme } from '@/src/core/theme/themeResolver';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
 export function useThemeColor(
-  props: { light?: string; dark?: string },
+  props: { light?: string | undefined; dark?: string | undefined },
   colorName: keyof typeof Colors.light & keyof typeof Colors.dark,
 ) {
   const systemScheme = useColorScheme();

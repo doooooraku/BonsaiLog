@@ -39,7 +39,7 @@ export type CreateEventInput = {
   occurredAtUtc?: string; // 省略時は now (logged) / planned 時は明示必須
   durationMin?: number | null;
   payload?: unknown; // Valibot で validate
-  note?: string | null;
+  note?: string | null | undefined;
 };
 
 export type UpdateEventInput = {
@@ -144,9 +144,9 @@ export async function getActiveEventsByBonsai(bonsaiId: string): Promise<Event[]
  * - occurred_at_utc 降順 (CSV は新しい順)
  */
 export async function getEventsInRange(opts: {
-  bonsaiIds?: readonly string[];
-  fromIso?: string;
-  toIso?: string;
+  bonsaiIds?: readonly string[] | undefined;
+  fromIso?: string | undefined;
+  toIso?: string | undefined;
 }): Promise<Event[]> {
   const db = await getDb();
   const where: string[] = ['deleted_at IS NULL'];

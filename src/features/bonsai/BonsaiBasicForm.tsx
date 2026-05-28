@@ -19,16 +19,14 @@
  *
  * Issue #439 で BonsaiCreateSheet から抽出。
  */
-import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { ConfirmDialog } from '@/src/components/ConfirmDialog';
-import { CameraIcon, ChevronRightIcon, PlusIcon } from '@/src/components/icons';
+import { CameraIcon, PlusIcon } from '@/src/components/icons';
 import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
@@ -437,6 +435,7 @@ export function useBonsaiBasicForm({
       if (to < 0 || to >= prev.length) return prev;
       const next = [...prev];
       const [moved] = next.splice(from, 1);
+      if (moved === undefined) return prev; // splice on a valid index always returns 1 element, but guard for type safety
       next.splice(to, 0, moved);
       return next;
     });
@@ -461,7 +460,7 @@ export function useBonsaiBasicForm({
     }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.85 });
     if (result.canceled || !result.assets || result.assets.length === 0) return;
-    const a = result.assets[0];
+    const a = result.assets[0]!; // guarded by assets.length === 0 check above
     setPendingPhotos((prev) => [
       ...prev,
       { uri: a.uri, width: a.width ?? null, height: a.height ?? null },
@@ -655,7 +654,7 @@ export type BonsaiBasicFormFieldsProps = {
    * Sess31 PR-1 (R-46 拡張): メモ欄 onFocus callback。 親 ScrollView 側で scrollToEnd を呼び、
    * IME 起動時の可視性を確保する用途。
    */
-  onMemoFocus?: () => void;
+  onMemoFocus?: (() => void) | undefined;
 };
 
 /**
@@ -691,10 +690,6 @@ export function BonsaiBasicFormFields({
     setAgeUnknown,
     memo,
     setMemo,
-    purchaseDate,
-    setPurchaseDate,
-    potInfoText,
-    setPotInfoText,
     potWidth,
     setPotWidth,
     potDepth,
@@ -715,7 +710,6 @@ export function BonsaiBasicFormFields({
     handleRemovePendingPhoto,
     handleMovePendingPhoto,
     handleTakePhotoCamera,
-    isPro,
   } = form;
 
   const showPhotoField = showPhotos && !isEdit;

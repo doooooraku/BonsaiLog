@@ -33,7 +33,8 @@ export type EventGroupEntry =
  * Date オブジェクトを経由するが TZ は使わず純粋に YMD 文字列としての計算。
  */
 export function prevDay(yyyymmdd: string): string {
-  const [y, m, d] = yyyymmdd.split('-').map(Number);
+  const parts = yyyymmdd.split('-').map(Number);
+  const [y, m, d] = [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0];
   // UTC で計算して TZ ノイズを排除 (出力も UTC 基準の YYYY-MM-DD)
   const dt = new Date(Date.UTC(y, m - 1, d));
   dt.setUTCDate(dt.getUTCDate() - 1);
@@ -53,11 +54,11 @@ export function groupContinuousEvents(events: Event[], tzOffsetMin: number): Eve
   const result: EventGroupEntry[] = [];
   let i = 0;
   while (i < events.length) {
-    const head = events[i];
+    const head = events[i]!; // i < events.length, so always in-bounds
     let lastDay = toLocalDateKey(head.occurredAtUtc as string, tzOffsetMin);
     let j = i;
     while (j + 1 < events.length) {
-      const next = events[j + 1];
+      const next = events[j + 1]!; // j + 1 < events.length, so always in-bounds
       if (next.type !== head.type) break;
       const nextDay = toLocalDateKey(next.occurredAtUtc as string, tzOffsetMin);
       // events は降順なので next は lastDay 以前。
@@ -72,8 +73,8 @@ export function groupContinuousEvents(events: Event[], tzOffsetMin: number): Eve
         kind: 'group',
         type: head.type as EventType,
         events: events.slice(i, j + 1),
-        startDate: toLocalDateKey(events[j].occurredAtUtc as string, tzOffsetMin),
-        endDate: toLocalDateKey(events[i].occurredAtUtc as string, tzOffsetMin),
+        startDate: toLocalDateKey(events[j]!.occurredAtUtc as string, tzOffsetMin), // j <= events.length-1
+        endDate: toLocalDateKey(events[i]!.occurredAtUtc as string, tzOffsetMin), // i < events.length
       });
     } else {
       result.push({ kind: 'single', event: head });
@@ -108,7 +109,7 @@ export function groupContinuousEventsAsc(events: Event[], tzOffsetMin: number): 
 export function findGroupKeyForEvent(groups: EventGroupEntry[], eventId: string): string | null {
   for (const g of groups) {
     if (g.kind === 'group' && g.events.some((e) => e.id === eventId)) {
-      return g.events[0].id;
+      return g.events[0]!.id; // g.events is non-empty by construction (slice i..j+1, j >= i)
     }
   }
   return null;

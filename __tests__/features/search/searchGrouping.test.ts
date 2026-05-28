@@ -82,9 +82,9 @@ describe('groupSearchResults (AC2 3 段組み)', () => {
       notes: [{ id: 'n1', bm25: 3 }],
     });
     expect(result.length).toBe(3);
-    expect(result[0].kind).toBe('bonsai');
-    expect(result[1].kind).toBe('species');
-    expect(result[2].kind).toBe('note');
+    expect(result[0]!.kind).toBe('bonsai');
+    expect(result[1]!.kind).toBe('species');
+    expect(result[2]!.kind).toBe('note');
   });
 
   test('SE1: 0 件セクションは非表示', () => {
@@ -94,7 +94,7 @@ describe('groupSearchResults (AC2 3 段組み)', () => {
       notes: [],
     });
     expect(result.length).toBe(1);
-    expect(result[0].kind).toBe('species');
+    expect(result[0]!.kind).toBe('species');
   });
 
   test('全カテゴリ 0 件 → 空配列', () => {
@@ -110,13 +110,13 @@ describe('groupSearchResults (AC2 3 段組み)', () => {
       species: [],
       notes: [],
     });
-    expect(result[0].items.map((x) => x.id)).toEqual(['b2', 'b1']);
+    expect(result[0]!.items.map((x) => x.id)).toEqual(['b2', 'b1']);
   });
 
   test('合算上限 (totalLimit=50) を超えない: 60 件入力 → 50 件カット', () => {
     const bonsai = Array.from({ length: 60 }, (_, i) => ({ id: `b${i}`, bm25: i }));
     const result = groupSearchResults({ bonsai, species: [], notes: [] });
-    expect(result[0].items.length).toBe(50);
+    expect(result[0]!.items.length).toBe(50);
   });
 
   test('合算上限カット: bonsai 30 + species 20 + notes 30 → 50 件で切る (note 0 件)', () => {
@@ -126,10 +126,10 @@ describe('groupSearchResults (AC2 3 段組み)', () => {
     const result = groupSearchResults({ bonsai, species, notes });
     // bonsai 30 + species 20 = 50 → notes は 0 件で除外
     expect(result.length).toBe(2);
-    expect(result[0].kind).toBe('bonsai');
-    expect(result[0].items.length).toBe(30);
-    expect(result[1].kind).toBe('species');
-    expect(result[1].items.length).toBe(20);
+    expect(result[0]!.kind).toBe('bonsai');
+    expect(result[0]!.items.length).toBe(30);
+    expect(result[1]!.kind).toBe('species');
+    expect(result[1]!.items.length).toBe(20);
   });
 
   test('合算上限カット: bonsai 50 → species/notes は除外 (合計 50)', () => {
@@ -140,13 +140,13 @@ describe('groupSearchResults (AC2 3 段組み)', () => {
       notes: [{ id: 'n1', bm25: 0 }],
     });
     expect(result.length).toBe(1);
-    expect(result[0].items.length).toBe(50);
+    expect(result[0]!.items.length).toBe(50);
   });
 
   test('カスタム totalLimit で切る', () => {
     const bonsai = Array.from({ length: 10 }, (_, i) => ({ id: `b${i}`, bm25: i }));
     const result = groupSearchResults({ bonsai, species: [], notes: [], totalLimit: 5 });
-    expect(result[0].items.length).toBe(5);
+    expect(result[0]!.items.length).toBe(5);
   });
 
   test('totalLimit=0 → 全カテゴリ除外 (空配列)', () => {

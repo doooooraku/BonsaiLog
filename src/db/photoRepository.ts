@@ -352,7 +352,7 @@ export async function reorderPhotos(bonsaiId: string, orderedIds: string[]): Pro
     for (let i = 0; i < orderedIds.length; i++) {
       await db.runAsync('UPDATE photos SET order_index = ? WHERE id = ? AND bonsai_id = ?;', [
         i,
-        orderedIds[i],
+        orderedIds[i]!, // i < orderedIds.length, so always in-bounds
         bonsaiId,
       ]);
     }

@@ -16,7 +16,7 @@
  * 関連: ADR-0036 D7 / `docs/reference/design_system.md` §18 / Material 3 Bottom Sheet / iOS HIG Action Sheet
  */
 import React from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useColors } from '@/src/core/theme/useColors';

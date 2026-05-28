@@ -36,7 +36,7 @@ export type ConfirmDialogProps = {
   /** 必須、 question form 推奨 (Apple HIG「Alerts」) */
   title: string;
   /** 任意、 ADR-0036 D4 で即削除前提では省略推奨 */
-  description?: string;
+  description?: string | undefined;
   /** confirm button label (例「削除」) */
   confirmLabel: string;
   /** cancel button label、 default は呼出側で t('cancel') 渡す */

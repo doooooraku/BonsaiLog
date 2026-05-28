@@ -39,7 +39,6 @@ import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
 import { HistoryChipRow } from '@/src/features/event/HistoryChip';
 import { UNWIRE_PARTS } from '@/src/features/event/WorkLogTypeFormFields';
 import {
-  classifyWiringDuration,
   getBodyPart,
   getDaysSinceWired,
   getScheduledUnwireAtWithFallback,

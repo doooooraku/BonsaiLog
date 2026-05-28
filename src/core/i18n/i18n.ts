@@ -25,7 +25,7 @@ import pl from './locales/pl';
 import sv from './locales/sv';
 
 import { type Lang, normalizeLangCode } from './langCode';
-import { pseudoWrap, isPseudoLang } from './pseudoLoc';
+import { pseudoWrap } from './pseudoLoc';
 
 const dictionaries = {
   en: baseEn,

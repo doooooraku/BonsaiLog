@@ -229,7 +229,14 @@ function safeDeleteFile(file: File) {
  * SQLite から bonsai / events / photos を全件読み出して BackupManifest 化する。
  * - 写真は relativePath を fileName (=<photoId>.jpg 想定) に変換 (ZIP 内ではこの名前で格納)。
  */
-async function buildManifestFromDb(): Promise<{
+/**
+ * DB → BackupManifest シリアライズ (functional core、I/O-free)。
+ *
+ * exportBackup の imperative shell (zip/共有) から分離された純粋な変換部。
+ * 実 DB harness で characterize するため export している (ADR-0007 / Phase 3 安全網)。
+ * native I/O (zip/Sharing/picker/photo-copy) は shell 側に残し Maestro で検証する。
+ */
+export async function buildManifestFromDb(): Promise<{
   manifest: BackupManifest;
   photoSourceUris: { id: string; absoluteUri: string }[];
 }> {

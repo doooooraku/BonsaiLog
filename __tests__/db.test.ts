@@ -45,7 +45,7 @@ describe('DB migration design', () => {
     const pragmaLineIndex = lines.findLastIndex((l: string) => l.includes('PRAGMA user_version'));
     expect(pragmaLineIndex).toBeGreaterThan(-1);
 
-    const pragmaLine = lines[pragmaLineIndex].trim();
+    const pragmaLine = lines[pragmaLineIndex]!.trim(); // pragmaLineIndex is in-bounds (checked by expect above)
     expect(pragmaLine.startsWith('//')).toBe(false);
     expect(pragmaLine.startsWith('*')).toBe(false);
   });

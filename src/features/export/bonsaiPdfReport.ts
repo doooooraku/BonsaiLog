@@ -62,7 +62,7 @@ export type PdfTimelineEntry = {
   /** ローカライズ済みの作業別チップ (例「番手: 2mm」「部位: 枝」)。 */
   chips: string[];
   /** 自由メモ。 */
-  note?: string;
+  note?: string | undefined;
   /** この作業に紐づくインライン写真 (base64 data URI)。 */
   photoUris: string[];
 };
@@ -71,27 +71,27 @@ export type PdfPestEntry = {
   date: string;
   /** 症状・部位 (チップを結合した 1 行)。 */
   symptomBodyPart: string;
-  note?: string;
+  note?: string | undefined;
 };
 
 export type BonsaiPdfReportData = {
   meta: {
     name: string;
-    speciesName?: string;
-    styleLabel?: string;
+    speciesName?: string | undefined;
+    styleLabel?: string | undefined;
     /** 樹齢 (例「35年」 or「不明」)。 */
-    ageText?: string;
+    ageText?: string | undefined;
     /** 取得日 + 保有年数 (例「2020-03-15（6.1年保有）」)。 */
-    acquiredText?: string;
-    acquiredFrom?: string;
-    potText?: string;
+    acquiredText?: string | undefined;
+    acquiredFrom?: string | undefined;
+    potText?: string | undefined;
     tags: string[];
-    memo?: string;
+    memo?: string | undefined;
   };
   /** カバー (or 最新) 写真 base64 data URI。 */
-  coverPhotoUri?: string;
+  coverPhotoUri?: string | undefined;
   /** カバー写真の撮影日キャプション (例「2026-04-22 撮影」)。 */
-  coverPhotoCaption?: string;
+  coverPhotoCaption?: string | undefined;
   pestEvents: PdfPestEntry[];
   timeline: PdfTimelineEntry[];
   /** タイムラインに紐づかない残り写真 (base64 data URI)。 */

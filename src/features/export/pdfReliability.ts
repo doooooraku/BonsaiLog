@@ -235,7 +235,7 @@ export async function runWithFallback<T>(
   }
   let lastError: unknown;
   for (let i = 0; i < attempts.length; i++) {
-    const attempt = attempts[i];
+    const attempt = attempts[i]!; // i < attempts.length, so always in-bounds
     try {
       const result = await factory(attempt);
       return { result, attemptUsed: attempt };

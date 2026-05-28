@@ -98,7 +98,7 @@ beforeEach(() => {
 });
 
 afterAll(() => {
-  (global as { __DEV__?: boolean }).__DEV__ = originalDev;
+  (global as { __DEV__?: boolean | undefined }).__DEV__ = originalDev;
 });
 
 describe('initializeAds (AC: app 起動 hook + Pro 不発火)', () => {

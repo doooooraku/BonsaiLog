@@ -63,12 +63,13 @@ describe('groupContinuousEvents', () => {
     const e3 = makeEvent('e3', 'watering', '2026-05-09T08:00:00');
     const result = groupContinuousEvents([e1, e2, e3], tz);
     expect(result).toHaveLength(1);
-    expect(result[0].kind).toBe('group');
-    if (result[0].kind === 'group') {
-      expect(result[0].type).toBe('watering');
-      expect(result[0].events).toHaveLength(3);
-      expect(result[0].startDate).toBe('2026-05-09');
-      expect(result[0].endDate).toBe('2026-05-11');
+    const first = result[0]!;
+    expect(first.kind).toBe('group');
+    if (first.kind === 'group') {
+      expect(first.type).toBe('watering');
+      expect(first.events).toHaveLength(3);
+      expect(first.startDate).toBe('2026-05-09');
+      expect(first.endDate).toBe('2026-05-11');
     }
   });
 
@@ -79,11 +80,12 @@ describe('groupContinuousEvents', () => {
     const e3 = makeEvent('e3', 'watering', '2026-05-10T08:00:00');
     const result = groupContinuousEvents([e1, e2, e3], tz);
     expect(result).toHaveLength(1);
-    expect(result[0].kind).toBe('group');
-    if (result[0].kind === 'group') {
-      expect(result[0].events).toHaveLength(3);
-      expect(result[0].startDate).toBe('2026-05-10');
-      expect(result[0].endDate).toBe('2026-05-11');
+    const first = result[0]!;
+    expect(first.kind).toBe('group');
+    if (first.kind === 'group') {
+      expect(first.events).toHaveLength(3);
+      expect(first.startDate).toBe('2026-05-10');
+      expect(first.endDate).toBe('2026-05-11');
     }
   });
 
@@ -105,11 +107,12 @@ describe('groupContinuousEvents', () => {
     const e3 = makeEvent('e3', 'watering', '2026-05-08T08:00:00');
     const result = groupContinuousEvents([e1, e2, e3], tz);
     expect(result).toHaveLength(2);
-    expect(result[0].kind).toBe('group');
-    if (result[0].kind === 'group') {
-      expect(result[0].events).toHaveLength(2);
-      expect(result[0].startDate).toBe('2026-05-10');
-      expect(result[0].endDate).toBe('2026-05-11');
+    const first = result[0]!;
+    expect(first.kind).toBe('group');
+    if (first.kind === 'group') {
+      expect(first.events).toHaveLength(2);
+      expect(first.startDate).toBe('2026-05-10');
+      expect(first.endDate).toBe('2026-05-11');
     }
     expect(result[1]).toEqual({ kind: 'single', event: e3 });
   });
@@ -124,9 +127,10 @@ describe('groupContinuousEvents', () => {
     const result = groupContinuousEvents([e1, e2, e3, e4, e5], tz);
     expect(result).toHaveLength(3);
     // 1st: water group (3 件)
-    expect(result[0].kind).toBe('group');
-    if (result[0].kind === 'group') {
-      expect(result[0].events).toHaveLength(3);
+    const first = result[0]!;
+    expect(first.kind).toBe('group');
+    if (first.kind === 'group') {
+      expect(first.events).toHaveLength(3);
     }
     // 2nd: pruning single
     expect(result[1]).toEqual({ kind: 'single', event: e4 });
@@ -149,11 +153,12 @@ describe('groupContinuousEventsAsc', () => {
     const e3 = makeEvent('e3', 'watering', '2026-05-11T08:00:00');
     const result = groupContinuousEventsAsc([e1, e2, e3], tz);
     expect(result).toHaveLength(1);
-    expect(result[0].kind).toBe('group');
-    if (result[0].kind === 'group') {
-      expect(result[0].events).toEqual([e1, e2, e3]); // asc 維持
-      expect(result[0].startDate).toBe('2026-05-09');
-      expect(result[0].endDate).toBe('2026-05-11');
+    const first = result[0]!;
+    expect(first.kind).toBe('group');
+    if (first.kind === 'group') {
+      expect(first.events).toEqual([e1, e2, e3]); // asc 維持
+      expect(first.startDate).toBe('2026-05-09');
+      expect(first.endDate).toBe('2026-05-11');
     }
   });
 
@@ -167,9 +172,10 @@ describe('groupContinuousEventsAsc', () => {
     expect(result).toHaveLength(3);
     expect(result[0]).toEqual({ kind: 'single', event: e1 });
     expect(result[1]).toEqual({ kind: 'single', event: e2 });
-    expect(result[2].kind).toBe('group');
-    if (result[2].kind === 'group') {
-      expect(result[2].events).toEqual([e3, e4]);
+    const third = result[2]!;
+    expect(third.kind).toBe('group');
+    if (third.kind === 'group') {
+      expect(third.events).toEqual([e3, e4]);
     }
   });
 });
