@@ -530,22 +530,24 @@ export default function BonsaiDetailScreen() {
         {
           text: t('delete'),
           style: 'destructive',
-          onPress: async () => {
-            // 既存の pending があれば先に finalize (連続削除対応)。
-            await finalizePendingDeletion();
-            // photos 内の現在 index を保存 (undo で同じ位置に戻すため)。
-            const previousIndex = photos.findIndex((p) => p.id === photo.id);
-            if (previousIndex < 0) return;
-            // 楽観的 state 更新 (UI 反映を即時化)。
-            setPhotos((prev) => removePhotoAndNormalize(prev, photo.id));
-            const pending: PendingDeletion = { photo, previousIndex };
-            pendingDeletionRef.current = pending;
-            setPendingDeletion(pending);
-            // 5 秒後に自動 finalize。
-            clearPendingDeletionTimer();
-            pendingDeletionTimerRef.current = setTimeout(() => {
-              void finalizePendingDeletion();
-            }, 5000);
+          onPress: () => {
+            void (async () => {
+              // 既存の pending があれば先に finalize (連続削除対応)。
+              await finalizePendingDeletion();
+              // photos 内の現在 index を保存 (undo で同じ位置に戻すため)。
+              const previousIndex = photos.findIndex((p) => p.id === photo.id);
+              if (previousIndex < 0) return;
+              // 楽観的 state 更新 (UI 反映を即時化)。
+              setPhotos((prev) => removePhotoAndNormalize(prev, photo.id));
+              const pending: PendingDeletion = { photo, previousIndex };
+              pendingDeletionRef.current = pending;
+              setPendingDeletion(pending);
+              // 5 秒後に自動 finalize。
+              clearPendingDeletionTimer();
+              pendingDeletionTimerRef.current = setTimeout(() => {
+                void finalizePendingDeletion();
+              }, 5000);
+            })();
           },
         },
       ]);

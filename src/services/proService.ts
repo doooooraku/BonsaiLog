@@ -103,7 +103,7 @@ async function ensureConfigured() {
     throw new Error('RevenueCat API key is missing.');
   }
 
-  Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+  void Purchases.setLogLevel(LOG_LEVEL.DEBUG);
   await Purchases.configure({ apiKey });
   if (IAP_DEBUG) {
     console.log('[RC] configured');
@@ -234,9 +234,14 @@ export const proService = {
       await saveState(state);
       onUpdate(state);
     };
-    Purchases.addCustomerInfoUpdateListener(handler);
+    // listener は void 返却を期待するため、async handler を void 包みで登録/解除する
+    // (add/remove で同一参照を渡す必要があるので wrapper を共有)。
+    const voidHandler = (info: CustomerInfo) => {
+      void handler(info);
+    };
+    Purchases.addCustomerInfoUpdateListener(voidHandler);
     return () => {
-      Purchases.removeCustomerInfoUpdateListener(handler);
+      Purchases.removeCustomerInfoUpdateListener(voidHandler);
     };
   },
 
