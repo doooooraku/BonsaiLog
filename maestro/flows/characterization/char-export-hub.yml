@@ -1,0 +1,71 @@
+# Phase 3 PR 1-5 characterization: エクスポートハブ (god 機能 export の入口) 到達 + 描画 smoke。
+#
+# PR 1-4 (god 描画 smoke) を Maestro に統合した一環。export hub 画面が「クラッシュせず表示」を
+# 実機で凍結する。export hub は Free でも render される (Pro gate は CSV/PDF 行タップ時のみ、
+# app/export/index.tsx L131)。本 flow は hub 到達まで (行タップ=paywall には踏み込まない)。
+#
+# 前提: no-launcher の preview build。自己完結: clearState:true → onboarding skip → タブ → export hub。
+# 導線: ふりかえりタブ (e2e_tab_look_back) → CareHub export カード (e2e_look_back_card_export)
+#       → エクスポートハブ (e2e_export_hub_screen)。
+appId: 'com.dooooraku.bonsailog'
+---
+- launchApp:
+    clearState: true
+    label: 'fresh 起動 (onboarding 未完了状態)'
+
+# onboarding を skip 通過 (welcome → 言語 next → tut skip で setCompleted + タブ遷移)。
+# 各 step は固定待ちでなく「次要素 visible」を待つ (描画ラグ対策)。Maestro id は full-match のため
+# 動的 suffix は `.*` で matching。
+- runFlow:
+    when:
+      visible:
+        id: 'e2e_onboarding_welcome'
+    commands:
+      - tapOn:
+          id: 'e2e_onboarding_welcome_cta'
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          visible:
+            id: 'e2e_onboarding_lang_next'
+          timeout: 15000
+      - tapOn:
+          id: 'e2e_onboarding_lang_next'
+          retryTapIfNoChange: true
+      - extendedWaitUntil:
+          visible:
+            id: 'e2e_onboarding_tut_skip_.*'
+          timeout: 15000
+      - tapOn:
+          id: 'e2e_onboarding_tut_skip_.*'
+          retryTapIfNoChange: true
+      - waitForAnimationToEnd:
+          timeout: 3000
+
+# タブ到達待ち
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_tab_look_back'
+    timeout: 20000
+    label: 'タブバー (ふりかえり) 表示を待つ'
+
+- tapOn:
+    id: 'e2e_tab_look_back'
+    retryTapIfNoChange: true
+    label: 'ふりかえりタブをタップ'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertVisible:
+    id: 'e2e_look_back_hub'
+    label: 'CareHub が表示されることを確認'
+
+- tapOn:
+    id: 'e2e_look_back_card_export'
+    retryTapIfNoChange: true
+    label: 'エクスポートカードをタップ'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertVisible:
+    id: 'e2e_export_hub_screen'
+    label: 'エクスポートハブ (god 機能入口) がクラッシュせず表示されることを確認'
