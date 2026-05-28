@@ -65,7 +65,7 @@ function extractTables(src: string): string[] {
   const re = /CREATE (?:VIRTUAL )?TABLE (?:IF NOT EXISTS )?([a-z_]+)/g;
   const set = new Set<string>();
   for (let m = re.exec(src); m !== null; m = re.exec(src)) {
-    set.add(m[1]);
+    set.add(m[1]!); // group 1 is always captured when exec() returns non-null
   }
   return [...set];
 }
@@ -74,7 +74,7 @@ function extractBonsaiAlterColumns(src: string): string[] {
   const re = /ALTER TABLE bonsai ADD COLUMN ([a-z_]+)/g;
   const set = new Set<string>();
   for (let m = re.exec(src); m !== null; m = re.exec(src)) {
-    set.add(m[1]);
+    set.add(m[1]!); // group 1 is always captured when exec() returns non-null
   }
   return [...set];
 }

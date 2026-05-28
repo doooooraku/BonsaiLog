@@ -32,8 +32,8 @@ describe('buildSpeciesSummaryRows', () => {
   test('樹種ごとに保有数を集計、保有数降順', () => {
     const rows = buildSpeciesSummaryRows(bonsai, [], t, '（未設定）');
     // 黒松(2) → 真柏(1) / 未設定(1) (同数は名前昇順)
-    expect(rows[0][0]).toBe('黒松');
-    expect(rows[0][1]).toBe('2');
+    expect(rows[0]![0]).toBe('黒松');
+    expect(rows[0]![1]).toBe('2');
     expect(rows.map((r) => r[0])).toContain('真柏');
     expect(rows.map((r) => r[0])).toContain('（未設定）');
   });
@@ -64,6 +64,6 @@ describe('buildSpeciesSummaryRows', () => {
       '（未設定）',
     );
     expect(rows).toHaveLength(1);
-    expect(rows[0][2]).toBe(''); // 黒松に紐づく水やり無し
+    expect(rows[0]![2]).toBe(''); // 黒松に紐づく水やり無し
   });
 });

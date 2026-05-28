@@ -143,7 +143,7 @@ describe('buildBonsaiPdfReport — timeline (作業ログ)', () => {
     });
     const r = buildBonsaiPdfReport(makeInput({ events: [e] }));
     expect(r.timeline).toHaveLength(1);
-    const entry = r.timeline[0];
+    const entry = r.timeline[0]!;
     expect(entry.typeLabel).toBe('eventType_wiring');
     expect(entry.date).toBe('2026-05-01'); // UTC 03:00 + JST = 同日
     expect(entry.badgeBg).toMatch(/^#/);
@@ -162,17 +162,17 @@ describe('buildBonsaiPdfReport — timeline (作業ログ)', () => {
         photoUrisByEventId: { 'ev-photo': ['data:image/jpeg;base64,AAA'] },
       }),
     );
-    expect(r.timeline[0].photoUris).toEqual(['data:image/jpeg;base64,AAA']);
+    expect(r.timeline[0]!.photoUris).toEqual(['data:image/jpeg;base64,AAA']);
   });
 
   test('payload 無しの作業はチップ空配列 (適応型)', () => {
     const r = buildBonsaiPdfReport(makeInput({ events: [makeEvent({ payloadJson: null })] }));
-    expect(r.timeline[0].chips).toEqual([]);
+    expect(r.timeline[0]!.chips).toEqual([]);
   });
 
   test('tz 異常時は日付部分 fallback (例外を投げない)', () => {
     const r = buildBonsaiPdfReport(makeInput({ events: [makeEvent({ tzIana: 'Invalid/Zone' })] }));
-    expect(r.timeline[0].date).toBe('2026-05-01');
+    expect(r.timeline[0]!.date).toBe('2026-05-01');
   });
 });
 
@@ -195,8 +195,8 @@ describe('buildBonsaiPdfReport — pestEvents (病害虫・対処)', () => {
     ];
     const r = buildBonsaiPdfReport(makeInput({ events }));
     expect(r.pestEvents).toHaveLength(2);
-    expect(r.pestEvents[0].note).toBe('ハダニ確認');
-    expect(r.pestEvents[0].symptomBodyPart.length).toBeGreaterThan(0);
+    expect(r.pestEvents[0]!.note).toBe('ハダニ確認');
+    expect(r.pestEvents[0]!.symptomBodyPart.length).toBeGreaterThan(0);
     // タイムラインには全件出る
     expect(r.timeline).toHaveLength(4);
   });

@@ -51,7 +51,7 @@ describe('buildEventCsvRow', () => {
     });
     const row = buildEventCsvRow(e, '黒松', t);
     // 部位列 (index 4): parts ラベルが入る (非空)
-    expect(row[4].length).toBeGreaterThan(0);
+    expect(row[4]!.length).toBeGreaterThan(0);
     // 詳細列 (index 5): 量の field ラベル workLogPruneAmount を含む
     expect(row[5]).toContain('workLogPruneAmount');
     // 部位列に量(workLogPruneAmount)は混ざらない
