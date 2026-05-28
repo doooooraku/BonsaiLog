@@ -499,6 +499,21 @@
 
 ---
 
+### R-57. PR マージ時にブランチを都度削除 (Sess51 由来)
+
+- **ルール**: PR を main にマージしたら、 **ローカル・リモート両方の作業ブランチをその場で削除**し溜めない。
+  1. マージは `gh pr merge <PR番号> --squash --delete-branch` で行う (`--delete-branch` がローカル枝とリモート枝を同時削除)
+  2. マージ直後に `git fetch --prune` (GitHub で消えたブランチの死んだ追跡参照を掃除)
+  3. GitHub repo 設定 `delete_branch_on_merge=true` (Sess51 で ON) により、 web UI マージや他経路でも remote 枝は自動削除される (二重の安全網)
+- **根拠**: Sess51 で `git fetch --prune` 実行時に、 過去の squash マージ済み PR が残したブランチが **ローカル 126 本 + リモート 75 本** 累積していたことが発覚し一括掃除した。 root cause = ①GitHub 設定 `delete_branch_on_merge=false` (自動削除 OFF) ②マージ手順にローカル枝削除が明記されていなかった、 の 2 点。「気をつける」 頼みでは必ず溜まる。
+- **自動化 / 構造防止**:
+  - remote: `delete_branch_on_merge=true` (設定で恒久自動化、 Sess51 で適用済)
+  - local + remote: マージコマンドを `--delete-branch` 固定 (`docs/how-to/workflow/git_workflow.md` §4.11 / §4.12 に明記)
+- **検証手順**: マージ後に `git branch` (ローカル) / `git branch -r` (リモート) で当該枝が消えていることを確認。 OPEN PR の枝・未マージ作業を含む枝 (中身が main に無いもの) は削除対象外として保護。
+- **関連**: Sess51 / `docs/how-to/workflow/git_workflow.md` (マージ手順 SoT) / R-2 (履歴は最小に) / 「測定 2 回、 切断 1 回」 原則
+
+---
+
 ## 関連
 
 - 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-52 索引 + 運用ルール)

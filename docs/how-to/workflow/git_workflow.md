@@ -273,26 +273,34 @@ git push -u origin feat/123-add-admob-skeleton
 
 - CIが全部OK
 - レビューOK
-- マージ（推奨：Squash merge で履歴を綺麗に）
+- マージは **`gh pr merge <PR番号> --squash --delete-branch`**（Squash で履歴を綺麗に + ローカル/リモート枝を同時削除）
+
+```bash
+gh pr merge 123 --squash --delete-branch
+```
+
+- `--delete-branch` を付けることで、マージ後にローカル枝とリモート枝が**その場で消える**（R-57: ブランチを溜めない）
 
 ---
 
 ### 4.12 後片付け（重要）
 
-#### mainを最新化
+#### mainを最新化 + 死んだ追跡参照の掃除
 
 ```bash
 git switch main
 git pull --ff-only origin main
+git fetch --prune   # GitHubで消えたブランチの追跡参照を掃除
 ```
 
-#### ブランチ削除（任意だが推奨）
+#### ブランチ削除（R-57: 都度削除を徹底）
 
-- GitHub上で Delete branch
-- ローカルも消すなら：
+- §4.11 の `--delete-branch` でローカル/リモート枝は既に削除済み。
+- GitHub repo 設定 `delete_branch_on_merge=true`（Sess51 で ON）により、web UI マージでも remote 枝は自動で削除される。
+- 万一 `--delete-branch` を付け忘れてローカル枝が残った場合のみ手動削除：
 
 ```bash
-git branch -d feat/123-add-admob-skeleton
+git branch -d feat/123-add-admob-skeleton   # 未マージなら -D
 ```
 
 ---
