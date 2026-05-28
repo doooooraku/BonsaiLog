@@ -70,7 +70,7 @@ type EventLike = {
 function parsePayload(json: string | null | undefined): Record<string, unknown> {
   if (!json) return {};
   try {
-    const v = JSON.parse(json);
+    const v: unknown = JSON.parse(json);
     return typeof v === 'object' && v !== null ? (v as Record<string, unknown>) : {};
   } catch {
     return {};
