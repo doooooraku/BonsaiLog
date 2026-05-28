@@ -668,13 +668,15 @@ export default function SettingsScreen() {
                     {
                       text: '削除',
                       style: 'destructive',
-                      onPress: async () => {
-                        try {
-                          await clearAllData();
-                          Alert.alert('削除完了', '全データを削除しました。');
-                        } catch (err) {
-                          Alert.alert('削除エラー', String(err));
-                        }
+                      onPress: () => {
+                        void (async () => {
+                          try {
+                            await clearAllData();
+                            Alert.alert('削除完了', '全データを削除しました。');
+                          } catch (err) {
+                            Alert.alert('削除エラー', String(err));
+                          }
+                        })();
                       },
                     },
                   ],

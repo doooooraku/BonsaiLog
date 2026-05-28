@@ -154,10 +154,12 @@ export default function TagEditScreen() {
       {
         text: t('delete'),
         style: 'destructive',
-        onPress: async () => {
-          const db = await getDb();
-          await db.runAsync('DELETE FROM tags WHERE id = ?', [tagId]);
-          router.back();
+        onPress: () => {
+          void (async () => {
+            const db = await getDb();
+            await db.runAsync('DELETE FROM tags WHERE id = ?', [tagId]);
+            router.back();
+          })();
         },
       },
     ]);

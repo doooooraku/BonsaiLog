@@ -102,7 +102,7 @@ export default function BackupScreen() {
     if (busy) return;
     Alert.alert(t('backupImportWarningTitle'), t('backupImportWarningBody'), [
       { text: t('cancel'), style: 'cancel' },
-      { text: t('backupImportAction'), style: 'default', onPress: runImport },
+      { text: t('backupImportAction'), style: 'default', onPress: () => void runImport() },
     ]);
   };
 
