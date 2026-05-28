@@ -28,8 +28,9 @@ export function swapPhotos(photos: PhotoRead[], fromIndex: number, toIndex: numb
     return photos;
   }
   const next = [...photos];
-  const temp = next[fromIndex];
-  next[fromIndex] = next[toIndex];
+  // fromIndex and toIndex are both in [0, photos.length) — guarded by the checks above
+  const temp = next[fromIndex]!;
+  next[fromIndex] = next[toIndex]!;
   next[toIndex] = temp;
   return normalizePhotoOrder(next);
 }

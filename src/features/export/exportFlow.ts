@@ -242,7 +242,7 @@ export async function loadListPdfHtml(
     name: b.name,
     speciesName: b.speciesCommonName,
     acquiredAt: b.acquiredAt,
-    eventCount: eventsByBonsai[i].length,
+    eventCount: (eventsByBonsai[i] ?? []).length, // i is always in-bounds (same-length arrays), but guard for type safety
   }));
   const allEvents = eventsByBonsai.flat();
   const typeBreakdown = allEvents.reduce<Record<string, number>>((acc, e) => {

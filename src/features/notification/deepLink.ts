@@ -42,7 +42,8 @@ export function isValidIsoDate(value: string): boolean {
   if (day < 1 || day > 31) return false;
   // 月別最大日数の厳密チェック (Date を経由せず純計算で 2/30 等を弾く)
   const daysInMonth = [31, 28 + (isLeapYear(year) ? 1 : 0), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  return day <= daysInMonth[month - 1];
+  // month is 1-12 (validated above), so month-1 is 0-11 — always in-bounds for this 12-element array
+  return day <= daysInMonth[month - 1]!;
 }
 
 function isLeapYear(year: number): boolean {

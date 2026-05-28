@@ -772,7 +772,7 @@ export default function BonsaiDetailScreen() {
                 {historyGroups.map((entry) => {
                   // 連続日 group: 「水やり ×3  4月20日 ～ 4月22日  3回まとめて表示 個別に開く ▼」
                   if (entry.kind === 'group') {
-                    const key = entry.events[0].id;
+                    const key = entry.events[0]!.id; // group always has ≥1 event by construction
                     const expanded = expandedGroupIds.has(key);
                     const startLabel = formatDate(`${entry.startDate}T00:00:00.000Z`, lang);
                     const endLabel = formatDate(`${entry.endDate}T00:00:00.000Z`, lang);
@@ -941,7 +941,7 @@ export default function BonsaiDetailScreen() {
                       {todayRow}
                       {groups.map((entry, idx) => (
                         <TimelineRow
-                          key={entry.kind === 'group' ? entry.events[0].id : entry.event.id}
+                          key={entry.kind === 'group' ? entry.events[0]!.id : entry.event.id} // group always has ≥1 event by construction
                           entry={entry}
                           isFirst={false}
                           isLast={idx === groups.length - 1}
@@ -1102,7 +1102,9 @@ function TimelineRow({
     const endLabel = formatDate(`${entry.endDate}T00:00:00.000Z`, lang);
     const note = entry.events.find((ev) => ev.note)?.note ?? null;
     return (
-      <View style={styles.timelineRow} testID={`e2e_timeline_event_${entry.events[0].id}`}>
+      <View style={styles.timelineRow} testID={`e2e_timeline_event_${entry.events[0]!.id}`}>
+        {' '}
+        {/* group always has ≥1 event by construction */}
         <View style={styles.timelineLeft}>
           <View style={[styles.timelineLine, isFirst && styles.timelineLineHidden]} />
           <View style={styles.timelineDot} />

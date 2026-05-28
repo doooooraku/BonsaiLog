@@ -80,9 +80,10 @@ export function parseLocalDateKey(
 ): { year: number; month: number; day: number } | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
   if (!m) return null;
-  const year = Number.parseInt(m[1], 10);
-  const month = Number.parseInt(m[2], 10); // 1-12
-  const day = Number.parseInt(m[3], 10); // 1-31
+  // m[1..3] are guaranteed by the regex groups above
+  const year = Number.parseInt(m[1]!, 10);
+  const month = Number.parseInt(m[2]!, 10); // 1-12
+  const day = Number.parseInt(m[3]!, 10); // 1-31
   if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
   if (month < 1 || month > 12) return null;
   if (day < 1 || day > 31) return null;

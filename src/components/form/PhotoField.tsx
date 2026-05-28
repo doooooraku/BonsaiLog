@@ -95,7 +95,7 @@ export function PhotoField({
       quality: 0.85,
     });
     if (result.canceled || !result.assets || result.assets.length === 0) return;
-    const a = result.assets[0];
+    const a = result.assets[0]!; // guarded by assets.length === 0 check above
     onChange([
       ...photos,
       {
@@ -118,6 +118,7 @@ export function PhotoField({
       if (to < 0 || to >= photos.length) return;
       const next = [...photos];
       const [moved] = next.splice(from, 1);
+      if (moved === undefined) return; // splice on a valid index always returns 1 element, but guard for type safety
       next.splice(to, 0, moved);
       onChange(next);
     },

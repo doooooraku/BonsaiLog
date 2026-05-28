@@ -568,7 +568,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       style: 'chokkan',
       acquiredAt: toIsoUtc('2018-04-12'),
       estimatedAge: 35,
-      photoUris: [photoUris.sample1],
+      photoUris: [photoUris['sample1'] ?? null],
       tagIds: [tagShow.id, tagBalcony.id],
     },
     {
@@ -576,7 +576,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       style: 'moyogi',
       acquiredAt: toIsoUtc('2020-06-03'),
       estimatedAge: 18,
-      photoUris: [photoUris.sample2],
+      photoUris: [photoUris['sample2'] ?? null],
       tagIds: [tagShow.id],
     },
     {
@@ -584,7 +584,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       style: 'shakan',
       acquiredAt: toIsoUtc('2022-09-21'),
       estimatedAge: 45,
-      photoUris: [photoUris.balcony],
+      photoUris: [photoUris['balcony'] ?? null],
       tagIds: [tagWatch.id, tagBalcony.id, tagMaster.id],
     },
     // 新規 7 件 active
@@ -593,7 +593,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       style: 'moyogi',
       acquiredAt: toIsoUtc('2023-03-15'),
       estimatedAge: 12,
-      photoUris: [photoUris.pear],
+      photoUris: [photoUris['pear'] ?? null],
       tagIds: [tagFlower.id, tagIndoor.id],
     },
     {
@@ -601,7 +601,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       style: 'chokkan',
       acquiredAt: toIsoUtc('2019-05-20'),
       estimatedAge: 25,
-      photoUris: [photoUris.momiji],
+      photoUris: [photoUris['momiji'] ?? null],
       tagIds: [tagAutumn.id, tagBalcony.id],
     },
     {
@@ -609,7 +609,11 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       style: 'kabudachi',
       acquiredAt: toIsoUtc('2015-10-05'),
       estimatedAge: 150,
-      photoUris: [photoUris.shimpaku, photoUris.balcony, photoUris.sample1], // 3 枚 = Free 上限
+      photoUris: [
+        photoUris['shimpaku'] ?? null,
+        photoUris['balcony'] ?? null,
+        photoUris['sample1'] ?? null,
+      ], // 3 枚 = Free 上限
       tagIds: [tagOld.id, tagShow.id, tagMaster.id],
     },
     {
@@ -617,7 +621,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       style: 'kengai',
       acquiredAt: toIsoUtc('2017-08-10'),
       estimatedAge: 60,
-      photoUris: [photoUris.seedlings],
+      photoUris: [photoUris['seedlings'] ?? null],
       tagIds: [tagOld.id],
     },
     {
@@ -668,13 +672,13 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
       ? (await createOrFindCustomSpecies(customSpeciesName)).id
       : null;
     const bonsai = await createBonsai({
-      name: pack.bonsaiNames[idx],
+      name: pack.bonsaiNames[idx] ?? '',
       speciesId: spec.speciesId,
       customSpeciesId,
       style: spec.style,
       acquiredAt: spec.acquiredAt,
       estimatedAge: spec.estimatedAge,
-      memo: pack.bonsaiMemos[idx],
+      memo: pack.bonsaiMemos[idx] ?? '',
     });
     createdBonsaiIds.push(bonsai.id);
 
@@ -730,7 +734,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
   for (const [defIdx, def] of OTHER_EVENT_DEFS.entries()) {
     try {
       await createEvent({
-        bonsaiId: createdBonsaiIds[def.bonsaiIdx],
+        bonsaiId: createdBonsaiIds[def.bonsaiIdx] ?? '',
         type: def.type,
         status: 'logged',
         occurredAtUtc: pastUtc(def.daysAgo, 9),
@@ -755,7 +759,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
   for (const spec of planSpecs) {
     try {
       await createEvent({
-        bonsaiId: createdBonsaiIds[spec.bonsaiIdx],
+        bonsaiId: createdBonsaiIds[spec.bonsaiIdx] ?? '',
         type: spec.type,
         status: 'planned',
         occurredAtUtc: futureUtc(spec.daysAhead, 9),
@@ -774,7 +778,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
   for (const spec of overdueSpecs) {
     try {
       await createEvent({
-        bonsaiId: createdBonsaiIds[spec.bonsaiIdx],
+        bonsaiId: createdBonsaiIds[spec.bonsaiIdx] ?? '',
         type: spec.type,
         status: 'planned',
         occurredAtUtc: pastUtc(spec.daysAgo, 9),
@@ -810,7 +814,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
           ? futureUtc(w.scheduledUnwireDaysAhead, 9)
           : pastUtc(-w.scheduledUnwireDaysAhead, 9);
       await createEvent({
-        bonsaiId: createdBonsaiIds[w.bonsaiIdx],
+        bonsaiId: createdBonsaiIds[w.bonsaiIdx] ?? '',
         type: 'wiring',
         status: 'logged',
         occurredAtUtc: pastUtc(w.weeksAgo * 7, 9),
@@ -882,7 +886,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
         // 各作業に写真 2 枚 (eventId 紐付け)。asset を巡回。
         if (assetPool.length > 0) {
           for (let k = 0; k < 2; k++) {
-            const uri = assetPool[(defIdx * 2 + k) % assetPool.length];
+            const uri = assetPool[(defIdx * 2 + k) % assetPool.length]!; // modulo ensures index is always in [0, assetPool.length-1]
             try {
               await addPhotoFromUri({ bonsaiId: fullBonsai.id, eventId: event.id, sourceUri: uri });
               photoCount += 1;
@@ -908,7 +912,7 @@ async function seedTestDataInternal(pack: SeedLangPack): Promise<SeedResult> {
   for (const spec of trashSpecs) {
     try {
       const event = await createEvent({
-        bonsaiId: createdBonsaiIds[spec.bonsaiIdx],
+        bonsaiId: createdBonsaiIds[spec.bonsaiIdx] ?? '',
         type: spec.type,
         status: 'logged',
         occurredAtUtc: pastUtc(spec.daysAgo, 7),

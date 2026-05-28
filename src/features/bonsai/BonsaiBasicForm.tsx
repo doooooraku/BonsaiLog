@@ -435,6 +435,7 @@ export function useBonsaiBasicForm({
       if (to < 0 || to >= prev.length) return prev;
       const next = [...prev];
       const [moved] = next.splice(from, 1);
+      if (moved === undefined) return prev; // splice on a valid index always returns 1 element, but guard for type safety
       next.splice(to, 0, moved);
       return next;
     });
@@ -459,7 +460,7 @@ export function useBonsaiBasicForm({
     }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.85 });
     if (result.canceled || !result.assets || result.assets.length === 0) return;
-    const a = result.assets[0];
+    const a = result.assets[0]!; // guarded by assets.length === 0 check above
     setPendingPhotos((prev) => [
       ...prev,
       { uri: a.uri, width: a.width ?? null, height: a.height ?? null },
