@@ -31,10 +31,10 @@ import type {
 } from './backupTypes';
 
 /** applyImportPlan が必要とする DB の最小インターフェース (テストの node:sqlite mock も満たす)。 */
-export type ImportApplyDb = Pick<SQLiteDatabase, 'runAsync' | 'withTransactionAsync'>;
+type ImportApplyDb = Pick<SQLiteDatabase, 'runAsync' | 'withTransactionAsync'>;
 
 /** insert 対象だけを取り出した import プラン (backupService が buildAppendImportPlan で生成する形)。 */
-export type BackupImportPlan = AppendImportPlan<
+type BackupImportPlan = AppendImportPlan<
   BackupBonsai,
   BackupEvent,
   BackupPhoto,
@@ -49,7 +49,7 @@ export type BackupImportPlan = AppendImportPlan<
  * native ファイル操作を核から切り離す注入点。コピー済みパスの追跡 (ロールバック後始末用) は
  * 呼出側がクロージャで行う。
  */
-export type CopyPhotoFile = (photo: BackupPhoto) => string;
+type CopyPhotoFile = (photo: BackupPhoto) => string;
 
 /**
  * import プランを 1 トランザクションで DB へ適用する (純粋核)。
