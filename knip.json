@@ -11,27 +11,19 @@
   "ignoreExportsUsedInFile": true,
   "ignoreBinaries": ["adb", "wslpath", "python3", "maestro"],
   "ignoreDependencies": [
-    "expo-web-browser",
     "expo-asset",
     "expo-updates",
+    "expo-web-browser",
     "@react-native/eslint-config",
     "@testing-library/jest-native",
     "eslint-config-prettier",
     "eslint-plugin-react",
     "eslint-plugin-react-hooks",
-    "eslint-plugin-boundaries",
     "lint-staged",
     "ts-jest",
     "typescript-eslint"
   ],
-  "ignore": [
-    "src/core/structuredLog.ts",
-    "src/features/watering/LastWateredText.tsx",
-    "src/services/legalService.ts",
-    "src/services/reviewService.ts",
-    "components/external-link.tsx",
-    "hooks/use-color-scheme.web.ts"
-  ],
+  "ignore": ["hooks/use-color-scheme.web.ts"],
   "rules": {
     "exports": "warn",
     "types": "warn",
