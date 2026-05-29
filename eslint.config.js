@@ -56,8 +56,8 @@ module.exports = defineConfig([
     },
   },
   // Phase 6 (FSD 境界整理): eslint-plugin-boundaries で層間 import を静的検査。
-  // 層定義と allow-matrix の正は ADR-0048。導入時は warn(既知の境界違反を可視化)、
-  // 全違反解消後に PR 6-5 で error 化 + CI gate 化する。
+  // 層定義と allow-matrix の正は ADR-0048。PR 6-1〜6-4 で全違反解消後、本 PR 6-5 で
+  // error 化 (CI=verify:lint で gate)。新規の層違反混入は CI が error として弾く。
   // 解決は expo flat config の import/resolver.typescript:true(@/ エイリアス対応)に依存。
   {
     files: ['src/**/*.{ts,tsx}', 'app/**/*.{ts,tsx}'],
@@ -77,7 +77,7 @@ module.exports = defineConfig([
     },
     rules: {
       'boundaries/dependencies': [
-        'warn',
+        'error',
         {
           default: 'disallow',
           rules: [
