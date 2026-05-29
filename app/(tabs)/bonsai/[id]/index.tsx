@@ -26,7 +26,6 @@ import { useEventActions } from '@/src/features/bonsai/detail/useEventActions';
 import { useScheduleEvent } from '@/src/features/bonsai/detail/useScheduleEvent';
 import { useScrollToEvent } from '@/src/features/bonsai/detail/useScrollToEvent';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BORDER_DEFAULT, BRAND_GREEN, DANGER, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
@@ -421,90 +420,4 @@ const styles = StyleSheet.create({
   flexOne: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   scrollContent: { padding: 16, gap: 16 },
-  // displayL 32/38 (design_system.md §3-3、Claude Design detail-screens.jsx)
-  bonsaiName: {
-    fontFamily: 'NotoSerifJP_500Medium',
-    fontSize: 32,
-    lineHeight: 38,
-    letterSpacing: 0.4,
-  },
-  sci: { fontStyle: 'italic', opacity: 0.7, fontSize: 13, color: TEXT_SECONDARY },
-  archiveBtn: {
-    marginTop: 24,
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: DANGER,
-    alignItems: 'center',
-    minHeight: 48,
-    justifyContent: 'center',
-  },
-  archiveText: { color: DANGER, fontSize: 15, fontWeight: '500' },
-  // Sess36 PR-3 ADR-0042 D3: 旧 historyFab + historyFabPlus は共通 <FAB /> に移行、 撤去済。
-  // ADR-0020 Phase 3: 「水やり履歴」リンク (詳細画面 → watering 画面遷移)
-  wateringHistoryLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 12,
-    minHeight: 48,
-  },
-  wateringHistoryLinkText: { fontSize: 15, fontWeight: '500', color: BRAND_GREEN },
-  wateringHistoryLinkArrow: { fontSize: 20, color: TEXT_SECONDARY },
-  yearBlock: { gap: 8 },
-  yearLabel: { fontSize: 13, opacity: 0.7 },
-  photoRow: { gap: 8 },
-  photoThumb: {
-    width: 96,
-    height: 96,
-    borderRadius: 12,
-    backgroundColor: BORDER_DEFAULT,
-  },
-  photoCover: {
-    borderWidth: 2,
-    borderColor: BRAND_GREEN,
-  },
-  eventAddBtn: {
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BRAND_GREEN,
-    alignItems: 'center',
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  eventAddText: { color: BRAND_GREEN, fontSize: 15, fontWeight: '500' },
-  headerMenuButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholderText: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: TEXT_SECONDARY,
-    textAlign: 'center',
-    paddingVertical: 24,
-  },
-  // Issue #298 Phase 1: timeline タブ planned events 表示用 (Card 風)
-  eventEntry: {
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    gap: 4,
-    marginBottom: 8,
-  },
-  eventHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  eventDate: { fontSize: 13, color: TEXT_SECONDARY, fontVariant: ['tabular-nums'] },
-  entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
 });
