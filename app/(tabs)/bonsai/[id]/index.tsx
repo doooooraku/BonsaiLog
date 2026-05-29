@@ -1,7 +1,7 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -22,20 +22,15 @@ import {
   usePhotoCrudWithUndo,
   type PendingPhotoDeletion,
 } from '@/src/features/bonsai/detail/usePhotoCrudWithUndo';
+import { useEventActions } from '@/src/features/bonsai/detail/useEventActions';
 import { useScheduleEvent } from '@/src/features/bonsai/detail/useScheduleEvent';
 import { useScrollToEvent } from '@/src/features/bonsai/detail/useScrollToEvent';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { BORDER_DEFAULT, BRAND_GREEN, DANGER, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 
-import { archiveBonsai } from '@/src/db/bonsaiRepository';
-import { bulkSoftDeleteEvents } from '@/src/db/eventRepository';
-import { cancelForEvents } from '@/src/features/notification/cancelForEvent';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
-import { useToastStore } from '@/src/components/Toast';
-import * as Haptics from 'expo-haptics';
 import { getTzOffsetMin } from '@/src/core/datetime';
-import { type Event } from '@/src/db/schema';
 import {
   findGroupKeyForEvent,
   groupContinuousEvents,
@@ -129,19 +124,19 @@ export default function BonsaiDetailScreen() {
     },
   });
 
-  // ADR-0036 D1-D4 (Sess25 PR-ζ-2-⑧、 Sess27 PR-4 で D5 撤回): event 削除 ConfirmDialog state + 通知 Toast のみ
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const handleConfirmDelete = useCallback(async () => {
-    if (!pendingDeleteId) return;
-    const id = pendingDeleteId;
-    setPendingDeleteId(null);
-    await bulkSoftDeleteEvents([id]); // R-43 atomic、 単体でも bulk wrapper 経由で統一
-    await cancelForEvents([id], t);
-    await reload();
-    // Sess27 PR-4 (ADR-0036 D5 撤回、 R-44 緩和): Undo button 撤回、 通知 Toast のみ
-    useToastStore.getState().show(t('undoSnackbarLoggedDeleteN').replace('{count}', '1'));
-  }, [pendingDeleteId, t, reload]);
-  const handleCancelDelete = useCallback(() => setPendingDeleteId(null), []);
+  // R8/R9 (Phase 4 A1-12): イベント削除 + アーカイブ (ADR-0036 D1-D4)。
+  // ConfirmDialog 本体 JSX は下の render に残置し、本フックの visible state で駆動する。
+  const {
+    deleteConfirmVisible,
+    confirmDeleteEvent,
+    kebabDeleteEvent,
+    handleConfirmDelete,
+    handleCancelDelete,
+    archiveConfirmVisible,
+    handleArchive,
+    handleConfirmArchive,
+    handleCancelArchive,
+  } = useEventActions({ item, reload, t, onArchived: () => router.back() });
 
   // R7 (Phase 4 A1-7): 検索結果タップ → 該当作業へジャンプ + 一時ハイライト (measureLayout)。
   const { highlightedEventId, registerRow, scrollToEvent } = useScrollToEvent({
@@ -193,19 +188,6 @@ export default function BonsaiDetailScreen() {
     setHistoryFilter,
     setExpandedGroupIds,
   ]);
-
-  // ADR-0036 D1: アーカイブ確認も OS 標準 Alert → カスタム ConfirmDialog に統一 (Home 長押しと見た目統一)
-  const [archiveConfirmVisible, setArchiveConfirmVisible] = useState(false);
-  const handleArchive = useCallback(() => {
-    if (!item) return;
-    setArchiveConfirmVisible(true);
-  }, [item]);
-  const handleConfirmArchive = useCallback(async () => {
-    if (!item) return;
-    setArchiveConfirmVisible(false);
-    await archiveBonsai(item.id);
-    router.back();
-  }, [item, router]);
 
   // R4 (Phase 4 A1-6): 写真 CRUD + 5 秒 Undo。pendingDeletionRef は上で作成した共有 ref を注入。
   const {
@@ -391,7 +373,7 @@ export default function BonsaiDetailScreen() {
 
       {/* ADR-0036 D1/D3/D4 (Sess25 PR-ζ-2-⑧): カスタム ConfirmDialog (history タブ = logged 削除) */}
       <ConfirmDialog
-        visible={pendingDeleteId !== null}
+        visible={deleteConfirmVisible}
         title={t('planEventDeleteConfirmLoggedSingleTitle')}
         confirmLabel={t('delete')}
         cancelLabel={t('cancel')}
@@ -410,7 +392,7 @@ export default function BonsaiDetailScreen() {
         cancelLabel={t('cancel')}
         destructive
         onConfirm={handleConfirmArchive}
-        onCancel={() => setArchiveConfirmVisible(false)}
+        onCancel={handleCancelArchive}
         testID="e2e_bonsai_detail_confirm_archive"
       />
     </ThemedView>
@@ -426,20 +408,7 @@ export default function BonsaiDetailScreen() {
   }
 
   // Sess19 PR-6 (ADR-0031 D3): persistEventWithPayload + showEventOverloadPopupForPayload 削除。
-  // WorkLogConfirm が直接 await + F-05 popup (line 92-129 の persistAndNavigate) で完結するため不要。
-  // stale closure bug (deps 欠落の useFocusEffect callback closure が古い item=null を参照) 構造的解消。
-
-  // ADR-0036 D1-D4 (Sess25 PR-ζ-2-⑧、 Sess27 PR-4-5 で D5/D6 撤回): カスタム ConfirmDialog + Haptics
-  // history タブ = logged only、 planEventDeleteConfirmLoggedSingleTitle 利用
-  function confirmDeleteEvent(ev: Event) {
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // R-45 長押し成功 fb
-    setPendingDeleteId(ev.id);
-  }
-
-  // Sess27 PR-5: kebab tap (Haptics なし、 個別 row 代替動線)
-  function kebabDeleteEvent(ev: Event) {
-    setPendingDeleteId(ev.id);
-  }
+  // WorkLogConfirm が直接 await + F-05 popup で完結するため不要。
 }
 
 // Sess22 ADR-0034 D5: 旧 EventSingleRow 定義は `src/features/event/EventRow.tsx` に移設、
