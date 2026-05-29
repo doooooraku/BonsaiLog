@@ -121,7 +121,6 @@
     "expo-sqlite": "^55.0.11",
     "expo-status-bar": "~55.0.4",
     "expo-store-review": "~55.0.9",
-    "expo-symbols": "~55.0.5",
     "expo-system-ui": "~55.0.11",
     "expo-tracking-transparency": "~55.0.13",
     "expo-web-browser": "~55.0.10",
