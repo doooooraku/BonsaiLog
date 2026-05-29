@@ -27,7 +27,6 @@
     "typescript-eslint"
   ],
   "ignore": [
-    "src/core/queries/**",
     "src/core/structuredLog.ts",
     "src/features/watering/LastWateredText.tsx",
     "src/services/legalService.ts",
