@@ -23,6 +23,7 @@ import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
 import { BonsaiBasicSection } from '@/src/features/bonsai/detail/BonsaiBasicSection';
 import { BonsaiTimelineTab } from '@/src/features/bonsai/detail/BonsaiTimelineTab';
 import { formatDate } from '@/src/features/bonsai/detail/dateFormat';
+import { useBonsaiDetailData } from '@/src/features/bonsai/detail/useBonsaiDetailData';
 import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
 import { PhotoUndoBanner } from '@/src/features/bonsai/PhotoUndoBanner';
 import {
@@ -44,27 +45,18 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 
-import {
-  archiveBonsai,
-  getBonsaiWithSpecies,
-  type BonsaiWithSpecies,
-} from '@/src/db/bonsaiRepository';
+import { archiveBonsai } from '@/src/db/bonsaiRepository';
 import {
   deletePhoto,
   FREE_PHOTO_LIMIT_PER_BONSAI,
   getPhotoCountByBonsai,
-  getPhotosByBonsai,
   insertPhoto,
   reorderPhotos,
   setCoverPhoto,
   updatePhotoCaption,
   type PhotoRead,
 } from '@/src/db/photoRepository';
-import {
-  bulkSoftDeleteEvents,
-  createEvent,
-  getActiveEventsByBonsai,
-} from '@/src/db/eventRepository';
+import { bulkSoftDeleteEvents, createEvent } from '@/src/db/eventRepository';
 import { cancelForEvents } from '@/src/features/notification/cancelForEvent';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { useToastStore } from '@/src/components/Toast';
@@ -107,13 +99,6 @@ export default function BonsaiDetailScreen() {
   const handleMemoFocus = React.useCallback(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
   }, []);
-  const [item, setItem] = useState<BonsaiWithSpecies | null>(null);
-  const [loading, setLoading] = useState(true);
-  // Repolog 風 photoCard 縦リスト (orderIndex 順、年次グループ化は廃止)
-  const [photos, setPhotos] = useState<PhotoRead[]>([]);
-  const [captions, setCaptions] = useState<Record<string, string>>({});
-  const [events, setEvents] = useState<Event[]>([]);
-  const photoCount = photos.length;
   // 削除 undo (Repolog 流用): 5 秒以内に「元に戻す」で復元、超過 / 別操作で finalize → DB 物理削除。
   type PendingDeletion = {
     photo: PhotoRead;
@@ -170,6 +155,12 @@ export default function BonsaiDetailScreen() {
     }, [handleSchedulePickerSelect]),
   );
 
+  // R2 (Phase 4 A1-4): bonsai + 写真 + イベント取得 + focus 毎 reload。
+  // R5 consume (上) の後・basicForm (下) の前に呼ぶことで useFocusEffect 登録順を保持。
+  const { item, loading, photos, setPhotos, captions, setCaptions, events, reload } =
+    useBonsaiDetailData({ id, lang, pendingDeletionRef });
+  const photoCount = photos.length;
+
   const handleScheduleDateSelect = React.useCallback(
     async (date: Date | null) => {
       setShowSchedulePicker(false);
@@ -200,37 +191,6 @@ export default function BonsaiDetailScreen() {
     const cover = photos.find((p) => p.isCover === 1);
     return cover?.absoluteUri ?? null;
   }, [photos]);
-
-  const reload = useCallback(async () => {
-    if (!id) return;
-    setLoading(true);
-    try {
-      const data = await getBonsaiWithSpecies(id, lang);
-      setItem(data);
-      const list = await getPhotosByBonsai(id);
-      // pending 削除中の photo は state に復活させない (DB にはまだ存在するが UI 上は削除済の見た目)。
-      // タイマー満了 or unmount で finalize → DB 削除されるまでの一時的な不可視化。
-      const pending = pendingDeletionRef.current;
-      const filtered = pending != null ? list.filter((p) => p.id !== pending.photo.id) : list;
-      setPhotos(filtered);
-      // captions の controlled 値を DB の最新値で初期化 (pending 含めて更新、復元時に caption も戻る)。
-      const captionMap: Record<string, string> = {};
-      list.forEach((p) => {
-        captionMap[p.id] = p.caption ?? '';
-      });
-      setCaptions(captionMap);
-      const evs = await getActiveEventsByBonsai(id);
-      setEvents(evs);
-    } finally {
-      setLoading(false);
-    }
-  }, [id, lang]);
-
-  useFocusEffect(
-    useCallback(() => {
-      void reload();
-    }, [reload]),
-  );
 
   // Issue #439: 基本情報タブの inline 編集フォーム state (BonsaiCreateSheet と同じフック)。
   // 親で hook を呼ぶことで、picker BottomSheet を画面 root に配置できる (ScrollView 内 nest 禁止)。
@@ -468,13 +428,16 @@ export default function BonsaiDetailScreen() {
         console.warn('[BonsaiDetail] reorder failed:', err);
       }
     },
-    [photos, item],
+    [photos, item, setPhotos],
   );
 
   // PhotoCard caption: controlled 入力 (state) + blur で DB 反映。
-  const handleCaptionChange = useCallback((photoId: string, text: string) => {
-    setCaptions((prev) => ({ ...prev, [photoId]: text }));
-  }, []);
+  const handleCaptionChange = useCallback(
+    (photoId: string, text: string) => {
+      setCaptions((prev) => ({ ...prev, [photoId]: text }));
+    },
+    [setCaptions],
+  );
   const handleCaptionBlur = useCallback(
     async (photoId: string) => {
       const text = captions[photoId] ?? '';
@@ -550,7 +513,7 @@ export default function BonsaiDetailScreen() {
         },
       ]);
     },
-    [t, photos, finalizePendingDeletion, clearPendingDeletionTimer],
+    [t, photos, finalizePendingDeletion, clearPendingDeletionTimer, setPhotos],
   );
 
   // 「元に戻す」: タイマーキャンセル + state を pending 前の位置に復元。
@@ -563,7 +526,7 @@ export default function BonsaiDetailScreen() {
     setPhotos((prev) =>
       restorePhotoAtIndexAndNormalize(prev, pending.photo, pending.previousIndex),
     );
-  }, [clearPendingDeletionTimer]);
+  }, [clearPendingDeletionTimer, setPhotos]);
 
   // unmount / 画面離脱時: pending を確定して clean state で離脱。
   React.useEffect(() => {
