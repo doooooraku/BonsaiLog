@@ -147,6 +147,8 @@ Before (現状)                          After (Phase 3 完了時)
 
 ### Phase 4: god component の段階的分割
 
+> **✅ 完了 (2026-05-29)**: 全 11 対象を分割 or 完了扱い。Before/After + DoD 検証は **`./phase-4-report.md`** 参照。成功基準は ADR-0045 (責務分離 + ≤約450 目安) に再定義済。
+
 **目的**: 上位 god component を hook/サブコンポーネントに分割。**振る舞い完全不変**。Strangler Fig で旧公開 API は wrapper として保持。
 
 #### Phase 4a: 上位 3件(各 1〜2 PR、計 3〜5 PR)
