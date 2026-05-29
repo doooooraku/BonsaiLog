@@ -20,7 +20,7 @@ import { getTzIana, getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 
 import { getDb } from './db';
 import { snakeToCamelRow, snakeToCamelRows } from './rowMapper';
-import { serializeEventPayload, validateEventPayload } from '@/src/features/event/payloadValidator';
+import { serializeEventPayload, validateEventPayload } from './eventPayloadValidator';
 import type { Event, EventStatus, EventType } from './schema';
 
 /** 30 日ゴミ箱の保持日数 (ADR-0008、Issue #17 AC4)。 */

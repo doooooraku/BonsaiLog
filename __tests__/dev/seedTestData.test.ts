@@ -17,7 +17,7 @@ import { resolve } from 'node:path';
 
 import { FULL_BONSAI_EVENT_DEFS, OTHER_EVENT_DEFS } from '@/src/dev/seedTestData';
 import { EVENT_TYPES } from '@/src/db/schema';
-import { validateEventPayload } from '@/src/features/event/payloadValidator';
+import { validateEventPayload } from '@/src/db/eventPayloadValidator';
 
 const SEED_SRC = readFileSync(resolve(__dirname, '../../src/dev/seedTestData.ts'), 'utf8');
 
