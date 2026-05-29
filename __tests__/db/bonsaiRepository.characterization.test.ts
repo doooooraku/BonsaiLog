@@ -164,7 +164,7 @@ describe('updateBonsai', () => {
   });
 });
 
-describe('deleteBonsaiHard / purgeBonsaiCompletely', () => {
+describe('deleteBonsaiHard / purgeBonsaiDbRows', () => {
   test('deleteBonsaiHard は bonsai 行を削除', async () => {
     const { bonsai } = repos();
     const b = await bonsai.createBonsai({ name: '削除' });
@@ -172,14 +172,14 @@ describe('deleteBonsaiHard / purgeBonsaiCompletely', () => {
     expect(await bonsai.getBonsaiById(b.id)).toBeNull();
   });
 
-  test('purgeBonsaiCompletely は子テーブル (events / bonsai_tags) も明示削除', async () => {
+  test('purgeBonsaiDbRows は子テーブル (events / bonsai_tags) も明示削除', async () => {
     const { bonsai, ev, tag } = repos();
     const b = await bonsai.createBonsai({ name: '完全削除' });
     await ev.createEvent({ bonsaiId: b.id, type: 'watering' });
     const t = await tag.createOrFindTag('タグ');
     await tag.attachTagToBonsai(b.id, t.id);
 
-    await bonsai.purgeBonsaiCompletely(b.id);
+    await bonsai.purgeBonsaiDbRows(b.id);
 
     expect(await bonsai.getBonsaiById(b.id)).toBeNull();
     expect((await ev.getActiveEventsByBonsai(b.id)).length).toBe(0);

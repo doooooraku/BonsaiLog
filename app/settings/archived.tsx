@@ -30,11 +30,11 @@ import { useColors } from '@/src/core/theme/useColors';
 import {
   getAllArchivedBonsai,
   getBonsaiWithSpecies,
-  purgeBonsaiCompletely,
   restoreBonsai,
 } from '@/src/db/bonsaiRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
 import { BonsaiPlaceholder, hashSeed } from '@/src/features/bonsai/BonsaiPlaceholder';
+import { purgeBonsaiCompletely } from '@/src/features/photos/photoOrchestrator';
 
 type ArchivedRow = {
   id: string;

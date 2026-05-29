@@ -7,8 +7,10 @@
  * - 取得系: getPhotosByBonsai / getCoverPhoto / event 紐付け / 年グルーピング
  * - 更新系: setCoverPhoto / updateCaption / reorder
  * - 削除系: deletePhoto (cover 自動昇格) / deleteAllPhotosForBonsai
- * - addPhotoFromUri: persistPhotoFile mock 経由
  * を凍結する。
+ *
+ * 注: addPhotoFromUri は Phase 6 F2 で photoOrchestrator へ移設
+ *     (__tests__/features/photos/photoOrchestrator.test.ts)。
  *
  * FS mock: 相対⇄絶対変換の documentDirectory と persistPhotoFile/deletePhotoFile を固定化。
  * top-level jest.mock は resetModules を跨いで sticky に再適用される。
@@ -188,16 +190,5 @@ describe('削除系', () => {
     await photo.insertPhoto({ bonsaiId, absoluteUri: uri(bonsaiId, 'b.jpg') });
     await photo.deleteAllPhotosForBonsai(bonsaiId);
     expect(await photo.getPhotoCountByBonsai(bonsaiId)).toBe(0);
-  });
-});
-
-describe('addPhotoFromUri (persistPhotoFile mock 経由)', () => {
-  test('一時 URI から永続化 + DB 登録 (photoId == DB id)', async () => {
-    const { photo } = repos();
-    const bonsaiId = await makeBonsai();
-    const p = await photo.addPhotoFromUri({ bonsaiId, sourceUri: 'file:///tmp/pick.jpg' });
-    expect(p.id).toMatch(/^mockphoto\d+$/); // mock の photoId
-    expect(p.isCover).toBe(1); // 初回
-    expect(await photo.getPhotoCountByBonsai(bonsaiId)).toBe(1);
   });
 });

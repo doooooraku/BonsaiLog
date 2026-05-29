@@ -16,7 +16,6 @@
 import { ulid } from 'ulid';
 
 import { nowUtc } from '@/src/core/datetime';
-import { persistPhotoFile } from '@/src/services/photoFileService';
 
 import { getDb } from './db';
 import { toAbsolutePath, toRelativePath } from './filePathUtils';
@@ -54,15 +53,6 @@ export type CreatePhotoInput = {
   takenAt?: string | null; // ISO 8601 UTC
   width?: number | null;
   height?: number | null;
-  caption?: string | null;
-  eventId?: string | null;
-};
-
-export type AddPhotoFromUriInput = {
-  bonsaiId: string;
-  /** expo-image-picker などが返す一時 URI (移動前)。 */
-  sourceUri: string;
-  takenAt?: string | null;
   caption?: string | null;
   eventId?: string | null;
 };
@@ -160,30 +150,6 @@ export async function insertPhoto(input: CreatePhotoInput): Promise<Photo> {
     caption: input.caption ?? null,
     createdAt: now,
   };
-}
-
-/**
- * 一時 URI から写真を永続化 + DB 登録 (T2-2-impl、Issue #369)。
- *
- * BonsaiCreateSheet (新規盆栽登録時のカバー写真) や event 写真追加で使用想定。
- * - persistPhotoFile に渡す photoId と insertPhoto の DB id を一致させる (整合性確保)
- * - 既存件数 0 なら自動的に is_cover=1 (insertPhoto の既存挙動を踏襲)
- *
- * @param input bonsaiId + sourceUri (expo-image-picker などの一時 URI)
- * @returns DB に登録された Photo
- */
-export async function addPhotoFromUri(input: AddPhotoFromUriInput): Promise<Photo> {
-  // persistPhotoFile は内部で ulid() で photoId を生成し、{ photoId, absoluteUri } を返す。
-  // その photoId を insertPhoto の id として渡すことでファイル名と DB id が一致する整合性を確保。
-  const { photoId, absoluteUri } = await persistPhotoFile(input.sourceUri, input.bonsaiId);
-  return insertPhoto({
-    id: photoId,
-    bonsaiId: input.bonsaiId,
-    absoluteUri,
-    takenAt: input.takenAt ?? null,
-    caption: input.caption ?? null,
-    eventId: input.eventId ?? null,
-  });
 }
 
 // ---------------------------------------------------------------------------
