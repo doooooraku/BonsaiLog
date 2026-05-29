@@ -155,6 +155,28 @@ gh pr list --state all --limit 100 --json number,title,state,createdAt,mergedAt
 - [1 行で本質]
 ```
 
+### Step 9: ハーネス棚卸し（削る側、ADR-0046）
+
+「足す側」（2 回再発で昇華）の対として、retro 時に「削る側」を回す。**完全自動判定はせず、候補を列挙して user の廃止可否判断を仰ぐ**（R-11）。
+
+1. 被参照の少ない ADR を列挙（役目を終えた廃止候補のヒント）:
+
+```bash
+for f in docs/adr/ADR-*.md; do
+  n=$(basename "$f" | grep -oE 'ADR-[0-9]{4}')
+  c=$(grep -rl "$n" . --exclude-dir=node_modules 2>/dev/null | grep -v "$f" | wc -l)
+  echo "$c $n"
+done | sort -n | head -10
+```
+
+被参照ファイル数が少ない ADR ほど「もう参照されていない」可能性。Status が既に `Deprecated`/`Superseded` のものは対象外。
+
+2. 重複しそうな R ルールの目視確認: `.claude/recurrence-prevention.md` + `.claude/recurrence-prevention/specialized.md` を読み、意図が重複する `R-NN` ペアを 1〜2 組ピックアップ。
+3. 列挙した候補を user に提示し、廃止可否を確認（判断材料 = 被参照件数・代替の有無）。
+4. 廃止が決まったら ADR-0046 の retire 手順（影響 grep → user 承認 → Status/注記変更 → 後継リンク、**番号は物理削除しない**）に従う。
+
+> グローバル `/memory-review`（Engram 対象・全プロジェクト共用）とは別物。本ステップは BonsaiLog のハーネス（ADR / R ルール）専用。手作業が 2 回以上再発したら `scripts/harness-inventory.mjs` への昇華を検討（既存の昇華方針）。
+
 ---
 
 ## 出力フォーマット
@@ -197,6 +219,7 @@ gh pr list --state all --limit 100 --json number,title,state,createdAt,mergedAt
 - [ ] lessons.md に教訓を追記
 - [ ] ADR 化すべき決定があれば作成
 - [ ] 改善策を Issue 化（P0/P1 のみ）
+- [ ] ハーネス棚卸し候補を user に提示（ADR-0046、Step 9）
 ```
 
 ---

@@ -139,6 +139,8 @@
 5. **R-13 以降は Hook で構造的に防止**（注意ではなく仕組み化、`.claude/hooks/` 参照）。
 6. **2 回再発で昇華必須 (本プロジェクト独自強化、 Sess8 Retro)**: CLAUDE.md §9 「3 回再発で昇華」 を本プロジェクトで **「2 回再発で hook 化検討、 3 回目で必須」** に強化。 同一テーマが lessons / recurrence-prevention に 2 件以上溜まったら、 hook / ESLint / CI / 型システムで構造的に防ぐ仕組み化を **検討**、 3 回目で **必須**。 user の「注意ではなく仕組み」 真意整合。 例: Sess8 Retro で「業界事例誤引用 (Sess7→Sess8 で 2 回目)」「Phase 1b 漏れ (R-9 違反 2 回目)」 を本ルールで hook 化 (R-33 / S-1 / S-2 新設)。
 
+7. **足す前ゲート (新規 R/ADR/hook 追加時の 3 自問、ADR-0046)**: ルール・ADR・hook・check を **足す前に**、(a) 構造 (型/lint/CI/hook/DB CHECK) で「違反が書けない形」にできないか (b) 既存と重複しないか (grep 確認、R-9) (c) 代わりに目的を終えた既存ルールを 1 つ廃止できないか を自問し、答えを Issue/PR に 1 行記載する。**廃止＝アーカイブ方式 (番号保持・Status/注記変更、物理削除禁止)**。retire 手順 (影響 grep → user 承認 → Status/注記変更 → 後継リンク) と棚卸し cadence (`/retro` 相乗り) は `docs/adr/ADR-0046-harness-inventory-and-retirement-policy.md` を参照。「足す仕組み」 (§6 昇華) に対する「削る仕組み」 = 肥大化 (足せても削れず変更不能になる) の構造的防止。
+
 ## 関連ファイル
 
 - `~/.claude/CLAUDE.md` — 個人横断ルール
