@@ -9,7 +9,6 @@
  * - 生成は exportFlow.runExport に委譲。Pro 判定は Hub 側で実施済み。
  */
 import * as LegacyFileSystem from 'expo-file-system/legacy';
-import { useRouter, type Href } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -70,7 +69,6 @@ type Props = {
 
 export function ExportOptionsSheet({ visible, type, onClose }: Props) {
   const { t, lang } = useTranslation();
-  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [period, setPeriod] = useState<ExportPeriod>('all');
   const [scope, setScope] = useState<ExportScope>('all');
@@ -150,13 +148,8 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
       includeArchived: showArchived ? includeArchived : false,
     };
 
-    // list_pdf は生成前に WebView プレビューを挟む。CSV 3 種は中間画面なしで即出力 (生成 → 共有)。
-    if (type === 'list_pdf') {
-      onClose();
-      router.push(`/export/list-preview?opts=${encodeURIComponent(JSON.stringify(opts))}` as Href);
-      return;
-    }
-
+    // 全 4 種 (CSV 3 + list_pdf) を中間画面なしで即出力 (生成 → OS 共有)。
+    // list_pdf も Sess51 でプレビュー画面を廃止し、写真付き 3 段階フォールバック出力に統一。
     setBusy(true);
     try {
       const result = await runExport({ ...opts, lang }, t);
@@ -305,9 +298,7 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
           <View style={styles.footer}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={
-                type === 'list_pdf' ? t('exportOptPreview') : t('exportOptExport')
-              }
+              accessibilityLabel={t('exportOptExport')}
               testID="e2e_export_options_generate"
               style={[styles.cta, busy && styles.ctaBusy]}
               onPress={handleGenerate}
@@ -316,9 +307,7 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
               {busy ? (
                 <ActivityIndicator color={ON_BRAND} />
               ) : (
-                <ThemedText style={styles.ctaText}>
-                  {type === 'list_pdf' ? t('exportOptPreview') : t('exportOptExport')}
-                </ThemedText>
+                <ThemedText style={styles.ctaText}>{t('exportOptExport')}</ThemedText>
               )}
             </Pressable>
           </View>

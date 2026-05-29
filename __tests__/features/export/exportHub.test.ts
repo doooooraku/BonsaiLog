@@ -69,14 +69,13 @@ describe('Export Options Sheet (ADR-0016 AC11 Options / AC12 Y4)', () => {
     expect(SHEET).toMatch(/exportOptTagEmptyBody/);
   });
 
-  test('8. ストレージ事前チェック / CSVは即出力 (runExport) / list_pdfのみプレビュー遷移', () => {
+  test('8. ストレージ事前チェック / 全 4 種が中間画面なしで runExport 直呼び (Sess51)', () => {
     expect(SHEET).toMatch(/isStorageSufficient/);
-    // list_pdf のみ WebView プレビューへ遷移
-    expect(SHEET).toMatch(/\/export\/list-preview/);
-    // CSV 3 種は中間画面なしで runExport 直呼び (即出力 → 共有)
+    // CSV 3 種 + list_pdf すべて runExport 直呼び (即出力 → OS 共有)
     expect(SHEET).toMatch(/await runExport\(/);
-    // csv-preview 中間画面は撤去済み
+    // 中間プレビュー画面 (csv-preview / list-preview) はいずれも撤去済み
     expect(SHEET).not.toContain('/export/csv-preview');
+    expect(SHEET).not.toContain('/export/list-preview');
   });
 });
 
@@ -89,7 +88,8 @@ describe('exportFlow orchestration', () => {
     expect(FLOW).toMatch(/buildSpeciesSummaryRows/);
     expect(FLOW).toMatch(/cellsToCsvString/);
     expect(FLOW).toMatch(/buildBonsaiListPdfHtml/);
-    expect(FLOW).toMatch(/generateAndShareListPdf/);
+    // Sess51 Phase 3: list_pdf は写真サムネ付きカタログ → 3 段階フォールバック出力
+    expect(FLOW).toMatch(/generateListPdfWithFallback/);
   });
 
   test('10. resolvePeriodRange + OPTION_APPLIES + scope/archived 解決', () => {

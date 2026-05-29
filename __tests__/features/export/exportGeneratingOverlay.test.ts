@@ -7,7 +7,6 @@ import { resolve } from 'node:path';
 const r = (p: string) => readFileSync(resolve(__dirname, p), 'utf8');
 const OVERLAY = r('../../../src/features/export/GeneratingOverlay.tsx');
 const PDF_PREVIEW = r('../../../app/export/pdf-preview.tsx');
-const LIST_PREVIEW = r('../../../app/export/list-preview.tsx');
 
 describe('GeneratingOverlay (ADR-0016 AC11 / Y2)', () => {
   test('1. fade Modal + spinner + キャンセル', () => {
@@ -18,9 +17,8 @@ describe('GeneratingOverlay (ADR-0016 AC11 / Y2)', () => {
     expect(OVERLAY).toMatch(/onRequestClose=\{onCancel\}/);
   });
 
-  test('2. PDF プレビュー両画面が共有中にオーバーレイ表示', () => {
+  test('2. 個別 PDF プレビュー画面が共有中にオーバーレイ表示 (Sess51: list_pdf はプレビュー廃止)', () => {
     expect(PDF_PREVIEW).toMatch(/<GeneratingOverlay visible=\{sharing\}/);
-    expect(LIST_PREVIEW).toMatch(/<GeneratingOverlay visible=\{sharing\}/);
   });
 
   test('3. 一定時間経過後に「お待ちください」ヒント (exportPdfSlowHint) を表示 (Sess50)', () => {
