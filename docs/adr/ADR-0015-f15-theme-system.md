@@ -607,3 +607,29 @@ F-15 を以下の構成で実装する。
 - ユーザー判断: 2026-05-10 セッション (Tier 3 Issue #32 着手時に方針変更)
 - 実装フェーズ: E1 (本 PR、ADR Amended) → E2 (Issue #32 改訂) → E3 (theme tokens / a11y) → E4 (UI / i18n)
 - 影響: F-04 (ヒートマップ) / F-13 (Paywall) / F-16 (通知) は Light/Dark のみ対応、本 Amended で簡素化
+
+---
+
+## Notes Amended (2026-05-30): Tamagui 撤回 → useColors + plain hex 採用 (Phase 7 K5)
+
+### 改訂内容
+
+本 ADR は当初「Tamagui themes (`tamagui.config.ts`) で F-15 theme system を実装」としていたが、その後の実装は **plain hex token + `useColors` hook** に作り替えられ、Tamagui は `tamagui.config.ts` / `tamagui.d.ts` / babel plugin のみ残った状態で `src`/`app` から **import 0 件の死蔵**となっていた。Phase 7 (死コード一掃) の判断 (user 確定 2026-05-30) で **Tamagui 一式を撤去**する。
+
+### 実態と整合する theme system
+
+- 正: `src/core/theme/colors.ts` + `src/core/theme/useColors.ts` + `constants/theme.ts` (Colors)、design system は `docs/reference/design_system.md` で集約。
+- ADR-0042 (theme tokens SoT) が現実の theme 基盤を定義済。
+- 「直 hex 禁止」は ESLint `no-restricted-syntax` の hardcode 検出 + `docs/reference/design_system.md` の token 経由強制で代替。
+
+### 削除対象 (Phase 7 PR 7-4)
+
+- `package.json` deps: `tamagui` / `@tamagui/animations-react-native` / `@tamagui/core` / `@tamagui/lucide-icons` / `@tamagui/portal`、devDep: `@tamagui/babel-plugin`
+- `tamagui.config.ts` / `tamagui.d.ts`
+- `babel.config.js` の `@tamagui/babel-plugin` ブロック
+- `package.json` jest `transformIgnorePatterns` の `tamagui|@tamagui/.*`
+- `knip.json` ignoreDependencies の `tamagui` / `@tamagui/babel-plugin`
+
+### 将来の再導入
+
+Tamagui を将来 UI 基盤として再評価したい場合は、本 ADR を超える新 ADR 起票 (Tamagui-based 全画面再構築の設計 + 移行計画) を前提とする。`pnpm add tamagui ...` で再導入可。
