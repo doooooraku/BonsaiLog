@@ -109,41 +109,32 @@ AC と一緒に docs が更新されているか:
 - [ ] 外部 SDK 追加なら `constraints.md` 更新
 - [ ] 意思決定あれば新 ADR
 
-### Step 9: 判定
+### Step 9: 判定（Output Contract、ADR-0047）
 
-3 つのいずれかを選ぶ:
+レビュー結果を **判定可能な決まった形式** で出す。
 
-#### ✅ Approve — 問題なしマージ可
+#### 9-1. 指摘表（Findings）を作る
 
-- 全 AC が ✅
-- constraints / ADR 準拠
-- 影響範囲に乖離なし
-- `pnpm verify` 緑
-- ドキュメント更新済み
+各指摘を 1 行に構造化する:
 
-→ PR に approve コメント + マージ可能を通知
+| ID       | 深刻度                    | 種別                                | 場所      | 内容 |
+| -------- | ------------------------- | ----------------------------------- | --------- | ---- |
+| FIND-001 | critical/high/medium/low  | bug/constraints/quality/structure-UI| file:line | 1 行 |
 
-#### ⚠ Request Changes — 差し戻し
+- **深刻度**: `critical`(致命) / `high`(マージ前に必須) / `medium`(直すべき) / `low`(好み)
+- **種別**: `bug`(コードの正しさ) / `constraints`(規約違反、grep 検証可) / `quality`(品質・好み) / `structure-UI`(UI/構造)
 
-以下のいずれかに該当:
+#### 9-2. 機械ゲートで 2 値判定（APPROVE / REQUEST_CHANGES）
 
-- AC に ❌ がある
-- constraints 違反
-- 影響範囲が大きすぎる（W-05 の予想を超える）
-- テスト不足
-- ドキュメント未更新
+- **種別が `bug` または `constraints` の指摘に `critical`/`high` が 1 件でもあれば → `REQUEST_CHANGES`**。
+- 上記が無く `medium`/`low` のみ → `APPROVE` 可。
+- **種別 `structure-UI` は機械ゲートの対象外（R-25）**。Claude が実機 SS / mockup を **Read** して構造系 5 項目（タブ / セクション / UI 種別 / スクロール範囲 / EventRow 表示モード+sub-layout）を評価し、その結果を別記する（PR テンプレ §7.6）。
 
-→ 具体的な修正指示を PR コメントで示す
+> ゲートは「マージ阻止の**下限**」であって「承認の根拠」ではない。`APPROVE` でも **最終マージは人間**（`auto-merge` ラベル運用は維持）。
 
-#### 🤔 Discuss — 議論が必要
+#### 9-3. 要議論メモ（旧 Discuss、判定値ではない）
 
-以下のいずれかに該当:
-
-- ADR 化すべき決定が含まれている
-- 影響範囲が広くユーザー確認が必要
-- 代替案があり得る
-
-→ `/discuss` に切り替えてユーザーと再議論
+ADR 化すべき決定 / 影響大でユーザー確認が要る / 代替案がある場合は、**判定とは別に**「要議論メモ」に列挙し、必要なら `/discuss` へ。
 
 ---
 
@@ -201,11 +192,24 @@ AC と一緒に docs が更新されているか:
 - ADR: [新規 / 更新 / 不要]
 - functional_spec: [更新 / 不要]
 
-### 判定
+### 判定（Output Contract、ADR-0047）
 
-**[✅ Approve / ⚠ Request Changes / 🤔 Discuss]**
+判定: **[APPROVE / REQUEST_CHANGES]**
 
-理由: [1〜2 文]
+#### 指摘表（Findings）
+
+| ID       | 深刻度 | 種別 | 場所         | 内容 |
+| -------- | ------ | ---- | ------------ | ---- |
+| FIND-001 | high   | bug  | `src/...:42` | ...  |
+
+#### ゲート判定
+
+- bug/constraints の critical/high: [N 件 → REQUEST_CHANGES / 0 件]
+- structure-UI: [R-25 構造系 5 項目評価の結果 / 該当なし]
+
+#### 要議論メモ（任意、判定値ではない）
+
+- ...
 
 ### マージ前の最終チェック
 
@@ -215,9 +219,9 @@ AC と一緒に docs が更新されているか:
 
 ### 次のアクション
 
-- Approve の場合: `gh pr merge <番号> --squash --delete-branch`
-- Request Changes の場合: 修正指示を PR コメント経由で Codex に通知
-- Discuss の場合: `/discuss` で方針再議論
+- APPROVE の場合: 人間承認 or `auto-merge` ラベルで `gh pr merge <番号> --squash --delete-branch`（R-57）
+- REQUEST_CHANGES の場合: 指摘表（FIND-xxx）に沿って修正指示を PR コメントで提示
+- 要議論メモがある場合: `/discuss` で方針相談
 ```
 
 ---

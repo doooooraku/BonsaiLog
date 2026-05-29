@@ -377,9 +377,7 @@ PR Template
 
 ---
 
-## 14. W-10.5 レビュー（Claude Code が記入）
-
-<!-- Codex が PR を作成後、Claude Code が /review-pr Skill で記入する -->
+## 14. W-10.5 レビュー（Claude Code が /review-pr Skill で記入、ADR-0047 Output Contract）
 
 - [ ] **AC 充足確認**: Issue の Acceptance Criteria が全て ✅ になっている
 - [ ] **constraints / ADR 準拠**: docs/reference/constraints.md と関連 ADR に違反していない
@@ -388,9 +386,19 @@ PR Template
 - [ ] **コード品質**: 既存の vertical slice パターンに従っている、不要な抽象化がない
 - [ ] **ドキュメント更新**: lessons.md / ADR / functional_spec が必要に応じて更新されている
 
-**レビュー判定**: [ ] Approve / [ ] Request Changes / [ ] Discuss
+### 指摘表（Findings）
 
-**理由（2〜3 文）**:
+| ID       | 深刻度                   | 種別                                 | 場所      | 内容 |
+| -------- | ------------------------ | ------------------------------------ | --------- | ---- |
+| FIND-001 | critical/high/medium/low | bug/constraints/quality/structure-UI | file:line |      |
+
+**レビュー判定**: [ ] APPROVE / [ ] REQUEST_CHANGES
+
+> ゲート規則（ADR-0047）: 種別 `bug`/`constraints` の `critical`/`high` が 1 件でもあれば REQUEST_CHANGES。
+> 種別 `structure-UI` は機械ゲート対象外 → R-25 の Claude Read 構造系 5 項目評価（§7.6）に回す。
+> ゲートは「マージ阻止の下限」であって承認根拠ではない（**最終マージは人間**）。
+
+**要議論メモ（任意、判定値ではない / 旧 Discuss）**:
 
 **マージ方法**: [ ] `auto-merge` ラベル付きで自動 / [ ] 人間承認待ち
 
