@@ -19,33 +19,22 @@
  *
  * Issue #439 で BonsaiCreateSheet から抽出。
  */
-import { Image } from 'expo-image';
-import * as ImagePicker from 'expo-image-picker';
-import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
-import { CameraIcon, PlusIcon } from '@/src/components/icons';
 import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
-import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
-import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
-import { LabeledPickerRow } from '@/src/components/form/LabeledPickerRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
+import { BonsaiIdentityFields } from '@/src/features/bonsai/basicForm/BonsaiIdentityFields';
+import { BonsaiMetadataFields } from '@/src/features/bonsai/basicForm/BonsaiMetadataFields';
+import { BonsaiPhotoPickerBlock } from '@/src/features/bonsai/basicForm/BonsaiPhotoPickerBlock';
+import { BonsaiPotInfoSection } from '@/src/features/bonsai/basicForm/BonsaiPotInfoSection';
+import { BonsaiTagsSection } from '@/src/features/bonsai/basicForm/BonsaiTagsSection';
+import { useBonsaiFormPhotos } from '@/src/features/bonsai/basicForm/useBonsaiFormPhotos';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import type { TranslationKey } from '@/src/core/i18n/locales/en';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_MUTED,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
 import { createBonsai, updateBonsai } from '@/src/db/bonsaiRepository';
-import { addPhotoFromUri, FREE_PHOTO_LIMIT_PER_BONSAI } from '@/src/db/photoRepository';
-import { BONSAI_STYLES, type Bonsai, type BonsaiStyle } from '@/src/db/schema';
+import { addPhotoFromUri } from '@/src/db/photoRepository';
+import { type Bonsai, type BonsaiStyle } from '@/src/db/schema';
 import { getCustomSpeciesById } from '@/src/db/bonsaiSpeciesCustomRepository';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
 import { cmToUnit, unitToCm } from '@/src/core/util/potUnitConvert';
@@ -58,7 +47,6 @@ import {
   type TagRecord,
 } from '@/src/db/tagRepository';
 import { usePickerStore } from '@/src/stores/pickerStore';
-import { useProStore } from '@/src/stores/proStore';
 
 /** pot_info JSON 復元用 shape。JSON.parse の any を堰き止め、runtime は各 setter の typeof ガードで検証。 */
 type ParsedPotInfo = {
@@ -118,8 +106,15 @@ export function useBonsaiBasicForm({
   const [style, setStyle] = useState<BonsaiStyle | null>(null);
   const [acquiredAt, setAcquiredAt] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [pendingPhotos, setPendingPhotos] = useState<PendingPhoto[]>([]);
-  const isPro = useProStore((s) => s.isPro);
+  const {
+    pendingPhotos,
+    setPendingPhotos,
+    isPro,
+    handlePickPhoto,
+    handleRemovePendingPhoto,
+    handleMovePendingPhoto,
+    handleTakePhotoCamera,
+  } = useBonsaiFormPhotos(t);
   const [estimatedAgeText, setEstimatedAgeText] = useState('');
   // Sess13 PR-D: 樹齢「不明」 明示 (schema v12 estimated_age_unknown column)。
   // checkbox tap で estimatedAgeText を空に + ageUnknown = true。
@@ -381,7 +376,8 @@ export function useBonsaiBasicForm({
       setAcquiredFrom('');
       setSelectedTagIds(new Set());
     }
-  }, [editingBonsai]);
+    // setPendingPhotos は useBonsaiFormPhotos 由来 (eslint が安定 setter と非認識のため明記、stable 故挙動不変)。
+  }, [editingBonsai, setPendingPhotos]);
 
   const toggleTag = useCallback((tagId: string) => {
     setSelectedTagIds((prev) => {
@@ -391,93 +387,6 @@ export function useBonsaiBasicForm({
       return next;
     });
   }, []);
-
-  const handlePickPhoto = useCallback(async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
-      return;
-    }
-    const remaining = isPro
-      ? Number.POSITIVE_INFINITY
-      : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - pendingPhotos.length);
-    if (remaining === 0) {
-      Alert.alert(
-        t('photoLimitTitle'),
-        t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_BONSAI)),
-        [{ text: t('ok') }],
-      );
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsMultipleSelection: true,
-      selectionLimit: 0,
-      quality: 0.85,
-    });
-    if (result.canceled || !result.assets || result.assets.length === 0) return;
-
-    const acceptedCount = isPro ? result.assets.length : Math.min(result.assets.length, remaining);
-    const accepted = result.assets.slice(0, acceptedCount).map((a) => ({
-      uri: a.uri,
-      width: a.width ?? null,
-      height: a.height ?? null,
-    }));
-    const skipped = result.assets.length - accepted.length;
-    setPendingPhotos((prev) => [...prev, ...accepted]);
-    if (skipped > 0) {
-      Alert.alert(
-        t('photoLimitTitle'),
-        t('photoLimitPartialAdded')
-          .replace('{added}', String(accepted.length))
-          .replace('{skipped}', String(skipped)),
-        [{ text: t('ok') }],
-      );
-    }
-  }, [isPro, pendingPhotos.length, t]);
-
-  const handleRemovePendingPhoto = useCallback((index: number) => {
-    setPendingPhotos((prev) => prev.filter((_, i) => i !== index));
-  }, []);
-
-  // Sess14 PR-T: handleUpdatePendingPhotoCaption 削除 (caption field 廃止)。
-
-  const handleMovePendingPhoto = useCallback((from: number, to: number) => {
-    setPendingPhotos((prev) => {
-      if (to < 0 || to >= prev.length) return prev;
-      const next = [...prev];
-      const [moved] = next.splice(from, 1);
-      if (moved === undefined) return prev; // splice on a valid index always returns 1 element, but guard for type safety
-      next.splice(to, 0, moved);
-      return next;
-    });
-  }, []);
-
-  const handleTakePhotoCamera = useCallback(async () => {
-    const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
-      return;
-    }
-    const remaining = isPro
-      ? Number.POSITIVE_INFINITY
-      : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - pendingPhotos.length);
-    if (remaining === 0) {
-      Alert.alert(
-        t('photoLimitTitle'),
-        t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_BONSAI)),
-        [{ text: t('ok') }],
-      );
-      return;
-    }
-    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.85 });
-    if (result.canceled || !result.assets || result.assets.length === 0) return;
-    const a = result.assets[0]!; // guarded by assets.length === 0 check above
-    setPendingPhotos((prev) => [
-      ...prev,
-      { uri: a.uri, width: a.width ?? null, height: a.height ?? null },
-    ]);
-  }, [isPro, pendingPhotos.length, t]);
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;
@@ -680,447 +589,27 @@ export function BonsaiBasicFormFields({
   onMemoFocus,
 }: BonsaiBasicFormFieldsProps) {
   const { t } = useTranslation();
-  const router = useRouter();
-  const {
-    isEdit,
-    name,
-    setName,
-    speciesId,
-    setSpeciesId,
-    customSpeciesId,
-    setCustomSpeciesId,
-    customSpeciesName,
-    setCustomSpeciesName,
-    selectedSpecies,
-    style,
-    setStyle,
-    acquiredAt,
-    setAcquiredAt,
-    estimatedAgeText,
-    setEstimatedAgeText,
-    ageUnknown,
-    setAgeUnknown,
-    memo,
-    setMemo,
-    potWidth,
-    setPotWidth,
-    potDepth,
-    setPotDepth,
-    potMaterial,
-    setPotMaterial,
-    potExpanded,
-    setPotExpanded,
-    displayPotUnit,
-    setDisplayPotUnit,
-    acquiredFrom,
-    setAcquiredFrom,
-    recentTags,
-    selectedTagIds,
-    toggleTag,
-    pendingPhotos,
-    handlePickPhoto,
-    handleRemovePendingPhoto,
-    handleMovePendingPhoto,
-    handleTakePhotoCamera,
-  } = form;
+  const { isEdit, memo, setMemo } = form;
 
   const showPhotoField = showPhotos && !isEdit;
 
-  // Sess15 PR-MM: タグ表示は「最近 3 件 + 「+N 件」 折りたたみ」 (案 A、 user 真意「画面埋め尽くし回避」)。
-  // tap で全展開 / 再 tap で折りたたみ。 既存 recentTags は最大 8 件 (BonsaiBasicForm getRecentTags(8))。
-  const TAG_COLLAPSED_COUNT = 3;
-  const [tagExpanded, setTagExpanded] = useState(false);
-  const visibleTags =
-    tagExpanded || recentTags.length <= TAG_COLLAPSED_COUNT
-      ? recentTags
-      : recentTags.slice(0, TAG_COLLAPSED_COUNT);
-  const hiddenTagCount = Math.max(0, recentTags.length - TAG_COLLAPSED_COUNT);
-
-  // Sess15 PR-CC: 案 P 採用 — 写真は「タグ」 と「メモ」 の間 (新規モード時) に表示する。
-  // 必須項目を先頭に、 重い任意処理 (写真撮影/選択) を後半に集約することで入力放棄リスクを軽減。
-  const photoBlock = showPhotoField ? (
-    <View style={styles.field}>
-      <View style={styles.fieldLabelRow}>
-        <ThemedText type="defaultSemiBold">
-          {t('bonsaiFieldPhotos')} ({pendingPhotos.length})
-        </ThemedText>
-        <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-      </View>
-      {/* Sess13 PR-J: Repolog 流 2 button (カメラ / ライブラリ) 並列。 */}
-      <View style={styles.photoSourceRow}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('photoSourceCamera')}
-          style={styles.photoSourceButton}
-          onPress={handleTakePhotoCamera}
-          testID="e2e_bonsai_create_photo_camera"
-        >
-          <CameraIcon size={20} />
-          <ThemedText style={styles.photoSourceText}>{t('photoSourceCamera')}</ThemedText>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('photoSourceLibrary')}
-          style={styles.photoSourceButton}
-          onPress={handlePickPhoto}
-          testID="e2e_bonsai_create_photo_library"
-        >
-          <ThemedText style={styles.photoSourceText}>{t('photoSourceLibrary')}</ThemedText>
-        </Pressable>
-      </View>
-      {pendingPhotos.length > 0 && (
-        <ThemedText style={styles.photoHelpText}>{t('photoReorderHelp')}</ThemedText>
-      )}
-      {pendingPhotos.map((p, idx) => {
-        const isFirst = idx === 0;
-        const isLast = idx === pendingPhotos.length - 1;
-        return (
-          <View key={`${p.uri}-${idx}`} style={styles.photoCard}>
-            <View style={styles.photoCardToolbar}>
-              <ThemedText style={styles.photoCardIndex}>{idx + 1}</ThemedText>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('photoMoveUp')}
-                accessibilityState={{ disabled: isFirst }}
-                disabled={isFirst}
-                style={[styles.photoMoveButton, isFirst && styles.photoMoveButtonDisabled]}
-                onPress={() => handleMovePendingPhoto(idx, idx - 1)}
-                testID={`e2e_bonsai_create_photo_move_up_${idx}`}
-              >
-                <ThemedText style={styles.photoMoveText}>↑</ThemedText>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('photoMoveDown')}
-                accessibilityState={{ disabled: isLast }}
-                disabled={isLast}
-                style={[styles.photoMoveButton, isLast && styles.photoMoveButtonDisabled]}
-                onPress={() => handleMovePendingPhoto(idx, idx + 1)}
-                testID={`e2e_bonsai_create_photo_move_down_${idx}`}
-              >
-                <ThemedText style={styles.photoMoveText}>↓</ThemedText>
-              </Pressable>
-              <View style={{ flex: 1 }} />
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('delete')}
-                style={styles.photoCardDeleteButton}
-                onPress={() => handleRemovePendingPhoto(idx)}
-                testID={`e2e_bonsai_create_photo_remove_${idx}`}
-              >
-                <ThemedText style={styles.photoCardDeleteText}>×</ThemedText>
-              </Pressable>
-            </View>
-            <Image source={{ uri: p.uri }} style={styles.photoCardImage} contentFit="cover" />
-          </View>
-        );
-      })}
-    </View>
-  ) : null;
-
   return (
     <>
-      {/* Sess13 PR-K: LabeledTextInput 共通化 (右上文字数 + 上限到達赤字) */}
-      <LabeledTextInput
-        label={t('bonsaiFieldName')}
-        required
-        requiredText={t('fieldRequiredLabel')}
-        overlimitText={t('inputOverLimit')}
-        value={name}
-        onChangeText={setName}
-        placeholder={t('bonsaiFieldNamePlaceholder')}
-        maxLength={100}
-        showCounter
-        testID="e2e_bonsai_create_name"
-      />
-
-      {/* Sess14 PR-M + Sess15 PR-Y: LabeledPickerRow + 任意 badge + placeholder「樹種を選択」 (取得日と統一)。 */}
-      <LabeledPickerRow
-        label={t('bonsaiFieldSpecies')}
-        optional
-        optionalText={t('fieldOptionalLabel')}
-        placeholder={t('bonsaiPlaceholderSpecies')}
-        valueText={selectedSpecies?.commonName ?? customSpeciesName}
-        onPress={() => {
-          // Sess13 PR-H: custom 樹種選択中の場合は 'custom:<id>' を initial に渡す
-          const initial =
-            customSpeciesId != null ? `custom:${customSpeciesId}` : (speciesId ?? null);
-          router.push(
-            (initial != null
-              ? `/species-picker?initial=${encodeURIComponent(initial)}`
-              : '/species-picker') as Href,
-          );
-        }}
-        onClear={() => {
-          setSpeciesId(null);
-          setCustomSpeciesId(null);
-          setCustomSpeciesName(null);
-        }}
-        testID="e2e_bonsai_create_species_pick"
-        testIDClear="e2e_bonsai_create_species_clear"
-      />
-
-      {/* Sess14 PR-M + Sess15 PR-Y: LabeledPickerRow + 任意 badge + placeholder「樹形を選択」 (取得日と統一)。 */}
-      <LabeledPickerRow
-        label={t('bonsaiFieldStyle')}
-        optional
-        optionalText={t('fieldOptionalLabel')}
-        placeholder={t('bonsaiPlaceholderStyle')}
-        valueText={
-          style != null
-            ? BONSAI_STYLES.includes(style as BonsaiStyle)
-              ? t(`bonsaiStyle_${style}` as TranslationKey)
-              : (style as string)
-            : null
-        }
-        onPress={() =>
-          router.push(
-            (style != null
-              ? `/style-picker?initial=${encodeURIComponent(style)}`
-              : '/style-picker') as Href,
-          )
-        }
-        onClear={() => setStyle(null)}
-        testID="e2e_bonsai_create_style_pick"
-        testIDClear="e2e_bonsai_create_style_clear"
-      />
-
-      {/* Sess14 PR-O: 取得日 を LabeledDateRow へ移行 (PR-E DatePicker 実装を component 化) */}
-      <LabeledDateRow
-        label={t('bonsaiFieldAcquiredAt')}
-        optional
-        optionalText={t('fieldOptionalLabel')}
-        value={acquiredAt}
-        onChangeText={setAcquiredAt}
-        placeholder={t('datePickerPlaceholder')}
-        testID="e2e_bonsai_create_acquired_at"
-        testIDClear="e2e_bonsai_create_acquired_at_clear"
-      />
-
-      <View style={styles.field}>
-        <View style={styles.fieldLabelRow}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldEstimatedAge')}</ThemedText>
-          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-        </View>
-        {/* Sess14 PR-O: 樹齢 を LabeledNumberInput へ移行 + 「不明」 checkbox 横並び維持 */}
-        <View style={styles.ageRow}>
-          <View style={{ flex: 1 }}>
-            <LabeledNumberInput
-              label=""
-              value={estimatedAgeText}
-              onChangeText={(text) => {
-                setEstimatedAgeText(text);
-                if (text.length > 0 && ageUnknown) setAgeUnknown(false);
-              }}
-              placeholder={t('bonsaiFieldEstimatedAgePlaceholder')}
-              suffix="年"
-              maxLength={4}
-              editable={!ageUnknown}
-              accessibilityLabel={t('bonsaiFieldEstimatedAge')}
-              testID="e2e_bonsai_create_age_input"
-            />
-          </View>
-          <Pressable
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: ageUnknown }}
-            accessibilityLabel={t('bonsaiFieldEstimatedAgeUnknown')}
-            style={styles.ageUnknownToggle}
-            onPress={() => {
-              const next = !ageUnknown;
-              setAgeUnknown(next);
-              if (next) setEstimatedAgeText('');
-            }}
-            testID="e2e_bonsai_create_age_unknown"
-          >
-            <View style={[styles.checkbox, ageUnknown && styles.checkboxChecked]}>
-              {ageUnknown && <ThemedText style={styles.checkboxMark}>✓</ThemedText>}
-            </View>
-            <ThemedText style={styles.ageUnknownLabel}>
-              {t('bonsaiFieldEstimatedAgeUnknown')}
-            </ThemedText>
-          </Pressable>
-        </View>
-      </View>
+      <BonsaiIdentityFields form={form} />
 
       {/* Sess14 PR-T: 購入日欄削除 (取得日と意味が重複、 user 真意「取得日があれば十分」)。
           purchaseDate state は後方互換で残す (既存 DB data 表示用、 form 上で編集不可)。 */}
+      <BonsaiMetadataFields form={form} />
 
-      {/* Sess13 PR-B + PR-K: 入手元 (任意、 schema v10 acquired_from + LabeledTextInput 共通化)。 */}
-      <LabeledTextInput
-        label={t('bonsaiFieldAcquiredFrom')}
-        optional
-        optionalText={t('fieldOptionalLabel')}
-        overlimitText={t('inputOverLimit')}
-        value={acquiredFrom}
-        onChangeText={setAcquiredFrom}
-        placeholder={t('bonsaiFieldAcquiredFromPlaceholder')}
-        maxLength={100}
-        showCounter
-        testID="e2e_bonsai_create_acquired_from"
-      />
+      <BonsaiPotInfoSection form={form} />
 
-      {/* Sess15 PR-BB: mockup 174029.png 整合の card group 化 + 単位 segmented control。
-          - 1 つの bordered card 内に expander + 3 input + 単位 segmented を集約 (まとまり感)
-          - 単位 segmented は一時切替 (settingsStore は touch しない、 display 単位のみ反映)。 */}
-      <View style={styles.field}>
-        <View style={styles.fieldLabelRow}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldPotInfo')}</ThemedText>
-          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-        </View>
-        <View style={styles.potCard}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('bonsaiFieldPotInfoExpand')}
-            style={styles.potExpander}
-            onPress={() => setPotExpanded((p) => !p)}
-            testID="e2e_bonsai_create_pot_expander"
-          >
-            <ThemedText style={styles.pickerPlaceholder}>
-              {potExpanded ? '▲ ' : '▼ '}
-              {t('bonsaiFieldPotInfoExpand')}
-            </ThemedText>
-          </Pressable>
-          {potExpanded && (
-            <View style={styles.potExpanded}>
-              {/* Sess15 PR-BB: 単位 segmented control (一時切替、 settingsStore は touch しない)。 */}
-              <View style={styles.potUnitSegmented}>
-                {(['cm', 'mm', 'inch'] as const).map((u) => {
-                  const active = displayPotUnit === u;
-                  return (
-                    <Pressable
-                      key={u}
-                      accessibilityRole="button"
-                      accessibilityLabel={`unit ${u}`}
-                      accessibilityState={{ selected: active }}
-                      style={[styles.potUnitSegment, active && styles.potUnitSegmentActive]}
-                      onPress={() => setDisplayPotUnit(u)}
-                      testID={`e2e_bonsai_create_pot_unit_${u}`}
-                    >
-                      <ThemedText
-                        style={active ? styles.potUnitSegmentTextActive : styles.potUnitSegmentText}
-                      >
-                        {u}
-                      </ThemedText>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              {/* Sess15 PR-JJ: label="" → 「幅」「深さ」「材質」 を明示 (user 真意「何の項目か分からない」 解消)。 */}
-              <LabeledNumberInput
-                label={t('bonsaiFieldPotWidth')}
-                value={potWidth}
-                onChangeText={setPotWidth}
-                placeholder={t('bonsaiFieldPotWidthPlaceholder').replace(' ({unit})', '')}
-                suffix={displayPotUnit}
-                maxLength={6}
-                accessibilityLabel={t('bonsaiFieldPotWidth')}
-                testID="e2e_bonsai_create_pot_width"
-              />
-              <LabeledNumberInput
-                label={t('bonsaiFieldPotDepth')}
-                value={potDepth}
-                onChangeText={setPotDepth}
-                placeholder={t('bonsaiFieldPotDepthPlaceholder').replace(' ({unit})', '')}
-                suffix={displayPotUnit}
-                maxLength={6}
-                accessibilityLabel={t('bonsaiFieldPotDepth')}
-                testID="e2e_bonsai_create_pot_depth"
-              />
-              <LabeledTextInput
-                label={t('bonsaiFieldPotMaterial')}
-                value={potMaterial}
-                onChangeText={setPotMaterial}
-                placeholder={t('bonsaiFieldPotMaterialPlaceholder')}
-                maxLength={100}
-                showCounter
-                overlimitText={t('inputOverLimit')}
-                accessibilityLabel={t('bonsaiFieldPotMaterial')}
-                testID="e2e_bonsai_create_pot_material"
-              />
-            </View>
-          )}
-        </View>
-      </View>
-
-      <View style={styles.field}>
-        <View style={styles.fieldLabelRow}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldTags')}</ThemedText>
-          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-        </View>
-        {/* Sess15 PR-DD: empty 時は文言上 + button 下 (縦配置)、 chip 1+ 件時は wrap row (横並び)。 */}
-        {recentTags.length === 0 ? (
-          <View style={styles.tagEmptyColumn}>
-            <ThemedText style={styles.tagsEmpty}>{t('bonsaiTagsEmpty')}</ThemedText>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('bonsaiTagsAddCta')}
-              style={styles.tagAddChip}
-              onPress={() => router.push('/tag-edit?returnTo=bonsai-create' as Href)}
-              testID="e2e_bonsai_tag_add"
-            >
-              <PlusIcon size={16} color={BRAND_GREEN} />
-              <ThemedText style={styles.tagAddChipText}>{t('bonsaiTagsAddCta')}</ThemedText>
-            </Pressable>
-          </View>
-        ) : (
-          <View style={styles.tagChipRow}>
-            {visibleTags.map((tg) => {
-              const selected = selectedTagIds.has(tg.id);
-              return (
-                <Pressable
-                  key={tg.id}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: selected }}
-                  accessibilityLabel={tg.name}
-                  style={[styles.tagChip, selected && styles.tagChipSelected]}
-                  onPress={() => toggleTag(tg.id)}
-                  testID={`e2e_bonsai_create_tag_chip_${tg.id}`}
-                >
-                  <ThemedText style={selected ? styles.tagChipTextSelected : styles.tagChipText}>
-                    {tg.name}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-            {/* Sess15 PR-MM: 「+N 件」 / 「閉じる」 折りたたみ chip (案 A、 user 真意「画面埋め尽くし回避」)。 */}
-            {hiddenTagCount > 0 && (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={
-                  tagExpanded
-                    ? t('tagShowLess')
-                    : t('tagShowMore').replace('{count}', String(hiddenTagCount))
-                }
-                style={styles.tagMoreChip}
-                onPress={() => setTagExpanded((p) => !p)}
-                testID="e2e_bonsai_create_tag_more"
-              >
-                <ThemedText style={styles.tagMoreChipText}>
-                  {tagExpanded
-                    ? t('tagShowLess')
-                    : t('tagShowMore').replace('{count}', String(hiddenTagCount))}
-                </ThemedText>
-              </Pressable>
-            )}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('bonsaiTagsAddCta')}
-              style={styles.tagAddChip}
-              onPress={() => router.push('/tag-edit?returnTo=bonsai-create' as Href)}
-              testID="e2e_bonsai_tag_add"
-            >
-              <PlusIcon size={16} color={BRAND_GREEN} />
-              <ThemedText style={styles.tagAddChipText}>{t('bonsaiTagsAddCta')}</ThemedText>
-            </Pressable>
-          </View>
-        )}
-      </View>
+      <BonsaiTagsSection form={form} />
 
       {/* Sess15 PR-CC + PR-SS: 写真フィールドをタグ後・メモ前に配置 (案 P)。
           新規 modal (showPhotoField=true) は内部 photoBlock (pendingPhotos)、
           詳細画面 (showPhotoField=false) は customPhotoBlock (詳細画面の photoSection) を slot として挿入。
           排他制御で 1 つだけ render。 */}
-      {showPhotoField ? photoBlock : customPhotoBlock}
+      {showPhotoField ? <BonsaiPhotoPickerBlock form={form} /> : customPhotoBlock}
 
       {/* Sess13 PR-K: メモを LabeledTextInput 共通化 (multiline + 文字数 + 上限赤字)。
           Sess31 PR-1 (R-46 拡張): onMemoFocus prop で親 ScrollView の auto-scroll 配線。 */}
@@ -1146,252 +635,3 @@ export function BonsaiBasicFormFields({
 // Phase G5 (ADR-0024 Accepted): 旧 `BonsaiBasicFormPickerSheets` 空関数 + Props 型を削除。
 // 樹種 / 樹形 Picker は `(modals)/species-picker` + `(modals)/style-picker` route
 // (presentation: 'formSheet') に完全移行済。
-
-const styles = StyleSheet.create({
-  field: { gap: 8 },
-  photoBox: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: BORDER_DEFAULT,
-    borderStyle: 'dashed',
-    backgroundColor: BG_SURFACE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  photoEmpty: { alignItems: 'center', justifyContent: 'center', gap: 6 },
-  photoCta: { fontSize: 12, color: TEXT_SECONDARY },
-  photoStrip: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  photoStripCell: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    overflow: 'hidden',
-    position: 'relative',
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-  },
-  photoStripImage: { width: '100%', height: '100%' },
-  photoStripCoverBadge: {
-    position: 'absolute',
-    top: 4,
-    left: 4,
-    backgroundColor: BRAND_GREEN,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  photoStripCoverBadgeText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: ON_BRAND,
-    letterSpacing: 0.6,
-  },
-  photoStripDeleteButton: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  photoStripDeleteText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', lineHeight: 18 },
-  photoCount: { fontSize: 11, color: TEXT_MUTED, marginLeft: 'auto' },
-  input: {
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 16,
-    minHeight: 48,
-    backgroundColor: BG_SURFACE,
-  },
-  pickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 12,
-    backgroundColor: BG_SURFACE,
-  },
-  pickerPlaceholder: { color: TEXT_MUTED },
-  fieldLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  requiredBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 8,
-    backgroundColor: '#8B2E2E',
-  },
-  requiredBadgeText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: '#F7F3E8',
-    letterSpacing: 0.8,
-  },
-  optionalLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: TEXT_MUTED,
-    letterSpacing: 0.8,
-  },
-  inputMultiline: { minHeight: 96, paddingVertical: 12 },
-  // Sess13 PR-D: 樹齢「不明」 checkbox 横並び。
-  ageRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  ageInput: { flex: 1 },
-  inputDisabled: { backgroundColor: BG_SURFACE, opacity: 0.5 },
-  ageUnknownToggle: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
-  checkboxMark: { color: ON_BRAND, fontSize: 14, fontWeight: '700', lineHeight: 16 },
-  ageUnknownLabel: { fontSize: 14 },
-  // Sess14 PR-Q: dateRow / dateInput / dateClearButton / dateClearText は PR-O で
-  // LabeledDateRow に移管済、 dead style として削除。
-  potExpanded: { gap: 10, marginTop: 8 },
-  // Sess15 PR-BB: mockup 174029.png 整合の card group (border 内に expander + 3 input + segmented を集約)。
-  potCard: {
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 12,
-    backgroundColor: BG_SURFACE,
-    padding: 12,
-    gap: 8,
-  },
-  potExpander: {
-    minHeight: 40,
-    justifyContent: 'center',
-  },
-  potUnitSegmented: {
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 8,
-    overflow: 'hidden',
-    alignSelf: 'flex-start',
-    marginBottom: 4,
-  },
-  potUnitSegment: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    minWidth: 48,
-    alignItems: 'center',
-  },
-  potUnitSegmentActive: { backgroundColor: BRAND_GREEN },
-  potUnitSegmentText: { fontSize: 13, color: TEXT_SECONDARY },
-  potUnitSegmentTextActive: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
-  // Sess13 PR-J: Repolog 流写真カード
-  photoSourceRow: { flexDirection: 'row', gap: 10 },
-  photoSourceButton: {
-    flex: 1,
-    height: 44,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: BG_SURFACE,
-  },
-  photoSourceText: { fontSize: 14, fontWeight: '500' },
-  photoHelpText: { fontSize: 12, color: TEXT_MUTED, marginTop: 4 },
-  photoCard: {
-    marginTop: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    overflow: 'hidden',
-    backgroundColor: BG_SURFACE,
-  },
-  photoCardToolbar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 8,
-  },
-  photoCardIndex: { fontSize: 14, color: TEXT_SECONDARY, minWidth: 16 },
-  photoMoveButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: BG_SURFACE,
-  },
-  photoMoveButtonDisabled: { opacity: 0.3 },
-  photoMoveText: { fontSize: 18 },
-  photoCardDeleteButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: BG_SURFACE,
-  },
-  photoCardDeleteText: { fontSize: 20, lineHeight: 22, color: TEXT_SECONDARY },
-  // 4:3 横長 (Q-10 b 採用)
-  photoCardImage: { width: '100%', aspectRatio: 4 / 3 },
-  // Sess14 PR-T: photoCardCaption* styles 削除 (caption UI 廃止)。
-  tagChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tagChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
-    minHeight: 36,
-    justifyContent: 'center',
-  },
-  tagChipSelected: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
-  tagChipText: { fontSize: 13 },
-  tagChipTextSelected: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
-  tagsEmpty: { fontSize: 13, color: TEXT_MUTED },
-  // Sess15 PR-DD: empty 時の縦並び container (alignSelf で button を左寄せ)。
-  tagEmptyColumn: { gap: 8 },
-  // Sess15 PR-EE: 案 D2 統一 (dashed gray → solid 1.5px BRAND_GREEN + BRAND_GREEN テキスト + PlusIcon)。
-  tagAddChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: BRAND_GREEN,
-    minHeight: 36,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    alignSelf: 'flex-start',
-  },
-  tagAddChipText: { fontSize: 13, color: BRAND_GREEN, fontWeight: '600' },
-  // Sess15 PR-MM: 「+N 件」 / 「閉じる」 折りたたみ chip。 tag chip と同じ size、 grey 系で secondary。
-  tagMoreChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
-    minHeight: 36,
-    justifyContent: 'center',
-  },
-  tagMoreChipText: { fontSize: 13, color: TEXT_SECONDARY, fontWeight: '500' },
-});
