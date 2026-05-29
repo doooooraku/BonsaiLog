@@ -32,7 +32,6 @@
     "src/services/legalService.ts",
     "src/services/reviewService.ts",
     "components/external-link.tsx",
-    "components/ui/**",
     "hooks/use-color-scheme.web.ts"
   ],
   "rules": {
