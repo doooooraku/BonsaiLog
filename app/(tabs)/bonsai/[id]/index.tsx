@@ -18,12 +18,9 @@ import { ThemedView } from '@/components/themed-view';
 import { CameraIcon, EventIcon } from '@/src/components/icons';
 import { FAB } from '@/src/components/common/FAB';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
-import {
-  BonsaiBasicFormFields,
-  type BonsaiBasicFormState,
-  useBonsaiBasicForm,
-} from '@/src/features/bonsai/BonsaiBasicForm';
+import { useBonsaiBasicForm } from '@/src/features/bonsai/BonsaiBasicForm';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
+import { BonsaiBasicSection } from '@/src/features/bonsai/detail/BonsaiBasicSection';
 import { formatDate } from '@/src/features/bonsai/detail/dateFormat';
 import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
 import { PhotoUndoBanner } from '@/src/features/bonsai/PhotoUndoBanner';
@@ -1467,99 +1464,4 @@ const styles = StyleSheet.create({
   },
   eventDate: { fontSize: 13, color: TEXT_SECONDARY, fontVariant: ['tabular-nums'] },
   entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },
-  // Sess15 PR-SS: 基本情報タブ inline 保存 button (sticky footer 廃止 + PR-NN design 復活)。
-  basicSaveButton: {
-    height: 56,
-    borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  basicSaveButtonDisabled: {
-    backgroundColor: BORDER_DEFAULT,
-  },
-  basicSaveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '500',
-    letterSpacing: 0.5,
-  },
-  // Sess15 PR-SS: アーカイブ inline button 復活 (PR-NN design、 保存と同 height 56 + 同 borderRadius)。
-  basicArchiveButton: {
-    height: 56,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: DANGER,
-    backgroundColor: 'transparent',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 24,
-  },
-  basicArchiveButtonText: {
-    color: DANGER,
-    fontSize: 17,
-    fontWeight: '500',
-    letterSpacing: 0.5,
-  },
-  // Sess15 PR-TT: gap 16 → 24 (メモ欄と アーカイブ button の overlap 解消)。
-  basicFormSection: {
-    padding: 16,
-    gap: 24,
-  },
 });
-
-/**
- * Issue #439: 基本情報タブの inline 編集フォーム。
- * BonsaiCreateSheet と同じ `useBonsaiBasicForm` フックを親で呼んで state を共有し、
- * mockup `bonsai-detail-basic-01/02/03.png` 整合の編集兼用フォームを実現する。
- * Picker BottomSheet は親側で画面 root に配置 (ScrollView 内 nest 禁止)。
- *
- * Sess15 PR-PP: 保存 button + アーカイブ button を Section 外 (画面 root sticky footer + ⋮ メニュー)
- * に移動。 BonsaiBasicSection はフィールドのみに集中、 新規 modal と完全同 pattern。
- */
-function BonsaiBasicSection({
-  form,
-  onArchive,
-  customPhotoBlock,
-  onMemoFocus,
-}: {
-  form: BonsaiBasicFormState;
-  onArchive: () => void;
-  customPhotoBlock?: React.ReactNode;
-  /** Sess31 PR-1 (R-46 拡張): メモ欄 onFocus → 親 ScrollView の auto-scroll 配線。 */
-  onMemoFocus?: () => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <View style={styles.basicFormSection}>
-      <BonsaiBasicFormFields
-        form={form}
-        showPhotos={false}
-        customPhotoBlock={customPhotoBlock}
-        onMemoFocus={onMemoFocus}
-      />
-      {/* Sess15 PR-SS: アーカイブ (上) + 保存 (下) inline 復活、 高さ 56 統一 (PR-NN design)。
-          user 真意「アーカイブの下に保存ボタンがあるイメージ」 整合。 */}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('bonsaiArchive')}
-        style={styles.basicArchiveButton}
-        onPress={onArchive}
-        testID="e2e_detail_basic_archive_button"
-      >
-        <ThemedText style={styles.basicArchiveButtonText}>{t('bonsaiArchive')}</ThemedText>
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('save')}
-        accessibilityState={{ disabled: !form.canSubmit }}
-        style={[styles.basicSaveButton, !form.canSubmit && styles.basicSaveButtonDisabled]}
-        onPress={() => void form.handleSubmit()}
-        disabled={!form.canSubmit}
-        testID="e2e_detail_basic_save_button"
-      >
-        <ThemedText style={styles.basicSaveButtonText}>{t('save')}</ThemedText>
-      </Pressable>
-    </View>
-  );
-}
