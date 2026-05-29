@@ -114,3 +114,28 @@
 ## Notes（メモ：任意）
 
 「≤400 行」は ESLint(300) / Sandi Metz(100) の通説から借りた数字で恣意的ではないが、本 repo では強制されておらず、かつ実責務抽出後の coordinator は構造上 400 をやや超える。行数は「責務分離の副産物」であり「目標そのもの」ではない、という 1 次情報の立場を採用する。
+
+---
+
+## Amendment (2026-05-29): Phase 4 完遂時の各 coordinator 行数 justify
+
+Phase 4 god 分割を完遂。本 ADR の基準で各 coordinator の最終行数を以下のとおり受容する（いずれも実責務は hook/サブ部品に分離済、 ≤約450 目安、 超過は本 ADR で justify）。
+
+| ID          | ファイル                         | 最終行数 | 判定                                                                                               |
+| ----------- | -------------------------------- | -------- | -------------------------------------------------------------------------------------------------- |
+| A1          | `bonsai/[id]/index.tsx`          | 423      | ✅ coordinator（既出）                                                                             |
+| A2          | `bonsai/BonsaiBasicForm.tsx`     | **589**  | ✅ **分割せず justify**（下記）                                                                    |
+| A3          | `app/settings/index.tsx`         | 407      | ✅ coordinator                                                                                     |
+| B1          | `calendar/CalendarTabScreen.tsx` | 189      | ✅ coordinator                                                                                     |
+| B2          | `look-back/search.tsx`           | 314      | ✅ coordinator                                                                                     |
+| C1          | `event/EventRow.tsx`             | 53       | ✅ thin dispatcher                                                                                 |
+| F5          | `backup/backupService.ts`        | 705      | ✅ shell（純粋核 applyImportPlan 抽出後、 残りは zip/picker/share/photo-copy の imperative shell） |
+| B3/B4/B5/C2 | 各 form/export/wiring 画面       | <450     | ✅ 既に責務分離済（master-plan 旧 micro 目標は本 ADR が上書き）                                    |
+
+### A2 `BonsaiBasicForm`（589 行）を分割しない判断
+
+- **残責務 = 単一の coordinating responsibility**：15+ の form フィールド state + 単一の editingBonsai prefill effect + picker-consume effect + submit handler + 未保存ガード。これらは「1 つの form を成立させる」一体の関心であり、3 hook（fields/pot/tags）へ割っても合成 wrapper が同じ複雑さを抱え再凝集する（master-plan §7 視点1 弱点1）。
+- **分割の利得が小さくリスクが高い**：抽出可能な純減は ~90–110 行に対し、新 hook 3 つ + 合成 glue + prefill の async/ref/JSON 依存の分散コスト。かつ form 全体の characterization テストが無く回帰検知が弱い（リスク高・利得小）。
+- **公開 API は wrapper で凍結済**（4 シンボル、 消費者 3 つ無改修）。内部 state 構造の変更は D1（破壊的変更リスト）扱いだが、 本判断で「実施しない」を確定。
+- **代替で張った安全網**：最も壊れやすい pot_info JSON parse（型不一致 / 壊れた JSON のフォールバック）と日付境界変換を純関数 `bonsaiFormUtils.ts`（toIsoUtc / isoToYmd / parsePotInfo）へ切り出し characterization（10 tests）。orchestrator 構造は不変のまま、 fragile path のみ凍結。
+- **再評価**：3 か月後 coordinator 行数再計測 TODO（上記 Follow-up）に A2 も含める。将来 prefill ロジックを別 form で再利用する具体的制約が出た時点で再分割を ADR 化。
