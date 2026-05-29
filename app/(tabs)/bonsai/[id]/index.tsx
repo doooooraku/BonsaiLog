@@ -2,7 +2,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -21,19 +21,20 @@ import {
   usePhotoCrudWithUndo,
   type PendingPhotoDeletion,
 } from '@/src/features/bonsai/detail/usePhotoCrudWithUndo';
+import { useScheduleEvent } from '@/src/features/bonsai/detail/useScheduleEvent';
 import { useScrollToEvent } from '@/src/features/bonsai/detail/useScrollToEvent';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { BORDER_DEFAULT, BRAND_GREEN, DANGER, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 
 import { archiveBonsai } from '@/src/db/bonsaiRepository';
-import { bulkSoftDeleteEvents, createEvent } from '@/src/db/eventRepository';
+import { bulkSoftDeleteEvents } from '@/src/db/eventRepository';
 import { cancelForEvents } from '@/src/features/notification/cancelForEvent';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { useToastStore } from '@/src/components/Toast';
 import * as Haptics from 'expo-haptics';
 import { getTzOffsetMin } from '@/src/core/datetime';
-import { type Event, type EventType } from '@/src/db/schema';
+import { type Event } from '@/src/db/schema';
 import {
   findGroupKeyForEvent,
   groupContinuousEvents,
@@ -83,28 +84,17 @@ export default function BonsaiDetailScreen() {
   // `(modals)/work-log-confirm` (formSheet) に置換、ref 経由の Sheet 制御は全廃 (router.push +
   // usePickerStore で代替)。
   // Sess16 PR-C: FORM_TYPES を全 14 種別に拡張、 全種別 form 経由化 (即書込 path 廃止)。
-  // 旧即書込 path (logEvent + showEventOverloadPopup) は deadcode、 削除は別 PR で。
-  const [pendingScheduleType, setPendingScheduleType] = useState<EventType | null>(null);
-  const [showSchedulePicker, setShowSchedulePicker] = useState(false);
-  // Sess18 PR-1 (ADR-0030 D2): handleWorkPickerSelect 廃止。
-  // WorkPickerScreen で log mode は直接 router.push('/work-log-confirm') するため、
-  // caller (本画面) で consume + push する logic は不要 (Case C 解消)。
-  // schedule mode は handleSchedulePickerSelect (下) で Case A 維持。
-
-  // Issue #298 Phase 2: 予定追加フロー (3 step を 2 step に簡略化、確認ステップ省略)
-  // Step 1: WorkPickerSheet (再利用、titleOverrideKey='addScheduleTitle') で作業選択
-  // Step 2: DateTimePicker (mode='date') で日付選択 → createEvent({ status: 'planned' })
-  const handleSchedulePickerSelect = React.useCallback((type: EventType) => {
-    // Phase G2 part 1: schedulePickerRef.close() は不要 (router.back で picker 画面が閉じている)。
-    setPendingScheduleType(type);
-    setTimeout(() => setShowSchedulePicker(true), 200);
-  }, []);
+  //
+  // R5 (Phase 4 A1-10): 予定追加フロー (作業種別 picker → DateTimePicker → createEvent planned)。
+  // reload は下の useBonsaiDetailData から reloadRef 経由で注入 (consume useFocusEffect を
+  // reload effect より先に登録する順序保持のため、本フックを先に呼ぶ)。
+  const reloadRef = React.useRef<(() => Promise<void>) | null>(null);
+  const { showSchedulePicker, handleSchedulePickerSelect, handleScheduleDateSelect } =
+    useScheduleEvent({ id, t, reloadRef });
 
   // Sess19 PR-6 (ADR-0031 D3): log mode consume + persistEventWithPayload を完全削除。
   // WorkLogConfirm が直接 await + router.replace('/(tabs)/plan?selectedDateKey=...')
   // でカレンダー画面に遷移するため、 bonsai-detail で consume する必要なし。
-  // stale closure bug (deps `[handleSchedulePickerSelect]` で persistEventWithPayload が
-  // 初回 mount 時の関数を保持、 item=null で早期 return) も path 排除で構造的解消。
   // schedule mode (Case A、 ADR-0030 §17 P2) は維持: WorkPicker からの DatePicker dialog 起動。
   useFocusEffect(
     React.useCallback(() => {
@@ -119,30 +109,8 @@ export default function BonsaiDetailScreen() {
   // R5 consume (上) の後・basicForm (下) の前に呼ぶことで useFocusEffect 登録順を保持。
   const { item, loading, photos, setPhotos, captions, setCaptions, events, reload } =
     useBonsaiDetailData({ id, lang, pendingDeletionRef });
-
-  const handleScheduleDateSelect = React.useCallback(
-    async (date: Date | null) => {
-      setShowSchedulePicker(false);
-      if (!date || !pendingScheduleType || !id) {
-        setPendingScheduleType(null);
-        return;
-      }
-      try {
-        await createEvent({
-          bonsaiId: id,
-          type: pendingScheduleType,
-          status: 'planned',
-          occurredAtUtc: date.toISOString(),
-        });
-        setPendingScheduleType(null);
-        await reload();
-      } catch (err) {
-        Alert.alert(t('error'), String(err));
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pendingScheduleType, id, t],
-  );
+  // R5 (A1-10): handleScheduleDateSelect が参照する reload を ref に橋渡し (上の早期呼出のため)。
+  reloadRef.current = reload;
 
   // Claude Design `detail-screens.jsx` DetailHero 整合 (Phase B-2): cover photo を抽出
   // (early return より前で呼ぶ — react-hooks/rules-of-hooks)
