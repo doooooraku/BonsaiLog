@@ -36,6 +36,32 @@ import { triggerSummaryReschedule } from '@/src/features/notification/triggerRes
 import { useSettingsStore, type PotUnit } from '@/src/stores/settingsStore';
 import { type ThemeMode } from '@/src/core/theme/themeResolver';
 import { buildAppendImportPlan, bonsaiTagKey } from './backupImportPlanner';
+import { applyImportPlan } from './applyImportPlan';
+import type {
+  BackupBonsai,
+  BackupBonsaiTag,
+  BackupErrorCode,
+  BackupEvent,
+  BackupImportResult,
+  BackupManifest,
+  BackupNamed,
+  BackupPhoto,
+  BackupTag,
+} from './backupTypes';
+
+// 公開 API 後方互換: 旧 backupService.ts が export していた DTO 型を re-export。
+export type {
+  BackupBonsai,
+  BackupBonsaiTag,
+  BackupErrorCode,
+  BackupEvent,
+  BackupImportResult,
+  BackupManifest,
+  BackupNamed,
+  BackupPhoto,
+  BackupSettings,
+  BackupTag,
+} from './backupTypes';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -58,109 +84,8 @@ const MAX_BACKUP_SIZE_BYTES = 200 * 1024 * 1024;
 const PHOTO_PATH_ANCHOR = 'bonsailog/photos/';
 
 // ---------------------------------------------------------------------------
-// Types
+// Error (DTO 型は ./backupTypes に集約、ここで re-export 済)
 // ---------------------------------------------------------------------------
-
-export type BackupBonsai = {
-  id: string;
-  name: string;
-  speciesId: string | null;
-  acquiredAt: string | null;
-  style: string | null;
-  potInfo: string | null;
-  estimatedAge: number | null;
-  memo: string | null;
-  purchaseDate: string | null;
-  acquiredFrom: string | null;
-  estimatedAgeUnknown: number;
-  customSpeciesId: string | null;
-  archivedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type BackupEvent = {
-  id: string;
-  bonsaiId: string;
-  type: string;
-  status: string;
-  occurredAtUtc: string;
-  tzOffsetMin: number;
-  tzIana: string;
-  durationMin: number | null;
-  payloadJson: string | null;
-  note: string | null;
-  deletedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type BackupPhoto = {
-  id: string;
-  bonsaiId: string;
-  eventId: string | null;
-  fileName: string; // 例: <photoId>.jpg (relative_path ではなく ZIP 内のファイル名)
-  takenAt: string | null;
-  isCover: number;
-  width: number | null;
-  height: number | null;
-  orderIndex: number;
-  caption: string | null;
-  createdAt: string;
-};
-
-export type BackupTag = {
-  id: string;
-  name: string;
-  nameNormalized: string;
-  createdAt: string;
-};
-
-export type BackupBonsaiTag = {
-  bonsaiId: string;
-  tagId: string;
-  createdAt: string;
-};
-
-/** bonsai_species_custom / bonsai_styles_custom 共通形 (id + name + created_at)。 */
-export type BackupNamed = {
-  id: string;
-  name: string;
-  createdAt: string;
-};
-
-export type BackupSettings = {
-  language: string;
-  /** 後付けの任意設定 (旧 ZIP には無い → import 時に存在分のみ適用)。 */
-  themeMode?: string;
-  potUnit?: string;
-  notificationDailySummaryEnabled?: boolean;
-  notificationDailySummaryTime?: string;
-};
-
-export type BackupManifest = {
-  schemaVersion: number;
-  exportedAt: string;
-  appVersion: string | null;
-  bonsai: BackupBonsai[];
-  events: BackupEvent[];
-  photos: BackupPhoto[];
-  /** schema_version 1 後付けの任意フィールド (旧 ZIP には存在しない → import 時 ?? [] で吸収)。 */
-  tags?: BackupTag[];
-  bonsaiTags?: BackupBonsaiTag[];
-  customSpecies?: BackupNamed[];
-  customStyles?: BackupNamed[];
-  settings: BackupSettings;
-};
-
-export type BackupImportResult = {
-  bonsai: number;
-  events: number;
-  photos: number;
-};
-
-/** BackupError.code: UI 側でメッセージを切り替えるための識別子。 */
-export type BackupErrorCode = 'unsupported' | 'invalid' | 'schema' | 'share' | 'size';
 
 export class BackupError extends Error {
   code: BackupErrorCode;
@@ -702,136 +627,30 @@ export async function importBackup(): Promise<BackupImportResult | null> {
       }
     }
 
-    // 6. INSERT + 写真コピー (失敗時はトランザクションロールバック + コピー済み写真も手動削除)
+    // 6. INSERT + 写真コピー (失敗時はトランザクションロールバック + コピー済み写真も手動削除)。
+    //    DB-apply 核は applyImportPlan (純粋核、node:sqlite で characterize 済) に委譲し、
+    //    写真の物理コピーだけを copyPhotoFile コールバックで注入する (核を I/O-free に保つ)。
     const copiedPhotoPaths: string[] = [];
     try {
-      await db.withTransactionAsync(async () => {
-        // カスタム樹種/樹形を bonsai より先に (bonsai.custom_species_id が参照)。
-        for (const sp of plan.customSpeciesToInsert) {
-          await db.runAsync(
-            'INSERT INTO bonsai_species_custom (id, name, created_at) VALUES (?, ?, ?);',
-            [sp.id, sp.name, sp.createdAt],
-          );
+      await applyImportPlan(db, plan, (photo) => {
+        // 写真ファイルを document/bonsailog/photos/<bonsaiId>/<photoId>.jpg に配置
+        const targetDir = new Directory(
+          Paths.document,
+          PHOTO_PATH_ANCHOR.replace(/\/$/, ''),
+          photo.bonsaiId,
+        );
+        if (!targetDir.exists) {
+          targetDir.create({ intermediates: true });
         }
-        for (const st of plan.customStylesToInsert) {
-          await db.runAsync(
-            'INSERT INTO bonsai_styles_custom (id, name, created_at) VALUES (?, ?, ?);',
-            [st.id, st.name, st.createdAt],
-          );
+        const targetFile = new File(targetDir, photo.fileName);
+        if (targetFile.exists) {
+          targetFile.delete();
         }
+        const sourceFile = new File(photosDir, photo.fileName);
+        sourceFile.copy(targetFile);
+        copiedPhotoPaths.push(targetFile.uri);
 
-        for (const tree of plan.bonsaiToInsert) {
-          await db.runAsync(
-            `INSERT INTO bonsai
-               (id, name, species_id, acquired_at, style, pot_info, estimated_age, memo,
-                purchase_date, acquired_from, estimated_age_unknown, custom_species_id,
-                archived_at, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-            [
-              tree.id,
-              tree.name,
-              tree.speciesId ?? null,
-              tree.acquiredAt ?? null,
-              tree.style ?? null,
-              tree.potInfo ?? null,
-              tree.estimatedAge ?? null,
-              tree.memo ?? null,
-              tree.purchaseDate ?? null,
-              tree.acquiredFrom ?? null,
-              tree.estimatedAgeUnknown ?? 0,
-              tree.customSpeciesId ?? null,
-              tree.archivedAt ?? null,
-              tree.createdAt,
-              tree.updatedAt,
-            ],
-          );
-        }
-
-        // tags → bonsai_tags の順 (bonsai_tags は bonsai/tags を参照)。
-        for (const tag of plan.tagsToInsert) {
-          await db.runAsync(
-            'INSERT INTO tags (id, name, name_normalized, created_at) VALUES (?, ?, ?, ?);',
-            [tag.id, tag.name, tag.nameNormalized, tag.createdAt],
-          );
-        }
-
-        for (const link of plan.bonsaiTagsToInsert) {
-          await db.runAsync(
-            'INSERT INTO bonsai_tags (bonsai_id, tag_id, created_at) VALUES (?, ?, ?);',
-            [link.bonsaiId, link.tagId, link.createdAt],
-          );
-        }
-
-        for (const event of plan.eventsToInsert) {
-          await db.runAsync(
-            `INSERT INTO events
-               (id, bonsai_id, type, status, occurred_at_utc, tz_offset_min, tz_iana,
-                duration_min, payload_json, note, deleted_at, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-            [
-              event.id,
-              event.bonsaiId,
-              event.type,
-              event.status,
-              event.occurredAtUtc,
-              event.tzOffsetMin,
-              event.tzIana,
-              event.durationMin ?? null,
-              event.payloadJson ?? null,
-              event.note ?? null,
-              event.deletedAt ?? null,
-              event.createdAt,
-              event.updatedAt,
-            ],
-          );
-          // FTS5 同期 (active な event のみ note + payload を可検索化)
-          if (event.deletedAt === null) {
-            await db.runAsync(
-              'INSERT INTO events_fts (event_id, bonsai_id, note, payload_text) VALUES (?, ?, ?, ?);',
-              [event.id, event.bonsaiId, event.note ?? '', event.payloadJson ?? ''],
-            );
-          }
-        }
-
-        for (const photo of plan.photosToInsert) {
-          // 写真ファイルを document/bonsailog/photos/<bonsaiId>/<photoId>.jpg に配置
-          const targetDir = new Directory(
-            Paths.document,
-            PHOTO_PATH_ANCHOR.replace(/\/$/, ''),
-            photo.bonsaiId,
-          );
-          if (!targetDir.exists) {
-            targetDir.create({ intermediates: true });
-          }
-          const targetFile = new File(targetDir, photo.fileName);
-          if (targetFile.exists) {
-            targetFile.delete();
-          }
-          const sourceFile = new File(photosDir, photo.fileName);
-          sourceFile.copy(targetFile);
-          copiedPhotoPaths.push(targetFile.uri);
-
-          const relativePath = toRelativePath(targetFile.uri, PHOTO_PATH_ANCHOR);
-          await db.runAsync(
-            `INSERT INTO photos
-               (id, bonsai_id, event_id, relative_path, taken_at, is_cover, width, height,
-                order_index, caption, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-            [
-              photo.id,
-              photo.bonsaiId,
-              photo.eventId ?? null,
-              relativePath,
-              photo.takenAt ?? null,
-              photo.isCover,
-              photo.width ?? null,
-              photo.height ?? null,
-              photo.orderIndex,
-              photo.caption ?? null,
-              photo.createdAt,
-            ],
-          );
-        }
+        return toRelativePath(targetFile.uri, PHOTO_PATH_ANCHOR);
       });
     } catch (error) {
       // トランザクション失敗時はコピー済みファイルを掃除
