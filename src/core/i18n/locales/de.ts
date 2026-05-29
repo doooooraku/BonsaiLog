@@ -895,8 +895,6 @@ const de: Partial<Record<TranslationKey, string>> = {
   exportPdfPestColSymptom: 'Symptom / Part',
   lookBackCardExportTitle: 'Export',
   lookBackCardExportDesc: 'Save your records as CSV or PDF',
-  exportPdfConfirmBody:
-    'Tap Export to generate this bonsai PDF report and open it in the share sheet.',
   exportPdfSlowHint: 'Generating the PDF is taking a while. Please wait.',
   exportListPdfSummaryBonsaiCount: 'Bonsai',
   exportListPdfSummarySpeciesCount: 'Species',
@@ -916,5 +914,6 @@ const de: Partial<Record<TranslationKey, string>> = {
   exportListPdfCatalogTitle: 'Bonsai catalog',
   exportListPdfCatalogTotalRecords: '{count} records',
   exportListPdfCatalogAcquired: 'Acquired',
+  exportGeneratingNamed: 'Generating {name}…',
 };
 export default de;

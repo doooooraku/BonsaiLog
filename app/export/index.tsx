@@ -8,14 +8,18 @@
  * 行 tap の挙動:
  * - Free: Paywall へ (useGoToPaywall)
  * - bonsai_pdf: 個別選択が本質なので専用 picker (app/export/pdf.tsx) へ遷移
- * - それ以外 (リスト系 4 種): Options Sheet を開く (期間 / 対象 / アーカイブ → runExport)
+ * - それ以外 (リスト系 4 種): Options Sheet を開く (期間 / 対象 / アーカイブ)
+ *
+ * 生成は Hub が一元管理 (Sess55): Sheet は条件を集めて onGenerate で返すだけ。Hub が Sheet を
+ * 閉じ → GeneratingOverlay (種別名 + バッジ、PDF はキャンセル可) を出し → runExport → 完了 Alert。
+ * これで「Sheet の Modal 上にさらに Modal」という二重 Modal を避ける。
  *
  * mockup v1.0 (04-Export.html) 整合。Pro 限定は ADR-0009 / 0011 / 0016 が正
  * (mockup の「全件 Free」注記は下書きとして不採用)。
  */
 import { useRouter, type Href } from 'expo-router';
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -23,21 +27,20 @@ import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { ChevronRightIcon } from '@/src/components/icons';
 import { type TranslationKey, useTranslation } from '@/src/core/i18n/i18n';
 import {
-  ACCENT_GOLD,
   BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
-  BRAND_GREEN,
   TEXT_MUTED,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { ExportFormatBadge, type ExportFmt } from '@/src/features/export/ExportFormatBadge';
 import { ExportOptionsSheet } from '@/src/features/export/ExportOptionsSheet';
-import type { ExportTypeKey } from '@/src/features/export/exportFlow';
+import type { ExportOptions, ExportTypeKey } from '@/src/features/export/exportFlow';
+import { runExport } from '@/src/features/export/exportFlow';
+import { GeneratingOverlay } from '@/src/features/export/GeneratingOverlay';
 import { useGoToPaywall } from '@/src/features/pro/useGoToPaywall';
 import { useProStore } from '@/src/stores/proStore';
-
-type ExportFmt = 'CSV' | 'PDF';
 
 type ExportTypeDef = {
   k: string;
@@ -74,25 +77,6 @@ const EXPORT_TYPES: readonly ExportTypeDef[] = [
   { k: 'list_pdf', fmt: 'PDF', titleKey: 'exportHubListPdfTitle', subKey: 'exportHubListPdfSub' },
 ];
 
-function FormatBadge({ fmt }: { fmt: ExportFmt }) {
-  const isCsv = fmt === 'CSV';
-  return (
-    <View
-      style={[
-        styles.badge,
-        {
-          backgroundColor: isCsv ? 'rgba(31,58,46,0.08)' : 'rgba(198,158,72,0.14)',
-          borderColor: isCsv ? BRAND_GREEN : ACCENT_GOLD,
-        },
-      ]}
-    >
-      <ThemedText style={[styles.badgeText, { color: isCsv ? BRAND_GREEN : '#8c6b25' }]}>
-        {fmt}
-      </ThemedText>
-    </View>
-  );
-}
-
 function ExportRow({ def, onPress }: { def: ExportTypeDef; onPress: () => void }) {
   const { t } = useTranslation();
   return (
@@ -103,7 +87,7 @@ function ExportRow({ def, onPress }: { def: ExportTypeDef; onPress: () => void }
       style={styles.row}
       onPress={onPress}
     >
-      <FormatBadge fmt={def.fmt} />
+      <ExportFormatBadge fmt={def.fmt} />
       <View style={styles.rowMain}>
         <View style={styles.rowTitleLine}>
           <ThemedText type="defaultSemiBold" style={styles.rowTitle}>
@@ -121,11 +105,12 @@ function ExportRow({ def, onPress }: { def: ExportTypeDef; onPress: () => void }
 }
 
 export default function ExportHubScreen() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const router = useRouter();
   const isPro = useProStore((s) => s.isPro);
   const goToPaywall = useGoToPaywall();
   const [sheetType, setSheetType] = useState<ExportTypeKey | null>(null);
+  const [generating, setGenerating] = useState<ExportTypeKey | null>(null);
 
   const handlePick = (k: string) => {
     if (!isPro) {
@@ -139,8 +124,27 @@ export default function ExportHubScreen() {
     setSheetType(k as ExportTypeKey);
   };
 
+  const handleGenerate = async (opts: Omit<ExportOptions, 'lang'>) => {
+    setSheetType(null);
+    setGenerating(opts.type);
+    try {
+      const result = await runExport({ ...opts, lang }, t);
+      Alert.alert(
+        t('exportGenericSuccess'),
+        t('exportGenericSuccessDetail').replace('{count}', String(result.count)),
+      );
+    } catch (error) {
+      Alert.alert(t('exportCsvFailed'), String(error));
+    } finally {
+      setGenerating(null);
+    }
+  };
+
   const csvTypes = EXPORT_TYPES.filter((d) => d.fmt === 'CSV');
   const pdfTypes = EXPORT_TYPES.filter((d) => d.fmt === 'PDF');
+
+  const generatingDef = generating ? EXPORT_TYPES.find((d) => d.k === generating) : undefined;
+  const generatingFmt: ExportFmt = generatingDef?.fmt ?? 'CSV';
 
   return (
     <ThemedView style={styles.container} testID="e2e_export_hub_screen">
@@ -168,6 +172,20 @@ export default function ExportHubScreen() {
         visible={sheetType !== null}
         type={sheetType ?? 'events_csv'}
         onClose={() => setSheetType(null)}
+        onGenerate={handleGenerate}
+      />
+
+      <GeneratingOverlay
+        visible={generating !== null}
+        format={generatingFmt}
+        title={
+          generatingDef
+            ? t('exportGeneratingNamed').replace('{name}', t(generatingDef.titleKey))
+            : t('exportGeneratingTitle')
+        }
+        showCancel={generatingFmt === 'PDF'}
+        delayMs={generatingFmt === 'PDF' ? 0 : 250}
+        onCancel={() => setGenerating(null)}
       />
     </ThemedView>
   );
@@ -211,15 +229,6 @@ const styles = StyleSheet.create({
     borderColor: BORDER_DEFAULT,
     borderRadius: 12,
   },
-  badge: {
-    width: 48,
-    height: 48,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.6 },
   rowMain: { flex: 1, minWidth: 0 },
   rowTitleLine: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
   rowTitle: { fontSize: 15, color: TEXT_PRIMARY },
