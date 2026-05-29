@@ -19,10 +19,8 @@
  *
  * Issue #439 で BonsaiCreateSheet から抽出。
  */
-import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert } from 'react-native';
 
 import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
@@ -31,10 +29,11 @@ import { BonsaiMetadataFields } from '@/src/features/bonsai/basicForm/BonsaiMeta
 import { BonsaiPhotoPickerBlock } from '@/src/features/bonsai/basicForm/BonsaiPhotoPickerBlock';
 import { BonsaiPotInfoSection } from '@/src/features/bonsai/basicForm/BonsaiPotInfoSection';
 import { BonsaiTagsSection } from '@/src/features/bonsai/basicForm/BonsaiTagsSection';
+import { useBonsaiFormPhotos } from '@/src/features/bonsai/basicForm/useBonsaiFormPhotos';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { createBonsai, updateBonsai } from '@/src/db/bonsaiRepository';
-import { addPhotoFromUri, FREE_PHOTO_LIMIT_PER_BONSAI } from '@/src/db/photoRepository';
+import { addPhotoFromUri } from '@/src/db/photoRepository';
 import { type Bonsai, type BonsaiStyle } from '@/src/db/schema';
 import { getCustomSpeciesById } from '@/src/db/bonsaiSpeciesCustomRepository';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
@@ -48,7 +47,6 @@ import {
   type TagRecord,
 } from '@/src/db/tagRepository';
 import { usePickerStore } from '@/src/stores/pickerStore';
-import { useProStore } from '@/src/stores/proStore';
 
 /** pot_info JSON 復元用 shape。JSON.parse の any を堰き止め、runtime は各 setter の typeof ガードで検証。 */
 type ParsedPotInfo = {
@@ -108,8 +106,15 @@ export function useBonsaiBasicForm({
   const [style, setStyle] = useState<BonsaiStyle | null>(null);
   const [acquiredAt, setAcquiredAt] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [pendingPhotos, setPendingPhotos] = useState<PendingPhoto[]>([]);
-  const isPro = useProStore((s) => s.isPro);
+  const {
+    pendingPhotos,
+    setPendingPhotos,
+    isPro,
+    handlePickPhoto,
+    handleRemovePendingPhoto,
+    handleMovePendingPhoto,
+    handleTakePhotoCamera,
+  } = useBonsaiFormPhotos(t);
   const [estimatedAgeText, setEstimatedAgeText] = useState('');
   // Sess13 PR-D: 樹齢「不明」 明示 (schema v12 estimated_age_unknown column)。
   // checkbox tap で estimatedAgeText を空に + ageUnknown = true。
@@ -371,7 +376,8 @@ export function useBonsaiBasicForm({
       setAcquiredFrom('');
       setSelectedTagIds(new Set());
     }
-  }, [editingBonsai]);
+    // setPendingPhotos は useBonsaiFormPhotos 由来 (eslint が安定 setter と非認識のため明記、stable 故挙動不変)。
+  }, [editingBonsai, setPendingPhotos]);
 
   const toggleTag = useCallback((tagId: string) => {
     setSelectedTagIds((prev) => {
@@ -381,93 +387,6 @@ export function useBonsaiBasicForm({
       return next;
     });
   }, []);
-
-  const handlePickPhoto = useCallback(async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
-      return;
-    }
-    const remaining = isPro
-      ? Number.POSITIVE_INFINITY
-      : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - pendingPhotos.length);
-    if (remaining === 0) {
-      Alert.alert(
-        t('photoLimitTitle'),
-        t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_BONSAI)),
-        [{ text: t('ok') }],
-      );
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsMultipleSelection: true,
-      selectionLimit: 0,
-      quality: 0.85,
-    });
-    if (result.canceled || !result.assets || result.assets.length === 0) return;
-
-    const acceptedCount = isPro ? result.assets.length : Math.min(result.assets.length, remaining);
-    const accepted = result.assets.slice(0, acceptedCount).map((a) => ({
-      uri: a.uri,
-      width: a.width ?? null,
-      height: a.height ?? null,
-    }));
-    const skipped = result.assets.length - accepted.length;
-    setPendingPhotos((prev) => [...prev, ...accepted]);
-    if (skipped > 0) {
-      Alert.alert(
-        t('photoLimitTitle'),
-        t('photoLimitPartialAdded')
-          .replace('{added}', String(accepted.length))
-          .replace('{skipped}', String(skipped)),
-        [{ text: t('ok') }],
-      );
-    }
-  }, [isPro, pendingPhotos.length, t]);
-
-  const handleRemovePendingPhoto = useCallback((index: number) => {
-    setPendingPhotos((prev) => prev.filter((_, i) => i !== index));
-  }, []);
-
-  // Sess14 PR-T: handleUpdatePendingPhotoCaption 削除 (caption field 廃止)。
-
-  const handleMovePendingPhoto = useCallback((from: number, to: number) => {
-    setPendingPhotos((prev) => {
-      if (to < 0 || to >= prev.length) return prev;
-      const next = [...prev];
-      const [moved] = next.splice(from, 1);
-      if (moved === undefined) return prev; // splice on a valid index always returns 1 element, but guard for type safety
-      next.splice(to, 0, moved);
-      return next;
-    });
-  }, []);
-
-  const handleTakePhotoCamera = useCallback(async () => {
-    const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
-      return;
-    }
-    const remaining = isPro
-      ? Number.POSITIVE_INFINITY
-      : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - pendingPhotos.length);
-    if (remaining === 0) {
-      Alert.alert(
-        t('photoLimitTitle'),
-        t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_BONSAI)),
-        [{ text: t('ok') }],
-      );
-      return;
-    }
-    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.85 });
-    if (result.canceled || !result.assets || result.assets.length === 0) return;
-    const a = result.assets[0]!; // guarded by assets.length === 0 check above
-    setPendingPhotos((prev) => [
-      ...prev,
-      { uri: a.uri, width: a.width ?? null, height: a.height ?? null },
-    ]);
-  }, [isPro, pendingPhotos.length, t]);
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;
