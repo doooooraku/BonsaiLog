@@ -6,13 +6,13 @@ import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } 
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { CameraIcon } from '@/src/components/icons';
 import { FAB } from '@/src/components/common/FAB';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 import { useBonsaiBasicForm } from '@/src/features/bonsai/BonsaiBasicForm';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
 import { BonsaiBasicSection } from '@/src/features/bonsai/detail/BonsaiBasicSection';
 import { BonsaiHistoryTab } from '@/src/features/bonsai/detail/BonsaiHistoryTab';
+import { BonsaiPhotoSection } from '@/src/features/bonsai/detail/BonsaiPhotoSection';
 import { BonsaiTimelineTab } from '@/src/features/bonsai/detail/BonsaiTimelineTab';
 import { useBonsaiDetailData } from '@/src/features/bonsai/detail/useBonsaiDetailData';
 import { useBonsaiDetailTabs } from '@/src/features/bonsai/detail/useBonsaiDetailTabs';
@@ -22,17 +22,8 @@ import {
   type PendingPhotoDeletion,
 } from '@/src/features/bonsai/detail/usePhotoCrudWithUndo';
 import { useScrollToEvent } from '@/src/features/bonsai/detail/useScrollToEvent';
-import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
-import { PhotoUndoBanner } from '@/src/features/bonsai/PhotoUndoBanner';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  DANGER,
-  TEXT_MUTED,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { BORDER_DEFAULT, BRAND_GREEN, DANGER, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 
 import { archiveBonsai } from '@/src/db/bonsaiRepository';
@@ -128,7 +119,6 @@ export default function BonsaiDetailScreen() {
   // R5 consume (上) の後・basicForm (下) の前に呼ぶことで useFocusEffect 登録順を保持。
   const { item, loading, photos, setPhotos, captions, setCaptions, events, reload } =
     useBonsaiDetailData({ id, lang, pendingDeletionRef });
-  const photoCount = photos.length;
 
   const handleScheduleDateSelect = React.useCallback(
     async (date: Date | null) => {
@@ -352,70 +342,19 @@ export default function BonsaiDetailScreen() {
                 onArchive={handleArchive}
                 onMemoFocus={handleMemoFocus}
                 customPhotoBlock={
-                  <View style={styles.section}>
-                    <View style={styles.photoSectionLabelRow}>
-                      <ThemedText type="defaultSemiBold">
-                        {t('bonsaiFieldPhotos')} ({photoCount})
-                      </ThemedText>
-                      <ThemedText style={styles.photoSectionOptionalLabel}>
-                        {t('fieldOptionalLabel')}
-                      </ThemedText>
-                    </View>
-                    <View style={styles.photoSourceRow}>
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel={t('photoSourceCamera')}
-                        style={styles.photoSourceButton}
-                        onPress={() => void pickAndSavePhoto('camera')}
-                        testID="e2e_detail_photo_camera"
-                      >
-                        <CameraIcon size={20} />
-                        <ThemedText style={styles.photoSourceText}>
-                          {t('photoSourceCamera')}
-                        </ThemedText>
-                      </Pressable>
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel={t('photoSourceLibrary')}
-                        style={styles.photoSourceButton}
-                        onPress={() => void pickAndSavePhoto('library')}
-                        testID="e2e_detail_photo_library"
-                      >
-                        <ThemedText style={styles.photoSourceText}>
-                          {t('photoSourceLibrary')}
-                        </ThemedText>
-                      </Pressable>
-                    </View>
-
-                    {photos.length === 0 && (
-                      <ThemedText style={styles.emptyPhotos}>{t('photoEmpty')}</ThemedText>
-                    )}
-
-                    {photos.map((photo, idx) => (
-                      <PhotoCard
-                        key={photo.id}
-                        photo={photo}
-                        index={idx}
-                        total={photos.length}
-                        caption={captions[photo.id] ?? ''}
-                        onCaptionChange={(text) => handleCaptionChange(photo.id, text)}
-                        onCaptionBlur={() => void handleCaptionBlur(photo.id)}
-                        onMoveUp={() => void handleMovePhoto(idx, idx - 1)}
-                        onMoveDown={() => void handleMovePhoto(idx, idx + 1)}
-                        onDelete={() => handleDeletePhoto(photo)}
-                        onSetCover={() => void handleSetCover(photo.id)}
-                      />
-                    ))}
-
-                    {/* 削除 undo Banner (Repolog 流用、5 秒以内に「元に戻す」で復元)。 */}
-                    {pendingDeletion != null && (
-                      <PhotoUndoBanner
-                        text={t('photoDeletedBanner')}
-                        actionLabel={t('photoUndoLabel')}
-                        onUndo={handleUndoDeletion}
-                      />
-                    )}
-                  </View>
+                  <BonsaiPhotoSection
+                    photos={photos}
+                    captions={captions}
+                    pendingDeletion={pendingDeletion}
+                    t={t}
+                    pickAndSavePhoto={pickAndSavePhoto}
+                    handleMovePhoto={handleMovePhoto}
+                    handleCaptionChange={handleCaptionChange}
+                    handleCaptionBlur={handleCaptionBlur}
+                    handleSetCover={handleSetCover}
+                    handleDeletePhoto={handleDeletePhoto}
+                    handleUndoDeletion={handleUndoDeletion}
+                  />
                 }
               />
             )}
@@ -574,7 +513,6 @@ const styles = StyleSheet.create({
   flexOne: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   scrollContent: { padding: 16, gap: 16 },
-  section: { gap: 8 },
   // displayL 32/38 (design_system.md §3-3、Claude Design detail-screens.jsx)
   bonsaiName: {
     fontFamily: 'NotoSerifJP_500Medium',
@@ -627,29 +565,6 @@ const styles = StyleSheet.create({
   },
   wateringHistoryLinkText: { fontSize: 15, fontWeight: '500', color: BRAND_GREEN },
   wateringHistoryLinkArrow: { fontSize: 20, color: TEXT_SECONDARY },
-  // Sess15 PR-QQ: 新規 modal BonsaiBasicForm.photoSourceButton と完全同 pattern。
-  photoSectionLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  photoSectionOptionalLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: TEXT_MUTED,
-    letterSpacing: 0.8,
-  },
-  photoSourceRow: { flexDirection: 'row', gap: 10 },
-  photoSourceButton: {
-    flex: 1,
-    height: 44,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: BG_SURFACE,
-  },
-  photoSourceText: { fontSize: 14, fontWeight: '500' },
-  emptyPhotos: { opacity: 0.6, textAlign: 'center', paddingVertical: 12 },
   yearBlock: { gap: 8 },
   yearLabel: { fontSize: 13, opacity: 0.7 },
   photoRow: { gap: 8 },
