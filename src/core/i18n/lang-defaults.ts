@@ -11,7 +11,7 @@
  * - 現時点では全 19 言語 = 'cm' (世界の盆栽人口の大多数がメートル法圏、 米 user は settings で inch に変更可能)
  * - `useSettingsStore.potUnit` の default は本 map から決定 (起動時 init)
  */
-import type { PotUnit } from '@/src/stores/settingsStore';
+import type { PotUnit } from '@/src/types/units';
 
 /**
  * 言語別 default 鉢情報単位。
