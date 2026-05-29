@@ -6,16 +6,17 @@ import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } 
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { CameraIcon, EventIcon } from '@/src/components/icons';
+import { CameraIcon } from '@/src/components/icons';
 import { FAB } from '@/src/components/common/FAB';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 import { useBonsaiBasicForm } from '@/src/features/bonsai/BonsaiBasicForm';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
 import { BonsaiBasicSection } from '@/src/features/bonsai/detail/BonsaiBasicSection';
+import { BonsaiHistoryTab } from '@/src/features/bonsai/detail/BonsaiHistoryTab';
 import { BonsaiTimelineTab } from '@/src/features/bonsai/detail/BonsaiTimelineTab';
-import { formatDate } from '@/src/features/bonsai/detail/dateFormat';
 import { useBonsaiDetailData } from '@/src/features/bonsai/detail/useBonsaiDetailData';
 import { useBonsaiDetailTabs } from '@/src/features/bonsai/detail/useBonsaiDetailTabs';
+import { useHistoryGroups } from '@/src/features/bonsai/detail/useHistoryGroups';
 import {
   usePhotoCrudWithUndo,
   type PendingPhotoDeletion,
@@ -24,10 +25,7 @@ import { useScrollToEvent } from '@/src/features/bonsai/detail/useScrollToEvent'
 import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
 import { PhotoUndoBanner } from '@/src/features/bonsai/PhotoUndoBanner';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
-  BADGE_SOFT_BG,
-  BADGE_SOFT_TEXT,
   BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
@@ -44,13 +42,11 @@ import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { useToastStore } from '@/src/components/Toast';
 import * as Haptics from 'expo-haptics';
 import { getTzOffsetMin } from '@/src/core/datetime';
-import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
+import { type Event, type EventType } from '@/src/db/schema';
 import {
   findGroupKeyForEvent,
   groupContinuousEvents,
-  type EventGroupEntry,
 } from '@/src/features/event/groupContinuousEvents';
-import { EventRow } from '@/src/features/event/EventRow';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
 /**
@@ -174,11 +170,6 @@ export default function BonsaiDetailScreen() {
     },
   });
 
-  // Issue #440 Phase 1 / Sess42 バグ3: 作業履歴タブのフィルタ chip。
-  // 旧: 5 種固定 ('all'|watering|pruning|wiring|repotting、剪定系 5 種を 1 chip に集約)。
-  // 新: 'all' + その盆栽に記録のある event type のみ動的生成 (全 14 種別個別フィルタ可能)。
-  //     chip 過多を避けるため記録のある種別のみ表示 + 横スクロール single row。
-  type HistoryFilter = 'all' | EventType;
   // ADR-0036 D1-D4 (Sess25 PR-ζ-2-⑧、 Sess27 PR-4 で D5 撤回): event 削除 ConfirmDialog state + 通知 Toast のみ
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const handleConfirmDelete = useCallback(async () => {
@@ -193,53 +184,23 @@ export default function BonsaiDetailScreen() {
   }, [pendingDeleteId, t, reload]);
   const handleCancelDelete = useCallback(() => setPendingDeleteId(null), []);
 
-  const [historyFilter, setHistoryFilter] = useState<HistoryFilter>('all');
-  // 連続日まとめの展開状態 (group の events[0].id を key にして個別開閉)
-  const [expandedGroupIds, setExpandedGroupIds] = useState<Set<string>>(new Set());
-  const toggleGroupExpand = useCallback((key: string) => {
-    setExpandedGroupIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }, []);
-
   // R7 (Phase 4 A1-7): 検索結果タップ → 該当作業へジャンプ + 一時ハイライト (measureLayout)。
   const { highlightedEventId, registerRow, scrollToEvent } = useScrollToEvent({
     scrollRef,
     scrollContentRef,
   });
 
-  // Sess42 バグ3: この盆栽に記録 (logged) のある event type を EVENT_TYPES のカノニカル順で抽出。
-  // フィルタ chip は 'all' + これらのみ表示 (記録のない種別の chip は出さず、chip 過多を回避)。
-  const presentEventTypes = React.useMemo<EventType[]>(() => {
-    const set = new Set<EventType>();
-    for (const ev of events) {
-      if (ev.status === 'logged') set.add(ev.type as EventType);
-    }
-    return EVENT_TYPES.filter((ty) => set.has(ty));
-  }, [events]);
-
-  // 選択中フィルタの種別が記録 0 件になった場合 (削除等) は 'all' に戻す (chip が消えて
-  // 選択解除できなくなるのを防ぐ)。
-  React.useEffect(() => {
-    if (historyFilter !== 'all' && !presentEventTypes.includes(historyFilter)) {
-      setHistoryFilter('all');
-    }
-  }, [historyFilter, presentEventTypes]);
-
-  // logged event のみ + フィルタ適用 (個別 event type 一致) + occurredAtUtc 降順 + 連続日グルーピング。
-  const historyGroups = React.useMemo<EventGroupEntry[]>(() => {
-    const filtered = events.filter((ev) => {
-      if (ev.status !== 'logged') return false;
-      if (historyFilter === 'all') return true;
-      return ev.type === historyFilter;
-    });
-    // 既存 events は updated_at 順なので occurredAtUtc 降順に並び替える。
-    const sorted = [...filtered].sort((a, b) => b.occurredAtUtc.localeCompare(a.occurredAtUtc));
-    return groupContinuousEvents(sorted, getTzOffsetMin());
-  }, [events, historyFilter]);
+  // R6 (Phase 4 A1-8): 作業履歴タブの絞り込み + 連続日グルーピング。
+  // setHistoryFilter / setExpandedGroupIds は下の focusEventId effect が使うため index で受ける。
+  const {
+    historyFilter,
+    setHistoryFilter,
+    expandedGroupIds,
+    setExpandedGroupIds,
+    toggleGroupExpand,
+    presentEventTypes,
+    historyGroups,
+  } = useHistoryGroups({ events });
 
   // 改善① focusEventId param 受領 → 履歴タブ表示 + フィルタ all + (group 内なら展開) + スクロール。
   // events ロード後に発火 (初回マウント / 既マウント画面への再遷移の両対応)。処理後 param クリア。
@@ -264,7 +225,15 @@ export default function BonsaiDetailScreen() {
     if (groupKey) setExpandedGroupIds((prev) => new Set(prev).add(groupKey));
     scrollToEvent(fid);
     router.setParams({ focusEventId: undefined });
-  }, [params.focusEventId, events, router, scrollToEvent, setActiveTab]);
+  }, [
+    params.focusEventId,
+    events,
+    router,
+    scrollToEvent,
+    setActiveTab,
+    setHistoryFilter,
+    setExpandedGroupIds,
+  ]);
 
   // ADR-0036 D1: アーカイブ確認も OS 標準 Alert → カスタム ConfirmDialog に統一 (Home 長押しと見た目統一)
   const [archiveConfirmVisible, setArchiveConfirmVisible] = useState(false);
@@ -455,156 +424,21 @@ export default function BonsaiDetailScreen() {
             mockup `bonsai-detail-history-01/02/03.png` 整合。FAB は ScrollView の外 (root)
             に absolute 配置 (画面右下、tab bar の上)。 */}
             {activeTab === 'history' && (
-              <View style={styles.section}>
-                {/* Sess42 バグ3: フィルタ chip = 'all' + この盆栽に記録のある event type のみ動的生成。
-                  横スクロール single row (chip が増えても横スライドで 1 行表示、折り返さない)。 */}
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.historyFilterRow}
-                  style={styles.historyFilterScroll}
-                >
-                  {(['all', ...presentEventTypes] as const).map((f) => {
-                    const on = historyFilter === f;
-                    const labelKey: TranslationKey =
-                      f === 'all' ? 'historyFilterAll' : (`eventType_${f}` as TranslationKey);
-                    return (
-                      <Pressable
-                        key={f}
-                        accessibilityRole="tab"
-                        accessibilityState={{ selected: on }}
-                        accessibilityLabel={t(labelKey)}
-                        style={[styles.historyFilterChip, on && styles.historyFilterChipOn]}
-                        onPress={() => setHistoryFilter(f)}
-                        testID={`e2e_history_filter_${f}`}
-                      >
-                        <ThemedText
-                          style={[
-                            styles.historyFilterChipText,
-                            on && styles.historyFilterChipTextOn,
-                          ]}
-                        >
-                          {t(labelKey)}
-                        </ThemedText>
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
-
-                {historyGroups.length === 0 && (
-                  <ThemedText style={styles.emptyPhotos}>{t('eventEmpty')}</ThemedText>
-                )}
-
-                {historyGroups.map((entry) => {
-                  // 連続日 group: 「水やり ×3  4月20日 ～ 4月22日  3回まとめて表示 個別に開く ▼」
-                  if (entry.kind === 'group') {
-                    const key = entry.events[0]!.id; // group always has ≥1 event by construction
-                    const expanded = expandedGroupIds.has(key);
-                    const startLabel = formatDate(`${entry.startDate}T00:00:00.000Z`, lang);
-                    const endLabel = formatDate(`${entry.endDate}T00:00:00.000Z`, lang);
-                    return (
-                      <View key={key}>
-                        <Pressable
-                          style={styles.eventRow}
-                          accessibilityRole="button"
-                          accessibilityLabel={t(`eventType_${entry.type}` as TranslationKey)}
-                          onPress={() => toggleGroupExpand(key)}
-                          testID={`e2e_history_group_toggle_${key}`}
-                        >
-                          <View style={styles.eventIconBox}>
-                            <EventIcon type={entry.type} size={20} />
-                          </View>
-                          <View style={styles.eventContent}>
-                            <View style={styles.eventRowMain}>
-                              <View style={styles.eventLabelWithCount}>
-                                <ThemedText style={styles.eventLabel}>
-                                  {t(`eventType_${entry.type}` as TranslationKey)}
-                                </ThemedText>
-                                <View style={styles.eventCountBadge}>
-                                  <ThemedText style={styles.eventCountBadgeText}>
-                                    ×{entry.events.length}
-                                  </ThemedText>
-                                </View>
-                              </View>
-                              <ThemedText style={styles.eventRowDate}>
-                                {startLabel} ～ {endLabel}
-                              </ThemedText>
-                            </View>
-                            <ThemedText style={styles.eventGroupToggle}>
-                              {t('historyGroupToggle')
-                                .replace('{count}', String(entry.events.length))
-                                .replace('{caret}', expanded ? '▲' : '▼')}
-                            </ThemedText>
-                          </View>
-                        </Pressable>
-                        {expanded && (
-                          <View style={styles.historyExpandedContainer}>
-                            {entry.events.map((ev, idx) => {
-                              const isFirst = idx === 0;
-                              const isLast = idx === entry.events.length - 1;
-                              return (
-                                <View key={ev.id} style={styles.historyExpandedRow}>
-                                  <View style={styles.historyExpandedLeft}>
-                                    <View
-                                      style={[
-                                        styles.historyExpandedLine,
-                                        isFirst && styles.historyExpandedLineHidden,
-                                      ]}
-                                    />
-                                    <View style={styles.historyExpandedDot} />
-                                    <View
-                                      style={[
-                                        styles.historyExpandedLine,
-                                        isLast && styles.historyExpandedLineHidden,
-                                      ]}
-                                    />
-                                  </View>
-                                  <View
-                                    style={styles.historyExpandedRowContent}
-                                    ref={(node) => registerRow(ev.id, node)}
-                                    collapsable={false}
-                                  >
-                                    <EventRow
-                                      ev={ev}
-                                      eventsForBonsai={events}
-                                      lang={lang}
-                                      t={t}
-                                      onLongPress={confirmDeleteEvent}
-                                      onKebabPress={kebabDeleteEvent}
-                                      kebabTestID={`e2e_bonsai_event_kebab_${ev.id}`}
-                                      displayMode="detailed"
-                                      highlighted={highlightedEventId === ev.id}
-                                    />
-                                  </View>
-                                </View>
-                              );
-                            })}
-                          </View>
-                        )}
-                      </View>
-                    );
-                  }
-                  return (
-                    <View
-                      key={entry.event.id}
-                      ref={(node) => registerRow(entry.event.id, node)}
-                      collapsable={false}
-                    >
-                      <EventRow
-                        ev={entry.event}
-                        eventsForBonsai={events}
-                        lang={lang}
-                        t={t}
-                        onLongPress={confirmDeleteEvent}
-                        onKebabPress={kebabDeleteEvent}
-                        kebabTestID={`e2e_bonsai_event_kebab_${entry.event.id}`}
-                        displayMode="detailed"
-                        highlighted={highlightedEventId === entry.event.id}
-                      />
-                    </View>
-                  );
-                })}
-              </View>
+              <BonsaiHistoryTab
+                events={events}
+                lang={lang}
+                t={t}
+                historyFilter={historyFilter}
+                setHistoryFilter={setHistoryFilter}
+                presentEventTypes={presentEventTypes}
+                historyGroups={historyGroups}
+                expandedGroupIds={expandedGroupIds}
+                toggleGroupExpand={toggleGroupExpand}
+                registerRow={registerRow}
+                highlightedEventId={highlightedEventId}
+                onLongPressEvent={confirmDeleteEvent}
+                onKebabPressEvent={kebabDeleteEvent}
+              />
             )}
 
             {/* Sess15 PR-NN: 旧 basic Tab 末尾アーカイブボタンを BonsaiBasicSection 内に移動 (保存 / アーカイブ同 height 56 統一)。 */}
@@ -760,69 +594,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   archiveText: { color: DANGER, fontSize: 15, fontWeight: '500' },
-  // Issue #440 Phase 1 / Sess42 バグ3: 作業履歴フィルタ chip。
-  // 横スクロール ScrollView の contentContainerStyle (flexWrap せず single row、gap 8)。
-  historyFilterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 2,
-    paddingRight: 8,
-  },
-  // 縦親 ScrollView 内で横 ScrollView が縦に伸びないよう flexGrow: 0 で content 高さに固定。
-  historyFilterScroll: { flexGrow: 0, marginBottom: 4 },
-  historyFilterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
-    minHeight: 36,
-    justifyContent: 'center',
-  },
-  historyFilterChipOn: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
-  historyFilterChipText: { fontSize: 13 },
-  historyFilterChipTextOn: { color: '#FFFFFF', fontWeight: '600' },
-  // Issue #440 Phase 1: 連続日 group の `×N` バッジ + 「N 回まとめて表示 個別に開く ▼」
-  eventLabelWithCount: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  // Sess28 PR-5 (ADR-0037 D3): BADGE_SOFT token 参照 (薄緑 + 濃緑文字、 design_system §20 整合、
-  // history タブ + timeline タブで共用)。
-  eventCountBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-    backgroundColor: BADGE_SOFT_BG,
-  },
-  eventCountBadgeText: {
-    color: BADGE_SOFT_TEXT,
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.4,
-  },
-  eventGroupToggle: { fontSize: 12, color: TEXT_SECONDARY, marginTop: 4 },
-  eventRowIndent: { paddingLeft: 32 },
-  // Sess28 PR-7 (ADR-0037 P0-2): 連続日 group 展開時の timeline 風表示 (縦線 + ○ marker)。
-  // mockup `bonsai-detail-history-01.png` スクショ4 整合、 既存 timelineRow と同 pattern。
-  historyExpandedContainer: { marginLeft: 16, marginTop: 4, marginBottom: 4 },
-  historyExpandedRow: { flexDirection: 'row', alignItems: 'stretch' },
-  historyExpandedLeft: { width: 24, alignItems: 'center' },
-  historyExpandedLine: {
-    flex: 1,
-    width: 2,
-    backgroundColor: BRAND_GREEN,
-  },
-  historyExpandedLineHidden: { backgroundColor: 'transparent' },
-  historyExpandedDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 2,
-    borderColor: BRAND_GREEN,
-    backgroundColor: BG_SURFACE,
-    marginVertical: 2,
-  },
-  historyExpandedRowContent: { flex: 1, paddingLeft: 8 },
   // Sess36 PR-3 ADR-0042 D3: 旧 historyFab + historyFabPlus は共通 <FAB /> に移行、 撤去済。
   // ADR-0020 v1.x-2: DetailTabs (Claude Design detail-screens.jsx)
   detailTabs: {
@@ -902,45 +673,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   eventAddText: { color: BRAND_GREEN, fontSize: 15, fontWeight: '500' },
-  // Claude Design HistoryTab 整合: 16 padding + 14 gap + minHeight 80、icon 40 box
-  eventRow: {
-    flexDirection: 'row',
-    gap: 14,
-    padding: 16,
-    minHeight: 80,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
-  },
-  eventIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  eventContent: { flex: 1, minWidth: 0 },
-  eventRowMain: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  // bodyL 16/24 + Medium (Claude Design fontSize 16, weight 500)
-  eventLabel: {
-    fontFamily: 'NotoSansJP_600SemiBold',
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  // mono 風 12pt + letterSpacing (Inter で代替)
-  eventRowDate: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    letterSpacing: 0.7,
-    color: TEXT_SECONDARY,
-  },
   headerMenuButton: {
     paddingHorizontal: 8,
     paddingVertical: 6,
