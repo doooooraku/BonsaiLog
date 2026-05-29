@@ -21,6 +21,7 @@ import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingPr
 import { useBonsaiBasicForm } from '@/src/features/bonsai/BonsaiBasicForm';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
 import { BonsaiBasicSection } from '@/src/features/bonsai/detail/BonsaiBasicSection';
+import { BonsaiTimelineTab } from '@/src/features/bonsai/detail/BonsaiTimelineTab';
 import { formatDate } from '@/src/features/bonsai/detail/dateFormat';
 import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
 import { PhotoUndoBanner } from '@/src/features/bonsai/PhotoUndoBanner';
@@ -68,12 +69,11 @@ import { cancelForEvents } from '@/src/features/notification/cancelForEvent';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { useToastStore } from '@/src/components/Toast';
 import * as Haptics from 'expo-haptics';
-import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
+import { getTzOffsetMin } from '@/src/core/datetime';
 import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
 import {
   findGroupKeyForEvent,
   groupContinuousEvents,
-  groupContinuousEventsAsc,
   type EventGroupEntry,
 } from '@/src/features/event/groupContinuousEvents';
 import { EventRow } from '@/src/features/event/EventRow';
@@ -888,72 +888,7 @@ export default function BonsaiDetailScreen() {
              * mockup `bonsai-detail-timeline-01/02.png` 整合。FAB は ScrollView の外 (root)
              * に absolute 配置。
              */}
-            {activeTab === 'timeline' && (
-              <View style={styles.section}>
-                {/* Issue #441 Phase 2: 「これからの予定」 + 右側 secondary label
-                「過去水やりは折りたたみ」 (mockup `bonsai-detail-timeline-01/02.png` 整合)。
-                過去水やりは作業履歴タブ + ふりかえりタブ CrossWateringHistory で参照可能。 */}
-                <View style={styles.timelineHeader}>
-                  <ThemedText type="subtitle">{t('detailTimelineSectionTitle')}</ThemedText>
-                  <ThemedText style={styles.timelineHeaderSecondary}>
-                    {t('detailTimelinePastCollapsed')}
-                  </ThemedText>
-                </View>
-                {(() => {
-                  const plannedEvents = events
-                    .filter((e) => e.status === 'planned')
-                    .sort((a, b) => a.occurredAtUtc.localeCompare(b.occurredAtUtc));
-                  // Sess12 PR-J: 「今日」 緑大円 row を先頭に追加 (mockup bonsai-detail-timeline-01/02 整合)
-                  // events 0 件でも「今日」 ヘッダー表示で「これからの予定の起点」 を明示
-                  const todayLabel = t('detailTimelineToday');
-                  const todayDate = formatDate(nowUtc() as string, lang);
-                  const todayRow = (
-                    <View key="__today__" style={styles.timelineRow} testID="e2e_timeline_today">
-                      <View style={styles.timelineLeft}>
-                        <View style={[styles.timelineLine, styles.timelineLineHidden]} />
-                        <View style={[styles.timelineDot, styles.timelineDotToday]} />
-                        <View
-                          style={[
-                            styles.timelineLine,
-                            plannedEvents.length === 0 && styles.timelineLineHidden,
-                          ]}
-                        />
-                      </View>
-                      <View style={styles.timelineContent}>
-                        <ThemedText style={styles.timelineTodayLabel}>{todayLabel}</ThemedText>
-                        <ThemedText style={styles.timelineTodayDate}>{todayDate}</ThemedText>
-                      </View>
-                    </View>
-                  );
-                  if (plannedEvents.length === 0) {
-                    return (
-                      <>
-                        {todayRow}
-                        <ThemedText style={styles.emptyPhotos} testID="e2e_timeline_empty">
-                          {t('detailTimelineEmpty')}
-                        </ThemedText>
-                      </>
-                    );
-                  }
-                  const groups = groupContinuousEventsAsc(plannedEvents, getTzOffsetMin());
-                  return (
-                    <>
-                      {todayRow}
-                      {groups.map((entry, idx) => (
-                        <TimelineRow
-                          key={entry.kind === 'group' ? entry.events[0]!.id : entry.event.id} // group always has ≥1 event by construction
-                          entry={entry}
-                          isFirst={false}
-                          isLast={idx === groups.length - 1}
-                          lang={lang}
-                          t={t}
-                        />
-                      ))}
-                    </>
-                  );
-                })()}
-              </View>
-            )}
+            {activeTab === 'timeline' && <BonsaiTimelineTab events={events} lang={lang} t={t} />}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -1069,89 +1004,6 @@ export default function BonsaiDetailScreen() {
   }
 }
 
-/**
- * Issue #441 Phase 1: 予定タブの timeline 行 (縦線 + 緑円マーカー + 連続日 mark + 詳細メモ)。
- * mockup `bonsai-detail-timeline-01/02.png` 整合。
- * - 左側: 上半線 / 緑円マーカー / 下半線 (firstRow は上線、lastRow は下線を非表示)
- * - 右側: 日付 (range or 単発) + N 日連続 (group のみ) + 作業名 + ×N badge (group のみ) + note
- */
-function TimelineRow({
-  entry,
-  isFirst,
-  isLast,
-  lang,
-  t,
-}: {
-  entry: EventGroupEntry;
-  isFirst: boolean;
-  isLast: boolean;
-  lang: string;
-  t: (key: TranslationKey) => string;
-}) {
-  if (entry.kind === 'group') {
-    const startLabel = formatDate(`${entry.startDate}T00:00:00.000Z`, lang);
-    const endLabel = formatDate(`${entry.endDate}T00:00:00.000Z`, lang);
-    const note = entry.events.find((ev) => ev.note)?.note ?? null;
-    return (
-      <View style={styles.timelineRow} testID={`e2e_timeline_event_${entry.events[0]!.id}`}>
-        {' '}
-        {/* group always has ≥1 event by construction */}
-        <View style={styles.timelineLeft}>
-          <View style={[styles.timelineLine, isFirst && styles.timelineLineHidden]} />
-          <View style={styles.timelineDot} />
-          <View style={[styles.timelineLine, isLast && styles.timelineLineHidden]} />
-        </View>
-        <View style={styles.timelineContent}>
-          <View style={styles.timelineRowMain}>
-            <ThemedText style={styles.timelineDateRange}>
-              {startLabel} ～ {endLabel}
-            </ThemedText>
-            <ThemedText style={styles.timelineConsecutive}>
-              {t('timelineConsecutive').replace('{count}', String(entry.events.length))}
-            </ThemedText>
-          </View>
-          <View style={styles.eventLabelWithCount}>
-            <ThemedText style={styles.eventLabel}>
-              {t(`eventType_${entry.type}` as TranslationKey)}
-            </ThemedText>
-            <View style={styles.eventCountBadge}>
-              <ThemedText style={styles.eventCountBadgeText}>×{entry.events.length}</ThemedText>
-            </View>
-          </View>
-          {note && (
-            <ThemedText style={styles.eventRowNote} numberOfLines={2}>
-              {note}
-            </ThemedText>
-          )}
-        </View>
-      </View>
-    );
-  }
-  const ev = entry.event;
-  return (
-    <View style={styles.timelineRow} testID={`e2e_timeline_event_${ev.id}`}>
-      <View style={styles.timelineLeft}>
-        <View style={[styles.timelineLine, isFirst && styles.timelineLineHidden]} />
-        <View style={styles.timelineDot} />
-        <View style={[styles.timelineLine, isLast && styles.timelineLineHidden]} />
-      </View>
-      <View style={styles.timelineContent}>
-        <ThemedText style={styles.timelineDateRange}>
-          {formatDate(ev.occurredAtUtc, lang)}
-        </ThemedText>
-        <ThemedText style={styles.eventLabel}>
-          {t(`eventType_${ev.type}` as TranslationKey)}
-        </ThemedText>
-        {ev.note && (
-          <ThemedText style={styles.eventRowNote} numberOfLines={2}>
-            {ev.note}
-          </ThemedText>
-        )}
-      </View>
-    </View>
-  );
-}
-
 // Sess22 ADR-0034 D5: 旧 EventSingleRow 定義は `src/features/event/EventRow.tsx` に移設、
 // PlanScreen listing でも流用 (整合性レベル 2、 D4)。 削除済、 import は line 70 周辺。
 
@@ -1246,77 +1098,6 @@ const styles = StyleSheet.create({
   },
   historyExpandedRowContent: { flex: 1, paddingLeft: 8 },
   // Sess36 PR-3 ADR-0042 D3: 旧 historyFab + historyFabPlus は共通 <FAB /> に移行、 撤去済。
-  // Issue #441 Phase 1: 予定タブ timeline UI (mockup `bonsai-detail-timeline-01/02.png` 整合)
-  timelineHeader: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  timelineHeaderSecondary: { fontSize: 11, color: TEXT_SECONDARY },
-  timelineRow: {
-    flexDirection: 'row',
-    minHeight: 80,
-  },
-  timelineLeft: {
-    width: 32,
-    alignItems: 'center',
-    paddingTop: 0,
-  },
-  // 縦線 (上半 + 下半)。flex:1 で row の縦方向に伸ばす。
-  timelineLine: {
-    flex: 1,
-    width: 2,
-    backgroundColor: BRAND_GREEN,
-  },
-  timelineLineHidden: { backgroundColor: 'transparent' },
-  // 緑円マーカー (mockup 整合)
-  timelineDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 2,
-    borderColor: BRAND_GREEN,
-    backgroundColor: '#FFFFFF',
-    marginVertical: 2,
-  },
-  // Sess12 PR-J: 「今日」 大円マーカー (mockup bonsai-detail-timeline-01/02 整合)
-  // 通常の dot より大きく、 内側塗りつぶしで「現在地」 明示
-  timelineDotToday: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: BRAND_GREEN,
-  },
-  // 「今日」 ラベル + 日付 (mockup line 1 「今日 / 4月25日」 整合)
-  timelineTodayLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: BRAND_GREEN,
-  },
-  timelineTodayDate: {
-    fontSize: 12,
-    color: TEXT_SECONDARY,
-    marginTop: 2,
-  },
-  timelineContent: {
-    flex: 1,
-    paddingLeft: 12,
-    paddingVertical: 8,
-    gap: 4,
-  },
-  timelineRowMain: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  timelineDateRange: { fontSize: 13, color: TEXT_SECONDARY, fontVariant: ['tabular-nums'] },
-  // Sess28 PR-5 (ADR-0037 D3): ad-hoc HEX '#E8F0EA' を BADGE_SOFT token 参照に統一 (4 箇所目)。
-  timelineConsecutive: {
-    fontSize: 11,
-    color: BADGE_SOFT_TEXT,
-    fontWeight: '600',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-    backgroundColor: BADGE_SOFT_BG,
-  },
   // ADR-0020 v1.x-2: DetailTabs (Claude Design detail-screens.jsx)
   detailTabs: {
     flexDirection: 'row',
@@ -1434,7 +1215,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.7,
     color: TEXT_SECONDARY,
   },
-  eventRowNote: { fontSize: 13, lineHeight: 20, color: TEXT_SECONDARY, marginTop: 4 },
   headerMenuButton: {
     paddingHorizontal: 8,
     paddingVertical: 6,
