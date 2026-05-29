@@ -43,6 +43,10 @@ const EXCLUDE_PATH_PATTERNS = [
   /\.test\.(ts|tsx|js|jsx)$/,
   /\/locales\//,
   /\/i18n\//,
+  // dev 専用コード (本番 build で枝刈り、 i18n 対象外。header の「除外(dev)」方針)。
+  // seedTestData.ts / DevSettingsSection.tsx 等。元 settings の DEV section は __DEV__ ブロック
+  // 検知で除外されていたが、 Phase 4 A3 で src/dev/ へ抽出したため path 除外に明示。
+  /^src\/dev\//,
 ];
 
 const INCLUDE_EXT = new Set(['.ts', '.tsx', '.js', '.jsx']);
