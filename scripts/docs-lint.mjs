@@ -7,8 +7,10 @@
  *   2. ADR 番号歯抜け検出 (ADR-0001〜0016 連番)
  *   3. 取り消し線パターン検出 (R-2 違反: ~~F-XX~~ / 削除お知らせ / 履歴のため残置)
  *   4. lessons.md 単体ファイルが新規 lesson を含んでいないか (索引のみ維持)
+ *   5. ルール doc の行数上限 (recurrence-prevention.md ≤ 250 / lessons ≤ 200)
+ *   6. Superseded ADR の後継リンク整合 (ADR-0046 廃止ポリシー、warning のみ)
  *
- * 終了コード: 0 = OK, 1 = エラー検出
+ * 終了コード: 0 = OK, 1 = エラー検出 (warning は exit 0)
  */
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -151,12 +153,33 @@ function checkRuleDocsLineLimit() {
   }
 }
 
+// Check 6: Superseded ADR が後継リンク (ADR-NNNN) を持つか (ADR-0046 廃止ポリシー)
+// 廃止は物理削除せずアーカイブ (番号保持 + Status 変更) する運用のため、Superseded は後継明示が必須。
+// 掃除をブロッカーにしないため warning のみ (error にしない)。Deprecated は後継なしが正常なので対象外。
+function checkSupersededLinks() {
+  const adrDir = join(ROOT, 'docs/adr');
+  if (!existsSync(adrDir)) return;
+  for (const f of readdirSync(adrDir)) {
+    if (!/^ADR-\d{4}-.*\.md$/.test(f)) continue;
+    const content = readFileSync(join(adrDir, f), 'utf8');
+    const statusMatch = content.match(/^\s*-?\s*Status:\s*(.+)$/m);
+    if (!statusMatch) continue;
+    const status = statusMatch[1];
+    if (/superseded/i.test(status) && !/ADR-\d{4}/.test(status)) {
+      warnings.push(
+        `[ADR-0046 Superseded 後継リンク欠落] ${f}: Status が Superseded ですが後継 ADR-NNNN リンクがありません → 「Superseded by [ADR-NNNN](./...)」形式で後継を明記してください`,
+      );
+    }
+  }
+}
+
 // 実行
 checkCodexReferences();
 checkAdrSequence();
 checkStrikethrough();
 checkLessonsIndex();
 checkRuleDocsLineLimit();
+checkSupersededLinks();
 
 // 結果出力
 if (errors.length > 0) {
