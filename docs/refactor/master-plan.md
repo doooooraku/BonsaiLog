@@ -312,6 +312,13 @@ Before (現状)                          After (Phase 3 完了時)
 
 ### Phase 7: 最終レビュー + 死コード一掃 + flag cleanup
 
+> **✅ 完了 (2026-05-30)**: 死コード一掃を完遂し、リファクタ大行進 (Phase 3-7) を締めくくった。詳細は **`./phase-7-report.md`**。
+>
+> 撤去内容: K1 `/modal` / K4 react-query / K5 **Tamagui 一式** (ADR-0015 Amendment) / K6 components/ui テンプレ + 連鎖死 deps (expo-symbols / @expo/vector-icons / @shopify/flash-list / expo-store-review / 死ファイル 3) + knip クリーン化。
+> 保留: K2/K3 ui-diff/store-screenshots は **user 確定で残す** (npm script 稼働中)。K7 未使用 export 33 件は characterization テスト参照を含むため将来の selective cleanup。
+> 学び: `lessons/refactor.md` (knip ignore の両刃 / pnpm verify 完全実行 / app.config plugin 不可視 / git rm+add 罠 / K7 慎重判断)。
+> PR: #897 / #898 / #899 / #900 / #901 / #902。
+
 **目的**: Phase 1 knip がフラグした死コードを user 承認後に削除、ADR-0015(Tamagui 採用宣言)を実態に合わせて amend、リファクタの学びを集約。
 
 **対象(user 承認後のみ削除)**:
