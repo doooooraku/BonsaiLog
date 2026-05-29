@@ -1,6 +1,7 @@
 // https://docs.expo.dev/guides/using-eslint/
 const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
+const boundaries = require('eslint-plugin-boundaries');
 
 module.exports = defineConfig([
   expoConfig,
@@ -52,6 +53,81 @@ module.exports = defineConfig([
     files: ['src/**/*.{ts,tsx}', 'app/**/*.{ts,tsx}'],
     rules: {
       'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }],
+    },
+  },
+  // Phase 6 (FSD 境界整理): eslint-plugin-boundaries で層間 import を静的検査。
+  // 層定義と allow-matrix の正は ADR-0048。導入時は warn(既知の境界違反を可視化)、
+  // 全違反解消後に PR 6-5 で error 化 + CI gate 化する。
+  // 解決は expo flat config の import/resolver.typescript:true(@/ エイリアス対応)に依存。
+  {
+    files: ['src/**/*.{ts,tsx}', 'app/**/*.{ts,tsx}'],
+    plugins: { boundaries },
+    settings: {
+      'boundaries/elements': [
+        { type: 'app', pattern: 'app', mode: 'folder' },
+        { type: 'features', pattern: 'src/features', mode: 'folder' },
+        { type: 'components', pattern: 'src/components', mode: 'folder' },
+        { type: 'core', pattern: 'src/core', mode: 'folder' },
+        { type: 'db', pattern: 'src/db', mode: 'folder' },
+        { type: 'services', pattern: 'src/services', mode: 'folder' },
+        { type: 'stores', pattern: 'src/stores', mode: 'folder' },
+        { type: 'types', pattern: 'src/types', mode: 'folder' },
+        { type: 'dev', pattern: 'src/dev', mode: 'folder' },
+      ],
+    },
+    rules: {
+      'boundaries/dependencies': [
+        'warn',
+        {
+          default: 'disallow',
+          rules: [
+            // app / dev(開発専用): 上位 entry は全層へ依存可
+            {
+              from: { type: ['app', 'dev'] },
+              allow: {
+                to: {
+                  type: [
+                    'app',
+                    'features',
+                    'components',
+                    'core',
+                    'db',
+                    'services',
+                    'stores',
+                    'types',
+                    'dev',
+                  ],
+                },
+              },
+            },
+            {
+              from: { type: 'features' },
+              allow: {
+                to: {
+                  type: ['features', 'components', 'core', 'db', 'services', 'stores', 'types'],
+                },
+              },
+            },
+            // components→db は EventIcons の `type EventType` のみ(将来 types/ 移設候補、ADR-0048 注記)
+            {
+              from: { type: 'components' },
+              allow: { to: { type: ['components', 'core', 'types', 'db'] } },
+            },
+            // core→stores は禁止(F1)。core は最下層付近、types/core のみ依存可。
+            { from: { type: 'core' }, allow: { to: { type: ['core', 'types'] } } },
+            // db→core は ADR-0008 が強制(nowUtc 等 datetime)。db→services(F2)/db→features(F3) は禁止。
+            { from: { type: 'db' }, allow: { to: { type: ['db', 'core', 'types'] } } },
+            // services→core は appExtra/debug の config 参照(正当)。
+            { from: { type: 'services' }, allow: { to: { type: ['services', 'core', 'types'] } } },
+            // stores→services は F4 を層定義で合法化(proStore→proService)。
+            {
+              from: { type: 'stores' },
+              allow: { to: { type: ['stores', 'services', 'db', 'core', 'types'] } },
+            },
+            { from: { type: 'types' }, allow: { to: { type: ['types'] } } },
+          ],
+        },
+      ],
     },
   },
   // R-52 (Sess34 PR-13): EventType switch case 漏れ silent bug 防止 (2 段階防御)。

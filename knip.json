@@ -21,6 +21,7 @@
     "eslint-config-prettier",
     "eslint-plugin-react",
     "eslint-plugin-react-hooks",
+    "eslint-plugin-boundaries",
     "lint-staged",
     "ts-jest",
     "typescript-eslint"
