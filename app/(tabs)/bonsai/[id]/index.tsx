@@ -2,15 +2,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import {
-  Alert,
-  InteractionManager,
-  KeyboardAvoidingView,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -28,6 +20,7 @@ import {
   usePhotoCrudWithUndo,
   type PendingPhotoDeletion,
 } from '@/src/features/bonsai/detail/usePhotoCrudWithUndo';
+import { useScrollToEvent } from '@/src/features/bonsai/detail/useScrollToEvent';
 import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
 import { PhotoUndoBanner } from '@/src/features/bonsai/PhotoUndoBanner';
 import { useTranslation } from '@/src/core/i18n/i18n';
@@ -212,41 +205,11 @@ export default function BonsaiDetailScreen() {
     });
   }, []);
 
-  // 改善① 検索結果タップ → 該当作業へジャンプ + 一時ハイライト。
-  // event.id をキーに row の wrapper View ref を登録 (measureLayout 用)。
-  const [highlightedEventId, setHighlightedEventId] = useState<string | null>(null);
-  const rowRefs = React.useRef<Map<string, View>>(new Map());
-  const registerRow = useCallback((eventId: string, node: View | null) => {
-    if (node) rowRefs.current.set(eventId, node);
-    else rowRefs.current.delete(eventId);
-  }, []);
-  // 対象行を ScrollView 内の実 Y 座標 (measureLayout) までスクロール。
-  // 展開アニメ・写真の非同期 fetch でレイアウトが後から伸びるため ref 未取得時はリトライ。
-  const scrollToEvent = useCallback((eventId: string, attempt = 0) => {
-    InteractionManager.runAfterInteractions(() => {
-      requestAnimationFrame(() => {
-        const node = rowRefs.current.get(eventId);
-        const scroll = scrollRef.current;
-        const content = scrollContentRef.current;
-        if ((!node || !scroll || !content) && attempt < 8) {
-          setTimeout(() => scrollToEvent(eventId, attempt + 1), 120);
-          return;
-        }
-        if (!node || !scroll || !content) return;
-        // Fabric 対応: relativeTo は数値ハンドル不可、ホスト View の ref (content wrapper) を渡す。
-        // 対象行の content 内 Y を実測 → ヘッダ余白 80px 分上にオフセットしてスクロール。
-        node.measureLayout(
-          content as never,
-          (_x: number, y: number) => {
-            scroll.scrollTo({ y: Math.max(0, y - 80), animated: true });
-            setHighlightedEventId(eventId);
-            setTimeout(() => setHighlightedEventId((cur) => (cur === eventId ? null : cur)), 2500);
-          },
-          () => {},
-        );
-      });
-    });
-  }, []);
+  // R7 (Phase 4 A1-7): 検索結果タップ → 該当作業へジャンプ + 一時ハイライト (measureLayout)。
+  const { highlightedEventId, registerRow, scrollToEvent } = useScrollToEvent({
+    scrollRef,
+    scrollContentRef,
+  });
 
   // Sess42 バグ3: この盆栽に記録 (logged) のある event type を EVENT_TYPES のカノニカル順で抽出。
   // フィルタ chip は 'all' + これらのみ表示 (記録のない種別の chip は出さず、chip 過多を回避)。
