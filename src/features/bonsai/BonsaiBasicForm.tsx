@@ -30,7 +30,6 @@ import { BonsaiPhotoPickerBlock } from '@/src/features/bonsai/basicForm/BonsaiPh
 import { BonsaiPotInfoSection } from '@/src/features/bonsai/basicForm/BonsaiPotInfoSection';
 import { BonsaiTagsSection } from '@/src/features/bonsai/basicForm/BonsaiTagsSection';
 import { useBonsaiFormPhotos } from '@/src/features/bonsai/basicForm/useBonsaiFormPhotos';
-import { nowUtc } from '@/src/core/datetime/clock';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { createBonsai, updateBonsai } from '@/src/db/bonsaiRepository';
 import { addPhotoFromUri } from '@/src/db/photoRepository';
@@ -38,6 +37,7 @@ import { type Bonsai, type BonsaiStyle } from '@/src/db/schema';
 import { getCustomSpeciesById } from '@/src/db/bonsaiSpeciesCustomRepository';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
 import { cmToUnit, unitToCm } from '@/src/core/util/potUnitConvert';
+import { isoToYmd, parsePotInfo, toIsoUtc } from './bonsaiFormUtils';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 import {
   attachTagToBonsai,
@@ -47,28 +47,6 @@ import {
   type TagRecord,
 } from '@/src/db/tagRepository';
 import { usePickerStore } from '@/src/stores/pickerStore';
-
-/** pot_info JSON 復元用 shape。JSON.parse の any を堰き止め、runtime は各 setter の typeof ガードで検証。 */
-type ParsedPotInfo = {
-  description?: string;
-  widthCm?: number;
-  depthCm?: number;
-  material?: string;
-};
-
-/** YYYY-MM-DD → ISO 8601 UTC TEXT (00:00:00Z)。ADR-0008 §TZ 整合で nowUtc 使用。 */
-function toIsoUtc(yyyymmdd: string): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(yyyymmdd);
-  if (!m) return nowUtc();
-  const [, y, mo, d] = m;
-  return `${y}-${mo}-${d}T00:00:00.000Z`;
-}
-
-/** ISO 8601 → YYYY-MM-DD (UI 入力欄 prefill 用、null/不正値は空文字)。 */
-function isoToYmd(iso: string | null | undefined): string {
-  if (!iso || iso.length < 10) return '';
-  return iso.slice(0, 10);
-}
 
 export type PendingPhoto = {
   uri: string;
@@ -278,29 +256,14 @@ export function useBonsaiBasicForm({
     setMemo(editingBonsai.memo ?? '');
     setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
     // pot_info JSON から復元 (Sess13 PR-I: 新形式 { width, depth, material } 優先、
-    // 旧 { description } も後方互換で保持表示)。
-    try {
-      const parsed: ParsedPotInfo | null = editingBonsai.potInfo
-        ? (JSON.parse(editingBonsai.potInfo) as ParsedPotInfo)
-        : null;
-      setPotInfoText(typeof parsed?.description === 'string' ? parsed.description : '');
-      // 新構造 (width / depth / material) は cm 単位で保存されている前提、
-      // 表示は user 設定 potUnit で変換 (本実装は cm 固定表示で simplify、 単位切替は別 PR で表示変換追加)。
-      const widthCm = typeof parsed?.widthCm === 'number' ? parsed.widthCm : null;
-      const depthCm = typeof parsed?.depthCm === 'number' ? parsed.depthCm : null;
-      // Sess14 PR-L + Sess15 PR-BB: cm 保存値 → displayPotUnit (一時切替対応) へ変換。
-      setPotWidth(cmToUnit(widthCm, displayPotUnit) ?? '');
-      setPotDepth(cmToUnit(depthCm, displayPotUnit) ?? '');
-      setPotMaterial(typeof parsed?.material === 'string' ? parsed.material : '');
-      // 値が入っていれば自動展開 (Q-17 a)
-      setPotExpanded(widthCm != null || depthCm != null || (parsed?.material?.length ?? 0) > 0);
-    } catch {
-      setPotInfoText('');
-      setPotWidth('');
-      setPotDepth('');
-      setPotMaterial('');
-      setPotExpanded(false);
-    }
+    // 旧 { description } も後方互換)。parsePotInfo は壊れた JSON / 型不一致を空フォールバック (純関数、 characterize 済)。
+    // cm 保存値 → displayPotUnit (一時切替対応) へ変換して表示 (Sess14 PR-L + Sess15 PR-BB)。
+    const pot = parsePotInfo(editingBonsai.potInfo);
+    setPotInfoText(pot.description);
+    setPotWidth(cmToUnit(pot.widthCm, displayPotUnit) ?? '');
+    setPotDepth(cmToUnit(pot.depthCm, displayPotUnit) ?? '');
+    setPotMaterial(pot.material);
+    setPotExpanded(pot.expanded);
     setAcquiredFrom(editingBonsai.acquiredFrom ?? '');
     let cancelled = false;
     void getTagsByBonsai(editingBonsai.id).then((tags) => {
@@ -335,24 +298,13 @@ export function useBonsaiBasicForm({
       setAgeUnknown(editingBonsai.estimatedAgeUnknown === 1);
       setMemo(editingBonsai.memo ?? '');
       setPurchaseDate(isoToYmd(editingBonsai.purchaseDate));
-      try {
-        const parsed: ParsedPotInfo | null = editingBonsai.potInfo
-          ? (JSON.parse(editingBonsai.potInfo) as ParsedPotInfo)
-          : null;
-        setPotInfoText(typeof parsed?.description === 'string' ? parsed.description : '');
-        const widthCm = typeof parsed?.widthCm === 'number' ? parsed.widthCm : null;
-        const depthCm = typeof parsed?.depthCm === 'number' ? parsed.depthCm : null;
-        setPotWidth(widthCm != null ? String(widthCm) : '');
-        setPotDepth(depthCm != null ? String(depthCm) : '');
-        setPotMaterial(typeof parsed?.material === 'string' ? parsed.material : '');
-        setPotExpanded(widthCm != null || depthCm != null || (parsed?.material?.length ?? 0) > 0);
-      } catch {
-        setPotInfoText('');
-        setPotWidth('');
-        setPotDepth('');
-        setPotMaterial('');
-        setPotExpanded(false);
-      }
+      // reset は prefill と異なり cm 生値をそのまま表示 (単位変換なし、 元実装踏襲)。
+      const pot = parsePotInfo(editingBonsai.potInfo);
+      setPotInfoText(pot.description);
+      setPotWidth(pot.widthCm != null ? String(pot.widthCm) : '');
+      setPotDepth(pot.depthCm != null ? String(pot.depthCm) : '');
+      setPotMaterial(pot.material);
+      setPotExpanded(pot.expanded);
       setAcquiredFrom(editingBonsai.acquiredFrom ?? '');
       setSelectedTagIds(new Set(originalTagIdsRef.current));
       setPendingPhotos([]);
