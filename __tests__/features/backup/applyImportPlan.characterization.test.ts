@@ -102,8 +102,8 @@ function makeTag(id: string, name: string): BackupTag {
   return { id, name, nameNormalized: name.toLowerCase(), createdAt: TS };
 }
 
-/** manifest 由来の入力から「全件 fresh insert」プランを作る (既存 DB は空想定)。 */
-function freshPlan(
+/** manifest 由来の入力から insert プランを作る (既存 ID 集合を渡すと skip 判定される)。 */
+function buildPlan(
   planner: PlannerModule,
   input: {
     bonsai?: BackupBonsai[];
@@ -114,6 +114,7 @@ function freshPlan(
     customSpecies?: BackupNamed[];
     customStyles?: BackupNamed[];
   },
+  existing: { bonsai?: Set<string>; events?: Set<string>; photos?: Set<string> } = {},
 ) {
   return planner.buildAppendImportPlan({
     bonsai: input.bonsai ?? [],
@@ -123,9 +124,9 @@ function freshPlan(
     bonsaiTags: input.bonsaiTags ?? [],
     customSpecies: input.customSpecies ?? [],
     customStyles: input.customStyles ?? [],
-    existingBonsaiIds: new Set<string>(),
-    existingEventIds: new Set<string>(),
-    existingPhotoIds: new Set<string>(),
+    existingBonsaiIds: existing.bonsai ?? new Set<string>(),
+    existingEventIds: existing.events ?? new Set<string>(),
+    existingPhotoIds: existing.photos ?? new Set<string>(),
   });
 }
 
@@ -149,7 +150,7 @@ describe('applyImportPlan (import functional core)', () => {
   test('空 plan は何も INSERT せず copyPhotoFile も呼ばない', async () => {
     const { apply, planner } = mods();
     const copy = makeFakeCopy();
-    await apply.applyImportPlan(db, freshPlan(planner, {}), copy.fn);
+    await apply.applyImportPlan(db, buildPlan(planner, {}), copy.fn);
 
     expect(await count('bonsai')).toBe(0);
     expect(await count('events')).toBe(0);
@@ -165,7 +166,7 @@ describe('applyImportPlan (import functional core)', () => {
     const tag = makeTag('t1', '春');
     const ev = makeEvent('e1', 'b1', { note: '水やり' });
     const ph = makePhoto('p1', 'b1', { eventId: 'e1', isCover: 1 });
-    const plan = freshPlan(planner, {
+    const plan = buildPlan(planner, {
       bonsai: [b],
       events: [ev],
       photos: [ph],
@@ -207,7 +208,7 @@ describe('applyImportPlan (import functional core)', () => {
     const b = makeBonsai('b1');
     const active = makeEvent('eActive', 'b1', { note: 'active' });
     const deleted = makeEvent('eDeleted', 'b1', { note: 'deleted', deletedAt: TS });
-    const plan = freshPlan(planner, { bonsai: [b], events: [active, deleted] });
+    const plan = buildPlan(planner, { bonsai: [b], events: [active, deleted] });
 
     await apply.applyImportPlan(db, plan, makeFakeCopy().fn);
 
@@ -222,18 +223,11 @@ describe('applyImportPlan (import functional core)', () => {
     const { apply, planner } = mods();
     const b = makeBonsai('b1');
     // 1 回目: 新規 insert
-    await apply.applyImportPlan(db, freshPlan(planner, { bonsai: [b] }), makeFakeCopy().fn);
+    await apply.applyImportPlan(db, buildPlan(planner, { bonsai: [b] }), makeFakeCopy().fn);
     expect(await count('bonsai')).toBe(1);
 
     // 2 回目: 既存 ID を渡して plan を作ると skip される (再 import の冪等性)
-    const plan2 = planner.buildAppendImportPlan({
-      bonsai: [b],
-      events: [],
-      photos: [],
-      existingBonsaiIds: new Set(['b1']),
-      existingEventIds: new Set<string>(),
-      existingPhotoIds: new Set<string>(),
-    });
+    const plan2 = buildPlan(planner, { bonsai: [b] }, { bonsai: new Set(['b1']) });
     expect(plan2.bonsaiToInsert.length).toBe(0);
     await apply.applyImportPlan(db, plan2, makeFakeCopy().fn);
     expect(await count('bonsai')).toBe(1);
@@ -243,7 +237,7 @@ describe('applyImportPlan (import functional core)', () => {
     const { apply, planner } = mods();
     const b = makeBonsai('b1');
     const ph = makePhoto('p1', 'b1');
-    const plan = freshPlan(planner, { bonsai: [b], photos: [ph] });
+    const plan = buildPlan(planner, { bonsai: [b], photos: [ph] });
 
     const throwingCopy = () => {
       throw new Error('copy failed');
