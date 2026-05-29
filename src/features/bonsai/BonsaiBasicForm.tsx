@@ -28,10 +28,10 @@ import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { CameraIcon, PlusIcon } from '@/src/components/icons';
 import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
-import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { BonsaiIdentityFields } from '@/src/features/bonsai/basicForm/BonsaiIdentityFields';
+import { BonsaiMetadataFields } from '@/src/features/bonsai/basicForm/BonsaiMetadataFields';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
@@ -682,12 +682,6 @@ export function BonsaiBasicFormFields({
   const router = useRouter();
   const {
     isEdit,
-    acquiredAt,
-    setAcquiredAt,
-    estimatedAgeText,
-    setEstimatedAgeText,
-    ageUnknown,
-    setAgeUnknown,
     memo,
     setMemo,
     potWidth,
@@ -700,8 +694,6 @@ export function BonsaiBasicFormFields({
     setPotExpanded,
     displayPotUnit,
     setDisplayPotUnit,
-    acquiredFrom,
-    setAcquiredFrom,
     recentTags,
     selectedTagIds,
     toggleTag,
@@ -810,79 +802,9 @@ export function BonsaiBasicFormFields({
     <>
       <BonsaiIdentityFields form={form} />
 
-      {/* Sess14 PR-O: 取得日 を LabeledDateRow へ移行 (PR-E DatePicker 実装を component 化) */}
-      <LabeledDateRow
-        label={t('bonsaiFieldAcquiredAt')}
-        optional
-        optionalText={t('fieldOptionalLabel')}
-        value={acquiredAt}
-        onChangeText={setAcquiredAt}
-        placeholder={t('datePickerPlaceholder')}
-        testID="e2e_bonsai_create_acquired_at"
-        testIDClear="e2e_bonsai_create_acquired_at_clear"
-      />
-
-      <View style={styles.field}>
-        <View style={styles.fieldLabelRow}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldEstimatedAge')}</ThemedText>
-          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-        </View>
-        {/* Sess14 PR-O: 樹齢 を LabeledNumberInput へ移行 + 「不明」 checkbox 横並び維持 */}
-        <View style={styles.ageRow}>
-          <View style={{ flex: 1 }}>
-            <LabeledNumberInput
-              label=""
-              value={estimatedAgeText}
-              onChangeText={(text) => {
-                setEstimatedAgeText(text);
-                if (text.length > 0 && ageUnknown) setAgeUnknown(false);
-              }}
-              placeholder={t('bonsaiFieldEstimatedAgePlaceholder')}
-              suffix="年"
-              maxLength={4}
-              editable={!ageUnknown}
-              accessibilityLabel={t('bonsaiFieldEstimatedAge')}
-              testID="e2e_bonsai_create_age_input"
-            />
-          </View>
-          <Pressable
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: ageUnknown }}
-            accessibilityLabel={t('bonsaiFieldEstimatedAgeUnknown')}
-            style={styles.ageUnknownToggle}
-            onPress={() => {
-              const next = !ageUnknown;
-              setAgeUnknown(next);
-              if (next) setEstimatedAgeText('');
-            }}
-            testID="e2e_bonsai_create_age_unknown"
-          >
-            <View style={[styles.checkbox, ageUnknown && styles.checkboxChecked]}>
-              {ageUnknown && <ThemedText style={styles.checkboxMark}>✓</ThemedText>}
-            </View>
-            <ThemedText style={styles.ageUnknownLabel}>
-              {t('bonsaiFieldEstimatedAgeUnknown')}
-            </ThemedText>
-          </Pressable>
-        </View>
-      </View>
-
       {/* Sess14 PR-T: 購入日欄削除 (取得日と意味が重複、 user 真意「取得日があれば十分」)。
           purchaseDate state は後方互換で残す (既存 DB data 表示用、 form 上で編集不可)。 */}
-
-      {/* Sess13 PR-B + PR-K: 入手元 (任意、 schema v10 acquired_from + LabeledTextInput 共通化)。 */}
-      <LabeledTextInput
-        label={t('bonsaiFieldAcquiredFrom')}
-        optional
-        optionalText={t('fieldOptionalLabel')}
-        overlimitText={t('inputOverLimit')}
-        value={acquiredFrom}
-        onChangeText={setAcquiredFrom}
-        placeholder={t('bonsaiFieldAcquiredFromPlaceholder')}
-        maxLength={100}
-        showCounter
-        testID="e2e_bonsai_create_acquired_from"
-      />
+      <BonsaiMetadataFields form={form} />
 
       {/* Sess15 PR-BB: mockup 174029.png 整合の card group 化 + 単位 segmented control。
           - 1 つの bordered card 内に expander + 3 input + 単位 segmented を集約 (まとまり感)
@@ -1169,24 +1091,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   inputMultiline: { minHeight: 96, paddingVertical: 12 },
-  // Sess13 PR-D: 樹齢「不明」 checkbox 横並び。
-  ageRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  ageInput: { flex: 1 },
-  inputDisabled: { backgroundColor: BG_SURFACE, opacity: 0.5 },
-  ageUnknownToggle: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
-  checkboxMark: { color: ON_BRAND, fontSize: 14, fontWeight: '700', lineHeight: 16 },
-  ageUnknownLabel: { fontSize: 14 },
   // Sess14 PR-Q: dateRow / dateInput / dateClearButton / dateClearText は PR-O で
   // LabeledDateRow に移管済、 dead style として削除。
   potExpanded: { gap: 10, marginTop: 8 },
