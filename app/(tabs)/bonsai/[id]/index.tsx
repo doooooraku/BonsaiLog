@@ -1,7 +1,6 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useState } from 'react';
 import {
   Alert,
@@ -25,13 +24,12 @@ import { BonsaiTimelineTab } from '@/src/features/bonsai/detail/BonsaiTimelineTa
 import { formatDate } from '@/src/features/bonsai/detail/dateFormat';
 import { useBonsaiDetailData } from '@/src/features/bonsai/detail/useBonsaiDetailData';
 import { useBonsaiDetailTabs } from '@/src/features/bonsai/detail/useBonsaiDetailTabs';
+import {
+  usePhotoCrudWithUndo,
+  type PendingPhotoDeletion,
+} from '@/src/features/bonsai/detail/usePhotoCrudWithUndo';
 import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
 import { PhotoUndoBanner } from '@/src/features/bonsai/PhotoUndoBanner';
-import {
-  removePhotoAndNormalize,
-  restorePhotoAtIndexAndNormalize,
-  swapPhotos,
-} from '@/src/features/bonsai/photoOrderUtils';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
@@ -47,16 +45,6 @@ import {
 import { useColors } from '@/src/core/theme/useColors';
 
 import { archiveBonsai } from '@/src/db/bonsaiRepository';
-import {
-  deletePhoto,
-  FREE_PHOTO_LIMIT_PER_BONSAI,
-  getPhotoCountByBonsai,
-  insertPhoto,
-  reorderPhotos,
-  setCoverPhoto,
-  updatePhotoCaption,
-  type PhotoRead,
-} from '@/src/db/photoRepository';
 import { bulkSoftDeleteEvents, createEvent } from '@/src/db/eventRepository';
 import { cancelForEvents } from '@/src/features/notification/cancelForEvent';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
@@ -71,8 +59,6 @@ import {
 } from '@/src/features/event/groupContinuousEvents';
 import { EventRow } from '@/src/features/event/EventRow';
 import { usePickerStore } from '@/src/stores/pickerStore';
-import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
-import { useProStore } from '@/src/stores/proStore';
 
 /**
  * 盆栽詳細画面 (P2-01 PR-D + P2-02 PR-C)。
@@ -100,14 +86,10 @@ export default function BonsaiDetailScreen() {
   const handleMemoFocus = React.useCallback(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
   }, []);
-  // 削除 undo (Repolog 流用): 5 秒以内に「元に戻す」で復元、超過 / 別操作で finalize → DB 物理削除。
-  type PendingDeletion = {
-    photo: PhotoRead;
-    previousIndex: number;
-  };
-  const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion | null>(null);
-  const pendingDeletionTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingDeletionRef = React.useRef<PendingDeletion | null>(null);
+  // 写真削除 Undo (R4 = usePhotoCrudWithUndo) が読み書きする pending ref。
+  // reload(useBonsaiDetailData) も pending 写真の非表示化で読むため、両フックへ注入する
+  // 共有 ref として index.tsx で作成する (循環依存回避、A1-4/A1-6 設計)。
+  const pendingDeletionRef = React.useRef<PendingPhotoDeletion | null>(null);
   // ADR-0020 §Notes Amended (2026-05-09): Hero + 3 Tabs (作業履歴 / 予定タイムライン / 基本情報)
   // mockup v1.0 detail-screens.jsx BonsaiDetailScreen の initialTab='history' 整合
   // 旧 photos タブは廃止、写真機能は history タブに統合 (A6 で _HistoryPhotos 正式化予定)
@@ -334,206 +316,26 @@ export default function BonsaiDetailScreen() {
     router.back();
   }, [item, router]);
 
-  const isPro = useProStore((s) => s.isPro);
-
-  const pickAndSavePhoto = useCallback(
-    async (source: 'camera' | 'library') => {
-      if (!item) return;
-      // Free 制限: 残枠計算 (Pro は無制限、Free は 3 - currentCount)。
-      const currentCount = await getPhotoCountByBonsai(item.id);
-      const remaining = isPro
-        ? Number.POSITIVE_INFINITY
-        : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - currentCount);
-      if (remaining === 0) {
-        Alert.alert(
-          t('photoLimitTitle'),
-          t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_BONSAI)),
-          [{ text: t('ok') }],
-        );
-        return;
-      }
-
-      const permission =
-        source === 'camera'
-          ? await ImagePicker.requestCameraPermissionsAsync()
-          : await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert(t('photoPermissionTitle'), t('photoPermissionDesc'), [{ text: t('ok') }]);
-        return;
-      }
-
-      // ライブラリは複数選択対応 (Repolog 流用、selectionLimit: 0 = OS 上限まで)。
-      const result =
-        source === 'camera'
-          ? await ImagePicker.launchCameraAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
-              quality: 0.85,
-            })
-          : await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
-              allowsMultipleSelection: true,
-              selectionLimit: 0,
-              quality: 0.85,
-            });
-      if (result.canceled || !result.assets || result.assets.length === 0) return;
-
-      // 残枠超過時は先頭から remaining 枚のみ受け入れ、超過分を Alert で告知 (Repolog resolvePhotoAddLimit 流用)。
-      const assets = result.assets;
-      const acceptedCount = isPro ? assets.length : Math.min(assets.length, remaining);
-      const accepted = assets.slice(0, acceptedCount);
-      const skipped = assets.length - accepted.length;
-
-      try {
-        for (const asset of accepted) {
-          const { absoluteUri } = await persistPhotoFile(asset.uri, item.id);
-          await insertPhoto({
-            bonsaiId: item.id,
-            absoluteUri,
-            width: asset.width ?? null,
-            height: asset.height ?? null,
-          });
-        }
-        if (skipped > 0) {
-          Alert.alert(
-            t('photoLimitTitle'),
-            t('photoLimitPartialAdded')
-              .replace('{added}', String(accepted.length))
-              .replace('{skipped}', String(skipped)),
-            [{ text: t('ok') }],
-          );
-        }
-        await reload();
-      } catch (err) {
-        Alert.alert(t('error'), String(err));
-      }
-    },
-    [item, isPro, t, reload],
-  );
-
-  // PhotoCard 並び替え (↑↓ ボタン): 即時 state 更新 + DB 反映 (reorderPhotos)。
-  const handleMovePhoto = useCallback(
-    async (fromIndex: number, toIndex: number) => {
-      if (!item) return;
-      const next = swapPhotos(photos, fromIndex, toIndex);
-      if (next === photos) return;
-      setPhotos(next);
-      try {
-        await reorderPhotos(
-          item.id,
-          next.map((p) => p.id),
-        );
-      } catch (err) {
-        console.warn('[BonsaiDetail] reorder failed:', err);
-      }
-    },
-    [photos, item, setPhotos],
-  );
-
-  // PhotoCard caption: controlled 入力 (state) + blur で DB 反映。
-  const handleCaptionChange = useCallback(
-    (photoId: string, text: string) => {
-      setCaptions((prev) => ({ ...prev, [photoId]: text }));
-    },
-    [setCaptions],
-  );
-  const handleCaptionBlur = useCallback(
-    async (photoId: string) => {
-      const text = captions[photoId] ?? '';
-      try {
-        await updatePhotoCaption(photoId, text.length > 0 ? text : null);
-      } catch (err) {
-        console.warn('[BonsaiDetail] caption save failed:', err);
-      }
-    },
-    [captions],
-  );
-
-  // PhotoCard ★ ボタン: カバー写真に設定。
-  const handleSetCover = useCallback(
-    async (photoId: string) => {
-      if (!item) return;
-      await setCoverPhoto(photoId, item.id);
-      await reload();
-    },
-    [item, reload],
-  );
-
-  // タイマー / pending state クリア共通ヘルパー (Repolog 流用)。
-  const clearPendingDeletionTimer = useCallback(() => {
-    if (pendingDeletionTimerRef.current != null) {
-      clearTimeout(pendingDeletionTimerRef.current);
-      pendingDeletionTimerRef.current = null;
-    }
-  }, []);
-
-  // 削除確定: DB 物理削除 + ファイル削除 (タイマー満了 or 別操作 or unmount で呼ばれる)。
-  const finalizePendingDeletion = useCallback(async () => {
-    clearPendingDeletionTimer();
-    const pending = pendingDeletionRef.current;
-    if (pending == null) return;
-    pendingDeletionRef.current = null;
-    setPendingDeletion(null);
-    try {
-      await deletePhoto(pending.photo.id);
-      await deletePhotoFile(pending.photo.absoluteUri);
-    } catch (err) {
-      console.warn('[BonsaiDetail] delete finalize failed:', err);
-    }
-  }, [clearPendingDeletionTimer]);
-
-  // PhotoCard 削除ボタン: Alert 確認 → 即時 state 除去 + undo banner 表示 (5 秒で確定)。
-  const handleDeletePhoto = useCallback(
-    (photo: PhotoRead) => {
-      Alert.alert(t('photoDeleteConfirmTitle'), t('photoDeleteConfirmDesc'), [
-        { text: t('cancel'), style: 'cancel' },
-        {
-          text: t('delete'),
-          style: 'destructive',
-          onPress: () => {
-            void (async () => {
-              // 既存の pending があれば先に finalize (連続削除対応)。
-              await finalizePendingDeletion();
-              // photos 内の現在 index を保存 (undo で同じ位置に戻すため)。
-              const previousIndex = photos.findIndex((p) => p.id === photo.id);
-              if (previousIndex < 0) return;
-              // 楽観的 state 更新 (UI 反映を即時化)。
-              setPhotos((prev) => removePhotoAndNormalize(prev, photo.id));
-              const pending: PendingDeletion = { photo, previousIndex };
-              pendingDeletionRef.current = pending;
-              setPendingDeletion(pending);
-              // 5 秒後に自動 finalize。
-              clearPendingDeletionTimer();
-              pendingDeletionTimerRef.current = setTimeout(() => {
-                void finalizePendingDeletion();
-              }, 5000);
-            })();
-          },
-        },
-      ]);
-    },
-    [t, photos, finalizePendingDeletion, clearPendingDeletionTimer, setPhotos],
-  );
-
-  // 「元に戻す」: タイマーキャンセル + state を pending 前の位置に復元。
-  const handleUndoDeletion = useCallback(() => {
-    clearPendingDeletionTimer();
-    const pending = pendingDeletionRef.current;
-    if (pending == null) return;
-    pendingDeletionRef.current = null;
-    setPendingDeletion(null);
-    setPhotos((prev) =>
-      restorePhotoAtIndexAndNormalize(prev, pending.photo, pending.previousIndex),
-    );
-  }, [clearPendingDeletionTimer, setPhotos]);
-
-  // unmount / 画面離脱時: pending を確定して clean state で離脱。
-  React.useEffect(() => {
-    return () => {
-      clearPendingDeletionTimer();
-      // 画面離脱時に DB 削除を確定 (banner が見えなくなる前に finalize)。
-      void finalizePendingDeletion();
-    };
-  }, [clearPendingDeletionTimer, finalizePendingDeletion]);
+  // R4 (Phase 4 A1-6): 写真 CRUD + 5 秒 Undo。pendingDeletionRef は上で作成した共有 ref を注入。
+  const {
+    pendingDeletion,
+    pickAndSavePhoto,
+    handleMovePhoto,
+    handleCaptionChange,
+    handleCaptionBlur,
+    handleSetCover,
+    handleDeletePhoto,
+    handleUndoDeletion,
+  } = usePhotoCrudWithUndo({
+    item,
+    photos,
+    setPhotos,
+    captions,
+    setCaptions,
+    reload,
+    pendingDeletionRef,
+    t,
+  });
 
   if (loading) {
     return (
