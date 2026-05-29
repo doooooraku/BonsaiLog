@@ -13,6 +13,7 @@
   "ignoreDependencies": [
     "expo-asset",
     "expo-updates",
+    "expo-web-browser",
     "@react-native/eslint-config",
     "@testing-library/jest-native",
     "eslint-config-prettier",
