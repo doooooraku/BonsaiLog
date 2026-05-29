@@ -28,10 +28,10 @@ import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { CameraIcon, PlusIcon } from '@/src/components/icons';
 import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
-import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { BonsaiIdentityFields } from '@/src/features/bonsai/basicForm/BonsaiIdentityFields';
 import { BonsaiMetadataFields } from '@/src/features/bonsai/basicForm/BonsaiMetadataFields';
+import { BonsaiPotInfoSection } from '@/src/features/bonsai/basicForm/BonsaiPotInfoSection';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
@@ -684,16 +684,6 @@ export function BonsaiBasicFormFields({
     isEdit,
     memo,
     setMemo,
-    potWidth,
-    setPotWidth,
-    potDepth,
-    setPotDepth,
-    potMaterial,
-    setPotMaterial,
-    potExpanded,
-    setPotExpanded,
-    displayPotUnit,
-    setDisplayPotUnit,
     recentTags,
     selectedTagIds,
     toggleTag,
@@ -806,88 +796,7 @@ export function BonsaiBasicFormFields({
           purchaseDate state は後方互換で残す (既存 DB data 表示用、 form 上で編集不可)。 */}
       <BonsaiMetadataFields form={form} />
 
-      {/* Sess15 PR-BB: mockup 174029.png 整合の card group 化 + 単位 segmented control。
-          - 1 つの bordered card 内に expander + 3 input + 単位 segmented を集約 (まとまり感)
-          - 単位 segmented は一時切替 (settingsStore は touch しない、 display 単位のみ反映)。 */}
-      <View style={styles.field}>
-        <View style={styles.fieldLabelRow}>
-          <ThemedText type="defaultSemiBold">{t('bonsaiFieldPotInfo')}</ThemedText>
-          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-        </View>
-        <View style={styles.potCard}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('bonsaiFieldPotInfoExpand')}
-            style={styles.potExpander}
-            onPress={() => setPotExpanded((p) => !p)}
-            testID="e2e_bonsai_create_pot_expander"
-          >
-            <ThemedText style={styles.pickerPlaceholder}>
-              {potExpanded ? '▲ ' : '▼ '}
-              {t('bonsaiFieldPotInfoExpand')}
-            </ThemedText>
-          </Pressable>
-          {potExpanded && (
-            <View style={styles.potExpanded}>
-              {/* Sess15 PR-BB: 単位 segmented control (一時切替、 settingsStore は touch しない)。 */}
-              <View style={styles.potUnitSegmented}>
-                {(['cm', 'mm', 'inch'] as const).map((u) => {
-                  const active = displayPotUnit === u;
-                  return (
-                    <Pressable
-                      key={u}
-                      accessibilityRole="button"
-                      accessibilityLabel={`unit ${u}`}
-                      accessibilityState={{ selected: active }}
-                      style={[styles.potUnitSegment, active && styles.potUnitSegmentActive]}
-                      onPress={() => setDisplayPotUnit(u)}
-                      testID={`e2e_bonsai_create_pot_unit_${u}`}
-                    >
-                      <ThemedText
-                        style={active ? styles.potUnitSegmentTextActive : styles.potUnitSegmentText}
-                      >
-                        {u}
-                      </ThemedText>
-                    </Pressable>
-                  );
-                })}
-              </View>
-              {/* Sess15 PR-JJ: label="" → 「幅」「深さ」「材質」 を明示 (user 真意「何の項目か分からない」 解消)。 */}
-              <LabeledNumberInput
-                label={t('bonsaiFieldPotWidth')}
-                value={potWidth}
-                onChangeText={setPotWidth}
-                placeholder={t('bonsaiFieldPotWidthPlaceholder').replace(' ({unit})', '')}
-                suffix={displayPotUnit}
-                maxLength={6}
-                accessibilityLabel={t('bonsaiFieldPotWidth')}
-                testID="e2e_bonsai_create_pot_width"
-              />
-              <LabeledNumberInput
-                label={t('bonsaiFieldPotDepth')}
-                value={potDepth}
-                onChangeText={setPotDepth}
-                placeholder={t('bonsaiFieldPotDepthPlaceholder').replace(' ({unit})', '')}
-                suffix={displayPotUnit}
-                maxLength={6}
-                accessibilityLabel={t('bonsaiFieldPotDepth')}
-                testID="e2e_bonsai_create_pot_depth"
-              />
-              <LabeledTextInput
-                label={t('bonsaiFieldPotMaterial')}
-                value={potMaterial}
-                onChangeText={setPotMaterial}
-                placeholder={t('bonsaiFieldPotMaterialPlaceholder')}
-                maxLength={100}
-                showCounter
-                overlimitText={t('inputOverLimit')}
-                accessibilityLabel={t('bonsaiFieldPotMaterial')}
-                testID="e2e_bonsai_create_pot_material"
-              />
-            </View>
-          )}
-        </View>
-      </View>
+      <BonsaiPotInfoSection form={form} />
 
       <View style={styles.field}>
         <View style={styles.fieldLabelRow}>
@@ -1070,7 +979,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: BG_SURFACE,
   },
-  pickerPlaceholder: { color: TEXT_MUTED },
   fieldLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   requiredBadge: {
     paddingHorizontal: 6,
@@ -1093,38 +1001,6 @@ const styles = StyleSheet.create({
   inputMultiline: { minHeight: 96, paddingVertical: 12 },
   // Sess14 PR-Q: dateRow / dateInput / dateClearButton / dateClearText は PR-O で
   // LabeledDateRow に移管済、 dead style として削除。
-  potExpanded: { gap: 10, marginTop: 8 },
-  // Sess15 PR-BB: mockup 174029.png 整合の card group (border 内に expander + 3 input + segmented を集約)。
-  potCard: {
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 12,
-    backgroundColor: BG_SURFACE,
-    padding: 12,
-    gap: 8,
-  },
-  potExpander: {
-    minHeight: 40,
-    justifyContent: 'center',
-  },
-  potUnitSegmented: {
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 8,
-    overflow: 'hidden',
-    alignSelf: 'flex-start',
-    marginBottom: 4,
-  },
-  potUnitSegment: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    minWidth: 48,
-    alignItems: 'center',
-  },
-  potUnitSegmentActive: { backgroundColor: BRAND_GREEN },
-  potUnitSegmentText: { fontSize: 13, color: TEXT_SECONDARY },
-  potUnitSegmentTextActive: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
   // Sess13 PR-J: Repolog 流写真カード
   photoSourceRow: { flexDirection: 'row', gap: 10 },
   photoSourceButton: {
