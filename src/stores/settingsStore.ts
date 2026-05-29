@@ -11,10 +11,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import type { PotUnit } from '@/src/types/units';
+
 type ThemeMode = 'light' | 'dark' | 'system';
 
-/** Sess13 PR-I: 鉢サイズ単位 (cm / mm / inch、 user preference、 Q-7 b 採用)。 */
-export type PotUnit = 'cm' | 'mm' | 'inch';
+/** 鉢サイズ単位。型の正は src/types/units.ts (Phase 6 F1b/c で FSD 最下層へ移設)。後方互換で re-export。 */
+export type { PotUnit } from '@/src/types/units';
 
 /** F-16 通知時刻の永続化フォーマット ("HH:MM" 24 時間制、Issue #30 / ADR-0014)。 */
 export type NotificationTimeString = string;

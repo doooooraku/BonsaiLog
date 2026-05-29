@@ -6,7 +6,7 @@
  * - 入力時: user 設定単位 → cm へ正規化
  * - 表示時: cm → user 設定単位へ変換 (toFixed 丸めで浮動小数誤差吸収)
  *
- * 単位定義 (settingsStore.PotUnit):
+ * 単位定義 (src/types/units.PotUnit):
  * - 'cm':   1 cm = 1 cm
  * - 'mm':   1 cm = 10 mm
  * - 'inch': 1 cm = 0.3937007874 inch (1 inch = 2.54 cm)
@@ -15,7 +15,7 @@
  * - 浮動小数 round-trip 誤差: cmToUnit(unitToCm(5, 'inch'), 'inch') が 5.0 に戻る保証は丸めで担保
  * - 負数 / NaN は null 返却 (UI 側で空欄表示)
  */
-import type { PotUnit } from '@/src/stores/settingsStore';
+import type { PotUnit } from '@/src/types/units';
 
 const INCH_PER_CM = 0.3937007874015748;
 const CM_PER_INCH = 2.54;
