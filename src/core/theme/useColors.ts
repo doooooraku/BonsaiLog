@@ -13,6 +13,11 @@
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { resolveEffectiveScheme } from '@/src/core/theme/themeResolver';
+// FSD 例外 (ADR-0048 Amendment, Phase 6 F1a): useColors は app/components/features 全層が使う
+// 横断テーマ hook。themeMode は本質的に settingsStore の state で、components から呼べて
+// かつ stores を呼べる層は存在しない (どこへ移しても別の違反が出る) ため、この core→stores
+// エッジ 1 本のみ受容する。他の core→stores は引き続き禁止。
+// eslint-disable-next-line boundaries/dependencies
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
 // Colors.light / Colors.dark は const assertion で値が string literal 型に narrow
