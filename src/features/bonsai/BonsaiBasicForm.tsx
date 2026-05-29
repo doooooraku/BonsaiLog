@@ -30,11 +30,10 @@ import { CameraIcon, PlusIcon } from '@/src/components/icons';
 import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
-import { LabeledPickerRow } from '@/src/components/form/LabeledPickerRow';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
+import { BonsaiIdentityFields } from '@/src/features/bonsai/basicForm/BonsaiIdentityFields';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
   BG_SURFACE,
   BORDER_DEFAULT,
@@ -45,7 +44,7 @@ import {
 } from '@/src/core/theme/colors';
 import { createBonsai, updateBonsai } from '@/src/db/bonsaiRepository';
 import { addPhotoFromUri, FREE_PHOTO_LIMIT_PER_BONSAI } from '@/src/db/photoRepository';
-import { BONSAI_STYLES, type Bonsai, type BonsaiStyle } from '@/src/db/schema';
+import { type Bonsai, type BonsaiStyle } from '@/src/db/schema';
 import { getCustomSpeciesById } from '@/src/db/bonsaiSpeciesCustomRepository';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
 import { cmToUnit, unitToCm } from '@/src/core/util/potUnitConvert';
@@ -683,17 +682,6 @@ export function BonsaiBasicFormFields({
   const router = useRouter();
   const {
     isEdit,
-    name,
-    setName,
-    speciesId,
-    setSpeciesId,
-    customSpeciesId,
-    setCustomSpeciesId,
-    customSpeciesName,
-    setCustomSpeciesName,
-    selectedSpecies,
-    style,
-    setStyle,
     acquiredAt,
     setAcquiredAt,
     estimatedAgeText,
@@ -820,70 +808,7 @@ export function BonsaiBasicFormFields({
 
   return (
     <>
-      {/* Sess13 PR-K: LabeledTextInput 共通化 (右上文字数 + 上限到達赤字) */}
-      <LabeledTextInput
-        label={t('bonsaiFieldName')}
-        required
-        requiredText={t('fieldRequiredLabel')}
-        overlimitText={t('inputOverLimit')}
-        value={name}
-        onChangeText={setName}
-        placeholder={t('bonsaiFieldNamePlaceholder')}
-        maxLength={100}
-        showCounter
-        testID="e2e_bonsai_create_name"
-      />
-
-      {/* Sess14 PR-M + Sess15 PR-Y: LabeledPickerRow + 任意 badge + placeholder「樹種を選択」 (取得日と統一)。 */}
-      <LabeledPickerRow
-        label={t('bonsaiFieldSpecies')}
-        optional
-        optionalText={t('fieldOptionalLabel')}
-        placeholder={t('bonsaiPlaceholderSpecies')}
-        valueText={selectedSpecies?.commonName ?? customSpeciesName}
-        onPress={() => {
-          // Sess13 PR-H: custom 樹種選択中の場合は 'custom:<id>' を initial に渡す
-          const initial =
-            customSpeciesId != null ? `custom:${customSpeciesId}` : (speciesId ?? null);
-          router.push(
-            (initial != null
-              ? `/species-picker?initial=${encodeURIComponent(initial)}`
-              : '/species-picker') as Href,
-          );
-        }}
-        onClear={() => {
-          setSpeciesId(null);
-          setCustomSpeciesId(null);
-          setCustomSpeciesName(null);
-        }}
-        testID="e2e_bonsai_create_species_pick"
-        testIDClear="e2e_bonsai_create_species_clear"
-      />
-
-      {/* Sess14 PR-M + Sess15 PR-Y: LabeledPickerRow + 任意 badge + placeholder「樹形を選択」 (取得日と統一)。 */}
-      <LabeledPickerRow
-        label={t('bonsaiFieldStyle')}
-        optional
-        optionalText={t('fieldOptionalLabel')}
-        placeholder={t('bonsaiPlaceholderStyle')}
-        valueText={
-          style != null
-            ? BONSAI_STYLES.includes(style as BonsaiStyle)
-              ? t(`bonsaiStyle_${style}` as TranslationKey)
-              : (style as string)
-            : null
-        }
-        onPress={() =>
-          router.push(
-            (style != null
-              ? `/style-picker?initial=${encodeURIComponent(style)}`
-              : '/style-picker') as Href,
-          )
-        }
-        onClear={() => setStyle(null)}
-        testID="e2e_bonsai_create_style_pick"
-        testIDClear="e2e_bonsai_create_style_clear"
-      />
+      <BonsaiIdentityFields form={form} />
 
       {/* Sess14 PR-O: 取得日 を LabeledDateRow へ移行 (PR-E DatePicker 実装を component 化) */}
       <LabeledDateRow
