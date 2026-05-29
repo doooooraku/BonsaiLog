@@ -35,7 +35,7 @@
    - `db→services` ×2（`photoRepository` / `bonsaiRepository`、F2）
    - `db→features` ×1（`eventRepository`→`payloadValidator`、F3）
 4. **`stores→services`（F4）は「違反」でなく正規化エッジと再定義**。`src/services/` を「外部 SDK の薄いラッパ層」（architecture.md §1 の定義）とし、`stores` がそれに依存するのは正当。コード修正は不要。
-5. **`useColors` の移設先は `src/features/theme/`**（F1a、PR 6-3）。feature 層は stores を import 可。`src/core/theme/useColors.ts` は re-export で凍結し 23 消費者は無改修。
+5. ~~**`useColors` の移設先は `src/features/theme/`**（F1a、PR 6-3）~~ → **下記 Amendment (2026-05-29) で変更**。実装時に「3 つの共通部品 (components 層) が useColors を使う」ことが判明し、features へ移すと `components→features` 違反が新たに発生するため、**core 据え置き + 例外受容**に方針変更。
 6. 導入時の severity は **warn**（既知 6 違反を可視化）、全違反解消後に **PR 6-5 で error 化 + CI gate** とする。
 
 ## Decision Drivers（判断の軸）
@@ -109,3 +109,38 @@
 
 - **`components→db` の暫定許可**: 唯一の該当は `src/components/icons/EventIcons.tsx` の `import type { EventType } from '@/src/db/schema'`（型のみ）。`EventType` は schema と同居する共有列挙で、移設は多数ファイルに波及するため Phase 6 のスコープ外。allow-matrix で暫定許可し、将来 `src/types/` へ移設時に例外撤去する。
 - **当初 master-plan の「ADR-0046」表記**: 起票時に 0046（ハーネス棚卸し）/ 0047（レビュー契約）が既に使用済だったため、FSD 層定義は本 ADR-0048 に採番した。古い参照は PR 6-5 で一掃する。
+
+---
+
+## Amendment (2026-05-29): F1a useColors は移設せず「core 据え置き + 例外受容」
+
+### 背景（実装時に判明した想定外）
+
+Decision 5 は当初「`useColors` を `src/features/theme/` へ移設」としていたが、PR 6-3 実装時の consumer 実測で **`useColors` を `src/components/` の 3 部品（`ConfirmDialog` / `RowActionMenu` / `FormScreenHeader`）が使用**していることが判明した。
+
+`useColors` は `themeMode`（= `settingsStore` の state）を読むため **`stores` を import できる層**にしか置けない。一方、それを使う `components` 層が import できるのは `core` / `types` / `db` のみ。
+
+| 条件                      | 該当層                   |
+| ------------------------- | ------------------------ |
+| `components` が import 可 | core / types / db        |
+| `stores` を import 可     | app / features / stores  |
+| **両方を満たす層**        | **存在しない（空集合）** |
+
+→ useColors を `features` へ移すと `components→features`（新規違反）が 3 件発生。**どこへ移しても別の違反が出る**ため、移設では解決できない。
+
+### 変更後の決定
+
+- **`useColors` は `src/core/theme/useColors.ts` に据え置く**。
+- `useColors` → `settingsStore` の **`core→stores` エッジ 1 本のみを受容**（accepted exception）。当該 import 行に `// eslint-disable-next-line boundaries/dependencies` + 理由コメントを付し、本 Amendment で明文化する。
+- **他の `core→stores` は引き続き禁止**（本件は theme hook 1 箇所のみの限定例外）。
+- 根拠: `useColors` は app / components / features 全層が使う**横断 UI hook**で、テーマ設定の state を読むのは本質的に正当。完全な純粋化（下記）は振る舞いリスク・工数に見合わない。CLAUDE.md §3「受容は ADR で明文化」/ ADR-0045 と同じ pragmatic 方針。
+
+### 却下した代替（再掲）
+
+- **C 案（core に ThemeMode Context を新設し app 入口で stores から注入）**: 例外ゼロの純粋解だが、テーマ配線の作り替え＝実機検証必須の中リスク。本 Phase の「振る舞い不変・低リスク」優先で見送り（将来 v1.x で再検討余地）。
+- **A 案（3 部品を props 受け取りに改修）**: 最も FSD 純粋だが部品 API 変更 + 約 16 呼出側修正 + 見た目崩れリスクで非採用。
+
+### 影響
+
+- 違反推移: F1a は「解消」でなく「受容（waive）」。`boundaries/dependencies` warn は本 PR で 3→2、PR 6-4（F2）後に **2→0 相当**（残る useColors は eslint-disable 済のため警告に出ない）。PR 6-5 の error 化後も当該行は disable で通過。
+- Decision 5（移設）は本 Amendment が supersede。`docs/refactor/phase-6-plan.md` の F1a 行も同期更新。
