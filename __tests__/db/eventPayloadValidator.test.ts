@@ -6,7 +6,7 @@ import {
   safeParsePayloadJson,
   serializeEventPayload,
   validateEventPayload,
-} from '../../../src/features/event/payloadValidator';
+} from '../../src/db/eventPayloadValidator';
 
 describe('isEventType', () => {
   test('既知の type は true', () => {
