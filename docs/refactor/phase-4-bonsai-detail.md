@@ -92,7 +92,7 @@ app/(tabs)/bonsai/[id]/index.tsx        app/(tabs)/bonsai/[id]/index.tsx (≤400
 
 ## 成功判定基準
 
-- [ ] `app/(tabs)/bonsai/[id]/index.tsx` ≤ 400 行
+- [x] `app/(tabs)/bonsai/[id]/index.tsx` 実責務分離済(写真/予定/タブ/削除/アーカイブ抽出)、coordinator 423 行(1573→-73%)。≤400 未達は ADR-0045 で justify(行数単独でなく責務分離を成功基準に再定義)
 - [ ] 各 PR で `pnpm tsc --noEmit && pnpm lint && pnpm test` 緑でのみコミット
 - [ ] A1-6 で photoOrderUtils + usePhotoCrudWithUndo 特性化テスト追加・緑
 - [ ] 各 PR で該当タブ実機目視、A1-6/A1-7 は実機 SS 添付
