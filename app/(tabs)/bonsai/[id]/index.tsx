@@ -24,6 +24,7 @@ import { BonsaiBasicSection } from '@/src/features/bonsai/detail/BonsaiBasicSect
 import { BonsaiTimelineTab } from '@/src/features/bonsai/detail/BonsaiTimelineTab';
 import { formatDate } from '@/src/features/bonsai/detail/dateFormat';
 import { useBonsaiDetailData } from '@/src/features/bonsai/detail/useBonsaiDetailData';
+import { useBonsaiDetailTabs } from '@/src/features/bonsai/detail/useBonsaiDetailTabs';
 import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
 import { PhotoUndoBanner } from '@/src/features/bonsai/PhotoUndoBanner';
 import {
@@ -114,10 +115,7 @@ export default function BonsaiDetailScreen() {
   // 旧 timeline タブの「水やり概要 / 取得日 / 更新日 / アーカイブ」は basic タブに移動 (A5 で
   // CreateBonsaiScreen embed に正式化予定)
   // Sess12 PR-F 改善 F: URL param ?tab=timeline で初期タブ指定可能 (planned event tap 時)
-  const initialTabParam = (params.tab as string | undefined) ?? 'history';
-  const initialTab: 'history' | 'timeline' | 'basic' =
-    initialTabParam === 'timeline' || initialTabParam === 'basic' ? initialTabParam : 'history';
-  const [activeTab, setActiveTab] = useState<'history' | 'timeline' | 'basic'>(initialTab);
+  const { activeTab, setActiveTab } = useBonsaiDetailTabs(params.tab);
 
   // Phase G2 part 1-2 (ADR-0024 Accepted): 作業記録 BottomSheet を `(modals)/work-picker` +
   // `(modals)/work-log-confirm` (formSheet) に置換、ref 経由の Sheet 制御は全廃 (router.push +
@@ -321,7 +319,7 @@ export default function BonsaiDetailScreen() {
     if (groupKey) setExpandedGroupIds((prev) => new Set(prev).add(groupKey));
     scrollToEvent(fid);
     router.setParams({ focusEventId: undefined });
-  }, [params.focusEventId, events, router, scrollToEvent]);
+  }, [params.focusEventId, events, router, scrollToEvent, setActiveTab]);
 
   // ADR-0036 D1: アーカイブ確認も OS 標準 Alert → カスタム ConfirmDialog に統一 (Home 長押しと見た目統一)
   const [archiveConfirmVisible, setArchiveConfirmVisible] = useState(false);
