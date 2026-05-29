@@ -159,6 +159,8 @@ gh pr list --state all --limit 100 --json number,title,state,createdAt,mergedAt
 
 「足す側」（2 回再発で昇華）の対として、retro 時に「削る側」を回す。**完全自動判定はせず、候補を列挙して user の廃止可否判断を仰ぐ**（R-11）。
 
+0. **まず効きめの数字を取る（施策②）**: `pnpm harness:metrics` を実行し、PR スループット / CI 成功率 / revert 事故率を確認 → 退役/維持の判断材料にする。
+
 1. 被参照の少ない ADR を列挙（役目を終えた廃止候補のヒント）:
 
 ```bash
