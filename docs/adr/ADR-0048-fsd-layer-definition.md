@@ -1,6 +1,6 @@
 # ADR-0048: FSD 層定義と境界 import allow-matrix (Phase 6)
 
-- Status: Proposed （PR 6-0 を user レビュー後に Accepted 化。マージ＝承認）
+- Status: Accepted （PR 6-0〜6-5 で全違反 0 + boundaries error 化を完遂）
 - Date: 2026-05-29
 - Deciders: @doooooraku
 - Related: `docs/refactor/master-plan.md` (Phase 6 / 当初は「ADR-0046 FSD層定義」と記載 → 0046/0047 使用済のため本 **ADR-0048** に採番変更) / `docs/architecture.md` §1-2 (層と依存の向き) / ADR-0008 (datetime 3層防御＝db→core を強制) / ADR-0007 (F-11 ZIP/写真データ経路、F2 の最高リスク根拠) / 1次情報: [Feature-Sliced Design](https://feature-sliced.design/) (層と一方向依存) / [eslint-plugin-boundaries](https://github.com/javierbrea/eslint-plugin-boundaries) v6 (`boundaries/dependencies` rule)
