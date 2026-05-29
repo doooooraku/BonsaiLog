@@ -144,7 +144,6 @@ export default function RootLayout() {
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
           {/* fix/247 (post-ADR-0020): Paywall は自前 Header を持つので Stack header 非表示。
               modal presentation で × タップ時に history が空でも自然に閉じられる。 */}
           <Stack.Screen name="pro" options={{ headerShown: false, presentation: 'modal' }} />
