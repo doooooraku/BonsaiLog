@@ -55,7 +55,7 @@ import {
   findPlannedEventByCondition,
 } from '@/src/db/eventRepository';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
-import { addPhotoFromUri } from '@/src/db/photoRepository';
+import { addPhotoFromUri } from '@/src/features/photos/photoOrchestrator';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';

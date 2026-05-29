@@ -34,7 +34,7 @@ import { createOrFindCustomSpecies } from '@/src/db/bonsaiSpeciesCustomRepositor
 import { getDb } from '@/src/db/db';
 import { createEvent, softDeleteEvent } from '@/src/db/eventRepository';
 import type { EventType } from '@/src/db/schema';
-import { addPhotoFromUri } from '@/src/db/photoRepository';
+import { addPhotoFromUri } from '@/src/features/photos/photoOrchestrator';
 import { getSpeciesByScientificName } from '@/src/db/speciesRepository';
 import { attachTagToBonsai, createOrFindTag } from '@/src/db/tagRepository';
 
