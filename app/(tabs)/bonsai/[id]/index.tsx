@@ -2,7 +2,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -11,6 +11,7 @@ import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingPr
 import { useBonsaiBasicForm } from '@/src/features/bonsai/BonsaiBasicForm';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
 import { BonsaiBasicSection } from '@/src/features/bonsai/detail/BonsaiBasicSection';
+import { BonsaiDetailTabs } from '@/src/features/bonsai/detail/BonsaiDetailTabs';
 import { BonsaiHistoryTab } from '@/src/features/bonsai/detail/BonsaiHistoryTab';
 import { BonsaiPhotoSection } from '@/src/features/bonsai/detail/BonsaiPhotoSection';
 import { BonsaiTimelineTab } from '@/src/features/bonsai/detail/BonsaiTimelineTab';
@@ -249,37 +250,7 @@ export default function BonsaiDetailScreen() {
           残機能 (基本情報編集 = タブ重複、 PDF 出力 = 未実装) は user 真意により全廃。 */}
       {/* ADR-0020 §Notes Amended (2026-05-09): DetailTabs 順序 = 作業履歴 / 予定 / 基本情報 (mockup v1.0 整合) */}
       {/* Issue #439: タブバーは sticky (画面上部固定)、Hero は ScrollView 内に移動して全画面スクロールできるようにする */}
-      <View style={styles.detailTabs}>
-        {(['history', 'timeline', 'basic'] as const).map((tab) => {
-          const on = activeTab === tab;
-          const labelKey =
-            tab === 'history'
-              ? 'detailTabHistory'
-              : tab === 'timeline'
-                ? 'detailTabPlanTimeline'
-                : 'detailTabBasic';
-          return (
-            <Pressable
-              key={tab}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: on }}
-              accessibilityLabel={t(labelKey)}
-              style={[styles.detailTab, on && styles.detailTabOn]}
-              onPress={() => setActiveTab(tab)}
-              testID={`e2e_detail_tab_${tab}`}
-            >
-              <ThemedText
-                style={[
-                  styles.detailTabText,
-                  on ? styles.detailTabTextOn : { color: c.textSecondary },
-                ]}
-              >
-                {t(labelKey)}
-              </ThemedText>
-            </Pressable>
-          );
-        })}
-      </View>
+      <BonsaiDetailTabs activeTab={activeTab} onChange={setActiveTab} t={t} />
 
       {/* Sess28 PR-3 (ADR-0037 D1 / R-46): useKeyboardAvoidingProps() で Platform 別 props を集約。
           旧 Platform.OS 分岐 + offset=64 ハードコード (Sess15 PR-TT) を hook 経由で動的化。 */}
@@ -501,24 +472,6 @@ const styles = StyleSheet.create({
   },
   archiveText: { color: DANGER, fontSize: 15, fontWeight: '500' },
   // Sess36 PR-3 ADR-0042 D3: 旧 historyFab + historyFabPlus は共通 <FAB /> に移行、 撤去済。
-  // ADR-0020 v1.x-2: DetailTabs (Claude Design detail-screens.jsx)
-  detailTabs: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
-  },
-  detailTab: {
-    flex: 1,
-    minHeight: 48,
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  detailTabOn: { borderBottomColor: BRAND_GREEN },
-  detailTabText: { fontSize: 14, fontWeight: '400' },
-  detailTabTextOn: { color: BRAND_GREEN, fontWeight: '500' },
   // ADR-0020 Phase 3: 「水やり履歴」リンク (詳細画面 → watering 画面遷移)
   wateringHistoryLink: {
     flexDirection: 'row',
