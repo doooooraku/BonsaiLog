@@ -19,30 +19,20 @@
  *
  * Issue #439 で BonsaiCreateSheet から抽出。
  */
-import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
-import { CameraIcon } from '@/src/components/icons';
 import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { BonsaiIdentityFields } from '@/src/features/bonsai/basicForm/BonsaiIdentityFields';
 import { BonsaiMetadataFields } from '@/src/features/bonsai/basicForm/BonsaiMetadataFields';
+import { BonsaiPhotoPickerBlock } from '@/src/features/bonsai/basicForm/BonsaiPhotoPickerBlock';
 import { BonsaiPotInfoSection } from '@/src/features/bonsai/basicForm/BonsaiPotInfoSection';
 import { BonsaiTagsSection } from '@/src/features/bonsai/basicForm/BonsaiTagsSection';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_MUTED,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
 import { createBonsai, updateBonsai } from '@/src/db/bonsaiRepository';
 import { addPhotoFromUri, FREE_PHOTO_LIMIT_PER_BONSAI } from '@/src/db/photoRepository';
 import { type Bonsai, type BonsaiStyle } from '@/src/db/schema';
@@ -680,100 +670,9 @@ export function BonsaiBasicFormFields({
   onMemoFocus,
 }: BonsaiBasicFormFieldsProps) {
   const { t } = useTranslation();
-  const {
-    isEdit,
-    memo,
-    setMemo,
-    pendingPhotos,
-    handlePickPhoto,
-    handleRemovePendingPhoto,
-    handleMovePendingPhoto,
-    handleTakePhotoCamera,
-  } = form;
+  const { isEdit, memo, setMemo } = form;
 
   const showPhotoField = showPhotos && !isEdit;
-
-  // Sess15 PR-CC: 案 P 採用 — 写真は「タグ」 と「メモ」 の間 (新規モード時) に表示する。
-  // 必須項目を先頭に、 重い任意処理 (写真撮影/選択) を後半に集約することで入力放棄リスクを軽減。
-  const photoBlock = showPhotoField ? (
-    <View style={styles.field}>
-      <View style={styles.fieldLabelRow}>
-        <ThemedText type="defaultSemiBold">
-          {t('bonsaiFieldPhotos')} ({pendingPhotos.length})
-        </ThemedText>
-        <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
-      </View>
-      {/* Sess13 PR-J: Repolog 流 2 button (カメラ / ライブラリ) 並列。 */}
-      <View style={styles.photoSourceRow}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('photoSourceCamera')}
-          style={styles.photoSourceButton}
-          onPress={handleTakePhotoCamera}
-          testID="e2e_bonsai_create_photo_camera"
-        >
-          <CameraIcon size={20} />
-          <ThemedText style={styles.photoSourceText}>{t('photoSourceCamera')}</ThemedText>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('photoSourceLibrary')}
-          style={styles.photoSourceButton}
-          onPress={handlePickPhoto}
-          testID="e2e_bonsai_create_photo_library"
-        >
-          <ThemedText style={styles.photoSourceText}>{t('photoSourceLibrary')}</ThemedText>
-        </Pressable>
-      </View>
-      {pendingPhotos.length > 0 && (
-        <ThemedText style={styles.photoHelpText}>{t('photoReorderHelp')}</ThemedText>
-      )}
-      {pendingPhotos.map((p, idx) => {
-        const isFirst = idx === 0;
-        const isLast = idx === pendingPhotos.length - 1;
-        return (
-          <View key={`${p.uri}-${idx}`} style={styles.photoCard}>
-            <View style={styles.photoCardToolbar}>
-              <ThemedText style={styles.photoCardIndex}>{idx + 1}</ThemedText>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('photoMoveUp')}
-                accessibilityState={{ disabled: isFirst }}
-                disabled={isFirst}
-                style={[styles.photoMoveButton, isFirst && styles.photoMoveButtonDisabled]}
-                onPress={() => handleMovePendingPhoto(idx, idx - 1)}
-                testID={`e2e_bonsai_create_photo_move_up_${idx}`}
-              >
-                <ThemedText style={styles.photoMoveText}>↑</ThemedText>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('photoMoveDown')}
-                accessibilityState={{ disabled: isLast }}
-                disabled={isLast}
-                style={[styles.photoMoveButton, isLast && styles.photoMoveButtonDisabled]}
-                onPress={() => handleMovePendingPhoto(idx, idx + 1)}
-                testID={`e2e_bonsai_create_photo_move_down_${idx}`}
-              >
-                <ThemedText style={styles.photoMoveText}>↓</ThemedText>
-              </Pressable>
-              <View style={{ flex: 1 }} />
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('delete')}
-                style={styles.photoCardDeleteButton}
-                onPress={() => handleRemovePendingPhoto(idx)}
-                testID={`e2e_bonsai_create_photo_remove_${idx}`}
-              >
-                <ThemedText style={styles.photoCardDeleteText}>×</ThemedText>
-              </Pressable>
-            </View>
-            <Image source={{ uri: p.uri }} style={styles.photoCardImage} contentFit="cover" />
-          </View>
-        );
-      })}
-    </View>
-  ) : null;
 
   return (
     <>
@@ -791,7 +690,7 @@ export function BonsaiBasicFormFields({
           新規 modal (showPhotoField=true) は内部 photoBlock (pendingPhotos)、
           詳細画面 (showPhotoField=false) は customPhotoBlock (詳細画面の photoSection) を slot として挿入。
           排他制御で 1 つだけ render。 */}
-      {showPhotoField ? photoBlock : customPhotoBlock}
+      {showPhotoField ? <BonsaiPhotoPickerBlock form={form} /> : customPhotoBlock}
 
       {/* Sess13 PR-K: メモを LabeledTextInput 共通化 (multiline + 文字数 + 上限赤字)。
           Sess31 PR-1 (R-46 拡張): onMemoFocus prop で親 ScrollView の auto-scroll 配線。 */}
@@ -817,156 +716,3 @@ export function BonsaiBasicFormFields({
 // Phase G5 (ADR-0024 Accepted): 旧 `BonsaiBasicFormPickerSheets` 空関数 + Props 型を削除。
 // 樹種 / 樹形 Picker は `(modals)/species-picker` + `(modals)/style-picker` route
 // (presentation: 'formSheet') に完全移行済。
-
-const styles = StyleSheet.create({
-  field: { gap: 8 },
-  photoBox: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: BORDER_DEFAULT,
-    borderStyle: 'dashed',
-    backgroundColor: BG_SURFACE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  photoEmpty: { alignItems: 'center', justifyContent: 'center', gap: 6 },
-  photoCta: { fontSize: 12, color: TEXT_SECONDARY },
-  photoStrip: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  photoStripCell: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    overflow: 'hidden',
-    position: 'relative',
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-  },
-  photoStripImage: { width: '100%', height: '100%' },
-  photoStripCoverBadge: {
-    position: 'absolute',
-    top: 4,
-    left: 4,
-    backgroundColor: BRAND_GREEN,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  photoStripCoverBadgeText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: ON_BRAND,
-    letterSpacing: 0.6,
-  },
-  photoStripDeleteButton: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  photoStripDeleteText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', lineHeight: 18 },
-  photoCount: { fontSize: 11, color: TEXT_MUTED, marginLeft: 'auto' },
-  input: {
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 16,
-    minHeight: 48,
-    backgroundColor: BG_SURFACE,
-  },
-  pickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 12,
-    backgroundColor: BG_SURFACE,
-  },
-  fieldLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  requiredBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 8,
-    backgroundColor: '#8B2E2E',
-  },
-  requiredBadgeText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: '#F7F3E8',
-    letterSpacing: 0.8,
-  },
-  optionalLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: TEXT_MUTED,
-    letterSpacing: 0.8,
-  },
-  inputMultiline: { minHeight: 96, paddingVertical: 12 },
-  // Sess14 PR-Q: dateRow / dateInput / dateClearButton / dateClearText は PR-O で
-  // LabeledDateRow に移管済、 dead style として削除。
-  // Sess13 PR-J: Repolog 流写真カード
-  photoSourceRow: { flexDirection: 'row', gap: 10 },
-  photoSourceButton: {
-    flex: 1,
-    height: 44,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: BG_SURFACE,
-  },
-  photoSourceText: { fontSize: 14, fontWeight: '500' },
-  photoHelpText: { fontSize: 12, color: TEXT_MUTED, marginTop: 4 },
-  photoCard: {
-    marginTop: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    overflow: 'hidden',
-    backgroundColor: BG_SURFACE,
-  },
-  photoCardToolbar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 8,
-  },
-  photoCardIndex: { fontSize: 14, color: TEXT_SECONDARY, minWidth: 16 },
-  photoMoveButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: BG_SURFACE,
-  },
-  photoMoveButtonDisabled: { opacity: 0.3 },
-  photoMoveText: { fontSize: 18 },
-  photoCardDeleteButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: BG_SURFACE,
-  },
-  photoCardDeleteText: { fontSize: 20, lineHeight: 22, color: TEXT_SECONDARY },
-  // 4:3 横長 (Q-10 b 採用)
-  photoCardImage: { width: '100%', aspectRatio: 4 / 3 },
-});
