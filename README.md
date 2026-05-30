@@ -17,7 +17,7 @@ pnpm dev
 | ------------------ | ------------------------------------------------------------ |
 | **フレームワーク** | Expo 55, React Native 0.83.4, New Architecture               |
 | **UI**             | React Native 標準コンポーネント, React Navigation            |
-| **状態管理**       | Zustand + persist, React Query                               |
+| **状態管理**       | Zustand + AsyncStorage (persist)                             |
 | **データ**         | expo-sqlite（マイグレーション対応）                          |
 | **多言語対応**     | 19 言語（expo-localization + 独自システム）                  |
 | **収益化**         | RevenueCat（サブスクリプション）、AdMob + UMP（広告）        |
