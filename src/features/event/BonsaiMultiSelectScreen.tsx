@@ -13,26 +13,18 @@
  * Sess12 PR-D 改善 D: router.replace → router.push に変更 (BulkWorkPicker から ← で
  * 1 画面戻り = 本画面に戻れるように)。 戻り時の選択状態は bulkContext から自動 restore。
  */
-import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { CheckIcon } from '@/src/components/icons';
+import { BonsaiSelectableCard } from '@/src/features/bonsai/BonsaiSelectableCard';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { ON_BRAND, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
-import { BonsaiPlaceholder, hashSeed } from '@/src/features/bonsai/BonsaiPlaceholder';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
 type CardData = {
@@ -138,55 +130,17 @@ export default function BonsaiMultiSelectScreen() {
           data={items}
           keyExtractor={(it) => it.id}
           contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => {
-            const selected = selectedIds.has(item.id);
-            return (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ selected }}
-                accessibilityLabel={item.name}
-                style={[
-                  styles.card,
-                  { backgroundColor: c.surface, borderColor: selected ? BRAND_GREEN : c.border },
-                  selected && styles.cardSelected,
-                ]}
-                onPress={() => handleCardPress(item.id)}
-                testID={`e2e_bonsai_multi_select_card_${item.id}`}
-              >
-                <View style={styles.thumbBox}>
-                  {item.coverUri ? (
-                    <Image source={{ uri: item.coverUri }} style={styles.thumb} />
-                  ) : (
-                    <BonsaiPlaceholder size={56} seed={hashSeed(item.id)} radius={10} />
-                  )}
-                </View>
-                <View style={styles.cardBody}>
-                  <ThemedText style={[styles.cardTitle, { color: c.text }]} numberOfLines={1}>
-                    {item.name}
-                  </ThemedText>
-                  {item.speciesCommonName ? (
-                    <ThemedText
-                      style={[styles.cardDesc, { color: c.textSecondary }]}
-                      numberOfLines={1}
-                    >
-                      {item.speciesCommonName}
-                    </ThemedText>
-                  ) : null}
-                </View>
-                <View
-                  style={[
-                    styles.checkBox,
-                    {
-                      backgroundColor: selected ? BRAND_GREEN : 'transparent',
-                      borderColor: selected ? BRAND_GREEN : BORDER_DEFAULT,
-                    },
-                  ]}
-                >
-                  {selected ? <CheckIcon size={18} color={ON_BRAND} /> : null}
-                </View>
-              </Pressable>
-            );
-          }}
+          renderItem={({ item }) => (
+            <BonsaiSelectableCard
+              id={item.id}
+              name={item.name}
+              coverUri={item.coverUri}
+              speciesCommonName={item.speciesCommonName}
+              selected={selectedIds.has(item.id)}
+              onPress={handleCardPress}
+              testID={`e2e_bonsai_multi_select_card_${item.id}`}
+            />
+          )}
         />
       )}
       <View style={[styles.footer, { backgroundColor: c.background, borderTopColor: c.border }]}>
@@ -222,37 +176,6 @@ const styles = StyleSheet.create({
   emptyBox: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
   emptyText: { fontSize: 15, textAlign: 'center' },
   listContent: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 96, gap: 8 },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    backgroundColor: BG_SURFACE,
-    borderColor: BORDER_DEFAULT,
-  },
-  cardSelected: {
-    backgroundColor: 'rgba(31,58,46,0.06)',
-  },
-  thumbBox: {
-    width: 56,
-    height: 56,
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  thumb: { width: 56, height: 56 },
-  cardBody: { flex: 1, minWidth: 0, gap: 2 },
-  cardTitle: { fontSize: 15, fontWeight: '500' },
-  cardDesc: { fontSize: 12 },
-  checkBox: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   footer: {
     paddingHorizontal: 16,
     paddingTop: 12,

@@ -59,8 +59,11 @@ describe('Export Options Sheet (ADR-0016 AC11 Options / AC12 Y4)', () => {
     expect(SHEET).toMatch(/exportOptScopeLabel/);
     expect(SHEET).toMatch(/exportOptIncludeArchived/);
     // 対象=選択/タグ の picker
-    expect(SHEET).toMatch(/e2e_export_opt_bonsai_\$\{b\.id\}/);
+    expect(SHEET).toMatch(/e2e_export_opt_bonsai_\$\{card\.id\}/);
     expect(SHEET).toMatch(/e2e_export_opt_tag_\$\{tg\.id\}/);
+    // Sess56: 盆栽選択 row は写真カード atom (BonsaiSelectableCard) に統一
+    // (BonsaiMultiSelectScreen と共用、重複削除)。
+    expect(SHEET).toMatch(/BonsaiSelectableCard/);
   });
 
   test('7. 0 件選択 / タグ未選択のバリデーション (AC12)', () => {
