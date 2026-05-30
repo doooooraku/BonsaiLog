@@ -1,0 +1,261 @@
+# ADR-0049: Pro 機能境界 v1.0 (Sess58 確定 6 項目 SoT)
+
+- Status: Accepted
+- Date: 2026-05-31
+- Deciders: @doooooraku
+- Related: ADR-0009 (RevenueCat billing 基盤) / ADR-0011 (推奨機能撤廃) / ADR-0020 (Claude Design 採用) / Issue #458 (写真制限撤廃、 本 ADR で Supersedes) / Sess58 議論セッション (`03317d4b-254d-451a-9f24-76d8e2b7b223`) / `docs/reference/constraints.md` §2-2 / `docs/reference/basic_spec.md` §8.2 / `docs/explanation/product_strategy.md`
+
+---
+
+## Context（背景：いま何に困っている？）
+
+- 現状：BonsaiLog の Pro 機能境界が **3 層 (コード / Paywall UI / docs) で乖離** している。
+  - コード: 写真制限が `FREE_PHOTO_LIMIT_PER_BONSAI = Infinity` (Issue #458 Phase 2 で撤廃済)、 タグ / カスタム樹種樹形は上限ロジック未実装
+  - Paywall UI (`PaywallScreen.tsx` FeatureRow 6 行): BonsaiCount / History / Backup / CSV / Theme / NoAds = Sess58 確定 6 項目と完全乖離 (4/6 行不一致)
+  - docs (`basic_spec.md` §8.2 / `constraints.md` §2-2): 「写真 3 枚/本」 と記載あるがコードは Infinity = **景品表示法第 5 条 (優良誤認表示) リスク**
+- 困りごと：
+  - 「Pro と書いてあるが実際は Free」 の幽霊機能が連鎖発生 (Sess58 で年次タイムライン PR #910 / F-05 PR #909 を緊急撤廃した経緯)
+  - v1.0 リリース判断のクリティカルパス: 法務 (景品表示法 / GDPR Art.20 / Apple Review 2.3.1) + ストア審査
+  - ADR-0009 (RevenueCat 基盤) は Pro 機能リスト 3 項目しか記載なし、 SoT 不足
+- 制約/前提：
+  - `docs/reference/constraints.md` §2-2 「写真 3 枚 等の数値を変更する場合は ADR 必須」
+  - `docs/reference/constraints.md` §1-1 完全ローカル原則 (クラウド同期なし)
+  - GDPR Art.20 (データポータビリティ) — 全期間履歴は Free 必須
+  - Apple App Store Review Guideline 5.1.1(v) — データ削除要請対応必須
+  - Apple App Store Review Guideline 2.3.1 — 機能と表示の整合性
+
+---
+
+## Decision（決めたこと：結論）
+
+**Pro 機能 6 項目を Sess59 で実装** (Sess58 議論で確定):
+
+| #   | Pro 機能                      | Free                                  | Pro            | 該当 PR                          |
+| --- | ----------------------------- | ------------------------------------- | -------------- | -------------------------------- |
+| ①   | 基本情報 写真                 | 各盆栽 3 枚まで                       | 無制限         | PR3                              |
+| ②   | タグ作成 (rename は無制限)    | 3 個まで                              | 無制限         | PR4                              |
+| ③   | 作業記録 写真                 | 各記録 3 枚まで (表示は全 Free)       | 無制限         | PR3                              |
+| ④   | CSV/PDF エクスポート (5 種類) | 不可                                  | 可             | 既存 (`csvExport.ts` Pro guard)  |
+| ⑤   | 広告非表示                    | AdMob バナー (Home 下部のみ)          | 完全非表示     | 既存 (`adService.ts` isPro 判定) |
+| ⑥   | カスタム樹種・樹形 作成       | マスタ 5 種 + カスタム 3 件 = 計 8 種 | カスタム無制限 | PR5                              |
+
+**Grandfathered 戦略** (既存ユーザー保護): 既存 4+ 写真 / タグ / カスタム樹種樹形は **表示 OK + 削除 OK + 追加のみ Paywall** (Slack 2022 churn 事件回避)。
+
+**Paywall ガード方式**:
+
+- 写真: `expo-image-picker` の `selectionLimit = max(0, 3 - photoCount)` + カウンター表示 "{used}/3" + 残枠 0 で押下時 Paywall modal
+- タグ / カスタム樹種樹形: カウンター表示 "{used}/3" + 残枠 0 で押下時 Paywall modal
+
+**適用範囲**: v1.x 全リリース (v1.0 初回リリースから適用)
+
+---
+
+## Decision Drivers（判断の軸：何を大事にした？）
+
+- Driver 1: **法的コンプライアンス** — 景品表示法第 5 条 + Apple Review 2.3.1 + GDPR Art.20 + 消費者契約法第 4 条 を全て満たす
+- Driver 2: **既存ユーザー churn 最小化** — Sess58 以前データを保護 (Slack 2022 churn 事件の轍を踏まない)
+- Driver 3: **業務利用層 (盆栽園プロ) の獲得** — タグ無制限 + カスタム樹種樹形無制限で「業務に即必要」 を訴求 (Sess58 ペルソナ Fit 評価で MEDIUM-STRONG → STRONG 想定)
+- Driver 4: **UX 親切設計** — カウンター事前表示 + Grandfathered 緩和で「急に Paywall」 「データ消失」 体験を回避 (ペルソナ高橋 62 歳・ライト の離脱防止)
+- Driver 5: **実装シンプル性** — 既存 Pro entitlement 基盤 (`useProStore.isPro`) と `useProGuard` 共通 hook で実装統一、 schema 変更ゼロ (app-level count check で対応可)
+
+### 4 ペルソナ評価 (Sess58 議論結果)
+
+| 機能境界                     | 高橋 62 歳 (シニア)   | Marcus 35 歳 (米国 IT) | 盆栽園プロ (100 鉢)                      | ライト (1-2 本)    |
+| ---------------------------- | --------------------- | ---------------------- | ---------------------------------------- | ------------------ |
+| ① 写真 3 枚/本 Free          | 🟢 安心、 上限見える  | 🟢 業界標準            | 🟡 業務継続性懸念 (Grandfathered で緩和) | 🟢 試用に十分      |
+| ② タグ 3 個 Free             | 🟢                    | 🟢                     | 🟢 即課金 (業務直結)                     | 🟢                 |
+| ③ 作業記録写真 3 枚 Free     | 🟢 表示は全 Free      | 🟢                     | 🟢 表示全 Free で業務維持                | 🟢                 |
+| ④ CSV/PDF Pro                | 🟡 出力したい場合のみ | 🟢                     | 🟢 業務必須                              | 🟢 不要            |
+| ⑤ 広告非表示 Pro             | 🟢 シニア誤タップ防止 | 🟢                     | 🟢                                       | 🟡 Free 我慢       |
+| ⑥ カスタム樹種樹形 3 件 Free | 🟢                    | 🟢                     | 🟢 即課金                                | 🟢 マスタ 5 で十分 |
+
+**結論**: 4 ペルソナ全員に Fit、 盆栽園プロが Pro 即購買候補。
+
+---
+
+## Alternatives considered（他の案と却下理由）
+
+### Option A (採用): Pro 機能 6 項目 + Grandfathered 緩 + カウンター表示
+
+- 概要: 上記 Decision に同じ
+- 良い点: 4 ペルソナ全員 Fit、 法的リスク全て解消、 既存実装 (CSV/PDF + 広告非表示) 流用可
+- 悪い点: PR2 で PaywallScreen / PlanSection 大幅書き換え必要、 i18n 19 言語 17 key 追加
+- 採用理由: 6 専門家評価 (テックリード / QA / UX / 法務 / PM / フラット) で多数推薦
+
+### Option B (却下): 他画面バナー追加 (Home 以外にも広告)
+
+- 概要: 詳細画面・一覧画面にも AdMob バナー追加
+- 良い点: 広告収益増
+- 悪い点: AdMob 公式統計で 88% 離脱、 Apple Review spammy 判定、 ASO 悪化、 ADR-0010 (Home 下部のみ) 整合維持必要
+- 却下理由: ADR-0010 / `docs/reference/constraints.md` §2-2 (全画面広告不採用) と矛盾
+
+### Option C (却下): 過去 30 日履歴を Pro 化
+
+- 概要: 作業履歴の Free 閲覧範囲を「過去 30 日のみ」 に制限、 30 日超過分は Pro
+- 良い点: Notion 7 日 vs 30 日 history と類似の業界事例
+- 悪い点: **GDPR Art.20 (データポータビリティ) 違反** + Apple Review 5.1.1(v) リスク + `docs/explanation/product_strategy.md` 「5 年データ蓄積」 戦略破壊
+- 却下理由: 法的リスク + 戦略破壊で即不採用
+
+### Option D (却下): 作業履歴タブ表示制限 (Pro でのみ全件表示)
+
+- 概要: 盆栽詳細画面の作業履歴タブを Free は最新 10 件のみ表示
+- 良い点: 課金圧力強
+- 悪い点: GDPR Art.20 違反 + Apple Review 5.1.1(v) リジェクトリスク + 全 4 ペルソナ ✕
+- 却下理由: 法的リスク + UX 致命傷
+
+### Option E (却下): 集計可視化機能を新規実装 + Pro 化
+
+- 概要: グラフ / ダッシュボード機能を新規実装し Pro 限定で提供
+- 良い点: Pro 訴求力強
+- 悪い点: 新機能実装 = v1.0 リリース遅延 (推定 +2-4 週間)、 シニアペルソナ「複雑」 評価
+- 却下理由: v1.0 リリース速度優先 (v1.x 候補で保留)
+
+### Option F (却下): Free 上限を緩める (写真 5 枚等)
+
+- 概要: Free 上限を 3 → 5 に緩和
+- 良い点: ライトペルソナ離脱率減
+- 悪い点: 業務利用層 (プロ) が Pro 不要と判断 = LTV 低下、 Day One 1 写真/entry Free と比較してすでに 3 倍緩い
+- 却下理由: 業界標準 (Day One / Bonsai Care App) と比較で「3 枚」 は緩い側、 これ以上緩めると Pro 訴求弱化
+
+---
+
+## Consequences（結果：嬉しいこと/辛いこと/副作用）
+
+### Positive（嬉しい）
+
+- 法的リスク全解消 (景品表示法 / GDPR Art.20 / Apple Review 2.3.1 / 消費者契約法第 4 条)
+- 既存ユーザー churn 回避 (Grandfathered 緩で「データ消失」 体験ゼロ)
+- 業務利用層 (盆栽園プロ) を Pro 主要顧客に狙える明確な訴求
+- 課金境界 SoT 確立 = 将来の機能追加時に判断基準が明確
+
+### Negative（辛い/副作用）
+
+- Issue #458 (写真制限撤廃) の方針逆行 = 当時の判断を Supersedes
+- PR2 で PaywallScreen / PlanSection 大幅書き換え (i18n 19 言語 17 key 追加)
+- TestFlight 検証期間 (1 週間) 分のリリース遅延
+- 既存 4+ データの判定ロジック (Grandfathered) でテストケース増 (count edge 含む)
+
+### Follow-ups（後でやる宿題）
+
+- [ ] PR1: `docs/reference/basic_spec.md` §2-2 / §8.2 更新
+- [ ] PR1: `docs/reference/constraints.md` §2-2 / §8 更新
+- [ ] PR1: `docs/reference/functional_spec.md` 関連セクション ADR-0049 参照追加
+- [ ] PR1: `docs/explanation/product_strategy.md` Pro 価格戦略整合
+- [ ] PR1: `docs/mockups/v1.0/docs/principles.md` Pro 機能境界の最新版反映
+- [ ] PR1: `docs/adr/ADR-0009-f13-revenuecat-billing.md` Sess59 Amendment (本 ADR 参照リンク追加)
+- [ ] PR2: PaywallScreen FeatureRow 6 項目に書き換え + useProGuard hook 確立 + i18n 19 言語 17 key 追加 / 4 key 削除
+- [ ] PR2: PlanSection bullet 3 → 6 個フラット表示
+- [ ] PR3: 写真 ①③ Paywall ガード実装 (FREE_PHOTO_LIMIT = 3 復活、 event_photos 上限追加、 selectionLimit) + SEED_PACK_FREE/PRO 分離開始
+- [ ] PR4: タグ ② Paywall ガード実装 (canCreateTag 追加) + SEED 整合
+- [ ] PR5: カスタム樹種樹形 ⑥ Paywall ガード実装 (countAllCustomSpecies 新規) + SEED 整合
+- [ ] TestFlight 1 週間検証 → App Store / Google Play 提出
+
+---
+
+## Acceptance / Tests（合否：テストに寄せる）
+
+### 正（自動テスト）
+
+- Jest:
+  - `__tests__/db/photoRepository.test.ts` (canAddPhoto / Grandfathered)
+  - `__tests__/db/tagRepository.test.ts` (canCreateTag)
+  - `__tests__/db/bonsaiSpeciesCustomRepository.test.ts` (canCreateCustomSpecies)
+  - `__tests__/features/pro/useProGuard.test.ts` (canAdd ロジック)
+  - `__tests__/features/pro/PaywallScreen.test.tsx` (FeatureRow 6 行確認)
+  - `__tests__/features/settings/PlanSection.test.ts` (bullet 6 個確認)
+- Maestro:
+  - `maestro/flows/paywall-display.yml` (Paywall 6 行表示)
+  - `maestro/flows/paywall-photo-basic.yml` (3 枚追加 + 4 枚目で Paywall)
+  - `maestro/flows/paywall-photo-worklog.yml` (作業記録写真同様)
+  - `maestro/flows/paywall-tag.yml` (3 個 + 4 個目で Paywall)
+  - `maestro/flows/paywall-custom-species.yml` (3 件 + 4 件目で Paywall)
+- 既存テスト:
+  - `__tests__/features/purchase/{buy_monthly,buy_annual,buy_lifetime,restore}.test.ts` (ADR-0009 既存)
+  - `__tests__/features/ads/visibility.test.ts` (Pro 広告非表示)
+
+### 手動チェック (TestFlight 検証時)
+
+- 手順:
+  1. SEED_PACK_FREE で起動 → devSetPro(false) で Free 確認
+  2. 各機能 (①〜⑥) で 4 件目試行 → Paywall 起動確認
+  3. Grandfathered: SEED_PACK_PRO で起動 → devSetPro(false) 切替 → 既存 4+ データ表示 + 削除 + 追加 Paywall 確認
+  4. 19 言語で Paywall 表示崩れなし確認
+  5. RevenueCat Receipt 復元動線確認
+- 期待結果: 全機能で Paywall 起動 + Grandfathered データ保護
+
+---
+
+## Rollout / Rollback（出し方/戻し方）
+
+- **リリース手順への影響**:
+  - PR1-5 段階的 merge (PR3+PR4 並行実装可能、 worktree isolation 推奨)
+  - PR2 で useProGuard hook 共通基盤確立、 PR3-5 conflict 回避
+  - TestFlight 1 週間検証 → App Store / Google Play 本番提出 (Sess59 R4 S-3 決定)
+  - App Store Connect / Google Play Console の IAP 説明文と PaywallScreen の Pro 機能リスト整合確認 (リリース前)
+- **ロールバック方針**:
+  - 各 PR は独立 `git revert` で安全に巻き戻し可
+  - PR2 revert 時は i18n 19 言語の翻訳が失われる = 再翻訳必要
+  - 写真制限 (PR3) 単独 revert で `FREE_PHOTO_LIMIT_PER_BONSAI = Infinity` (Issue #458 状態) に戻る、 既存 user に影響なし
+  - ストア提出後リジェクトの場合: 該当 PR revert + 緊急修正 PR
+  - メタデータ不整合の場合: `fastlane/metadata/` 修正で再提出 (コード変更不要)
+- **検知方法**:
+  - RevenueCat Dashboard でサブスク取得率を monitoring
+  - Maestro E2E flow CI で各 Paywall 動線の regression 検出
+  - Apple App Store Connect / Google Play Console の Review status 通知
+
+---
+
+## Links（関連リンク：正へ寄せる）
+
+- constraints: `docs/reference/constraints.md` §2-2 (Free/Pro 不変差分) / §8 (機能 ID 一覧)
+- basic_spec: `docs/reference/basic_spec.md` §8.2 (Free/Pro 機能差分表) / F-08 (写真管理) / F-13 (課金)
+- functional_spec: `docs/reference/functional_spec.md` §13 (F-08 写真管理) / §15 (CSV/PDF)
+- product_strategy: `docs/explanation/product_strategy.md` §2 (収益モデル) / §6-1 (v1.x コア機能)
+- principles: `docs/mockups/v1.0/docs/principles.md` (UI 原則)
+- ADR: ADR-0009 (RevenueCat 基盤) / ADR-0011 (推奨機能撤廃) / ADR-0020 (Claude Design 採用)
+- Sess58 議論セッション: Claude Code セッション ID `03317d4b-254d-451a-9f24-76d8e2b7b223` (2026-05-30、 1046 行)
+- 関連 Issue: #458 (写真制限撤廃 Phase 2、 本 ADR で **Supersedes**)
+- 関連 PR (Sess58 派生): #909 (F-05 撤廃 docs 同期) / #910 (年次タイムライン撤廃)
+- 業界事例:
+  - [Day One 1 photo/entry Free 制限](https://dayoneapp.com/) (機能①〜③ 参考)
+  - [Slack 10k message 制限 2022 年事件](https://slack.com/) (Grandfathered 緩採用根拠)
+  - [Notion 7 vs 30 days history](https://www.notion.so/) (Option C 却下根拠)
+- 法令:
+  - [景品表示法第 5 条 (優良誤認表示)](https://www.caa.go.jp/policies/policy/representation/fair_labeling/)
+  - [GDPR Art.20 (Right to data portability)](https://gdpr-info.eu/art-20-gdpr/)
+  - [Apple App Store Review Guideline 2.3.1 / 5.1.1(v)](https://developer.apple.com/app-store/review/guidelines/)
+
+---
+
+## Notes（メモ：任意）
+
+### Sess58 議論経緯 (2026-05-30、 セッション 03317d4b)
+
+4 ラウンド構成で議論完遂:
+
+- R1: 機能棚卸し v1/v2 (119 機能 + 80 fields) + 3 層乖離発覚
+- 中間: F-05 撤廃 PR #909 + 年次タイムライン撤廃 PR #910 (法的リスク即解消)
+- R2: 競合 6 アプリ比較 (Day One / Bonsai Care App / Notion / Todoist / AdMob 公式 88% 離脱統計)
+- R3: バリュープロポジションキャンバス 4 ペルソナ完全作成 + Fit 検証
+- R4: 課金 8 項目 6 専門家 + 4 ペルソナ評価 + 最終 6 項目確定
+
+### Sess59 議論経緯 (2026-05-31)
+
+R1-R4 で実装計画を詰めた:
+
+- R1: ADR 構造 (新規 ADR-0049 + ADR-0009 Sess59 Amendment リンクのみ)
+- R2: PR 分割粒度 (5 PR、 PR1→PR2→[PR3‖PR4]→PR5、 統合構成、 SEED 各 PR 内、 2 並列)
+- R3: ガード方式 (写真=selectionLimit + 押下時 Pro / タグ/カスタム=カウンター+押下) + Grandfathered 緩 + Settings 6 個全表示フラット + SEED_PACK_FREE/PRO 2 種
+- R4: ストア提出 = TestFlight 1 週間検証 → 本番
+
+### User 真意反映 (Sess59 議論中の修正)
+
+- 写真ピッカー段階で先に止める (selectionLimit) 採用 ← Forced downgrade 議論からの転換
+- Settings bullet 「Free と Pro で差分があるもの全部表示」 = 6 個全部表示 (3 個絞り棄却)
+- TestFlight 先行で進める確定
+
+### 学び (Learned)
+
+- ADR Amendment は履歴管理に有効だが、 主題が変わる場合は新規 ADR が適切
+- 「実装ゼロの i18n key だけ UI 露出」 は構造的に防ぐべき (Sess58 年次タイムライン教訓、 R-57 候補)
+- Grandfathered 戦略は churn 防止に必須 (Slack 2022 事件の轍を踏まない)

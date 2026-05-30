@@ -375,3 +375,25 @@ F-13 を以下の構成で実装する。
 - `paywallFeatureCsv`: CSV/PDF エクスポート
 - `settingsBenefitNoAds`: 広告非表示
 - `paywallFeatureBackup`: 全データバックアップ (ZIP)
+
+---
+
+### Sess59 Amendment (2026-05-31): Pro 機能境界 v1.0 を ADR-0049 に分離
+
+Sess58 で確定した「Pro 機能 6 項目」 (基本情報写真 / タグ / 作業記録写真 / CSV/PDF / 広告非表示 / カスタム樹種樹形) の完全仕様 + 法的コンプライアンス (景品表示法 / GDPR Art.20 / Apple Review) + 4 ペルソナ Fit 評価 + Grandfathered 戦略 + Paywall ガード方式 (selectionLimit + カウンター) を、 **新規 `ADR-0049-pro-feature-boundary-v1.md`** に分離して SoT 化した。
+
+**理由**:
+
+- 本 ADR (ADR-0009) は **RevenueCat 課金基盤の決定**が主題 (SDK 採用 / 価格 / Champion 方式 / Lifetime 等)
+- Pro 機能境界の決定 (どの機能をどう Pro 化するか) は性質が異なる独立決定 → 別 ADR が適切
+- ADR-0009 が既に Amendment 2 回 (Sess57/Sess58) で 378 行 = 肥大化傾向、 Pro 機能境界拡張で更に複雑化を避ける
+- 法的監査時 (景品表示法 / Apple Review リジェクト等) に「Pro 機能境界決定の根拠」 を 1 ADR で提示できる方が監査効率高
+
+**Pro 機能の完全仕様は [`ADR-0049-pro-feature-boundary-v1.md`](./ADR-0049-pro-feature-boundary-v1.md) を参照**。
+
+本 ADR (ADR-0009) は引き続き **RevenueCat 課金基盤 + 価格 + 復元 + Champion 方式** の決定を保持する (Pro 機能リスト変更時は ADR-0049 を更新)。
+
+**実装責務分担**:
+
+- ADR-0009: RevenueCat SDK 統合 / `useProStore.isPro` 判定 / Paywall 購入動線 / Restore Purchases
+- ADR-0049: Pro 機能 6 項目の境界実装 (PR1-5、 Sess59 着手)
