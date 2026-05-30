@@ -14,8 +14,8 @@ import * as path from 'node:path';
 import { FREE_PHOTO_LIMIT_PER_BONSAI } from '../src/db/photoRepository';
 
 describe('FREE_PHOTO_LIMIT_PER_BONSAI', () => {
-  test('写真制限撤廃で Infinity (PR #470 / Issue #458 Phase 2)', () => {
-    expect(FREE_PHOTO_LIMIT_PER_BONSAI).toBe(Number.POSITIVE_INFINITY);
+  test('Free 上限 3 (ADR-0049 Sess59 PR3 で復活、 Issue #458 Phase 2 Supersedes)', () => {
+    expect(FREE_PHOTO_LIMIT_PER_BONSAI).toBe(3);
   });
 });
 

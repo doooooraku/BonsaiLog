@@ -2,9 +2,9 @@ import { useCallback, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
 
-import type { TranslationKey } from '@/src/core/i18n/locales/en';
+import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { FREE_PHOTO_LIMIT_PER_BONSAI } from '@/src/db/photoRepository';
-import { useProStore } from '@/src/stores/proStore';
+import { useProGuard } from '@/src/features/pro/useProGuard';
 import type { PendingPhoto } from '@/src/features/bonsai/BonsaiBasicForm';
 
 /**
@@ -17,7 +17,24 @@ import type { PendingPhoto } from '@/src/features/bonsai/BonsaiBasicForm';
  */
 export function useBonsaiFormPhotos(t: (key: TranslationKey) => string) {
   const [pendingPhotos, setPendingPhotos] = useState<PendingPhoto[]>([]);
-  const isPro = useProStore((s) => s.isPro);
+  const { t: tRoot } = useTranslation();
+  // ADR-0049 Sess59 PR3: 基本情報写真 ① Free 上限 3 ガード共通 hook
+  const { canAdd, remainingSlots, openPaywall, isPro } = useProGuard({
+    feature: 'photo_basic',
+    currentCount: pendingPhotos.length,
+  });
+
+  // Free 上限到達時の Paywall 誘導 Alert (cancel + Pro へ進む 2 ボタン、 useGoToPaywall パターン)
+  const showLimitPaywall = useCallback(() => {
+    Alert.alert(
+      t('photoLimitTitle'),
+      t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_BONSAI)),
+      [
+        { text: tRoot('cancel'), style: 'cancel' },
+        { text: tRoot('proCtaUpgrade'), onPress: openPaywall },
+      ],
+    );
+  }, [t, tRoot, openPaywall]);
 
   const handlePickPhoto = useCallback(async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -25,26 +42,24 @@ export function useBonsaiFormPhotos(t: (key: TranslationKey) => string) {
       Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
       return;
     }
-    const remaining = isPro
-      ? Number.POSITIVE_INFINITY
-      : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - pendingPhotos.length);
-    if (remaining === 0) {
-      Alert.alert(
-        t('photoLimitTitle'),
-        t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_BONSAI)),
-        [{ text: t('ok') }],
-      );
+    if (!canAdd) {
+      showLimitPaywall();
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true,
-      selectionLimit: 0,
+      // Pro = OS 上限まで (selectionLimit: 0)、 Free = 残枠 (User 真意 Sess59 R3:
+      // 写真ピッカー段階で 4 枚目以降を選べないようにする)
+      selectionLimit: isPro ? 0 : remainingSlots,
       quality: 0.85,
     });
     if (result.canceled || !result.assets || result.assets.length === 0) return;
 
-    const acceptedCount = isPro ? result.assets.length : Math.min(result.assets.length, remaining);
+    // 念のため remaining 超過分は受け入れない (selectionLimit が想定通り効かない端末への保険)
+    const acceptedCount = isPro
+      ? result.assets.length
+      : Math.min(result.assets.length, remainingSlots);
     const accepted = result.assets.slice(0, acceptedCount).map((a) => ({
       uri: a.uri,
       width: a.width ?? null,
@@ -53,15 +68,9 @@ export function useBonsaiFormPhotos(t: (key: TranslationKey) => string) {
     const skipped = result.assets.length - accepted.length;
     setPendingPhotos((prev) => [...prev, ...accepted]);
     if (skipped > 0) {
-      Alert.alert(
-        t('photoLimitTitle'),
-        t('photoLimitPartialAdded')
-          .replace('{added}', String(accepted.length))
-          .replace('{skipped}', String(skipped)),
-        [{ text: t('ok') }],
-      );
+      showLimitPaywall();
     }
-  }, [isPro, pendingPhotos.length, t]);
+  }, [canAdd, isPro, remainingSlots, showLimitPaywall, t]);
 
   const handleRemovePendingPhoto = useCallback((index: number) => {
     setPendingPhotos((prev) => prev.filter((_, i) => i !== index));
@@ -84,15 +93,8 @@ export function useBonsaiFormPhotos(t: (key: TranslationKey) => string) {
       Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
       return;
     }
-    const remaining = isPro
-      ? Number.POSITIVE_INFINITY
-      : Math.max(0, FREE_PHOTO_LIMIT_PER_BONSAI - pendingPhotos.length);
-    if (remaining === 0) {
-      Alert.alert(
-        t('photoLimitTitle'),
-        t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_BONSAI)),
-        [{ text: t('ok') }],
-      );
+    if (!canAdd) {
+      showLimitPaywall();
       return;
     }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.85 });
@@ -102,7 +104,7 @@ export function useBonsaiFormPhotos(t: (key: TranslationKey) => string) {
       ...prev,
       { uri: a.uri, width: a.width ?? null, height: a.height ?? null },
     ]);
-  }, [isPro, pendingPhotos.length, t]);
+  }, [canAdd, showLimitPaywall, t]);
 
   return {
     pendingPhotos,

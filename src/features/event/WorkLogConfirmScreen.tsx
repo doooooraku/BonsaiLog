@@ -47,10 +47,12 @@ import {
   createEvent,
   findPlannedEventByCondition,
 } from '@/src/db/eventRepository';
+import { FREE_PHOTO_LIMIT_PER_EVENT } from '@/src/db/photoRepository';
 import { addPhotoFromUri } from '@/src/features/photos/photoOrchestrator';
 import type { EventType } from '@/src/db/schema';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
+import { useProGuard } from '@/src/features/pro/useProGuard';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 import {
@@ -95,6 +97,18 @@ export default function WorkLogConfirmScreen() {
   );
   // Sess16 PR-A3 → PR-H: 写真添付 (caption 削除、 BonsaiBasicForm PendingPhoto 整合)。
   const [photos, setPhotos] = React.useState<readonly PhotoFieldItem[]>([]);
+  // ADR-0049 Sess59 PR3: 作業記録写真 ③ Free 上限 3 ガード (PhotoField に props で注入)
+  const photoGuard = useProGuard({ feature: 'photo_worklog', currentCount: photos.length });
+  const showPhotoLimitPaywall = React.useCallback(() => {
+    Alert.alert(
+      t('photoLimitTitle'),
+      t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_EVENT)),
+      [
+        { text: t('cancel'), style: 'cancel' },
+        { text: t('proCtaUpgrade'), onPress: photoGuard.openPaywall },
+      ],
+    );
+  }, [t, photoGuard.openPaywall]);
   // Sess17 PR-G1: 14 種別 form state を WorkLogTypeFormState union に集約 (controlled component)。
   const settingsPotUnit = useSettingsStore((s) => s.potUnit);
   const [formState, setFormState] = React.useState<WorkLogTypeFormState>(() => {
@@ -315,7 +329,7 @@ export default function WorkLogConfirmScreen() {
             />
           </View>
 
-          {/* Sess16 PR-A3: 写真添付 (mockup 14 種別共通、 最大 10 枚)。 */}
+          {/* Sess16 PR-A3: 写真添付 (mockup 14 種別共通、 Pro 最大 10 枚、 ADR-0049 Sess59 PR3 Free 3 枚) */}
           <View style={styles.field}>
             <PhotoField
               label={t('workLogPhotoField')}
@@ -323,6 +337,8 @@ export default function WorkLogConfirmScreen() {
               optionalText={t('workLogOptional')}
               photos={photos}
               onChange={setPhotos}
+              isPro={photoGuard.isPro}
+              onLimitReached={showPhotoLimitPaywall}
               testID="e2e_work_log_photo_field"
             />
           </View>
