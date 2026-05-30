@@ -420,7 +420,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: '全データバックアップ(ZIP)',
   paywallFeatureCsv: 'CSV/PDF エクスポート',
   paywallFeaturePdf: 'PDF エクスポート',
-  paywallFeatureYearlyTimeline: '年次タイムライン画像',
   paywallFeatureNoAds: '広告表示',
   paywallFeatureNoAdsFreeValue: 'あり',
   paywallFeatureNoAdsProValue: 'なし',

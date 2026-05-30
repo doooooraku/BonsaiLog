@@ -467,7 +467,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: 'Full data backup (ZIP)',
   paywallFeatureCsv: 'CSV export',
   paywallFeaturePdf: 'PDF export',
-  paywallFeatureYearlyTimeline: 'Yearly timeline image',
   paywallFeatureNoAds: 'Ads',
   paywallFeatureNoAdsFreeValue: 'Shown',
   paywallFeatureNoAdsProValue: 'None',

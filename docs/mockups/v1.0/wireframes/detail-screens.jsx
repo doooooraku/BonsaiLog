@@ -476,8 +476,7 @@ function ProLockModal({ feature = 'PDFで書き出し', onClose, onShowPro }) {
             marginBottom: 20,
           }}
         >
-          美しい PDF レポート、CSV エクスポート、年次タイムライン画像、すべて Pro
-          でご利用いただけます。
+          美しい PDF レポート、 CSV エクスポート、 すべて Pro でご利用いただけます。
         </div>
         <button
           onClick={onShowPro}
