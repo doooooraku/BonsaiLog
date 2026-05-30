@@ -49,7 +49,7 @@ import {
   createEvent,
   findPlannedEventByCondition,
 } from '@/src/db/eventRepository';
-import { addPhotoFromUri } from '@/src/db/photoRepository';
+import { addPhotoFromUri } from '@/src/features/photos/photoOrchestrator';
 import type { EventType } from '@/src/db/schema';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';

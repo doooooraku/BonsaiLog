@@ -271,6 +271,8 @@ Before (現状)                          After (Phase 3 完了時)
 
 ### Phase 6: feature 境界整理(FSD への正規化)
 
+> **✅ 完了 (2026-05-30)**: 境界違反を 0 にし `eslint-plugin-boundaries`(`boundaries/dependencies`)を **error** 化(CI=verify:lint で gate)。正は **ADR-0048**(FSD 層定義 + allow-matrix)/ `docs/refactor/phase-6-plan.md`。当初「ADR-0046」表記は 0046(ハーネス)/0047(レビュー契約)使用済のため **ADR-0048** に採番変更。実績: F4(stores→services)は services を SDK ラッパ層と定義し正規化、F1b/c・F3・F2 は移設で解消、F1a(useColors)は全層横断 hook のため core 据え置き + 例外受容(ADR-0048 Amendment)。PR #891〜#896。
+
 **目的**: Phase 1 で検出した **7 件の境界違反**を是正、ESLint boundary plugin を **warning → error** に昇格。
 
 **対象ファイル一覧(全 4 PR、違反エッジ別)**:
@@ -280,7 +282,7 @@ Before (現状)                          After (Phase 3 完了時)
 | F1  | `core → stores` ×3(`useColors`/`lang-defaults`/`potUnitConvert`)                            | `PotUnit` 型を `src/types/units.ts` に新設して移動。`useColors` を `src/shared/theme/useColors.ts` に格上げ(または `src/features/theme/` 新設)。`settingsStore` で type re-export 保持 |
 | F2  | `db → services` ×2(`photoRepository.ts`/`bonsaiRepository.ts` が `photoFileService` を呼出) | repository を純データアクセスに戻し、ファイル削除/コピー側 effect は `src/features/photos/photoOrchestrator.ts` に集約。呼出側を 1 ファイルずつ更新                                    |
 | F3  | `db → features` ×1(`eventRepository.ts` が `features/event/payloadValidator` を呼出)        | `payloadValidator` を `src/db/eventPayloadValidator.ts` に移動(イベントデータ契約は db 層に正規化)。循環疑い 1件も同時解消                                                             |
-| F4  | `stores → services` ×1(`proStore` が `proService`)                                          | services を「外部 SDK ラッパ」として `src/services/sdks/` に格下げ、依存方向「stores → services」を正規化として ADR-0046「FSD 層定義」起票                                             |
+| F4  | `stores → services` ×1(`proStore` が `proService`)                                          | services を「外部 SDK ラッパ」として `src/services/sdks/` に格下げ、依存方向「stores → services」を正規化として ADR-0048「FSD 層定義」起票                                             |
 
 **boundary plugin 設定変更**: warning → error 昇格(P3-10 で warning 化したものを格上げ)
 
@@ -304,11 +306,18 @@ Before (現状)                          After (Phase 3 完了時)
 - [ ] `eslint-plugin-boundaries` violation = 0、error レベルで CI gate 化
 - [ ] 循環依存 0(import/no-cycle error 維持)
 - [ ] `pnpm verify` 全 green
-- [ ] ADR-0046「FSD 層定義」起票完了
+- [ ] ADR-0048「FSD 層定義」起票完了
 
 ---
 
 ### Phase 7: 最終レビュー + 死コード一掃 + flag cleanup
+
+> **✅ 完了 (2026-05-30)**: 死コード一掃を完遂し、リファクタ大行進 (Phase 3-7) を締めくくった。詳細は **`./phase-7-report.md`**。
+>
+> 撤去内容: K1 `/modal` / K4 react-query / K5 **Tamagui 一式** (ADR-0015 Amendment) / K6 components/ui テンプレ + 連鎖死 deps (expo-symbols / @expo/vector-icons / @shopify/flash-list / expo-store-review / 死ファイル 3) + knip クリーン化。
+> 保留: K2/K3 ui-diff/store-screenshots は **user 確定で残す** (npm script 稼働中)。K7 未使用 export 33 件は characterization テスト参照を含むため将来の selective cleanup。
+> 学び: `lessons/refactor.md` (knip ignore の両刃 / pnpm verify 完全実行 / app.config plugin 不可視 / git rm+add 罠 / K7 慎重判断)。
+> PR: #897 / #898 / #899 / #900 / #901 / #902。
 
 **目的**: Phase 1 knip がフラグした死コードを user 承認後に削除、ADR-0015(Tamagui 採用宣言)を実態に合わせて amend、リファクタの学びを集約。
 
@@ -327,7 +336,7 @@ Before (現状)                          After (Phase 3 完了時)
 **ADR 起票/更新**:
 
 - ADR-0015 amend「Tamagui 撤回 → useColors + plain hex 採用」(実態整合)
-- ADR-0046「FSD 層定義」(Phase 6 で実体化したものを正式化)
+- ADR-0048「FSD 層定義」(Phase 6 で実体化したものを正式化)
 - ADR-0047「リファクタ完遂レポート」(Before/After 数値・lessons・次回反省)
 
 **docs/lessons**:
@@ -463,7 +472,7 @@ Before (現状)                          After (Phase 3 完了時)
 **評価**: 🟡 方向性は正しいが、層定義の合意形成が遅い。
 
 - ✅ **強み**: 違反 7件を 4 PR で潰す具体性。`src/types` が既にクリーンで FSD の bottom が確立済み。
-- ⚠️ **弱点 1 — ADR-0046「FSD 層定義」を Phase 6 で起票するが、Phase 3 の boundary plugin 設定時に層を仮定する必要がある**: 鶏卵問題。**対策**: Phase 3 P3-10 で boundary plugin に「現状の暫定的層定義」を入れ、ADR-0046 起票時に正式化する 2 段階運用。`docs/architecture.md`(P3-11) で暫定的層を明文化。
+- ⚠️ **弱点 1 — ADR-0048「FSD 層定義」を Phase 6 で起票するが、Phase 3 の boundary plugin 設定時に層を仮定する必要がある**: 鶏卵問題。**対策**: Phase 3 P3-10 で boundary plugin に「現状の暫定的層定義」を入れ、ADR-0046 起票時に正式化する 2 段階運用。`docs/architecture.md`(P3-11) で暫定的層を明文化。
 - ⚠️ **弱点 2 — `useColors` の `core → shared/features` 移動先**: 「shared」レイヤを新設すべきか、`src/features/theme/` で済ますかは設計判断。**対策**: ADR-0046 で議論、Phase 6 F1 PR の前に user 承認取得。
 - 🔴 **盲点 — ADR-0030 modal-stack push は ADR で正当化されているが、長期的にはアンチパターン**: 本リファクタの scope 外とするが、Phase 7 完了後の v1.2 議題として残す。
 - ✅ **提案**: Phase 6 を着手する前に ADR-0046 を **草案 PR** として先行起票 + user レビュー → 確定後に F1〜F4 PR を進める 2 段階ゲート。

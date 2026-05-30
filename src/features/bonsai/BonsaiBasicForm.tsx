@@ -32,7 +32,7 @@ import { BonsaiTagsSection } from '@/src/features/bonsai/basicForm/BonsaiTagsSec
 import { useBonsaiFormPhotos } from '@/src/features/bonsai/basicForm/useBonsaiFormPhotos';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { createBonsai, updateBonsai } from '@/src/db/bonsaiRepository';
-import { addPhotoFromUri } from '@/src/db/photoRepository';
+import { addPhotoFromUri } from '@/src/features/photos/photoOrchestrator';
 import { type Bonsai, type BonsaiStyle } from '@/src/db/schema';
 import { getCustomSpeciesById } from '@/src/db/bonsaiSpeciesCustomRepository';
 import { getAllSpecies, type SpeciesWithName } from '@/src/db/speciesRepository';
