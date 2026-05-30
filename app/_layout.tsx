@@ -161,6 +161,10 @@ export default function RootLayout() {
           {/* F-10 (Issue #33 / ADR-0016): エクスポートは独自 _layout (FormScreenHeader) を持つので
               Stack header 非表示。未登録だと default header が route path ("export/csv") を表示する。 */}
           <Stack.Screen name="export" options={{ headerShown: false }} />
+          {/* Sess57 検証発覚: settings group route 未登録で default header「settings」 (小文字) が
+              表示されていた。SettingsScreen は SearchHeader (タイトル「設定」) を自前で持つので
+              Stack header は非表示にする (Issue #507 / export と同 pattern)。 */}
+          <Stack.Screen name="settings" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style={effectiveScheme === 'dark' ? 'light' : 'dark'} />
         {/* Sess12 PR-B+C: 一括予定/記録追加完了の Toast (root mount で全画面に表示可) */}

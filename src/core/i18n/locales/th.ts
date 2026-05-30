@@ -418,8 +418,6 @@ const th: Partial<Record<TranslationKey, string>> = {
   settingsLegalSection: 'ข้อกฎหมาย',
   settingsLegalTerms: 'ข้อกำหนดการใช้บริการ',
   settingsLegalPrivacy: 'นโยบายความเป็นส่วนตัว',
-  settingsVersionSection: 'เกี่ยวกับ',
-  settingsVersionLabel: 'เวอร์ชัน',
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
   outdoorModeToggleA11y: 'Toggle outdoor mode',
@@ -911,5 +909,12 @@ const th: Partial<Record<TranslationKey, string>> = {
   exportListPdfCatalogTotalRecords: '{count} records',
   exportListPdfCatalogAcquired: 'Acquired',
   exportGeneratingNamed: 'Generating {name}…',
+  settingsCurrentPlan: 'Current plan',
+  settingsRenewsOn: 'Next renewal: {date}',
+  settingsLifetimeAccess: 'Lifetime access',
+  settingsDescFree: 'Upgrade to Pro for unlimited exports and backups.',
+  settingsDescPro: 'Thank you for supporting BonsaiLog!',
+  settingsViewProPlans: 'See Pro plans',
+  settingsBenefitNoAds: 'No ads',
 };
 export default th;

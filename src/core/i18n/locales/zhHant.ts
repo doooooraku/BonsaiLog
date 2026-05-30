@@ -408,8 +408,6 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   settingsLegalSection: '法律',
   settingsLegalTerms: '服務條款',
   settingsLegalPrivacy: '隱私權政策',
-  settingsVersionSection: '關於',
-  settingsVersionLabel: '版本',
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
   outdoorModeToggleA11y: 'Toggle outdoor mode',
@@ -900,5 +898,12 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   exportListPdfCatalogTotalRecords: '{count} records',
   exportListPdfCatalogAcquired: 'Acquired',
   exportGeneratingNamed: 'Generating {name}…',
+  settingsCurrentPlan: 'Current plan',
+  settingsRenewsOn: 'Next renewal: {date}',
+  settingsLifetimeAccess: 'Lifetime access',
+  settingsDescFree: 'Upgrade to Pro for unlimited exports and backups.',
+  settingsDescPro: 'Thank you for supporting BonsaiLog!',
+  settingsViewProPlans: 'See Pro plans',
+  settingsBenefitNoAds: 'No ads',
 };
 export default zhHant;

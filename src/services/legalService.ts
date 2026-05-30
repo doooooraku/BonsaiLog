@@ -16,11 +16,22 @@ function resolveUrl(value: unknown, fallback: string): string {
   return trimmed;
 }
 
-export function getLegalLinks(extra?: Record<string, unknown>): LegalLinks {
+// lang 別 URL 切替 (Sess57): docs/{privacy,terms}/ja/ に日本語版が存在するため、
+// lang === 'ja' のときのみ末尾に 'ja/' を付与。他言語は英版にフォールバック。
+// URL 末尾スラッシュを正規化してから suffix を付ける (重複/欠落 両対応)。
+function applyLangSuffix(url: string, lang?: string): string {
+  if (lang !== 'ja') return url;
+  const normalized = url.endsWith('/') ? url : `${url}/`;
+  return `${normalized}ja/`;
+}
+
+export function getLegalLinks(lang?: string, extra?: Record<string, unknown>): LegalLinks {
   const resolved = extra ?? getAppExtra();
+  const privacy = resolveUrl(resolved['LEGAL_PRIVACY_URL'], 'https://example.com/privacy');
+  const terms = resolveUrl(resolved['LEGAL_TERMS_URL'], 'https://example.com/terms');
   return {
-    privacyUrl: resolveUrl(resolved['LEGAL_PRIVACY_URL'], 'https://example.com/privacy'),
-    termsUrl: resolveUrl(resolved['LEGAL_TERMS_URL'], 'https://example.com/terms'),
+    privacyUrl: applyLangSuffix(privacy, lang),
+    termsUrl: applyLangSuffix(terms, lang),
   };
 }
 

@@ -420,8 +420,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   settingsLegalSection: 'कानूनी',
   settingsLegalTerms: 'सेवा की शर्तें',
   settingsLegalPrivacy: 'गोपनीयता नीति',
-  settingsVersionSection: 'के बारे में',
-  settingsVersionLabel: 'संस्करण',
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
   outdoorModeToggleA11y: 'Toggle outdoor mode',
@@ -913,5 +911,12 @@ const hi: Partial<Record<TranslationKey, string>> = {
   exportListPdfCatalogTotalRecords: '{count} records',
   exportListPdfCatalogAcquired: 'Acquired',
   exportGeneratingNamed: 'Generating {name}…',
+  settingsCurrentPlan: 'Current plan',
+  settingsRenewsOn: 'Next renewal: {date}',
+  settingsLifetimeAccess: 'Lifetime access',
+  settingsDescFree: 'Upgrade to Pro for unlimited exports and backups.',
+  settingsDescPro: 'Thank you for supporting BonsaiLog!',
+  settingsViewProPlans: 'See Pro plans',
+  settingsBenefitNoAds: 'No ads',
 };
 export default hi;

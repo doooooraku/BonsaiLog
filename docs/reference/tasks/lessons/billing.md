@@ -32,3 +32,12 @@
   2. `'/pro'` は `expo-router` の型で受け付けないため **`as Href` キャスト必須** (`import { useRouter, type Href } from 'expo-router'`)
   3. Pro 画面 (`/pro`) は Paywall を内包し、購入後は proStore reactive で自動的に元の画面に戻れる
 - **一次情報**: ADR-0009 (F-13 Paywall) / ADR-0016 (F-10 Pro 限定) / Apple Review Guideline 3.1.1
+
+### `Alert.alert('準備中')` を残したまま PR をマージしない (Sess57)
+
+- **何が起きたか**: GitHub Pages で利用規約 / プライバシーポリシー URL を公開した PR #838-839 のあと、 アプリ内 `app/settings/index.tsx` の wiring は `Alert.alert(t('settingsLegalTerms'), 'docs/legal/terms.md (準備中)')` のまま 5 ヶ月以上放置されていた。 ストア審査では URL 公開で OK だが、 アプリ内ユーザーは規約に到達できない状態だった。
+- **根本原因**: 「URL 公開」 と 「アプリ内 wiring」 が別 PR にスコープ分割されたまま、 後者の Issue / Backlog 登録が漏れていた。 `legalService.ts` は実装済 (`getLegalLinks` / `openExternalLink`) で caller ゼロ、 静的解析 (`verify:dead`) も export だけ存在する状態を死コード判定しないため気づけなかった。
+- **ルール**:
+  1. **`Alert.alert(.*準備中)`** を発見したら、 単発で削除する PR を切る前に、 まず「結線すべきインフラはどこまでできているか」を grep で確認 (`legalService.ts` のように使われていない service が居る場合あり)。
+  2. ストア向け URL を公開する PR の DoD に **「アプリ内設定からも tap 可能」 を含める** (ADR-0017 Sess57 Amendment で明文化済)。
+  3. Settings/Paywall のような ストアコンプライアンス系画面は、 wiring の有無を per-section AC として ADR に書く。
