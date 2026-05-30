@@ -46,15 +46,22 @@ describe('PlanSection (Sess57 Repolog 風強化)', () => {
     expect(SRC).toContain("t('settingsViewProPlans')");
   });
 
-  test('5. Pro メリット bullet 3 項目 (paywallFeature* + settingsBenefitNoAds)', () => {
+  test('5. Pro メリット bullet 6 項目 (ADR-0049 Sess59 PR2 Pro 機能 6 項目フラット表示)', () => {
+    // ① 基本情報写真 / ② タグ / ③ 作業記録写真 / ④ CSV-PDF / ⑤ 広告非表示 / ⑥ カスタム樹種樹形
+    expect(SRC).toContain("'settingsBenefitPhoto'");
+    expect(SRC).toContain("'settingsBenefitTag'");
+    expect(SRC).toContain("'settingsBenefitWorkLogPhoto'");
     expect(SRC).toContain("'paywallFeatureCsv'");
-    // Sess57 検証発覚: 「広告表示」 が意味曖昧なので「広告非表示」 専用 key に置換
+    // Sess57 検証発覚: 「広告表示」 が意味曖昧なので「広告非表示」 専用 key を維持
     expect(SRC).toContain("'settingsBenefitNoAds'");
     expect(SRC).not.toContain("'paywallFeatureNoAds'");
-    expect(SRC).toContain("'paywallFeatureBackup'");
-    // Sess58: paywallFeatureYearlyTimeline (年次タイムライン画像) は実装ゼロの
-    // 幽霊機能だったため撤廃 (景品表示法/Apple Review 2.3.1 リスク回避)。
+    expect(SRC).toContain("'settingsBenefitCustomSpecies'");
+    // Sess58: paywallFeatureYearlyTimeline (年次タイムライン画像) は実装ゼロ
+    // のため撤廃済 (景品表示法/Apple Review 2.3.1 リスク回避)。
     expect(SRC).not.toContain("'paywallFeatureYearlyTimeline'");
+    // Sess58 「全 Free」 確定の paywallFeatureBackup は bullet から削除
+    // (Sess59 PR2 で 6 項目フラット = ADR-0049 Pro 機能境界整合)
+    expect(SRC).not.toContain("'paywallFeatureBackup'");
   });
 
   test('6. Pro / Free 表示分岐 (isPro による条件レンダ)', () => {

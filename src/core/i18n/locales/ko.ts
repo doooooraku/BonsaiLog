@@ -913,5 +913,23 @@ const ko: Partial<Record<TranslationKey, string>> = {
   settingsDescPro: 'Thank you for supporting BonsaiLog!',
   settingsViewProPlans: 'See Pro plans',
   settingsBenefitNoAds: 'No ads',
+  // --- ADR-0049 Sess59 PR2: Pro 機能 6 項目 (写真 / タグ / 作業記録写真 / カスタム樹種樹形) i18n ---
+  paywallFeaturePhoto: '분재 사진',
+  paywallFeaturePhotoFreeValue: '최대 3장',
+  paywallFeaturePhotoProValue: '무제한',
+  paywallFeatureTag: '태그',
+  paywallFeatureTagFreeValue: '최대 3개',
+  paywallFeatureTagProValue: '무제한',
+  paywallFeatureWorkLogPhoto: '작업 기록 사진',
+  paywallFeatureWorkLogPhotoFreeValue: '최대 3장',
+  paywallFeatureWorkLogPhotoProValue: '무제한',
+  paywallFeatureCustomSpecies: '사용자 정의 수종·수형',
+  paywallFeatureCustomSpeciesFreeValue: '최대 3개',
+  paywallFeatureCustomSpeciesProValue: '무제한',
+  settingsBenefitPhoto: '분재 사진: 3 → 무제한',
+  settingsBenefitTag: '태그: 3 → 무제한',
+  settingsBenefitWorkLogPhoto: '작업 기록 사진: 3 → 무제한',
+  settingsBenefitCustomSpecies: '사용자 정의 수종·수형: 3 → 무제한',
+  paywallFeatureLimitCounter: '{used}/{limit}',
 };
 export default ko;

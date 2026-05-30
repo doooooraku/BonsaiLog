@@ -206,31 +206,46 @@ export default function PaywallScreen() {
           </View>
         )}
 
-        {/* ADR-0020 v1.x-5: Claude Design FeatureRow 比較表 (Free / Pro 3 列、機能 / FREE / PRO) */}
+        {/* ADR-0049 Sess59 PR2: Sess58 確定 Pro 機能 6 項目に整合 (旧 BonsaiCount/History/
+            Backup/Theme は Sess58 で「全 Free」 確定のため row 削除、 新規 ①Photo + ②Tag +
+            ③WorkLogPhoto + ⑥CustomSpecies の 4 行追加)。 */}
         <View style={styles.featureTable} testID="e2e_paywall_comparison">
           <View style={styles.featureHeader}>
             <ThemedText style={styles.featureHeaderLabel}>{t('paywallFeatureColLabel')}</ThemedText>
             <ThemedText style={styles.featureHeaderFree}>FREE</ThemedText>
             <ThemedText style={styles.featureHeaderPro}>PRO</ThemedText>
           </View>
-          <FeatureRow label={t('paywallFeatureBonsaiCount')} free="∞" pro="∞" />
-          {/* Issue #458 Phase 2: 写真制限撤廃 (principles.md v1.0「写真枚数 Free/Pro
-              いずれも無制限」)。Free/Pro 同じ ∞/∞ で冗長なため比較表 row 削除。
-              paywallFeaturePhotos key は legacy 残置。 */}
-          <FeatureRow label={t('paywallFeatureHistory')} free="∞" pro="∞" />
-          <FeatureRow label={t('paywallFeatureBackup')} free="◎" pro="◎" />
-          {/* Issue #458 Phase 3: mockup `paywall-01.png` 整合で CSV/PDF を 1 行に統合
-              (paywallFeaturePdf key は legacy で残置)。 */}
+          {/* ① 基本情報 写真 (ADR-0049、 PR3 で実装) */}
+          <FeatureRow
+            label={t('paywallFeaturePhoto')}
+            free={t('paywallFeaturePhotoFreeValue')}
+            pro={t('paywallFeaturePhotoProValue')}
+          />
+          {/* ② タグ作成 (rename は無制限、 ADR-0049、 PR4 で実装) */}
+          <FeatureRow
+            label={t('paywallFeatureTag')}
+            free={t('paywallFeatureTagFreeValue')}
+            pro={t('paywallFeatureTagProValue')}
+          />
+          {/* ③ 作業記録 写真 (表示は全 Free、 ADR-0049、 PR3 で実装) */}
+          <FeatureRow
+            label={t('paywallFeatureWorkLogPhoto')}
+            free={t('paywallFeatureWorkLogPhotoFreeValue')}
+            pro={t('paywallFeatureWorkLogPhotoProValue')}
+          />
+          {/* ④ CSV/PDF エクスポート (既存実装済、 csvExport.ts L8 で Pro guard) */}
           <FeatureRow label={t('paywallFeatureCsv')} free="—" pro="◎" />
-          {/* Sess58: paywallFeatureYearlyTimeline (年次タイムライン画像) は実装ゼロの
-              幽霊機能だったため撤廃 (景品表示法/Apple Review 2.3.1 リスク回避)。 */}
-          {/* Issue #335: mockup v1.0 「テーマ」 行追加。ADR-0015 整合 (theme は 3 mode 全 Free)、
-              機能差なし = 両方 ◎ で表記。mockup の「標準/◎」 表記は古い情報、ADR 優先 (R-28)。 */}
-          <FeatureRow label={t('paywallFeatureTheme')} free="◎" pro="◎" />
+          {/* ⑤ 広告非表示 (既存実装済、 adService.ts L170-174 で isPro 判定) */}
           <FeatureRow
             label={t('paywallFeatureNoAds')}
             free={t('paywallFeatureNoAdsFreeValue')}
             pro={t('paywallFeatureNoAdsProValue')}
+          />
+          {/* ⑥ カスタム樹種・樹形 (マスタ 5 + カスタム 3、 ADR-0049、 PR5 で実装) */}
+          <FeatureRow
+            label={t('paywallFeatureCustomSpecies')}
+            free={t('paywallFeatureCustomSpeciesFreeValue')}
+            pro={t('paywallFeatureCustomSpeciesProValue')}
           />
         </View>
 
