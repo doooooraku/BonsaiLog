@@ -81,7 +81,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   eventTypePickerDesc: '何をしましたか?',
   eventEmpty: 'まだ記録がありません。',
 
-  // --- F-05 気遣い型ポップアップ (Issue #25、ADR-0011) ---
+  // --- F-02 作業種別 (13 種類、 Issue #25 由来、 F-05 撤廃後も保持) ---
   eventType_watering: '水やり',
   eventType_pruning: '剪定',
   eventType_wiring: '針金がけ',
@@ -175,10 +175,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   errorSaveFailed: '保存に失敗しました。',
   errorDeleteFailed: '削除に失敗しました。',
 
-  // --- 設定セクション (F-05 通知 + F-11 お引っ越し) ---
+  // --- 設定セクション (F-11 お引っ越し) ---
   settingsNotificationSection: '通知',
-  settingsEventOverloadToggleDesc:
-    'ON にすると、同じ日に 6 件目の作業を記録するときに、無理のない範囲を確認するメッセージが出ます。',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: '設定',

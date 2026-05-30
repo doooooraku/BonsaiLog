@@ -164,10 +164,8 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   eventType_moss_care: 'Moss care',
   eventType_position_change: 'Position change',
 
-  // --- Settings sections (F-05 notification + F-11 move, English fallback for v1.0) ---
+  // --- Settings sections (F-11 move, English fallback for v1.0) ---
   settingsNotificationSection: '通知',
-  settingsEventOverloadToggleDesc:
-    'When this is on, a gentle confirmation appears when you log the 6th entry on the same day.',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: '设置',
