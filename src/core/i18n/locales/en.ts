@@ -172,10 +172,8 @@ const baseEn = {
   eventType_moss_care: 'Moss care',
   eventType_position_change: 'Position change',
 
-  // --- Settings sections (F-05 notification + F-11 move) ---
+  // --- Settings sections (F-11 move) ---
   settingsNotificationSection: 'Notifications',
-  settingsEventOverloadToggleDesc:
-    'When this is on, a gentle confirmation appears when you log the 6th entry on the same day.',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
   settingsTitle: 'Settings',
