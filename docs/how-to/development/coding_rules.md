@@ -109,10 +109,12 @@
 - ロジック：store / feature / service へ
 - “画面ファイルが肥大化”したら分割する
 
-### 4.3 Tamagui利用ルール
+### 4.3 テーマ / 色管理ルール (ADR-0015 Amendment)
 
-- 直値（ハードコード）を増やしすぎない  
-  → トークン/テーマを優先（後から全体変更しやすい）
+- Tamagui は Phase 7 (2026-05-30) で撤去済。 現実装は `src/core/theme/useColors.ts` + plain hex
+- 直値 (`#xxx`) を JSX に増やさない → `useColors()` hook 経由で参照
+- ESLint `no-direct-hex-in-jsx` ルールで構造防止
+- 詳細は `docs/reference/design_system.md` §6 を参照
 - 同じUIが2回出たら共通化候補（`src/ui` へ）
 
 ---

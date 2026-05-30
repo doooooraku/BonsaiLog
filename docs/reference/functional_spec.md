@@ -2377,24 +2377,17 @@ stateDiagram-v2
 
 **前回モードは `previousMode` として AsyncStorage に保存** (BR1)。
 
-#### §20.3.2 Tamagui テーマ統合
+#### §20.3.2 テーマ解決 + 配信 (useColors hook、 ADR-0015 Amendment 2026-05-30)
+
+Tamagui は Phase 7 で撤去済 (ADR-0015 Amendment)。 現実装は `src/core/theme/useColors.ts` + plain hex で実現。
 
 ```tsx
 // app/_layout.tsx
-import { Appearance, useColorScheme } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
+import { useColorScheme } from 'react-native';
 
 export default function RootLayout() {
-  const themeMode = useThemeStore((s) => s.themeMode); // 'auto' | 'light' | 'dark' | 'outdoor'
-  const systemScheme = useColorScheme(); // 'light' | 'dark' | null
-
-  const resolved = useMemo(() => resolveTheme(themeMode, systemScheme), [themeMode, systemScheme]);
-
-  return (
-    <TamaguiProvider config={config} defaultTheme={resolved}>
-      <Slot />
-    </TamaguiProvider>
-  );
+  // useColors 内部で themeMode + systemScheme + outdoor を解決
+  return <Slot />;
 }
 
 // src/core/theme/resolveTheme.ts (純関数)
@@ -2405,6 +2398,14 @@ export function resolveTheme(
   if (mode === 'outdoor') return 'outdoor';
   if (mode === 'auto') return systemColorScheme === 'dark' ? 'dark' : 'light'; // null → light (IM1-A)
   return mode;
+}
+
+// src/core/theme/useColors.ts (色取得 hook、 各 component で呼ぶ)
+export function useColors() {
+  const themeMode = useThemeStore((s) => s.themeMode);
+  const systemScheme = useColorScheme();
+  const resolved = resolveTheme(themeMode, systemScheme);
+  return COLORS[resolved]; // plain hex map (下記 §20.3.3 を参照)
 }
 ```
 
@@ -2419,10 +2420,6 @@ export function resolveTheme(
 | `muted`               | #4A4A4A (8.6:1 AAA)        | #A0A0A0 (8.5:1 AAA)             | #000000 (純黒)              |
 | `borderColor`         | #E0E0E0                    | #2C2C2C                         | #000000 (純黒、線幅 2dp+)   |
 | `accent`              | #2E7D32 (Mat green、7.4:1) | **#7BC97D** (M3 tone 80、8.5:1) | **#1B5E20** (緑単色、9.7:1) |
-| `bonsai_heatmap_l0`   | #F5F8F5 (ADR-0013 継続)    | #1E1E1E                         | #FFFFFF                     |
-| `bonsai_heatmap_l1`   | #BAE4B3                    | #2D4A2E                         | #A8D5A8                     |
-| `bonsai_heatmap_l2`   | #74C476                    | #4A8A4D                         | #4A8A4D                     |
-| `bonsai_heatmap_l3`   | #238B45 (4.7:1 + 数字併記) | #7BC97D (8.5:1 AAA)             | #1B5E20 (9.7:1 AAA)         |
 | `bonsai_today_border` | #238B45 太枠 2dp           | #7BC97D 太枠 2dp                | #000000 太枠 2dp            |
 
 **屋外モード追加要件**:
@@ -2436,20 +2433,20 @@ export function resolveTheme(
 
 ```tsx
 const reduceMotion = useReducedMotion(); // react-native-reanimated
-const duration = reduceMotion ? 0 : 200; // F-15: 200ms 標準 (Tamagui quick)
+const duration = reduceMotion ? 0 : 200; // F-15: 200ms 標準
 ```
 
 #### §20.3.5 全画面ヘッダー太陽アイコン (OA1)
 
 ```tsx
 // src/components/HeaderSunIcon.tsx
-import { Sun, SunDim } from '@tamagui/lucide-icons';
+import { Sun, SunDim } from 'lucide-react-native';
 import { useThemeStore } from '@/core/theme/themeStore';
-import { useTheme } from 'tamagui';
+import { useColors } from '@/core/theme/useColors';
 
 export function HeaderSunIcon() {
   const { themeMode, setThemeMode, previousMode } = useThemeStore();
-  const theme = useTheme();
+  const colors = useColors();
   const isOutdoor = themeMode === 'outdoor';
   const Icon = isOutdoor ? SunDim : Sun;
 
@@ -2466,7 +2463,7 @@ export function HeaderSunIcon() {
       accessibilityLabel="屋外モードを切り替える"
       accessibilityRole="button"
     >
-      <Icon size={24} color={theme.color.val} />
+      <Icon size={24} color={colors.color} />
     </Pressable>
   );
 }
@@ -2513,16 +2510,16 @@ return (
 
 ### §20.5 エラーフロー
 
-| エラー                 | 表示                                   | 対応                             |
-| ---------------------- | -------------------------------------- | -------------------------------- |
-| AsyncStorage 保存失敗  | 無音 (Sentry ログのみ)                 | セッション内反映、再起動で前回値 |
-| Tamagui theme 解決失敗 | light フォールバック                   | Sentry ログ、ユーザー無通知      |
-| 直 hex 違反 (CI 検出)  | ESLint エラー (`no-direct-hex-in-jsx`) | コード修正必須、CI block         |
+| エラー                | 表示                                   | 対応                             |
+| --------------------- | -------------------------------------- | -------------------------------- |
+| AsyncStorage 保存失敗 | 無音 (Sentry ログのみ)                 | セッション内反映、再起動で前回値 |
+| テーマ解決失敗        | light フォールバック                   | Sentry ログ、ユーザー無通知      |
+| 直 hex 違反 (CI 検出) | ESLint エラー (`no-direct-hex-in-jsx`) | コード修正必須、CI block         |
 
 ### §20.6 受け入れ条件
 
-- [ ] tamagui.config.ts に light / dark / outdoor の 3 themes (neonPink/cyberBlue 削除確認)
-- [ ] 全 themes で 11 トークン (background / surface / surface2 / color / muted / borderColor / accent / bonsai_heatmap_l0..l3 / bonsai_today_border) 保持
+- [ ] `src/core/theme/colors.ts` に light / dark / outdoor の 3 hex マップ (ADR-0015 Amendment、 Tamagui 撤去後)
+- [ ] 全 mode で 7 トークン (background / surface / surface2 / color / muted / borderColor / accent / bonsai_today_border) 保持
 - [ ] light: AAA 16:1 (color on background)
 - [ ] dark: Material 3 #121212 + AAA 14.5:1
 - [ ] outdoor: 21:1 (理論上限) + 緑単色 #1B5E20 (9.7:1)

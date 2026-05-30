@@ -72,7 +72,7 @@ These rules apply to **ALL AI agents** working on this project:
 ### 2.1 Tech Stack
 
 - Expo SDK 55+, React Native 0.83+, Expo Router v55
-- UI: Tamagui v1
+- UI: React Native 標準コンポーネント + `useColors` theme system (ADR-0015 Amendment)
 - State: Zustand + AsyncStorage (persist)
 - DB: expo-sqlite (migrations with `PRAGMA user_version`)
 - i18n: 19 languages (see `src/core/i18n/locales/`)

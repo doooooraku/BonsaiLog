@@ -506,7 +506,6 @@ Free プランのホーム画面下部にアダプティブバナー広告を表
 - 屋外モードは**コントラスト AAA (7:1)** 達成、accent `#1B5E20` (緑単色、9.7:1)、文字 `#000000` (21:1) (OC1、青系撤回)
 - ダークモードは**Material 3 baseline `#121212`** (BD1、shadow 視認 + eye strain 軽減、純黒/独自値撤回)
 - アニメーション 200ms、reduced motion 設定時 0ms (A1)
-- F-04 ヒートマップ 3 mode 自動切替 (`bonsai_heatmap_l0..l3` トークン)
 - F-08 写真自体は変更なし、UI 枠のみテーマ追従 (Y3、PH1)
 - AsyncStorage `theme.mode` 永続化、F-11 引継ぎで移行 (Y10)
 - ESLint `no-direct-hex-in-jsx` ルールで直 hex 禁止、theme.color 参照強制 (EL1)
