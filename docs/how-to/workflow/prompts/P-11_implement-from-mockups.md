@@ -337,7 +337,7 @@ A. jsx は React.js Web 向け(HTML / className / inline style)。RN は ネイ�
 - `<img>` → `<Image>`(Expo Image 推奨)
 - `className="..."` → `style={styles.foo}`(StyleSheet.create)
 - inline style `{color: '#1F3A2E'}` → constants/colors.ts の BRAND_GREEN
-- map list → FlatList / ScrollView(大量なら FlashList @shopify)
+- map list → FlatList (keyExtractor + 必要に応じ getItemLayout で最適化)
 - onClick → onPress
 
 ### Q. mockups と ADR が矛盾したらどうする?
