@@ -809,3 +809,36 @@ PR #903 の実機検証で `GeneratingOverlay` のタイトルが見切れる事
 2. **PR テンプレ §7.5（写経駆動）改訂**：動的文字長を持つ UI は ja/en 最長種別の SS 添付を必須化。
 3. **Pseudo-loc toggle 周知**：Settings DEV `e2e_dev_pseudo_toggle` で `[xx-{原文}-xx]` 化し最悪ケース
    文字長を視認可能（既存機能、追加実装なし）。
+
+### Amended（2026-05-30 Sess56、Sheet の盆栽選択 UI を atom 共通化）
+
+PR #903 の実機検証で `ExportOptionsSheet` の scope=「選択した盆栽」が「☑/☐ + 名前のみ」の素朴行で、
+別画面 `BonsaiMultiSelectScreen`（予定/記録の「盆栽を選ぶ」）の写真カード形式と**重複した二系統 UI**
+になっていた事を確認 (SS `H-2a-2-selected.png` / `H-3b-validation-alert.png`)。重複コード + UI 不統一
+を atom 抽出で解消。
+
+- **`src/features/bonsai/BonsaiSelectableCard.tsx` 新規** (Sheet と Screen 共用 atom)：
+  写真サムネ 56px + 名前 + 樹種 + 右端チェックボックス (✓、`CheckIcon`) の Pressable カード。
+  Props: `{ id, name, coverUri, speciesCommonName, selected, onPress, testID }`。**内部 state を持たない**
+  ことで `pickerStore.bulkContext` への副作用ゼロ＝予定/記録 flow と export flow の選択結果が混線しない。
+- **配置: `src/features/bonsai/`** (`BonsaiPlaceholder` と同 features 層)：当初は `components/bonsai/`
+  を検討したが Phase 6 ADR-0048 boundaries が「components → features 方向 import 禁止」を error 化して
+  おり、atom 内で `BonsaiPlaceholder` を使う必要があるため同 features 層に置く（features 同士の import
+  は許容）。`features/event` ↔ `features/export` から共用 atom を呼ぶ動線は維持される。
+- **`ExportOptionsSheet`**: `bonsaiList: Bonsai[]` → `bonsaiCards: CardData[]` に変更し
+  `getAllActiveBonsaiWithSpecies(lang)` + `getCoverPhoto` を並走取得。renderItem を atom に置換。
+  旧 `pickRow/pickRowOn/pickCheck/pickName` styles を削除。
+- **`BonsaiMultiSelectScreen`**: renderItem を atom に置換、styles から `card/cardSelected/thumbBox/
+thumb/cardBody/cardTitle/cardDesc/checkBox` を削除。**見た目は完全に変化なし**（atom が同じ styles
+  を保持）。`Image`/`CheckIcon`/`BonsaiPlaceholder`/`hashSeed`/`BG_SURFACE`/`BORDER_DEFAULT`/`BRAND_GREEN`
+  の不要 import 削除。
+- **静的保証**: `__tests__/components/bonsai/bonsaiSelectableCard.test.ts` 新規 5 ケース（Pressable +
+  accessibilityState / Image + CheckIcon / Props 形式と内部 state なし / Sheet+Screen 両方で利用 /
+  src/components/bonsai 配置）。`exportHub.test.ts` test 6 にも `BonsaiSelectableCard` 利用を追加。
+- **将来拡張**: 個別 PDF picker (`app/export/pdf.tsx`) も同 atom の単一選択 mode 拡張で統合可能（v1.x
+  follow-up）。
+
+**恒久策（atom 重複の再発防止）**:
+
+1. 「写真カード + 名前 + 樹種 + チェック」 系 UI は `BonsaiSelectableCard` を再利用 (新規実装禁止)。
+2. components 階層 (FSD layer) に atom を集約し、features 同士の直 import を避ける（ADR-0048 準拠）。

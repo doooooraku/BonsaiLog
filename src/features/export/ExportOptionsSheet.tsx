@@ -14,6 +14,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { BonsaiSelectableCard } from '@/src/features/bonsai/BonsaiSelectableCard';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { LabeledSegmented } from '@/src/components/form/LabeledSegmented';
@@ -27,8 +28,8 @@ import {
   TEXT_MUTED,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
-import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
-import type { Bonsai } from '@/src/db/schema';
+import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
+import { getCoverPhoto } from '@/src/db/photoRepository';
 import { getMostUsedTags, type TagRecord } from '@/src/db/tagRepository';
 import { buildExportFileName, type ExportKind } from './exportFileName';
 import {
@@ -39,6 +40,13 @@ import {
   OPTION_APPLIES,
 } from './exportFlow';
 import { isStorageSufficient } from './pdfReliability';
+
+type CardData = {
+  id: string;
+  name: string;
+  coverUri: string | null;
+  speciesCommonName: string | null;
+};
 
 const KIND_MAP: Record<ExportTypeKey, ExportKind> = {
   bonsai_csv: 'bonsai-csv',
@@ -63,7 +71,7 @@ type Props = {
 };
 
 export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [period, setPeriod] = useState<ExportPeriod>('all');
   const [scope, setScope] = useState<ExportScope>('all');
   const [includeArchived, setIncludeArchived] = useState(false);
@@ -71,7 +79,7 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
   const [dateTo, setDateTo] = useState('');
   const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
   const [tagId, setTagId] = useState<string | undefined>(undefined);
-  const [bonsaiList, setBonsaiList] = useState<Bonsai[]>([]);
+  const [bonsaiCards, setBonsaiCards] = useState<CardData[]>([]);
   const [tags, setTags] = useState<TagRecord[]>([]);
 
   const showPeriod = OPTION_APPLIES.period.has(type);
@@ -92,15 +100,41 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
   }, [visible, type]);
 
   useEffect(() => {
-    if (visible && showScope) {
-      getAllActiveBonsai()
-        .then(setBonsaiList)
-        .catch(() => setBonsaiList([]));
-      getMostUsedTags(50)
-        .then(setTags)
-        .catch(() => setTags([]));
+    if (!visible || !showScope) return;
+    let cancelled = false;
+    // 樹種＋写真を並走取得し BonsaiSelectableCard で表示するための CardData を構築
+    // (Sess56: ExportOptionsSheet と BonsaiMultiSelectScreen で同じ atom を共用)。
+    async function load() {
+      try {
+        const bonsai = await getAllActiveBonsaiWithSpecies(lang);
+        const cards = await Promise.all(
+          bonsai.map(async (b) => {
+            const cover = await getCoverPhoto(b.id);
+            return {
+              id: b.id,
+              name: b.name,
+              coverUri: cover?.absoluteUri ?? null,
+              speciesCommonName: b.species?.commonName ?? null,
+            } satisfies CardData;
+          }),
+        );
+        if (!cancelled) setBonsaiCards(cards);
+      } catch {
+        if (!cancelled) setBonsaiCards([]);
+      }
     }
-  }, [visible, showScope]);
+    void load();
+    getMostUsedTags(50)
+      .then((next) => {
+        if (!cancelled) setTags(next);
+      })
+      .catch(() => {
+        if (!cancelled) setTags([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [visible, showScope, lang]);
 
   const fileName = buildExportFileName({
     kind: KIND_MAP[type],
@@ -209,20 +243,18 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
                     <ThemedText style={styles.pickHint}>
                       {t('exportOptSelectedCount').replace('{count}', String(selectedIds.length))}
                     </ThemedText>
-                    {bonsaiList.map((b) => {
-                      const on = selectedIds.includes(b.id);
-                      return (
-                        <Pressable
-                          key={b.id}
-                          style={[styles.pickRow, on && styles.pickRowOn]}
-                          onPress={() => toggleBonsai(b.id)}
-                          testID={`e2e_export_opt_bonsai_${b.id}`}
-                        >
-                          <ThemedText style={styles.pickCheck}>{on ? '☑' : '☐'}</ThemedText>
-                          <ThemedText style={styles.pickName}>{b.name}</ThemedText>
-                        </Pressable>
-                      );
-                    })}
+                    {bonsaiCards.map((card) => (
+                      <BonsaiSelectableCard
+                        key={card.id}
+                        id={card.id}
+                        name={card.name}
+                        coverUri={card.coverUri}
+                        speciesCommonName={card.speciesCommonName}
+                        selected={selectedIds.includes(card.id)}
+                        onPress={toggleBonsai}
+                        testID={`e2e_export_opt_bonsai_${card.id}`}
+                      />
+                    ))}
                   </View>
                 )}
                 {scope === 'tag' && (
@@ -316,22 +348,8 @@ const styles = StyleSheet.create({
   field: { marginBottom: 18 },
   fieldLabel: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY, marginBottom: 8 },
   dateRange: { marginTop: 10, gap: 8 },
-  pickList: { marginTop: 8, gap: 4 },
+  pickList: { marginTop: 8, gap: 8 },
   pickHint: { fontSize: 12, color: TEXT_MUTED, marginBottom: 4 },
-  pickRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    minHeight: 44,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
-  },
-  pickRowOn: { borderColor: BRAND_GREEN },
-  pickCheck: { fontSize: 16, color: BRAND_GREEN },
-  pickName: { flex: 1, fontSize: 14 },
   tagWrap: { marginTop: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tagChip: {
     minHeight: 36,
