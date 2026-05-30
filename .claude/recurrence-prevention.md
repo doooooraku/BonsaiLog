@@ -90,7 +90,7 @@
 
 ---
 
-## 専門ルール R-13 〜 R-31（詳細は `recurrence-prevention/specialized.md`）
+## 専門ルール R-13 〜 R-57（詳細は `recurrence-prevention/specialized.md`）
 
 | ID | テーマ | 1 行サマリ |
 |----|--------|-----------|
@@ -146,7 +146,7 @@
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
-- `.claude/recurrence-prevention/specialized.md` — R-13 〜 R-31 詳細記述
+- `.claude/recurrence-prevention/specialized.md` — R-13 〜 R-57 詳細記述
 - `.claude/hooks/` — 構造的防止 Hook 群（R-16/R-18/R-19/R-20 自動化）
 - `.claude/settings.json` — Hook 登録
 - `docs/reference/tasks/lessons/` — 技術 lesson（領域別フォルダ、`lessons/db.md` 等）
