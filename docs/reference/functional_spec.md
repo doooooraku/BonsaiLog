@@ -840,6 +840,8 @@ sequenceDiagram
 
 盆栽 1 本ごとに写真を時系列保存する (相対パス + EXIF + サムネイル)。
 
+> **Pro 機能境界**: 基本情報写真 (① Free 3 枚/本) + 作業記録写真 (③ Free 3 枚/記録、 表示は全 Free) の 2 系統で Pro 化。 SoT は [ADR-0049](../adr/ADR-0049-pro-feature-boundary-v1.md) (Sess58 確定、 Sess59 実装着手) を参照。 既存 4+ 枚は Grandfathered (表示 OK + 削除 OK + 追加のみ Paywall) で保護。
+
 > **Sess58 撤廃**: 「年次タイムライン画像生成 (Pro 限定)」 は実装ゼロの幽霊機能だったため撤廃。 PR #51 (P2-02 Phase 0) で企画されたが実装されず、 ADR-0020 (Claude Design 採用) で「作業履歴チップに統合」 されてさらに形態変更、 i18n key (paywallFeatureYearlyTimeline) と Paywall 比較表 / Settings bullet の表示残骸が景品表示法 / Apple Review 2.3.1 リスクとして発覚。 詳細は ADR-0009 Sess58 Amendment 参照。
 
 ### §13.2 画面 / 入口
@@ -1867,6 +1869,8 @@ export function formatRelativeDays(days: number, locale: string): string {
 ### §18.1 目的
 
 月額・年額サブスク + Lifetime 買切で Pro 機能を解放する。Lifetime 所持時はサブスク表示を抑止する **Champion 方式** (Pocket Casts) を採用し、Pro→Free 戻り時の既存データ保持には **Notion 方式データ保護** を採用 (詳細は ADR-0009、glossary.md 参照)。
+
+> **Pro 機能境界 SoT**: [ADR-0049](../adr/ADR-0049-pro-feature-boundary-v1.md) (Sess58 確定 Pro 機能 6 項目、 Sess59 実装着手)。 課金基盤 (RevenueCat / 価格 / 復元 / Champion 方式) は本 §18 + ADR-0009 を、 機能境界 (写真 / タグ / 作業記録写真 / CSV/PDF / 広告非表示 / カスタム樹種樹形) は ADR-0049 を正とする。
 
 ### §18.2 画面 / 入口
 
