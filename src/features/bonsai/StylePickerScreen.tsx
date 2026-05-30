@@ -27,8 +27,14 @@ import {
   TEXT_PRIMARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
-import { createOrFindCustomStyle, getAllCustomStyles } from '@/src/db/bonsaiStylesCustomRepository';
+import {
+  canCreateNewCustomStyle,
+  createOrFindCustomStyle,
+  FREE_CUSTOM_STYLE_LIMIT,
+  getAllCustomStyles,
+} from '@/src/db/bonsaiStylesCustomRepository';
 import { BONSAI_STYLES, type BonsaiStyle, type BonsaiStyleCustom } from '@/src/db/schema';
+import { useProGuard } from '@/src/features/pro/useProGuard';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
 const CUSTOM_STYLE_MAX_LENGTH = 32;
@@ -61,10 +67,26 @@ export default function StylePickerScreen() {
     router.back();
   };
 
+  // ADR-0049 Sess59 PR5: カスタム樹形 ⑥ Free 上限 3 ガード (custom_species と同 feature 扱い)
+  const styleGuard = useProGuard({ feature: 'custom_species', currentCount: customStyles.length });
+
   const handleCreateCustom = async () => {
     const trimmed = customInput.trim();
     if (trimmed.length === 0) return;
     try {
+      // ADR-0049 Sess59 PR5: Free 上限到達 + 既存名重複なし → Paywall 誘導
+      const canCreate = await canCreateNewCustomStyle(trimmed, styleGuard.isPro);
+      if (!canCreate) {
+        Alert.alert(
+          t('photoLimitTitle'),
+          t('photoLimitDesc').replace('{count}', String(FREE_CUSTOM_STYLE_LIMIT)),
+          [
+            { text: t('cancel'), style: 'cancel' },
+            { text: t('proCtaUpgrade'), onPress: styleGuard.openPaywall },
+          ],
+        );
+        return;
+      }
       const created = await createOrFindCustomStyle(trimmed);
       setShowCustomModal(false);
       setCustomInput('');

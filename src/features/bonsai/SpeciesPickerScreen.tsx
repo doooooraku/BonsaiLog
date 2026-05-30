@@ -26,11 +26,14 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
+  canCreateNewCustomSpecies,
   createOrFindCustomSpecies,
+  FREE_CUSTOM_SPECIES_LIMIT,
   getAllCustomSpecies,
 } from '@/src/db/bonsaiSpeciesCustomRepository';
 import type { BonsaiSpeciesCustom } from '@/src/db/schema';
 import { SPECIES_SEED } from '@/src/db/seedSpecies';
+import { useProGuard } from '@/src/features/pro/useProGuard';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
 const CUSTOM_SPECIES_MAX_LENGTH = 64;
@@ -85,10 +88,29 @@ export default function SpeciesPickerScreen() {
     router.back();
   };
 
+  // ADR-0049 Sess59 PR5: カスタム樹種 ⑥ Free 上限 3 ガード
+  const speciesGuard = useProGuard({
+    feature: 'custom_species',
+    currentCount: customSpecies.length,
+  });
+
   const handleCreateCustom = async () => {
     const trimmed = customInput.trim();
     if (trimmed.length === 0) return;
     try {
+      // ADR-0049 Sess59 PR5: Free 上限到達 + 既存名重複なし → Paywall 誘導
+      const canCreate = await canCreateNewCustomSpecies(trimmed, speciesGuard.isPro);
+      if (!canCreate) {
+        Alert.alert(
+          t('photoLimitTitle'), // 既存 i18n key 流用 (汎用 limit title)
+          t('photoLimitDesc').replace('{count}', String(FREE_CUSTOM_SPECIES_LIMIT)),
+          [
+            { text: t('cancel'), style: 'cancel' },
+            { text: t('proCtaUpgrade'), onPress: speciesGuard.openPaywall },
+          ],
+        );
+        return;
+      }
       const created = await createOrFindCustomSpecies(trimmed);
       setShowCustomModal(false);
       setCustomInput('');
