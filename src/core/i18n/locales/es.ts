@@ -918,5 +918,23 @@ const es: Partial<Record<TranslationKey, string>> = {
   settingsDescPro: 'Thank you for supporting BonsaiLog!',
   settingsViewProPlans: 'See Pro plans',
   settingsBenefitNoAds: 'No ads',
+  // --- ADR-0049 Sess59 PR2: Pro 機能 6 項目 (写真 / タグ / 作業記録写真 / カスタム樹種樹形) i18n ---
+  paywallFeaturePhoto: 'Fotos del bonsái',
+  paywallFeaturePhotoFreeValue: 'Hasta 3',
+  paywallFeaturePhotoProValue: 'Ilimitado',
+  paywallFeatureTag: 'Etiquetas',
+  paywallFeatureTagFreeValue: 'Hasta 3',
+  paywallFeatureTagProValue: 'Ilimitado',
+  paywallFeatureWorkLogPhoto: 'Fotos del registro',
+  paywallFeatureWorkLogPhotoFreeValue: 'Hasta 3',
+  paywallFeatureWorkLogPhotoProValue: 'Ilimitado',
+  paywallFeatureCustomSpecies: 'Especies y estilos personalizados',
+  paywallFeatureCustomSpeciesFreeValue: 'Hasta 3',
+  paywallFeatureCustomSpeciesProValue: 'Ilimitado',
+  settingsBenefitPhoto: 'Fotos del bonsái: 3 → Ilimitado',
+  settingsBenefitTag: 'Etiquetas: 3 → Ilimitado',
+  settingsBenefitWorkLogPhoto: 'Fotos del registro: 3 → Ilimitado',
+  settingsBenefitCustomSpecies: 'Especies y estilos: 3 → Ilimitado',
+  paywallFeatureLimitCounter: '{used}/{limit}',
 };
 export default es;

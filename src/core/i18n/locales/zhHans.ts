@@ -902,5 +902,23 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   settingsDescPro: 'Thank you for supporting BonsaiLog!',
   settingsViewProPlans: 'See Pro plans',
   settingsBenefitNoAds: 'No ads',
+  // --- ADR-0049 Sess59 PR2: Pro 機能 6 項目 (写真 / タグ / 作業記録写真 / カスタム樹種樹形) i18n ---
+  paywallFeaturePhoto: '盆景照片',
+  paywallFeaturePhotoFreeValue: '最多3张',
+  paywallFeaturePhotoProValue: '无限制',
+  paywallFeatureTag: '标签',
+  paywallFeatureTagFreeValue: '最多3个',
+  paywallFeatureTagProValue: '无限制',
+  paywallFeatureWorkLogPhoto: '工作记录照片',
+  paywallFeatureWorkLogPhotoFreeValue: '最多3张',
+  paywallFeatureWorkLogPhotoProValue: '无限制',
+  paywallFeatureCustomSpecies: '自定义树种与树形',
+  paywallFeatureCustomSpeciesFreeValue: '最多3项',
+  paywallFeatureCustomSpeciesProValue: '无限制',
+  settingsBenefitPhoto: '盆景照片：3 → 无限制',
+  settingsBenefitTag: '标签：3 → 无限制',
+  settingsBenefitWorkLogPhoto: '工作记录照片：3 → 无限制',
+  settingsBenefitCustomSpecies: '自定义树种与树形：3 → 无限制',
+  paywallFeatureLimitCounter: '{used}/{limit}',
 };
 export default zhHans;

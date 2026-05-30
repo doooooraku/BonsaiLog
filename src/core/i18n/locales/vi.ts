@@ -914,5 +914,23 @@ const vi: Partial<Record<TranslationKey, string>> = {
   settingsDescPro: 'Thank you for supporting BonsaiLog!',
   settingsViewProPlans: 'See Pro plans',
   settingsBenefitNoAds: 'No ads',
+  // --- ADR-0049 Sess59 PR2: Pro 機能 6 項目 (写真 / タグ / 作業記録写真 / カスタム樹種樹形) i18n ---
+  paywallFeaturePhoto: 'Ảnh bonsai',
+  paywallFeaturePhotoFreeValue: 'Tối đa 3',
+  paywallFeaturePhotoProValue: 'Không giới hạn',
+  paywallFeatureTag: 'Thẻ',
+  paywallFeatureTagFreeValue: 'Tối đa 3',
+  paywallFeatureTagProValue: 'Không giới hạn',
+  paywallFeatureWorkLogPhoto: 'Ảnh nhật ký công việc',
+  paywallFeatureWorkLogPhotoFreeValue: 'Tối đa 3',
+  paywallFeatureWorkLogPhotoProValue: 'Không giới hạn',
+  paywallFeatureCustomSpecies: 'Loài và kiểu tùy chỉnh',
+  paywallFeatureCustomSpeciesFreeValue: 'Tối đa 3',
+  paywallFeatureCustomSpeciesProValue: 'Không giới hạn',
+  settingsBenefitPhoto: 'Ảnh bonsai: 3 → Không giới hạn',
+  settingsBenefitTag: 'Thẻ: 3 → Không giới hạn',
+  settingsBenefitWorkLogPhoto: 'Ảnh nhật ký: 3 → Không giới hạn',
+  settingsBenefitCustomSpecies: 'Loài và kiểu: 3 → Không giới hạn',
+  paywallFeatureLimitCounter: '{used}/{limit}',
 };
 export default vi;

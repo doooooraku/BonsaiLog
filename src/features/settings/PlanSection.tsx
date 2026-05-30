@@ -31,16 +31,18 @@ import { useProStore } from '@/src/stores/proStore';
 
 import { SettingsSection } from './SettingsSection';
 
-// Pro メリット bullet (既存 paywallFeature* + 短縮新規 settingsBenefitNoAds)。
-// paywallFeatureNoAds は機能名「広告表示」で意味が逆になる (Free にとってデメリットに読める)
-// ため、 「広告非表示」 / "No ads" のメリット表現に置換 (Sess57 実機検証で発覚)。
-// Sess58: paywallFeatureYearlyTimeline (年次タイムライン画像) は実装ゼロの
-// 幽霊機能だったため撤廃 (景品表示法/Apple Review 2.3.1 リスク回避)。
-// bullet 4→3 項目 (CSV/PDF + 広告非表示 + バックアップ)。
+// ADR-0049 Sess59 PR2: Pro メリット bullet を Sess58 確定 Pro 機能 6 項目 全部に展開
+// (User 真意「Free と Pro で差分があるもの全部表示」 採用、 案 A フラット シンプル)。
+// 順序は ADR-0049 ①〜⑥ に整合 (写真 / タグ / 作業記録写真 / CSV-PDF / 広告非表示 /
+// カスタム樹種樹形)。 paywallFeatureNoAds は意味曖昧 ("広告表示" = Free 視点で逆効果) のため
+// settingsBenefitNoAds 「広告非表示」 専用 key を維持 (Sess57 実機検証由来)。
 const PRO_BENEFIT_KEYS: TranslationKey[] = [
+  'settingsBenefitPhoto',
+  'settingsBenefitTag',
+  'settingsBenefitWorkLogPhoto',
   'paywallFeatureCsv',
   'settingsBenefitNoAds',
-  'paywallFeatureBackup',
+  'settingsBenefitCustomSpecies',
 ];
 
 function formatRenewalDate(iso: string | null, lang: string): string | null {
