@@ -73,11 +73,25 @@
 - master-plan §7 アーキテクト視点が指摘した cooling-off (2 週間延期) は妥当だった。**「分割直後の共通化は早すぎ」を実測で確認できた珍しいケース**。
 - 計画書の自己批判 (§7 5視点ペルソナ) は機能する。書く価値あり。
 
+## L8: ADR-0022/0023 欠番は ADR-0046 廃止ポリシー確立前の連番予約ミス (Sess56 監査)
+
+**症状**: `scripts/docs-lint.mjs` の連番チェックで `ADR-0022` / `ADR-0023` が欠番として warning に出続けている (連番 0001〜0048 のうち 2 箇所)。 `git log --all --oneline --diff-filter=D -- 'docs/adr/ADR-002[23]*'` で削除履歴を辿っても**検出ゼロ** = 一度もファイルが存在しなかった。
+
+**教訓**:
+
+- ADR 番号は **「Pull Request 起票時に番号予約 → 中断時に欠番」 になりやすい**。 Sess56 監査でこのパターンを git log で確定。
+- **ADR-0046 (廃止ポリシー、 2026-05-29 起票) 以降は「物理削除禁止 + Status: Deprecated で保持」 が正式ルール**。 以後の欠番発生は構造的に防がれる。
+- 既存欠番 (0022/0023) は**遡って復元する必要なし** (Issue 起票 → 不採用となった経緯を持つ可能性が高く、 内容不明で復元しても無意味)。
+- `docs-lint.mjs` の warning は既知として受容、 復元は不要。
+- 教訓は「**新規 ADR は実装着手と同時に番号確定 + ファイル起票**」 = 番号だけ予約しない (Sess56 監査で確認した盲点)。
+
 ---
 
 ## 関連 ADR / Report
 
 - ADR-0045 (god 分割 coordinator の成功基準 = 責務分離 + ≤約450)
+- ADR-0046 (廃止ポリシー、 番号保持 + Status 注記 = L8 欠番再発防止策)
 - ADR-0048 (FSD 層定義 + allow-matrix + boundaries error 化)
 - ADR-0015 Amendment 2026-05-30 (Tamagui 撤回)
 - `phase-4-report.md` / `phase-6-report.md` / `phase-7-report.md`
+- `docs/audit/code-docs-consistency-audit.md` §9 F-04 (Sess56 監査、 L8 由来)
