@@ -327,3 +327,20 @@ F-13 を以下の構成で実装する。
   - PR #147 F-13 lesson: `lessons/billing.md` 新設 (Repolog 踏襲時のペルソナ再評価 等 3 lesson)
 - **本 ADR Notes 追記 PR**: ADR-0009 Notes に実装履歴を記録 (本 PR)
 - **残作業 (人間 / 実機 / 法務)**: Sandbox 全 12 パターン手動検証 / App Store / Google Play 設定 / Privacy Policy 19 言語更新 / DPA 取得 / Maestro Sandbox 実購入フロー追記。詳細は Issue #20 残作業コメント参照
+
+### Sess57 Amendment (2026-05-30): 設定画面強化 + Paywall 規約リンク掲載
+
+ユーザー指示で設定画面の「購入」セクションを Repolog 風に拡張し、購買意欲を喚起できる UI に改修。あわせて Phase 1c TODO だった Paywall への規約 / プライバシーポリシーリンク掲載を完遂。
+
+**実装内容**:
+
+- `src/features/settings/PlanSection.tsx`: 既存 2 row (プラン badge + 復元) → 7 要素 (現在のプラン + 更新日 / 永久アクセス + 説明文 + Pro メリット bullet 4 + Primary CTA + 復元) に強化。 既存 testID 全保持 + 新規 `e2e_view_pro_plans`。
+- Pro メリット bullet は既存 `paywallFeatureCsv` / `paywallFeatureYearlyTimeline` / `paywallFeatureNoAds` / `paywallFeatureBackup` を流用 (19 言語翻訳済資産活用)。
+- `src/features/legal/LegalLinksRow.tsx` 新規作成 (Settings + Paywall 両画面で使用する共通 component)。
+- `PaywallScreen` Fine Print 直下に `<LegalLinksRow />` を追加 → Apple Review 3.1.1 / Google Play Data Safety で要求される規約掲載を満たす。
+- `legalService.getLegalLinks(lang?)` に lang 引数追加 — `lang === 'ja'` のとき URL 末尾に `ja/` を付与 (GitHub Pages /ja/ 版に切替)。
+- 新規 i18n key 6 種 (settingsCurrentPlan / settingsRenewsOn / settingsLifetimeAccess / settingsDescFree / settingsDescPro / settingsViewProPlans) を 19 言語に追加。
+
+**消化された AC**:
+
+- Phase 1c TODO の「Privacy Policy リンク (legalService 流用)」を完遂。

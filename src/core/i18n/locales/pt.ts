@@ -421,8 +421,6 @@ const pt: Partial<Record<TranslationKey, string>> = {
   settingsLegalSection: 'Legal',
   settingsLegalTerms: 'Termos de serviço',
   settingsLegalPrivacy: 'Política de privacidade',
-  settingsVersionSection: 'Sobre',
-  settingsVersionLabel: 'Versão',
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
   outdoorModeToggleA11y: 'Toggle outdoor mode',
@@ -915,5 +913,12 @@ const pt: Partial<Record<TranslationKey, string>> = {
   exportListPdfCatalogTotalRecords: '{count} records',
   exportListPdfCatalogAcquired: 'Acquired',
   exportGeneratingNamed: 'Generating {name}…',
+  settingsCurrentPlan: 'Current plan',
+  settingsRenewsOn: 'Next renewal: {date}',
+  settingsLifetimeAccess: 'Lifetime access',
+  settingsDescFree: 'Upgrade to Pro for unlimited exports and backups.',
+  settingsDescPro: 'Thank you for supporting BonsaiLog!',
+  settingsViewProPlans: 'See Pro plans',
+  settingsBenefitNoAds: 'No ads',
 };
 export default pt;

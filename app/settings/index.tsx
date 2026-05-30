@@ -25,6 +25,7 @@ import { countArchivedBonsai } from '@/src/db/bonsaiRepository';
 import { countAllTags } from '@/src/db/tagRepository';
 import { DevSettingsSection } from '@/src/dev/DevSettingsSection';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
+import { LegalLinksRow } from '@/src/features/legal/LegalLinksRow';
 import { NotificationSettingsSection } from '@/src/features/settings/NotificationSettingsSection';
 import { PlanSection } from '@/src/features/settings/PlanSection';
 import { SettingsSection } from '@/src/features/settings/SettingsSection';
@@ -248,36 +249,9 @@ export default function SettingsScreen() {
           </Pressable>
         </SettingsSection>
 
-        {/* --- 7. その他/法令 (Issue #330 AC) --- */}
+        {/* --- 7. その他/法令 (Issue #330 AC + Sess57: Linking 化) --- */}
         <SettingsSection title={t('settingsLegalSection')}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('settingsLegalTerms')}
-            testID="e2e_open_legal_terms"
-            style={styles.entry}
-            onPress={() => {
-              Alert.alert(t('settingsLegalTerms'), 'docs/legal/terms.md (準備中)');
-            }}
-          >
-            <View style={styles.rowInner}>
-              <ThemedText type="defaultSemiBold">{t('settingsLegalTerms')}</ThemedText>
-              <ThemedText style={styles.chevron}>›</ThemedText>
-            </View>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('settingsLegalPrivacy')}
-            testID="e2e_open_legal_privacy"
-            style={styles.entry}
-            onPress={() => {
-              Alert.alert(t('settingsLegalPrivacy'), 'docs/legal/privacy.md (準備中)');
-            }}
-          >
-            <View style={styles.rowInner}>
-              <ThemedText type="defaultSemiBold">{t('settingsLegalPrivacy')}</ThemedText>
-              <ThemedText style={styles.chevron}>›</ThemedText>
-            </View>
-          </Pressable>
+          <LegalLinksRow />
           {/* AdMob プライバシーオプション (Free のみ表示、 既存 F-LEGAL-001 Phase A 流用) */}
           {!isPro && (
             <Pressable
@@ -296,15 +270,7 @@ export default function SettingsScreen() {
           )}
         </SettingsSection>
 
-        {/* --- 8. バージョン (Issue #330 AC、 read-only) --- */}
-        <SettingsSection title={t('settingsVersionSection')}>
-          <View style={styles.entry} testID="e2e_settings_version_row">
-            <View style={styles.rowInner}>
-              <ThemedText type="defaultSemiBold">{t('settingsVersionLabel')}</ThemedText>
-              <ThemedText style={styles.rowValue}>1.0.0</ThemedText>
-            </View>
-          </View>
-        </SettingsSection>
+        {/* Sess57: バージョン section 廃止 (UI ノイズ削減、 app-factory 共通ルール)。 */}
 
         {/* --- (実機固有) F-09 検索 (Issue #31) --- */}
         <SettingsSection title={t('settingsSearchSection')}>

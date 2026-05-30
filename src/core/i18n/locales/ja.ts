@@ -548,8 +548,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsLegalSection: 'その他',
   settingsLegalTerms: '利用規約',
   settingsLegalPrivacy: 'プライバシーポリシー',
-  settingsVersionSection: 'バージョン',
-  settingsVersionLabel: 'アプリのバージョン',
   searchRecentTitle: '最近の検索',
   searchHistoryClear: '履歴を削除',
   outdoorModeToggleA11y: '屋外モードを切り替える',
@@ -920,6 +918,13 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportListPdfCatalogTotalRecords: '累計 {count} 件',
   exportListPdfCatalogAcquired: '入手日',
   exportGeneratingNamed: '{name} を生成中',
+  settingsCurrentPlan: '現在のプラン',
+  settingsRenewsOn: '次回更新日: {date}',
+  settingsLifetimeAccess: '永久アクセス',
+  settingsDescFree: 'Proにアップグレードして、出力・バックアップを無制限に。',
+  settingsDescPro: 'BonsaiLogをご支援いただきありがとうございます！',
+  settingsViewProPlans: 'Proプランを見る',
+  settingsBenefitNoAds: '広告非表示',
 };
 
 export default ja;

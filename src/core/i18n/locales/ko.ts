@@ -418,8 +418,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   settingsLegalSection: '법적 고지',
   settingsLegalTerms: '서비스 약관',
   settingsLegalPrivacy: '개인정보 처리방침',
-  settingsVersionSection: '정보',
-  settingsVersionLabel: '버전',
   searchRecentTitle: 'Recent searches',
   searchHistoryClear: 'Clear history',
   outdoorModeToggleA11y: 'Toggle outdoor mode',
@@ -911,5 +909,12 @@ const ko: Partial<Record<TranslationKey, string>> = {
   exportListPdfCatalogTotalRecords: '{count} records',
   exportListPdfCatalogAcquired: 'Acquired',
   exportGeneratingNamed: 'Generating {name}…',
+  settingsCurrentPlan: 'Current plan',
+  settingsRenewsOn: 'Next renewal: {date}',
+  settingsLifetimeAccess: 'Lifetime access',
+  settingsDescFree: 'Upgrade to Pro for unlimited exports and backups.',
+  settingsDescPro: 'Thank you for supporting BonsaiLog!',
+  settingsViewProPlans: 'See Pro plans',
+  settingsBenefitNoAds: 'No ads',
 };
 export default ko;

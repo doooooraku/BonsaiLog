@@ -35,6 +35,7 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { LegalLinksRow } from '@/src/features/legal/LegalLinksRow';
 import { shouldHideSubscriptions } from '@/src/features/pro/championMode';
 import {
   mapPurchaseErrorCode,
@@ -285,6 +286,12 @@ export default function PaywallScreen() {
 
         <ThemedText style={styles.finePrint}>{t('proFinePrint')}</ThemedText>
         <ThemedText style={styles.finePrint}>{t('proLifetimeFinePrint')}</ThemedText>
+
+        {/* Sess57: Apple Review 3.1.1 / Google Play Data Safety 整合で Paywall に
+            利用規約 + プライバシーポリシーリンクを掲載。Settings と共通の LegalLinksRow を流用。 */}
+        <View style={styles.legalLinks}>
+          <LegalLinksRow />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -497,4 +504,5 @@ const styles = StyleSheet.create({
   },
   restoreText: { fontSize: 14 },
   finePrint: { fontSize: 11, opacity: 0.65, lineHeight: 16 },
+  legalLinks: { marginTop: 16 },
 });
