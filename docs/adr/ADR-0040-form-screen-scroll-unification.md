@@ -1,7 +1,7 @@
 # ADR-0040: フォーム画面 scroll 構造統一 (FormScreenHeader + full-screen scroll)
 
-- **Status**: Accepted
-- **Date**: 2026-05-23
+- Status: Accepted
+- Date: 2026-05-23
 - **Phase**: Sess33 (Sess28-32 連続改善の最終構造統一)
 - **関連**:
   - ADR-0037 (Hero + バッジ + KAV 統一、 R-46 v1 起票元)

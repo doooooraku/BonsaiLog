@@ -1,20 +1,28 @@
 ---
-
-
 # ADR-0015: F-15 ダークモード / 屋外モード（Tamagui themes 全面再設計 + Material 3 baseline + 屋外モード緑単色）
 
-- Status: Accepted
-- Date: 2026-05-01
-- Deciders: @doooooraku
-- Related:
-  - 上書き対象: `functional_spec.md` §20（F-15 詳細仕様）— 4 mode + Material 3 + 屋外モード緑単色 + ヒートマップ 3 モード hex
-  - 上書き対象: `basic_spec.md` F-15 セクション — 青系撤回、Material 3 反映
-  - 上書き対象: `tamagui.config.ts` — 全面書換 (light/dark/outdoor 3 themes + neonPink/cyberBlue 削除)
-  - 連動: ADR-0013 (F-04 ヒートマップ hex 継続) / ADR-0014 (F-16 太陽アイコン) / ADR-0010 (F-14 広告) / ADR-0011 (記録のみ哲学) / ADR-0007 (F-11 ZIP 引継ぎで AsyncStorage 含む)
-  - 影響先: ADR-0013 / ADR-0014 に「F-15 連動 (heatmap_l0..l3 トークン参照)」明記、ESLint カスタムルール `no-direct-hex-in-jsx` 追加
-  - 既存資産: `tamagui.config.ts` (現状 dark / neonPink / cyberBlue の 3 themes、neonGreen #39FF14 アクセント) ← **F-15 仕様と完全乖離、全面書換必須**
-  - Issue: #<TBD>
+> ## ⚠ 実装注意 (2026-05-30 Notes Amended)
+  >
+  > **本文 (Decision §) は当初 PoC 設計 (Tamagui themes 前提)**。 現実装は Phase 7 K5 で Tamagui を撤回し、 `src/core/theme/colors.ts` (plain hex) + `src/core/theme/useColors.ts` (Hook) で運用中。
+  >
+  > 参照すべき最新仕様:
+  > 1. `docs/reference/design_system.md` §6 (Colors token SoT)
+  > 2. `src/core/theme/useColors.ts` (実装 hook)
+  > 3. 本 ADR 末尾の **Notes Amended (2026-05-30): Tamagui 撤回 → useColors + plain hex 採用**
+  >
+  > 本 ADR は ADR-0046 (廃止ポリシー、 番号保持 + Status 注記) に沿って **歴史的価値のみ保持**。 タイトル中の「Tamagui themes 全面再設計」 は当初 PoC 段階の表現であり、 現実装と一致しない点に留意。
 
+  - Status: Accepted (Amended 2026-05-30: Tamagui 撤回、 実装は useColors hook + plain hex)
+  - Date: 2026-05-01
+  - Deciders: @doooooraku
+  - Related:
+    - 上書き対象: `functional_spec.md` §20（F-15 詳細仕様）— 4 mode + Material 3 + 屋外モード緑単色 + ヒートマップ 3 モード hex
+    - 上書き対象: `basic_spec.md` F-15 セクション — 青系撤回、Material 3 反映
+    - 上書き対象: `tamagui.config.ts` — 全面書換 (light/dark/outdoor 3 themes + neonPink/cyberBlue 削除)
+    - 連動: ADR-0013 (F-04 ヒートマップ hex 継続) / ADR-0014 (F-16 太陽アイコン) / ADR-0010 (F-14 広告) / ADR-0011 (記録のみ哲学) / ADR-0007 (F-11 ZIP 引継ぎで AsyncStorage 含む)
+    - 影響先: ADR-0013 / ADR-0014 に「F-15 連動 (heatmap_l0..l3 トークン参照)」明記、ESLint カスタムルール `no-direct-hex-in-jsx` 追加
+    - 既存資産: `tamagui.config.ts` (現状 dark / neonPink / cyberBlue の 3 themes、neonGreen #39FF14 アクセント) ← **F-15 仕様と完全乖離、全面書換必須**
+    - Issue: #<TBD>
 ---
 
 ## Context（背景：いま何に困っている？）
