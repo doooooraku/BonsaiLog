@@ -22,17 +22,27 @@ import { toAbsolutePath, toRelativePath } from './filePathUtils';
 import type { Photo } from './schema';
 
 /**
- * 1 樹あたり写真上限 (Issue #458 Phase 2 で「写真制限撤廃」 適用、principles.md v1.0
- * 「Pro = 出力 + 体験、写真枚数は Free でも無制限」 整合)。
+ * 1 樹あたり写真上限 (ADR-0049 Sess59 PR3 で Issue #458 Phase 2 を Supersedes、
+ * Sess58 確定 Pro 機能 ① 基本情報写真 = Free 3 枚 / Pro 無制限 に復活)。
  *
- * 旧 (Phase 2 適用前): Free = 3 枚 / Pro = 無制限 (constraints §2-2 旧版)。
- * 新: 全プラン無制限 (`Number.POSITIVE_INFINITY`、UI の残枠表示・上限アラートは Infinity
- * 評価で自動的に no-op になる)。
+ * 経緯:
+ * - 初期 v1.0: Free 3 枚 / Pro 無制限 (constraints §2-2 旧版)
+ * - Issue #458 Phase 2: 写真制限撤廃 (全プラン無制限、 principles.md v1.0「Pro = 出力 + 体験」)
+ * - **ADR-0049 Sess59 PR3 (本 PR)**: Pro 機能境界 v1.0 で復活 (Sess58 議論で 6 項目確定、
+ *   業務利用層 + Day One モデル参考)。 Issue #458 Phase 2 を Supersedes。
  *
- * 定数自体は legacy として残置 (UI/storage で参照中の callsite を一括変更せずに済む)。
- * Pro 訴求は CSV/PDF エクスポート / Year-in-Photos / Theme / 広告なし に集約。
+ * 既存ユーザー保護 (Grandfathered 緩、 ADR-0049 Decision §):
+ * - 4+ 枚の既存写真は表示 OK + 削除 OK + 新規追加のみ Paywall
+ * - 判定ロジック: `currentCount < FREE_PHOTO_LIMIT_PER_BONSAI` で新規追加判定
  */
-export const FREE_PHOTO_LIMIT_PER_BONSAI = Number.POSITIVE_INFINITY;
+export const FREE_PHOTO_LIMIT_PER_BONSAI = 3;
+
+/**
+ * 1 作業記録 (event) あたり写真上限 (ADR-0049 Sess59 PR3、 機能 ③ 作業記録写真)。
+ * Free = 3 枚 / Pro = MAX_PHOTOS_PER_EVENT (10) まで (PhotoField.tsx 整合)。
+ * 表示は全 Free (GDPR Art.20 整合、 functional_spec §13 line 564-567)。
+ */
+export const FREE_PHOTO_LIMIT_PER_EVENT = 3;
 
 /** 相対パスの anchor (絶対パス → 相対パス変換時の起点)。 */
 const PHOTO_PATH_ANCHOR = 'bonsailog/photos/';

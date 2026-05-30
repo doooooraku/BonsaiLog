@@ -54,13 +54,21 @@ beforeEach(async () => {
   await setupFreshDb();
 });
 
-describe('canAddPhotoFromCount / canAddPhoto (写真制限撤廃 = Infinity)', () => {
-  test('Pro / Free いずれも常に追加可 (FREE_PHOTO_LIMIT = Infinity)', async () => {
+describe('canAddPhotoFromCount / canAddPhoto (ADR-0049 Sess59 PR3 で Free 3 復活)', () => {
+  test('Pro は無制限 / Free は 3 まで', async () => {
     const { photo } = repos();
+    // Pro は無制限
     expect(photo.canAddPhotoFromCount(0, true)).toBe(true);
-    expect(photo.canAddPhotoFromCount(999, false)).toBe(true);
+    expect(photo.canAddPhotoFromCount(999, true)).toBe(true);
+    // Free は 3 まで
+    expect(photo.canAddPhotoFromCount(0, false)).toBe(true);
+    expect(photo.canAddPhotoFromCount(2, false)).toBe(true);
+    expect(photo.canAddPhotoFromCount(3, false)).toBe(false);
+    expect(photo.canAddPhotoFromCount(999, false)).toBe(false); // Grandfathered
+    // DB 実カウント込みの canAddPhoto
     const bonsaiId = await makeBonsai();
-    expect(await photo.canAddPhoto(bonsaiId, false)).toBe(true);
+    expect(await photo.canAddPhoto(bonsaiId, false)).toBe(true); // 0 枚 → 追加可
+    expect(await photo.canAddPhoto(bonsaiId, true)).toBe(true); // Pro 追加可
   });
 });
 

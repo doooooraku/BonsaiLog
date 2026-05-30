@@ -19,6 +19,7 @@
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Pressable,
   ScrollView,
@@ -54,8 +55,10 @@ import {
   createEvent,
   findPlannedEventByCondition,
 } from '@/src/db/eventRepository';
+import { FREE_PHOTO_LIMIT_PER_EVENT } from '@/src/db/photoRepository';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { addPhotoFromUri } from '@/src/features/photos/photoOrchestrator';
+import { useProGuard } from '@/src/features/pro/useProGuard';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
@@ -137,6 +140,18 @@ export default function BulkLogConfirmScreen() {
   );
   // Sess16 PR-B2 → PR-H: 写真添付 (caption 削除、 BonsaiBasicForm PendingPhoto 整合)
   const [photos, setPhotos] = React.useState<readonly PhotoFieldItem[]>([]);
+  // ADR-0049 Sess59 PR3: 作業記録写真 ③ Free 上限 3 ガード (PhotoField に props で注入)
+  const photoGuard = useProGuard({ feature: 'photo_worklog', currentCount: photos.length });
+  const showPhotoLimitPaywall = React.useCallback(() => {
+    Alert.alert(
+      t('photoLimitTitle'),
+      t('photoLimitDesc').replace('{count}', String(FREE_PHOTO_LIMIT_PER_EVENT)),
+      [
+        { text: t('cancel'), style: 'cancel' },
+        { text: t('proCtaUpgrade'), onPress: photoGuard.openPaywall },
+      ],
+    );
+  }, [t, photoGuard.openPaywall]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // Sess17 PR-H2: 14 種別 form state を Single と同 component で集約 (ADR-0029 D5 §16 1:1 整合)。
@@ -350,7 +365,7 @@ export default function BulkLogConfirmScreen() {
             />
           </View>
 
-          {/* Sess16 PR-B2: 写真添付 (mockup 14 種別共通、 最大 10 枚、 全 bonsai に同 photos 紐付け)。 */}
+          {/* Sess16 PR-B2: 写真添付 (mockup 14 種別共通、 Pro 最大 10 枚、 全 bonsai に同 photos 紐付け、 ADR-0049 Sess59 PR3 Free 3 枚) */}
           <View style={styles.field}>
             <PhotoField
               label={t('workLogPhotoField')}
@@ -358,6 +373,8 @@ export default function BulkLogConfirmScreen() {
               optionalText={t('workLogOptional')}
               photos={photos}
               onChange={setPhotos}
+              isPro={photoGuard.isPro}
+              onLimitReached={showPhotoLimitPaywall}
               testID="e2e_bulk_log_photo_field"
             />
           </View>

@@ -11,8 +11,11 @@
  * - index 表示「1 / N」 format (BonsaiBasicForm「1」 のみより分かりやすい)
  * - ImagePicker `selectionLimit: remaining` 動的設定 (picker レベル enforce)
  *
- * F-08 仕様 (functional_spec.md §13 line 564-567): 作業記録の写真は Free でも無制限
- * (盆栽単位 3 枚制限とは別集計)、 ただし 1 作業あたり最大 10 枚。
+ * ADR-0049 Sess59 PR3: 作業記録写真 ③ Free 上限 3 ガード追加 (User 真意 Sess59 R3:
+ * 写真ピッカー段階で 4 枚目以降を選べないようにする + 残枠 0 で押下時 Paywall)。
+ * - Free: 各記録 3 枚まで、 4 枚目押下時 Paywall (source=photo_worklog)
+ * - Pro:  MAX_PHOTOS_PER_EVENT = 10 まで (UI 安全上限、 v1.x 拡張候補)
+ * - 表示は全 Free (GDPR Art.20 整合、 functional_spec §13 line 564-567)
  */
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
@@ -30,8 +33,10 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { FREE_PHOTO_LIMIT_PER_EVENT } from '@/src/db/photoRepository';
 
 export const MAX_PHOTOS_PER_EVENT = 10;
+export { FREE_PHOTO_LIMIT_PER_EVENT };
 
 export type PhotoFieldItem = {
   uri: string;
@@ -46,6 +51,15 @@ export type PhotoFieldProps = {
   photos: readonly PhotoFieldItem[];
   onChange: (photos: readonly PhotoFieldItem[]) => void;
   testID?: string;
+  /**
+   * ADR-0049 Sess59 PR3: 親 (features 層) から渡す Pro 状態 (FSD 境界: components→features 禁止)。
+   * - isPro = true: Pro user (MAX_PHOTOS_PER_EVENT = 10 まで)
+   * - isPro = false + onLimitReached 未指定: Free user で silent no-op (旧挙動)
+   * - isPro = false + onLimitReached 指定: Free user で上限到達時 onLimitReached() を呼ぶ
+   *   (callsite で Paywall 誘導 Alert 表示推奨)
+   */
+  isPro?: boolean;
+  onLimitReached?: () => void;
 };
 
 export function PhotoField({
@@ -55,9 +69,17 @@ export function PhotoField({
   photos,
   onChange,
   testID,
+  isPro = true, // 後方互換: 未指定なら Pro 扱い = 旧挙動 (MAX 10 まで)
+  onLimitReached,
 }: PhotoFieldProps) {
   const { t } = useTranslation();
-  const canAdd = photos.length < MAX_PHOTOS_PER_EVENT;
+  // ADR-0049 Sess59 PR3: 作業記録写真 ③ Free 上限 3 ガード
+  // Pro = MAX-現在数 / Free = min(MAX-現在数, FREE_LIMIT-現在数)
+  const remainingForPicker = isPro
+    ? MAX_PHOTOS_PER_EVENT - photos.length
+    : Math.min(MAX_PHOTOS_PER_EVENT - photos.length, FREE_PHOTO_LIMIT_PER_EVENT - photos.length);
+  const isFreeAtLimit = !isPro && photos.length >= FREE_PHOTO_LIMIT_PER_EVENT;
+  const canAdd = !isFreeAtLimit && photos.length < MAX_PHOTOS_PER_EVENT;
 
   const handlePickFromLibrary = React.useCallback(async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -65,28 +87,36 @@ export function PhotoField({
       Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
       return;
     }
-    const remaining = MAX_PHOTOS_PER_EVENT - photos.length;
-    if (remaining <= 0) return;
+    // Free user 上限到達: Paywall 誘導 (onLimitReached 経由) / Pro user 上限到達: silent no-op
+    if (isFreeAtLimit) {
+      onLimitReached?.();
+      return;
+    }
+    if (remainingForPicker <= 0) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true,
-      selectionLimit: remaining,
+      selectionLimit: remainingForPicker,
       quality: 0.85,
     });
     if (result.canceled || !result.assets || result.assets.length === 0) return;
-    const acceptedCount = Math.min(result.assets.length, remaining);
+    const acceptedCount = Math.min(result.assets.length, remainingForPicker);
     const accepted = result.assets.slice(0, acceptedCount).map<PhotoFieldItem>((a) => ({
       uri: a.uri,
       width: a.width ?? null,
       height: a.height ?? null,
     }));
     onChange([...photos, ...accepted]);
-  }, [photos, onChange, t]);
+  }, [photos, onChange, t, isFreeAtLimit, remainingForPicker, onLimitReached]);
 
   const handleTakePhotoCamera = React.useCallback(async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
       Alert.alert(t('photoPermissionDeniedTitle'), t('photoPermissionDeniedBody'));
+      return;
+    }
+    if (isFreeAtLimit) {
+      onLimitReached?.();
       return;
     }
     if (photos.length >= MAX_PHOTOS_PER_EVENT) return;
@@ -104,7 +134,7 @@ export function PhotoField({
         height: a.height ?? null,
       },
     ]);
-  }, [photos, onChange, t]);
+  }, [photos, onChange, t, isFreeAtLimit, onLimitReached]);
 
   const handleRemove = React.useCallback(
     (index: number) => {
