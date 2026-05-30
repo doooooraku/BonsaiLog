@@ -31,6 +31,19 @@ describe('GeneratingOverlay (ADR-0016 AC11 / Y2)', () => {
     expect(OVERLAY).toContain('e2e_export_generating_title');
   });
 
+  test('2-1. Sess56: バッジ+タイトル縦並び + numberOfLines={2} + ellipsizeMode で多言語 wrap 構造解決', () => {
+    // 横並び (flex:1 で title wrap) は 19 言語×5 種別で中途半端な折り返しを起こすため縦並びに変更。
+    // headerCol の flexDirection が 'column' でバッジ→タイトルが縦に並ぶことを構造保証。
+    expect(OVERLAY).toMatch(/headerCol:\s*\{\s*flexDirection:\s*'column'/);
+    // タイトルは保険として 2 行までで ellipsize (超長言語対応)。
+    expect(OVERLAY).toMatch(/numberOfLines=\{2\}/);
+    expect(OVERLAY).toMatch(/ellipsizeMode="tail"/);
+    // タイトルは中央揃え (縦並びの中心線に沿わせる)。
+    expect(OVERLAY).toMatch(/textAlign:\s*'center'/);
+    // カードは画面幅 90% まで広げる (横並びの 360px 上限を撤廃して超長文に追随)。
+    expect(OVERLAY).toMatch(/maxWidth:\s*'90%'/);
+  });
+
   test('3. 遅延表示: delayMs 経過前に閉じれば出さない (瞬間完了のチラつき防止)', () => {
     // shown state を delayMs の setTimeout で立ち上げ、Modal visible は shown を使う
     expect(OVERLAY).toMatch(/setShown/);

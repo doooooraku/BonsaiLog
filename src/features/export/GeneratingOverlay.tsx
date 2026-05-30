@@ -88,9 +88,14 @@ export function GeneratingOverlay({
           accessibilityRole="alert"
           testID="e2e_export_generating_overlay"
         >
-          <View style={styles.headerRow}>
+          <View style={styles.headerCol}>
             {format ? <ExportFormatBadge fmt={format} size={40} /> : null}
-            <ThemedText style={styles.title} testID="e2e_export_generating_title">
+            <ThemedText
+              style={styles.title}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+              testID="e2e_export_generating_title"
+            >
               {title ?? t('exportGeneratingTitle')}
             </ThemedText>
           </View>
@@ -132,15 +137,19 @@ const styles = StyleSheet.create({
   },
   card: {
     minWidth: 260,
-    maxWidth: 360,
+    maxWidth: '90%',
     backgroundColor: BG_PRIMARY,
     borderRadius: 16,
     paddingVertical: 24,
     paddingHorizontal: 24,
     gap: 20,
   },
-  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  title: { flex: 1, fontSize: 16, fontWeight: '500', color: TEXT_PRIMARY },
+  // Sess56: バッジを上、タイトルを下に縦並びでカード幅をフルに使い、19 言語×5 種別での
+  // 中途半端な折り返し (例: 「個別盆栽レポート を / 生成中」「中」孤立行) を構造的に解消。
+  // 横並び (flex:1 で title が wrap) では多言語超長文や種別名長で破綻するため、縦並び + 中央寄せ
+  // + numberOfLines={2} ellipsize の組み合わせで保険を掛ける。詳細は ADR-0016 Sess56 Amend 参照。
+  headerCol: { flexDirection: 'column', alignItems: 'center', gap: 12 },
+  title: { fontSize: 16, fontWeight: '500', color: TEXT_PRIMARY, textAlign: 'center' },
   slowHint: { fontSize: 13, lineHeight: 19, color: TEXT_SECONDARY, textAlign: 'center' },
   footerRow: { flexDirection: 'row', justifyContent: 'flex-end' },
   cancel: {
