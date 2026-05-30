@@ -6,7 +6,6 @@
  *   2026-05-04 セッションの実機検証で「pnpm verify 全 9 ゲート緑 + Gradle BUILD SUCCESSFUL
  *   + APK インストール成功」だが、起動 / 操作で複数のクラッシュ + 警告が判明:
  *     - ULIDError: ulid v3 が React Native の Web Crypto 未搭載で SIGSEGV 級失敗
- *     - libskia.a 不在: Skia の install-libs.js postinstall がスキップされ Gradle CMake fail
  *     - VirtualizedList nesting 警告: ScrollView 直下の FlatList で LogBox エラー
  *
  *   いずれも JS test / type-check / lint では検知不能。CLAUDE.md §9
@@ -15,16 +14,17 @@
  * 検査対象:
  *   1. app/_layout.tsx の最上部に `react-native-get-random-values` polyfill が import されている
  *      (ulid v3 / uuid v9 / crypto-js 等の Web Crypto 依存ライブラリの起動時クラッシュ防止)
- *   2. node_modules/@shopify/react-native-skia/libs/android/<abi>/ が全 4 ABI 存在
- *      (postinstall 漏れによる libskia.a 不在 → Gradle CMake fail 防止)
- *   3. app/ + src/ 配下の .tsx で <ScrollView> 直下に <FlatList> / <SectionList> がない
+ *   2. app/ + src/ 配下の .tsx で <ScrollView> 直下に <FlatList> / <SectionList> がない
  *      (VirtualizedList nesting LogBox エラー防止)
+ *
+ * 備考:
+ *   旧「検査 2: @shopify/react-native-skia libs/android 全 4 ABI」 は Phase 7 (ADR-0039
+ *   + PR #901) で skia 撤去のため削除済 (Sess56 docs/code 整合性監査)。
  *
  * 終了コード: 0 = OK、1 = 検出
  *
  * Related:
  *   - docs/reference/tasks/lessons/runtime.md (ULIDError lesson)
- *   - docs/reference/tasks/lessons/build.md (Skia install-libs.js lesson)
  *   - PR #179 (polyfill 導入) / PR #183 (VirtualizedList 修正) / PR #184 (本 script 起源、close)
  *   - Issue #289 (本 script 再起票、本 PR で実装)
  */
@@ -72,36 +72,7 @@ function checkPolyfillImport() {
 }
 
 // ---------------------------------------------------------------------------
-// 検査 2: @shopify/react-native-skia の libs/android が全 4 ABI 存在
-// ---------------------------------------------------------------------------
-function checkSkiaLibs() {
-  const skiaPkgPath = join(ROOT, 'node_modules/@shopify/react-native-skia');
-  if (!existsSync(skiaPkgPath)) return; // skia 未使用ならスキップ
-
-  const libsAndroidPath = join(skiaPkgPath, 'libs/android');
-  if (!existsSync(libsAndroidPath)) {
-    errors.push(
-      '@shopify/react-native-skia/libs/android/ ディレクトリが存在しません。' +
-        '\n  install-libs.js postinstall がスキップされた可能性。' +
-        '\n  対処: `node node_modules/@shopify/react-native-skia/scripts/install-libs.js`' +
-        '\n  根拠: docs/reference/tasks/lessons/build.md「Skia libskia.a 不在」',
-    );
-    return;
-  }
-
-  const requiredAbis = ['arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'];
-  const missing = requiredAbis.filter((abi) => !existsSync(join(libsAndroidPath, abi)));
-  if (missing.length > 0) {
-    errors.push(
-      `@shopify/react-native-skia の libs/android で以下の ABI が不足: ${missing.join(', ')}` +
-        '\n  対処: `node node_modules/@shopify/react-native-skia/scripts/install-libs.js`' +
-        '\n  根拠: docs/reference/tasks/lessons/build.md「Skia libskia.a 不在」',
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// 検査 3: <ScrollView> 直下に <FlatList> / <SectionList> / <VirtualizedList> がない
+// 検査 2: <ScrollView> 直下に <FlatList> / <SectionList> / <VirtualizedList> がない
 // ---------------------------------------------------------------------------
 function checkVirtualizedListNesting() {
   const targets = ['app', 'src'];
@@ -152,7 +123,6 @@ function walkTsx(dir, callback) {
 // 実行
 // ---------------------------------------------------------------------------
 checkPolyfillImport();
-checkSkiaLibs();
 checkVirtualizedListNesting();
 
 if (errors.length > 0) {
@@ -165,6 +135,4 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
-console.log(
-  '✅ native-runtime-check passed (polyfill / Skia libs / VirtualizedList nesting 全 OK)',
-);
+console.log('✅ native-runtime-check passed (polyfill / VirtualizedList nesting 全 OK)');

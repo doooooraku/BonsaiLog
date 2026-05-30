@@ -687,186 +687,9 @@ const handleSave = async (input: CreateEventInput) => {
 
 ---
 
-## §9. F-04 水やり履歴の可視化 — **撤廃済 (ADR-0039、 Sess31 PR-B、 2026-05-22)**
+## §9. F-04 水やり履歴の可視化 — 撤廃 (ADR-0039、 2026-05-22)
 
-> **2026-05-22 撤廃**: 本機能は ADR-0039 で完全削除。 user 判断「水やりは土の湿り気・天気・気温・湿度依存で履歴可視化は意思決定価値なし」 + ADR-0011 (記録のみ哲学) 整合。
->
-> **削除済**: ヒートマップ (`WateringHeatmap.tsx`) / 月別カレンダー (`CrossWateringCalendar.tsx`) / 日別詳細 modal / `watering-history` 画面 / CareHub「水やり履歴」 card。
->
-> **維持**: 「最後の水やりから N 日」 テキスト (`LastWateredText.tsx`、 盆栽カード上の事実表示)。
->
-> 以下の本文は削除前の仕様。 履歴維持 (R-2) のため残置。 ADR-0039 が現在の正。
-
-### §9.1 目的 (旧仕様)
-
-水やり記録を**ヒートマップ**と「最後の水やりから X 日」で可視化する。盆栽健康問題の 98% が水やり由来（Bonsai Direct 公式）ゆえ、記録習慣がコア価値。Free / Pro 関係なく全機能利用可（ADR-0013）。
-
-### §9.2 画面 / 入口 (ADR-0020 改訂)
-
-- 盆栽詳細のサマリセクション（「最後の水やりから X 日」テキスト + 「水やり履歴を見る」リンク）
-- **個別盆栽の水やり履歴画面 `app/(tabs)/bonsai/[id]/watering.tsx`** (ADR-0020 v1.x-6 整合):
-  - 30 / 90 / 365 日切替セグメント (windowDays prop で動的サイズ: 5×7 / 13×7 / 53×7)
-  - ヒートマップ (Skia)、4 サマリー (連続記録 / 過去 N 日記録日数 / 回数 / 2 回の日)
-  - 注記: 「これは記録の表示です。水やりの判定はしません」(ADR-0011 哲学)
-- **全盆栽サマリータブ (stats) は廃止** (ADR-0020 で削除、集約モード K2 達成率も廃止)
-
-### §9.3 期待動作
-
-#### §9.3.1 「最後の水やりから X 日」表示
-
-```typescript
-// components/DaysSinceWatering.tsx
-export function DaysSinceWatering({ bonsaiId }: { bonsaiId: string }) {
-  const { data: lastEvent } = useLiveQuery(
-    db.select().from(events)
-      .where(and(
-        eq(events.bonsai_id, bonsaiId),
-        eq(events.type, 'watering'),
-        eq(events.status, 'logged'),
-        isNull(events.deleted_at)
-      ))
-      .orderBy(desc(events.occurred_at_utc))
-      .limit(1)
-  );
-
-  if (!lastEvent) return <Text size="$6">{t('water.never')}</Text>;
-
-  const days = differenceInLocalDays(new Date(), lastEvent.occurred_at_utc, lastEvent.tz_offset_min);
-
-  if (days === 0) return <Text size="$10" weight="bold">{t('water.today')}</Text>;
-  if (days <= 30) return <Text size="$10" weight="bold">{t('water.days_ago', { count: days })}</Text>;
-  if (days <= 365) return <Text size="$8" weight="regular" color="$color10">{t('water.days_ago', { count: days })}</Text>;
-  return <Text size="$8" weight="regular" color="$color10">{t('water.over_year')}</Text>;
-}
-```
-
-- フォントサイズ: 24-28pt Bold（0-30 日）/ 24pt Regular（31-365 日 + 1 年超）
-- コントラスト: WCAG AAA 7:1 以上（`#1A1A1A` on `#FFFFFF`）
-- 集約モード関連の記述は **ADR-0020 v1.x-7 で廃止済** (個別ヒートマップ詳細画面に統合)
-
-#### §9.3.2 ヒートマップ仕様
-
-- 描画: `@shopify/react-native-skia` の `<Atlas>` API で 365 セル一括 GPU 描画
-- 形状: **年モード = 7 行 × 52 列**（GitHub Contribution Graph 風）/ **月モード = 7 行 × 5 列**
-- 期間切替: セグメンテッドコントロール `[ 月 ] [ 年 ]`、年送り `[◀ 2025] [2026] [2027 ▶]` / 月送り併設
-- 配色: ColorBrewer 2.0 Greens 4-class（color-blind safe）
-  - L0 (空): `#F5F8F5` / L1: `#BAE4B3` / L2: `#74C476` / L3: `#238B45`
-- 数字併記: 各セルに白文字オーバーレイ（"1" "2" "3+"）— WCAG 1.4.1 / Apple Differentiate Without Color 評価基準
-- 今日のセル: 太枠 2dp `#238B45` でハイライト
-- 未来日: 灰色 `#E0E0E0` で「未来」と区別
-- 過去のみ表示（status='logged' のみ、未来予定 status='planned' は F-02 タイムラインタブで表示）
-- **判定は行わない**（「少なすぎます」等の警告を出さない、constraints §5-2 禁止語）
-
-```mermaid
-graph LR
-  A[SQLite events WHERE type='watering' AND status='logged'] --> B[aggregateByDay 純関数]
-  B --> C[ローカル日付で 365 / 30 配列に変換]
-  C --> D[K5 ハイブリッド凡例指標を計算]
-  D --> E[Skia Atlas で sprite 描画]
-```
-
-#### §9.3.3 凡例（K1 個別モードのみ、ADR-0020 v1.x-7 で集約 K2 廃止）
-
-- **個別盆栽の水やり履歴画面 (`bonsai/[id]/watering.tsx`)**:
-  ```
-  凡例 (この盆栽への水やり回数):
-  □ 0 回  ■ 1 回  ■ 2 回  ■ 3+ 回
-  ```
-- 集約モード (K2 達成率 %) は ADR-0020 で廃止、stats タブ削除に伴い削除済
-
-#### §9.3.4 タップ詳細（Apple Health 風 シート）
-
-- **実装** (ADR-0024 Notes Amended 2026-05-15 改訂): Expo Router `presentation: 'modal'` 一本化 (formSheet 全廃、`(modals)/watering-day-detail` 経由)
-- **過去経緯** (Phase G 着手前): `@gorhom/bottom-sheet` v5.2.13 → Phase G で廃止 (ADR-0024 / Issue #475 close 済)
-- ヒートマップセルをタップ → 下から シート がせり上がる（画面遷移なし、シニア UX◎）
-- シート内容:
-  - 日付（"2026年4月15日 (水)"）
-  - 水やり回数
-  - その日の events リスト（時刻 + 盆栽名）
-  - `[ + この日に水やり記録 ]` ボタン
-- 閉じる操作: 下スワイプ / シート外タップ / 背景タップ / OS 戻るボタン
-
-#### §9.3.5 フィルター — ADR-0020 v1.x-7 で削除
-
-- 旧 stats タブの BonsaiFilterSheet (F1+F3 ハイブリッド) は ADR-0020 で廃止
-- 個別ヒートマップは盆栽詳細画面に統合済 (盆栽選択不要、`bonsai/[id]/watering.tsx`)
-- 検索は探すタブ (`/(tabs)/find`) で別途対応 (検索履歴 + chip + マッチハイライト)
-
-#### §9.3.6 画面構成 UI
-
-```
-┌─────────────────────────────────────┐
-│ ←  黒松「太郎」                  ⋮  │
-├─────────────────────────────────────┤
-│        最後の水やりから              │
-│            3 日                      │  ← 28pt Bold
-│    [ 💧 今日の水やりを記録 ]         │
-├─────────────────────────────────────┤
-│  📊 2026年の水やり実績               │
-│  [ 月 ] [ 年 ]                       │  ← セグメンテッドコントロール
-│  [◀ 2025] [2026] [2027 ▶]           │
-│                                      │
-│  月  ■■□■■■□■□■■■■■■■■□■■  │  ← Skia ヒートマップ 7×52
-│  ...                                  │
-│                                      │
-│  凡例 (この盆栽への水やり回数):       │
-│  □ 0回  ■ 1回  ■ 2回  ■ 3+回      │
-│                                      │
-│  記録日数: 87 / 365 日 (24%)         │  ← 提案 F: 年間サマリー数字
-│  記録件数: 95 件                     │  ← 提案 H: データ件数
-└─────────────────────────────────────┘
-```
-
-### §9.4 境界値テーブル
-
-| 項目                        | 境界 | 期待動作                                                      |
-| --------------------------- | ---- | ------------------------------------------------------------- |
-| 水やり記録 0 件             | 下限 | 「まだ記録がありません」+ 記録ボタン                          |
-| 水やり記録 1 件（今日）     | 境界 | 「今日、水やりしました」                                      |
-| 水やり記録 1 件（昨日）     | 境界 | 「最後の水やりから 1 日」                                     |
-| 水やり記録 1 件（1 年前）   | 境界 | 「最後の水やりから 365 日」（警告表示しない）                 |
-| 水やり記録 1 件（1 年超）   | 境界 | 「最後の水やりから 1 年以上」                                 |
-| 同日 2 回の水やり           | 境界 | ヒートマップセル内に "2" 数字オーバーレイ                     |
-| 同日 4 回以上の水やり       | 境界 | ヒートマップセル内に "3+" 数字オーバーレイ                    |
-| 未来日時の記録              | 異常 | バリデーション NG（F-02 で対処、ADR-0008）                    |
-| TZ 境界（JST 23:55 水やり） | 境界 | ローカル日付で当日のセルにカウント                            |
-| 全盆栽集約モード            | -    | **ADR-0020 v1.x-7 で廃止** (個別ヒートマップ詳細画面に統合済) |
-| 100 本フィルター切替        | 性能 | 60 FPS でスムーズアニメ                                       |
-
-### §9.5 エラーフロー
-
-| エラー               | 表示                              | 対応                      |
-| -------------------- | --------------------------------- | ------------------------- |
-| ヒートマップ描画失敗 | 「データを読み込めませんでした」  | 再試行                    |
-| events データ破損    | 「データを修復してください」      | 設定 → 整合性チェック機能 |
-| Hermes Intl エラー   | フォールバックで `MM/DD` 形式表示 | @formatjs polyfill 追加   |
-
-### §9.6 受け入れ条件
-
-- [x] ヒートマップが windowDays に応じた構成で表示される (30:5×7 / 90:13×7 / 365:53×7、ADR-0020 v1.x-6)
-- [x] ColorBrewer Greens 4 段階配色 (個別モード K1 のみ、ADR-0020 v1.x-7 で集約 K2 廃止)
-- [x] 凡例が画面下部に常時表示 (個別モード固定)
-- [x] 「最後から X 日」が画面上部に 28pt NotoSerifJP で表示 (ADR-0020 v1.x-6 SS 222921 整合)
-- [x] セルタップ → BottomSheet で日別詳細表示
-- [x] 30/90/365 切替セグメント (ADR-0020 v1.x-6)
-- [x] 4 サマリー: 連続記録 / 過去 N 日記録日数 / 回数 / 2 回の日 (ADR-0020 v1.x-6)
-- [x] 過去のみ表示（未来予定は非表示）
-- [x] 「警告」「不足」「べき」等の判定語が UI に出ない（CI `pnpm i18n:forbidden`）
-- [x] Free / Pro 関係なく全機能利用可
-- [x] 19 言語ローカライズ
-- [x] WCAG AA 4.5:1 (ADR-0020 Phase 10 で TEXT_MUTED #767066 補正)
-- [ ] iOS Color Filters Grayscale モードで数字併記が機能（手動チェック）
-
-### §9.7 対応テスト
-
-- Jest: `__tests__/features/watering/wateringHeatmap.test.ts` (個別モード純関数、TZ 境界、空日)
-- Jest: `__tests__/features/watering/heatmapA11y.test.ts` (a11y label / 凡例)
-- Maestro: `maestro/flows/watering-heatmap.yml` (盆栽詳細 → 水やり履歴 → ヒートマップ → セルタップ)
-- 廃止: `aggregateWatering.test.ts` / `bonsaiFilter.test.ts` (ADR-0020 v1.x-7 集約モード削除に伴い)
-
-詳細は ADR-0013 (Amended by ADR-0020) + ADR-0020 を正とする。
-
----
+詳細は [ADR-0039](../adr/ADR-0039-watering-heatmap-removal.md) を参照。 維持は「最後の水やりから N 日」 テキスト (`LastWateredText.tsx`、 盆栽カード上の事実表示、 F-02 統合) のみ。
 
 ## §10. F-05 「気遣い型」予定確認ポップアップ
 
@@ -2554,24 +2377,17 @@ stateDiagram-v2
 
 **前回モードは `previousMode` として AsyncStorage に保存** (BR1)。
 
-#### §20.3.2 Tamagui テーマ統合
+#### §20.3.2 テーマ解決 + 配信 (useColors hook、 ADR-0015 Amendment 2026-05-30)
+
+Tamagui は Phase 7 で撤去済 (ADR-0015 Amendment)。 現実装は `src/core/theme/useColors.ts` + plain hex で実現。
 
 ```tsx
 // app/_layout.tsx
-import { Appearance, useColorScheme } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
+import { useColorScheme } from 'react-native';
 
 export default function RootLayout() {
-  const themeMode = useThemeStore((s) => s.themeMode); // 'auto' | 'light' | 'dark' | 'outdoor'
-  const systemScheme = useColorScheme(); // 'light' | 'dark' | null
-
-  const resolved = useMemo(() => resolveTheme(themeMode, systemScheme), [themeMode, systemScheme]);
-
-  return (
-    <TamaguiProvider config={config} defaultTheme={resolved}>
-      <Slot />
-    </TamaguiProvider>
-  );
+  // useColors 内部で themeMode + systemScheme + outdoor を解決
+  return <Slot />;
 }
 
 // src/core/theme/resolveTheme.ts (純関数)
@@ -2582,6 +2398,14 @@ export function resolveTheme(
   if (mode === 'outdoor') return 'outdoor';
   if (mode === 'auto') return systemColorScheme === 'dark' ? 'dark' : 'light'; // null → light (IM1-A)
   return mode;
+}
+
+// src/core/theme/useColors.ts (色取得 hook、 各 component で呼ぶ)
+export function useColors() {
+  const themeMode = useThemeStore((s) => s.themeMode);
+  const systemScheme = useColorScheme();
+  const resolved = resolveTheme(themeMode, systemScheme);
+  return COLORS[resolved]; // plain hex map (下記 §20.3.3 を参照)
 }
 ```
 
@@ -2596,10 +2420,6 @@ export function resolveTheme(
 | `muted`               | #4A4A4A (8.6:1 AAA)        | #A0A0A0 (8.5:1 AAA)             | #000000 (純黒)              |
 | `borderColor`         | #E0E0E0                    | #2C2C2C                         | #000000 (純黒、線幅 2dp+)   |
 | `accent`              | #2E7D32 (Mat green、7.4:1) | **#7BC97D** (M3 tone 80、8.5:1) | **#1B5E20** (緑単色、9.7:1) |
-| `bonsai_heatmap_l0`   | #F5F8F5 (ADR-0013 継続)    | #1E1E1E                         | #FFFFFF                     |
-| `bonsai_heatmap_l1`   | #BAE4B3                    | #2D4A2E                         | #A8D5A8                     |
-| `bonsai_heatmap_l2`   | #74C476                    | #4A8A4D                         | #4A8A4D                     |
-| `bonsai_heatmap_l3`   | #238B45 (4.7:1 + 数字併記) | #7BC97D (8.5:1 AAA)             | #1B5E20 (9.7:1 AAA)         |
 | `bonsai_today_border` | #238B45 太枠 2dp           | #7BC97D 太枠 2dp                | #000000 太枠 2dp            |
 
 **屋外モード追加要件**:
@@ -2613,20 +2433,20 @@ export function resolveTheme(
 
 ```tsx
 const reduceMotion = useReducedMotion(); // react-native-reanimated
-const duration = reduceMotion ? 0 : 200; // F-15: 200ms 標準 (Tamagui quick)
+const duration = reduceMotion ? 0 : 200; // F-15: 200ms 標準
 ```
 
 #### §20.3.5 全画面ヘッダー太陽アイコン (OA1)
 
 ```tsx
 // src/components/HeaderSunIcon.tsx
-import { Sun, SunDim } from '@tamagui/lucide-icons';
+import { Sun, SunDim } from 'lucide-react-native';
 import { useThemeStore } from '@/core/theme/themeStore';
-import { useTheme } from 'tamagui';
+import { useColors } from '@/core/theme/useColors';
 
 export function HeaderSunIcon() {
   const { themeMode, setThemeMode, previousMode } = useThemeStore();
-  const theme = useTheme();
+  const colors = useColors();
   const isOutdoor = themeMode === 'outdoor';
   const Icon = isOutdoor ? SunDim : Sun;
 
@@ -2643,7 +2463,7 @@ export function HeaderSunIcon() {
       accessibilityLabel="屋外モードを切り替える"
       accessibilityRole="button"
     >
-      <Icon size={24} color={theme.color.val} />
+      <Icon size={24} color={colors.color} />
     </Pressable>
   );
 }
@@ -2684,23 +2504,22 @@ return (
 | reduced motion ON                     | 境界     | アニメーション 0ms (A1)                                  |
 | AAA 7:1 (light color #1A1A1A on #FFF) | 達成     | 16:1 (楽勝)                                              |
 | AAA 7:1 (outdoor color)               | 達成     | 21:1 (理論上限)                                          |
-| ヒートマップ L0 vs L1 (outdoor)       | 1.4.11   | 1.6:1、数字「1」併記 + 枠線 1dp 黒で識別補完             |
 | AsyncStorage 保存失敗                 | 異常     | 無音 + Sentry ログ、セッション内反映、再起動で戻る (PE1) |
-| OS dark mode 切替時 (auto モード)     | 境界     | 即時アプリ再描画、ヒートマップも 1 フレーム以内 (RD1)    |
-| TZ 変更                               | 影響なし | F-15 はテーマのみ、F-04/F-16 は ADR-0014 で対応          |
+| OS dark mode 切替時 (auto モード)     | 境界     | 即時アプリ再描画 (RD1)                                   |
+| TZ 変更                               | 影響なし | F-15 はテーマのみ、F-16 は ADR-0014 で対応               |
 
 ### §20.5 エラーフロー
 
-| エラー                 | 表示                                   | 対応                             |
-| ---------------------- | -------------------------------------- | -------------------------------- |
-| AsyncStorage 保存失敗  | 無音 (Sentry ログのみ)                 | セッション内反映、再起動で前回値 |
-| Tamagui theme 解決失敗 | light フォールバック                   | Sentry ログ、ユーザー無通知      |
-| 直 hex 違反 (CI 検出)  | ESLint エラー (`no-direct-hex-in-jsx`) | コード修正必須、CI block         |
+| エラー                | 表示                                   | 対応                             |
+| --------------------- | -------------------------------------- | -------------------------------- |
+| AsyncStorage 保存失敗 | 無音 (Sentry ログのみ)                 | セッション内反映、再起動で前回値 |
+| テーマ解決失敗        | light フォールバック                   | Sentry ログ、ユーザー無通知      |
+| 直 hex 違反 (CI 検出) | ESLint エラー (`no-direct-hex-in-jsx`) | コード修正必須、CI block         |
 
 ### §20.6 受け入れ条件
 
-- [ ] tamagui.config.ts に light / dark / outdoor の 3 themes (neonPink/cyberBlue 削除確認)
-- [ ] 全 themes で 11 トークン (background / surface / surface2 / color / muted / borderColor / accent / bonsai_heatmap_l0..l3 / bonsai_today_border) 保持
+- [ ] `src/core/theme/colors.ts` に light / dark / outdoor の 3 hex マップ (ADR-0015 Amendment、 Tamagui 撤去後)
+- [ ] 全 mode で 7 トークン (background / surface / surface2 / color / muted / borderColor / accent / bonsai_today_border) 保持
 - [ ] light: AAA 16:1 (color on background)
 - [ ] dark: Material 3 #121212 + AAA 14.5:1
 - [ ] outdoor: 21:1 (理論上限) + 緑単色 #1B5E20 (9.7:1)
@@ -2714,7 +2533,6 @@ return (
 - [ ] AsyncStorage 永続化失敗時無音 (PE1)
 - [ ] Settings UI セグメント (3 つ) + 屋外トグル (UI1)
 - [ ] 全画面ヘッダー右上太陽アイコン (OA1)、48×48dp タッチ
-- [ ] F-04 ヒートマップが 3 mode で即時再描画 (RD1、Skia Atlas worklet 内 1 フレーム)
 - [ ] F-08 写真自体は変更なし、UI 枠のみテーマ追従 (PH1)
 - [ ] BottomSheet が屋外モード時 純白/純黒 (BS1)
 - [ ] Lucide アイコン全 theme.color 参照 (IC1)

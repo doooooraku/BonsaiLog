@@ -137,7 +137,7 @@ export default function OnboardingTutScreen() {
   );
 }
 
-/** Lucide icon 名 → 絵文字 fallback (将来 @tamagui/lucide-icons で置換予定)。 */
+/** Lucide icon 名 → 絵文字 fallback。 */
 const ICON_FALLBACK: Record<string, string> = {
   'book-open': '📖',
   leaf: '🌿',

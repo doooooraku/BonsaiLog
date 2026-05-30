@@ -130,7 +130,8 @@ export default function RootLayout() {
   }
 
   return (
-    // F-04 Phase E (Issue #29): @gorhom/bottom-sheet に必要な GestureHandlerRootView を root に配置
+    // GestureHandlerRootView: React Navigation native presentation (modal/formSheet) の
+    // swipe-down dismiss などのジェスチャ処理に必須 (react-native-gesture-handler の root wrapper)
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: headerColors.background }}>
       <ThemeProvider value={navigationTheme}>
         <Stack

@@ -1,10 +1,8 @@
 /**
- * 作業選択 画面 (Phase G2 part 1、ADR-0024 Accepted)。
+ * 作業選択 画面 (ADR-0024 で native presentation `(modals)/work-picker` に移行、 `presentation: 'modal'`)。
  *
- * 旧 `WorkPickerSheet.tsx` (`@gorhom/bottom-sheet` snap 62%) を画面化、
- * `(modals)/work-picker` route で `presentation: 'modal'` 配下に配置 (ADR-0024 Notes Amended
- * 2026-05-15 で formSheet → modal 一本化)。Sess16 PR-A1 で nav title を mode URL param で
- * 動的化 (log → 「作業を記録」 / schedule → 「予定を追加」)。
+ * Sess16 PR-A1 で nav title を mode URL param で動的化
+ * (log → 「作業を記録」 / schedule → 「予定を追加」)。
  *
  * 14 種別の作業タイプを 3 列 grid (WorkTypeIcon SVG outline + ラベル) で表示。
  * Sess16 PR-Q (2026-05-20): candle_cut の松類限定表示を撤廃、 user 真意「どんな盆栽でも全種別表示」

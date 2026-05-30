@@ -193,4 +193,5 @@ Phase G 完了後に以下の自動化を起票:
 - ADR-0021 (ui-diff pipeline、testID 規約 確立元)
 - Maestro 公式 docs: <https://docs.maestro.dev/api-reference/commands/waitforanimationtoend>
 - Maestro Issue #1703 (animation flaky、"not planned" で close): <https://github.com/mobile-dev-inc/Maestro/issues/1703>
-- gorhom Issue #1753 (BottomSheet v4.6.0 Maestro バグ): <https://github.com/gorhom/react-native-bottom-sheet/issues/1753>
+- gorhom Issue #1753 (BottomSheet v4.6.0 Maestro バグ、 歴史記録): <https://github.com/gorhom/react-native-bottom-sheet/issues/1753>
+  - 注: `@gorhom/bottom-sheet` は ADR-0024 (Phase G、 2026-05-12) で全廃済。 現在は Expo Router native presentation (`(modals)` + `formSheet`/`modal`) を使用。 本リンクは過去経緯の参考として残置

@@ -36,7 +36,8 @@ const REQUIRED_TOKENS = [
 
 if (!existsSync(CONFIG_PATH)) {
   // Phase 7 K5: Tamagui 撤去後は本 check は obsolete (Tamagui 固有の themes 構造を検査するスクリプト)。
-  // 現行 theme tokens の正は src/core/theme/colors.ts + ADR-0042、検査は theme:sot で実施する。
+  // 現行 theme tokens の正は src/core/theme/colors.ts + design_system.md §6 + ADR-0042、検査は theme:sot で実施する。
+  // 本 script は graceful skip 維持 (将来 Tamagui 再導入時の reference として残置)。
   console.log(
     'ℹ️  tamagui.config.ts 不在 (Phase 7 K5 で Tamagui 撤去済) — theme:tokens は skip。token SoT 検査は theme:sot を参照。',
   );

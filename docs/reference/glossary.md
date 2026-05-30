@@ -346,52 +346,9 @@
 - ダークモード：通常の暗色テーマ
 - 屋外モード：高輝度モード（直射日光下での視認性向上、F-15）
 
-### ヒートマップ（Heatmap） — **廃止済 (ADR-0039、 Sess31 PR-B、 2026-05-22)**
+### ヒートマップ / Skia / Skia Atlas / ColorBrewer / 凡例 / 達成率 / Apple Health 風 BottomSheet — 撤廃 (ADR-0039、 2026-05-22)
 
-- 定義：データの量を色濃淡で表現する図表。 F-04 で水やり実績を 7 行 × N 列で表示していた (履歴維持のため定義は残置、 但し実装は撤廃済)
-- 形状: GitHub Contribution Graph 風（ADR-0013、 Superseded）
-- 配色: ColorBrewer 2.0 Greens 4-class（color-blind safe）
-- 廃止理由: ADR-0039 参照 (user 判断「履歴可視化は意思決定価値なし」 + ADR-0011 整合)
-
-### Skia / Skia Atlas — **F-04 利用は廃止済 (ADR-0039、 Sess31 PR-B)**
-
-- Skia: Google が開発した 2D 描画エンジン（Chrome / Android 標準）。React Native では `@shopify/react-native-skia` で利用
-- Skia Atlas: 同形状のスプライト（小さな絵）を一括 GPU 描画する API。 F-04 ヒートマップで 365 セルを 60-120 FPS 描画していた (廃止)
-- 後続: `@shopify/react-native-skia` 依存自体の削除は PR-C で検証予定 (grep で他用途ゼロ確認後)
-
-### BottomSheet（ボトムシート）
-
-- 定義：画面下からせり上がる「シート型モーダル」。iOS 13+ の標準 UI、Apple Health 等で採用
-- ライブラリ: `@gorhom/bottom-sheet`（業界標準、a11y 対応、TypeScript 完全）
-- F-04 ではヒートマップセルタップ時の日別詳細表示に使用
-
-### セグメンテッドコントロール（Segmented Control）
-
-- 定義：横並びの 2-3 個から 1 個選ぶボタン群（iOS 標準 UI）
-- F-04 では `[ 月 ] [ 年 ]` の期間切替に使用
-
-### ColorBrewer
-
-- 定義：Cynthia Brewer 教授（Penn State 大学）が地図のために設計した「色弱の人にも識別できる配色集」。学術標準
-- 公式: https://colorbrewer2.org/
-- F-04 では Greens 4-class（`#F5F8F5 / #BAE4B3 / #74C476 / #238B45`）採用
-
-### 凡例（Legend、K5 ハイブリッド）
-
-- 定義：ヒートマップの色 → 意味の対応表。画面下部に常時表示
-- K5 ハイブリッド（ADR-0013）:
-  - 個別盆栽: `凡例 (この盆栽への水やり回数): □ 0回 ■ 1回 ■ 2回 ■ 3+回`
-  - 全盆栽集約: `凡例 (持っている盆栽のうち水やった割合): □ 0% ■ 1-33% ■ 34-66% ■ 67-100%`
-
-### 達成率（Achievement Rate）
-
-- 定義：「持っている盆栽のうち水やった割合 %」。ライトユーザー（1 本持ち）と盆栽園プロ（100 本持ち）の達成感格差を解消する正規化指標
-- F-04 stats タブ集約モードで使用（K2、ADR-0013）
-
-### Apple Health 風 BottomSheet
-
-- 定義：iPhone 標準ヘルスケアアプリのデータタップ時 UI を踏襲。背景にうっすら元画面が残り、シートを下にスワイプで閉じる
-- F-04 ヒートマップセルタップで採用、画面遷移なしのシニア UX
+F-04 水やり履歴の可視化機能 (ヒートマップ + 関連 UI / Skia 描画 / Apple Health 風 BottomSheet) は ADR-0039 で完全撤廃。 詳細は [ADR-0039](../adr/ADR-0039-watering-heatmap-removal.md) を参照。 維持: 「最後の水やりから X 日」 テキストのみ (下記)。
 
 ### 「最後から X 日」（Days Since Watering）
 
@@ -474,7 +431,6 @@
 - 配置: F-02 タイムラインタブから push（タブバー追加なし、4 タブ維持）
 - 通知タップ後の遷移先（当日選択状態で開く）
 - 構造: 月単位カレンダー + dot 件数表現（1=`•`、2=`••`、3+=`•••`）+ 当日選択時に下部リスト表示
-- F-04 ヒートマップ（年俯瞰、水やり実績のみ）と役割分離
 
 ### Step 5 通知（Onboarding Step 5）
 
@@ -542,7 +498,7 @@
 ### monochromatic palette（単色濃淡配色）
 
 - 定義：1 色相の明度濃淡だけで階調を表現する配色方式
-- BonsaiLog 採用: F-04 ヒートマップ + F-15 屋外モード accent (緑単色 #1B5E20)
+- BonsaiLog 採用: F-15 屋外モード accent (緑単色 #1B5E20)
 - 利点: 色覚異常者 (P 型/D 型 = 日本男性 4-6.5%) も識別可、老眼者の青-紫弁別困難回避 (ADR-0015 OC1)
 
 ### userInterfaceStyle（Expo / iOS）
@@ -580,17 +536,16 @@
 - Material 3 推奨: surface (基本) / surface +1 / +2 / +3 / +4 / +5 で elevation 増
 - BonsaiLog dark theme: surface = #1E1E1E (+1) / surface2 = #242424 (+2) を採用 (ADR-0015)
 
-### bonsai\_\* プレフィクス（Tamagui トークン命名）
+### bonsai\_\* プレフィクス（テーマトークン命名）
 
-- 定義：Tamagui 標準キー (background / color 等) と独自トークンを区別するプレフィクス (ADR-0015 TN1)
-- 例: `bonsai_heatmap_l0..l3` (F-04 ヒートマップ 3 モード対応)、`bonsai_today_border` (今日のセル太枠)
-- 目的: 将来 Tamagui アップデート時のトークン名衝突回避
+- 定義：標準キー (background / color 等) と独自トークン (例: `bonsai_today_border`) を区別するプレフィクス
+- 注: Tamagui 撤去 (ADR-0015 Amendment 2026-05-30) 後は `src/core/theme/colors.ts` の plain hex マップで管理。 トークン命名規約は `docs/reference/design_system.md` §6 を参照
 
-### no-direct-hex-in-jsx（ESLint カスタムルール）
+### 直 hex 禁止ルール（ESLint）
 
-- 定義：JSX 内の `color` / `backgroundColor` / `borderColor` プロパティに直 hex (`#xxx`) を禁止するルール (ADR-0015 EL1)
-- 強制: `useTheme()` 経由のみ
-- 例外: tamagui.config.ts 内の tokens 定義のみ許可
+- 定義：JSX 内の `color` / `backgroundColor` / `borderColor` プロパティに直 hex (`#xxx`) を禁止
+- 強制: `useColors()` hook 経由のみ (ADR-0015 Amendment)
+- 例外: `src/core/theme/colors.ts` 内の hex 定義のみ許可
 - 目的: テーマ追加時の漏れ検出、構造的品質保護
 
 ### BOM (Byte Order Mark)
@@ -673,8 +628,6 @@
 - 定義：ユーザーが自分のデータを別の形式 / 別のサービスに持ち出せる権利・仕組み
 - BonsaiLog F-10 のキャッチ「あなたの記録を、あなたの手元へ。」(Design 参考)
 - GDPR / 業界標準で重視される概念
-
-### Apple Health 風 BottomSheet（再掲）
 
 ---
 

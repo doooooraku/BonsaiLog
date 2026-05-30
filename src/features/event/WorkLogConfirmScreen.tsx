@@ -1,8 +1,6 @@
 /**
- * 作業記録 詳細 入力画面 (Phase G2 part 2、ADR-0024 Accepted、 Sess19 PR-4 で直接 await 化)。
- *
- * 旧 `WorkLogConfirmSheet.tsx` (`@gorhom/bottom-sheet` snap 78%) を画面化、
- * `(modals)/work-log-confirm` route で `presentation: 'formSheet'` 配下に配置。
+ * 作業記録 詳細 入力画面 (ADR-0024 で native presentation `(modals)/work-log-confirm` に移行、
+ * `presentation: 'formSheet'`。 Sess19 PR-4 で直接 await 化)。
  *
  * Sess17 PR-G1: 14 種別固有 form を WorkLogTypeFormFields component に切り出し、
  * WorkLogConfirm (Single) と BulkLogConfirm (Bulk) で 1:1 UI 整合 (ADR-0029 D5)。
