@@ -265,8 +265,10 @@ export async function getRepresentativePhotoByEventId(eventId: string): Promise<
 }
 
 /**
- * 年次タイムライン用: 写真を taken_at の年でグルーピングして返却。
+ * 写真を taken_at の年でグルーピングして返却。
  * taken_at が NULL の写真は created_at 年でグルーピング。
+ * (Sess58: 「年次タイムライン用」 コメント削除 = paywallFeatureYearlyTimeline 撤廃整合、
+ *  function 自体は unused export として knip 検出済、 別 Phase クリーンアップ対象)
  */
 export async function getPhotosByBonsaiGroupedByYear(
   bonsaiId: string,

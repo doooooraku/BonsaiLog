@@ -299,7 +299,6 @@ function PaywallScreen({ onClose, onPurchase, onRestore }) {
           <FeatureRow name="作業履歴" free="∞" pro="∞" />
           <FeatureRow name="全データバックアップ(ZIP)" free="◎" pro="◎" />
           <FeatureRow name="CSV/PDFエクスポート" free="—" pro="◎" highlight />
-          <FeatureRow name="年次タイムライン画像" free="—" pro="◎" highlight />
           <FeatureRow name="テーマ" free="標準" pro="◎" />
           <div
             style={{

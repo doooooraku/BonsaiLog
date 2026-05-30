@@ -422,7 +422,6 @@ const baseEn = {
   paywallFeatureBackup: 'Full data backup (ZIP)',
   paywallFeatureCsv: 'CSV/PDF export',
   paywallFeaturePdf: 'PDF export',
-  paywallFeatureYearlyTimeline: 'Yearly timeline image',
   paywallFeatureNoAds: 'Ads',
   paywallFeatureNoAdsFreeValue: 'Shown',
   paywallFeatureNoAdsProValue: 'None',

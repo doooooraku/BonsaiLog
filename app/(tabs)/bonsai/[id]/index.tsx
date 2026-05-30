@@ -38,10 +38,11 @@ import { usePickerStore } from '@/src/stores/pickerStore';
 
 /**
  * 盆栽詳細画面 (P2-01 PR-D + P2-02 PR-C)。
- * - 基本情報 + 写真年次タイムライン
+ * - 基本情報 + 写真時系列管理
  * - 写真追加 (カメラ + ライブラリ、Free 3 枚制限)
  * - 写真タップでアクション (カバー写真設定 / 削除)
  * - アーカイブ (Issue #14 AC4)
+ * (Sess58: 「写真年次タイムライン」 表記撤廃 = paywallFeatureYearlyTimeline 整合)
  */
 export default function BonsaiDetailScreen() {
   const params = useLocalSearchParams<{ id: string; tab?: string; focusEventId?: string }>();

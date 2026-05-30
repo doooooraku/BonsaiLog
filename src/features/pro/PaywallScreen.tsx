@@ -222,7 +222,8 @@ export default function PaywallScreen() {
           {/* Issue #458 Phase 3: mockup `paywall-01.png` 整合で CSV/PDF を 1 行に統合
               (paywallFeaturePdf key は legacy で残置)。 */}
           <FeatureRow label={t('paywallFeatureCsv')} free="—" pro="◎" />
-          <FeatureRow label={t('paywallFeatureYearlyTimeline')} free="—" pro="◎" />
+          {/* Sess58: paywallFeatureYearlyTimeline (年次タイムライン画像) は実装ゼロの
+              幽霊機能だったため撤廃 (景品表示法/Apple Review 2.3.1 リスク回避)。 */}
           {/* Issue #335: mockup v1.0 「テーマ」 行追加。ADR-0015 整合 (theme は 3 mode 全 Free)、
               機能差なし = 両方 ◎ で表記。mockup の「標準/◎」 表記は古い情報、ADR 優先 (R-28)。 */}
           <FeatureRow label={t('paywallFeatureTheme')} free="◎" pro="◎" />

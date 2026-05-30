@@ -46,13 +46,15 @@ describe('PlanSection (Sess57 Repolog 風強化)', () => {
     expect(SRC).toContain("t('settingsViewProPlans')");
   });
 
-  test('5. Pro メリット bullet 4 項目 (paywallFeature* + settingsBenefitNoAds)', () => {
+  test('5. Pro メリット bullet 3 項目 (paywallFeature* + settingsBenefitNoAds)', () => {
     expect(SRC).toContain("'paywallFeatureCsv'");
-    expect(SRC).toContain("'paywallFeatureYearlyTimeline'");
     // Sess57 検証発覚: 「広告表示」 が意味曖昧なので「広告非表示」 専用 key に置換
     expect(SRC).toContain("'settingsBenefitNoAds'");
     expect(SRC).not.toContain("'paywallFeatureNoAds'");
     expect(SRC).toContain("'paywallFeatureBackup'");
+    // Sess58: paywallFeatureYearlyTimeline (年次タイムライン画像) は実装ゼロの
+    // 幽霊機能だったため撤廃 (景品表示法/Apple Review 2.3.1 リスク回避)。
+    expect(SRC).not.toContain("'paywallFeatureYearlyTimeline'");
   });
 
   test('6. Pro / Free 表示分岐 (isPro による条件レンダ)', () => {

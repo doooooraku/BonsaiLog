@@ -34,9 +34,11 @@ import { SettingsSection } from './SettingsSection';
 // Pro メリット bullet (既存 paywallFeature* + 短縮新規 settingsBenefitNoAds)。
 // paywallFeatureNoAds は機能名「広告表示」で意味が逆になる (Free にとってデメリットに読める)
 // ため、 「広告非表示」 / "No ads" のメリット表現に置換 (Sess57 実機検証で発覚)。
+// Sess58: paywallFeatureYearlyTimeline (年次タイムライン画像) は実装ゼロの
+// 幽霊機能だったため撤廃 (景品表示法/Apple Review 2.3.1 リスク回避)。
+// bullet 4→3 項目 (CSV/PDF + 広告非表示 + バックアップ)。
 const PRO_BENEFIT_KEYS: TranslationKey[] = [
   'paywallFeatureCsv',
-  'paywallFeatureYearlyTimeline',
   'settingsBenefitNoAds',
   'paywallFeatureBackup',
 ];

@@ -335,7 +335,7 @@ F-13 を以下の構成で実装する。
 **実装内容**:
 
 - `src/features/settings/PlanSection.tsx`: 既存 2 row (プラン badge + 復元) → 7 要素 (現在のプラン + 更新日 / 永久アクセス + 説明文 + Pro メリット bullet 4 + Primary CTA + 復元) に強化。 既存 testID 全保持 + 新規 `e2e_view_pro_plans`。
-- Pro メリット bullet は既存 `paywallFeatureCsv` / `paywallFeatureYearlyTimeline` / `paywallFeatureNoAds` / `paywallFeatureBackup` を流用 (19 言語翻訳済資産活用)。
+- Pro メリット bullet は既存 `paywallFeatureCsv` / `settingsBenefitNoAds` / `paywallFeatureBackup` を流用 (19 言語翻訳済資産活用)。 ※ Sess58 で `paywallFeatureYearlyTimeline` (年次タイムライン画像) は実装ゼロの幽霊機能だったため bullet から撤廃 (4→3 項目)。
 - `src/features/legal/LegalLinksRow.tsx` 新規作成 (Settings + Paywall 両画面で使用する共通 component)。
 - `PaywallScreen` Fine Print 直下に `<LegalLinksRow />` を追加 → Apple Review 3.1.1 / Google Play Data Safety で要求される規約掲載を満たす。
 - `legalService.getLegalLinks(lang?)` に lang 引数追加 — `lang === 'ja'` のとき URL 末尾に `ja/` を付与 (GitHub Pages /ja/ 版に切替)。
@@ -344,3 +344,34 @@ F-13 を以下の構成で実装する。
 **消化された AC**:
 
 - Phase 1c TODO の「Privacy Policy リンク (legalService 流用)」を完遂。
+
+---
+
+### Sess58 Amendment (2026-05-30): 年次タイムライン画像 (paywallFeatureYearlyTimeline) 撤廃
+
+議論セッション中 user 指摘「年次タイムライン画像って何？ そんな機能を作った覚えがありません」 を契機に調査、 **i18n key (paywallFeatureYearlyTimeline) + Paywall 比較表 + Settings Pro メリット bullet + 仕様書 4 ファイル + mockup の合計 10 箇所に「Pro 限定機能」 として表示されているが、 実装はゼロ** の幽霊機能と判明。
+
+**発生源**: PR #51 (P2-02 Phase 0、 1 年以上前) で「F-08 写真追加 + 年次タイムライン + Free 制限」 として企画されたが、 タイムライン部分は実装無し、 i18n key だけ確立。 ADR-0020 (Claude Design 採用) で「写真年次タイムラインを作業履歴チップに統合」 = 機能形態を変更したがクリーンアップ漏れ。 本 ADR Sess57 Amendment で Pro メリット bullet として流用していた。
+
+**法的リスク**:
+
+- 景品表示法第 5 条 (優良誤認表示): 機能無いのに「Pro なら使える」 と表示
+- Apple App Store Review Guideline 2.3.1 (Accurate Metadata): 未実装機能の Pro 表示は規約違反
+- 特定商取引法第 11 条 (誇大広告): サブスク契約取消事由
+- 消費者契約法第 4 条 (誤認): 重要事項誤認 = 契約取消事由
+
+**対処 (Sess58)**: X1 撤廃案採用 (R-17 4 段階で承認、 PR #910 想定)。
+
+- i18n 19 言語: `paywallFeatureYearlyTimeline` key 削除
+- `PaywallScreen.tsx`: 比較表 8→7 行 (年次画像行削除)
+- `PlanSection.tsx`: Pro メリット bullet 4→3 (`paywallFeatureCsv` + `settingsBenefitNoAds` + `paywallFeatureBackup`)
+- 仕様書 4 ファイル (basic_spec / constraints / functional_spec / product_strategy) + ADR + principles.md 整合
+- Marcus 35 歳ペルソナの Instagram 投稿価値は既存の個別 PDF レポート (Sess49-50 実機検証完了) で代替可能
+
+**消化された AC**: 法的リスク即解消、 v1.0 リリース判断のクリティカルパスから外れる。
+
+**Pro メリット bullet 構成 (Sess58 後)**:
+
+- `paywallFeatureCsv`: CSV/PDF エクスポート
+- `settingsBenefitNoAds`: 広告非表示
+- `paywallFeatureBackup`: 全データバックアップ (ZIP)
