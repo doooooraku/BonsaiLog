@@ -29,7 +29,14 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getDb } from '@/src/db/db';
-import { countBonsaiByTag, createOrFindTag, renameTag } from '@/src/db/tagRepository';
+import {
+  canCreateNewTag,
+  countBonsaiByTag,
+  createOrFindTag,
+  FREE_TAG_LIMIT,
+  renameTag,
+} from '@/src/db/tagRepository';
+import { useProGuard } from '@/src/features/pro/useProGuard';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
 const TAG_NAME_MAX_LENGTH = 32;
@@ -54,6 +61,9 @@ export default function TagEditScreen() {
   const [busy, setBusy] = React.useState(false);
   // Sess9 PR-8: 影響範囲警告用、 編集モード時のみ fetch (新規追加時は count = 0 固定)
   const [usageCount, setUsageCount] = React.useState<number>(0);
+  // ADR-0049 Sess59 PR4: 新規タグ作成 Free 上限 3 ガード (rename は無制限)
+  // currentCount は使わない (handleSave 内で canCreateNewTag が DB 直接参照)
+  const { openPaywall, isPro } = useProGuard({ feature: 'tag', currentCount: 0 });
 
   // Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog (rename + 新規追加 両 mode 対応)
   const isDirty = React.useMemo(() => input.trim() !== initialName.trim(), [input, initialName]);
@@ -126,6 +136,25 @@ export default function TagEditScreen() {
         }
         await performRename(trimmed);
       } else {
+        // ADR-0049 Sess59 PR4: 新規タグ作成 Free 上限 3 ガード (rename は無制限)
+        const canCreate = await canCreateNewTag(trimmed, isPro);
+        if (!canCreate) {
+          Alert.alert(
+            t('photoLimitTitle'), // 既存 i18n key 流用 (汎用 limit title)
+            t('photoLimitDesc').replace('{count}', String(FREE_TAG_LIMIT)),
+            [
+              { text: t('cancel'), style: 'cancel', onPress: () => setBusy(false) },
+              {
+                text: t('proCtaUpgrade'),
+                onPress: () => {
+                  setBusy(false);
+                  openPaywall();
+                },
+              },
+            ],
+          );
+          return;
+        }
         const created = await createOrFindTag(trimmed);
         // Sess13 PR-C: returnTo=bonsai-create で呼ばれた場合は caller で auto-select するため
         // tagAddResult に新規 tagId を入れる (caller の useFocusEffect で consume)。

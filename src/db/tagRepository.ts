@@ -143,6 +143,39 @@ export async function countAllTags(): Promise<number> {
 }
 
 /**
+ * Free 上限タグ数 (ADR-0049 Sess58 確定 機能 ②、 Sess59 PR4 で実装)。
+ * Pro user は無制限。 rename は別 API (renameTag) で無制限。
+ */
+export const FREE_TAG_LIMIT = 3;
+
+/**
+ * 新規タグ作成が可能か判定 (ADR-0049 Sess59 PR4)。
+ *
+ * - 入力名が既存タグ (正規化一致) と重複 → true (createOrFindTag が既存返却 = 新規追加にならない)
+ * - 重複なし + Pro → true
+ * - 重複なし + Free + countAllTags() < 3 → true
+ * - 上記以外 → false (Paywall 誘導)
+ *
+ * Grandfathered (ADR-0049 Decision §): 既存 4+ 件タグは表示 OK + rename OK +
+ * 新規追加のみ Paywall (Slack 2022 churn 事件回避)。
+ */
+export async function canCreateNewTag(rawName: string, isPro: boolean): Promise<boolean> {
+  if (isPro) return true;
+  const normalized = normalizeTagName(rawName);
+  if (normalized.length === 0) return false;
+  const db = await getDb();
+  // 既存タグ重複なら新規追加にならないので OK
+  const existing = await db.getFirstAsync<{ id: string }>(
+    'SELECT id FROM tags WHERE name_normalized = ?',
+    [normalized],
+  );
+  if (existing) return true;
+  // 新規追加するなら Free 上限 check
+  const count = await countAllTags();
+  return count < FREE_TAG_LIMIT;
+}
+
+/**
  * 指定タグが attach されている盆栽の件数を返す (Sess9 PR-8、 rename/削除影響範囲警告用)。
  *
  * 業界事例: Linear Label delete confirmation pattern。
