@@ -18,12 +18,44 @@ import { nowUtc } from '@/src/core/datetime/clock';
 import { snakeToCamelRows } from './rowMapper';
 import type { BonsaiStyleCustom } from './schema';
 
+/**
+ * Free 上限カスタム樹形数 (ADR-0049 Sess58 確定 機能 ⑥、 Sess59 PR5 で実装)。
+ * Pro user は無制限。 master BONSAI_STYLES (enum 10 種) は対象外、 常に全 Free 利用可。
+ */
+export const FREE_CUSTOM_STYLE_LIMIT = 3;
+
 export async function getAllCustomStyles(): Promise<BonsaiStyleCustom[]> {
   const db = await getDb();
   const raw = await db.getAllAsync<Record<string, unknown>>(
     'SELECT * FROM bonsai_styles_custom ORDER BY created_at ASC;',
   );
   return snakeToCamelRows<BonsaiStyleCustom>(raw);
+}
+
+export async function countAllCustomStyles(): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM bonsai_styles_custom;',
+  );
+  return row?.count ?? 0;
+}
+
+/**
+ * 新規カスタム樹形作成が可能か判定 (ADR-0049 Sess59 PR5)。
+ * canCreateNewCustomSpecies と同パターン。
+ */
+export async function canCreateNewCustomStyle(rawName: string, isPro: boolean): Promise<boolean> {
+  if (isPro) return true;
+  const name = rawName.trim();
+  if (name.length === 0) return false;
+  const db = await getDb();
+  const existing = await db.getFirstAsync<{ id: string }>(
+    'SELECT id FROM bonsai_styles_custom WHERE name = ?;',
+    [name],
+  );
+  if (existing) return true;
+  const count = await countAllCustomStyles();
+  return count < FREE_CUSTOM_STYLE_LIMIT;
 }
 
 /**
