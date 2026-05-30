@@ -612,7 +612,7 @@ Free プランのホーム画面下部にアダプティブバナー広告を表
 - **SQLite クエリ**: 盆栽一覧 50 件表示 < 100ms、作業履歴 500 件表示 < 300ms
 - **写真ロード**: サムネイル < 500ms、原本 < 1.5 秒
 - **データロード時の進捗表示**: 1 秒を超える操作にはインジケーター
-- **FlashList 前提**: 50 件以上のリストは `@shopify/flash-list` を使う（`FlatList` 不可）
+- **リスト描画**: `FlatList` を使用 (`keyExtractor` 必須、 必要に応じて `getItemLayout` で最適化)。 `@shopify/flash-list` は Phase 7 (PR #901) で死 deps として撤去済
 
 ### 6.2 アクセシビリティ（最低ライン）
 
