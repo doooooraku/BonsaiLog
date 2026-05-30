@@ -3,8 +3,8 @@
  * (Issue #33 / ADR-0016 AC2 / AC11 / AC12)。
  *
  * ConfirmDialog.test.tsx 等で確立した静的解析 pattern (fs.readFileSync + regex) を踏襲。
- * Hub が 5 種類を露出し、リスト系はシート → runExport、bonsai_pdf は picker へ分岐し、
- * Sheet が期間/対象/アーカイブを持ち、exportFlow が 4 種を扱うことを構造保証する。
+ * Hub が 5 種類を露出し、リスト系はシートで条件確定 → Hub が一元生成 (runExport)、bonsai_pdf は
+ * picker へ分岐し、Sheet が期間/対象/アーカイブを持ち、exportFlow が 4 種を扱うことを構造保証する。
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -69,10 +69,13 @@ describe('Export Options Sheet (ADR-0016 AC11 Options / AC12 Y4)', () => {
     expect(SHEET).toMatch(/exportOptTagEmptyBody/);
   });
 
-  test('8. ストレージ事前チェック / 全 4 種が中間画面なしで runExport 直呼び (Sess51)', () => {
+  test('8. ストレージ事前チェック / 生成は Hub に委譲 (onGenerate)、Sheet は runExport しない (Sess55)', () => {
     expect(SHEET).toMatch(/isStorageSufficient/);
-    // CSV 3 種 + list_pdf すべて runExport 直呼び (即出力 → OS 共有)
-    expect(SHEET).toMatch(/await runExport\(/);
+    // 生成 + 共有 + 生成中オーバーレイは Hub に委譲 (二重 Modal 回避)。Sheet は条件を返すだけ。
+    expect(SHEET).toMatch(/onGenerate\(/);
+    expect(SHEET).not.toMatch(/runExport/);
+    // Hub が 4 種を中間画面なしで一元生成 (即出力 → OS 共有)
+    expect(HUB).toMatch(/await runExport\(/);
     // 中間プレビュー画面 (csv-preview / list-preview) はいずれも撤去済み
     expect(SHEET).not.toContain('/export/csv-preview');
     expect(SHEET).not.toContain('/export/list-preview');

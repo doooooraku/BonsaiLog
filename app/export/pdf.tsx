@@ -4,28 +4,38 @@
  * 「1 本ずつの 1 ページレポート」は per-bonsai 選択が本質のため、Hub からは
  * Options Sheet ではなくこの picker へ遷移する。
  *
- * フロー:
+ * フロー (Sess55, ADR-0016 Amended):
  * 1. Pro 判定 (useProStore.isPro) — Free は Paywall 案内
- * 2. 盆栽を選ぶ (写真カード) → タップで pdf-preview 画面 (WebView プレビュー + 出力) へ遷移
+ * 2. 盆栽カードをタップ = 単一選択 (ハイライト) → 下部「出力する」CTA が有効化
+ * 3. CTA で prepareBonsaiPdf → generateBonsaiPdfWithFallback (3 段階フォールバック) → OS 共有
  *
- * Sess49 追補3: 素テキスト行 → 予定/記録の「盆栽を選ぶ」と同じ写真カード (サムネ+名前+樹種)
- * に統一。単一選択のためカードタップ = 即プレビュー遷移。
+ * 旧: カードタップ = 即 pdf-preview 画面へ遷移。中間の確認画面を廃止し、選択 + 下部 CTA に統一
+ * (他エクスポート種別が「出力する」で即生成する動線と揃える)。生成中は GeneratingOverlay を表示。
  */
 import { Image } from 'expo-image';
-import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import React from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ChevronRightIcon } from '@/src/components/icons';
 import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, TEXT_MUTED } from '@/src/core/theme/colors';
+import {
+  BG_PRIMARY,
+  BG_SURFACE,
+  BORDER_DEFAULT,
+  BRAND_GREEN,
+  ON_BRAND,
+} from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
 import { BonsaiPlaceholder, hashSeed } from '@/src/features/bonsai/BonsaiPlaceholder';
+import { prepareBonsaiPdf } from '@/src/features/export/exportFlow';
+import { GeneratingOverlay } from '@/src/features/export/GeneratingOverlay';
+import { generateBonsaiPdfWithFallback } from '@/src/features/export/pdfExport';
 import { useGoToPaywall } from '@/src/features/pro/useGoToPaywall';
 import { useProStore } from '@/src/stores/proStore';
 
@@ -38,11 +48,13 @@ type CardData = {
 
 export default function ExportPdfScreen() {
   const { t, lang } = useTranslation();
-  const router = useRouter();
   const c = useColors();
+  const insets = useSafeAreaInsets();
   const isPro = useProStore((s) => s.isPro);
   const goToPaywall = useGoToPaywall();
   const [items, setItems] = React.useState<CardData[]>([]);
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [busy, setBusy] = React.useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -73,13 +85,31 @@ export default function ExportPdfScreen() {
     }, [lang]),
   );
 
-  const handlePick = (id: string) => {
+  const handleExport = async () => {
+    if (busy || !selectedId) return;
     if (!isPro) {
       goToPaywall(t('exportProRequiredTitle'), t('exportProRequiredBody'));
       return;
     }
-    router.push(`/export/pdf-preview?bonsaiId=${id}` as Href);
+    setBusy(true);
+    try {
+      const prep = await prepareBonsaiPdf(selectedId, lang, t);
+      await generateBonsaiPdfWithFallback({
+        buildHtmlForAttempt: prep.buildHtmlForAttempt,
+        photoCount: prep.photoCount,
+        shareDialogTitle: t('exportPdfShareTitle'),
+      });
+    } catch {
+      Alert.alert(t('error'), t('exportPdfFailedBody'));
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const generatingTitle = t('exportGeneratingNamed').replace(
+    '{name}',
+    t('exportHubBonsaiPdfTitle'),
+  );
 
   return (
     <ThemedView style={styles.container} testID="e2e_export_pdf_screen">
@@ -92,34 +122,72 @@ export default function ExportPdfScreen() {
           <ThemedText style={styles.empty}>{t('bonsaiListEmptyTitle')}</ThemedText>
         }
         contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={item.name}
-            testID={`e2e_export_pdf_${item.id}`}
-            style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}
-            onPress={() => handlePick(item.id)}
-          >
-            <View style={styles.thumbBox}>
-              {item.coverUri ? (
-                <Image source={{ uri: item.coverUri }} style={styles.thumb} />
-              ) : (
-                <BonsaiPlaceholder size={56} seed={hashSeed(item.id)} radius={10} />
-              )}
-            </View>
-            <View style={styles.cardBody}>
-              <ThemedText style={[styles.cardTitle, { color: c.text }]} numberOfLines={1}>
-                {item.name}
-              </ThemedText>
-              {item.speciesCommonName ? (
-                <ThemedText style={[styles.cardDesc, { color: c.textSecondary }]} numberOfLines={1}>
-                  {item.speciesCommonName}
+        renderItem={({ item }) => {
+          const selected = item.id === selectedId;
+          return (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={item.name}
+              accessibilityState={{ selected }}
+              testID={`e2e_export_pdf_${item.id}`}
+              style={[
+                styles.card,
+                { backgroundColor: c.surface, borderColor: selected ? BRAND_GREEN : c.border },
+              ]}
+              onPress={() => setSelectedId(item.id)}
+            >
+              <View style={styles.thumbBox}>
+                {item.coverUri ? (
+                  <Image source={{ uri: item.coverUri }} style={styles.thumb} />
+                ) : (
+                  <BonsaiPlaceholder size={56} seed={hashSeed(item.id)} radius={10} />
+                )}
+              </View>
+              <View style={styles.cardBody}>
+                <ThemedText style={[styles.cardTitle, { color: c.text }]} numberOfLines={1}>
+                  {item.name}
                 </ThemedText>
-              ) : null}
-            </View>
-            <ChevronRightIcon size={20} color={TEXT_MUTED} />
-          </Pressable>
-        )}
+                {item.speciesCommonName ? (
+                  <ThemedText
+                    style={[styles.cardDesc, { color: c.textSecondary }]}
+                    numberOfLines={1}
+                  >
+                    {item.speciesCommonName}
+                  </ThemedText>
+                ) : null}
+              </View>
+              <View style={[styles.radio, selected && styles.radioOn]}>
+                {selected ? <ThemedText style={styles.radioCheck}>✓</ThemedText> : null}
+              </View>
+            </Pressable>
+          );
+        }}
+      />
+
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('exportOptExport')}
+          accessibilityState={{ disabled: !selectedId || busy }}
+          testID="e2e_export_pdf_generate"
+          style={[styles.cta, (!selectedId || busy) && styles.ctaBusy]}
+          onPress={handleExport}
+          disabled={!selectedId || busy}
+        >
+          {busy ? (
+            <ActivityIndicator color={ON_BRAND} />
+          ) : (
+            <ThemedText style={styles.ctaText}>{t('exportOptExport')}</ThemedText>
+          )}
+        </Pressable>
+      </View>
+
+      <GeneratingOverlay
+        visible={busy}
+        format="PDF"
+        title={generatingTitle}
+        delayMs={0}
+        onCancel={() => setBusy(false)}
       />
     </ThemedView>
   );
@@ -145,4 +213,31 @@ const styles = StyleSheet.create({
   cardBody: { flex: 1, minWidth: 0, gap: 2 },
   cardTitle: { fontSize: 15, fontWeight: '500' },
   cardDesc: { fontSize: 12 },
+  radio: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioOn: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN },
+  radioCheck: { fontSize: 14, fontWeight: '700', color: ON_BRAND },
+  footer: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: BORDER_DEFAULT,
+    backgroundColor: BG_PRIMARY,
+  },
+  cta: {
+    minHeight: 56,
+    borderRadius: 12,
+    backgroundColor: BRAND_GREEN,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ctaBusy: { opacity: 0.6 },
+  ctaText: { color: ON_BRAND, fontSize: 17, fontWeight: '600' },
 });

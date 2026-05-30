@@ -6,19 +6,12 @@
  *
  * - RN <Modal transparent animationType="slide"> (RowActionMenu パターン、@gorhom 不使用)
  * - 種類別に意味のあるオプションだけ表示 (exportFlow.OPTION_APPLIES)
- * - 生成は exportFlow.runExport に委譲。Pro 判定は Hub 側で実施済み。
+ * - 条件確定後の生成・共有・生成中オーバーレイは Hub に委譲 (onGenerate)。二重 Modal を避けるため
+ *   本 Sheet は出力処理を持たない。Pro 判定も Hub 側で実施済み。
  */
 import * as LegacyFileSystem from 'expo-file-system/legacy';
 import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
@@ -39,11 +32,11 @@ import type { Bonsai } from '@/src/db/schema';
 import { getMostUsedTags, type TagRecord } from '@/src/db/tagRepository';
 import { buildExportFileName, type ExportKind } from './exportFileName';
 import {
+  type ExportOptions,
   type ExportPeriod,
   type ExportScope,
   type ExportTypeKey,
   OPTION_APPLIES,
-  runExport,
 } from './exportFlow';
 import { isStorageSufficient } from './pdfReliability';
 
@@ -65,11 +58,12 @@ type Props = {
   visible: boolean;
   type: ExportTypeKey;
   onClose: () => void;
+  /** 条件確定後の生成 (生成 + 共有 + 生成中オーバーレイ) は Hub 側に委譲する。 */
+  onGenerate: (opts: Omit<ExportOptions, 'lang'>) => void;
 };
 
-export function ExportOptionsSheet({ visible, type, onClose }: Props) {
-  const { t, lang } = useTranslation();
-  const [busy, setBusy] = useState(false);
+export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props) {
+  const { t } = useTranslation();
   const [period, setPeriod] = useState<ExportPeriod>('all');
   const [scope, setScope] = useState<ExportScope>('all');
   const [includeArchived, setIncludeArchived] = useState(false);
@@ -119,7 +113,6 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
   };
 
   const handleGenerate = async () => {
-    if (busy) return;
     if (showScope && scope === 'selected' && selectedIds.length === 0) {
       Alert.alert(t('exportOptScopeEmptyTitle'), t('exportOptScopeEmptyBody'));
       return;
@@ -137,7 +130,7 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
     } catch {
       // チェックスキップ (AC7-2)
     }
-    const opts = {
+    const opts: Omit<ExportOptions, 'lang'> = {
       type,
       period: showPeriod ? period : 'all',
       dateFrom: dateFrom || undefined,
@@ -148,21 +141,9 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
       includeArchived: showArchived ? includeArchived : false,
     };
 
-    // 全 4 種 (CSV 3 + list_pdf) を中間画面なしで即出力 (生成 → OS 共有)。
-    // list_pdf も Sess51 でプレビュー画面を廃止し、写真付き 3 段階フォールバック出力に統一。
-    setBusy(true);
-    try {
-      const result = await runExport({ ...opts, lang }, t);
-      onClose();
-      Alert.alert(
-        t('exportGenericSuccess'),
-        t('exportGenericSuccessDetail').replace('{count}', String(result.count)),
-      );
-    } catch (error) {
-      Alert.alert(t('exportCsvFailed'), String(error));
-    } finally {
-      setBusy(false);
-    }
+    // 全 4 種 (CSV 3 + list_pdf) を中間画面なしで即出力。生成 + 共有 + 生成中オーバーレイは
+    // Hub 側に委譲する (Sheet の Modal 上にさらに Modal を重ねる二重 Modal を回避)。
+    onGenerate(opts);
   };
 
   return (
@@ -300,15 +281,10 @@ export function ExportOptionsSheet({ visible, type, onClose }: Props) {
               accessibilityRole="button"
               accessibilityLabel={t('exportOptExport')}
               testID="e2e_export_options_generate"
-              style={[styles.cta, busy && styles.ctaBusy]}
+              style={styles.cta}
               onPress={handleGenerate}
-              disabled={busy}
             >
-              {busy ? (
-                <ActivityIndicator color={ON_BRAND} />
-              ) : (
-                <ThemedText style={styles.ctaText}>{t('exportOptExport')}</ThemedText>
-              )}
+              <ThemedText style={styles.ctaText}>{t('exportOptExport')}</ThemedText>
             </Pressable>
           </View>
         </Pressable>
@@ -408,6 +384,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ctaBusy: { opacity: 0.6 },
   ctaText: { color: ON_BRAND, fontSize: 17, fontWeight: '600' },
 });

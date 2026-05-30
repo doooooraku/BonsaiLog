@@ -1,9 +1,16 @@
 /**
  * F-10 生成中オーバーレイ (Issue #33 / ADR-0016 AC11 Generating + Y2 キャンセル)。
  *
- * CSV / PDF 生成中に中央へ表示する Modal。spinner + 「生成中…」 + キャンセル。
- * ConfirmDialog と同じ fade Modal パターン。生成自体は短時間 (CSV は即時、PDF も数秒)
- * のため、キャンセルは best-effort (呼出側が onCancel で busy を解除し結果を破棄)。
+ * 全エクスポート種類 (CSV×3 / PDF×2) が通る唯一の「生成中」UI。中央 Modal に
+ * 形式バッジ + 「○○を生成中」 + spinner + (任意で) キャンセルを表示。
+ * ConfirmDialog と同じ fade Modal パターン。
+ *
+ * - `title`: 「{種別名} を生成中」 (未指定なら汎用「生成中…」)
+ * - `format`: CSV / PDF バッジ (未指定なら非表示)
+ * - `showCancel`: PDF は中断手段として表示、CSV は即時完了のため非表示にできる
+ * - `delayMs`: この時間内に visible が false に戻れば一切表示しない (瞬間完了のチラつき防止)。
+ *   生成が長引く時 (PDF) だけ Modal が立ち上がる。キャンセルは best-effort
+ *   (呼出側が onCancel で busy を解除し結果を破棄。OS 共有自体は中断できない場合がある)。
  */
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, StyleSheet, View } from 'react-native';
@@ -17,30 +24,63 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { ExportFormatBadge, type ExportFmt } from './ExportFormatBadge';
 
 type Props = {
   visible: boolean;
   onCancel: () => void;
+  /** 「{種別名} を生成中」。未指定なら汎用「生成中…」。 */
+  title?: string;
+  /** CSV / PDF バッジ。未指定ならバッジ非表示。 */
+  format?: ExportFmt;
+  /** キャンセルボタンを出すか (既定 true)。CSV は即時のため false 推奨。 */
+  showCancel?: boolean;
+  /** 表示までの遅延 (ms)。この間に visible→false なら出さない (既定 250)。 */
+  delayMs?: number;
 };
 
 /** 生成開始から「時間がかかっています」を出すまでの待機 (ms)。すぐ終わる時は出さない。 */
 const SLOW_HINT_DELAY_MS = 4000;
+const DEFAULT_SHOW_DELAY_MS = 250;
 
-export function GeneratingOverlay({ visible, onCancel }: Props) {
+export function GeneratingOverlay({
+  visible,
+  onCancel,
+  title,
+  format,
+  showCancel = true,
+  delayMs = DEFAULT_SHOW_DELAY_MS,
+}: Props) {
   const { t } = useTranslation();
-  // 多写真 PDF は数十秒かかることがあるため、一定時間経過したら「お待ちください」を追加表示。
+  // 遅延表示: visible が delayMs 以上続いた時だけ実際に Modal を出す (瞬間完了のチラつき防止)。
+  const [shown, setShown] = useState(false);
+  // 多写真 PDF は数十秒かかることがあるため、表示後さらに一定時間で「お待ちください」を追加表示。
   const [slow, setSlow] = useState(false);
+
   useEffect(() => {
     if (!visible) {
+      setShown(false);
+      return;
+    }
+    if (delayMs <= 0) {
+      setShown(true);
+      return;
+    }
+    const id = setTimeout(() => setShown(true), delayMs);
+    return () => clearTimeout(id);
+  }, [visible, delayMs]);
+
+  useEffect(() => {
+    if (!shown) {
       setSlow(false);
       return;
     }
     const id = setTimeout(() => setSlow(true), SLOW_HINT_DELAY_MS);
     return () => clearTimeout(id);
-  }, [visible]);
+  }, [shown]);
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
+    <Modal visible={shown} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.backdrop}>
         <View
           style={styles.card}
@@ -48,22 +88,34 @@ export function GeneratingOverlay({ visible, onCancel }: Props) {
           accessibilityRole="alert"
           testID="e2e_export_generating_overlay"
         >
+          <View style={styles.headerRow}>
+            {format ? <ExportFormatBadge fmt={format} size={40} /> : null}
+            <ThemedText style={styles.title} testID="e2e_export_generating_title">
+              {title ?? t('exportGeneratingTitle')}
+            </ThemedText>
+          </View>
+
           <ActivityIndicator size="large" color={BRAND_GREEN} />
-          <ThemedText style={styles.title}>{t('exportGeneratingTitle')}</ThemedText>
+
           {slow ? (
             <ThemedText style={styles.slowHint} testID="e2e_export_generating_slow_hint">
               {t('exportPdfSlowHint')}
             </ThemedText>
           ) : null}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('cancel')}
-            onPress={onCancel}
-            style={styles.cancel}
-            testID="e2e_export_generating_cancel"
-          >
-            <ThemedText style={styles.cancelText}>{t('cancel')}</ThemedText>
-          </Pressable>
+
+          {showCancel ? (
+            <View style={styles.footerRow}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('cancel')}
+                onPress={onCancel}
+                style={styles.cancel}
+                testID="e2e_export_generating_cancel"
+              >
+                <ThemedText style={styles.cancelText}>{t('cancel')}</ThemedText>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
       </View>
     </Modal>
@@ -79,16 +131,18 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   card: {
-    minWidth: 220,
+    minWidth: 260,
+    maxWidth: 360,
     backgroundColor: BG_PRIMARY,
     borderRadius: 16,
-    paddingVertical: 28,
+    paddingVertical: 24,
     paddingHorizontal: 24,
-    alignItems: 'center',
-    gap: 16,
+    gap: 20,
   },
-  title: { fontSize: 16, fontWeight: '500', color: TEXT_PRIMARY },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  title: { flex: 1, fontSize: 16, fontWeight: '500', color: TEXT_PRIMARY },
   slowHint: { fontSize: 13, lineHeight: 19, color: TEXT_SECONDARY, textAlign: 'center' },
+  footerRow: { flexDirection: 'row', justifyContent: 'flex-end' },
   cancel: {
     minHeight: 40,
     paddingHorizontal: 16,
