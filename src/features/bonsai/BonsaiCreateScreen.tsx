@@ -1,9 +1,6 @@
 /**
- * 盆栽 新規登録画面 (Phase G4 part 2、ADR-0024 Accepted、functional_spec §6.2 既存設計に整合)。
- *
- * 旧 `BonsaiCreateSheet.tsx` (`@gorhom/bottom-sheet` snap 90%) を画面化、
- * `(modals)/bonsai-new` route で `presentation: 'modal'` (formSheet ではなく modal、
- * functional_spec §6.2 既存設計に整合) 配下に配置。
+ * 盆栽 新規登録画面 (ADR-0024 で native presentation `(modals)/bonsai-new` に移行、
+ * `presentation: 'modal'`。 functional_spec §6.2 既存設計に整合)。
  *
  * `useBonsaiBasicForm` フック + `BonsaiBasicFormFields` を流用 (詳細画面 基本情報タブと共通)。
  *

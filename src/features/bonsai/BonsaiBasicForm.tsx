@@ -1,5 +1,5 @@
 /**
- * 盆栽 基本情報フォーム — 新規登録 BottomSheet と詳細画面 基本情報タブで共用。
+ * 盆栽 基本情報フォーム — 新規登録画面と詳細画面 基本情報タブで共用。
  *
  * mockup v1.0 `create-screens.jsx CreateBonsaiScreen` の prefill prop で create / edit
  * 両対応な単一コンポーネントを React Native 上で再現する目的。
@@ -7,17 +7,13 @@
  * 構成:
  * - `useBonsaiBasicForm` — state + handler + submit ロジックを集約するフック
  * - `BonsaiBasicFormFields` — フィールド JSX (ScrollView は呼び出し側)
- * - `BonsaiBasicFormPickerSheets` — 樹種 / 樹形 Picker BottomSheet。@gorhom/bottom-sheet は
- *   ScrollView 内に nest すると closed (index=-1) でも inline で leak するため、呼び出し側で
- *   親 ScrollView の外 (root) に置く前提で別コンポーネントに分離。
  *
  * 呼び出し側:
- * - `BonsaiCreateSheet` (新規登録 / 編集 BottomSheet) — `BottomSheetScrollView` + `BottomSheetFooter`
- *   に組み込み、Picker Sheet は親 BottomSheet の sibling として配置
- * - `app/(tabs)/bonsai/[id]/index.tsx` の基本情報タブ — 親 ScrollView 内に inline 配置、
- *   Picker Sheet は ScrollView の外 (画面 root) に配置
+ * - `BonsaiCreateScreen` (新規登録画面、 `(modals)/bonsai-new` route)
+ * - `app/(tabs)/bonsai/[id]/index.tsx` の基本情報タブ (詳細画面)
  *
- * Issue #439 で BonsaiCreateSheet から抽出。
+ * Issue #439 で BonsaiCreateSheet から抽出。 樹種 / 樹形 Picker は ADR-0024 で
+ * `(modals)/species-picker` + `(modals)/style-picker` route (presentation: 'formSheet') に完全移行済。
  */
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
