@@ -170,3 +170,63 @@ PR1 で `/whatsnew/whatsnew-*.txt` を repo root に置いた設計は **EAS Sub
 ### 学び
 
 `lessons/release.md` R-Sess61-6 として追記: **EAS Submit は AAB バイナリのみ。 metadata (release notes / screenshots / store text) は Publisher API or fastlane supply 経由で別途扱う必要がある。 思い込みで設計せず 1 次情報を確認すること。**
+
+---
+
+## PR7 Amendment (2026-05-31、 PR6 検証後の信頼性 hotfix)
+
+### 経緯
+
+PR6 完成後、 versionCode 6 で実走検証中に 4 件の改善点が判明:
+
+1. **EAS Submit 1 回目 ERRORED**: fastlane supply が "Edit has been deleted" で失敗
+   - 原因: `release-snapshot.mjs before` の `createEdit` が EAS Submit ジョブ内の fastlane supply の edit と干渉
+   - 並走する 2 つの edit transaction が Google Publisher API 側で競合した
+2. **orchestrate.sh の nohup wrap で wait が機能せず**: 親シェルが先に exit、 build が orphan 化
+3. **release-diff の経過時間チェックが critical 扱い**: セッション中断で 8739s (2.4h) となり summary が「完了していません」 と誤表示
+4. **submission status の手動確認**: ERRORED 時に user に expo.dev を目視確認依頼していたが、 GraphQL API で Claude が直接取れることが判明
+
+### Decision Amendment
+
+**D7 (新規): orchestrate.sh は `--wait` モードで Submit 完了を確認してから snapshot を取る**:
+
+- Step 4 を `pnpm submit:android` (--no-wait) → 直接 `eas submit --wait` 呼び出しに変更
+- snapshot と Submit ジョブの edit transaction 並走を構造的に防止
+- WSL2 session 切断耐性は GitHub Actions fallback で代替 (PR3 既存)
+
+**D8 (新規): Expo GraphQL API で submission status を自動取得**:
+
+- `scripts/release-utils/expo-graphql.mjs` 新規作成
+- `getSubmissionStatus(id)` / `getSubmissionLogs(id)` / `parseSubmissionIdFromLog(path)` を export
+- EXPO_TOKEN は `docs/01_key/03_Expo/access-tokens.txt` から自動 fallback (Sess61 中盤で確立済 SoT)
+- `release-set-notes.mjs` の「draft なし」 abort 時に submission status を確認 + エラー詳細を user に表示
+
+**D9 (新規): release-diff の critical/warning 重み付けを精緻化**:
+
+- 経過時間チェックを `warning: true` に変更 (PR6 で critical だったが、 セッション中断時に自然と延びるため監視レベルに降格)
+- whatsnew check も warning のまま (PR6 で setReleaseNotes 別 step に分離済み、 防御的 design)
+- critical: new draft +1 + versionCode +1 のみ (= Submit 成否の本質)
+
+### PR7 で同時対処した周辺改善
+
+- #1 release-diff 経過時間 warning 降格 (← criticalPass の誤判定解消)
+- #2 orchestrate.sh nohup 撤回 + Step 4 `--wait` 化 (← build orphan 化 + edit 干渉解消)
+- #3 expo-graphql.mjs 新規 + release-set-notes 拡張 (← 失敗時の原因究明自動化)
+- #4 snapshot/Submit 排他 (#2 の副作用として保証)
+
+### 学び (lessons/release.md R-Sess61-7/8 追記)
+
+**R-Sess61-7**: EAS Submit Android は内部で fastlane supply を使う (今回の logs から判明)。 つまり fastlane の挙動 / 制約 / バグが EAS にも継承される。 「EAS = AAB だけ」「fastlane = メタデータ + AAB + signing」 を区別。
+
+**R-Sess61-8**: Google Publisher API の edit transaction は同一アプリで複数 active 可能だが、 fastlane supply が「前の active edit を find して reuse」 する設計のため、 並走 edit があると 「This Edit has been deleted」 エラーで失敗する。 → Submit と snapshot は時系列で排他にする。
+
+### Future Work (PR8+)
+
+- #6 Play Console URL config 化 (PR6 から繰り越し)
+- #7 .gitignore 二重防御 (現状で十分、 削除候補)
+- #8 ja-JP listing 原稿 = `/store-text` Skill 別 session
+- composite action 化 (iOS/Android workflow 共通 step 抽出)
+- staged rollout 自動化 (Production 公開時、 rollout 5% → 20% → 100% を Vitals 監視+API で自動 ramp)
+- Pre-Launch Report 自動取得 (Publisher API、 crash 0 確認後 rollout 開始)
+- スクリーンショット自動 PUT (`edits.images` endpoint)
+- Sentry release 自動作成 + sourcemap upload
