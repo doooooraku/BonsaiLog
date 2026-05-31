@@ -469,9 +469,9 @@ const nl: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: 'Full data backup (ZIP)',
   paywallFeatureCsv: 'CSV export',
   paywallFeaturePdf: 'PDF export',
-  paywallFeatureNoAds: 'Ads',
-  paywallFeatureNoAdsFreeValue: 'Shown',
-  paywallFeatureNoAdsProValue: 'None',
+  paywallFeatureNoAds: 'Advertenties',
+  paywallFeatureNoAdsFreeValue: 'Zichtbaar',
+  paywallFeatureNoAdsProValue: 'Verborgen',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
   planWiringListLink: 'Wiring list',
   wiringTabAll: 'All',
@@ -941,5 +941,8 @@ const nl: Partial<Record<TranslationKey, string>> = {
   customLimitTitle: 'Limiet van Free-plan bereikt',
   customLimitDesc:
     'Het Free-plan staat tot {count} eigen soorten en stijlen toe. Upgrade naar Pro voor onbeperkt gebruik.',
+  // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
+  paywallFeatureCsvFreeValue: 'Niet beschikbaar',
+  paywallFeatureCsvProValue: 'Beschikbaar',
 };
 export default nl;

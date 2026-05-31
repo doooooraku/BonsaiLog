@@ -234,7 +234,12 @@ export default function PaywallScreen() {
             pro={t('paywallFeatureWorkLogPhotoProValue')}
           />
           {/* ④ CSV/PDF エクスポート (既存実装済、 csvExport.ts L8 で Pro guard) */}
-          <FeatureRow label={t('paywallFeatureCsv')} free="—" pro="◎" />
+          {/* Sess60 PR2: literal "—" "◎" を i18n key に置換 (値表記統一) */}
+          <FeatureRow
+            label={t('paywallFeatureCsv')}
+            free={t('paywallFeatureCsvFreeValue')}
+            pro={t('paywallFeatureCsvProValue')}
+          />
           {/* ⑤ 広告非表示 (既存実装済、 adService.ts L170-174 で isPro 判定) */}
           <FeatureRow
             label={t('paywallFeatureNoAds')}

@@ -468,9 +468,9 @@ const vi: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: 'Full data backup (ZIP)',
   paywallFeatureCsv: 'CSV export',
   paywallFeaturePdf: 'PDF export',
-  paywallFeatureNoAds: 'Ads',
-  paywallFeatureNoAdsFreeValue: 'Shown',
-  paywallFeatureNoAdsProValue: 'None',
+  paywallFeatureNoAds: 'Quảng cáo',
+  paywallFeatureNoAdsFreeValue: 'Hiển thị',
+  paywallFeatureNoAdsProValue: 'Ẩn',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
   planWiringListLink: 'Wiring list',
   wiringTabAll: 'All',
@@ -938,5 +938,8 @@ const vi: Partial<Record<TranslationKey, string>> = {
   customLimitTitle: 'Đã đạt giới hạn gói Free',
   customLimitDesc:
     'Gói Free cho phép thêm tối đa {count} loài và kiểu tùy chỉnh. Nâng cấp lên Pro để không giới hạn.',
+  // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
+  paywallFeatureCsvFreeValue: 'Không khả dụng',
+  paywallFeatureCsvProValue: 'Khả dụng',
 };
 export default vi;

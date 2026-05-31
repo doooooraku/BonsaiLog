@@ -469,9 +469,9 @@ const hi: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: 'Full data backup (ZIP)',
   paywallFeatureCsv: 'CSV export',
   paywallFeaturePdf: 'PDF export',
-  paywallFeatureNoAds: 'Ads',
-  paywallFeatureNoAdsFreeValue: 'Shown',
-  paywallFeatureNoAdsProValue: 'None',
+  paywallFeatureNoAds: 'विज्ञापन',
+  paywallFeatureNoAdsFreeValue: 'दिखाए जाते हैं',
+  paywallFeatureNoAdsProValue: 'छिपे',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
   planWiringListLink: 'Wiring list',
   wiringTabAll: 'All',
@@ -940,5 +940,8 @@ const hi: Partial<Record<TranslationKey, string>> = {
   customLimitTitle: 'Free प्लान की सीमा पहुँच गई',
   customLimitDesc:
     'Free प्लान में अधिकतम {count} कस्टम प्रजातियाँ और शैलियाँ जोड़ी जा सकती हैं। असीमित के लिए Pro में अपग्रेड करें।',
+  // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
+  paywallFeatureCsvFreeValue: 'उपलब्ध नहीं',
+  paywallFeatureCsvProValue: 'उपलब्ध',
 };
 export default hi;

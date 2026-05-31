@@ -424,7 +424,7 @@ const baseEn = {
   paywallFeaturePdf: 'PDF export',
   paywallFeatureNoAds: 'Ads',
   paywallFeatureNoAdsFreeValue: 'Shown',
-  paywallFeatureNoAdsProValue: 'None',
+  paywallFeatureNoAdsProValue: 'Hidden',
 
   // --- ADR-0020 Phase 5: plan tab calendar ---
   planMonthYearSuffix: '',
@@ -949,6 +949,10 @@ const baseEn = {
   customLimitTitle: 'Free plan limit reached',
   customLimitDesc:
     'The Free plan allows up to {count} custom species and styles. Upgrade to Pro for unlimited.',
+
+  // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
+  paywallFeatureCsvFreeValue: 'Not available',
+  paywallFeatureCsvProValue: 'Available',
 };
 
 export type TranslationKey = keyof typeof baseEn;

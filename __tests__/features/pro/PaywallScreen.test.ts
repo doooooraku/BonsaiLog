@@ -29,7 +29,7 @@ describe('PaywallScreen FeatureRow (ADR-0049 Sess59 PR2 6 項目整合)', () => 
     expect(SRC).toContain("t('paywallFeatureCustomSpecies')"); // ⑥
   });
 
-  test('2. 各 FeatureRow の Free/Pro 値 i18n key も参照されている', () => {
+  test('2. 各 FeatureRow の Free/Pro 値 i18n key も参照されている (Sess60 PR2 で CSV も i18n 化、 literal "—" "◎" 排除)', () => {
     expect(SRC).toContain("t('paywallFeaturePhotoFreeValue')");
     expect(SRC).toContain("t('paywallFeaturePhotoProValue')");
     expect(SRC).toContain("t('paywallFeatureTagFreeValue')");
@@ -38,6 +38,12 @@ describe('PaywallScreen FeatureRow (ADR-0049 Sess59 PR2 6 項目整合)', () => 
     expect(SRC).toContain("t('paywallFeatureWorkLogPhotoProValue')");
     expect(SRC).toContain("t('paywallFeatureCustomSpeciesFreeValue')");
     expect(SRC).toContain("t('paywallFeatureCustomSpeciesProValue')");
+    // Sess60 PR2: CSV/PDF も literal "—" "◎" 排除して i18n 化
+    expect(SRC).toContain("t('paywallFeatureCsvFreeValue')");
+    expect(SRC).toContain("t('paywallFeatureCsvProValue')");
+    // 値表記統一: literal "—" "◎" がもう code 上にない
+    expect(SRC).not.toContain('free="—"');
+    expect(SRC).not.toContain('pro="◎"');
   });
 
   test('3. Sess58「全 Free」 確定の旧 row は削除済', () => {
