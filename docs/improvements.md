@@ -30,13 +30,15 @@
 
 ### Sess61 以降 候補
 
-| #   | 起票日     | Status   | 対応 Sess   | 内容                                                                                                                                               |
-| --- | ---------- | -------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 6   | 2026-05-31 | **Open** | Sess61 候補 | `pnpm docs:lint` に improvements.md Open 30 日経過 items を WARN 出力する check 追加                                                               |
-| 7   | 2026-05-31 | **Open** | Sess61 候補 | PR template (`.github/pull_request_template.md`) DoD section に「本 PR で意図的に妥協した点を improvements.md に追記したか?」 チェックボックス追加 |
-| 8   | 2026-05-31 | **Open** | v1.x 候補   | useProGuard hook の debug log 追加 (PR3-5 で `console.log('useProGuard:openPaywall', source)`)                                                     |
-| 9   | 2026-05-31 | **Open** | v1.x 候補   | SEED_PACK_FREE / SEED_PACK_PRO 切替 UI を DevSettings に追加 (Sess10 EN button パターン拡張)                                                       |
-| 10  | 2026-05-31 | **Open** | v1.x 候補   | カスタム樹種・樹形の Full 管理画面 (rename / 削除 menu + UndoSnackbar、 タグ管理と同パターン)                                                      |
+| #   | 起票日     | Status   | 対応 Sess   | 内容                                                                                                                                                                             |
+| --- | ---------- | -------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 6   | 2026-05-31 | **Open** | Sess61 候補 | `pnpm docs:lint` に improvements.md Open 30 日経過 items を WARN 出力する check 追加                                                                                             |
+| 7   | 2026-05-31 | **Open** | Sess61 候補 | PR template (`.github/pull_request_template.md`) DoD section に「本 PR で意図的に妥協した点を improvements.md に追記したか?」 チェックボックス追加                               |
+| 8   | 2026-05-31 | **Open** | v1.x 候補   | useProGuard hook の debug log 追加 (PR3-5 で `console.log('useProGuard:openPaywall', source)`)                                                                                   |
+| 9   | 2026-05-31 | **Open** | v1.x 候補   | SEED_PACK_FREE / SEED_PACK_PRO 切替 UI を DevSettings に追加 (Sess10 EN button パターン拡張)                                                                                     |
+| 10  | 2026-05-31 | **Open** | v1.x 候補   | カスタム樹種・樹形の Full 管理画面 (rename / 削除 menu + UndoSnackbar、 タグ管理と同パターン)                                                                                    |
+| 11  | 2026-05-31 | **Open** | Sess61 候補 | Paywall「表示される」 (ja) / Settings「Not available」 (en) が FREE column width 60-64dp で 2 行折返し → 機能名 60% / FREE 20% / PRO 20% を 50%/25%/25% に調整 (Sess60 検証発見) |
+| 12  | 2026-05-31 | **Open** | Sess61 候補 | SpeciesPicker カスタム counter「8/3」 (Grandfathered 5 件超過) 表示で「上限超え!?」 と一瞬戸惑う UX、 「カスタム (上限超過)」 や「8 個」 表記に変更検討 (Sess60 検証発見)        |
 
 ---
 
