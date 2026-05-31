@@ -420,9 +420,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: '全データバックアップ(ZIP)',
   paywallFeatureCsv: 'CSV/PDF エクスポート',
   paywallFeaturePdf: 'PDF エクスポート',
-  paywallFeatureNoAds: '広告表示',
-  paywallFeatureNoAdsFreeValue: 'あり',
-  paywallFeatureNoAdsProValue: 'なし',
+  paywallFeatureNoAds: '広告非表示',
+  paywallFeatureNoAdsFreeValue: '表示される',
+  paywallFeatureNoAdsProValue: '非表示',
 
   // --- ADR-0020 Phase 5: 予定タブ カレンダー ---
   planMonthYearSuffix: '年',
@@ -946,6 +946,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   customLimitTitle: 'Free プランの上限です',
   customLimitDesc:
     'Free プランで追加できるカスタム樹種・樹形は {count} 件までです。Pro にすると無制限になります。',
+  // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
+  paywallFeatureCsvFreeValue: '使えない',
+  paywallFeatureCsvProValue: '使える',
 };
 
 export default ja;

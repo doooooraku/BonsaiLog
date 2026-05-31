@@ -470,9 +470,9 @@ const sv: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: 'Full data backup (ZIP)',
   paywallFeatureCsv: 'CSV export',
   paywallFeaturePdf: 'PDF export',
-  paywallFeatureNoAds: 'Ads',
-  paywallFeatureNoAdsFreeValue: 'Shown',
-  paywallFeatureNoAdsProValue: 'None',
+  paywallFeatureNoAds: 'Annonser',
+  paywallFeatureNoAdsFreeValue: 'Visas',
+  paywallFeatureNoAdsProValue: 'Dolda',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
   planWiringListLink: 'Wiring list',
   wiringTabAll: 'All',
@@ -940,5 +940,8 @@ const sv: Partial<Record<TranslationKey, string>> = {
   customLimitTitle: 'Free-planens gräns nådd',
   customLimitDesc:
     'Free-planen tillåter upp till {count} egna arter och stilar. Uppgradera till Pro för obegränsat.',
+  // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
+  paywallFeatureCsvFreeValue: 'Inte tillgänglig',
+  paywallFeatureCsvProValue: 'Tillgänglig',
 };
 export default sv;

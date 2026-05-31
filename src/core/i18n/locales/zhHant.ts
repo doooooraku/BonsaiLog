@@ -457,9 +457,9 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: 'Full data backup (ZIP)',
   paywallFeatureCsv: 'CSV export',
   paywallFeaturePdf: 'PDF export',
-  paywallFeatureNoAds: 'Ads',
-  paywallFeatureNoAdsFreeValue: 'Shown',
-  paywallFeatureNoAdsProValue: 'None',
+  paywallFeatureNoAds: '廣告',
+  paywallFeatureNoAdsFreeValue: '顯示',
+  paywallFeatureNoAdsProValue: '隱藏',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
   planWiringListLink: 'Wiring list',
   wiringTabAll: 'All',
@@ -925,5 +925,8 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   tagLimitDesc: 'Free 方案最多可建立 {count} 個標籤。升級 Pro 即可無限制。',
   customLimitTitle: 'Free 方案已達上限',
   customLimitDesc: 'Free 方案最多可新增 {count} 項自訂樹種與樹形。升級 Pro 即可無限制。',
+  // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
+  paywallFeatureCsvFreeValue: '不可用',
+  paywallFeatureCsvProValue: '可用',
 };
 export default zhHant;

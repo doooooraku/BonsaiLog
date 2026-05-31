@@ -467,9 +467,9 @@ const th: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: 'Full data backup (ZIP)',
   paywallFeatureCsv: 'CSV export',
   paywallFeaturePdf: 'PDF export',
-  paywallFeatureNoAds: 'Ads',
-  paywallFeatureNoAdsFreeValue: 'Shown',
-  paywallFeatureNoAdsProValue: 'None',
+  paywallFeatureNoAds: 'โฆษณา',
+  paywallFeatureNoAdsFreeValue: 'แสดง',
+  paywallFeatureNoAdsProValue: 'ซ่อน',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
   planWiringListLink: 'Wiring list',
   wiringTabAll: 'All',
@@ -938,5 +938,8 @@ const th: Partial<Record<TranslationKey, string>> = {
   customLimitTitle: 'ถึงขีดจำกัดของแผน Free แล้ว',
   customLimitDesc:
     'แผน Free อนุญาตให้เพิ่มพันธุ์และทรงที่กำหนดเองได้สูงสุด {count} รายการ อัปเกรดเป็น Pro เพื่อใช้งานไม่จำกัด',
+  // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
+  paywallFeatureCsvFreeValue: 'ไม่ใช้งานได้',
+  paywallFeatureCsvProValue: 'ใช้งานได้',
 };
 export default th;

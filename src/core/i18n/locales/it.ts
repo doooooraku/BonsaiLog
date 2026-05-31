@@ -470,9 +470,9 @@ const it: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: 'Full data backup (ZIP)',
   paywallFeatureCsv: 'CSV export',
   paywallFeaturePdf: 'PDF export',
-  paywallFeatureNoAds: 'Ads',
-  paywallFeatureNoAdsFreeValue: 'Shown',
-  paywallFeatureNoAdsProValue: 'None',
+  paywallFeatureNoAds: 'Annunci',
+  paywallFeatureNoAdsFreeValue: 'Visibili',
+  paywallFeatureNoAdsProValue: 'Nascosti',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
   planWiringListLink: 'Wiring list',
   wiringTabAll: 'All',
@@ -942,5 +942,8 @@ const it: Partial<Record<TranslationKey, string>> = {
   customLimitTitle: 'Limite del piano Free raggiunto',
   customLimitDesc:
     'Il piano Free consente fino a {count} specie e stili personalizzati. Passa a Pro per averne illimitati.',
+  // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
+  paywallFeatureCsvFreeValue: 'Non disponibile',
+  paywallFeatureCsvProValue: 'Disponibile',
 };
 export default it;

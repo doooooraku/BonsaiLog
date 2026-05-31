@@ -467,9 +467,9 @@ const ko: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: 'Full data backup (ZIP)',
   paywallFeatureCsv: 'CSV export',
   paywallFeaturePdf: 'PDF export',
-  paywallFeatureNoAds: 'Ads',
-  paywallFeatureNoAdsFreeValue: 'Shown',
-  paywallFeatureNoAdsProValue: 'None',
+  paywallFeatureNoAds: '광고',
+  paywallFeatureNoAdsFreeValue: '표시',
+  paywallFeatureNoAdsProValue: '숨김',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
   planWiringListLink: 'Wiring list',
   wiringTabAll: 'All',
@@ -938,5 +938,8 @@ const ko: Partial<Record<TranslationKey, string>> = {
   customLimitTitle: 'Free 플랜 한도 도달',
   customLimitDesc:
     'Free 플랜에서는 최대 {count}개의 사용자 정의 수종·수형을 추가할 수 있습니다. Pro로 업그레이드하면 무제한입니다.',
+  // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
+  paywallFeatureCsvFreeValue: '사용 불가',
+  paywallFeatureCsvProValue: '사용 가능',
 };
 export default ko;

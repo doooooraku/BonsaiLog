@@ -470,9 +470,9 @@ const ru: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: 'Full data backup (ZIP)',
   paywallFeatureCsv: 'CSV export',
   paywallFeaturePdf: 'PDF export',
-  paywallFeatureNoAds: 'Ads',
-  paywallFeatureNoAdsFreeValue: 'Shown',
-  paywallFeatureNoAdsProValue: 'None',
+  paywallFeatureNoAds: 'Реклама',
+  paywallFeatureNoAdsFreeValue: 'Показывается',
+  paywallFeatureNoAdsProValue: 'Скрыта',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
   planWiringListLink: 'Wiring list',
   wiringTabAll: 'All',
@@ -940,5 +940,8 @@ const ru: Partial<Record<TranslationKey, string>> = {
   customLimitTitle: 'Достигнут лимит плана Free',
   customLimitDesc:
     'План Free позволяет добавить до {count} своих видов и стилей. Перейдите на Pro для безлимита.',
+  // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
+  paywallFeatureCsvFreeValue: 'Недоступно',
+  paywallFeatureCsvProValue: 'Доступно',
 };
 export default ru;

@@ -469,9 +469,9 @@ const id: Partial<Record<TranslationKey, string>> = {
   paywallFeatureBackup: 'Full data backup (ZIP)',
   paywallFeatureCsv: 'CSV export',
   paywallFeaturePdf: 'PDF export',
-  paywallFeatureNoAds: 'Ads',
-  paywallFeatureNoAdsFreeValue: 'Shown',
-  paywallFeatureNoAdsProValue: 'None',
+  paywallFeatureNoAds: 'Iklan',
+  paywallFeatureNoAdsFreeValue: 'Ditampilkan',
+  paywallFeatureNoAdsProValue: 'Disembunyikan',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
   planWiringListLink: 'Wiring list',
   wiringTabAll: 'All',
@@ -940,5 +940,8 @@ const id: Partial<Record<TranslationKey, string>> = {
   customLimitTitle: 'Batas paket Free tercapai',
   customLimitDesc:
     'Paket Free memungkinkan menambah hingga {count} spesies dan gaya khusus. Tingkatkan ke Pro untuk tanpa batas.',
+  // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
+  paywallFeatureCsvFreeValue: 'Tidak tersedia',
+  paywallFeatureCsvProValue: 'Tersedia',
 };
 export default id;
