@@ -933,5 +933,12 @@ const id: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: 'Foto catatan kerja: 3 → Tanpa batas',
   settingsBenefitCustomSpecies: 'Spesies & gaya khusus: 3 → Tanpa batas',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Batas paket Free tercapai',
+  tagLimitDesc:
+    'Paket Free memungkinkan membuat hingga {count} tag. Tingkatkan ke Pro untuk tanpa batas.',
+  customLimitTitle: 'Batas paket Free tercapai',
+  customLimitDesc:
+    'Paket Free memungkinkan menambah hingga {count} spesies dan gaya khusus. Tingkatkan ke Pro untuk tanpa batas.',
 };
 export default id;

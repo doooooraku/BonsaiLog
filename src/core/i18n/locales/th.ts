@@ -931,5 +931,12 @@ const th: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: 'รูปบันทึก: 3 → ไม่จำกัด',
   settingsBenefitCustomSpecies: 'พันธุ์และทรง: 3 → ไม่จำกัด',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'ถึงขีดจำกัดของแผน Free แล้ว',
+  tagLimitDesc:
+    'แผน Free อนุญาตให้สร้างแท็กได้สูงสุด {count} รายการ อัปเกรดเป็น Pro เพื่อใช้งานไม่จำกัด',
+  customLimitTitle: 'ถึงขีดจำกัดของแผน Free แล้ว',
+  customLimitDesc:
+    'แผน Free อนุญาตให้เพิ่มพันธุ์และทรงที่กำหนดเองได้สูงสุด {count} รายการ อัปเกรดเป็น Pro เพื่อใช้งานไม่จำกัด',
 };
 export default th;

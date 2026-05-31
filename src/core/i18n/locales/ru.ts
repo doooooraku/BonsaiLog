@@ -934,5 +934,11 @@ const ru: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: 'Фото записей: 3 → Без ограничений',
   settingsBenefitCustomSpecies: 'Свои виды и стили: 3 → Без ограничений',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Достигнут лимит плана Free',
+  tagLimitDesc: 'План Free позволяет создать до {count} тегов. Перейдите на Pro для безлимита.',
+  customLimitTitle: 'Достигнут лимит плана Free',
+  customLimitDesc:
+    'План Free позволяет добавить до {count} своих видов и стилей. Перейдите на Pro для безлимита.',
 };
 export default ru;

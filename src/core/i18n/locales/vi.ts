@@ -932,5 +932,11 @@ const vi: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: 'Ảnh nhật ký: 3 → Không giới hạn',
   settingsBenefitCustomSpecies: 'Loài và kiểu: 3 → Không giới hạn',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Đã đạt giới hạn gói Free',
+  tagLimitDesc: 'Gói Free cho phép tạo tối đa {count} thẻ. Nâng cấp lên Pro để không giới hạn.',
+  customLimitTitle: 'Đã đạt giới hạn gói Free',
+  customLimitDesc:
+    'Gói Free cho phép thêm tối đa {count} loài và kiểu tùy chỉnh. Nâng cấp lên Pro để không giới hạn.',
 };
 export default vi;

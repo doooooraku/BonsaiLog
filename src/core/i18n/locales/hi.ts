@@ -933,5 +933,12 @@ const hi: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: 'कार्य लॉग तस्वीरें: 3 → असीमित',
   settingsBenefitCustomSpecies: 'कस्टम प्रजातियाँ और शैलियाँ: 3 → असीमित',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Free प्लान की सीमा पहुँच गई',
+  tagLimitDesc:
+    'Free प्लान में अधिकतम {count} टैग बनाए जा सकते हैं। असीमित के लिए Pro में अपग्रेड करें।',
+  customLimitTitle: 'Free प्लान की सीमा पहुँच गई',
+  customLimitDesc:
+    'Free प्लान में अधिकतम {count} कस्टम प्रजातियाँ और शैलियाँ जोड़ी जा सकती हैं। असीमित के लिए Pro में अपग्रेड करें।',
 };
 export default hi;

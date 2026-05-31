@@ -136,12 +136,13 @@ export default function TagEditScreen() {
         }
         await performRename(trimmed);
       } else {
-        // ADR-0049 Sess59 PR4: 新規タグ作成 Free 上限 3 ガード (rename は無制限)
+        // ADR-0049 Sess59 PR4 + Sess60 PR1: 新規タグ作成 Free 上限 3 ガード (rename は無制限)
+        // Sess60 PR1: photoLimit* 流用 → tagLimit* 専用 key に切替 (Sess59 検証で文言不整合発覚)
         const canCreate = await canCreateNewTag(trimmed, isPro);
         if (!canCreate) {
           Alert.alert(
-            t('photoLimitTitle'), // 既存 i18n key 流用 (汎用 limit title)
-            t('photoLimitDesc').replace('{count}', String(FREE_TAG_LIMIT)),
+            t('tagLimitTitle'),
+            t('tagLimitDesc').replace('{count}', String(FREE_TAG_LIMIT)),
             [
               { text: t('cancel'), style: 'cancel', onPress: () => setBusy(false) },
               {

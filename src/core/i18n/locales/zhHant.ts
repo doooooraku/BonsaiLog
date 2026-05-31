@@ -920,5 +920,10 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: '工作記錄照片：3 → 無限制',
   settingsBenefitCustomSpecies: '自訂樹種與樹形：3 → 無限制',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Free 方案已達上限',
+  tagLimitDesc: 'Free 方案最多可建立 {count} 個標籤。升級 Pro 即可無限制。',
+  customLimitTitle: 'Free 方案已達上限',
+  customLimitDesc: 'Free 方案最多可新增 {count} 項自訂樹種與樹形。升級 Pro 即可無限制。',
 };
 export default zhHant;

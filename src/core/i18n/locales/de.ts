@@ -935,5 +935,12 @@ const de: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: 'Arbeitsfotos: 3 → Unbegrenzt',
   settingsBenefitCustomSpecies: 'Eigene Arten & Stile: 3 → Unbegrenzt',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Free-Plan-Limit erreicht',
+  tagLimitDesc:
+    'Im Free-Plan können bis zu {count} Tags erstellt werden. Upgrade auf Pro für unbegrenzt.',
+  customLimitTitle: 'Free-Plan-Limit erreicht',
+  customLimitDesc:
+    'Im Free-Plan können bis zu {count} eigene Arten und Stile hinzugefügt werden. Upgrade auf Pro für unbegrenzt.',
 };
 export default de;
