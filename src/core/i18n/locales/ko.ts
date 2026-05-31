@@ -941,5 +941,10 @@ const ko: Partial<Record<TranslationKey, string>> = {
   // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
   paywallFeatureCsvFreeValue: '사용 불가',
   paywallFeatureCsvProValue: '사용 가능',
+  // --- Sess60 PR3: SpeciesPicker/StylePicker カスタム差別化 (section header + badge + counter) ---
+  pickerSectionMaster: '기본',
+  pickerSectionCustom: '사용자 정의',
+  pickerCustomBadge: '사용자 정의',
+  pickerCustomCounter: '{used}/{limit}',
 };
 export default ko;

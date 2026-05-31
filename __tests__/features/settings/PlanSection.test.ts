@@ -46,22 +46,29 @@ describe('PlanSection (Sess57 Repolog 風強化)', () => {
     expect(SRC).toContain("t('settingsViewProPlans')");
   });
 
-  test('5. Pro メリット bullet 6 項目 (ADR-0049 Sess59 PR2 Pro 機能 6 項目フラット表示)', () => {
-    // ① 基本情報写真 / ② タグ / ③ 作業記録写真 / ④ CSV-PDF / ⑤ 広告非表示 / ⑥ カスタム樹種樹形
-    expect(SRC).toContain("'settingsBenefitPhoto'");
-    expect(SRC).toContain("'settingsBenefitTag'");
-    expect(SRC).toContain("'settingsBenefitWorkLogPhoto'");
-    expect(SRC).toContain("'paywallFeatureCsv'");
-    // Sess57 検証発覚: 「広告表示」 が意味曖昧なので「広告非表示」 専用 key を維持
-    expect(SRC).toContain("'settingsBenefitNoAds'");
-    expect(SRC).not.toContain("'paywallFeatureNoAds'");
-    expect(SRC).toContain("'settingsBenefitCustomSpecies'");
-    // Sess58: paywallFeatureYearlyTimeline (年次タイムライン画像) は実装ゼロ
-    // のため撤廃済 (景品表示法/Apple Review 2.3.1 リスク回避)。
-    expect(SRC).not.toContain("'paywallFeatureYearlyTimeline'");
-    // Sess58 「全 Free」 確定の paywallFeatureBackup は bullet から削除
-    // (Sess59 PR2 で 6 項目フラット = ADR-0049 Pro 機能境界整合)
+  test('5. Pro メリット 3 列表 (Sess60 PR3 で bullet → table 化、 Pro 機能 6 項目)', () => {
+    // 旧 bullet key 削除確認 (settingsBenefit* は bullet 専用、 表化で paywallFeature* に統一)
+    expect(SRC).not.toContain("'settingsBenefitPhoto'");
+    expect(SRC).not.toContain("'settingsBenefitTag'");
+    expect(SRC).not.toContain("'settingsBenefitWorkLogPhoto'");
+    expect(SRC).not.toContain("'settingsBenefitCustomSpecies'");
+    // Sess58 「全 Free」 確定の paywallFeatureBackup は表から除外
     expect(SRC).not.toContain("'paywallFeatureBackup'");
+    // Sess58: paywallFeatureYearlyTimeline 撤廃済
+    expect(SRC).not.toContain("'paywallFeatureYearlyTimeline'");
+  });
+
+  test('5b. Sess60 PR3 で bullet → 3 列表化 (PaywallScreen FeatureRow と同設計)', () => {
+    // 3 列表の testID 追加
+    expect(SRC).toContain('testID="e2e_settings_plan_feature_table"');
+    // FeatureRow と同 i18n key 構造 (paywallFeature*Label + FreeValue + ProValue)
+    expect(SRC).toContain("'paywallFeaturePhoto'");
+    expect(SRC).toContain("'paywallFeaturePhotoFreeValue'");
+    expect(SRC).toContain("'paywallFeaturePhotoProValue'");
+    expect(SRC).toContain("'paywallFeatureCsvFreeValue'");
+    expect(SRC).toContain("'paywallFeatureCsvProValue'");
+    // 機能名「広告非表示」 統一 (Sess60 PR2 で paywallFeatureNoAds が「広告非表示」 になった)
+    expect(SRC).toContain("'paywallFeatureNoAds'");
   });
 
   test('6. Pro / Free 表示分岐 (isPro による条件レンダ)', () => {

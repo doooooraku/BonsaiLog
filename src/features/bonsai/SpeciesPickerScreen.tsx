@@ -23,6 +23,8 @@ import {
   DISABLED_BG,
   ON_BRAND,
   TEXT_PRIMARY,
+  TEXT_MUTED,
+  TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
@@ -138,6 +140,12 @@ export default function SpeciesPickerScreen() {
         />
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
+        {/* Sess60 PR3: section header でマスタ/カスタムを視覚的に差別化 */}
+        {filteredMaster.length > 0 && (
+          <View style={styles.sectionHeader} testID="e2e_species_section_master">
+            <ThemedText style={styles.sectionHeaderText}>{t('pickerSectionMaster')}</ThemedText>
+          </View>
+        )}
         {filteredMaster.map((s) => {
           const selected = s.id === current;
           return (
@@ -156,6 +164,17 @@ export default function SpeciesPickerScreen() {
           );
         })}
         {/* Sess13 PR-H: カスタム樹種 (bonsai_species_custom) を master の下に UNION 表示。 */}
+        {/* Sess60 PR3: section header + 「カスタム」 badge + 残枠 counter で差別化 */}
+        {customSpecies.length > 0 && (
+          <View style={styles.sectionHeader} testID="e2e_species_section_custom">
+            <ThemedText style={styles.sectionHeaderText}>{t('pickerSectionCustom')}</ThemedText>
+            <ThemedText style={styles.sectionHeaderCounter}>
+              {speciesGuard.isPro
+                ? `${customSpecies.length}`
+                : `${customSpecies.length}/${FREE_CUSTOM_SPECIES_LIMIT}`}
+            </ThemedText>
+          </View>
+        )}
         {filteredCustom.map((cs) => {
           const customKey = `${CUSTOM_PREFIX}${cs.id}`;
           const selected = customKey === current;
@@ -165,12 +184,15 @@ export default function SpeciesPickerScreen() {
               testID={`e2e_species_option_custom_${cs.id}`}
               accessibilityRole="button"
               accessibilityLabel={cs.name}
-              style={[styles.row, selected && styles.rowSelected]}
+              style={[styles.row, styles.rowCustom, selected && styles.rowSelected]}
               onPress={() => handleSelect(customKey)}
             >
               <ThemedText style={selected ? styles.rowTextSelected : undefined}>
                 {cs.name}
               </ThemedText>
+              <View style={styles.customBadge}>
+                <ThemedText style={styles.customBadgeText}>{t('pickerCustomBadge')}</ThemedText>
+              </View>
             </Pressable>
           );
         })}
@@ -264,8 +286,50 @@ const styles = StyleSheet.create({
     borderBottomColor: BORDER_DEFAULT,
     minHeight: 48,
   },
+  // Sess60 PR3: カスタム row 用 (badge を右寄せするため flex-row)
+  rowCustom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
   rowSelected: { backgroundColor: BRAND_GREEN_BG, borderBottomColor: BRAND_GREEN },
   rowTextSelected: { fontWeight: '600' },
+  // Sess60 PR3: マスタ/カスタム section header (視覚的区切り、 uppercase + small text)
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+    paddingTop: 12,
+    paddingBottom: 4,
+    marginTop: 4,
+  },
+  sectionHeaderText: {
+    fontSize: 11,
+    color: TEXT_MUTED,
+    fontWeight: '600',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  sectionHeaderCounter: {
+    fontSize: 12,
+    color: TEXT_SECONDARY,
+  },
+  // Sess60 PR3: カスタム badge (BRAND_GREEN outline chip、 small)
+  customBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: BRAND_GREEN,
+    maxWidth: 100,
+  },
+  customBadgeText: {
+    fontSize: 10,
+    color: BRAND_GREEN,
+    fontWeight: '600',
+  },
   footerWrap: {
     paddingHorizontal: 16,
     paddingVertical: 12,

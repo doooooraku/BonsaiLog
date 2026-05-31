@@ -953,6 +953,12 @@ const baseEn = {
   // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
   paywallFeatureCsvFreeValue: 'Not available',
   paywallFeatureCsvProValue: 'Available',
+
+  // --- Sess60 PR3: SpeciesPicker/StylePicker カスタム差別化 (section header + badge + counter) ---
+  pickerSectionMaster: 'Master',
+  pickerSectionCustom: 'Custom',
+  pickerCustomBadge: 'Custom',
+  pickerCustomCounter: '{used}/{limit}',
 };
 
 export type TranslationKey = keyof typeof baseEn;
