@@ -114,3 +114,13 @@ export async function updateListing(token, packageName, editId, language, body) 
     body,
   );
 }
+
+export async function commitEdit(token, packageName, editId) {
+  // edits は draft transaction、 commit を呼ばないと変更が反映されない
+  return callApi(
+    'POST',
+    `${API_BASE}/applications/${packageName}/edits/${editId}:commit`,
+    token,
+    {},
+  );
+}
