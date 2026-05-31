@@ -1,0 +1,106 @@
+name: Build Android & Submit to Play Console
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-submit:
+    name: Build & Submit AAB
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Setup Java
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create .env file
+        run: |
+          cat <<'DOTENV' > .env
+          APP_NAME=${{ vars.APP_NAME }}
+          APP_SLUG=${{ vars.APP_SLUG }}
+          IOS_BUNDLE_IDENTIFIER=${{ vars.IOS_BUNDLE_IDENTIFIER }}
+          ANDROID_PACKAGE=${{ vars.ANDROID_PACKAGE }}
+          ADMOB_ANDROID_APP_ID=${{ secrets.ADMOB_ANDROID_APP_ID }}
+          ADMOB_ANDROID_BANNER_ID=${{ secrets.ADMOB_ANDROID_BANNER_ID }}
+          REVENUECAT_ANDROID_API_KEY=${{ secrets.REVENUECAT_ANDROID_API_KEY }}
+          REVENUECAT_IOS_API_KEY=placeholder
+          DOTENV
+
+      - name: Setup Google Service Account
+        run: |
+          mkdir -p secrets
+          echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64 }}" | base64 -d > secrets/google-service-account.json
+          # 読み取り確認 (機密値は出さない、 client_email のドメイン部のみ表示)
+          node -e "const j=require('./secrets/google-service-account.json'); console.log('SA loaded: domain=' + j.client_email.split('@')[1]);"
+
+      - name: Preflight check (--ci で Secrets/workflow も検査)
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: pnpm preflight:android:ci || echo "preflight 警告あり (継続)"
+
+      - name: Verify code quality
+        run: pnpm verify:lint && pnpm verify:type-check && pnpm verify:test
+
+      - name: Build Android AAB
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          mkdir -p dist
+          eas build --platform android --profile production --local --non-interactive --output=dist/app-production.aab
+
+      - name: Postbuild verify (assets/app.config 内の必須キー埋め込み確認)
+        run: node scripts/postbuild-verify.mjs dist/app-production.aab
+
+      - name: Submit to Play Console (track=alpha, draft)
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas submit --platform android --path dist/app-production.aab --profile production --non-interactive --no-wait
+
+      - name: Upload AAB artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: Android-AAB-${{ github.run_id }}
+          path: dist/app-production.aab
+          retention-days: 7
+
+      - name: Post build summary
+        if: success()
+        run: |
+          {
+            echo "## Android Build & Submit Successful"
+            echo ""
+            echo "- **AAB**: dist/app-production.aab"
+            echo "- **Profile**: production"
+            echo "- **Track**: alpha (Closed Testing)"
+            echo "- **Release status**: draft"
+            echo ""
+            echo "👉 次にやること: Play Console → クローズドテスト → Alpha → 「ロールアウトを開始」 を 1 クリック"
+          } >> "$GITHUB_STEP_SUMMARY"
