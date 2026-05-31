@@ -940,6 +940,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: '作業記録の写真 3枚→無制限',
   settingsBenefitCustomSpecies: 'カスタム樹種・樹形 3件→無制限',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Free プランの上限です',
+  tagLimitDesc: 'Free プランで作成できるタグは {count} 個までです。Pro にすると無制限になります。',
+  customLimitTitle: 'Free プランの上限です',
+  customLimitDesc:
+    'Free プランで追加できるカスタム樹種・樹形は {count} 件までです。Pro にすると無制限になります。',
 };
 
 export default ja;

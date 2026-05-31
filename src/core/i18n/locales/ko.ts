@@ -931,5 +931,12 @@ const ko: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: '작업 기록 사진: 3 → 무제한',
   settingsBenefitCustomSpecies: '사용자 정의 수종·수형: 3 → 무제한',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Free 플랜 한도 도달',
+  tagLimitDesc:
+    'Free 플랜에서는 최대 {count}개의 태그를 만들 수 있습니다. Pro로 업그레이드하면 무제한입니다.',
+  customLimitTitle: 'Free 플랜 한도 도달',
+  customLimitDesc:
+    'Free 플랜에서는 최대 {count}개의 사용자 정의 수종·수형을 추가할 수 있습니다. Pro로 업그레이드하면 무제한입니다.',
 };
 export default ko;

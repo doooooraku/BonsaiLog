@@ -74,12 +74,13 @@ export default function StylePickerScreen() {
     const trimmed = customInput.trim();
     if (trimmed.length === 0) return;
     try {
-      // ADR-0049 Sess59 PR5: Free 上限到達 + 既存名重複なし → Paywall 誘導
+      // ADR-0049 Sess59 PR5 + Sess60 PR1: Free 上限到達 + 既存名重複なし → Paywall 誘導
+      // Sess60 PR1: photoLimit* 流用 → customLimit* 専用 key に切替 (文言不整合修正)
       const canCreate = await canCreateNewCustomStyle(trimmed, styleGuard.isPro);
       if (!canCreate) {
         Alert.alert(
-          t('photoLimitTitle'),
-          t('photoLimitDesc').replace('{count}', String(FREE_CUSTOM_STYLE_LIMIT)),
+          t('customLimitTitle'),
+          t('customLimitDesc').replace('{count}', String(FREE_CUSTOM_STYLE_LIMIT)),
           [
             { text: t('cancel'), style: 'cancel' },
             { text: t('proCtaUpgrade'), onPress: styleGuard.openPaywall },

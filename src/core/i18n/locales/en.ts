@@ -942,6 +942,13 @@ const baseEn = {
   settingsBenefitWorkLogPhoto: 'Work log photos: 3 → Unlimited',
   settingsBenefitCustomSpecies: 'Custom species & styles: 3 → Unlimited',
   paywallFeatureLimitCounter: '{used}/{limit}',
+
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Free plan limit reached',
+  tagLimitDesc: 'The Free plan allows up to {count} tags. Upgrade to Pro for unlimited tags.',
+  customLimitTitle: 'Free plan limit reached',
+  customLimitDesc:
+    'The Free plan allows up to {count} custom species and styles. Upgrade to Pro for unlimited.',
 };
 
 export type TranslationKey = keyof typeof baseEn;

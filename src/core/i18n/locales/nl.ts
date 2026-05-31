@@ -934,5 +934,12 @@ const nl: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: 'Logfoto’s: 3 → Onbeperkt',
   settingsBenefitCustomSpecies: 'Eigen soorten & stijlen: 3 → Onbeperkt',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Limiet van Free-plan bereikt',
+  tagLimitDesc:
+    'Het Free-plan staat tot {count} tags toe. Upgrade naar Pro voor onbeperkt gebruik.',
+  customLimitTitle: 'Limiet van Free-plan bereikt',
+  customLimitDesc:
+    'Het Free-plan staat tot {count} eigen soorten en stijlen toe. Upgrade naar Pro voor onbeperkt gebruik.',
 };
 export default nl;

@@ -934,5 +934,11 @@ const sv: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: 'Arbetsfoton: 3 → Obegränsat',
   settingsBenefitCustomSpecies: 'Egna arter & stilar: 3 → Obegränsat',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Free-planens gräns nådd',
+  tagLimitDesc: 'Free-planen tillåter upp till {count} taggar. Uppgradera till Pro för obegränsat.',
+  customLimitTitle: 'Free-planens gräns nådd',
+  customLimitDesc:
+    'Free-planen tillåter upp till {count} egna arter och stilar. Uppgradera till Pro för obegränsat.',
 };
 export default sv;

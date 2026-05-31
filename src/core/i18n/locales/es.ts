@@ -936,5 +936,12 @@ const es: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: 'Fotos del registro: 3 → Ilimitado',
   settingsBenefitCustomSpecies: 'Especies y estilos: 3 → Ilimitado',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Límite del plan Free alcanzado',
+  tagLimitDesc:
+    'El plan Free permite hasta {count} etiquetas. Actualiza a Pro para tener acceso ilimitado.',
+  customLimitTitle: 'Límite del plan Free alcanzado',
+  customLimitDesc:
+    'El plan Free permite hasta {count} especies y estilos personalizados. Actualiza a Pro para tener acceso ilimitado.',
 };
 export default es;

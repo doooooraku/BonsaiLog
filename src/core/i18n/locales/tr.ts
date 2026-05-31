@@ -933,5 +933,12 @@ const tr: Partial<Record<TranslationKey, string>> = {
   settingsBenefitWorkLogPhoto: 'Kayıt fotoğrafları: 3 → Sınırsız',
   settingsBenefitCustomSpecies: 'Özel türler ve stiller: 3 → Sınırsız',
   paywallFeatureLimitCounter: '{used}/{limit}',
+  // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---
+  tagLimitTitle: 'Free plan sınırına ulaşıldı',
+  tagLimitDesc:
+    "Free plan en fazla {count} etiket oluşturmanıza izin verir. Sınırsız için Pro'ya geçin.",
+  customLimitTitle: 'Free plan sınırına ulaşıldı',
+  customLimitDesc:
+    "Free plan en fazla {count} özel tür ve stil eklemenize izin verir. Sınırsız için Pro'ya geçin.",
 };
 export default tr;
