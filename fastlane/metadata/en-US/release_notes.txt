@@ -1,1 +1,5 @@
-Initial release.
+Initial Closed Testing release of BonsaiLog.
+- Track and log bonsai care: watering, pruning, repotting, wiring, and more
+- 14 work types with dedicated forms and photo support
+- Multi-language (19 languages)
+- Pro plan with unlimited photos, CSV/PDF export, ad-free

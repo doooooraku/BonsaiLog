@@ -30,16 +30,8 @@ const FIXERS = {
     appendFileSync('.gitignore', '\nsecrets/\n');
     return 'append .gitignore += "secrets/"';
   },
-  'A-7': () => {
-    if (!existsSync('whatsnew')) mkdirSync('whatsnew', { recursive: true });
-    if (existsSync('whatsnew/whatsnew-en-US.txt')) return 'whatsnew-en-US.txt 既存';
-    const src = 'fastlane/metadata/en-US/release_notes.txt';
-    const content = existsSync(src)
-      ? readFileSync(src, 'utf8')
-      : 'Initial Closed Testing release of BonsaiLog.\n';
-    writeFileSync('whatsnew/whatsnew-en-US.txt', content);
-    return `created whatsnew/whatsnew-en-US.txt from ${existsSync(src) ? src : 'default'}`;
-  },
+  // PR6: A-7 (whatsnew/ チェック) は廃止、 fastlane/metadata SoT 一本化
+  // A-7 / A-7b (fastlane/metadata 存在チェック) は preflight 側で fixable=false 設定のため修復ロジック不要
   'B-1': () => fixEasJson({ track: 'alpha' }, 'track=alpha'),
   'B-2': () => fixEasJson({ releaseStatus: 'draft' }, 'releaseStatus=draft'),
   'B-3': () => fixEasJson({ changesNotSentForReview: true }, 'changesNotSentForReview=true'),
