@@ -86,7 +86,7 @@ async function main() {
       expected: '< 1800s',
       actual: `${elapsedSec}s`,
       pass: elapsedMs > 0 && elapsedMs < 1800 * 1000,
-      warning: false,
+      warning: true, // PR7: critical → warning 降格。 セッション中断で経過時間が延びる事象を critical 判定から除外
     },
   ];
 

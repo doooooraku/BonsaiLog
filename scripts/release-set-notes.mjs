@@ -65,6 +65,31 @@ async function main() {
   const drafts = snapshot.drafts ?? [];
   if (drafts.length === 0) {
     console.error('[set-notes] draft が存在しません — Phase 4 submit が完了していますか？');
+    // PR7: submission status を GraphQL で確認、 ERRORED ならエラー詳細を user に表示
+    const submitLogPath = `${dir}/04-submit.log`;
+    try {
+      const { parseSubmissionIdFromLog, getSubmissionStatus } =
+        await import('./release-utils/expo-graphql.mjs');
+      const subId = parseSubmissionIdFromLog(submitLogPath);
+      if (subId) {
+        console.error(`[set-notes] submission ID detected: ${subId}`);
+        console.error(`[set-notes] GraphQL で status を確認中...`);
+        const sub = await getSubmissionStatus(subId);
+        console.error(`[set-notes] Status: ${sub.status}`);
+        if (sub.error) {
+          console.error(`[set-notes] errorCode: ${sub.error.errorCode}`);
+          console.error(`[set-notes] message: ${sub.error.message}`);
+        }
+        console.error(
+          `[set-notes] 詳細: https://expo.dev/accounts/dooraku/projects/bonsailog/submissions/${subId}`,
+        );
+        if (sub.logsUrl) {
+          console.error(`[set-notes] logs (15分有効): ${sub.logsUrl.slice(0, 120)}...`);
+        }
+      }
+    } catch (e) {
+      console.error(`[set-notes] GraphQL 状態確認失敗 (無視可): ${e.message}`);
+    }
     process.exit(1);
   }
 

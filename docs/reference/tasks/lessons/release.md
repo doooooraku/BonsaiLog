@@ -58,9 +58,45 @@
   - orchestrate.sh build step を nohup wrap (WSL2 session 切断耐性)
   - RELEASE_LOG_TS を `dist/release-logs/.current` に永続化 (env 揮発対策)
 
+## R-Sess61-7: EAS Submit Android は内部で **fastlane supply** を使う
+
+- **背景**: PR6 検証時に release notes 反映が失敗。 EAS Submit ジョブの logs を Expo GraphQL API で取得して中身を見たところ、 `fastlaneArgs: ["supply", "--aab", ..., "--track", "alpha", ...]` という記述を発見。
+- **原因 (1 次情報)**: EAS Submit は **fastlane supply** をラップしている (公式 docs では明示されていない)。
+- **学び**: EAS = AAB バイナリだけ / fastlane = メタデータ + AAB + signing + ジョブ管理。 つまり fastlane の挙動・制約・バグが EAS にも継承される。
+- **適用**:
+  - EAS Submit が失敗した時、 まず fastlane supply の挙動から疑う
+  - fastlane の `metadata_path` 慣習 (`android/fastlane/metadata/android/<lang>/changelogs/<versionCode>.txt`) は EAS の中で使われている可能性
+  - ただし EAS は `--aab` 引数のみ渡して metadata は別 (= release notes 等は EAS は無視) という挙動を採用
+- **再発検知**: EAS の挙動を「ブラックボックス」 と見ず、 logs を Expo GraphQL API で取得 + fastlane の挙動と照らし合わせて理解する習慣。
+
+## R-Sess61-8: Google Publisher API の edit transaction は **並走 NG**
+
+- **背景**: PR6 検証で `release-snapshot.mjs before` が `createEdit` した直後に EAS Submit ジョブが起動 → fastlane supply 内の edit と並走 → `"This Edit has been deleted"` で 5 回 retry 全敗 → 失敗。
+- **原因**:
+  - Google Publisher API の edit transaction は同一アプリで複数 active 可能 (仕様上)
+  - だが fastlane supply は **「前の active edit を find して reuse」** する設計
+  - → 並走する別の edit transaction があると、 fastlane が古い edit を掴んで「deleted」 エラー
+- **対処 (PR7)**:
+  - `orchestrate.sh` の Step 4 を `eas submit --wait` で完了確認待ち
+  - snapshot before は build 前 (Step 2) / snapshot after は Submit 完了後 (Step 4.5) で時系列排他
+- **適用**: Publisher API edits を使う複数スクリプトを並走させない。 1 つの edit transaction を 1 つの目的で使い切ってから次へ。
+- **再発検知**: `createEdit` 呼ぶスクリプトを設計する時は、 並走する別の edit が無いことを保証 (orchestrate.sh の Step 順序、 もしくは mutex)。
+
+## R-Sess61-9: EAS CLI に無い機能は **Expo GraphQL API** を直接叩く
+
+- **背景**: PR6 検証で submission が失敗した時、 EAS CLI に submission status 照会 sub-command が無く、 user に expo.dev で目視確認を依頼していた。
+- **発見**: `https://api.expo.dev/graphql` に `EXPO_TOKEN` で Bearer 認証 + `submissions { byId(submissionId: $id) { status error logsUrl } }` クエリで Claude が直接取得可能。
+- **対処 (PR7)**: `scripts/release-utils/expo-graphql.mjs` 新規作成。 `getSubmissionStatus(id)` / `getSubmissionLogs(id)` / `parseSubmissionIdFromLog(path)` を共通 export。
+- **適用**:
+  - EAS CLI に sub-command が無い操作は Expo GraphQL API を直接叩く
+  - EXPO_TOKEN は `docs/01_key/03_Expo/access-tokens.txt` に永続化済み (Sess61 中盤で確立)
+  - 同パターンを他の Expo 関連操作 (builds 照会、 credentials 確認 等) にも展開可能
+- **再発検知**: 「CLI に無い → 諦める or user 確認依頼」 ではなく「GraphQL or REST API 直叩き」 が選択肢。
+
 ## 参考
 
-- ADR-0050: Android Release Automation (PR6 Amendment 含む)
+- ADR-0050: Android Release Automation (PR6 Amendment + PR7 Amendment 含む)
 - `.claude/skills/release-android/SKILL.md`: 11+ phase Skill (Phase 5.5 setReleaseNotes 追加)
 - `docs/how-to/workflow/google_play_release.md`: 手動フロー + EAS Submit + 12 testers/14 days + Pre-Launch Report
+- `scripts/release-utils/expo-graphql.mjs`: Expo GraphQL API 共通モジュール (R-Sess61-9 反映)
 - Sess61 plan: `~/.claude/plans/tidy-pondering-spark.md`
