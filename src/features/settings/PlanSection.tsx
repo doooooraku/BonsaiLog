@@ -25,24 +25,61 @@ import {
   BORDER_DEFAULT,
   BRAND_GREEN,
   ON_BRAND,
+  TEXT_MUTED,
+  TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useProStore } from '@/src/stores/proStore';
 
 import { SettingsSection } from './SettingsSection';
 
-// ADR-0049 Sess59 PR2: Pro メリット bullet を Sess58 確定 Pro 機能 6 項目 全部に展開
-// (User 真意「Free と Pro で差分があるもの全部表示」 採用、 案 A フラット シンプル)。
-// 順序は ADR-0049 ①〜⑥ に整合 (写真 / タグ / 作業記録写真 / CSV-PDF / 広告非表示 /
-// カスタム樹種樹形)。 paywallFeatureNoAds は意味曖昧 ("広告表示" = Free 視点で逆効果) のため
-// settingsBenefitNoAds 「広告非表示」 専用 key を維持 (Sess57 実機検証由来)。
-const PRO_BENEFIT_KEYS: TranslationKey[] = [
-  'settingsBenefitPhoto',
-  'settingsBenefitTag',
-  'settingsBenefitWorkLogPhoto',
-  'paywallFeatureCsv',
-  'settingsBenefitNoAds',
-  'settingsBenefitCustomSpecies',
+// ADR-0049 Sess59 PR2 + Sess60 PR3: bullet → 3 列表 (機能 / Free / Pro) に変更。
+// PaywallScreen の FeatureRow と同じ 6 行構成で、 ユーザーが Free vs Pro を一目で比較可能。
+// Sess60 PR2 で確立した literal 排除 + i18n 統一 pattern を Settings でも適用。
+type FeatureRowKey = {
+  label: TranslationKey;
+  free: TranslationKey;
+  pro: TranslationKey;
+};
+
+const PRO_FEATURE_ROWS: FeatureRowKey[] = [
+  // ① 基本情報写真
+  {
+    label: 'paywallFeaturePhoto',
+    free: 'paywallFeaturePhotoFreeValue',
+    pro: 'paywallFeaturePhotoProValue',
+  },
+  // ② タグ
+  {
+    label: 'paywallFeatureTag',
+    free: 'paywallFeatureTagFreeValue',
+    pro: 'paywallFeatureTagProValue',
+  },
+  // ③ 作業記録写真
+  {
+    label: 'paywallFeatureWorkLogPhoto',
+    free: 'paywallFeatureWorkLogPhotoFreeValue',
+    pro: 'paywallFeatureWorkLogPhotoProValue',
+  },
+  // ④ CSV/PDF エクスポート
+  {
+    label: 'paywallFeatureCsv',
+    free: 'paywallFeatureCsvFreeValue',
+    pro: 'paywallFeatureCsvProValue',
+  },
+  // ⑤ 広告非表示 (機能名は Settings 用 settingsBenefitNoAds でも OK だが、 Sess60 PR2 で
+  //    Paywall 側も「広告非表示」 統一済なので paywallFeatureNoAds 使用)
+  {
+    label: 'paywallFeatureNoAds',
+    free: 'paywallFeatureNoAdsFreeValue',
+    pro: 'paywallFeatureNoAdsProValue',
+  },
+  // ⑥ カスタム樹種・樹形
+  {
+    label: 'paywallFeatureCustomSpecies',
+    free: 'paywallFeatureCustomSpeciesFreeValue',
+    pro: 'paywallFeatureCustomSpeciesProValue',
+  },
 ];
 
 function formatRenewalDate(iso: string | null, lang: string): string | null {
@@ -145,11 +182,26 @@ export function PlanSection() {
         </ThemedText>
       </View>
 
-      {/* 5. (Free のみ) Pro メリット bullet 4 項目 */}
+      {/* 5. (Free のみ) Pro メリット 3 列表 (機能 / Free / Pro) - Sess60 PR3 で bullet → table 化 */}
       {!isPro && (
-        <View style={styles.benefitList}>
-          {PRO_BENEFIT_KEYS.map((key) => (
-            <ThemedText key={key} style={styles.benefitText}>{`• ${t(key)}`}</ThemedText>
+        <View style={styles.featureTable} testID="e2e_settings_plan_feature_table">
+          <View style={styles.featureHeader}>
+            <ThemedText style={styles.featureHeaderLabel}>{t('paywallFeatureColLabel')}</ThemedText>
+            <ThemedText style={styles.featureHeaderFree}>FREE</ThemedText>
+            <ThemedText style={styles.featureHeaderPro}>PRO</ThemedText>
+          </View>
+          {PRO_FEATURE_ROWS.map((row, idx) => (
+            <View
+              key={row.label}
+              style={[
+                styles.featureRow,
+                idx === PRO_FEATURE_ROWS.length - 1 && styles.featureRowLast,
+              ]}
+            >
+              <ThemedText style={styles.featureLabel}>{t(row.label)}</ThemedText>
+              <ThemedText style={styles.featureFree}>{t(row.free)}</ThemedText>
+              <ThemedText style={styles.featurePro}>{t(row.pro)}</ThemedText>
+            </View>
           ))}
         </View>
       )}
@@ -204,8 +256,76 @@ const styles = StyleSheet.create({
   chevron: { fontSize: 18, opacity: 0.5, lineHeight: 18 },
   body: { paddingHorizontal: 16, paddingTop: 8 },
   bodyText: { fontSize: 13, color: TEXT_SECONDARY, lineHeight: 20 },
-  benefitList: { paddingHorizontal: 16, paddingTop: 6, gap: 4 },
-  benefitText: { fontSize: 13, color: TEXT_SECONDARY, lineHeight: 20 },
+  // Sess60 PR3: Settings PlanSection bullet → 3 列表に変更 (PaywallScreen FeatureRow と同設計)
+  // 幅 720dp で 機能 60% / Free 20% / Pro 20% を flexbox で割り当て
+  featureTable: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: BORDER_DEFAULT,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+  },
+  featureHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER_DEFAULT,
+  },
+  featureHeaderLabel: {
+    flex: 1,
+    fontSize: 10,
+    color: TEXT_MUTED,
+    letterSpacing: 1.0,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  featureHeaderFree: {
+    width: 60,
+    textAlign: 'center',
+    fontSize: 10,
+    color: TEXT_MUTED,
+    letterSpacing: 1.0,
+    fontWeight: '600',
+  },
+  featureHeaderPro: {
+    width: 60,
+    textAlign: 'center',
+    fontSize: 10,
+    color: BRAND_GREEN,
+    letterSpacing: 1.0,
+    fontWeight: '700',
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: BORDER_DEFAULT,
+  },
+  featureRowLast: {
+    borderBottomWidth: 0,
+  },
+  featureLabel: {
+    flex: 1,
+    fontSize: 13,
+    color: TEXT_PRIMARY,
+  },
+  featureFree: {
+    width: 60,
+    textAlign: 'center',
+    fontSize: 12,
+    color: TEXT_SECONDARY,
+  },
+  featurePro: {
+    width: 60,
+    textAlign: 'center',
+    fontSize: 12,
+    color: BRAND_GREEN,
+    fontWeight: '600',
+  },
   primaryCta: {
     marginHorizontal: 16,
     marginTop: 12,

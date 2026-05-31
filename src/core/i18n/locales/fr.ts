@@ -946,5 +946,10 @@ const fr: Partial<Record<TranslationKey, string>> = {
   // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
   paywallFeatureCsvFreeValue: 'Indisponible',
   paywallFeatureCsvProValue: 'Disponible',
+  // --- Sess60 PR3: SpeciesPicker/StylePicker カスタム差別化 (section header + badge + counter) ---
+  pickerSectionMaster: 'Par défaut',
+  pickerSectionCustom: 'Personnalisé',
+  pickerCustomBadge: 'Personnalisé',
+  pickerCustomCounter: '{used}/{limit}',
 };
 export default fr;

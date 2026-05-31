@@ -928,5 +928,10 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
   paywallFeatureCsvFreeValue: '不可用',
   paywallFeatureCsvProValue: '可用',
+  // --- Sess60 PR3: SpeciesPicker/StylePicker カスタム差別化 (section header + badge + counter) ---
+  pickerSectionMaster: '主列表',
+  pickerSectionCustom: '自定义',
+  pickerCustomBadge: '自定义',
+  pickerCustomCounter: '{used}/{limit}',
 };
 export default zhHans;
