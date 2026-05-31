@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 /**
- * release-snapshot.mjs — Play Console 状態を Publisher API で撮影 (Sess61 PR2)
+ * release-snapshot.mjs — Play Console 状態を Publisher API で撮影 (Sess61 PR2 + PR6)
  *
  * Usage:
  *   node scripts/release-snapshot.mjs before [ts]
  *   node scripts/release-snapshot.mjs after [ts]
  *
- * 引数 ts (タイムスタンプ) を指定しないと現在時刻で生成。 env RELEASE_LOG_TS でも上書き可。
+ * 引数 ts (タイムスタンプ) を指定しないと:
+ *   1. env RELEASE_LOG_TS から取得
+ *   2. dist/release-logs/.current から取得 (PR6: 永続化 fallback)
+ *   3. 現在時刻で新規生成
  * 出力: dist/release-logs/<ts>-android/{02-snapshot-before.json | 05-snapshot-after.json}
  */
 import { mkdir, writeFile } from 'node:fs/promises';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
   loadServiceAccount,
@@ -21,6 +25,14 @@ import {
 
 const PACKAGE_NAME = 'com.dooooraku.bonsailog';
 const SA_PATH = './secrets/google-service-account.json';
+const CURRENT_FILE = path.resolve('dist/release-logs/.current');
+
+function resolveTS(tsArg) {
+  if (tsArg) return tsArg;
+  if (process.env.RELEASE_LOG_TS) return process.env.RELEASE_LOG_TS;
+  if (existsSync(CURRENT_FILE)) return readFileSync(CURRENT_FILE, 'utf8').trim();
+  return new Date().toISOString().replace(/[:.]/g, '-');
+}
 
 async function main() {
   const phase = process.argv[2];
@@ -29,7 +41,7 @@ async function main() {
     console.error('Usage: release-snapshot.mjs before|after [ts]');
     process.exit(1);
   }
-  const ts = tsArg ?? process.env.RELEASE_LOG_TS ?? new Date().toISOString().replace(/[:.]/g, '-');
+  const ts = resolveTS(tsArg);
 
   const sa = loadServiceAccount(SA_PATH);
   const token = await getAccessToken(sa);

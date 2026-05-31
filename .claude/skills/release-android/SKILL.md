@@ -79,6 +79,23 @@ pnpm submit:android
 
 Play Console Alpha track に Draft 投稿 (--no-wait)。 submit ID を `04-submit.log` に保存。
 
+### Phase 5.5 — Release Notes 別途 PUT (PR6 で追加)
+
+```bash
+sleep 90   # EAS → Play Console 反映待ち実測値
+node scripts/release-snapshot.mjs after   # 反映後に snapshot
+node scripts/release-set-notes.mjs        # fastlane/metadata から release notes を Publisher API で別途 PUT
+```
+
+EAS Submit Android は **release notes (whatsnew) を扱わない公式仕様** (Sess61 検証で判明)。 そのため、 Submit 後に `publisher-api.mjs setReleaseNotes` で fastlane/metadata から release notes を Play Console に別途 PUT する。 ADR-0050 PR6 Amendment 参照。
+
+SoT: `fastlane/metadata/{en-US,ja}/release_notes.txt` (ADR-0033 i18n policy 準拠)
+言語コード変換: `scripts/release-utils/i18n-mapping.mjs` (fastlane `ja` → Publisher API `ja-JP`)
+
+### Phase 6 — (旧) EAS Submit ✏️ 廃止、 Phase 5 に統合
+
+Play Console Alpha track に Draft 投稿 (--no-wait)。 submit ID を `04-submit.log` に保存。
+
 ### Phase 6 — snapshot after
 
 ```bash

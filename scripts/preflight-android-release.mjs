@@ -95,14 +95,23 @@ for (const key of ANDROID_KEYS) {
   );
 })();
 
+// PR6: whatsnew/ ディレクトリは廃止、 fastlane/metadata/<lang>/release_notes.txt SoT 一本化 (ADR-0033 整合)
+// EAS Submit が release notes を扱わない仕様判明により、 publisher-api.mjs setReleaseNotes で別途 PUT
 add(
   'A-7',
-  'whatsnew/whatsnew-en-US.txt 存在',
-  existsSync('whatsnew/whatsnew-en-US.txt'),
-  existsSync('whatsnew/whatsnew-en-US.txt')
+  'fastlane/metadata/en-US/release_notes.txt 存在',
+  existsSync('fastlane/metadata/en-US/release_notes.txt'),
+  existsSync('fastlane/metadata/en-US/release_notes.txt')
     ? ''
-    : '未作成 (fastlane/metadata/en-US/release_notes.txt から流用可)',
-  !existsSync('whatsnew/whatsnew-en-US.txt'),
+    : '未作成 (Publisher API setReleaseNotes が読む SoT)',
+  false, // 既存ファイルのため通常 OK、 修復ロジック不要
+);
+add(
+  'A-7b',
+  'fastlane/metadata/ja/release_notes.txt 存在',
+  existsSync('fastlane/metadata/ja/release_notes.txt'),
+  existsSync('fastlane/metadata/ja/release_notes.txt') ? '' : '未作成 (ja-JP listing 用、 任意)',
+  false,
 );
 
 (function checkGitClean() {

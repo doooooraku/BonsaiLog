@@ -39,9 +39,28 @@
 - **対処**: `grep '^NAME=' .env | cut -d= -f2- | gh secret set NAME` または `base64 -w0 file | gh secret set NAME` で stdin から渡す。
 - **適用**: app-factory 共通 best practice。 Secrets 登録時のセキュリティガード。
 
+## R-Sess61-6: EAS Submit Android は release notes (whatsnew) を **扱わない公式仕様**
+
+- **背景**: Sess61 PR1 で `/whatsnew/whatsnew-en-US.txt` を repo root に置けば EAS Submit が自動投稿してくれると仮定。 PR1-5 完成後の実証検証 (versionCode 4 Submit) で **release notes が空のまま Play Console に到達**。
+- **原因 (1 次情報)**: Expo 公式 docs にて確認:
+  > "EAS Submit uploads your binary but does not manage store listing metadata, screenshots, or release notes. For Google Play Store, configure your store listing directly in Google Play Console before submitting."
+- **学び**: 「EAS Submit は AAB バイナリを上げるだけ」 を勘違いしていた。 metadata (release notes / screenshots / store listing text) は EAS の役割外、 Publisher API or Console UI で別途扱う必要がある。
+- **対処 (PR6)**:
+  - `scripts/release-utils/publisher-api.mjs` に `updateTrack` (PUT) + `setReleaseNotes` 関数を追加
+  - `scripts/release-set-notes.mjs` 新規作成、 fastlane/metadata から release notes を読んで Publisher API 経由で別途 PUT
+  - `scripts/release-android-orchestrate.sh` Phase 5.5 に組み込み
+  - SoT 整理: `whatsnew/` ディレクトリ廃止、 `fastlane/metadata/<lang>/release_notes.txt` 一本化 (ADR-0033 整合)
+- **適用**: app-factory の他アプリでも EAS Submit を使う時、 release notes / screenshots / store text 投稿は **必ず Publisher API or fastlane supply 経由** にする。 EAS だけで完結すると思い込まない。
+- **再発検知**: PR 計画時に「EAS Submit が扱う / 扱わない」 を 1 次情報で必ず確認、 思い込みで設計しない。
+- **PR6 で同時修正した周辺改善**:
+  - sleep 5 → 90 (EAS → Play 反映待ち実測値)
+  - diff allPass の重み付け (critical / warning 分離)
+  - orchestrate.sh build step を nohup wrap (WSL2 session 切断耐性)
+  - RELEASE_LOG_TS を `dist/release-logs/.current` に永続化 (env 揮発対策)
+
 ## 参考
 
-- ADR-0050: Android Release Automation
-- `.claude/skills/release-android/SKILL.md`: 11 phase Skill
+- ADR-0050: Android Release Automation (PR6 Amendment 含む)
+- `.claude/skills/release-android/SKILL.md`: 11+ phase Skill (Phase 5.5 setReleaseNotes 追加)
 - `docs/how-to/workflow/google_play_release.md`: 手動フロー + EAS Submit + 12 testers/14 days + Pre-Launch Report
 - Sess61 plan: `~/.claude/plans/tidy-pondering-spark.md`

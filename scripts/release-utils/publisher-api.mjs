@@ -124,3 +124,58 @@ export async function commitEdit(token, packageName, editId) {
     {},
   );
 }
+
+export async function updateTrack(token, packageName, editId, track, body) {
+  // edits.tracks.update (PUT) — TrackRelease 配列を replace
+  // body: { track, releases: [{ name, versionCodes, releaseNotes, status }] }
+  return callApi(
+    'PUT',
+    `${API_BASE}/applications/${packageName}/edits/${editId}/tracks/${track}`,
+    token,
+    body,
+  );
+}
+
+/**
+ * setReleaseNotes — 指定 versionCode の release に releaseNotes を inject + commit (Sess61 PR6)
+ *
+ * 冪等パターン:
+ *   1. createEdit で edit transaction を開始
+ *   2. getTrack で現状取得
+ *   3. 該当 versionCode の release を find
+ *   4. releaseNotes を inject (他フィールドは温存)
+ *   5. updateTrack で PUT
+ *   6. commitEdit で確定
+ *
+ * notesMap = { 'en-US': 'text', 'ja-JP': 'text' } (BCP-47)
+ * 既存の他 release は temper せず、 該当 release のみ更新する。
+ */
+export async function setReleaseNotes(token, packageName, track, versionCode, notesMap) {
+  const edit = await createEdit(token, packageName);
+  const editId = edit.id;
+
+  const current = await getTrack(token, packageName, editId, track);
+  const releases = current.releases ?? [];
+  const targetVc = String(versionCode);
+
+  const targetIndex = releases.findIndex((r) =>
+    (r.versionCodes ?? []).some((vc) => String(vc) === targetVc),
+  );
+  if (targetIndex < 0) {
+    throw new Error(
+      `setReleaseNotes: track=${track} に versionCode=${targetVc} の release が見つかりません`,
+    );
+  }
+
+  const releaseNotes = Object.entries(notesMap)
+    .filter(([, text]) => text && text.trim() !== '')
+    .map(([language, text]) => ({ language, text }));
+
+  // 該当 release の releaseNotes を inject、 他フィールドは温存
+  const updatedReleases = releases.map((r, i) => (i === targetIndex ? { ...r, releaseNotes } : r));
+
+  const body = { track, releases: updatedReleases };
+  await updateTrack(token, packageName, editId, track, body);
+  await commitEdit(token, packageName, editId);
+  return { editId, targetVc, languagesInjected: releaseNotes.map((rn) => rn.language) };
+}

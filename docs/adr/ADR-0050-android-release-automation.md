@@ -118,5 +118,55 @@ BonsaiLog は Play Console Closed Testing (Alpha track) で v1.0.0 (versionCode 
 ## Trace
 
 - Sess61 議論 (6 専門家 + 4 ペルソナ評価 + Plan agent 8 観点 validation)
-- Engram: `mem_save id=454` (Sess61 議論完遂、 5 PR 構成確定)
+- Engram: `mem_save id=454` (Sess61 議論完遂、 5 PR 構成確定) / `id=455` (Sess61 検証完遂、 3/4 ✅ 確認)
 - plan file: `~/.claude/plans/tidy-pondering-spark.md`
+
+---
+
+## PR6 Amendment (2026-05-31、 Sess61 検証後の hotfix)
+
+### 経緯
+
+PR1-5 完成後、 `/release-android` Skill フル実走で **whatsnew (release notes) が空のまま Play Console Alpha track Draft (versionCode 4) に到達** する事象を発見。 原因調査の結果、 EAS Submit Android は **release notes を扱わない公式仕様** と判明 (Expo docs):
+
+> "EAS Submit uploads your binary but does not manage store listing metadata, screenshots, or release notes."
+
+PR1 で `/whatsnew/whatsnew-*.txt` を repo root に置いた設計は **EAS Submit から無視される運命** だった。 ADR-0050 D5 (Publisher API + fastlane/metadata SoT) と PR1 配置の **二重化** が根本原因。
+
+### Decision Amendment
+
+**D4 を完全達成するため、 release notes 投稿経路を以下に確定**:
+
+1. **`scripts/release-utils/publisher-api.mjs` 拡張**:
+   - `updateTrack(token, packageName, editId, track, body)` (PUT)
+   - `setReleaseNotes(token, packageName, track, versionCode, notesMap)` 冪等パターン:
+     - createEdit → getTrack → 該当 release を find → releaseNotes を inject (他フィールド温存) → updateTrack PUT → commitEdit
+2. **`scripts/release-set-notes.mjs` 新規作成**:
+   - fastlane/metadata/<lang>/release_notes.txt から各言語の release notes を読む
+   - `scripts/release-utils/i18n-mapping.mjs` で fastlane code (`ja`) → Publisher API BCP-47 (`ja-JP`) 変換
+   - publisher-api.mjs setReleaseNotes で Play Console へ PUT
+3. **`scripts/release-android-orchestrate.sh` Phase 5.5 追加**:
+   - Phase 5 (EAS Submit) 直後に sleep 90 (実測 EAS → Play 反映時間)
+   - Phase 5.5 で setReleaseNotes 実行
+   - Phase 6 (snapshot after) 直前で再 snapshot
+4. **SoT 整理**: `whatsnew/` ディレクトリ廃止 → `fastlane/metadata/{en-US,ja}/release_notes.txt` 一本化 (ADR-0033 i18n policy 整合)
+5. **release-diff.mjs 重み付け**: whatsnew check を warning 化、 critical (Draft+1, versionCode+1, 経過時間) のみで `criticalPass` 判定 (PR6 で setReleaseNotes 別 step のため、 万一失敗時の検知用に残す防御的 design)
+6. **release-log.mjs `.current` 永続化**: RELEASE_LOG_TS env が揮発しても `dist/release-logs/.current` から fallback、 session 切断時の再開耐性
+7. **orchestrate.sh `nohup` wrap**: WSL2 ターミナル切断 (SIGHUP) 耐性
+
+### PR6 で同時対処した周辺改善 (Plan agent validation 反映)
+
+- #2 sleep 5 → 90 (実測値)
+- #3 diff allPass の critical/warning 重み付け
+- #4 session resume 対応 (nohup + Actions fallback 案内)
+- #5 RELEASE_LOG_TS 永続化 (.current ファイル)
+
+### 延期 (PR7+)
+
+- #6 Play Console URL config 化 (eas.json `extra` 議論)
+- #7 .gitignore 二重防御 (現状 dist/ 全体保護で十分)
+- #8 ja-JP listing 原稿 = `/store-text` Skill 別 session
+
+### 学び
+
+`lessons/release.md` R-Sess61-6 として追記: **EAS Submit は AAB バイナリのみ。 metadata (release notes / screenshots / store text) は Publisher API or fastlane supply 経由で別途扱う必要がある。 思い込みで設計せず 1 次情報を確認すること。**
