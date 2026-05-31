@@ -73,8 +73,36 @@ gh run list --limit 5         # 直近 CI 結果
 
 ### Android 固有
 
-- [ ] `versionCode` が前回より大きい
+- [ ] `versionCode` が前回より大きい (自動: `eas.json autoIncrement: true` + Publisher API alpha latest 比較ゲート)
 - [ ] 12 人テスター要件を満たしている（個人アカウントの場合）
+- [ ] `secrets/google-service-account.json` 配置済み (Sess61 PR1 で symlink)
+- [ ] `eas.json submit.production.android.track="alpha"` (Closed testing カウント対象)
+- [ ] `eas.json submit.production.android.changesNotSentForReview=true` (永遠ペンディング罠回避)
+- [ ] GitHub Secrets 5 個登録済み (Sess61 PR3 で `gh secret set` 代行) — EXPO_TOKEN のみ user 手動
+
+### Android 自動 Submit (Sess61 PR5 で完成)
+
+Android リリースは専用 Skill `/release-android` で 1 発実行可能:
+
+```
+/release-android
+```
+
+11 phase (確認 → git clean → verify → preflight → auto-fix → snapshot before → build → submit → snapshot after → diff → user report) を自動代行 + 完全ログ落とし (`dist/release-logs/<ts>-android/`)。 ADR-0050 参照。
+
+ローカル CLI 単独実行:
+
+```bash
+pnpm release:android   # 1 コマンド全代行 (約 15 分)
+```
+
+GitHub Actions (タグ push 自動):
+
+```bash
+git tag v0.x.y && git push --tags   # ubuntu-latest で自動ビルド + Submit
+```
+
+→ Play Console Alpha track Draft 到達後、 user は Console で「ロールアウトを開始」 1 クリックのみ。
 
 ## 警告レベル
 
