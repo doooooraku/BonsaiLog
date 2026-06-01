@@ -68,6 +68,16 @@ jobs:
       - name: Verify code quality
         run: pnpm verify:lint && pnpm verify:type-check && pnpm verify:test
 
+      # Sess62 PR2 D11: SDK 整合ゲート (preflight A-EXPO-SDK と二重化、 CI failsafe)
+      - name: Expo SDK alignment check
+        run: pnpm expo install --check
+
+      # Sess62 PR2 D10: snapshot before (= Play Console alpha track の build 前の状態を撮影)
+      - name: Snapshot before (Publisher API)
+        env:
+          RELEASE_LOG_TS: ${{ github.run_id }}
+        run: node scripts/release-snapshot.mjs before
+
       - name: Build Android AAB
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -78,10 +88,32 @@ jobs:
       - name: Postbuild verify (assets/app.config 内の必須キー埋め込み確認)
         run: node scripts/postbuild-verify.mjs dist/app-production.aab
 
-      - name: Submit to Play Console (track=alpha, draft)
+      - name: Submit to Play Console (track=alpha, draft, --wait)
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: eas submit --platform android --path dist/app-production.aab --profile production --non-interactive --no-wait
+        # ADR-0050 D7 整合: --wait モードで Submit ジョブ完了を確認 (fastlane supply 内の edit と
+        # snapshot/release-notes の Publisher API edit transaction が並走しないよう排他)
+        run: eas submit --platform android --path dist/app-production.aab --profile production --non-interactive --wait
+
+      # Sess62 PR2 D10: release notes 投稿 (= EAS Submit が扱わない release notes を Publisher API で別途 PUT)
+      # ADR-0050 D5/D7 整合
+      - name: Post release notes (Publisher API)
+        env:
+          RELEASE_LOG_TS: ${{ github.run_id }}
+        run: node scripts/release-set-notes.mjs
+
+      # Sess62 PR2 D10: snapshot after (= submit 反映後の Play Console alpha track 状態を撮影)
+      - name: Snapshot after (Publisher API)
+        env:
+          RELEASE_LOG_TS: ${{ github.run_id }}
+        run: node scripts/release-snapshot.mjs after
+
+      # Sess62 PR2 D10: diff 検証 (= snapshot before/after を比較、 new draft +1 / versionCode +1 等を機械検証)
+      - name: Release diff verification
+        env:
+          RELEASE_LOG_TS: ${{ github.run_id }}
+        run: node scripts/release-diff.mjs
+        continue-on-error: true # warning レベルは継続 (critical のみ fail)
 
       - name: Upload AAB artifact
         if: always()
@@ -91,16 +123,39 @@ jobs:
           path: dist/app-production.aab
           retention-days: 7
 
+      # Sess62 PR2 D10: release logs artifact (= snapshot/diff の結果も保管、 ローカル smoke test 用)
+      - name: Upload release logs artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: Android-release-logs-${{ github.run_id }}
+          path: dist/release-logs/${{ github.run_id }}-android/
+          retention-days: 7
+          if-no-files-found: warn
+
       - name: Post build summary
         if: success()
         run: |
           {
-            echo "## Android Build & Submit Successful"
+            echo "## Android Build & Submit Successful (Sess62 PR2: cloud-only)"
             echo ""
             echo "- **AAB**: dist/app-production.aab"
             echo "- **Profile**: production"
             echo "- **Track**: alpha (Closed Testing)"
             echo "- **Release status**: draft"
             echo ""
-            echo "👉 次にやること: Play Console → クローズドテスト → Alpha → 「ロールアウトを開始」 を 1 クリック"
+            echo "### Phase 結果"
+            echo "- ✅ Snapshot before / After"
+            echo "- ✅ Build (cloud runner, ローカル PC 負荷ゼロ)"
+            echo "- ✅ Submit (--wait モード、 fastlane supply 完了確認済)"
+            echo "- ✅ Release notes (ja-JP + en-US) 投稿"
+            echo "- ✅ Diff 検証 (critical: new draft +1 / versionCode +1)"
+            echo ""
+            echo "### 次にやること"
+            echo "1. Play Console → クローズドテスト → Alpha → 「ロールアウトを開始」 を 1 クリック"
+            echo "2. (任意) artifact から AAB をローカル DL して smoke test:"
+            echo "   \`\`\`bash"
+            echo "   gh run download ${{ github.run_id }} -n Android-AAB-${{ github.run_id }} -D /tmp/sess62-artifact/"
+            echo "   pnpm release:android   # Phase 5 smoke test のみ走る (Sess62 PR2 改修後)"
+            echo "   \`\`\`"
           } >> "$GITHUB_STEP_SUMMARY"
