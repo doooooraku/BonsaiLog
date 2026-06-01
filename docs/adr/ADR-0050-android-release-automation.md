@@ -299,3 +299,74 @@ Claude (私) は AAB の `dex/classes*.dex` を `strings` で grep し、 `"Defa
 - **R-Sess62-59**: 依存追加・更新後は `pnpm expo install --check` で SDK 整合を必須確認
 - **R-Sess62-60**: production AAB に `expo-dev-client` を条件分岐で除外
 - **R-Sess62-61**: production AAB 提出前に smoke test phase 必須 (= release-android Skill Phase 7.6)
+
+---
+
+## Sess62 PR2 Amendment (2026-06-01): cloud-first migration (D13)
+
+### Context
+
+Sess62 PR1 (#927) 完了直後、 ローカル `pnpm release:android` を 3 回連続で実行したところ、 **Phase 4 の AAB build (Gradle + ABI ×4 + Hermes、 メモリ 8〜10 GB を 18 分連続消費)** で **PC が複数回落ちる** 事象が発生。 セッション中断 + 再起動 + 再開を繰り返し、 リリース完了が大幅に遅延した。
+
+原因: WSL2 上の Gradle build が Windows + Chrome + Claude Code 等とメモリを奪い合い、 OS が不安定化。
+
+### Decision Amendment
+
+**D13 (新規): AAB build は GitHub Actions (cloud runner) で実行する**:
+
+- 本 ADR 当初 (D1) の「Phase 1 (ローカル CLI) + Phase 2 (GitHub Actions) で並行採用」 を以下に方針転換:
+  - **標準 = GitHub Actions** (build / submit / snapshot / release notes / diff を一括代行)
+  - **予備 = ローカル** (GitHub Actions 障害 / gh CLI 不通時のみ、 緊急 fallback)
+- 理由: ローカル PC 負荷でクラッシュ → 構造的に解消するため cloud に集約
+- ローカル `pnpm release:android` (= `scripts/release-android-orchestrate.sh`) を改修:
+  - Phase 2-7 (snapshot before / build / submit / release notes / snapshot after / diff) を **削除** し workflow に移動
+  - 新 Phase 3 で `gh workflow run` + `gh run watch` + `gh run download` を実行
+  - 残り phase: preflight / cloud trigger / artifact DL / smoke test / summary / cleanup
+
+**GitHub Actions workflow 改修** (`.github/workflows/build-android-play.yml`):
+
+10 steps → 14 steps に拡張、 ローカル `release-android-orchestrate.sh` と機能等価に:
+
+```
+新規追加:
+  step 11: Expo SDK alignment check (= pnpm expo install --check、 PR1 D11 と整合)
+  step 12: Snapshot before (publisher-api 経由)
+  step 16: Post release notes (publisher-api 経由、 ADR-0050 D5 整合)
+  step 17: Snapshot after
+  step 18: Release diff verification (continue-on-error で warning 継続)
+  + artifact upload: Android-release-logs-${run-id} (snapshot/diff JSON 7 日保管)
+
+修正:
+  step 15 (旧 Submit): --no-wait → --wait モード (D7 整合)
+```
+
+**ローカル orchestrate.sh の新 phase 構成**:
+
+1. release-log.mjs init (LOG_DIR 発行)
+2. preflight --auto-fix (ローカル状態確認のみ)
+3. gh workflow run + run-id 取得
+4. gh run watch (workflow 完了監視)
+5. gh run download (AAB + release-logs artifact 取得)
+6. smoke test (実機 install + 起動確認、 cloud では実行不可)
+7. release-log.mjs summary
+8. release-log.mjs cleanup
+
+### Sess62 PR2 で同時対処した変更
+
+- #1 `.github/workflows/build-android-play.yml` に 4 steps 追加 (snapshot before / release notes / snapshot after / diff) + SDK 整合 check + release-logs artifact upload
+- #2 `scripts/release-android-orchestrate.sh` を「cloud trigger + smoke test」 に書き換え (9 phase → 7 step)
+- #3 `.claude/skills/release-android/SKILL.md` を新 9 phase 構成に更新、 ローカル build を「緊急時 fallback」 と位置付け
+- #4 `docs/reference/tasks/lessons/release.md` R-Sess62-62 追記 (cloud-first 方針)
+
+### 学び (lessons/release.md R-Sess62-62 追記)
+
+- **R-Sess62-62**: AAB build は必ず GitHub Actions で実行 (ローカル build は緊急時のみ fallback)。 WSL2 上の Gradle build はメモリ消費 8〜10 GB × 18 分連続で OS 不安定化リスクが高い。
+
+### Trade-off
+
+- ✅ ローカル PC 負荷ゼロ (= PC が落ちる原因の構造的排除)
+- ✅ workflow_dispatch + tag push の 2 経路で起動可能
+- ✅ AAB + release-logs を 7 日保管 (GitHub artifact)、 smoke test 用に DL 可
+- ⚠️ smoke test だけは cloud では不可 (実機がない) → ローカル orchestrate.sh で実行
+- ⚠️ gh CLI 認証が必須 (`gh auth login` を user 1 回実行)
+- ⚠️ workflow 1 run あたり cloud runner 約 15-20 分 (GitHub Free tier は private repo で 2000 min/month、 1 release ≈ 15-20 min → 月 100 回まで OK)

@@ -155,6 +155,26 @@
 - **適用**: iOS 側にも同等の smoke test phase を追加 (TestFlight 配信前に Simulator で起動確認)。 app-factory 他アプリでも共通パターン化。
 - **再発検知**: release:android が smoke test なしで完了したら Engram に「Skill 仕様違反」 警告を残す (将来の改善)。
 
+## R-Sess62-62: AAB build は **必ず GitHub Actions** で実行 (ローカル build は緊急時のみ fallback)
+
+- **背景**: Sess62 PR1 (#927) merge 直後、 ローカル `pnpm release:android` を 3 回連続実行したところ、 Phase 4 の AAB build (Gradle + ABI ×4 + Hermes) で **PC が複数回落ち**、 セッション中断 + 再起動 + 再開を繰り返した。 versionCode 7 を Play Console に上げる残作業が大幅に遅延。
+- **原因**: WSL2 上の Gradle build が **メモリ 8〜10 GB を 18 分連続消費**。 Windows + Chrome + Claude Code + その他アプリと奪い合い、 OS が不安定化。 Windows が WSL2 を kill する or Windows 自体がフリーズ。
+- **対処 (Sess62 PR2)**:
+  - `.github/workflows/build-android-play.yml` を拡張: 10 steps → 14 steps、 snapshot before / release notes / snapshot after / diff を cloud 側で実行 (ローカル orchestrate.sh と機能等価)
+  - `scripts/release-android-orchestrate.sh` を「cloud trigger + AAB DL + smoke test」 に書き換え: `gh workflow run` → `gh run watch` → `gh run download` → 実機 smoke test
+  - `pnpm release:android` の 1 コマンド体験は維持しつつ、 中身は cloud build に転換
+- **学び**:
+  - WSL2 上で 8 GB+ のメモリを 10 分以上消費する処理は OS 安定性のリスク → cloud に集約
+  - GitHub Actions の `ubuntu-latest` runner は 16 GB メモリ独占 + 2 vCPU 専用、 build 専用機として最適
+  - artifact (= AAB + release-logs) は 7 日保管されるので、 ローカル smoke test の入力として使える
+- **適用**:
+  - **標準フロー**: `pnpm release:android` (cloud trigger 経由) or `git tag v0.x.y && git push --tags`
+  - **緊急 fallback** (cloud 障害 / gh CLI 不通時のみ): ローカル `pnpm build:android:aab:local && pnpm submit:android`
+  - app-factory 他アプリ (Repolog 等) でも同パターン採用、 IPA build は GitHub macOS runner に集約
+- **再発検知**:
+  - PR diff に `pnpm build:android:aab:local` を新規追加する変更があれば PR レビューで警告
+  - `dist/app-production.aab` の mtime が最近の `gh run` artifact から離れているなら、 ローカル build が走った可能性を疑う
+
 ## 参考
 
 - ADR-0050: Android Release Automation (PR6 Amendment + PR7 Amendment + Sess62 D10 Amendment 含む)
