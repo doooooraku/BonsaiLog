@@ -112,6 +112,28 @@ node scripts/release-diff.mjs
 
 4 検証 (new draft +1 / versionCode > before.latest / whatsnew 反映 / 経過時間 < 30 min)。 結果は `06-diff.json`。
 
+### Phase 7.6 — smoke test (= 実機 install + 起動確認、 Sess62 R-58)
+
+Sess61 まではこの phase がなく、 「Submit 成功 = リリース完成」 と誤判定した結果、 versionCode 6 配信版がテスター端末で即クラッシュした (root cause: expo-web-browser ^56.0.5 vs expo-modules-core 55.0.23 の SDK version mismatch、 起動時 NoClassDefFoundError)。
+
+```bash
+adb devices                                       # 端末認可状態確認
+adb logcat -c                                     # ログバッファクリア
+adb install -r dist/app-production.aab            # local AAB を直接 install
+adb shell monkey -p com.dooooraku.bonsailog 1     # 起動 (1 イベント送信)
+sleep 10                                          # 起動完了待ち
+adb logcat -d -b crash > dist/release-logs/<ts>-android/07-smoke-test.log
+adb logcat -d AndroidRuntime:E *:S | head -200 >> dist/release-logs/<ts>-android/07-smoke-test.log
+```
+
+**判定**:
+- crash buffer に新規 FATAL EXCEPTION なし → ✅ smoke test pass、 Phase 7.5 へ
+- 新規 FATAL EXCEPTION あり → ❌ release:android が exit 1 で停止、 user に stack trace 提示
+
+**注意**:
+- adb 接続できない場合は本 phase を skip 可能 (引数 `--skip-smoke-test`)、 ただし非推奨
+- Play 配信版とローカル install 版は署名鍵が異なる (Play App Signing で再署名) が、 dex / native lib は同一なので起動確認には十分
+
 ### Phase 7.5 — user report (= summary.md)
 
 ```bash

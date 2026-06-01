@@ -167,6 +167,51 @@ add(
   }
 })();
 
+// === A-EXPO-SDK グループ: Expo SDK 依存整合 (Sess62 R-59) ===
+// Why: Sess62 で expo-web-browser ^56.0.5 のみ SDK 56 系混入していたのが起動即クラッシュ
+// (NoClassDefFoundError: expo.modules.kotlin.types.AnyTypeCache) の直接原因だった。
+// `pnpm expo install --check` で全 SDK 互換性を 0 件 mismatch に保証する。
+(function checkExpoSdkAlignment() {
+  try {
+    const out = execSync('corepack pnpm expo install --check 2>&1', {
+      encoding: 'utf8',
+      timeout: 120000,
+    });
+    const mismatchLine = out.split('\n').find((l) => /should be updated/i.test(l));
+    if (mismatchLine) {
+      // Found outdated dependencies
+      const mismatches = out
+        .split('\n')
+        .filter((l) => / - expected version: /.test(l))
+        .map((l) => l.trim());
+      add(
+        'A-EXPO-SDK',
+        'pnpm expo install --check',
+        false,
+        `${mismatches.length} 件 mismatch (例: ${mismatches[0] ?? ''}) — pnpm expo install --fix で一括修復可`,
+        true,
+      );
+    } else {
+      add('A-EXPO-SDK', 'pnpm expo install --check', true, '全 SDK 依存が推奨と一致');
+    }
+  } catch (e) {
+    // exit code 1 でも `pnpm expo install --check` は stderr に出力するので catch で再判定
+    const stderr = (e.stdout ?? '') + (e.stderr ?? '');
+    const mismatches = stderr.split('\n').filter((l) => / - expected version: /.test(l));
+    if (mismatches.length > 0) {
+      add(
+        'A-EXPO-SDK',
+        'pnpm expo install --check',
+        false,
+        `${mismatches.length} 件 mismatch — pnpm expo install --fix で一括修復可`,
+        true,
+      );
+    } else {
+      add('A-EXPO-SDK', 'pnpm expo install --check', false, `実行失敗: ${e.message.slice(0, 80)}`);
+    }
+  }
+})();
+
 // === B グループ: eas.json ===
 const easJson = (() => {
   try {

@@ -84,12 +84,6 @@ const SUPPORTED_LOCALES = [
   'sv',
 ];
 
-const toAndroidLocaleQualifier = (locale: string): string => {
-  if (locale === 'zh-Hans') return 'b+zh+Hans';
-  if (locale === 'zh-Hant') return 'b+zh+Hant';
-  return locale;
-};
-
 // ---------------------------------------------------------------------------
 // Plugin helpers
 // ---------------------------------------------------------------------------
@@ -123,10 +117,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   // --- Plugins ---
   let plugins = config.plugins ?? [];
 
+  // expo-localization (~55.0.15+): plugin internally converts BCP-47 → Android
+  // resource qualifier (e.g. 'zh-Hans' → 'b+zh+Hans') via convertBcp47ToResourceQualifier().
+  // Pass raw BCP-47 strings; passing pre-converted 'b+zh+Hans' is now reject by assertLocale().
   plugins = ensurePlugin(plugins, 'expo-localization', {
     supportedLocales: {
       ios: SUPPORTED_LOCALES,
-      android: SUPPORTED_LOCALES.map(toAndroidLocaleQualifier),
+      android: SUPPORTED_LOCALES,
     },
   });
 
@@ -152,7 +149,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   //       リリース版は dev-client 同梱しないため元から無関係。
   //       Maestro ui-diff 撮影は Preview Build (dev-client なし) を使用 (Sess2 PR-4)。
   // 関連: ADR-0021 / docs/handoff/sess3-progress-2026-05-17.md / PR #535 (Sess2 で revert された Edit を本 PR で再修正)
-  plugins = ensurePlugin(plugins, 'expo-dev-client', { toolsButton: false });
+  //
+  // Sess62 R-58 fix: APP_ENV='production' 時は plugin を skip。 過去 (Sess61 まで)
+  // 無条件登録だったため production AAB に DevLauncherPackage が混入し dex bloat。
+  // eas.json の build.{development,preview,base}.env.APP_ENV で profile 別注入。
+  if (process.env.APP_ENV !== 'production') {
+    plugins = ensurePlugin(plugins, 'expo-dev-client', { toolsButton: false });
+  }
   // expo-splash-screen は app.json の plugins[] が SoT。
   // ensurePlugin はすでに存在するプラグインを上書きしないため、ここに書いても効かない。
   // → app.json 側で dark/light 2 枚構成を管理 (ADR-0018:91 / ADR-0015:97 準拠)。

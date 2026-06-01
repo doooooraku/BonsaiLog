@@ -230,3 +230,72 @@ PR6 完成後、 versionCode 6 で実走検証中に 4 件の改善点が判明:
 - Pre-Launch Report 自動取得 (Publisher API、 crash 0 確認後 rollout 開始)
 - スクリーンショット自動 PUT (`edits.images` endpoint)
 - Sentry release 自動作成 + sourcemap upload
+
+---
+
+## Sess62 Amendment (2026-06-01): smoke test 必須化 + SDK 整合ゲート
+
+### Context
+
+Sess61 PR7 で versionCode 6 AAB を Play Console alpha track に submit + ロールアウト → テスター端末で **アプリ tap で起動即クラッシュ**。 自動化パイプラインは「Submit が成功したか」 までは検証していたが、 「AAB が実機で起動できるか」 のチェックは含まれていなかった。
+
+### 真の root cause (logcat 一次情報)
+
+```
+FATAL EXCEPTION: pool-2-thread-1
+java.lang.NoClassDefFoundError: Failed resolution of:
+    Lexpo/modules/kotlin/types/AnyTypeCache;
+  at expo.modules.webbrowser.WebBrowserModule.definition(WebBrowserModule.kt:181)
+Caused by: java.lang.ClassNotFoundException:
+    expo.modules.kotlin.types.AnyTypeCache
+```
+
+- `expo-web-browser ^56.0.5` のみ Expo SDK 56 系混入
+- 残り全ての expo-\* は SDK 55 系 (`expo-modules-core 55.0.23` に `AnyTypeCache` クラスなし)
+- 起動時に web-browser モジュールが `NoClassDefFoundError` で死亡 → 即クラッシュ
+- 副次発見: `pnpm expo install --check` で **33 個の依存が SDK 55 推奨と mismatch** (うち MAJOR 違反 4 件)
+
+### 当初仮説の誤判定
+
+Claude (私) は AAB の `dex/classes*.dex` を `strings` で grep し、 `"Default FirebaseApp is not initialized in this process"` 文字列を発見 → 「expo-notifications が google-services.json なしで Firebase init failure でクラッシュ」 と推論し、 user に Firebase 設定追加 PR を提案。 しかし user が adb logcat 取得 → 真の原因は別物 (NoClassDefFoundError / AnyTypeCache) と判明。
+
+→ **lessons/release.md R-Sess62-58 起票**: 「dex 文字列だけで原因を確定せず、 必ず adb logcat 一次情報を取る」
+
+### Decision Amendment
+
+**D10 (新規): `release-android` パイプラインに smoke test phase 必須化**:
+
+- `.claude/skills/release-android/SKILL.md` に Phase 7.6 smoke test を追加
+- AAB を local install + monkey で起動 + `adb logcat -d -b crash` で新規 FATAL EXCEPTION の有無を判定
+- crash buffer に新規 FATAL があれば release 中断 (exit 1)
+- 結果は `dist/release-logs/<ts>-android/07-smoke-test.log` に保管
+- adb 接続不可なら `--skip-smoke-test` フラグで skip 可 (非推奨)
+
+**D11 (新規): preflight に SDK 整合ゲート追加**:
+
+- `scripts/preflight-android-release.mjs` に A-EXPO-SDK チェック追加
+- 内部で `pnpm expo install --check` を実行
+- 1 件以上 mismatch があれば preflight ❌ で停止
+- `--auto-fix` で `pnpm expo install --fix` を提案
+
+**D12 (新規): production AAB に dev 専用 plugin を含めない**:
+
+- `app.config.ts` で `process.env.APP_ENV !== 'production'` のときのみ `expo-dev-client` plugin を登録
+- `eas.json` の `build.{development,preview,base}.env.APP_ENV` で profile 別注入を活用
+- production AAB の dex bloat (`DevLauncherPackage` 等) + 潜在副作用を防止
+
+### Sess62 PR で同時対処した変更
+
+- #1 `pnpm expo install --fix` で 33 件依存整合 (= クラッシュ直接原因の解消)
+- #2 `app.config.ts` expo-localization plugin: BCP-47 そのまま渡し (新版 plugin が `b+zh+Hans` を reject)
+- #3 `app.config.ts` expo-dev-client plugin: APP_ENV 分岐 (D12)
+- #4 `.claude/skills/release-android/SKILL.md` Phase 7.6 smoke test 追加 (D10)
+- #5 `scripts/preflight-android-release.mjs` A-EXPO-SDK チェック追加 (D11)
+- #6 `lessons/release.md` R-Sess62-58/59/60/61 追記
+
+### 学び (lessons/release.md R-Sess62-58/59/60/61 追記)
+
+- **R-Sess62-58**: Android クラッシュ調査は dex 文字列だけで原因を確定せず、 必ず adb logcat 一次情報を取る
+- **R-Sess62-59**: 依存追加・更新後は `pnpm expo install --check` で SDK 整合を必須確認
+- **R-Sess62-60**: production AAB に `expo-dev-client` を条件分岐で除外
+- **R-Sess62-61**: production AAB 提出前に smoke test phase 必須 (= release-android Skill Phase 7.6)
