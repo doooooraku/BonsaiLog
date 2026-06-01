@@ -101,15 +101,23 @@ jobs:
         # snapshot/release-notes の Publisher API edit transaction が並走しないよう排他)
         run: eas submit --platform android --path dist/app-production.aab --profile production --non-interactive --wait
 
+      # Sess62 PR2 D10 + PR5 hotfix: snapshot after (1st) — release-set-notes が読む draft 情報を生成
+      # 順序: submit → snapshot after (draft 確認) → release notes 投稿 → snapshot after (反映確認) → diff
+      # orchestrate.sh Sess61 PR6 構造と整合
+      - name: Snapshot after — draft confirmation (Publisher API)
+        env:
+          RELEASE_LOG_TS: ${{ github.run_id }}
+        run: node scripts/release-snapshot.mjs after
+
       # Sess62 PR2 D10: release notes 投稿 (= EAS Submit が扱わない release notes を Publisher API で別途 PUT)
-      # ADR-0050 D5/D7 整合
+      # ADR-0050 D5/D7 整合 + Sess62 PR5: snapshot after 後に実行 (snapshot から draft.versionCode を読む)
       - name: Post release notes (Publisher API)
         env:
           RELEASE_LOG_TS: ${{ github.run_id }}
         run: node scripts/release-set-notes.mjs
 
-      # Sess62 PR2 D10: snapshot after (= submit 反映後の Play Console alpha track 状態を撮影)
-      - name: Snapshot after (Publisher API)
+      # Sess62 PR2 D10: snapshot after (2nd) = release notes 反映後の最終状態
+      - name: Snapshot after — final (Publisher API)
         env:
           RELEASE_LOG_TS: ${{ github.run_id }}
         run: node scripts/release-snapshot.mjs after
