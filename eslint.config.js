@@ -14,6 +14,18 @@ module.exports = defineConfig([
       'docs/mockups/**', // OpenDesign 生成物 (凍結保管、BonsaiLog 規則の対象外)
     ],
   },
+  // jest.setup.js は CJS + jest globals 環境。 flat config では eslint-env directive が
+  // 機能しないため、 ファイル指定で globals.jest を明示。 (Sess62 R-Sess62-59 後追い)
+  {
+    files: ['jest.setup.js'],
+    languageOptions: {
+      globals: {
+        jest: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+      },
+    },
+  },
   // Phase 3 Step 3 (PR 3-1a): typed-linting で async 安全ルールを error 化。
   // god 分割(Phase 4)前の安全網。await 漏れ(floating promise)/ Promise 誤用を型情報で検出。
   // projectService=高速 API(tsconfig 自動探索)。
