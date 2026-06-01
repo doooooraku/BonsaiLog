@@ -47,6 +47,8 @@ jobs:
           APP_SLUG=${{ vars.APP_SLUG }}
           IOS_BUNDLE_IDENTIFIER=${{ vars.IOS_BUNDLE_IDENTIFIER }}
           ANDROID_PACKAGE=${{ vars.ANDROID_PACKAGE }}
+          EAS_PROJECT_ID=${{ vars.EAS_PROJECT_ID }}
+          EAS_OWNER=${{ vars.EAS_OWNER }}
           ADMOB_ANDROID_APP_ID=${{ secrets.ADMOB_ANDROID_APP_ID }}
           ADMOB_ANDROID_BANNER_ID=${{ secrets.ADMOB_ANDROID_BANNER_ID }}
           REVENUECAT_ANDROID_API_KEY=${{ secrets.REVENUECAT_ANDROID_API_KEY }}
