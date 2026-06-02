@@ -181,13 +181,17 @@ Claude Code uses both **"thinking" skills** (`/discuss`, `/plan`, `/review-pr`, 
 
 Bundled from official upstreams. These trigger automatically when the conversation matches their description — you do not need to type `/xxx`.
 
-| Skill                         | Source                                                                                      | When it triggers                                                 |
-| ----------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `skill-creator`               | [anthropics/skills](https://github.com/anthropics/skills) (official)                        | When creating, editing, or evaluating a new Skill                |
-| `react-native-best-practices` | [callstackincubator/agent-skills](https://github.com/callstackincubator/agent-skills) (MIT) | RN performance tasks (FPS, TTI, bundle size, memory, re-renders) |
-| `upgrading-react-native`      | Callstack (same repo)                                                                       | RN / Expo SDK version upgrade (rn-diff-purge, CocoaPods, Gradle) |
+| Skill                         | Source                                                                                      | When it triggers                                                 | Trigger 補強 hook (ADR-0051 D-6)          | BonsaiLog override                                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------- |
+| `skill-creator`               | [anthropics/skills](https://github.com/anthropics/skills) (official)                        | When creating, editing, or evaluating a new Skill                | `.claude/hooks/check-skill-edit-hint.mjs` | `.claude/skills/skill-creator/BONSAI-OVERRIDE.md` (ai:sync で同期)     |
+| `react-native-best-practices` | [callstackincubator/agent-skills](https://github.com/callstackincubator/agent-skills) (MIT) | RN performance tasks (FPS, TTI, bundle size, memory, re-renders) | `.claude/hooks/check-rn-perf-hint.mjs`    | `.claude/skills/react-native-best-practices/BONSAI-OVERRIDE.md` (同上) |
+| `upgrading-react-native`      | Callstack (same repo)                                                                       | RN / Expo SDK version upgrade (rn-diff-purge, CocoaPods, Gradle) | `.claude/hooks/check-rn-upgrade-hint.mjs` | `.claude/skills/upgrading-react-native/BONSAI-OVERRIDE.md` (同上)      |
 
 **Supply-chain policy**: Only bundle third-party skills from **verified official publishers** (Anthropic, Callstack, Vercel, Cloudflare, Expo). Review each `SKILL.md` for hidden prompts before adding. Do not add skills based on popularity alone.
+
+**Trigger 補強 hook (ADR-0051 D-6)**: 3 つの third-party skill は description マッチング auto-trigger だが、BonsaiLog 実会話パターン (Hermes Intl 19 言語 / Paywall FlashList / SDK 56 upgrade / skill 改修) と description キーワードが噛み合わず発火率極小 (Engram 言及 17-84 件)。`.claude/hooks/check-*-hint.mjs` で文脈検知 → `additionalContext` で skill 参照リマインダーを注入し、発火率を構造的に底上げする。詳細は [ADR-0051](./docs/adr/ADR-0051-harness-inventory-2026-06.md) §D-6。
+
+**BonsaiLog override (BONSAI-OVERRIDE.md)**: upstream SKILL.md は無改変、BonsaiLog 固有文脈 (現状スタック / 既存 ADR / 過去 Sess 教訓) を別ファイル分離保持。`pnpm ai:sync` で upstream SKILL.md と同じ階層に自動コピーされ、両者一致で `ai:doctor` 緑のまま。upstream 更新時の手動 merge は不要。
 
 ### 4.4 UI 整合タスク時の必読 docs (Sess5 PR-3 / PR-4 で整備、 1 画面 = 1 ループ運用)
 
