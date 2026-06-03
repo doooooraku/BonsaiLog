@@ -57,6 +57,7 @@
     "verify:icon-duplication": "pnpm lint:icon-duplication",
     "verify:utc-date-slice": "pnpm lint:utc-date-slice",
     "verify:event-type-consistency": "node scripts/check-event-type-consistency.mjs",
+    "scaffold:event-type": "node scripts/scaffold-event-type.mjs",
     "verify:adr-sources": "node scripts/check-adr-sources.mjs",
     "knip": "knip",
     "verify:dead": "knip --no-exit-code",
