@@ -20,6 +20,7 @@ import Svg, { Circle, Path } from 'react-native-svg';
 
 import { ACCENT_BARK, BRAND_GREEN, DANGER, SUCCESS, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import type { EventType } from '@/src/db/schema';
+import { assertNever } from '@/src/lib/assertNever';
 
 type IconProps = { size?: number; color?: string };
 
@@ -209,12 +210,8 @@ export function EventIcon({
       return <CompassIcon size={size} />;
     case 'leaf_first_aid':
       return <LeafAidIcon size={size} />;
-    default: {
-      // exhaustive check: 新規 EventType 追加時に compile error
-      const _exhaustive: never = type;
-      void _exhaustive;
-      // unreachable、 unit test の non-null assertion が fail するので意図せず default に到達したことが分かる
-      return <CompassIcon size={size} />;
-    }
+    default:
+      // exhaustive check (Sess64 Issue #934): 新規 EventType 追加時に compile error
+      return assertNever(type);
   }
 }

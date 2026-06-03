@@ -8,6 +8,7 @@ import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
 import { TEXT_PRIMARY } from '@/src/core/theme/colors';
 import type { EventType } from '@/src/db/schema';
+import { assertNever } from '@/src/lib/assertNever';
 
 type Props = {
   type: EventType;
@@ -253,6 +254,7 @@ export function WorkTypeIcon({ type, size = 32, color = TEXT_PRIMARY, strokeWidt
       );
 
     default:
-      return null;
+      // exhaustive check (Sess64 Issue #934): 新規 EventType 追加時に compile error
+      return assertNever(type);
   }
 }

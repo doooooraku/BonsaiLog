@@ -24,7 +24,8 @@
  * @see src/db/schema.ts EVENT_TYPES (14 種別 SoT)
  */
 import type { TranslationKey } from '@/src/core/i18n/i18n';
-import type { EventType } from '@/src/db/schema';
+import { isEventType } from '@/src/db/eventPayloadValidator';
+import { assertNever } from '@/src/lib/assertNever';
 
 import {
   getFertKindLabelKey,
@@ -133,8 +134,12 @@ export function buildHistoryChips(event: EventLike): HistoryChip[] {
   };
 
   // type は string (DB row 由来) だが EVENT_TYPES に validate 済の値が来ることが期待される。
-  // 不正な type は default で chip 空配列を返す (graceful degradation)。
-  const type = event.type as EventType;
+  // 不正な type (古い schema、 DB データ不整合等) は graceful degradation で空配列を返す
+  // (forward-compat、 forward-only schema 整合)。 EVENT_TYPES 内の値だけ switch に進む。
+  if (!isEventType(event.type)) {
+    return chips;
+  }
+  const type = event.type;
 
   // fieldLabelKey は既存 workLog* keys (form field 名) を流用 (Phase θ PR-9、 user 指摘で path 変更):
   // - 19 言語 × 18 keys = 342 entries の追加翻訳ゼロ
@@ -239,12 +244,9 @@ export function buildHistoryChips(event: EventLike): HistoryChip[] {
       pushChip(freeTextChip(payload.treatment, 'workLogLeafAidTreatment'));
       break;
     }
-    default: {
-      // exhaustive check: 新規 EventType 追加時に compile error
-      const _exhaustive: never = type;
-      void _exhaustive;
-      break;
-    }
+    default:
+      // exhaustive check (Sess64 Issue #934): 新規 EventType 追加時に compile error
+      assertNever(type);
   }
 
   return chips;

@@ -33,6 +33,7 @@ import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { lengthToCanonical, type LengthUnit } from '@/src/core/util/unitConvert';
 import type { EventType } from '@/src/db/schema';
+import { assertNever } from '@/src/lib/assertNever';
 
 // =========================================================================
 // 14 種別 enum 定数 (Sess16 確立、 Sess17 で WorkLogConfirm から移植)
@@ -451,60 +452,83 @@ export function buildWorkLogPayload(
   type: EventType,
   state: WorkLogTypeFormState,
 ): Record<string, unknown> {
-  // 動的 import せず、 ここで直接 inline (build size ?? なし)
-  // 単純な switch 構造、 各 type の payload 仕様は ADR-0027/0028/0029 + functional_spec §7.3.2.1 整合
+  // 動的 import せず、 ここで直接 inline (build size 影響なし)。
+  // switch + assertNever (Sess64 Issue #934): 新規 EventType 追加時に compile error 化、
+  // silent fall-through (Sess16 leaf_first_aid 漏れ事例タイプ) を構造防止。
+  // 各 type の payload 仕様は ADR-0027/0028/0029 + functional_spec §7.3.2.1 整合。
   const payload: Record<string, unknown> = {};
-  if (type === 'watering') {
-    payload.amount = state.waterAmount;
-  } else if (type === 'pruning') {
-    payload.parts = [...state.pruneParts];
-    payload.amount = state.pruneAmount;
-  } else if (type === 'wiring') {
-    const numericPart = state.wireGauge.replace('mm', '').trim();
-    const gaugeNum = parseFloat(numericPart);
-    if (!Number.isNaN(gaugeNum) && gaugeNum > 0) payload.wire_size_mm = gaugeNum;
-    payload.body_part = state.wireParts;
-    if (state.wireUnwireDate) payload.scheduled_unwire_at = `${state.wireUnwireDate}T00:00:00.000Z`;
-  } else if (type === 'unwiring') {
-    payload.body_part = state.unwireParts;
-  } else if (type === 'repotting') {
-    // unit conversion は本関数で実行 (state.repotPotSize は user 入力単位文字列)、
-    // payload には cm canonical の number で保存。
-    const sizeCm = lengthToCanonical(state.repotPotSize, state.repotPotSizeUnit);
-    if (sizeCm != null) payload.pot_size_cm = sizeCm;
-    const soilTrimmed = state.repotSoilMix.trim();
-    if (soilTrimmed.length > 0) payload.soil_mix = soilTrimmed;
-    payload.root_pruning = state.repotRootAmount;
-  } else if (type === 'fertilizing') {
-    payload.kind = state.fertKind;
-    const productTrimmed = state.fertProduct.trim();
-    if (productTrimmed.length > 0) payload.amount = productTrimmed;
-  } else if (type === 'pest_control') {
-    payload.target = state.pestPurpose;
-    const agentTrimmed = state.pestAgent.trim();
-    if (agentTrimmed.length > 0) payload.agent = agentTrimmed;
-    const dilutionNum = parseFloat(state.pestDilution);
-    if (!Number.isNaN(dilutionNum)) payload.dilution_ratio = dilutionNum;
-  } else if (
-    type === 'leaf_trimming' ||
-    type === 'defoliation' ||
-    type === 'deshoot' ||
-    type === 'candle_cut'
-  ) {
-    payload.body_part = state.trimRange;
-    if (type === 'candle_cut') {
+  switch (type) {
+    case 'watering':
+      payload.amount = state.waterAmount;
+      break;
+    case 'pruning':
+      payload.parts = [...state.pruneParts];
+      payload.amount = state.pruneAmount;
+      break;
+    case 'wiring': {
+      const numericPart = state.wireGauge.replace('mm', '').trim();
+      const gaugeNum = parseFloat(numericPart);
+      if (!Number.isNaN(gaugeNum) && gaugeNum > 0) payload.wire_size_mm = gaugeNum;
+      payload.body_part = state.wireParts;
+      if (state.wireUnwireDate)
+        payload.scheduled_unwire_at = `${state.wireUnwireDate}T00:00:00.000Z`;
+      break;
+    }
+    case 'unwiring':
+      payload.body_part = state.unwireParts;
+      break;
+    case 'repotting': {
+      // unit conversion は本関数で実行 (state.repotPotSize は user 入力単位文字列)、
+      // payload には cm canonical の number で保存。
+      const sizeCm = lengthToCanonical(state.repotPotSize, state.repotPotSizeUnit);
+      if (sizeCm != null) payload.pot_size_cm = sizeCm;
+      const soilTrimmed = state.repotSoilMix.trim();
+      if (soilTrimmed.length > 0) payload.soil_mix = soilTrimmed;
+      payload.root_pruning = state.repotRootAmount;
+      break;
+    }
+    case 'fertilizing': {
+      payload.kind = state.fertKind;
+      const productTrimmed = state.fertProduct.trim();
+      if (productTrimmed.length > 0) payload.amount = productTrimmed;
+      break;
+    }
+    case 'pest_control': {
+      payload.target = state.pestPurpose;
+      const agentTrimmed = state.pestAgent.trim();
+      if (agentTrimmed.length > 0) payload.agent = agentTrimmed;
+      const dilutionNum = parseFloat(state.pestDilution);
+      if (!Number.isNaN(dilutionNum)) payload.dilution_ratio = dilutionNum;
+      break;
+    }
+    case 'leaf_trimming':
+    case 'defoliation':
+    case 'deshoot':
+      payload.body_part = state.trimRange;
+      break;
+    case 'candle_cut': {
+      payload.body_part = state.trimRange;
       const countNum = parseInt(state.candleCount, 10);
       if (!Number.isNaN(countNum) && countNum > 0) payload.count = countNum;
+      break;
     }
-  } else if (type === 'moss_care') {
-    payload.action = state.mossAction;
-  } else if (type === 'position_change') {
-    const toTrimmed = state.positionTo.trim();
-    if (toTrimmed.length > 0) payload.to = toTrimmed;
-  } else if (type === 'leaf_first_aid') {
-    payload.symptom = state.leafAidSymptom;
-    const treatmentTrimmed = state.leafAidTreatment.trim();
-    if (treatmentTrimmed.length > 0) payload.treatment = treatmentTrimmed;
+    case 'moss_care':
+      payload.action = state.mossAction;
+      break;
+    case 'position_change': {
+      const toTrimmed = state.positionTo.trim();
+      if (toTrimmed.length > 0) payload.to = toTrimmed;
+      break;
+    }
+    case 'leaf_first_aid': {
+      payload.symptom = state.leafAidSymptom;
+      const treatmentTrimmed = state.leafAidTreatment.trim();
+      if (treatmentTrimmed.length > 0) payload.treatment = treatmentTrimmed;
+      break;
+    }
+    default:
+      // exhaustive check (Sess64 Issue #934): 新規 EventType 追加時に compile error
+      assertNever(type);
   }
   return payload;
 }
