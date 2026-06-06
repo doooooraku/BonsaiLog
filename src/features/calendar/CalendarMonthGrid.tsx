@@ -9,13 +9,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BRAND_GREEN,
-  DANGER,
-  TEXT_MUTED,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: TEXT_MUTED / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / DANGER は status/brand-static で保持。
+import { BRAND_GREEN, DANGER, TEXT_MUTED } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { type EventType } from '@/src/db/schema';
 import { CalendarDot } from '@/src/features/plan/CalendarDot';
@@ -106,7 +101,7 @@ export function CalendarMonthGrid({
           style={styles.monthArrow}
           testID={`e2e_${testIdPrefix}_prev_month`}
         >
-          <ThemedText style={styles.monthArrowText}>{'‹'}</ThemedText>
+          <ThemedText style={[styles.monthArrowText, { color: c.textSecondary }]}>{'‹'}</ThemedText>
         </Pressable>
         <ThemedText style={[styles.monthLabel, { color: c.text }]}>{monthLabel}</ThemedText>
         <Pressable
@@ -116,7 +111,7 @@ export function CalendarMonthGrid({
           style={styles.monthArrow}
           testID={`e2e_${testIdPrefix}_next_month`}
         >
-          <ThemedText style={styles.monthArrowText}>{'›'}</ThemedText>
+          <ThemedText style={[styles.monthArrowText, { color: c.textSecondary }]}>{'›'}</ThemedText>
         </Pressable>
       </View>
 
@@ -194,11 +189,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   monthArrow: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
-  monthArrowText: { fontSize: 24, color: TEXT_SECONDARY },
+  monthArrowText: { fontSize: 24 },
   monthLabel: {
     fontFamily: 'NotoSerifJP_500Medium',
     fontSize: 18,
-    color: TEXT_PRIMARY,
     letterSpacing: 0.5,
   },
   dowRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 2 },
@@ -209,7 +203,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     paddingVertical: 6,
     letterSpacing: 0.6,
-    color: TEXT_MUTED,
   },
   grid: { paddingHorizontal: 16, gap: 2 },
   weekRow: { flexDirection: 'row', gap: 2 },
@@ -227,7 +220,7 @@ const styles = StyleSheet.create({
     borderColor: BRAND_GREEN,
     backgroundColor: 'rgba(31,58,46,0.06)',
   },
-  cellText: { fontSize: 15, color: TEXT_PRIMARY },
+  cellText: { fontSize: 15 },
   cellTextToday: { fontWeight: '700' },
   dotRow: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 6 },
   dotPlus: { fontSize: 10, lineHeight: 10, color: BRAND_GREEN, fontWeight: '700' },

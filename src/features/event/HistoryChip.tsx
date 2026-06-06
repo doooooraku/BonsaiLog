@@ -15,7 +15,8 @@ import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BG_PRIMARY, BORDER_DEFAULT } from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_PRIMARY / BORDER_DEFAULT は inline c.* 化。
+import { useColors } from '@/src/core/theme/useColors';
 import { eventRowChipLabel, eventRowChipText } from '@/src/core/theme/typography';
 
 import type { HistoryChip as HistoryChipData } from './buildHistoryChips';
@@ -26,6 +27,7 @@ import type { HistoryChip as HistoryChipData } from './buildHistoryChips';
  */
 export function HistoryChip({ chip }: { chip: HistoryChipData }) {
   const { t } = useTranslation();
+  const c = useColors();
   const baseValue = chip.labelKey ? t(chip.labelKey) : (chip.text ?? '');
   // Sess37 PR-1 C4: valueUnitKey があれば値の後ろに単位 i18n 値を結合 (例: `${1000}${'倍'}` = `1000倍`)
   const valueLabel = chip.valueUnitKey ? `${baseValue}${t(chip.valueUnitKey)}` : baseValue;
@@ -38,7 +40,7 @@ export function HistoryChip({ chip }: { chip: HistoryChipData }) {
         <ThemedText style={styles.fieldLabel} numberOfLines={1}>
           {`${t(chip.fieldLabelKey)}:`}
         </ThemedText>
-        <View style={styles.chip}>
+        <View style={[styles.chip, { borderColor: c.border, backgroundColor: c.background }]}>
           <ThemedText style={styles.chipText} numberOfLines={1}>
             {valueLabel}
           </ThemedText>
@@ -49,7 +51,7 @@ export function HistoryChip({ chip }: { chip: HistoryChipData }) {
 
   // 後方互換: fieldLabelKey なしは chip のみ (旧 compact 表示)
   return (
-    <View style={styles.chip}>
+    <View style={[styles.chip, { borderColor: c.border, backgroundColor: c.background }]}>
       <ThemedText style={styles.chipText} numberOfLines={1}>
         {valueLabel}
       </ThemedText>
@@ -61,8 +63,9 @@ export function HistoryChip({ chip }: { chip: HistoryChipData }) {
  * 「+N」 sentinel chip — chip 数が maxVisible を超えた時、 末尾に省略表示する専用 chip。
  */
 function OverflowChip({ count }: { count: number }) {
+  const c = useColors();
   return (
-    <View style={styles.chip}>
+    <View style={[styles.chip, { borderColor: c.border, backgroundColor: c.background }]}>
       <ThemedText style={styles.chipText} numberOfLines={1}>{`+${count}`}</ThemedText>
     </View>
   );
@@ -123,8 +126,6 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_PRIMARY,
     // Sess37 PR-1 C5: maxWidth 200→240 (fontSize 14 化で truncate 防止)
     maxWidth: 240,
   },

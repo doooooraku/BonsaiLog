@@ -13,7 +13,9 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BG_SURFACE, BORDER_DEFAULT, BRAND_GREEN, TEXT_PRIMARY } from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_PRIMARY は inline c.* 化、 BRAND_GREEN は brand-static で保持。
+import { BRAND_GREEN } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 
 type Props = {
   text: string;
@@ -22,9 +24,13 @@ type Props = {
 };
 
 export function PhotoUndoBanner({ text, actionLabel, onUndo }: Props) {
+  const c = useColors();
   return (
-    <View style={styles.banner} testID="e2e_photo_undo_banner">
-      <ThemedText style={styles.bannerText}>{text}</ThemedText>
+    <View
+      style={[styles.banner, { backgroundColor: c.surface, borderColor: c.border }]}
+      testID="e2e_photo_undo_banner"
+    >
+      <ThemedText style={[styles.bannerText, { color: c.text }]}>{text}</ThemedText>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={actionLabel}
@@ -42,7 +48,6 @@ const styles = StyleSheet.create({
   banner: {
     marginTop: 8,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -50,12 +55,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
-    backgroundColor: BG_SURFACE,
   },
   bannerText: {
     flex: 1,
     fontSize: 13,
-    color: TEXT_PRIMARY,
   },
   actionText: {
     fontSize: 13,

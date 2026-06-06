@@ -22,13 +22,15 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
+// Sess68 PR #C: 全 forbidden token を inline c.* 化。
+import { useColors } from '@/src/core/theme/useColors';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore, type WorkPickerMode } from '@/src/stores/pickerStore';
 
 export default function WorkPickerScreen() {
   const { t } = useTranslation();
+  const c = useColors();
   const params = useLocalSearchParams<{
     bonsaiName?: string;
     bonsaiId?: string;
@@ -56,9 +58,12 @@ export default function WorkPickerScreen() {
   };
 
   return (
-    <View style={styles.container} testID="e2e_work_picker_screen">
+    <View
+      style={[styles.container, { backgroundColor: c.background }]}
+      testID="e2e_work_picker_screen"
+    >
       <View style={styles.header}>
-        <ThemedText style={styles.subject}>{bonsaiName}</ThemedText>
+        <ThemedText style={[styles.subject, { color: c.text }]}>{bonsaiName}</ThemedText>
       </View>
       <View style={styles.grid} testID="e2e_work_picker_grid">
         {items.map((type) => (
@@ -66,12 +71,12 @@ export default function WorkPickerScreen() {
             key={type}
             accessibilityRole="button"
             accessibilityLabel={t(`eventType_${type}` as Parameters<typeof t>[0])}
-            style={styles.cell}
+            style={[styles.cell, { backgroundColor: c.surface, borderColor: c.border }]}
             onPress={() => handleSelect(type)}
             testID={`e2e_work_picker_${type}`}
           >
-            <WorkTypeIcon type={type} size={32} color={TEXT_PRIMARY} />
-            <ThemedText style={styles.label}>
+            <WorkTypeIcon type={type} size={32} color={c.text} />
+            <ThemedText style={[styles.label, { color: c.text }]}>
               {t(`eventType_${type}` as Parameters<typeof t>[0])}
             </ThemedText>
           </Pressable>
@@ -82,21 +87,19 @@ export default function WorkPickerScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG_PRIMARY, paddingHorizontal: 16, paddingTop: 16 },
+  container: { flex: 1, paddingHorizontal: 16, paddingTop: 16 },
   header: { paddingTop: 8, paddingBottom: 12, alignItems: 'center' },
-  subject: { fontSize: 14, color: TEXT_PRIMARY },
+  subject: { fontSize: 14 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   cell: {
     width: '31.5%',
     aspectRatio: 1,
     borderRadius: 12,
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     padding: 8,
   },
-  label: { fontSize: 13, color: TEXT_PRIMARY, textAlign: 'center' },
+  label: { fontSize: 13, textAlign: 'center' },
 });

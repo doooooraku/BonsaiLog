@@ -4,14 +4,9 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { EventIcon } from '@/src/components/icons';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-import {
-  BADGE_SOFT_BG,
-  BADGE_SOFT_TEXT,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess66 PR6c.2: theme-dependent token を inline c.* に (dark cascade)。
+import { BADGE_SOFT_BG, BADGE_SOFT_TEXT, BRAND_GREEN } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import type { Event, EventType } from '@/src/db/schema';
 import { formatDate } from '@/src/features/bonsai/detail/dateFormat';
 import type { HistoryFilter } from '@/src/features/bonsai/detail/useHistoryGroups';
@@ -55,6 +50,7 @@ export function BonsaiHistoryTab({
   onLongPressEvent: (ev: Event) => void;
   onKebabPressEvent: (ev: Event) => void;
 }) {
+  const c = useColors();
   return (
     <View style={styles.section}>
       {/* Sess42 バグ3: フィルタ chip = 'all' + この盆栽に記録のある event type のみ動的生成。
@@ -75,7 +71,11 @@ export function BonsaiHistoryTab({
               accessibilityRole="tab"
               accessibilityState={{ selected: on }}
               accessibilityLabel={t(labelKey)}
-              style={[styles.historyFilterChip, on && styles.historyFilterChipOn]}
+              style={[
+                styles.historyFilterChip,
+                { backgroundColor: c.surface, borderColor: c.border },
+                on && styles.historyFilterChipOn,
+              ]}
               onPress={() => setHistoryFilter(f)}
               testID={`e2e_history_filter_${f}`}
             >
@@ -103,13 +103,13 @@ export function BonsaiHistoryTab({
           return (
             <View key={key}>
               <Pressable
-                style={styles.eventRow}
+                style={[styles.eventRow, { borderBottomColor: c.border }]}
                 accessibilityRole="button"
                 accessibilityLabel={t(`eventType_${entry.type}` as TranslationKey)}
                 onPress={() => toggleGroupExpand(key)}
                 testID={`e2e_history_group_toggle_${key}`}
               >
-                <View style={styles.eventIconBox}>
+                <View style={[styles.eventIconBox, { borderColor: c.border }]}>
                   <EventIcon type={entry.type} size={20} />
                 </View>
                 <View style={styles.eventContent}>
@@ -124,11 +124,11 @@ export function BonsaiHistoryTab({
                         </ThemedText>
                       </View>
                     </View>
-                    <ThemedText style={styles.eventRowDate}>
+                    <ThemedText style={[styles.eventRowDate, { color: c.textSecondary }]}>
                       {startLabel} ～ {endLabel}
                     </ThemedText>
                   </View>
-                  <ThemedText style={styles.eventGroupToggle}>
+                  <ThemedText style={[styles.eventGroupToggle, { color: c.textSecondary }]}>
                     {t('historyGroupToggle')
                       .replace('{count}', String(entry.events.length))
                       .replace('{caret}', expanded ? '▲' : '▼')}
@@ -149,7 +149,9 @@ export function BonsaiHistoryTab({
                               isFirst && styles.historyExpandedLineHidden,
                             ]}
                           />
-                          <View style={styles.historyExpandedDot} />
+                          <View
+                            style={[styles.historyExpandedDot, { backgroundColor: c.surface }]}
+                          />
                           <View
                             style={[
                               styles.historyExpandedLine,
@@ -225,8 +227,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
     minHeight: 36,
     justifyContent: 'center',
   },
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.4,
   },
-  eventGroupToggle: { fontSize: 12, color: TEXT_SECONDARY, marginTop: 4 },
+  eventGroupToggle: { fontSize: 12, marginTop: 4 },
   // Sess28 PR-7 (ADR-0037 P0-2): 連続日 group 展開時の timeline 風表示 (縦線 + ○ marker)。
   historyExpandedContainer: { marginLeft: 16, marginTop: 4, marginBottom: 4 },
   historyExpandedRow: { flexDirection: 'row', alignItems: 'stretch' },
@@ -265,7 +265,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 2,
     borderColor: BRAND_GREEN,
-    backgroundColor: BG_SURFACE,
     marginVertical: 2,
   },
   historyExpandedRowContent: { flex: 1, paddingLeft: 8 },
@@ -276,14 +275,12 @@ const styles = StyleSheet.create({
     padding: 16,
     minHeight: 80,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
   },
   eventIconBox: {
     width: 40,
     height: 40,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
@@ -306,6 +303,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
     letterSpacing: 0.7,
-    color: TEXT_SECONDARY,
   },
 });

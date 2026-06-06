@@ -23,7 +23,8 @@ import { ThemedText } from '@/components/themed-text';
 import { useToastStore } from '@/src/components/Toast';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
-import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
+// Sess68 PR #C: 全 forbidden token を inline c.* 化。
+import { useColors } from '@/src/core/theme/useColors';
 import { bulkScheduleEvents } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { maybePromptNotificationOptIn } from '@/src/features/notification/optInPrompt';
@@ -38,6 +39,7 @@ const BULK_WORK_TYPES: readonly EventType[] = EVENT_TYPES;
 
 export default function BulkWorkPickerScreen() {
   const { t } = useTranslation();
+  const c = useColors();
   const params = useLocalSearchParams<{ mode?: 'schedule' | 'log'; date?: string }>();
   const mode: 'schedule' | 'log' = params.mode === 'log' ? 'log' : 'schedule';
   const scheduleDate = params.date ?? '';
@@ -87,16 +89,22 @@ export default function BulkWorkPickerScreen() {
   );
 
   return (
-    <View style={styles.container} testID="e2e_bulk_work_picker_screen">
+    <View
+      style={[styles.container, { backgroundColor: c.background }]}
+      testID="e2e_bulk_work_picker_screen"
+    >
       <View style={styles.header}>
-        <ThemedText style={styles.sub}>
+        <ThemedText style={[styles.sub, { color: c.text }]}>
           {t(subKey).replace('{count}', String(selectedBonsais.length))}
         </ThemedText>
       </View>
-      <View style={styles.chipsRow}>
+      <View style={[styles.chipsRow, { borderBottomColor: c.border }]}>
         {selectedBonsais.map((b) => (
-          <View key={b.id} style={styles.chip}>
-            <ThemedText style={styles.chipText} numberOfLines={1}>
+          <View
+            key={b.id}
+            style={[styles.chip, { backgroundColor: c.surface, borderColor: c.border }]}
+          >
+            <ThemedText style={[styles.chipText, { color: c.text }]} numberOfLines={1}>
               {b.name}
             </ThemedText>
           </View>
@@ -109,12 +117,12 @@ export default function BulkWorkPickerScreen() {
               key={type}
               accessibilityRole="button"
               accessibilityLabel={t(`eventType_${type}` as TranslationKey)}
-              style={styles.cell}
+              style={[styles.cell, { backgroundColor: c.surface, borderColor: c.border }]}
               onPress={() => handleSelect(type)}
               testID={`e2e_bulk_work_picker_${type}`}
             >
-              <WorkTypeIcon type={type} size={32} color={TEXT_PRIMARY} />
-              <ThemedText style={styles.label}>
+              <WorkTypeIcon type={type} size={32} color={c.text} />
+              <ThemedText style={[styles.label, { color: c.text }]}>
                 {t(`eventType_${type}` as TranslationKey)}
               </ThemedText>
             </Pressable>
@@ -126,9 +134,9 @@ export default function BulkWorkPickerScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG_PRIMARY },
+  container: { flex: 1 },
   header: { paddingTop: 8, paddingBottom: 8, alignItems: 'center' },
-  sub: { fontSize: 14, color: TEXT_PRIMARY },
+  sub: { fontSize: 14 },
   chipsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -136,7 +144,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     gap: 6,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
   },
   chip: {
     // Sess18 PR-11: design_system §4 (spacing 8/12) + §5 (borderRadius 16) 整合。
@@ -144,28 +151,24 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 12, // 旧 10 → 12 (spacing token 整合)
     borderRadius: 16, // 旧 18 → 16 (design_system §5 カード用途)
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     minWidth: 80, // BulkLogConfirm と統一
     maxWidth: 140,
     alignItems: 'center', // text 中央揃え
     justifyContent: 'center',
   },
-  chipText: { fontSize: 12, fontWeight: '500', color: TEXT_PRIMARY, flexShrink: 1 },
+  chipText: { fontSize: 12, fontWeight: '500', flexShrink: 1 },
   body: { padding: 16, paddingBottom: 16, gap: 16 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   cell: {
     width: '31.5%',
     aspectRatio: 1,
     borderRadius: 12,
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     padding: 8,
   },
-  label: { fontSize: 13, color: TEXT_PRIMARY, textAlign: 'center' },
+  label: { fontSize: 13, textAlign: 'center' },
 });

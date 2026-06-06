@@ -23,7 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { BackIcon, CogIcon, SearchIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
+// Sess68 PR #C: BORDER_DEFAULT / TEXT_PRIMARY は inline c.* で既に上書き済、 StyleSheet 内 token 削除のみ。
 import { useColors } from '@/src/core/theme/useColors';
 
 type Props = {
@@ -142,14 +142,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
   },
   title: {
     fontFamily: 'NotoSerifJP_500Medium',
     fontSize: 22,
     lineHeight: 32,
     letterSpacing: 0.9,
-    color: TEXT_PRIMARY,
     flex: 1,
   },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 4 },

@@ -25,7 +25,8 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BG_SURFACE, BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_PRIMARY は inline c.* 化。
+import { useColors } from '@/src/core/theme/useColors';
 
 type Props = {
   /** 表示する盆栽名 (例: 「アカシア」「思い出のツバキ」) */
@@ -34,9 +35,13 @@ type Props = {
 };
 
 export function SelectedBonsaiChip({ name, testID }: Props) {
+  const c = useColors();
   return (
-    <View style={styles.chip} testID={testID}>
-      <ThemedText style={styles.chipText} numberOfLines={1}>
+    <View
+      style={[styles.chip, { backgroundColor: c.surface, borderColor: c.border }]}
+      testID={testID}
+    >
+      <ThemedText style={[styles.chipText, { color: c.text }]} numberOfLines={1}>
         {name}
       </ThemedText>
     </View>
@@ -54,9 +59,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 16,
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     minWidth: 80,
     maxWidth: 140,
     justifyContent: 'center',
@@ -64,7 +67,6 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: 12,
     fontWeight: '500',
-    color: TEXT_PRIMARY,
     flexShrink: 1,
     textAlign: 'center',
   },

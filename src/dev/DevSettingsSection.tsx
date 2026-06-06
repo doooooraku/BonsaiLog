@@ -12,7 +12,8 @@ import { Alert, Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { getPseudoMode, setPseudoMode, useTranslation } from '@/src/core/i18n/i18n';
-import { BORDER_DEFAULT } from '@/src/core/theme/colors';
+// Sess68 PR #C: BORDER_DEFAULT は inline c.border 化。
+import { useColors } from '@/src/core/theme/useColors';
 import { clearAllData, seedTestData, seedTestDataEn } from '@/src/dev/seedTestData';
 import { SettingsSection } from '@/src/features/settings/SettingsSection';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
@@ -20,6 +21,8 @@ import { useProStore } from '@/src/stores/proStore';
 
 export function DevSettingsSection() {
   const { t } = useTranslation();
+  const c = useColors();
+  const entryThemed = { borderBottomColor: c.border };
   const router = useRouter();
   const isPro = useProStore((s) => s.isPro);
   // i18n を呼ぶが DEV 文言は固定日本語 (本番枝刈りのため翻訳しない、 元実装踏襲)。
@@ -31,7 +34,7 @@ export function DevSettingsSection() {
         accessibilityRole="button"
         accessibilityLabel="seed test data (Japanese)"
         testID="e2e_dev_seed_button"
-        style={styles.entry}
+        style={[styles.entry, entryThemed]}
         onPress={async () => {
           try {
             const result = await seedTestData();
@@ -62,7 +65,7 @@ export function DevSettingsSection() {
         accessibilityRole="button"
         accessibilityLabel="seed test data (English)"
         testID="e2e_dev_seed_en_button"
-        style={styles.entry}
+        style={[styles.entry, entryThemed]}
         onPress={async () => {
           try {
             const result = await seedTestDataEn();
@@ -91,7 +94,7 @@ export function DevSettingsSection() {
         accessibilityRole="button"
         accessibilityLabel="clear all data"
         testID="e2e_dev_clear_button"
-        style={styles.entry}
+        style={[styles.entry, entryThemed]}
         onPress={() => {
           Alert.alert(
             '全データ削除',
@@ -126,7 +129,7 @@ export function DevSettingsSection() {
         accessibilityRole="button"
         accessibilityLabel="reset onboarding"
         testID="e2e_dev_reset_onboarding"
-        style={styles.entry}
+        style={[styles.entry, entryThemed]}
         onPress={() => {
           useOnboardingStore.getState().resetTutorial();
           useOnboardingStore.getState().setCompleted(false);
@@ -144,7 +147,7 @@ export function DevSettingsSection() {
         accessibilityRole="button"
         accessibilityLabel="toggle pseudo-localization"
         testID="e2e_dev_pseudo_toggle"
-        style={styles.entry}
+        style={[styles.entry, entryThemed]}
         onPress={() => {
           const current = getPseudoMode();
           setPseudoMode(!current);
@@ -167,7 +170,7 @@ export function DevSettingsSection() {
         accessibilityRole="button"
         accessibilityLabel="set pro state"
         testID="e2e_dev_set_pro"
-        style={styles.entry}
+        style={[styles.entry, entryThemed]}
         onPress={async () => {
           await useProStore.getState().devSetPro(true);
           Alert.alert('課金状態', 'Pro 状態にしました (広告非表示 / 写真無制限 / CSV 解放)');
@@ -182,7 +185,7 @@ export function DevSettingsSection() {
         accessibilityRole="button"
         accessibilityLabel="clear pro state"
         testID="e2e_dev_clear_pro"
-        style={styles.entry}
+        style={[styles.entry, entryThemed]}
         onPress={async () => {
           await useProStore.getState().devSetPro(false);
           Alert.alert('課金状態', '無料状態に戻しました');
@@ -201,7 +204,6 @@ const styles = StyleSheet.create({
   entry: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
     gap: 6,
   },
   entryDesc: { fontSize: 13, opacity: 0.7, lineHeight: 18 },

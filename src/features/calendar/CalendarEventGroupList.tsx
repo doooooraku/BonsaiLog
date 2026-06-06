@@ -14,18 +14,15 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { DropletIcon, EventIcon, MoreVerticalIcon } from '@/src/components/icons';
 import type { TranslationKey } from '@/src/core/i18n/i18n';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化、 BADGE / BUTTON_SECONDARY / BRAND_GREEN は brand-static で保持。
 import {
   BADGE_SOFT_BG,
   BADGE_SOFT_TEXT,
-  BG_SURFACE,
-  BORDER_DEFAULT,
   BRAND_GREEN,
   BUTTON_SECONDARY_BG,
   BUTTON_SECONDARY_TEXT,
-  TEXT_MUTED,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { type Bonsai, type Event, type EventType } from '@/src/db/schema';
 import { EventRow } from '@/src/features/event/EventRow';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
@@ -92,10 +89,11 @@ export function CalendarEventGroupList({
   handleSingleConvert,
 }: CalendarEventGroupListProps) {
   const router = useRouter();
+  const c = useColors();
 
   return (
     <View style={styles.listSection}>
-      <ThemedText style={styles.listLabel}>
+      <ThemedText style={[styles.listLabel, { color: c.textMuted }]}>
         {selectedDateKey === todayLocalKey
           ? t('planSelectedListTodayLabel').replace('{count}', String(selectedDayEvents.length))
           : t('planSelectedListLabel')
@@ -103,13 +101,15 @@ export function CalendarEventGroupList({
               .replace('{count}', String(selectedDayEvents.length))}
       </ThemedText>
       {selectedDayEvents.length === 0 ? (
-        <ThemedText style={styles.emptyText}>{t('planSelectedEmpty')}</ThemedText>
+        <ThemedText style={[styles.emptyText, { color: c.textSecondary }]}>
+          {t('planSelectedEmpty')}
+        </ThemedText>
       ) : (
         <>
           {plannedGroupedEvents.length > 0 && (
             <>
               <ThemedText
-                style={styles.sectionHeader}
+                style={[styles.sectionHeader, { color: c.textSecondary }]}
                 testID={`e2e_${testIdPrefix}_section_upcoming`}
               >
                 {t('planSectionScheduled')} (
@@ -128,7 +128,11 @@ export function CalendarEventGroupList({
                       accessibilityRole="button"
                       accessibilityLabel={formatGroupAccessibility(groupLabel, events, toggleText)}
                       accessibilityState={{ expanded: isExpanded }}
-                      style={[styles.groupRow, hasOverdue && styles.groupRowOverdue]}
+                      style={[
+                        styles.groupRow,
+                        { backgroundColor: c.surface, borderColor: c.border },
+                        hasOverdue && styles.groupRowOverdue,
+                      ]}
                       onPress={() => toggleExpand(type)}
                       onLongPress={() => confirmDeleteGroup('planned', type, events)}
                       testID={`e2e_${testIdPrefix}_group_planned_${type}`}
@@ -137,7 +141,12 @@ export function CalendarEventGroupList({
                           件数バッジ + kebab。2 段目 = 「全 N 件を記録」 button (タップ領域拡大) + 開くトグル。
                           groupLeftCluster (flex:1 + minWidth:0) で label を読める幅に保ちつつ長言語は省略。 */}
                       <View style={styles.groupLine}>
-                        <View style={styles.groupIconBox}>
+                        <View
+                          style={[
+                            styles.groupIconBox,
+                            { backgroundColor: c.surface, borderColor: c.border },
+                          ]}
+                        >
                           {type === 'watering' ? (
                             <DropletIcon size={18} />
                           ) : (
@@ -146,7 +155,10 @@ export function CalendarEventGroupList({
                         </View>
                         <View style={styles.groupLeftCluster}>
                           <ThemedText
-                            style={[styles.groupLabel, hasOverdue && styles.groupLabelOverdue]}
+                            style={[
+                              styles.groupLabel,
+                              { color: hasOverdue ? c.textMuted : c.text },
+                            ]}
                             numberOfLines={1}
                           >
                             {groupLabel}
@@ -165,7 +177,7 @@ export function CalendarEventGroupList({
                           onPress={() => handleKebabPress('planned', type, events)}
                           testID={`e2e_${testIdPrefix}_group_kebab_planned_${type}`}
                         >
-                          <MoreVerticalIcon size={20} color={TEXT_SECONDARY} />
+                          <MoreVerticalIcon size={20} color={c.textSecondary} />
                         </Pressable>
                       </View>
                       <View style={styles.groupLine2}>
@@ -188,7 +200,11 @@ export function CalendarEventGroupList({
                           </ThemedText>
                         </Pressable>
                         <ThemedText
-                          style={[styles.groupToggleText, styles.groupTogglePush]}
+                          style={[
+                            styles.groupToggleText,
+                            { color: c.textSecondary },
+                            styles.groupTogglePush,
+                          ]}
                           numberOfLines={1}
                         >
                           {toggleText} {isExpanded ? '▲' : '▼'}
@@ -239,7 +255,10 @@ export function CalendarEventGroupList({
           )}
           {loggedGroupedEvents.length > 0 && (
             <>
-              <ThemedText style={styles.sectionHeader} testID={`e2e_${testIdPrefix}_section_done`}>
+              <ThemedText
+                style={[styles.sectionHeader, { color: c.textSecondary }]}
+                testID={`e2e_${testIdPrefix}_section_done`}
+              >
                 {t('planSectionRecorded')} (
                 {loggedGroupedEvents.reduce((sum, [, evs]) => sum + evs.length, 0)} 件)
               </ThemedText>
@@ -253,7 +272,10 @@ export function CalendarEventGroupList({
                       accessibilityRole="button"
                       accessibilityLabel={formatGroupAccessibility(groupLabel, events, toggleText)}
                       accessibilityState={{ expanded: isExpanded }}
-                      style={styles.groupRow}
+                      style={[
+                        styles.groupRow,
+                        { backgroundColor: c.surface, borderColor: c.border },
+                      ]}
                       onPress={() => toggleExpand(type)}
                       onLongPress={() => confirmDeleteGroup('logged', type, events)}
                       testID={`e2e_${testIdPrefix}_group_logged_${type}`}
@@ -262,7 +284,12 @@ export function CalendarEventGroupList({
                           1 段目 = アイコン + 種類名 (長言語は…省略) + 件数 + kebab、
                           2 段目 = 開くトグル (record ボタンなし、右寄せ)。 */}
                       <View style={styles.groupLine}>
-                        <View style={styles.groupIconBox}>
+                        <View
+                          style={[
+                            styles.groupIconBox,
+                            { backgroundColor: c.surface, borderColor: c.border },
+                          ]}
+                        >
                           {type === 'watering' ? (
                             <DropletIcon size={18} />
                           ) : (
@@ -270,7 +297,10 @@ export function CalendarEventGroupList({
                           )}
                         </View>
                         <View style={styles.groupLeftCluster}>
-                          <ThemedText style={styles.groupLabel} numberOfLines={1}>
+                          <ThemedText
+                            style={[styles.groupLabel, { color: c.text }]}
+                            numberOfLines={1}
+                          >
                             {groupLabel}
                           </ThemedText>
                           <View style={styles.groupCountBadge}>
@@ -287,12 +317,16 @@ export function CalendarEventGroupList({
                           onPress={() => handleKebabPress('logged', type, events)}
                           testID={`e2e_${testIdPrefix}_group_kebab_logged_${type}`}
                         >
-                          <MoreVerticalIcon size={20} color={TEXT_SECONDARY} />
+                          <MoreVerticalIcon size={20} color={c.textSecondary} />
                         </Pressable>
                       </View>
                       <View style={styles.groupLine2}>
                         <ThemedText
-                          style={[styles.groupToggleText, styles.groupTogglePush]}
+                          style={[
+                            styles.groupToggleText,
+                            { color: c.textSecondary },
+                            styles.groupTogglePush,
+                          ]}
                           numberOfLines={1}
                         >
                           {toggleText} {isExpanded ? '▲' : '▼'}
@@ -343,16 +377,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 11,
     letterSpacing: 1.4,
-    color: TEXT_MUTED,
     textTransform: 'uppercase',
     marginBottom: 8,
   },
-  emptyText: { fontSize: 14, color: TEXT_SECONDARY, textAlign: 'center', paddingVertical: 24 },
+  emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 24 },
   sectionHeader: {
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
     fontWeight: '600',
-    color: TEXT_SECONDARY,
     marginTop: 12,
     marginBottom: 6,
     letterSpacing: 0.4,
@@ -363,13 +395,10 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     gap: 8,
     padding: 14,
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
   },
   groupRowOverdue: { opacity: 0.6 },
-  groupLabelOverdue: { color: TEXT_MUTED },
   // 1 段目: アイコン + 種類名クラスタ + kebab (横並び)。
   groupLine: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   // 種類名 + 件数バッジを flex:1 + minWidth:0 の塊にし、長言語名は label 側で… 省略 (案B)。
@@ -380,14 +409,12 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 9,
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     alignItems: 'center',
     justifyContent: 'center',
   },
   // flexShrink: 1 で画面が狭い時はラベルが縮んで省略 (…) され、右側の操作が枠外に押し出されない。
-  groupLabel: { fontSize: 15, fontWeight: '500', color: TEXT_PRIMARY, flexShrink: 1 },
+  groupLabel: { fontSize: 15, fontWeight: '500', flexShrink: 1 },
   groupCountBadge: {
     backgroundColor: BADGE_SOFT_BG,
     borderRadius: 10,
@@ -399,7 +426,7 @@ const styles = StyleSheet.create({
   },
   groupCountBadgeText: { color: BADGE_SOFT_TEXT, fontSize: 12, fontWeight: '600' },
   // Sess42 バグ4: 右寄せは marginLeft:'auto' で行う (flex:1 spacer と groupLabel の flexShrink 競合回避)。
-  groupToggleText: { fontSize: 12, color: TEXT_SECONDARY, flexShrink: 0 },
+  groupToggleText: { fontSize: 12, flexShrink: 0 },
   groupTogglePush: { marginLeft: 'auto' },
   // Sess29 ADR-0038 D3 / R-48: Secondary CTA、 design_system §22。タップ領域 minHeight 44 (WCAG 2.5.5)。
   groupRecordButton: {

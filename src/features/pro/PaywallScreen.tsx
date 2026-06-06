@@ -21,20 +21,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
+// Sess66 PR6c: theme-dependent token (BG_*/TEXT_*/BORDER_*) を inline c.* に移行 (dark cascade)。
 import {
   ACCENT_BARK,
   ACCENT_GOLD,
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
   BRAND_GREEN,
   BRAND_GREEN_BG,
   DISABLED_BG,
   ON_BRAND,
-  TEXT_MUTED,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { LegalLinksRow } from '@/src/features/legal/LegalLinksRow';
 import { shouldHideSubscriptions } from '@/src/features/pro/championMode';
 import {
@@ -62,6 +58,7 @@ const PURCHASE_ERROR_MESSAGE_KEY: Record<
 export default function PaywallScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const c = useColors();
   const isPro = useProStore((s) => s.isPro);
   const planType = useProStore((s) => s.planType);
   const initPro = useProStore((s) => s.init);
@@ -160,7 +157,7 @@ export default function PaywallScreen() {
     : t('proPlanFreeTitle');
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll} testID="e2e_paywall_screen">
         <View style={styles.header}>
           <Pressable
@@ -175,17 +172,25 @@ export default function PaywallScreen() {
             hitSlop={8}
             style={styles.headerSide}
           >
-            <ThemedText style={styles.closeText}>{'×'}</ThemedText>
+            <ThemedText style={[styles.closeText, { color: c.text }]}>{'×'}</ThemedText>
           </Pressable>
-          <ThemedText style={styles.headerTitle}>{t('paywallModalHeaderTitle')}</ThemedText>
+          <ThemedText style={[styles.headerTitle, { color: c.text }]}>
+            {t('paywallModalHeaderTitle')}
+          </ThemedText>
           <View style={styles.headerSide} />
         </View>
 
         {/* ADR-0020 v1.x-5: Claude Design Hero (NotoSerifJP 32pt、letterSpacing 0.5) */}
         <View style={styles.hero}>
-          <ThemedText style={styles.heroEyebrow}>{t('paywallHeroEyebrow')}</ThemedText>
-          <ThemedText style={styles.heroTitle}>{t('paywallHeroTitle')}</ThemedText>
-          <ThemedText style={styles.heroBody}>{t('paywallHeroBody')}</ThemedText>
+          <ThemedText style={[styles.heroEyebrow, { color: c.textMuted }]}>
+            {t('paywallHeroEyebrow')}
+          </ThemedText>
+          <ThemedText style={[styles.heroTitle, { color: c.text }]}>
+            {t('paywallHeroTitle')}
+          </ThemedText>
+          <ThemedText style={[styles.heroBody, { color: c.textSecondary }]}>
+            {t('paywallHeroBody')}
+          </ThemedText>
         </View>
 
         {planType === 'lifetime' ? (
@@ -201,7 +206,7 @@ export default function PaywallScreen() {
             </View>
           </View>
         ) : (
-          <View style={styles.statusBox}>
+          <View style={[styles.statusBox, { borderColor: c.border }]}>
             <ThemedText type="defaultSemiBold">{proStateLabel}</ThemedText>
           </View>
         )}
@@ -209,10 +214,15 @@ export default function PaywallScreen() {
         {/* ADR-0049 Sess59 PR2: Sess58 確定 Pro 機能 6 項目に整合 (旧 BonsaiCount/History/
             Backup/Theme は Sess58 で「全 Free」 確定のため row 削除、 新規 ①Photo + ②Tag +
             ③WorkLogPhoto + ⑥CustomSpecies の 4 行追加)。 */}
-        <View style={styles.featureTable} testID="e2e_paywall_comparison">
-          <View style={styles.featureHeader}>
-            <ThemedText style={styles.featureHeaderLabel}>{t('paywallFeatureColLabel')}</ThemedText>
-            <ThemedText style={styles.featureHeaderFree}>FREE</ThemedText>
+        <View
+          style={[styles.featureTable, { backgroundColor: c.surface, borderColor: c.border }]}
+          testID="e2e_paywall_comparison"
+        >
+          <View style={[styles.featureHeader, { borderBottomColor: c.border }]}>
+            <ThemedText style={[styles.featureHeaderLabel, { color: c.textMuted }]}>
+              {t('paywallFeatureColLabel')}
+            </ThemedText>
+            <ThemedText style={[styles.featureHeaderFree, { color: c.textMuted }]}>FREE</ThemedText>
             <ThemedText style={styles.featureHeaderPro}>PRO</ThemedText>
           </View>
           {/* ① 基本情報 写真 (ADR-0049、 PR3 で実装) */}
@@ -294,7 +304,7 @@ export default function PaywallScreen() {
           accessibilityRole="button"
           accessibilityLabel={t('restore')}
           testID="e2e_paywall_restore"
-          style={styles.restoreBtn}
+          style={[styles.restoreBtn, { borderColor: c.border }]}
           disabled={action !== null}
           onPress={handleRestore}
         >
@@ -340,20 +350,24 @@ function FeatureRow({
   pro: string;
   highlight?: boolean;
 }) {
+  const c = useColors();
   return (
-    <View style={styles.featureRow}>
-      <ThemedText style={[styles.featureLabel, highlight && styles.featureLabelHighlight]}>
+    <View style={[styles.featureRow, { borderBottomColor: c.border }]}>
+      <ThemedText
+        style={[styles.featureLabel, { color: c.text }, highlight && styles.featureLabelHighlight]}
+      >
         {label}
       </ThemedText>
-      <ThemedText style={styles.featureFree}>{free}</ThemedText>
+      <ThemedText style={[styles.featureFree, { color: c.textMuted }]}>{free}</ThemedText>
       <ThemedText style={styles.featurePro}>{pro}</ThemedText>
     </View>
   );
 }
 
 function PlanCard({ testID, title, badge, price, cta, busy, disabled, onPress }: PlanCardProps) {
+  const c = useColors();
   return (
-    <View style={styles.card} testID={testID}>
+    <View style={[styles.card, { borderColor: c.border }]} testID={testID}>
       <View style={styles.cardHeader}>
         <ThemedText type="defaultSemiBold">{title}</ThemedText>
         {badge && <ThemedText style={styles.badge}>{badge}</ThemedText>}
@@ -377,17 +391,17 @@ function PlanCard({ testID, title, badge, price, cta, busy, disabled, onPress }:
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: BG_PRIMARY },
+  // Sess66 PR6c: 全 theme-dependent 色を inline c.* に (dark cascade)。
+  safe: { flex: 1 },
   scroll: { padding: 16, gap: 16 },
   header: { flexDirection: 'row', alignItems: 'center', paddingTop: 4 },
   headerSide: { width: 48, alignItems: 'flex-start', justifyContent: 'center' },
-  closeText: { fontSize: 28, paddingHorizontal: 8, color: TEXT_PRIMARY },
+  closeText: { fontSize: 28, paddingHorizontal: 8 },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
     fontFamily: 'NotoSerifJP_500Medium',
     fontSize: 20,
-    color: TEXT_PRIMARY,
     letterSpacing: 0.4,
   },
   // ADR-0020 v1.x-5: Hero (Claude Design monetization-screens.jsx 整合、NotoSerifJP 32pt)
@@ -395,7 +409,6 @@ const styles = StyleSheet.create({
   heroEyebrow: {
     fontFamily: 'Inter_400Regular',
     fontSize: 11,
-    color: TEXT_MUTED,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
   },
@@ -403,15 +416,12 @@ const styles = StyleSheet.create({
     fontFamily: 'NotoSerifJP_500Medium',
     fontSize: 32,
     lineHeight: 42,
-    color: TEXT_PRIMARY,
     letterSpacing: 0.5,
   },
-  heroBody: { fontSize: 15, lineHeight: 24, color: TEXT_SECONDARY },
+  heroBody: { fontSize: 15, lineHeight: 24 },
   // FeatureRow テーブル (Free / Pro 比較)
   featureTable: {
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 4,
@@ -421,13 +431,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
   },
   featureHeaderLabel: {
     flex: 1,
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
-    color: TEXT_MUTED,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
@@ -436,7 +444,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
-    color: TEXT_MUTED,
     letterSpacing: 1.2,
   },
   featureHeaderPro: {
@@ -453,11 +460,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
   },
-  featureLabel: { flex: 1, fontSize: 14, color: TEXT_PRIMARY },
+  featureLabel: { flex: 1, fontSize: 14 },
   featureLabelHighlight: { fontWeight: '500' },
-  featureFree: { width: 64, textAlign: 'center', fontSize: 13, color: TEXT_MUTED },
+  featureFree: { width: 64, textAlign: 'center', fontSize: 13 },
   featurePro: {
     width: 64,
     textAlign: 'center',
@@ -469,7 +475,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     alignItems: 'center',
   },
   championBanner: {
@@ -490,7 +495,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     gap: 12,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -521,7 +525,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
   },
   restoreText: { fontSize: 14 },
   finePrint: { fontSize: 11, opacity: 0.65, lineHeight: 16 },

@@ -13,7 +13,8 @@ import { Alert, Pressable, StyleSheet, Switch, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BORDER_DEFAULT } from '@/src/core/theme/colors';
+// Sess68 PR #C: BORDER_DEFAULT は inline c.border 化。
+import { useColors } from '@/src/core/theme/useColors';
 import { formatDateToHhmm, parseHhmmToDate } from '@/src/features/notification/notificationTime';
 import { requestNotificationPermission } from '@/src/features/notification/scheduler';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
@@ -23,6 +24,8 @@ import { SettingsSection } from './SettingsSection';
 
 export function NotificationSettingsSection() {
   const { t } = useTranslation();
+  const c = useColors();
+  const entryThemed = { borderBottomColor: c.border };
   // ADR-0014 Amended: 通知は当日まとめ 1 系統に集約、トグルも 1 つ (master + summary 統合)
   const notifSummaryEnabled = useSettingsStore((s) => s.notificationDailySummaryEnabled);
   const setNotifSummaryEnabled = useSettingsStore((s) => s.setNotificationDailySummaryEnabled);
@@ -63,7 +66,7 @@ export function NotificationSettingsSection() {
     <SettingsSection title={t('settingsNotificationSection')}>
       {/* 行 1: 通知トグル */}
       <View
-        style={styles.entry}
+        style={[styles.entry, entryThemed]}
         testID="e2e_settings_notification_master_row"
         accessibilityLabel={t('settingsNotificationRowLabel')}
       >
@@ -85,7 +88,7 @@ export function NotificationSettingsSection() {
           accessibilityLabel={t('settingsNotifSummaryEditTime')}
           accessibilityValue={{ text: notificationTimeRangeLabel }}
           testID="e2e_settings_notifications_row"
-          style={styles.entry}
+          style={[styles.entry, entryThemed]}
           onPress={() => setShowTimePicker(true)}
         >
           <View style={styles.rowInner}>
@@ -118,7 +121,6 @@ const styles = StyleSheet.create({
   entry: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
     gap: 6,
   },
   rowInner: {

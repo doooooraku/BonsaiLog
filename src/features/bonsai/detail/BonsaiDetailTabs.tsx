@@ -2,7 +2,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-import { BORDER_DEFAULT, BRAND_GREEN } from '@/src/core/theme/colors';
+// Sess68 PR #C: BORDER_DEFAULT は inline c.border 化、 BRAND_GREEN は brand-static で保持。
+import { BRAND_GREEN } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import type { DetailTab } from '@/src/features/bonsai/detail/useBonsaiDetailTabs';
 
@@ -24,7 +25,7 @@ export function BonsaiDetailTabs({
 }) {
   const c = useColors();
   return (
-    <View style={styles.detailTabs}>
+    <View style={[styles.detailTabs, { borderBottomColor: c.border }]}>
       {(['history', 'timeline', 'basic'] as const).map((tab) => {
         const on = activeTab === tab;
         const labelKey =
@@ -63,7 +64,6 @@ const styles = StyleSheet.create({
   detailTabs: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
   },
   detailTab: {
     flex: 1,

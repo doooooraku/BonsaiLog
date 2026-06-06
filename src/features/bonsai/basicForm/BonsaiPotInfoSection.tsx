@@ -4,14 +4,9 @@ import { ThemedText } from '@/components/themed-text';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_MUTED,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import type { BonsaiBasicFormState } from '@/src/features/bonsai/BonsaiBasicForm';
 
 /**
@@ -25,6 +20,7 @@ import type { BonsaiBasicFormState } from '@/src/features/bonsai/BonsaiBasicForm
  */
 export function BonsaiPotInfoSection({ form }: { form: BonsaiBasicFormState }) {
   const { t } = useTranslation();
+  const c = useColors();
   const {
     potWidth,
     setPotWidth,
@@ -42,9 +38,11 @@ export function BonsaiPotInfoSection({ form }: { form: BonsaiBasicFormState }) {
     <View style={styles.field}>
       <View style={styles.fieldLabelRow}>
         <ThemedText type="defaultSemiBold">{t('bonsaiFieldPotInfo')}</ThemedText>
-        <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+        <ThemedText style={[styles.optionalLabel, { color: c.textMuted }]}>
+          {t('fieldOptionalLabel')}
+        </ThemedText>
       </View>
-      <View style={styles.potCard}>
+      <View style={[styles.potCard, { backgroundColor: c.surface, borderColor: c.border }]}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('bonsaiFieldPotInfoExpand')}
@@ -52,7 +50,7 @@ export function BonsaiPotInfoSection({ form }: { form: BonsaiBasicFormState }) {
           onPress={() => setPotExpanded((p) => !p)}
           testID="e2e_bonsai_create_pot_expander"
         >
-          <ThemedText style={styles.pickerPlaceholder}>
+          <ThemedText style={[styles.pickerPlaceholder, { color: c.textMuted }]}>
             {potExpanded ? '▲ ' : '▼ '}
             {t('bonsaiFieldPotInfoExpand')}
           </ThemedText>
@@ -60,7 +58,7 @@ export function BonsaiPotInfoSection({ form }: { form: BonsaiBasicFormState }) {
         {potExpanded && (
           <View style={styles.potExpanded}>
             {/* Sess15 PR-BB: 単位 segmented control (一時切替、 settingsStore は touch しない)。 */}
-            <View style={styles.potUnitSegmented}>
+            <View style={[styles.potUnitSegmented, { borderColor: c.border }]}>
               {(['cm', 'mm', 'inch'] as const).map((u) => {
                 const active = displayPotUnit === u;
                 return (
@@ -74,7 +72,11 @@ export function BonsaiPotInfoSection({ form }: { form: BonsaiBasicFormState }) {
                     testID={`e2e_bonsai_create_pot_unit_${u}`}
                   >
                     <ThemedText
-                      style={active ? styles.potUnitSegmentTextActive : styles.potUnitSegmentText}
+                      style={
+                        active
+                          ? styles.potUnitSegmentTextActive
+                          : [styles.potUnitSegmentText, { color: c.textSecondary }]
+                      }
                     >
                       {u}
                     </ThemedText>
@@ -127,17 +129,14 @@ const styles = StyleSheet.create({
   optionalLabel: {
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
-    color: TEXT_MUTED,
     letterSpacing: 0.8,
   },
-  pickerPlaceholder: { color: TEXT_MUTED },
+  pickerPlaceholder: {},
   potExpanded: { gap: 10, marginTop: 8 },
   // Sess15 PR-BB: mockup 174029.png 整合の card group (border 内に expander + 3 input + segmented を集約)。
   potCard: {
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
-    backgroundColor: BG_SURFACE,
     padding: 12,
     gap: 8,
   },
@@ -148,7 +147,6 @@ const styles = StyleSheet.create({
   potUnitSegmented: {
     flexDirection: 'row',
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 8,
     overflow: 'hidden',
     alignSelf: 'flex-start',
@@ -161,6 +159,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   potUnitSegmentActive: { backgroundColor: BRAND_GREEN },
-  potUnitSegmentText: { fontSize: 13, color: TEXT_SECONDARY },
+  potUnitSegmentText: { fontSize: 13 },
   potUnitSegmentTextActive: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
 });

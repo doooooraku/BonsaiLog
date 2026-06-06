@@ -5,14 +5,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { PlusIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_MUTED,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import type { BonsaiBasicFormState } from '@/src/features/bonsai/BonsaiBasicForm';
 
 const TAG_COLLAPSED_COUNT = 3;
@@ -27,6 +22,7 @@ const TAG_COLLAPSED_COUNT = 3;
  */
 export function BonsaiTagsSection({ form }: { form: BonsaiBasicFormState }) {
   const { t } = useTranslation();
+  const c = useColors();
   const router = useRouter();
   const { recentTags, selectedTagIds, toggleTag } = form;
 
@@ -42,12 +38,16 @@ export function BonsaiTagsSection({ form }: { form: BonsaiBasicFormState }) {
     <View style={styles.field}>
       <View style={styles.fieldLabelRow}>
         <ThemedText type="defaultSemiBold">{t('bonsaiFieldTags')}</ThemedText>
-        <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+        <ThemedText style={[styles.optionalLabel, { color: c.textMuted }]}>
+          {t('fieldOptionalLabel')}
+        </ThemedText>
       </View>
       {/* Sess15 PR-DD: empty 時は文言上 + button 下 (縦配置)、 chip 1+ 件時は wrap row (横並び)。 */}
       {recentTags.length === 0 ? (
         <View style={styles.tagEmptyColumn}>
-          <ThemedText style={styles.tagsEmpty}>{t('bonsaiTagsEmpty')}</ThemedText>
+          <ThemedText style={[styles.tagsEmpty, { color: c.textMuted }]}>
+            {t('bonsaiTagsEmpty')}
+          </ThemedText>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('bonsaiTagsAddCta')}
@@ -69,7 +69,11 @@ export function BonsaiTagsSection({ form }: { form: BonsaiBasicFormState }) {
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: selected }}
                 accessibilityLabel={tg.name}
-                style={[styles.tagChip, selected && styles.tagChipSelected]}
+                style={[
+                  styles.tagChip,
+                  { backgroundColor: c.surface, borderColor: c.border },
+                  selected && styles.tagChipSelected,
+                ]}
                 onPress={() => toggleTag(tg.id)}
                 testID={`e2e_bonsai_create_tag_chip_${tg.id}`}
               >
@@ -88,11 +92,11 @@ export function BonsaiTagsSection({ form }: { form: BonsaiBasicFormState }) {
                   ? t('tagShowLess')
                   : t('tagShowMore').replace('{count}', String(hiddenTagCount))
               }
-              style={styles.tagMoreChip}
+              style={[styles.tagMoreChip, { backgroundColor: c.surface, borderColor: c.border }]}
               onPress={() => setTagExpanded((p) => !p)}
               testID="e2e_bonsai_create_tag_more"
             >
-              <ThemedText style={styles.tagMoreChipText}>
+              <ThemedText style={[styles.tagMoreChipText, { color: c.textSecondary }]}>
                 {tagExpanded
                   ? t('tagShowLess')
                   : t('tagShowMore').replace('{count}', String(hiddenTagCount))}
@@ -121,7 +125,6 @@ const styles = StyleSheet.create({
   optionalLabel: {
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
-    color: TEXT_MUTED,
     letterSpacing: 0.8,
   },
   tagChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -130,15 +133,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
     minHeight: 36,
     justifyContent: 'center',
   },
   tagChipSelected: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
   tagChipText: { fontSize: 13 },
   tagChipTextSelected: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
-  tagsEmpty: { fontSize: 13, color: TEXT_MUTED },
+  tagsEmpty: { fontSize: 13 },
   // Sess15 PR-DD: empty 時の縦並び container (alignSelf で button を左寄せ)。
   tagEmptyColumn: { gap: 8 },
   // Sess15 PR-EE: 案 D2 統一 (dashed gray → solid 1.5px BRAND_GREEN + BRAND_GREEN テキスト + PlusIcon)。
@@ -162,10 +163,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
     minHeight: 36,
     justifyContent: 'center',
   },
-  tagMoreChipText: { fontSize: 13, color: TEXT_SECONDARY, fontWeight: '500' },
+  tagMoreChipText: { fontSize: 13, fontWeight: '500' },
 });

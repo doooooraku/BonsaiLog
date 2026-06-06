@@ -14,15 +14,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_PRIMARY / BG_SURFACE / BORDER_DEFAULT / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import type { PhotoRead } from '@/src/db/photoRepository';
 
 // Sess14 PR-T: MAX_CAPTION_CHARS 削除 (caption UI 廃止)。
@@ -54,14 +48,20 @@ export function PhotoCard({
   onSetCover,
 }: Props) {
   const { t } = useTranslation();
+  const c = useColors();
   const isCover = photo.isCover === 1;
   const canMoveUp = index > 0;
   const canMoveDown = index < total - 1;
 
   return (
-    <View style={styles.card} testID={`e2e_photo_card_${photo.id}`}>
+    <View
+      style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}
+      testID={`e2e_photo_card_${photo.id}`}
+    >
       {/* 上部ツールバー: ↑↓ + index + cover バッジ + 削除 */}
-      <View style={styles.toolbar}>
+      <View
+        style={[styles.toolbar, { backgroundColor: c.background, borderBottomColor: c.border }]}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('photoMoveUpLabel')}
@@ -71,7 +71,7 @@ export function PhotoCard({
           disabled={!canMoveUp}
           testID={`e2e_photo_card_move_up_${photo.id}`}
         >
-          <ThemedText style={styles.moveText}>↑</ThemedText>
+          <ThemedText style={[styles.moveText, { color: c.text }]}>↑</ThemedText>
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -82,10 +82,10 @@ export function PhotoCard({
           disabled={!canMoveDown}
           testID={`e2e_photo_card_move_down_${photo.id}`}
         >
-          <ThemedText style={styles.moveText}>↓</ThemedText>
+          <ThemedText style={[styles.moveText, { color: c.text }]}>↓</ThemedText>
         </Pressable>
 
-        <ThemedText style={styles.indexLabel}>
+        <ThemedText style={[styles.indexLabel, { color: c.textSecondary }]}>
           {index + 1} / {total}
         </ThemedText>
 
@@ -97,11 +97,13 @@ export function PhotoCard({
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('photoSetCoverLabel')}
-            style={styles.setCoverButton}
+            style={[styles.setCoverButton, { borderColor: c.border }]}
             onPress={onSetCover}
             testID={`e2e_photo_card_set_cover_${photo.id}`}
           >
-            <ThemedText style={styles.setCoverButtonText}>★</ThemedText>
+            <ThemedText style={[styles.setCoverButtonText, { color: c.textSecondary }]}>
+              ★
+            </ThemedText>
           </Pressable>
         )}
 
@@ -114,7 +116,7 @@ export function PhotoCard({
           onPress={onDelete}
           testID={`e2e_photo_card_delete_${photo.id}`}
         >
-          <ThemedText style={styles.deleteButtonText}>×</ThemedText>
+          <ThemedText style={[styles.deleteButtonText, { color: c.text }]}>×</ThemedText>
         </Pressable>
       </View>
 
@@ -133,9 +135,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 12,
     overflow: 'hidden',
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
   },
   toolbar: {
     flexDirection: 'row',
@@ -143,9 +143,7 @@ const styles = StyleSheet.create({
     height: 40,
     paddingHorizontal: 8,
     gap: 6,
-    backgroundColor: BG_PRIMARY,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: BORDER_DEFAULT,
   },
   moveButton: {
     width: 32,
@@ -155,8 +153,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   moveButtonDisabled: { opacity: 0.3 },
-  moveText: { fontSize: 18, color: TEXT_PRIMARY },
-  indexLabel: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY, marginLeft: 4 },
+  moveText: { fontSize: 18 },
+  indexLabel: { fontSize: 13, fontWeight: '500', marginLeft: 4 },
   coverBadge: {
     backgroundColor: BRAND_GREEN,
     paddingHorizontal: 8,
@@ -175,13 +173,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     marginLeft: 4,
     minHeight: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  setCoverButtonText: { fontSize: 13, color: TEXT_SECONDARY, lineHeight: 18 },
+  setCoverButtonText: { fontSize: 13, lineHeight: 18 },
   spacer: { flex: 1 },
   deleteButton: {
     width: 28,
@@ -194,7 +191,6 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 18,
     fontWeight: '700',
-    color: TEXT_PRIMARY,
     lineHeight: 20,
   },
   // Sess14 PR-N: CreateMode (PR-J) と統一、 4:3 aspect (画面幅追従、 縦長盆栽写真に親和)。
