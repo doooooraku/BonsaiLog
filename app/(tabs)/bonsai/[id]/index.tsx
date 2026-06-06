@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomCtaBar } from '@/src/components/common/BottomCtaBar';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
+import { useScrollPreservation } from '@/src/core/hooks/useScrollPreservation';
 import { useBonsaiBasicForm } from '@/src/features/bonsai/BonsaiBasicForm';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
 import { BonsaiBasicSection } from '@/src/features/bonsai/detail/BonsaiBasicSection';
@@ -56,6 +57,10 @@ export default function BonsaiDetailScreen() {
   const kavProps = useKeyboardAvoidingProps();
   // Sess31 PR-1 (R-46 拡張): ScrollView ref + 基本情報タブ メモ欄 onFocus → scrollToEnd で可視性確保。
   const scrollRef = React.useRef<ScrollView>(null);
+  // Sess72 PR-3 (ADR-0040 D5 予定 / R-63 予定): 子画面 push (tag-edit / work-picker) から戻った
+  // 時の scroll 位置保持。 基本情報タブの tag 追加 + 作業履歴/予定タブの予定/記録追加 等、 詳細
+  // 画面の各タブから子画面 push する全 flow で先頭リセット問題を解消。
+  const { onScroll, scrollEventThrottle } = useScrollPreservation(scrollRef);
   // 改善① measureLayout 基準: ScrollView 直下の content wrapper View ref。
   // Fabric では measureLayout の relativeTo に数値ハンドル不可・ホスト View の ref が必要なため、
   // 全 content を包む collapsable=false の View を基準にして対象行の content 内 Y を実測する。
@@ -239,6 +244,8 @@ export default function BonsaiDetailScreen() {
       <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
         <ScrollView
           ref={scrollRef}
+          onScroll={onScroll}
+          scrollEventThrottle={scrollEventThrottle}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
