@@ -188,7 +188,14 @@ module.exports = defineConfig([
     files: ['src/**/*.{ts,tsx}', 'app/**/*.{ts,tsx}'],
     plugins: { local: localPlugin },
     rules: {
-      'local/no-color-token-in-stylesheet': 'error',
+      // Sess70 PR-D: FORBIDDEN_TOKENS 8 種 → 16 種拡張 (brand-static 撤回)。
+      // 既存 PR-C1-C3 で主要 cascade 対応、 残違反は PR-E (将来) で 0 化 → error 昇格予定。
+      // Sess66 PR3 → Sess68 PR #D と同じ段階移行 (warn → 違反 0 化 → error)。
+      'local/no-color-token-in-stylesheet': 'warn',
+      // Sess70 PR-D / ADR-0052 Amendment: hex literal 禁止 (StyleSheet 内)。
+      // 例外: 'transparent' / 'rgba()' は通過、 写真 overlay 等は reason marker (5 件以下上限)。
+      // PR-D 段階導入 (warn)、 既存違反 0 化後 error 昇格予定 (PR-E)。
+      'local/no-color-hex-literal-in-stylesheet': 'warn',
     },
   },
   // -----------------------------------------------------------------------
