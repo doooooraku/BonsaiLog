@@ -20,7 +20,8 @@ import { Modal, Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useColors } from '@/src/core/theme/useColors';
-import { BG_SURFACE, BORDER_DEFAULT, DANGER, TEXT_PRIMARY } from '@/src/core/theme/colors';
+// Sess66 PR6b: BG_SURFACE / BORDER_DEFAULT / TEXT_PRIMARY を inline c.* に (dark cascade)。
+import { DANGER } from '@/src/core/theme/colors';
 
 export type RowActionMenuItem = {
   /** unique key (React list rendering 用) */
@@ -73,11 +74,21 @@ export function RowActionMenu({ visible, items, onDismiss, testID }: RowActionMe
               key={item.key}
               accessibilityRole="menuitem"
               accessibilityLabel={item.label}
-              style={[styles.item, idx > 0 && styles.itemBordered]}
+              style={[
+                styles.item,
+                { backgroundColor: c.surface },
+                idx > 0 && [styles.itemBordered, { borderTopColor: c.border }],
+              ]}
               onPress={() => handleItemPress(item)}
               testID={item.testID}
             >
-              <ThemedText style={[styles.itemText, item.destructive && styles.itemTextDestructive]}>
+              <ThemedText
+                style={[
+                  styles.itemText,
+                  { color: c.text },
+                  item.destructive && styles.itemTextDestructive,
+                ]}
+              >
                 {item.label}
               </ThemedText>
             </Pressable>
@@ -101,15 +112,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingBottom: 24,
   },
+  // Sess66 PR6b: bg/border/color は inline c.* で動的指定 (dark cascade)。
   item: {
     paddingVertical: 16,
     paddingHorizontal: 24,
-    backgroundColor: BG_SURFACE,
   },
   itemBordered: {
     borderTopWidth: 1,
-    borderTopColor: BORDER_DEFAULT,
   },
-  itemText: { fontSize: 16, color: TEXT_PRIMARY, fontWeight: '500' },
+  itemText: { fontSize: 16, fontWeight: '500' },
   itemTextDestructive: { color: DANGER },
 });

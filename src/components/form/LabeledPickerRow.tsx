@@ -15,7 +15,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ChevronRightIcon, CloseIcon } from '@/src/components/icons';
-import { ON_BRAND, TEXT_MUTED } from '@/src/core/theme/colors';
+// Sess66 PR6b: TEXT_MUTED は inline c.textMuted で動的指定 (dark cascade)。
+import { ON_BRAND } from '@/src/core/theme/colors';
 import { formOptional } from '@/src/core/theme/typography';
 import { useColors } from '@/src/core/theme/useColors';
 
@@ -77,7 +78,7 @@ export function LabeledPickerRow({
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`${label}: clear`}
-            style={styles.clearButton}
+            style={[styles.clearButton, { backgroundColor: c.textMuted }]}
             hitSlop={6}
             onPress={onClear}
             testID={testIDClear}
@@ -107,12 +108,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   // Sess15 PR-II: 案 a = 灰 circle 32x32 (hitSlop で 44pt 確保) + 白 X icon。
+  // Sess66 PR6b: backgroundColor は inline c.textMuted (dark cascade)。
   clearButton: {
     width: 32,
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 16,
-    backgroundColor: TEXT_MUTED,
   },
 });

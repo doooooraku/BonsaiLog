@@ -21,7 +21,8 @@ import {
 } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BG_PRIMARY, DANGER, OVERLIMIT } from '@/src/core/theme/colors';
+// Sess66 PR6b: badge 白文字は theme-invariant ゆえ ON_BRAND (旧 BG_PRIMARY = bug)。
+import { DANGER, ON_BRAND, OVERLIMIT } from '@/src/core/theme/colors';
 import {
   formCounter,
   formCounterOver,
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { ...formRequired, color: BG_PRIMARY },
+  requiredText: { ...formRequired, color: ON_BRAND },
   optionalText: formOptional,
   counter: formCounter,
   counterOver: formCounterOver,
