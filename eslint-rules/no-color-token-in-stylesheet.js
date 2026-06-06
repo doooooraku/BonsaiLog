@@ -19,21 +19,29 @@
  *   - TEXT_PRIMARY / TEXT_SECONDARY / TEXT_MUTED / TEXT_DEFAULT — light=sumi dark=cream
  *   - BORDER_DEFAULT / BORDER_STRONG — light=cream dark=navy
  *
- * Theme-invariant tokens (allowed everywhere):
- *   - ON_BRAND (#FFFFFF, brand 上の白文字) / ACCENT_GOLD (Pro バッジ) / ACCENT_BARK
+ * Theme-invariant tokens (allowed everywhere、 Sess70 PR-D で大幅縮小):
+ *   - ON_BRAND (#FFFFFF, brand 上の白文字、 light 専用) / ACCENT_GOLD (Pro バッジ専用)
  *   - DANGER / SUCCESS / OVERLIMIT (status 色は意図的に固定)
- *   - DISABLED_BG / HEATMAP_COLORS
- *   - BADGE_SOFT_BG / BADGE_SOFT_TEXT / BUTTON_SECONDARY_BG / BUTTON_SECONDARY_TEXT (brand-static)
- *   - BRAND_GREEN / BRAND_GREEN_HOVER / BRAND_GREEN_BG (CTA primary、 dark でも同色 brand intent)
+ *   - HEATMAP_COLORS (F-04 専用 4 色、 ADR-0013 固定)
+ *
+ * Sess70 PR-D で FORBIDDEN に昇格 (brand-static 撤回、 ADR-0015/0052 Sess69 PR-A Amendment 整合):
+ *   - BRAND_GREEN / BRAND_GREEN_HOVER / BRAND_GREEN_BG (dark で深緑 #1F3A2E 沈み)
+ *   - BADGE_SOFT_BG / BADGE_SOFT_TEXT (dark で薄緑 #E8F0EA 浮き)
+ *   - BUTTON_SECONDARY_BG / BUTTON_SECONDARY_TEXT (同上)
+ *   - DISABLED_BG (dark で #9E9E9E 灰色が意図不明)
+ *   - ACCENT_BARK (dark で深茶 #5A4637 沈み → dark warm #A1886F)
+ *   → 全 16 種を inline c.tint / c.tintSubtle / c.badgeBg / c.buttonSecondaryBg / c.disabledBg /
+ *     c.accentBark 経由必須化、 useColors hook 戻り値 7 prop (PR-A) 利用
  *
  * Color-related style props (検査対象):
  *   color / backgroundColor / borderColor (4 方向含む) / shadowColor / tintColor /
  *   overlayColor / placeholderTextColor / selectionColor / underlineColorAndroid
  *
- * 関連: ADR-0052 / docs/reference/design_system.md §2 / R-58 dark cascade verify
+ * 関連: ADR-0052 (Sess70 PR-D で Allowed 縮小) / docs/reference/design_system.md §2 / R-58 拡張 (Sess70)
  */
 
 const FORBIDDEN_TOKENS = new Set([
+  // Sess66 PR3 (8 種): theme-dependent base color
   'BG_PRIMARY',
   'BG_SURFACE',
   'TEXT_PRIMARY',
@@ -42,6 +50,15 @@ const FORBIDDEN_TOKENS = new Set([
   'TEXT_DEFAULT',
   'BORDER_DEFAULT',
   'BORDER_STRONG',
+  // Sess70 PR-D 追加 (8 種): brand-static 撤回 (ADR-0015/0052 Sess69 PR-A Amendment 整合)
+  'BRAND_GREEN',
+  'BRAND_GREEN_HOVER',
+  'BRAND_GREEN_BG',
+  'BADGE_SOFT_BG',
+  'BADGE_SOFT_TEXT',
+  'BUTTON_SECONDARY_BG',
+  'BUTTON_SECONDARY_TEXT',
+  'DISABLED_BG',
 ]);
 
 const COLOR_PROPS = new Set([

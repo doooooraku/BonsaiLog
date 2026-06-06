@@ -1,8 +1,8 @@
-# 再発防止プロトコル — 専門ルール (R-13 〜 R-57)
+# 再発防止プロトコル — 専門ルール (R-13 〜 R-60)
 
 > 本ファイルは `.claude/recurrence-prevention.md` (親) の詳細部分。
-> 親ファイル = R-1 〜 R-12 全文 + R-13 〜 R-57 索引 + 運用ルール。
-> 本ファイル = R-13 〜 R-57 詳細記述。
+> 親ファイル = R-1 〜 R-12 全文 + R-13 〜 R-60 索引 + 運用ルール。
+> 本ファイル = R-13 〜 R-60 詳細記述。
 > 親ファイルの「専門ルール 索引」 から各 R-N に飛ぶ運用。
 
 ---
@@ -514,9 +514,64 @@
 
 ---
 
+### R-58. dark theme cascade 構造禁止 (Sess66-68 起点、 Sess70 PR-D 拡張)
+
+- **ルール**: 画面追加 / 色変更 / theme 関連 PR では以下 4 点必須:
+  1. **`StyleSheet.create()` 内に theme-dependent / brand-static color token を書かない** (16 種):
+     - 旧 8 種 (Sess66 PR3): `BG_PRIMARY` / `BG_SURFACE` / `TEXT_PRIMARY` / `TEXT_SECONDARY` / `TEXT_MUTED` / `TEXT_DEFAULT` / `BORDER_DEFAULT` / `BORDER_STRONG`
+     - Sess70 PR-D 追加 8 種 (brand-static 撤回): `BRAND_GREEN` / `BRAND_GREEN_HOVER` / `BRAND_GREEN_BG` / `BADGE_SOFT_BG` / `BADGE_SOFT_TEXT` / `BUTTON_SECONDARY_BG` / `BUTTON_SECONDARY_TEXT` / `DISABLED_BG`
+  2. **`useColors()` hook + inline `c.*` で動的色注入**: Sess69 PR-A で 7 prop 追加 (`c.tint` / `c.tintSubtle` / `c.badgeBg` / `c.buttonSecondaryBg` / `c.onTint` / `c.disabledBg` / `c.accentBark` + `c.dangerColor`)
+  3. **`pnpm a11y:contrast` で全 22 pair WCAG AA pass** (PR-A で 14→22 拡張、 brand pair 含む)
+  4. **dark mode 実機 SS で視認性確認** (R-60 と連動)
+
+- **根拠**: Sess65 user 報告「設定画面が dark で真っ白」 + Sess66 残 245 違反 + Sess68 PR #A/B/C で完走 (旧 8 種) + Sess69 で真因確定 (brand-static 罠 = light `BRAND_GREEN = #1F3A2E` 深緑が dark `#16140F` 上で contrast 1.5:1 ≪ AA 3.0:1 で破綻) → 5 回連続再発の主要因。 Sess70 PR-A/B/C1/C2/C3/D で「設計レベル是正 = brand 色も scheme-aware」 完遂、 構造禁止で恒久化。
+
+- **段階移行 (warn → 違反 0 化 → error)**:
+  - Sess66 PR3 (`'warn'`、 8 種) → Sess68 PR #D (`'error'`、 245→0 完走)
+  - Sess70 PR-D (`'warn'`、 16 種に拡張) → PR-E 予定 (`'error'`、 残違反 0 化)
+- **brand-static 維持判断 (4 種)**:
+  - `ON_BRAND` (`#FFFFFF`、 light 専用 = brand 上の白文字、 dark は `c.onTint` = sumi `#1A1A1A`)
+  - `ACCENT_GOLD` (`#C69E48` 秋葉、 Pro バッジ専用、 両 theme 同色維持)
+  - `DANGER` / `SUCCESS` / `OVERLIMIT` (status 色、 ただし dark mode 追従が必要な場合は `c.dangerColor` 経由)
+  - `HEATMAP_COLORS` (F-04 ADR-0013 専用 4 色)
+- **関連**: ADR-0052 + ADR-0015 Notes Amended (Sess66 PR4 + Sess69 PR-A + Sess70 PR-D) / `eslint-rules/no-color-token-in-stylesheet.js` (16 種 FORBIDDEN) / `scripts/a11y-contrast-check.mjs` (22 pair) / Sess65 PR #938 / Sess66 PR #940 #941 #943 / Sess67 PR #942 / Sess68 PR #950-#953 / Sess69 PR #954 #955 / Sess70 PR #956 #957 #958 + 本 PR
+
+---
+
+### R-59. StyleSheet 内 hex literal 禁止 (Sess70 PR-D 起票、 ADR-0052 Amendment)
+
+- **ルール**: `StyleSheet.create()` 内に raw hex literal (`'#RGB'` / `'#RRGGBB'` / `'#RRGGBBAA'`) を **書かない**。 inline `c.*` (`useColors` hook 経由) に変換するか、 reason marker を付ける。
+  - 例外なし pass: `'transparent'` / `'rgba(R,G,B,A)'` 半透明
+  - 例外 marker: `// eslint-disable-next-line local/no-color-hex-literal-in-stylesheet`、 直下に `// reason: <一文>` 必須
+  - 例外 marker は **5 件以下上限** (`scripts/check-eslint-disable-count.mjs` で CI 監視、 PR-E 同梱予定)
+  - 例外用途 (reason 候補): 写真 overlay text 固定 (例: `BonsaiBasicSection.tsx:84` 写真上の盆栽名) / PDF/SVG export 紙白固定 (例: `listPdfExport.ts:180`) / Pro 金 badge 上 `ON_BRAND` 文字 (`PaywallScreen.tsx:508` / `PlanSection.tsx:358`)
+
+- **根拠**: Sess69 で R-58 既存 rule (token 名 base) が hex literal を見逃した盲点が判明 (4 file: `BonsaiTimelineTab.tsx:246` / `EventRowCompact.tsx:143` / `EventRowDetailed.tsx:309` / `SearchResultRows.tsx:226`)。 Sess70 PR-C1/C2/C3 で 4 file inline `c.*` 化済、 PR-D で構造禁止化。
+- **段階移行**: PR-D `'warn'` 導入 → PR-E で残違反 0 化 + `'error'` 昇格
+- **自動化 / 構造防止**: `eslint-rules/no-color-hex-literal-in-stylesheet.js` (AST walker `isInsideStyleSheetCreate` + hex regex `/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/`)
+- **関連**: ADR-0052 Notes Amended (Sess70 PR-D) / `eslint-rules/no-color-hex-literal-in-stylesheet.js` / R-58 (連動)
+
+---
+
+### R-60. 新画面 PR は dark mode SS 添付必須 (Sess70 PR-D 起票)
+
+- **ルール**: 新画面追加 PR (`app/**/*.tsx` 新規 file) では PR 本文に **dark mode で撮影した SS を最低 1 枚添付**必須。
+  - 既存画面の修正 PR でも、 dark mode 視覚変化がある場合は推奨
+  - PR テンプレに「☐ dark mode SS 添付」 check 項目を追加 (PR-E 同梱予定)
+  - 将来 hook (`scripts/check-pr-dark-ss.mjs`) で機械検証も検討
+- **根拠**: Sess65→69 で「ユーザーが dark mode で実機テストして報告 → 開発者が cascade 漏れに気付く」 を 4 回繰り返した root cause = 「新画面で dark mode 視覚検証が任意」 の仕組み欠落 (Sess66 ADR-0052 で a11y CI を入れたが、 brand pair が漏れていた = R-58 拡張で対応)。 開発者の「dark mode 後回し」 認知バイアスを構造的に抑制。
+- **自動化 / 構造防止 (PR-E 以降)**:
+  - PR テンプレに check 項目追加 (人手 reminder)
+  - `scripts/check-pr-dark-ss.mjs` で PR 本文を grep し dark SS 画像 link 検出 (機械検証)
+  - check-list 失敗時 CI fail or PR レビューで指摘
+- **R-25 連動**: 既存 R-25 (機械判定のみで達成判定禁止 + Claude Read 主導) の「dark mode 視覚検証」 領域版。
+- **関連**: ADR-0052 Notes Amended (Sess70 PR-D) / R-25 (Claude Read pattern) / R-58 (連動)
+
+---
+
 ## 関連
 
-- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-57 索引 + 運用ルール)
+- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-60 索引 + 運用ルール)
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動

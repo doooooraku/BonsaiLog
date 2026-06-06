@@ -44,11 +44,11 @@ ruleTester.run('no-color-token-in-stylesheet', rule, {
         });
       `,
     },
-    // ✅ BRAND_GREEN (brand intent、 dark でも同色) は OK
+    // ✅ Sess70 PR-D 後の theme-invariant: ACCENT_GOLD (Pro バッジ、 両 theme 同色) は OK
     {
       code: `
         const styles = StyleSheet.create({
-          cta: { backgroundColor: BRAND_GREEN },
+          pro: { backgroundColor: ACCENT_GOLD, color: '#FFFFFF' },
         });
       `,
     },
@@ -152,6 +152,57 @@ ruleTester.run('no-color-token-in-stylesheet', rule, {
       errors: [
         { messageId: 'forbidden', data: { name: 'TEXT_SECONDARY', prop: 'color' } },
         { messageId: 'forbidden', data: { name: 'TEXT_MUTED', prop: 'color' } },
+      ],
+    },
+    // ❌ Sess70 PR-D 拡張: BRAND_GREEN (brand-static 撤回)
+    {
+      code: `
+        const styles = StyleSheet.create({
+          cta: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
+        });
+      `,
+      errors: [
+        { messageId: 'forbidden', data: { name: 'BRAND_GREEN', prop: 'backgroundColor' } },
+        { messageId: 'forbidden', data: { name: 'BRAND_GREEN', prop: 'borderColor' } },
+      ],
+    },
+    // ❌ Sess70 PR-D 拡張: BADGE_SOFT_BG / BADGE_SOFT_TEXT
+    {
+      code: `
+        const styles = StyleSheet.create({
+          badge: { backgroundColor: BADGE_SOFT_BG, color: BADGE_SOFT_TEXT },
+        });
+      `,
+      errors: [
+        { messageId: 'forbidden', data: { name: 'BADGE_SOFT_BG', prop: 'backgroundColor' } },
+        { messageId: 'forbidden', data: { name: 'BADGE_SOFT_TEXT', prop: 'color' } },
+      ],
+    },
+    // ❌ Sess70 PR-D 拡張: BUTTON_SECONDARY_BG / BUTTON_SECONDARY_TEXT
+    {
+      code: `
+        const styles = StyleSheet.create({
+          action: { backgroundColor: BUTTON_SECONDARY_BG, color: BUTTON_SECONDARY_TEXT },
+        });
+      `,
+      errors: [
+        { messageId: 'forbidden', data: { name: 'BUTTON_SECONDARY_BG', prop: 'backgroundColor' } },
+        { messageId: 'forbidden', data: { name: 'BUTTON_SECONDARY_TEXT', prop: 'color' } },
+      ],
+    },
+    // ❌ Sess70 PR-D 拡張: DISABLED_BG / BRAND_GREEN_BG / BRAND_GREEN_HOVER
+    {
+      code: `
+        const styles = StyleSheet.create({
+          d: { backgroundColor: DISABLED_BG },
+          s: { backgroundColor: BRAND_GREEN_BG },
+          h: { backgroundColor: BRAND_GREEN_HOVER },
+        });
+      `,
+      errors: [
+        { messageId: 'forbidden', data: { name: 'DISABLED_BG', prop: 'backgroundColor' } },
+        { messageId: 'forbidden', data: { name: 'BRAND_GREEN_BG', prop: 'backgroundColor' } },
+        { messageId: 'forbidden', data: { name: 'BRAND_GREEN_HOVER', prop: 'backgroundColor' } },
       ],
     },
   ],
