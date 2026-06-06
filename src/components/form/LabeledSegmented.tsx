@@ -114,7 +114,9 @@ export function LabeledSegmented({
               onPress={() => onChange(it.v)}
               testID={testID ? `${testID}_${it.v}` : undefined}
             >
-              <ThemedText style={[styles.segmentText, on && styles.segmentTextOn]}>
+              <ThemedText
+                style={[styles.segmentText, on && [styles.segmentTextOn, { color: c.onTint }]]}
+              >
                 {it.l}
               </ThemedText>
             </Pressable>
@@ -148,5 +150,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   segmentText: formSegmentText,
-  segmentTextOn: { ...formSegmentTextOn, color: ON_BRAND },
+  // Sess69 PR-B: color は inline c.onTint (scheme-aware: light #FFFFFF / dark #1A1A1A sumi)。
+  segmentTextOn: formSegmentTextOn,
 });

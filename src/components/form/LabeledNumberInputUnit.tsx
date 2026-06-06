@@ -116,7 +116,13 @@ export function LabeledNumberInputUnit({
               onPress={() => onChangeUnit(u)}
               testID={testIDUnit ? `${testIDUnit}_${u}` : undefined}
             >
-              <ThemedText style={active ? styles.unitSegmentTextActive : styles.unitSegmentText}>
+              <ThemedText
+                style={
+                  active
+                    ? [styles.unitSegmentTextActive, { color: c.onTint }]
+                    : styles.unitSegmentText
+                }
+              >
                 {u}
               </ThemedText>
             </Pressable>
@@ -165,5 +171,6 @@ const styles = StyleSheet.create({
   },
   // unitSegmentActive: backgroundColor は inline c.tint で指定。
   unitSegmentText: formSegmentText,
-  unitSegmentTextActive: { ...formSegmentTextOn, color: ON_BRAND, fontWeight: '600' },
+  // Sess69 PR-B: color は inline c.onTint (scheme-aware: light #FFFFFF / dark #1A1A1A sumi)。
+  unitSegmentTextActive: { ...formSegmentTextOn, fontWeight: '600' },
 });

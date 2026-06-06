@@ -121,7 +121,9 @@ export function LabeledNumberSegmentOrFree({
               onPress={() => onChangeValue(s.value)}
               testID={testID ? `${testID}_${s.value}` : undefined}
             >
-              <ThemedText style={[styles.segmentText, on && styles.segmentTextOn]}>
+              <ThemedText
+                style={[styles.segmentText, on && [styles.segmentTextOn, { color: c.onTint }]]}
+              >
                 {s.label}
               </ThemedText>
             </Pressable>
@@ -146,7 +148,9 @@ export function LabeledNumberSegmentOrFree({
           }}
           testID={testID ? `${testID}_free` : undefined}
         >
-          <ThemedText style={[styles.segmentText, isFree && styles.segmentTextOn]}>
+          <ThemedText
+            style={[styles.segmentText, isFree && [styles.segmentTextOn, { color: c.onTint }]]}
+          >
             {freeLabel}
           </ThemedText>
         </Pressable>
@@ -191,6 +195,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   segmentText: formSegmentText,
-  segmentTextOn: { ...formSegmentTextOn, color: ON_BRAND },
+  // Sess69 PR-B: color は inline c.onTint (scheme-aware: light #FFFFFF / dark #1A1A1A sumi)。
+  segmentTextOn: formSegmentTextOn,
   freeInputWrap: { marginTop: 4 },
 });
