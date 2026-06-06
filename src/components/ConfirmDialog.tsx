@@ -22,7 +22,9 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useColors } from '@/src/core/theme/useColors';
-import { DANGER, ON_BRAND } from '@/src/core/theme/colors';
+// Sess70 PR-C3: DANGER は c.dangerColor (scheme-aware: light #8B2E2E / dark warm #CE7A72)、
+// ON_BRAND は c.onTint (scheme-aware: light #FFFFFF / dark #1A1A1A sumi) に移行
+// (ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 
 export type ConfirmDialogProps = {
   visible: boolean;
@@ -109,13 +111,20 @@ export function ConfirmDialog({
               accessibilityLabel={confirmLabel}
               style={[
                 styles.button,
-                destructive ? styles.buttonDestructive : styles.buttonPrimary,
+                destructive
+                  ? [
+                      styles.buttonDestructive,
+                      { backgroundColor: c.dangerColor, borderColor: c.dangerColor },
+                    ]
+                  : styles.buttonPrimary,
                 !destructive && { backgroundColor: c.tint, borderColor: c.tint },
               ]}
               onPress={handleConfirm}
               testID={testID ? `${testID}_confirm` : undefined}
             >
-              <ThemedText style={styles.buttonPrimaryText}>{confirmLabel}</ThemedText>
+              <ThemedText style={[styles.buttonPrimaryText, { color: c.onTint }]}>
+                {confirmLabel}
+              </ThemedText>
             </Pressable>
           </View>
         </Pressable>
@@ -156,6 +165,7 @@ const styles = StyleSheet.create({
   buttonSecondaryText: {},
   // primary button: inline で c.tint 上書きするため、 base は空 (test 6 が styles.buttonPrimary 参照を要求)
   buttonPrimary: {},
-  buttonDestructive: { backgroundColor: DANGER, borderColor: DANGER },
-  buttonPrimaryText: { color: ON_BRAND, fontWeight: '600' },
+  // Sess70 PR-C3: bg/border/color は inline c.dangerColor / c.tint / c.onTint (scheme-aware)。
+  buttonDestructive: {},
+  buttonPrimaryText: { fontWeight: '600' },
 });

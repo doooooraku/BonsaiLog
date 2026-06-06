@@ -19,7 +19,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess66 PR6a: TEXT_SECONDARY を inline c.textSecondary に移行 (dark cascade)。
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess70 PR-C3: BRAND_GREEN / ON_BRAND を scheme-aware (c.tint / c.onTint) に移行
+// (15765 「復元する」 outline button 沈み解消、 ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import { BackupError, exportBackup, importBackup } from '@/src/features/backup/backupService';
 
@@ -130,14 +131,20 @@ export default function BackupScreen() {
             accessibilityLabel={t('backupExportAction')}
             accessibilityHint={t('backupExportDesc')}
             testID="e2e_backup_export_action"
-            style={[styles.primaryButton, busy && styles.disabledButton]}
+            style={[
+              styles.primaryButton,
+              { backgroundColor: c.tint },
+              busy && styles.disabledButton,
+            ]}
             onPress={handleExport}
             disabled={busy}
           >
             {exporting ? (
-              <ActivityIndicator color={ON_BRAND} />
+              <ActivityIndicator color={c.onTint} />
             ) : (
-              <ThemedText style={styles.primaryButtonText}>{t('backupExportAction')}</ThemedText>
+              <ThemedText style={[styles.primaryButtonText, { color: c.onTint }]}>
+                {t('backupExportAction')}
+              </ThemedText>
             )}
           </Pressable>
         </View>
@@ -156,14 +163,16 @@ export default function BackupScreen() {
             accessibilityLabel={t('backupImportAction')}
             accessibilityHint={t('backupImportDesc')}
             testID="e2e_backup_import_action"
-            style={[styles.secondaryButton, busy && styles.disabledButton]}
+            style={[styles.secondaryButton, { borderColor: c.tint }, busy && styles.disabledButton]}
             onPress={handleImport}
             disabled={busy}
           >
             {importing ? (
-              <ActivityIndicator color={BRAND_GREEN} />
+              <ActivityIndicator color={c.tint} />
             ) : (
-              <ThemedText style={styles.secondaryButtonText}>{t('backupImportAction')}</ThemedText>
+              <ThemedText style={[styles.secondaryButtonText, { color: c.tint }]}>
+                {t('backupImportAction')}
+              </ThemedText>
             )}
           </Pressable>
         </View>
@@ -181,23 +190,22 @@ const styles = StyleSheet.create({
   // Sess66 PR6a: color は inline c.textSecondary (dark cascade)。
   note: { fontSize: 12, lineHeight: 17 },
   divider: { height: 1, backgroundColor: 'rgba(0, 0, 0, 0.08)', marginVertical: 4 },
+  // Sess70 PR-C3: bg / border / color は inline c.tint / c.onTint (scheme-aware)。
   primaryButton: {
     marginTop: 4,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
   },
-  primaryButtonText: { color: ON_BRAND, fontSize: 17, fontWeight: '600' },
+  primaryButtonText: { fontSize: 17, fontWeight: '600' },
   secondaryButton: {
     marginTop: 4,
     paddingVertical: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BRAND_GREEN,
     backgroundColor: 'transparent',
     alignItems: 'center',
   },
-  secondaryButtonText: { color: BRAND_GREEN, fontSize: 17, fontWeight: '600' },
+  secondaryButtonText: { fontSize: 17, fontWeight: '600' },
   disabledButton: { opacity: 0.6 },
 });

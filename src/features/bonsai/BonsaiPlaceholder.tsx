@@ -1,12 +1,14 @@
 /**
  * 写真未登録時の盆栽 placeholder (Sess6 PR-1 で簡略化、 user 「灰色のみ、 工数かけない」 採用)。
  *
- * - 単色 #E0E0E0 (汎用グレー、 user 指定 hardcode)
+ * - 単色 placeholder (light: #E0E0E0 / dark: #3A3631、 Sess70 PR-C3 で scheme-aware 化)
  * - 旧 SVG 抽象シルエット (canopy + 鉢) + 5 色ローテは削除 (Sess1 PR-3 で導入、 user 視覚整合 △ 判断で簡略化)
  * - hashSeed は BonsaiCard で seed 用途で参照のため export 維持 (legacy 互換)
  */
 import React from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
+
+import { useColors } from '@/src/core/theme/useColors';
 
 type Props = {
   /** 正方形時の一辺 (w/h と排他、両方未指定なら w/h 必須)。 */
@@ -31,6 +33,7 @@ export function hashSeed(s: string): number {
 }
 
 export function BonsaiPlaceholder({ size, w: wProp, h: hProp, radius = 12, style }: Props) {
+  const c = useColors();
   const w = wProp ?? size ?? 0;
   const h = hProp ?? size ?? 0;
   return (
@@ -40,8 +43,8 @@ export function BonsaiPlaceholder({ size, w: wProp, h: hProp, radius = 12, style
           width: w,
           height: h,
           borderRadius: radius,
-          // Sess6 PR-1 user 指定: 汎用グレー hardcode (#E0E0E0)、 トークン化検討は将来 Issue
-          backgroundColor: '#E0E0E0',
+          // Sess70 PR-C3: scheme-aware placeholder (light #E0E0E0 / dark #3A3631 sumi 重ね灰)。
+          backgroundColor: c.placeholderBg,
         },
         style,
       ]}

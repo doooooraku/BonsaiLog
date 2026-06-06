@@ -22,14 +22,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 // Sess66 PR6c: theme-dependent token (BG_*/TEXT_*/BORDER_*) を inline c.* に移行 (dark cascade)。
-import {
-  ACCENT_BARK,
-  ACCENT_GOLD,
-  BRAND_GREEN,
-  BRAND_GREEN_BG,
-  DISABLED_BG,
-  ON_BRAND,
-} from '@/src/core/theme/colors';
+// Sess70 PR-C3: BRAND_GREEN / BRAND_GREEN_BG / DISABLED_BG / ON_BRAND を scheme-aware
+// (c.tint / c.tintSubtle / c.disabledBg / c.onTint) に移行 (ADR-0015/0052 Sess69 PR-A Amendment 整合)。
+// ACCENT_BARK は champion banner で利用継続 (PR-D で再検討、 ここでは static 維持)、
+// ACCENT_GOLD は Pro バッジ専用 brand-static (両 theme 同色維持)。
+import { ACCENT_BARK, ACCENT_GOLD } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { LegalLinksRow } from '@/src/features/legal/LegalLinksRow';
 import { shouldHideSubscriptions } from '@/src/features/pro/championMode';
@@ -194,7 +191,10 @@ export default function PaywallScreen() {
         </View>
 
         {planType === 'lifetime' ? (
-          <View style={styles.championBanner} testID="e2e_paywall_champion_banner">
+          <View
+            style={[styles.championBanner, { backgroundColor: c.tintSubtle }]}
+            testID="e2e_paywall_champion_banner"
+          >
             <ThemedText style={styles.championBannerEmoji}>👑</ThemedText>
             <View style={styles.championBannerTextWrap}>
               <ThemedText type="defaultSemiBold" style={styles.championBannerTitle}>
@@ -223,7 +223,7 @@ export default function PaywallScreen() {
               {t('paywallFeatureColLabel')}
             </ThemedText>
             <ThemedText style={[styles.featureHeaderFree, { color: c.textMuted }]}>FREE</ThemedText>
-            <ThemedText style={styles.featureHeaderPro}>PRO</ThemedText>
+            <ThemedText style={[styles.featureHeaderPro, { color: c.tint }]}>PRO</ThemedText>
           </View>
           {/* ① 基本情報 写真 (ADR-0049、 PR3 で実装) */}
           <FeatureRow
@@ -359,7 +359,7 @@ function FeatureRow({
         {label}
       </ThemedText>
       <ThemedText style={[styles.featureFree, { color: c.textMuted }]}>{free}</ThemedText>
-      <ThemedText style={styles.featurePro}>{pro}</ThemedText>
+      <ThemedText style={[styles.featurePro, { color: c.tint }]}>{pro}</ThemedText>
     </View>
   );
 }
@@ -376,14 +376,14 @@ function PlanCard({ testID, title, badge, price, cta, busy, disabled, onPress }:
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={cta}
-        style={[styles.cta, disabled && styles.ctaDisabled]}
+        style={[styles.cta, { backgroundColor: disabled ? c.disabledBg : c.tint }]}
         disabled={disabled}
         onPress={onPress}
       >
         {busy ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <ThemedText style={styles.ctaText}>{cta}</ThemedText>
+          <ThemedText style={[styles.ctaText, { color: c.onTint }]}>{cta}</ThemedText>
         )}
       </Pressable>
     </View>
@@ -446,12 +446,12 @@ const styles = StyleSheet.create({
     fontSize: 10,
     letterSpacing: 1.2,
   },
+  // Sess70 PR-C3: color は inline c.tint (scheme-aware)。
   featureHeaderPro: {
     width: 64,
     textAlign: 'center',
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
-    color: BRAND_GREEN,
     letterSpacing: 1.2,
     fontWeight: '500',
   },
@@ -464,11 +464,11 @@ const styles = StyleSheet.create({
   featureLabel: { flex: 1, fontSize: 14 },
   featureLabelHighlight: { fontWeight: '500' },
   featureFree: { width: 64, textAlign: 'center', fontSize: 13 },
+  // Sess70 PR-C3: color は inline c.tint (scheme-aware)。
   featurePro: {
     width: 64,
     textAlign: 'center',
     fontSize: 13,
-    color: BRAND_GREEN,
     fontWeight: '500',
   },
   statusBox: {
@@ -477,12 +477,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
   },
+  // Sess70 PR-C3: bg は inline c.tintSubtle (scheme-aware)、 ACCENT_GOLD border は static 維持。
   championBanner: {
     padding: 16,
     borderRadius: 12,
     borderWidth: 2,
     borderColor: ACCENT_GOLD,
-    backgroundColor: BRAND_GREEN_BG,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -498,26 +498,27 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  // pill 999 → 8 (design_system.md §5)、accent-gold で Pro 推奨マーク
+  // pill 999 → 8 (design_system.md §5)、accent-gold で Pro 推奨マーク。
+  // Sess70 PR-C3: ACCENT_GOLD bg + 白文字は両 theme 同色 (Pro バッジ仕様、 ADR-0015 Allowed)、
+  // PR-D で hex literal rule 例外 marker 規約化予定。
   badge: {
     fontSize: 12,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 8,
     backgroundColor: ACCENT_GOLD,
-    color: ON_BRAND,
+    color: '#FFFFFF',
   },
   price: { fontSize: 20, fontWeight: '600' },
+  // Sess70 PR-C3: bg / color は inline c.tint / c.disabledBg / c.onTint (scheme-aware)。
   cta: {
     paddingVertical: 14,
     minHeight: 56,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: BRAND_GREEN,
   },
-  ctaDisabled: { backgroundColor: DISABLED_BG },
-  ctaText: { color: ON_BRAND, fontWeight: '600' },
+  ctaText: { fontWeight: '600' },
   restoreBtn: {
     paddingVertical: 14,
     minHeight: 48,

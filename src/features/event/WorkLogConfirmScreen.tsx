@@ -34,8 +34,9 @@ import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoFiel
 import { useToastStore } from '@/src/components/Toast';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
-// Sess68 PR #C: BORDER_DEFAULT / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess68 PR #C: BORDER_DEFAULT / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化。
+// Sess70 PR-C3: BRAND_GREEN / ON_BRAND も scheme-aware (c.tint / c.onTint) に移行
+// (ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import {
   convertPlannedToRecorded,
@@ -352,11 +353,13 @@ export default function WorkLogConfirmScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('workLogSaveCta')}
-            style={styles.saveBtn}
+            style={[styles.saveBtn, { backgroundColor: c.tint }]}
             onPress={handleSubmit}
             testID="e2e_work_log_save"
           >
-            <ThemedText style={styles.saveText}>{t('workLogSaveCta')}</ThemedText>
+            <ThemedText style={[styles.saveText, { color: c.onTint }]}>
+              {t('workLogSaveCta')}
+            </ThemedText>
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -394,12 +397,12 @@ const styles = StyleSheet.create({
     paddingBottom: 34,
     borderTopWidth: 1,
   },
+  // Sess70 PR-C3: bg / color は inline c.tint / c.onTint (scheme-aware)。
   saveBtn: {
     height: 56,
     borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  saveText: { color: ON_BRAND, fontSize: 17, fontWeight: '500', letterSpacing: 0.4 },
+  saveText: { fontSize: 17, fontWeight: '500', letterSpacing: 0.4 },
 });
