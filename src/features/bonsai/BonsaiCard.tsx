@@ -25,7 +25,10 @@ import { ThemedText } from '@/components/themed-text';
 import { CheckIcon, DropletIcon, ScissorsIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess66 PR6c: theme-dependent token を inline c.* に (dark cascade)。
-import { ACCENT_BARK, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess70 PR-C2: BRAND_GREEN / ON_BRAND / hex '#1F3A2E' を scheme-aware
+// (c.tint / c.onTint) に移行 (ADR-0015/0052 Sess69 PR-A Amendment 整合)。
+// ACCENT_BARK は別利用継続 (PR-C3 で検討、 ここでは触らず import 維持)。
+import { ACCENT_BARK } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 
 import { BonsaiPlaceholder, hashSeed } from './BonsaiPlaceholder';
@@ -96,7 +99,7 @@ export function BonsaiCard({
       style={[
         styles.card,
         { backgroundColor: c.surface, borderColor: c.border },
-        selected && styles.cardSelected,
+        selected && [styles.cardSelected, { borderColor: c.tint }],
       ]}
       onPress={() => onPress(data.id)}
       onLongPress={onLongPress != null ? () => onLongPress(data.id) : undefined}
@@ -119,7 +122,9 @@ export function BonsaiCard({
           <View
             style={[
               styles.checkbox,
-              selected ? styles.checkboxSelected : styles.checkboxUnselected,
+              selected
+                ? [styles.checkboxSelected, { backgroundColor: c.tint, borderColor: c.tint }]
+                : styles.checkboxUnselected,
             ]}
             testID={
               selected
@@ -127,7 +132,7 @@ export function BonsaiCard({
                 : `${testID ?? 'e2e_bonsai_card'}_unchecked`
             }
           >
-            {selected && <CheckIcon size={16} color={ON_BRAND} />}
+            {selected && <CheckIcon size={16} color={c.onTint} />}
           </View>
         )}
       </View>
@@ -184,14 +189,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 14,
     overflow: 'hidden',
-    shadowColor: '#1F3A2E',
+    // Sess70 PR-C2: shadowColor は brand-static literal hex を撤回し theme-invariant 暗色に
+    // (両 mode で薄い shadow、 dark で過剰な発光を回避)。
+    shadowColor: '#000000',
     shadowOpacity: 0.08,
     shadowRadius: 3,
     shadowOffset: { width: 0, height: 1 },
     elevation: 1,
   },
+  // Sess70 PR-C2: borderColor は inline c.tint (scheme-aware)。
   cardSelected: {
-    borderColor: BRAND_GREEN,
     shadowOpacity: 0.18,
   },
   hero: { position: 'relative', width: '100%', height: HERO_HEIGHT },
@@ -207,7 +214,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
   },
-  checkboxSelected: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
+  // Sess70 PR-C2: bg / borderColor は inline c.tint (scheme-aware)。
+  checkboxSelected: {},
   checkboxUnselected: {
     backgroundColor: 'rgba(255,255,255,0.92)',
     borderColor: 'rgba(255,255,255,0.95)',

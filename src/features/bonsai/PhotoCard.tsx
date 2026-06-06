@@ -14,8 +14,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-// Sess68 PR #C: BG_PRIMARY / BG_SURFACE / BORDER_DEFAULT / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_PRIMARY / BG_SURFACE / BORDER_DEFAULT / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化。
+// Sess70 PR-C2: BRAND_GREEN / ON_BRAND も scheme-aware (c.tint / c.onTint) に移行
+// (ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import type { PhotoRead } from '@/src/db/photoRepository';
 
@@ -90,8 +91,10 @@ export function PhotoCard({
         </ThemedText>
 
         {isCover ? (
-          <View style={styles.coverBadge}>
-            <ThemedText style={styles.coverBadgeText}>{t('photoCoverBadge')}</ThemedText>
+          <View style={[styles.coverBadge, { backgroundColor: c.tint }]}>
+            <ThemedText style={[styles.coverBadgeText, { color: c.onTint }]}>
+              {t('photoCoverBadge')}
+            </ThemedText>
           </View>
         ) : (
           <Pressable
@@ -155,8 +158,8 @@ const styles = StyleSheet.create({
   moveButtonDisabled: { opacity: 0.3 },
   moveText: { fontSize: 18 },
   indexLabel: { fontSize: 13, fontWeight: '500', marginLeft: 4 },
+  // Sess70 PR-C2: bg / color は inline c.tint / c.onTint (scheme-aware)。
   coverBadge: {
-    backgroundColor: BRAND_GREEN,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
@@ -165,7 +168,6 @@ const styles = StyleSheet.create({
   coverBadgeText: {
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
-    color: ON_BRAND,
     letterSpacing: 0.6,
   },
   setCoverButton: {

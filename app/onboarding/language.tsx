@@ -21,7 +21,9 @@ import { ThemedText } from '@/components/themed-text';
 import { setLang, useTranslation } from '@/src/core/i18n/i18n';
 import type { Lang } from '@/src/core/i18n/langCode';
 import { LANGUAGE_OPTIONS } from '@/src/core/i18n/languageOptions';
-import { BRAND_GREEN, BRAND_GREEN_BG, ON_BRAND } from '@/src/core/theme/colors';
+// Sess70 PR-C2: BRAND_GREEN / BRAND_GREEN_BG / ON_BRAND を scheme-aware (c.tint / c.tintSubtle /
+// c.onTint) に移行 (15764 root cause: dark mode で「日本語」 選択中行が cream bg + cream 文字で
+// 識別不能 → 苔緑 bg + sumi 文字に解消、 ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import { getNextOnboardingStep } from '@/src/features/onboarding/onboardingFlow';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
@@ -96,7 +98,7 @@ export default function OnboardingLanguageScreen() {
             style={styles.backButton}
             hitSlop={8}
           >
-            <ThemedText style={styles.backIcon}>‹</ThemedText>
+            <ThemedText style={[styles.backIcon, { color: c.tint }]}>‹</ThemedText>
           </Pressable>
         </View>
         <ThemedText type="title" style={[styles.title, { color: c.text }]}>
@@ -117,7 +119,14 @@ export default function OnboardingLanguageScreen() {
                 accessibilityState={{ selected }}
                 accessibilityLabel={opt.native}
                 testID={`e2e_onboarding_lang_${opt.code}`}
-                style={[styles.row, { borderColor: c.border }, selected && styles.rowSelected]}
+                style={[
+                  styles.row,
+                  { borderColor: c.border },
+                  selected && [
+                    styles.rowSelected,
+                    { borderColor: c.tint, backgroundColor: c.tintSubtle },
+                  ],
+                ]}
                 onPress={() => handlePick(opt.code)}
               >
                 <View style={styles.rowMain}>
@@ -129,8 +138,8 @@ export default function OnboardingLanguageScreen() {
                   </ThemedText>
                 </View>
                 {isOs && (
-                  <View style={styles.osBadge}>
-                    <ThemedText style={styles.osBadgeText}>
+                  <View style={[styles.osBadge, { backgroundColor: c.tint }]}>
+                    <ThemedText style={[styles.osBadgeText, { color: c.onTint }]}>
                       {t('onboardingLanguageOsBadge')}
                     </ThemedText>
                   </View>
@@ -139,10 +148,10 @@ export default function OnboardingLanguageScreen() {
                   style={[
                     styles.radio,
                     { borderColor: c.border },
-                    selected && styles.radioSelected,
+                    selected && { borderColor: c.tint },
                   ]}
                 >
-                  {selected && <View style={styles.radioDot} />}
+                  {selected && <View style={[styles.radioDot, { backgroundColor: c.tint }]} />}
                 </View>
               </Pressable>
             );
@@ -153,11 +162,13 @@ export default function OnboardingLanguageScreen() {
           accessibilityRole="button"
           accessibilityLabel={t('onboardingLanguageContinue')}
           testID="e2e_onboarding_lang_next"
-          style={styles.cta}
+          style={[styles.cta, { backgroundColor: c.tint }]}
           onPress={handleNext}
         >
           {/* mockup v1.0 screens.jsx LanguagePickerScreen 整合 (B2 PR、「選択して続ける」) */}
-          <ThemedText style={styles.ctaText}>{t('onboardingLanguageContinue')}</ThemedText>
+          <ThemedText style={[styles.ctaText, { color: c.onTint }]}>
+            {t('onboardingLanguageContinue')}
+          </ThemedText>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -174,7 +185,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  backIcon: { fontSize: 28, lineHeight: 32, color: BRAND_GREEN, fontWeight: '500' },
+  // Sess70 PR-C2: color / bg / borderColor は inline c.tint / c.tintSubtle / c.onTint (scheme-aware)。
+  backIcon: { fontSize: 28, lineHeight: 32, fontWeight: '500' },
   title: { fontSize: 22, lineHeight: 28 },
   desc: { fontSize: 14, opacity: 0.7, lineHeight: 20 },
   list: { flex: 1 },
@@ -187,7 +199,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  rowSelected: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN_BG, borderWidth: 2 },
+  rowSelected: { borderWidth: 2 },
   rowMain: { flex: 1, gap: 2 },
   native: { fontSize: 16 },
   latin: { fontSize: 12, opacity: 0.6, fontStyle: 'italic' },
@@ -195,9 +207,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
-    backgroundColor: BRAND_GREEN,
   },
-  osBadgeText: { color: ON_BRAND, fontSize: 10, fontWeight: '700' },
+  osBadgeText: { fontSize: 10, fontWeight: '700' },
   radio: {
     width: 22,
     height: 22,
@@ -206,18 +217,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioSelected: { borderColor: BRAND_GREEN },
   radioDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: BRAND_GREEN,
   },
   cta: {
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
   },
-  ctaText: { color: ON_BRAND, fontWeight: '600', fontSize: 16 },
+  ctaText: { fontWeight: '600', fontSize: 16 },
 });

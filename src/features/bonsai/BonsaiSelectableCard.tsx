@@ -17,8 +17,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { CheckIcon } from '@/src/components/icons';
-// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT は inline c.* 化 (既に inline 反映済)、 BRAND_GREEN / ON_BRAND は brand-static で保持。
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT は inline c.* 化 (既に inline 反映済)。
+// Sess70 PR-C2: BRAND_GREEN / ON_BRAND も scheme-aware (c.tint / c.onTint) に移行
+// (ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import { BonsaiPlaceholder, hashSeed } from '@/src/features/bonsai/BonsaiPlaceholder';
 
@@ -49,8 +50,8 @@ export function BonsaiSelectableCard({
       accessibilityLabel={name}
       style={[
         styles.card,
-        { backgroundColor: c.surface, borderColor: selected ? BRAND_GREEN : c.border },
-        selected && styles.cardSelected,
+        { backgroundColor: c.surface, borderColor: selected ? c.tint : c.border },
+        selected && [styles.cardSelected, { backgroundColor: c.tintSubtle }],
       ]}
       onPress={() => onPress(id)}
       testID={testID}
@@ -76,12 +77,12 @@ export function BonsaiSelectableCard({
         style={[
           styles.checkBox,
           {
-            backgroundColor: selected ? BRAND_GREEN : 'transparent',
-            borderColor: selected ? BRAND_GREEN : c.border,
+            backgroundColor: selected ? c.tint : 'transparent',
+            borderColor: selected ? c.tint : c.border,
           },
         ]}
       >
-        {selected ? <CheckIcon size={18} color={ON_BRAND} /> : null}
+        {selected ? <CheckIcon size={18} color={c.onTint} /> : null}
       </View>
     </Pressable>
   );
@@ -96,9 +97,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  cardSelected: {
-    backgroundColor: 'rgba(31,58,46,0.06)',
-  },
+  // Sess70 PR-C2: bg は inline c.tintSubtle (scheme-aware、 旧 rgba 半透明緑は撤回)。
+  cardSelected: {},
   thumbBox: {
     width: 56,
     height: 56,
