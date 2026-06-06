@@ -135,10 +135,10 @@ appId: 'com.dooooraku.bonsailog'
 # 詳細画面 履歴 FAB tap → work-picker formSheet
 - extendedWaitUntil:
     visible:
-      id: 'e2e_history_fab'
+      id: 'e2e_history_bottom_cta'
     timeout: 10000
 - tapOn:
-    id: 'e2e_history_fab'
+    id: 'e2e_history_bottom_cta'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 

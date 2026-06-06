@@ -23,7 +23,7 @@ appId: 'com.dooooraku.bonsailog'
 
 # Home FAB tap → 盆栽新規作成 modal 表示
 - tapOn:
-    id: 'e2e_home_fab_create'
+    id: 'e2e_home_bottom_cta_create'
 - waitForAnimationToEnd:
     timeout: 3000
 - extendedWaitUntil:
