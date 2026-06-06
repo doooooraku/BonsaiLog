@@ -14,14 +14,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { DropletIcon, EventIcon, MoreVerticalIcon } from '@/src/components/icons';
 import type { TranslationKey } from '@/src/core/i18n/i18n';
-// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化、 BADGE / BUTTON_SECONDARY / BRAND_GREEN は brand-static で保持。
-import {
-  BADGE_SOFT_BG,
-  BADGE_SOFT_TEXT,
-  BRAND_GREEN,
-  BUTTON_SECONDARY_BG,
-  BUTTON_SECONDARY_TEXT,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化。
+// Sess70 PR-C1: BADGE_SOFT_BG/TEXT / BUTTON_SECONDARY_BG/TEXT / BRAND_GREEN も scheme-aware
+// (c.badgeBg / c.tint / c.buttonSecondaryBg) に移行 (ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import { type Bonsai, type Event, type EventType } from '@/src/db/schema';
 import { EventRow } from '@/src/features/event/EventRow';
@@ -163,8 +158,8 @@ export function CalendarEventGroupList({
                           >
                             {groupLabel}
                           </ThemedText>
-                          <View style={styles.groupCountBadge}>
-                            <ThemedText style={styles.groupCountBadgeText}>
+                          <View style={[styles.groupCountBadge, { backgroundColor: c.badgeBg }]}>
+                            <ThemedText style={[styles.groupCountBadgeText, { color: c.tint }]}>
                               {formatGroupCount(events)}
                             </ThemedText>
                           </View>
@@ -188,14 +183,17 @@ export function CalendarEventGroupList({
                             '{count}',
                             String(events.length),
                           )}
-                          style={styles.groupRecordButton}
+                          style={[
+                            styles.groupRecordButton,
+                            { backgroundColor: c.buttonSecondaryBg },
+                          ]}
                           onPress={(e) => {
                             e.stopPropagation();
                             handleBulkConvert(type, events);
                           }}
                           testID={`e2e_${testIdPrefix}_group_record_button_${type}`}
                         >
-                          <ThemedText style={styles.groupRecordButtonText}>
+                          <ThemedText style={[styles.groupRecordButtonText, { color: c.tint }]}>
                             {t('rowActionMenuRecordAll').replace('{count}', String(events.length))}
                           </ThemedText>
                         </Pressable>
@@ -212,7 +210,7 @@ export function CalendarEventGroupList({
                       </View>
                     </Pressable>
                     {isExpanded && (
-                      <View style={styles.expandedContainer}>
+                      <View style={[styles.expandedContainer, { borderLeftColor: c.tint }]}>
                         {events.map((e) => {
                           const b = bonsaiMap.get(e.bonsaiId);
                           const isOverdue =
@@ -303,8 +301,8 @@ export function CalendarEventGroupList({
                           >
                             {groupLabel}
                           </ThemedText>
-                          <View style={styles.groupCountBadge}>
-                            <ThemedText style={styles.groupCountBadgeText}>
+                          <View style={[styles.groupCountBadge, { backgroundColor: c.badgeBg }]}>
+                            <ThemedText style={[styles.groupCountBadgeText, { color: c.tint }]}>
                               {formatGroupCount(events)}
                             </ThemedText>
                           </View>
@@ -334,7 +332,7 @@ export function CalendarEventGroupList({
                       </View>
                     </Pressable>
                     {isExpanded && (
-                      <View style={styles.expandedContainer}>
+                      <View style={[styles.expandedContainer, { borderLeftColor: c.tint }]}>
                         {events.map((e) => {
                           const b = bonsaiMap.get(e.bonsaiId);
                           return (
@@ -415,8 +413,8 @@ const styles = StyleSheet.create({
   },
   // flexShrink: 1 で画面が狭い時はラベルが縮んで省略 (…) され、右側の操作が枠外に押し出されない。
   groupLabel: { fontSize: 15, fontWeight: '500', flexShrink: 1 },
+  // Sess70 PR-C1: bg / color は inline c.badgeBg / c.tint (scheme-aware)。
   groupCountBadge: {
-    backgroundColor: BADGE_SOFT_BG,
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -424,33 +422,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  groupCountBadgeText: { color: BADGE_SOFT_TEXT, fontSize: 12, fontWeight: '600' },
+  groupCountBadgeText: { fontSize: 12, fontWeight: '600' },
   // Sess42 バグ4: 右寄せは marginLeft:'auto' で行う (flex:1 spacer と groupLabel の flexShrink 競合回避)。
   groupToggleText: { fontSize: 12, flexShrink: 0 },
   groupTogglePush: { marginLeft: 'auto' },
   // Sess29 ADR-0038 D3 / R-48: Secondary CTA、 design_system §22。タップ領域 minHeight 44 (WCAG 2.5.5)。
+  // Sess70 PR-C1: bg / color は inline c.buttonSecondaryBg / c.tint (scheme-aware)。
   groupRecordButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     minHeight: 44,
     borderRadius: 8,
-    backgroundColor: BUTTON_SECONDARY_BG,
     alignItems: 'center',
     justifyContent: 'center',
   },
   groupRecordButtonText: {
     fontSize: 13,
     fontWeight: '600',
-    color: BUTTON_SECONDARY_TEXT,
     letterSpacing: 0.3,
   },
   kebabButton: { padding: 6, marginLeft: 4, alignItems: 'center', justifyContent: 'center' },
   eventCardOverdue: { opacity: 0.6 },
+  // Sess70 PR-C1: borderLeftColor は inline c.tint (scheme-aware)。
   expandedContainer: {
     marginTop: 8,
     marginLeft: 16,
     borderLeftWidth: 2,
-    borderLeftColor: BRAND_GREEN,
     paddingLeft: 12,
     gap: 6,
   },

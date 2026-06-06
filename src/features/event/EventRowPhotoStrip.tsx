@@ -22,7 +22,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT は inline c.* 化、 BADGE は brand-static で保持。
-import { BADGE_SOFT_BG, BADGE_SOFT_TEXT } from '@/src/core/theme/colors';
+// Sess70 PR-C1: BADGE_SOFT_BG/TEXT を scheme-aware (c.badgeBg / c.tint) に移行
+// (ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import type { PhotoRead } from '@/src/db/photoRepository';
 
@@ -69,8 +70,11 @@ export function EventRowPhotoStrip({
         accessible={false}
       />
       {remaining > 0 && (
-        <View style={styles.badge} testID={testID ? `${testID}_badge` : undefined}>
-          <ThemedText style={styles.badgeText}>{`+${remaining}`}</ThemedText>
+        <View
+          style={[styles.badge, { backgroundColor: c.badgeBg }]}
+          testID={testID ? `${testID}_badge` : undefined}
+        >
+          <ThemedText style={[styles.badgeText, { color: c.tint }]}>{`+${remaining}`}</ThemedText>
         </View>
       )}
     </Pressable>
@@ -89,11 +93,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  // Sess70 PR-C1: bg / color は inline c.badgeBg / c.tint (scheme-aware)。
   badge: {
     position: 'absolute',
     right: 2,
     bottom: 2,
-    backgroundColor: BADGE_SOFT_BG,
     borderRadius: 10,
     paddingHorizontal: 6,
     paddingVertical: 1,
@@ -102,7 +106,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   badgeText: {
-    color: BADGE_SOFT_TEXT,
     fontSize: 11,
     fontWeight: '600',
   },

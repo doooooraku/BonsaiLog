@@ -15,7 +15,8 @@ import { ThemedText } from '@/components/themed-text';
 import { MoreVerticalIcon } from '@/src/components/icons';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 // Sess66 PR6c.1: theme-dependent token を inline c.* に (dark cascade)。
-import { BUTTON_SECONDARY_BG, BUTTON_SECONDARY_TEXT } from '@/src/core/theme/colors';
+// Sess70 PR-C1: BUTTON_SECONDARY_BG/TEXT + hex '#F5EEDD' を scheme-aware
+// (c.buttonSecondaryBg / c.tint / c.background) に移行 (ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import {
   eventRowMemo,
@@ -165,7 +166,10 @@ export function EventRowDetailed({
         styles.detailedCard,
         { backgroundColor: c.surface, borderColor: c.border },
         indent && styles.detailedCardIndent,
-        highlighted && styles.rowHighlighted,
+        highlighted && [
+          styles.rowHighlighted,
+          { backgroundColor: c.buttonSecondaryBg, borderColor: c.tint },
+        ],
       ]}
       accessibilityRole="button"
       accessibilityLabel={
@@ -293,10 +297,12 @@ export function EventRowDetailed({
           accessibilityRole="button"
           accessibilityLabel={actionButtonLabel}
           onPress={() => onActionPress(ev)}
-          style={styles.actionButton}
+          style={[styles.actionButton, { backgroundColor: c.buttonSecondaryBg }]}
           testID={actionButtonTestID}
         >
-          <ThemedText style={styles.actionButtonText}>{actionButtonLabel}</ThemedText>
+          <ThemedText style={[styles.actionButtonText, { color: c.tint }]}>
+            {actionButtonLabel}
+          </ThemedText>
         </Pressable>
       )}
     </Pressable>
@@ -304,11 +310,8 @@ export function EventRowDetailed({
 }
 
 const styles = StyleSheet.create({
-  // 改善① 検索ジャンプ時の一時ハイライト (washi 系・薄め。 数秒後に解除)。
-  rowHighlighted: {
-    backgroundColor: '#F5EEDD',
-    borderColor: BUTTON_SECONDARY_TEXT,
-  },
+  // 改善① 検索ジャンプ時の一時ハイライト。 Sess70 PR-C1: bg/border は inline c.* (scheme-aware)。
+  rowHighlighted: {},
   // detailed mode (Phase θ D1): vertical stack card。 Sess66 PR6c.1: bg/border は inline c.*。
   detailedCard: {
     flexDirection: 'column',
@@ -359,15 +362,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   // Sess29 ADR-0038 D4 / R-48: BUTTON_SECONDARY token 参照 (薄緑 + 濃緑文字、 design_system §22 Secondary CTA)。
+  // Sess70 PR-C1: bg / color は inline c.buttonSecondaryBg / c.tint (scheme-aware)。
   actionButton: {
     marginTop: 8,
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: BUTTON_SECONDARY_BG,
   },
-  actionButtonText: { fontSize: 12, fontWeight: '600', color: BUTTON_SECONDARY_TEXT },
+  actionButtonText: { fontSize: 12, fontWeight: '600' },
   // ADR-0036 D7 拡張 (Sess27 PR-5): 個別 row 右端 kebab ⋮ button
   kebabButton: {
     width: 32,
