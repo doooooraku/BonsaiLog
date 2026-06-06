@@ -21,15 +21,15 @@ import {
 } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, DANGER, OVERLIMIT } from '@/src/core/theme/colors';
+import { BG_PRIMARY, DANGER, OVERLIMIT } from '@/src/core/theme/colors';
 import {
-  FORM_PLACEHOLDER_COLOR,
   formCounter,
   formCounterOver,
   formInput,
   formOptional,
   formRequired,
 } from '@/src/core/theme/typography';
+import { useColors } from '@/src/core/theme/useColors';
 
 // Sess14 PR-R: hardcoded color → 既存 theme constant 経由に統合。
 // Sess17 PR-C1: hardcoded fontSize/fontWeight → typography.ts token 経由化 (ADR-0029 D1)。
@@ -96,8 +96,10 @@ export const LabeledTextInput = forwardRef<TextInput, LabeledTextInputProps>(
     const length = value.length;
     const overLimit = maxLength != null && length >= maxLength;
     const showCountText = showCounter && maxLength != null;
-
-    // Sess14 PR-Q: label="" の場合 labelRow skip (caller 側で外部ラベル提供時の余白問題回避)。
+    // Sess65 PR2-c: input bg / border / text / placeholder の static 色を useColors 動的化。
+    // bonsai-create form 等で「dark BG container + 白入力欄 + 黒文字」 で背景と input が乖離して
+    // いた問題 (Pattern B) を解消。
+    const c = useColors();
     const hasLabel = label.length > 0;
 
     // Sess15 PR-TT: multiline auto-grow (Q18 H1 採用)。
@@ -140,6 +142,7 @@ export const LabeledTextInput = forwardRef<TextInput, LabeledTextInputProps>(
           ref={ref}
           style={[
             styles.input,
+            { backgroundColor: c.surface, borderColor: c.border, color: c.text },
             multiline && styles.inputMultiline,
             // Sess15 PR-TT: multiline auto-grow (動的高さ)。
             multiline && { height: contentHeight },
@@ -149,7 +152,7 @@ export const LabeledTextInput = forwardRef<TextInput, LabeledTextInputProps>(
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={FORM_PLACEHOLDER_COLOR}
+          placeholderTextColor={c.textMuted}
           maxLength={maxLength}
           keyboardType={keyboardType}
           multiline={multiline}
@@ -188,9 +191,7 @@ const styles = StyleSheet.create({
     height: 44,
     paddingHorizontal: 14,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
-    backgroundColor: BG_SURFACE,
     ...formInput,
   },
   inputMultiline: { minHeight: 96, paddingVertical: 12 },

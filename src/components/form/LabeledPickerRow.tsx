@@ -15,8 +15,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ChevronRightIcon, CloseIcon } from '@/src/components/icons';
-import { BG_SURFACE, BORDER_DEFAULT, ON_BRAND, TEXT_MUTED } from '@/src/core/theme/colors';
+import { ON_BRAND, TEXT_MUTED } from '@/src/core/theme/colors';
 import { formOptional } from '@/src/core/theme/typography';
+import { useColors } from '@/src/core/theme/useColors';
 
 // Sess17 PR-C1: hardcoded fontSize/fontWeight → typography.ts token 経由化 (ADR-0029 D1)。
 
@@ -48,6 +49,8 @@ export function LabeledPickerRow({
   testIDClear,
 }: LabeledPickerRowProps) {
   const hasValue = valueText != null && valueText.length > 0;
+  // Sess65 PR2-c: row bg / border / placeholder / chevron を useColors 動的化。
+  const c = useColors();
 
   return (
     <View style={styles.field}>
@@ -61,14 +64,14 @@ export function LabeledPickerRow({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={label}
-          style={[styles.row, hasValue && styles.rowSelected]}
+          style={[styles.row, { backgroundColor: c.surface, borderColor: c.border }]}
           onPress={onPress}
           testID={testID}
         >
-          <ThemedText style={hasValue ? undefined : styles.placeholderText}>
+          <ThemedText style={hasValue ? { color: c.text } : { color: c.textMuted }}>
             {hasValue ? valueText : placeholder}
           </ThemedText>
-          {!hasValue && <ChevronRightIcon size={20} color={TEXT_MUTED} />}
+          {!hasValue && <ChevronRightIcon size={20} color={c.textMuted} />}
         </Pressable>
         {hasValue && onClear && (
           <Pressable
@@ -98,15 +101,11 @@ const styles = StyleSheet.create({
     height: 44,
     paddingHorizontal: 14,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
-    backgroundColor: BG_SURFACE,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  rowSelected: { borderColor: BORDER_DEFAULT },
-  placeholderText: { color: TEXT_MUTED },
   // Sess15 PR-II: 案 a = 灰 circle 32x32 (hitSlop で 44pt 確保) + 白 X icon。
   clearButton: {
     width: 32,

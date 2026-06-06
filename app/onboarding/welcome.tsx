@@ -27,15 +27,8 @@ import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { Fonts } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_MUTED,
-  TEXT_PRIMARY,
-} from '@/src/core/theme/colors';
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 
 type IconProps = { size?: number; color?: string };
 
@@ -97,6 +90,9 @@ const VALUES = [
 export default function OnboardingWelcomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  // Sess65 PR2-d: safe (BG_PRIMARY 固定) / title / iconBox / valueText / note の static 色を
+  // useColors 経由化。 OS dark でも washi beige のまま残っていた onboarding を dark 追従化。
+  const c = useColors();
 
   const handleStart = React.useCallback(() => {
     // Phase C: 言語選択画面へ遷移、completed は言語選択完了時にセット
@@ -104,19 +100,25 @@ export default function OnboardingWelcomeScreen() {
   }, [router]);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']} testID="e2e_onboarding_welcome">
+    <SafeAreaView
+      style={[styles.safe, { backgroundColor: c.background }]}
+      edges={['top', 'bottom']}
+      testID="e2e_onboarding_welcome"
+    >
       <View style={styles.container}>
         <View style={styles.titleSection}>
-          <ThemedText style={styles.title}>{t('onboardingWelcomeTitle')}</ThemedText>
+          <ThemedText style={[styles.title, { color: c.text }]}>
+            {t('onboardingWelcomeTitle')}
+          </ThemedText>
         </View>
 
         <View style={styles.valueList}>
           {VALUES.map(({ key, Icon }) => (
             <View key={key} style={styles.valueRow}>
-              <View style={styles.iconBox}>
-                <Icon size={32} color={BRAND_GREEN} />
+              <View style={[styles.iconBox, { borderColor: c.border, backgroundColor: c.surface }]}>
+                <Icon size={32} color={c.tint} />
               </View>
-              <ThemedText style={styles.valueText}>{t(key)}</ThemedText>
+              <ThemedText style={[styles.valueText, { color: c.text }]}>{t(key)}</ThemedText>
             </View>
           ))}
         </View>
@@ -126,12 +128,18 @@ export default function OnboardingWelcomeScreen() {
             accessibilityRole="button"
             accessibilityLabel={t('onboardingWelcomeCta')}
             testID="e2e_onboarding_welcome_cta"
-            style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
+            style={({ pressed }) => [
+              styles.cta,
+              { backgroundColor: c.tint },
+              pressed && styles.ctaPressed,
+            ]}
             onPress={handleStart}
           >
             <ThemedText style={styles.ctaText}>{t('onboardingWelcomeCta')}</ThemedText>
           </Pressable>
-          <ThemedText style={styles.note}>{t('onboardingWelcomeNote')}</ThemedText>
+          <ThemedText style={[styles.note, { color: c.textMuted }]}>
+            {t('onboardingWelcomeNote')}
+          </ThemedText>
         </View>
       </View>
     </SafeAreaView>
@@ -139,7 +147,7 @@ export default function OnboardingWelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: BG_PRIMARY },
+  safe: { flex: 1 },
   container: { flex: 1 },
   titleSection: {
     paddingTop: 48,
@@ -149,7 +157,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts?.serif,
     fontSize: 32,
     lineHeight: 46,
-    color: TEXT_PRIMARY,
     fontWeight: '500',
   },
   valueList: {
@@ -169,8 +176,6 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -179,7 +184,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts?.sans,
     fontSize: 17,
     lineHeight: 26,
-    color: TEXT_PRIMARY,
   },
   footer: {
     paddingHorizontal: 16,
@@ -188,7 +192,6 @@ const styles = StyleSheet.create({
   cta: {
     height: 56,
     borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -207,7 +210,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 13,
     lineHeight: 19,
-    color: TEXT_MUTED,
     fontFamily: Fonts?.sans,
   },
 });

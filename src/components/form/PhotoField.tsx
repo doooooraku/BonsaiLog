@@ -33,6 +33,7 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { FREE_PHOTO_LIMIT_PER_EVENT } from '@/src/db/photoRepository';
 
 export const MAX_PHOTOS_PER_EVENT = 10;
@@ -73,6 +74,8 @@ export function PhotoField({
   onLimitReached,
 }: PhotoFieldProps) {
   const { t } = useTranslation();
+  // Sess65 PR2-c: sourceButton bg / border / text の static 色を useColors 動的化。
+  const c = useColors();
   // ADR-0049 Sess59 PR3: 作業記録写真 ③ Free 上限 3 ガード
   // Pro = MAX-現在数 / Free = min(MAX-現在数, FREE_LIMIT-現在数)
   const remainingForPicker = isPro
@@ -172,12 +175,16 @@ export function PhotoField({
           accessibilityLabel={t('photoSourceCamera' as TranslationKey)}
           accessibilityState={{ disabled: !canAdd }}
           disabled={!canAdd}
-          style={[styles.sourceButton, !canAdd && styles.sourceButtonDisabled]}
+          style={[
+            styles.sourceButton,
+            { backgroundColor: c.surface, borderColor: c.border },
+            !canAdd && styles.sourceButtonDisabled,
+          ]}
           onPress={handleTakePhotoCamera}
           testID="e2e_photo_field_camera"
         >
-          <CameraIcon size={20} />
-          <ThemedText style={styles.sourceText}>
+          <CameraIcon size={20} color={c.text} />
+          <ThemedText style={[styles.sourceText, { color: c.text }]}>
             {t('photoSourceCamera' as TranslationKey)}
           </ThemedText>
         </Pressable>
@@ -186,11 +193,15 @@ export function PhotoField({
           accessibilityLabel={t('photoSourceLibrary' as TranslationKey)}
           accessibilityState={{ disabled: !canAdd }}
           disabled={!canAdd}
-          style={[styles.sourceButton, !canAdd && styles.sourceButtonDisabled]}
+          style={[
+            styles.sourceButton,
+            { backgroundColor: c.surface, borderColor: c.border },
+            !canAdd && styles.sourceButtonDisabled,
+          ]}
           onPress={handlePickFromLibrary}
           testID="e2e_photo_field_library"
         >
-          <ThemedText style={styles.sourceText}>
+          <ThemedText style={[styles.sourceText, { color: c.text }]}>
             {t('photoSourceLibrary' as TranslationKey)}
           </ThemedText>
         </Pressable>
@@ -259,11 +270,9 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
   },
   sourceButtonDisabled: { opacity: 0.4 },
-  sourceText: { fontSize: 14, color: TEXT_PRIMARY, fontWeight: '500' },
+  sourceText: { fontSize: 14, fontWeight: '500' },
   helpText: { fontSize: 12, color: TEXT_SECONDARY },
   card: {
     flexDirection: 'column',
