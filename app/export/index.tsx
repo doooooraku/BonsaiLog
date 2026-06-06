@@ -24,6 +24,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
+import { useScrollPreservation } from '@/src/core/hooks/useScrollPreservation';
 import { ChevronRightIcon } from '@/src/components/icons';
 import { type TranslationKey, useTranslation } from '@/src/core/i18n/i18n';
 // Sess66 PR6a.1: theme-dependent token を inline c.* に (dark cascade)。
@@ -109,6 +110,10 @@ export default function ExportHubScreen() {
   const goToPaywall = useGoToPaywall();
   const [sheetType, setSheetType] = useState<ExportTypeKey | null>(null);
   const [generating, setGenerating] = useState<ExportTypeKey | null>(null);
+  // Sess72 PR-4 (ADR-0040 D5 予定 / R-63 予定): 個別盆栽 PDF (export/pdf) への push 戻りで
+  // Hub の scroll 位置が 0 リセットされる挙動を hook で解消。
+  const scrollRef = React.useRef<ScrollView>(null);
+  const { onScroll, scrollEventThrottle } = useScrollPreservation(scrollRef);
 
   const handlePick = (k: string) => {
     if (!isPro) {
@@ -150,7 +155,12 @@ export default function ExportHubScreen() {
       testID="e2e_export_hub_screen"
     >
       <FormScreenHeader title={t('settingsExportSection')} testID="e2e_export_hub_header" />
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView
+        ref={scrollRef}
+        onScroll={onScroll}
+        scrollEventThrottle={scrollEventThrottle}
+        contentContainerStyle={styles.scroll}
+      >
         <View style={styles.hero}>
           <ThemedText style={[styles.heroTitle, { color: c.text }]}>
             {t('exportHubHeroTitle')}
