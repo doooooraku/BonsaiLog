@@ -20,7 +20,9 @@ import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { getTzOffsetMin } from '@/src/core/datetime/tz';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
-import { ACCENT_GOLD, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess70 PR-C3: BRAND_GREEN / ON_BRAND を scheme-aware (c.tint / c.onTint) に移行
+// (ADR-0015/0052 Sess69 PR-A Amendment 整合)。 ACCENT_GOLD は Pro バッジ専用 brand-static 維持。
+import { ACCENT_GOLD } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import { useProStore } from '@/src/stores/proStore';
@@ -161,8 +163,11 @@ export function PlanSection() {
               </ThemedText>
             </View>
             {!isPro && (
-              <View style={styles.planUpgradeBadge} testID="e2e_settings_plan_upgrade_cta">
-                <ThemedText style={styles.planUpgradeBadgeText}>
+              <View
+                style={[styles.planUpgradeBadge, { backgroundColor: c.tint }]}
+                testID="e2e_settings_plan_upgrade_cta"
+              >
+                <ThemedText style={[styles.planUpgradeBadgeText, { color: c.onTint }]}>
                   {t('settingsPlanUpgradeBadge')}
                 </ThemedText>
               </View>
@@ -230,7 +235,9 @@ export function PlanSection() {
           style={[styles.primaryCta, { backgroundColor: c.tint }]}
           onPress={() => router.push('/pro' as Href)}
         >
-          <ThemedText style={styles.primaryCtaText}>{t('settingsViewProPlans')}</ThemedText>
+          <ThemedText style={[styles.primaryCtaText, { color: c.onTint }]}>
+            {t('settingsViewProPlans')}
+          </ThemedText>
         </Pressable>
       )}
 
@@ -341,8 +348,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
+  // Sess70 PR-C3: color は inline c.onTint (scheme-aware)。
   primaryCtaText: {
-    color: ON_BRAND,
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.3,
@@ -355,15 +362,15 @@ const styles = StyleSheet.create({
   },
   planStatusBadgePro: { borderColor: ACCENT_GOLD, backgroundColor: ACCENT_GOLD },
   planStatusBadgeText: { fontSize: 11, fontWeight: '600', letterSpacing: 0.4 },
-  planStatusBadgeTextPro: { color: ON_BRAND },
+  // Sess70 PR-C3: ACCENT_GOLD は両 theme 同色維持、 文字色は白固定 (Pro バッジ仕様)。
+  planStatusBadgeTextPro: { color: '#FFFFFF' },
+  // Sess70 PR-C3: bg / color は inline c.tint / c.onTint (scheme-aware)。
   planUpgradeBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
-    backgroundColor: BRAND_GREEN,
   },
   planUpgradeBadgeText: {
-    color: ON_BRAND,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.4,

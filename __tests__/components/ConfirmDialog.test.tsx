@@ -39,10 +39,12 @@ describe('ConfirmDialog (ADR-0036 D1)', () => {
     expect(SRC).toMatch(/description\s*\?\s*\(?\s*<ThemedText/);
   });
 
-  test('6. destructive=true で DANGER 赤 button (削除等)', () => {
+  test('6. destructive=true で DANGER 赤 button (削除等、 Sess70 PR-C3 で scheme-aware c.dangerColor 化)', () => {
     expect(SRC).toMatch(/destructive\?:\s*boolean/);
-    expect(SRC).toMatch(/buttonDestructive.*backgroundColor:\s*DANGER/s);
-    expect(SRC).toMatch(/destructive\s*\?\s*styles\.buttonDestructive\s*:\s*styles\.buttonPrimary/);
+    // Sess70 PR-C3: brand-static DANGER 撤回 → inline c.dangerColor で scheme-aware 化
+    // (light: #8B2E2E 深赤 / dark: #CE7A72 warm 赤)。 ADR-0015/0052 Sess69 PR-A Amendment 整合。
+    expect(SRC).toMatch(/backgroundColor:\s*c\.dangerColor/);
+    expect(SRC).toMatch(/destructive\s*\n?\s*\?\s*\[?\s*styles\.buttonDestructive/);
   });
 
   test('7. Haptics.notificationAsync(Warning) を onConfirm 直前に発火 (ADR-0036 D6 / R-45)', () => {
