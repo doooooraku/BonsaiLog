@@ -56,6 +56,16 @@ export function SearchHeader({
   const { t } = useTranslation();
   const router = useRouter();
   const c = useColors();
+  // Sess66 PR5 (ADR-0053): showBack prop は deprecated。 Expo Stack native header に
+  // SoT 統一済 (settings/index.tsx の `<Stack.Screen options={{title}}/>` 参照)。
+  // 新規利用禁止、 既存設定画面は撤去済。 dev 中のみ警告。
+  if (showBack && __DEV__) {
+    console.warn(
+      '[SearchHeader] showBack prop is deprecated (ADR-0053 Sess66 PR5). ' +
+        'Use Expo Stack native header instead: `<Stack.Screen options={{title}}/>` + ' +
+        'remove headerShown:false from the screen layout.',
+    );
+  }
   // Issue #259: status bar / notch と被らないよう safe-area top inset を吸収
   // (app/_layout.tsx で headerShown:false のため、各タブのコンテンツ側で吸収する必要あり)
   const insets = useSafeAreaInsets();
