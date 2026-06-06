@@ -10,7 +10,9 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BORDER_DEFAULT, BRAND_GREEN, ON_BRAND, TEXT_SECONDARY } from '@/src/core/theme/colors';
+// Sess68 PR #C: BORDER_DEFAULT / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 
 export type FilterChip = {
   /** id='ALL' は「すべて」を表す予約値。それ以外は tag.id。 */
@@ -26,8 +28,9 @@ type Props = {
 };
 
 export function HomeFilterTabs({ chips, selectedId, onSelect, testID }: Props) {
+  const themeColors = useColors();
   return (
-    <View style={styles.container} testID={testID}>
+    <View style={[styles.container, { borderBottomColor: themeColors.border }]} testID={testID}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -41,11 +44,18 @@ export function HomeFilterTabs({ chips, selectedId, onSelect, testID }: Props) {
               accessibilityRole="button"
               accessibilityState={{ selected: on }}
               accessibilityLabel={c.label}
-              style={[styles.chip, on && styles.chipOn]}
+              style={[styles.chip, { borderColor: themeColors.border }, on && styles.chipOn]}
               onPress={() => onSelect(c.id)}
               testID={`e2e_home_filter_chip_${c.id}`}
             >
-              <ThemedText style={[styles.chipText, on && styles.chipTextOn]} numberOfLines={1}>
+              <ThemedText
+                style={[
+                  styles.chipText,
+                  { color: themeColors.textSecondary },
+                  on && styles.chipTextOn,
+                ]}
+                numberOfLines={1}
+              >
                 {c.label}
               </ThemedText>
             </Pressable>
@@ -57,7 +67,7 @@ export function HomeFilterTabs({ chips, selectedId, onSelect, testID }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { borderBottomWidth: 1, borderBottomColor: BORDER_DEFAULT },
+  container: { borderBottomWidth: 1 },
   scrollContent: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
   chip: {
     paddingHorizontal: 14,
@@ -65,12 +75,11 @@ const styles = StyleSheet.create({
     minHeight: 36,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
   },
   chipOn: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN },
-  chipText: { fontSize: 13, color: TEXT_SECONDARY, letterSpacing: 0.3 },
+  chipText: { fontSize: 13, letterSpacing: 0.3 },
   chipTextOn: { color: ON_BRAND, fontWeight: '500' },
 });

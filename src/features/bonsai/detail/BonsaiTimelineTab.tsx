@@ -4,12 +4,9 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-import {
-  BADGE_SOFT_BG,
-  BADGE_SOFT_TEXT,
-  BRAND_GREEN,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: TEXT_SECONDARY は inline c.* 化、 BADGE / BRAND_GREEN は brand-static で保持。
+import { BADGE_SOFT_BG, BADGE_SOFT_TEXT, BRAND_GREEN } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import type { Event } from '@/src/db/schema';
 import { formatDate } from '@/src/features/bonsai/detail/dateFormat';
 import {
@@ -35,6 +32,7 @@ export function BonsaiTimelineTab({
   lang: string;
   t: (key: TranslationKey) => string;
 }) {
+  const c = useColors();
   return (
     <View style={styles.section}>
       {/* Issue #441 Phase 2: 「これからの予定」 + 右側 secondary label
@@ -42,7 +40,7 @@ export function BonsaiTimelineTab({
       過去水やりは作業履歴タブ + ふりかえりタブ CrossWateringHistory で参照可能。 */}
       <View style={styles.timelineHeader}>
         <ThemedText type="subtitle">{t('detailTimelineSectionTitle')}</ThemedText>
-        <ThemedText style={styles.timelineHeaderSecondary}>
+        <ThemedText style={[styles.timelineHeaderSecondary, { color: c.textSecondary }]}>
           {t('detailTimelinePastCollapsed')}
         </ThemedText>
       </View>
@@ -68,7 +66,9 @@ export function BonsaiTimelineTab({
             </View>
             <View style={styles.timelineContent}>
               <ThemedText style={styles.timelineTodayLabel}>{todayLabel}</ThemedText>
-              <ThemedText style={styles.timelineTodayDate}>{todayDate}</ThemedText>
+              <ThemedText style={[styles.timelineTodayDate, { color: c.textSecondary }]}>
+                {todayDate}
+              </ThemedText>
             </View>
           </View>
         );
@@ -122,6 +122,7 @@ function TimelineRow({
   lang: string;
   t: (key: TranslationKey) => string;
 }) {
+  const c = useColors();
   if (entry.kind === 'group') {
     const startLabel = formatDate(`${entry.startDate}T00:00:00.000Z`, lang);
     const endLabel = formatDate(`${entry.endDate}T00:00:00.000Z`, lang);
@@ -137,7 +138,7 @@ function TimelineRow({
         </View>
         <View style={styles.timelineContent}>
           <View style={styles.timelineRowMain}>
-            <ThemedText style={styles.timelineDateRange}>
+            <ThemedText style={[styles.timelineDateRange, { color: c.textSecondary }]}>
               {startLabel} ～ {endLabel}
             </ThemedText>
             <ThemedText style={styles.timelineConsecutive}>
@@ -153,7 +154,7 @@ function TimelineRow({
             </View>
           </View>
           {note && (
-            <ThemedText style={styles.eventRowNote} numberOfLines={2}>
+            <ThemedText style={[styles.eventRowNote, { color: c.textSecondary }]} numberOfLines={2}>
               {note}
             </ThemedText>
           )}
@@ -170,14 +171,14 @@ function TimelineRow({
         <View style={[styles.timelineLine, isLast && styles.timelineLineHidden]} />
       </View>
       <View style={styles.timelineContent}>
-        <ThemedText style={styles.timelineDateRange}>
+        <ThemedText style={[styles.timelineDateRange, { color: c.textSecondary }]}>
           {formatDate(ev.occurredAtUtc, lang)}
         </ThemedText>
         <ThemedText style={styles.eventLabel}>
           {t(`eventType_${ev.type}` as TranslationKey)}
         </ThemedText>
         {ev.note && (
-          <ThemedText style={styles.eventRowNote} numberOfLines={2}>
+          <ThemedText style={[styles.eventRowNote, { color: c.textSecondary }]} numberOfLines={2}>
             {ev.note}
           </ThemedText>
         )}
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 8,
   },
-  timelineHeaderSecondary: { fontSize: 11, color: TEXT_SECONDARY },
+  timelineHeaderSecondary: { fontSize: 11 },
   timelineRow: {
     flexDirection: 'row',
     minHeight: 80,
@@ -260,7 +261,6 @@ const styles = StyleSheet.create({
   },
   timelineTodayDate: {
     fontSize: 12,
-    color: TEXT_SECONDARY,
     marginTop: 2,
   },
   timelineContent: {
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   timelineRowMain: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  timelineDateRange: { fontSize: 13, color: TEXT_SECONDARY, fontVariant: ['tabular-nums'] },
+  timelineDateRange: { fontSize: 13, fontVariant: ['tabular-nums'] },
   // Sess28 PR-5 (ADR-0037 D3): ad-hoc HEX '#E8F0EA' を BADGE_SOFT token 参照に統一。
   timelineConsecutive: {
     fontSize: 11,
@@ -281,5 +281,5 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: BADGE_SOFT_BG,
   },
-  eventRowNote: { fontSize: 13, lineHeight: 20, color: TEXT_SECONDARY, marginTop: 4 },
+  eventRowNote: { fontSize: 13, lineHeight: 20, marginTop: 4 },
 });
