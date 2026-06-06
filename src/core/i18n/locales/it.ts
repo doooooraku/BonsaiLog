@@ -777,7 +777,7 @@ const it: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '{count} piano/i eliminato/i',
   undoSnackbarLoggedDeleteN: '{count} registrazione/i eliminata/e',
   undoSnackbarAction: 'Annulla',
-  recordFabLabel: '作業を記録',
+  recordFabLabel: 'Registra cura',
   historyLabelPruneAmountFew: 'Un po',
   historyLabelPruneAmountSome: 'Discreto',
   historyLabelPruneAmountLot: 'Molto',

@@ -1,4 +1,3 @@
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React from 'react';
@@ -6,7 +5,7 @@ import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { FAB } from '@/src/components/common/FAB';
+import { BottomCtaBar } from '@/src/components/common/BottomCtaBar';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 import { useBonsaiBasicForm } from '@/src/features/bonsai/BonsaiBasicForm';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
@@ -50,8 +49,9 @@ export default function BonsaiDetailScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
   const c = useColors();
-  // Sess15 PR-RR: Tab bar の高さ取得 (sticky footer を Tab bar の上に固定するため)。
-  const tabBarHeight = useBottomTabBarHeight();
+  // Sess72 ADR-0054 D1: 旧 tabBarHeight (ScrollView paddingBottom 計算用) は撤去。
+  // BottomCtaBar (画面下端 inline) が container 内に直接配置され、 ScrollView は
+  // BottomCtaBar の上で自然に終わるため paddingBottom 計算不要 (R-62 構造解決)。
   // Sess28 PR-3 (ADR-0037 D1 / R-46): KAV props 共通 hook 適用 (KAV、 container 縮小)。
   const kavProps = useKeyboardAvoidingProps();
   // Sess31 PR-1 (R-46 拡張): ScrollView ref + 基本情報タブ メモ欄 onFocus → scrollToEnd で可視性確保。
@@ -239,11 +239,7 @@ export default function BonsaiDetailScreen() {
       <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
         <ScrollView
           ref={scrollRef}
-          contentContainerStyle={[
-            styles.scrollContent,
-            // Sess15 PR-SS: sticky footer 廃止 (PR-RR revert)、 Tab bar + 余裕のみ。
-            { paddingBottom: tabBarHeight + 32 },
-          ]}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
           {/* 改善① measureLayout 基準 wrapper (collapsable=false で Android view flattening 回避)。 */}
@@ -313,24 +309,20 @@ export default function BonsaiDetailScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Issue #440 Phase 1: 緑 FAB (画面右下、tab bar の上)。 作業履歴タブ表示中のみ可視、
-          tap で WorkPickerSheet を開く (mockup `bonsai-detail-history-01.png` の緑「+」FAB 整合)。
-          ADR-0042 D3 / Sess36 PR-3 で共通 <FAB /> に統一、 旧 ThemedText「+」 文字列を
-          PlusIcon SVG に統一 + SafeArea 反映 (旧 bottom=24 固定の bug 解消)。 */}
+      {/* Sess72 ADR-0054 D1: FAB -> BottomCtaBar replacement on history tab.
+          Inline layout = ScrollView ends above the bar naturally (R-62). */}
       {activeTab === 'history' && (
-        <FAB
+        <BottomCtaBar
           onPress={() => showEventTypePicker()}
-          accessibilityLabel={t('eventLogCta')}
-          testID="e2e_history_fab"
+          label={t('eventLogCta')}
+          testID="e2e_history_bottom_cta"
         />
       )}
 
-      {/* Issue #441 Phase 1 + Phase G2 part 1 (ADR-0024): 予定タブ FAB。 tap で
-          `/work-picker?mode=schedule` (formSheet) を開く (旧 schedulePickerRef は廃止)。
-          mockup `bonsai-detail-timeline-01/02.png` の緑「+」FAB 整合。
-          ADR-0042 D3 / Sess36 PR-3 で共通 <FAB /> に統一。 */}
+      {/* Sess72 ADR-0054 D1: FAB -> BottomCtaBar replacement on timeline tab.
+          Tap opens /work-picker?mode=schedule (formSheet). */}
       {activeTab === 'timeline' && (
-        <FAB
+        <BottomCtaBar
           onPress={() => {
             if (!item) return;
             // Sess16 PR-Q: isPine URL param 撤廃 (松類限定 candle_cut 表示廃止、 全種別常時表示)
@@ -338,8 +330,8 @@ export default function BonsaiDetailScreen() {
               `/work-picker?bonsaiName=${encodeURIComponent(item.name)}&mode=schedule` as Href,
             );
           }}
-          accessibilityLabel={t('addScheduleCta')}
-          testID="e2e_timeline_fab"
+          label={t('addScheduleCta')}
+          testID="e2e_timeline_bottom_cta"
         />
       )}
 

@@ -1,8 +1,8 @@
-# 再発防止プロトコル — 専門ルール (R-13 〜 R-61)
+# 再発防止プロトコル — 専門ルール (R-13 〜 R-62)
 
 > 本ファイルは `.claude/recurrence-prevention.md` (親) の詳細部分。
-> 親ファイル = R-1 〜 R-12 全文 + R-13 〜 R-61 索引 + 運用ルール。
-> 本ファイル = R-13 〜 R-61 詳細記述。
+> 親ファイル = R-1 〜 R-12 全文 + R-13 〜 R-62 索引 + 運用ルール。
+> 本ファイル = R-13 〜 R-62 詳細記述。
 > 親ファイルの「専門ルール 索引」 から各 R-N に飛ぶ運用。
 
 ---
@@ -640,9 +640,61 @@
 
 ---
 
+### R-62. Component SoT 化時は Layout Contract も同じ ADR で SoT 化必須 (Sess72 ADR-0054 起票)
+
+> **位置付け**: R-61 (人間判定 → 機械判定) と並列の **meta-rule (= ルールのルール)**。 個別ルールが「特定場面で何をする」 を決めるのに対し、 本 R-62 は「Component の SoT 化 ADR を書く時に何を意識する」 を決める。
+
+#### ルール本文
+
+Component (例: FAB / BottomSheet / Header / KAV / Modal) の SoT 化を ADR で決定する時、 必ず **「その Component を使う画面側の Layout Contract (= scroll content padding / margin / safe area / KeyboardAvoiding offset / focus management / animation timing)」 も同じ ADR で SoT 化** する。 Component と Layout Contract は **2 つの SoT として扱う**。
+
+#### Layout Contract の典型項目
+
+- **paddingBottom / paddingTop**: ScrollView / FlatList の content padding (Component が画面外固定の場合、 last item との clearance を確保)
+- **safe area inset 反映**: `useSafeAreaInsets()` でデバイス依存余白を吸収
+- **KeyboardAvoiding offset**: KAV の `keyboardVerticalOffset` 計算式 (Component と KAV の重なり防止)
+- **focus management**: 画面遷移時の focus 移動 (`React.useFocusEffect` + `useRef` 連携)
+- **animation timing**: 画面入退場の animation duration (Component と画面の同期)
+
+#### 違反例 (Sess36 ADR-0042 の SoT 漏れ)
+
+- ADR-0042 D3 で **FAB component の SoT** (`src/components/common/FAB.tsx`) は確立
+- しかし **FAB を置く画面の ScrollView paddingBottom 計算 (Layout Contract)** が SoT 化対象から漏れた
+- 結果として 4 画面で paddingBottom 計算式が散在 (`tabBarHeight+32` / `tabBarHeight+60+32` / `96` ハードコード)
+- **`FAB top edge (tabBarHeight+insets.bottom+72) > paddingBottom`** で 40〜74 px の重なり領域が常時発生
+- 2026-06-03 テスター報告「FAB がリストと重なる」 → Sess72 で ADR-0042 D3 撤回 + ADR-0054 起票の手戻り
+- ADR-0042 Acceptance test では「FAB が tabBar / banner にかぶらない」 は検証したが、 「FAB が ScrollView 最終項目にかぶらない」 は検証項目になかった (Layout Contract SoT 化漏れ)
+
+#### 適用例 (Sess72 以降の将来想定)
+
+| Component | Layout Contract 項目 |
+|---|---|
+| `<BottomCtaBar />` (Sess72 ADR-0054) | 画面下端固定 = paddingBottom 計算不要、 ただし AdBanner / TabBar との順序保証 |
+| `<BottomSheet />` (将来) | 画面下半分占有時の content scroll 動作 / focus 管理 |
+| `<StickyHeader />` (将来) | scroll 時の content paddingTop / status bar 整合 |
+| `<KeyboardAvoidingView />` (ADR-0037 既存) | keyboardVerticalOffset = Stack header 高さ + safe area inset、 form 画面の inner ScrollView padding |
+| `<Modal />` / `<FormSheet />` (ADR-0024) | backdrop + 親画面 scroll lock / focus trap |
+
+#### 検出 / 自動化方針
+
+- **静的解析の困難**: 「Component を使う画面側の Layout Contract」 は型 / lint で完全検出が困難 (画面コンテキスト依存)
+- **代替手段**: ADR template の Acceptance / Tests 章に **「Layout Contract 検証 (短リスト / 長リスト / dynamic insets) 必須」** を明文化 (`docs/adr/adr_template.md` 修正候補)
+- **PR template**: `.github/PULL_REQUEST_TEMPLATE.md` §7.5 に「Component 新規追加時の Layout Contract チェックリスト」 追加 (Sess72 PR-6 で実装)
+- **将来候補**: Maestro flow に「最下端まで scroll → 最終項目 testID visible 検証」 を共通 helper 化
+
+#### 関連
+
+- **ADR-0054** (Sess72): D5 で本 R-62 起票
+- **ADR-0042** (Sess36): D3 撤回事例、 Component SoT 化漏れの典型
+- **R-61** (Sess71): 並列の meta-rule (人間判定 → 機械判定)
+- **R-25** (機械判定のみで達成判定禁止): Layout Contract 検証は機械判定だけでは不十分、 Claude Read 主導必須
+- **`docs/reference/design_system.md`**: §FAB → §BottomCtaBar 改訂 (Sess72 PR-5、 Layout Contract も併記)
+
+---
+
 ## 関連
 
-- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-61 索引 + 運用ルール)
+- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-62 索引 + 運用ルール)
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動

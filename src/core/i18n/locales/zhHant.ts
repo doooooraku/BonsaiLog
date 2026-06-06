@@ -761,7 +761,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '已刪除 {count} 個計畫',
   undoSnackbarLoggedDeleteN: '已刪除 {count} 條記錄',
   undoSnackbarAction: '復原',
-  recordFabLabel: '作業を記録',
+  recordFabLabel: '記錄護理',
   historyLabelPruneAmountFew: '少量',
   historyLabelPruneAmountSome: '適量',
   historyLabelPruneAmountLot: '大量',

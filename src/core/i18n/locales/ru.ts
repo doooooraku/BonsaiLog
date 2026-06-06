@@ -775,7 +775,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: 'Удалено планов: {count}',
   undoSnackbarLoggedDeleteN: 'Удалено записей: {count}',
   undoSnackbarAction: 'Отменить',
-  recordFabLabel: '作業を記録',
+  recordFabLabel: 'Записать уход',
   historyLabelPruneAmountFew: 'Немного',
   historyLabelPruneAmountSome: 'Умеренно',
   historyLabelPruneAmountLot: 'Много',

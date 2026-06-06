@@ -774,7 +774,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '{count} rencana dihapus',
   undoSnackbarLoggedDeleteN: '{count} catatan dihapus',
   undoSnackbarAction: 'Urungkan',
-  recordFabLabel: '作業を記録',
+  recordFabLabel: 'Catat perawatan',
   historyLabelPruneAmountFew: 'Sedikit',
   historyLabelPruneAmountSome: 'Cukup',
   historyLabelPruneAmountLot: 'Banyak',

@@ -20,7 +20,6 @@
  * 長押し → アーカイブ確認 (ADR-0025 Notes Amended): 廃止したのは「一括選択モード」であり、
  * 単一カードの長押し → カスタム ConfirmDialog 直行 → archiveBonsai は別動線として再導入 (ADR-0036 D1 整合)。
  */
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -30,7 +29,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { PlusIcon, PotIcon } from '@/src/components/icons';
-import { FAB } from '@/src/components/common/FAB';
+import { BottomCtaBar } from '@/src/components/common/BottomCtaBar';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { ON_BRAND } from '@/src/core/theme/colors';
@@ -48,9 +47,6 @@ import { usePickerStore } from '@/src/stores/pickerStore';
 
 const ALL_FILTER_ID = 'ALL';
 
-// Issue #256: AdBanner の概算高さ (INLINE_ADAPTIVE_BANNER + maxHeight=90、 Repolog 同等)。
-const AD_BANNER_HEIGHT_APPROX = 60;
-
 // 旧 inline formatElapsed + buildCardData (lines 49-123) は Sess9 PR-11 で共有 util へ extract 済:
 // - formatElapsed → src/core/datetime/relativeElapsed.ts formatElapsedDays
 // - buildCardData → src/features/bonsai/cardDataBuilder.ts buildBonsaiCardData
@@ -60,7 +56,6 @@ export default function BonsaiHomeScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
   const c = useColors();
-  const tabBarHeight = useBottomTabBarHeight();
   const [items, setItems] = useState<BonsaiCardData[]>([]);
   const [tags, setTags] = useState<TagRecord[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<string>(ALL_FILTER_ID);
@@ -216,8 +211,6 @@ export default function BonsaiHomeScreen() {
     );
   }
 
-  const listPaddingBottom = tabBarHeight + AD_BANNER_HEIGHT_APPROX + 32;
-
   return (
     <ThemedView
       style={[styles.container, { backgroundColor: c.background }]}
@@ -233,7 +226,7 @@ export default function BonsaiHomeScreen() {
       <FlatList
         data={visibleItems}
         keyExtractor={(it) => it.id}
-        contentContainerStyle={[styles.listContent, { paddingBottom: listPaddingBottom }]}
+        contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
           <BonsaiCard
             data={item}
@@ -243,11 +236,12 @@ export default function BonsaiHomeScreen() {
           />
         )}
       />
-      <FAB
+      {/* Sess72 ADR-0054 D1: FAB -> BottomCtaBar replacement. Inline layout =
+          FlatList ends above the bar naturally (R-62 Layout Contract solved). */}
+      <BottomCtaBar
         onPress={openCreateSheet}
-        accessibilityLabel={t('bonsaiCreateNew')}
-        testID="e2e_home_fab_create"
-        showAdBanner
+        label={t('bonsaiCreateNew')}
+        testID="e2e_home_bottom_cta_create"
       />
       <AdBanner />
 

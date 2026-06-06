@@ -774,7 +774,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '{count} योजना(एँ) हटाई गई',
   undoSnackbarLoggedDeleteN: '{count} रिकॉर्ड हटाए गए',
   undoSnackbarAction: 'पूर्ववत् करें',
-  recordFabLabel: '作業を記録',
+  recordFabLabel: 'देखभाल दर्ज करें',
   historyLabelPruneAmountFew: 'थोड़ा',
   historyLabelPruneAmountSome: 'कुछ',
   historyLabelPruneAmountLot: 'बहुत',

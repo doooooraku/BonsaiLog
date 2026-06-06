@@ -772,7 +772,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: 'ลบแผน {count} รายการแล้ว',
   undoSnackbarLoggedDeleteN: 'ลบบันทึก {count} รายการแล้ว',
   undoSnackbarAction: 'เลิกทำ',
-  recordFabLabel: '作業を記録',
+  recordFabLabel: 'บันทึกการดูแล',
   historyLabelPruneAmountFew: 'เล็กน้อย',
   historyLabelPruneAmountSome: 'พอประมาณ',
   historyLabelPruneAmountLot: 'มาก',
