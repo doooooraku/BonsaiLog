@@ -156,6 +156,94 @@ hook 内:
 - design_system.md §23-3 (Scroll 位置保持 hook)
 - PR-1 #969 (`useScrollPreservation` hook 新設 + Jest 6/6)
 
+## 罠 5: Metro 起動 dir の罠 — worktree 隔離環境で「最新コード」 を実機で見るには (Sess72 PR-6 retro 由来)
+
+### 症状
+
+worktree 環境で開発中、 PR を main に squash merge した後 `reload-app.sh` で実機 BonsaiLog を再起動しても、 **画面に新しい機能が反映されない**。 ログ上は `[reload-app] done — Dev Client が Metro から最新 bundle を取得します` と成功表示なのに、 hook 適用済の grep ヒットを目で確認しても、 実機画面は古い挙動のまま。
+
+### 実例 (Sess72 scroll-preservation 実機検証)
+
+PR-1〜5 を main に全 merge (main HEAD = `8139d21`) した直後の実機検証:
+
+```
+[私が最初にやったこと (ミス)]
+cd /home/doooo/04_app-factory/apps/BonsaiLog        ← user 作業 dir!
+pnpm dev                                              ← ここで Metro 起動
+                                                       (user branch HEAD = e1a4cf6 の bundle 配信)
+bash scripts/dev/reload-app.sh                        ← Dev Build app 再起動 (正常動作)
+                                                       → 古い bundle 取得 = scroll preservation 反映されない
+```
+
+Metro が配信した JS bundle は **user の並行作業 branch (feat/bottom-cta-bar-replace-fab)** = PR-1〜5 を含まない HEAD `e1a4cf6` のもの。 実機画面に hook が反映されないのは当然。
+
+### 真因
+
+Metro は **「`pnpm dev` を実行した dir = 起動 dir」** から JS bundle を作って配信する。 起動 dir の git HEAD によって、 配信される bundle の内容が変わる。
+
+- user 作業 dir で起動 → user branch HEAD の bundle
+- worktree dir で起動 → worktree HEAD の bundle (main HEAD と一致しているとは限らない!)
+
+加えて、 **worktree branch HEAD ≠ main HEAD** という罠もある。 私が PR-1〜5 を作って push & squash merge した後でも、 worktree の `feature/sess72-scroll-pr5-codify` branch は古い HEAD (`5bdb462`) のまま。 main HEAD (`8139d21`) と内容はほぼ同じだが別 commit hash で、 src/app の hook 適用 commit (PR-2/3/4) は worktree branch に含まれていない。
+
+### 解決策
+
+#### 1) Metro 起動前に「3 つの確認」 を必ず実行
+
+```bash
+pwd                              # ① 現在 dir が worktree dir か確認
+git log -1 --oneline             # ② 現在 HEAD が期待 commit か確認 (main HEAD と同じか?)
+grep -l "<検証対象 symbol>" 検証対象 file群  # ③ コードが反映済か grep で 1 秒確認
+```
+
+3 つ全部 OK でないなら Metro 起動しない。
+
+#### 2) worktree HEAD を main HEAD に揃える (非破壊で)
+
+```bash
+git fetch origin main
+git checkout origin/main         # 非破壊 detached HEAD、 main の最新 commit に切り替え
+```
+
+❌ **使わない**: `git reset --hard origin/main`
+
+- destructive、 user 安全 hook で denied される (CLAUDE.md §11 ハック修正禁止)
+- 同等の効果 (= HEAD を移動) は `git checkout origin/main` で非破壊に達成可能
+
+#### 3) Metro 起動 dir を明示
+
+```bash
+# 古い Metro process 全 kill (port 8081 衝突防止)
+pkill -f "expo start"
+sleep 2
+
+# worktree dir から起動 (絶対 path 明示)
+cd /home/doooo/04_app-factory/apps/BonsaiLog/.claude/worktrees/<worktree-name>
+nohup corepack pnpm dev > /tmp/metro.log 2>&1 &
+sleep 20  # bundle 準備待ち
+
+# 接続確認
+curl http://localhost:8081/status  # HTTP 200 OK
+```
+
+### reload-app.sh は完璧に正常
+
+`scripts/dev/reload-app.sh` (Sess71 PR-3 拡張) の責務は:
+
+- adb reverse tcp:8081 設定
+- 実機スリープ解除
+- BonsaiLog 強制終了
+- BonsaiLog 起動
+
+の 4 つだけ。 **「Metro が何の bundle を配信するか」 は責務外**。 スクリプト冒頭コメントに「前提: Metro が PC 側で起動済」 と明記されている通り、 Metro 立ち上げは呼び出し側の責任。
+
+### 教訓
+
+- 「reload-app.sh は完璧に正常動作した、 おかしかったのは Metro 起動 dir 選択」 と切り分ける
+- worktree branch HEAD = main HEAD と無条件に期待しない、 squash merge 後は明示的に揃える
+- `git checkout origin/main` は detached HEAD だが非破壊で安全、 検証用途には最適
+- Metro 起動前 3 段確認 (pwd + git log + grep) を SoT 化
+
 ## 関連 ADR / lessons
 
 - `ADR-0024-bottom-sheet-removal-and-native-presentation.md` (modal 構造)
@@ -163,3 +251,5 @@ hook 内:
 - `ADR-0040-form-screen-scroll-unification.md` D5 Amendment (Sess72 PR-5)
 - Sess12 retro (PR-F revert 経緯)
 - Sess72 plan (`~/.claude/plans/6-bonsailog-squishy-glacier.md`、 R-63 / scroll preservation 全討議記録)
+- Sess67 worktree 隔離 pattern 確立 (`docs/reference/tasks/lessons/refactor.md` 等)
+- Sess71 reload-app.sh + dev-workflow (`docs/how-to/development/dev-workflow.md`)
