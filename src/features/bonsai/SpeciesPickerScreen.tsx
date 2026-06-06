@@ -15,17 +15,8 @@ import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from
 import { ThemedText } from '@/components/themed-text';
 import { PlusIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  BRAND_GREEN_BG,
-  DISABLED_BG,
-  ON_BRAND,
-  TEXT_PRIMARY,
-  TEXT_MUTED,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN* / DISABLED_BG / ON_BRAND は brand-static で保持。
+import { BRAND_GREEN, BRAND_GREEN_BG, DISABLED_BG, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
   canCreateNewCustomSpecies,
@@ -132,7 +123,10 @@ export default function SpeciesPickerScreen() {
       <View style={styles.searchWrap}>
         <TextInput
           testID="e2e_species_picker_search"
-          style={[styles.input, { color: c.text, borderColor: c.border }]}
+          style={[
+            styles.input,
+            { color: c.text, borderColor: c.border, backgroundColor: c.surface },
+          ]}
           value={query}
           onChangeText={setQuery}
           placeholder={t('bonsaiFieldSpeciesSearchPlaceholder')}
@@ -143,7 +137,9 @@ export default function SpeciesPickerScreen() {
         {/* Sess60 PR3: section header でマスタ/カスタムを視覚的に差別化 */}
         {filteredMaster.length > 0 && (
           <View style={styles.sectionHeader} testID="e2e_species_section_master">
-            <ThemedText style={styles.sectionHeaderText}>{t('pickerSectionMaster')}</ThemedText>
+            <ThemedText style={[styles.sectionHeaderText, { color: c.textMuted }]}>
+              {t('pickerSectionMaster')}
+            </ThemedText>
           </View>
         )}
         {filteredMaster.map((s) => {
@@ -154,7 +150,7 @@ export default function SpeciesPickerScreen() {
               testID={`e2e_species_option_${s.id}`}
               accessibilityRole="button"
               accessibilityLabel={s.commonName}
-              style={[styles.row, selected && styles.rowSelected]}
+              style={[styles.row, { borderBottomColor: c.border }, selected && styles.rowSelected]}
               onPress={() => handleSelect(s.id)}
             >
               <ThemedText style={selected ? styles.rowTextSelected : undefined}>
@@ -167,8 +163,10 @@ export default function SpeciesPickerScreen() {
         {/* Sess60 PR3: section header + 「カスタム」 badge + 残枠 counter で差別化 */}
         {customSpecies.length > 0 && (
           <View style={styles.sectionHeader} testID="e2e_species_section_custom">
-            <ThemedText style={styles.sectionHeaderText}>{t('pickerSectionCustom')}</ThemedText>
-            <ThemedText style={styles.sectionHeaderCounter}>
+            <ThemedText style={[styles.sectionHeaderText, { color: c.textMuted }]}>
+              {t('pickerSectionCustom')}
+            </ThemedText>
+            <ThemedText style={[styles.sectionHeaderCounter, { color: c.textSecondary }]}>
               {speciesGuard.isPro
                 ? `${customSpecies.length}`
                 : `${customSpecies.length}/${FREE_CUSTOM_SPECIES_LIMIT}`}
@@ -184,7 +182,12 @@ export default function SpeciesPickerScreen() {
               testID={`e2e_species_option_custom_${cs.id}`}
               accessibilityRole="button"
               accessibilityLabel={cs.name}
-              style={[styles.row, styles.rowCustom, selected && styles.rowSelected]}
+              style={[
+                styles.row,
+                { borderBottomColor: c.border },
+                styles.rowCustom,
+                selected && styles.rowSelected,
+              ]}
               onPress={() => handleSelect(customKey)}
             >
               <ThemedText style={selected ? styles.rowTextSelected : undefined}>
@@ -198,7 +201,7 @@ export default function SpeciesPickerScreen() {
         })}
       </ScrollView>
       {/* Sess15 PR-AA: 案 D2 = solid outline + BRAND_GREEN テキスト/icon (Home Empty CTA と color family 統一、 secondary action 階層保持)。 */}
-      <View style={styles.footerWrap}>
+      <View style={[styles.footerWrap, { borderTopColor: c.border, backgroundColor: c.surface }]}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('customInputAdd')}
@@ -235,13 +238,19 @@ export default function SpeciesPickerScreen() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={t('cancel')}
-                style={[styles.modalButton, styles.modalButtonSecondary]}
+                style={[
+                  styles.modalButton,
+                  styles.modalButtonSecondary,
+                  { backgroundColor: c.surface },
+                ]}
                 onPress={() => {
                   setShowCustomModal(false);
                   setCustomInput('');
                 }}
               >
-                <ThemedText style={styles.modalButtonSecondaryText}>{t('cancel')}</ThemedText>
+                <ThemedText style={[styles.modalButtonSecondaryText, { color: c.text }]}>
+                  {t('cancel')}
+                </ThemedText>
               </Pressable>
               <Pressable
                 accessibilityRole="button"
@@ -272,9 +281,7 @@ const styles = StyleSheet.create({
     height: 44,
     paddingHorizontal: 14,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
-    backgroundColor: BG_SURFACE,
     fontSize: 16,
   },
   scroll: { paddingHorizontal: 16, paddingBottom: 16, gap: 4 },
@@ -283,7 +290,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: BORDER_DEFAULT,
     minHeight: 48,
   },
   // Sess60 PR3: カスタム row 用 (badge を右寄せするため flex-row)
@@ -307,14 +313,12 @@ const styles = StyleSheet.create({
   },
   sectionHeaderText: {
     fontSize: 11,
-    color: TEXT_MUTED,
     fontWeight: '600',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
   sectionHeaderCounter: {
     fontSize: 12,
-    color: TEXT_SECONDARY,
   },
   // Sess60 PR3: カスタム badge (BRAND_GREEN outline chip、 small)
   customBadge: {
@@ -334,8 +338,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
   },
   // Sess15 PR-AA: dashed gray → solid BRAND_GREEN (案 D2、 Home Empty CTA と統一 color family)。
   customAddButton: {
@@ -369,8 +371,8 @@ const styles = StyleSheet.create({
     minWidth: 80,
     alignItems: 'center',
   },
-  modalButtonSecondary: { backgroundColor: BG_SURFACE },
-  modalButtonSecondaryText: { color: TEXT_PRIMARY },
+  modalButtonSecondary: {},
+  modalButtonSecondaryText: {},
   modalButtonPrimary: { backgroundColor: BRAND_GREEN },
   modalButtonPrimaryText: { color: ON_BRAND, fontWeight: '600' },
   modalButtonDisabled: { backgroundColor: DISABLED_BG },
