@@ -238,8 +238,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- F-09 検索 (Phase A、ADR-0008 改訂) ---
   settingsSearchSection: '検索',
   searchAction: '検索する',
-  bulkLog: '一括記録',
-  bulkSchedule: '作業を選ぶ',
+  // Sess73 PR-3: 'bonsai-multi-select' 画面 CTA を「次へ」 (動作予告型) 統一。
+  // 旧 ja「一括記録」 「作業を選ぶ」 は user 報告で違和感、 次画面 = 作業 picker への
+  // 遷移予告として「次へ」 が WCAG 3.2.4 一貫識別 + シニア層 (高橋 62) 安心感 ◎。
+  bulkLog: '次へ',
+  bulkSchedule: '次へ',
   bulkPickerSheetSub: '{count}件の盆栽に同じ予定を追加',
   bulkScheduleDoneToast: '{count}件の予定を追加しました',
   bulkPickerSheetSubLog: '{count}件の盆栽に同じ作業を記録',
@@ -639,7 +642,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailTimelinePastCollapsed: '過去水やりは折りたたみ',
   back: '戻る',
   tabRecord: '記録',
-  planFabLabel: '一括予定追加',
+  // Sess73 PR-3: 旧「一括予定追加」 user 報告で違和感 → 「予定を追加」 へ (ja のみ、
+  // 他 18 言語の現訳「Schedule tasks」 / 「Aufgaben planen」 等は維持 = ADR-0054 D3
+  // 英訳許容差発動)。 動詞は addScheduleCta「予定を登録」 と「登録/追加」 で意味分離
+  // (登録 = entity 永続化 / 追加 = 既存集合への要素追加)。
+  planFabLabel: '予定を追加',
   bulkSelectModalTitle: '盆栽を選ぶ',
   bulkSelectModalNotice: '盆栽を選んでください ({count}件選択中)',
   tagEditTitleAdd: 'タグを追加',

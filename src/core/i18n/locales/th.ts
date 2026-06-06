@@ -221,8 +221,8 @@ const th: Partial<Record<TranslationKey, string>> = {
   // --- F-09 Search (Phase A、English fallback) ---
   settingsSearchSection: 'ค้นหา',
   searchAction: 'ค้นหา',
-  bulkLog: 'Log all',
-  bulkSchedule: 'Select task',
+  bulkLog: 'ถัดไป',
+  bulkSchedule: 'ถัดไป',
   bulkPickerSheetSub: 'Add the same schedule to {count} bonsai',
   bulkScheduleDoneToast: 'Schedule added to {count} bonsai',
   bulkPickerSheetSubLog: 'Log the same action to {count} bonsai',

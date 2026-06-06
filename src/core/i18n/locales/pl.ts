@@ -223,8 +223,8 @@ const pl: Partial<Record<TranslationKey, string>> = {
   // --- F-09 Search (Phase A、English fallback) ---
   settingsSearchSection: 'Szukaj',
   searchAction: 'Szukaj',
-  bulkLog: 'Log all',
-  bulkSchedule: 'Select task',
+  bulkLog: 'Dalej',
+  bulkSchedule: 'Dalej',
   bulkPickerSheetSub: 'Add the same schedule to {count} bonsai',
   bulkScheduleDoneToast: 'Schedule added to {count} bonsai',
   bulkPickerSheetSubLog: 'Log the same action to {count} bonsai',
