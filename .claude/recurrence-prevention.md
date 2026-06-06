@@ -90,7 +90,7 @@
 
 ---
 
-## 専門ルール R-13 〜 R-61（詳細は `recurrence-prevention/specialized.md`）
+## 専門ルール R-13 〜 R-62（詳細は `recurrence-prevention/specialized.md`）
 
 | ID | テーマ | 1 行サマリ |
 |----|--------|-----------|
@@ -131,6 +131,7 @@
 | **R-59** | StyleSheet 内 hex literal 禁止 (Sess70 PR-D / ADR-0052 Amendment) | StyleSheet.create() 内に raw hex literal (`'#RGB'` / `'#RRGGBB'` / `'#RRGGBBAA'`) を **書かない** (`local/no-color-hex-literal-in-stylesheet` rule で段階移行: PR-D は `'warn'`、 PR-E で違反 0 化後 `'error'` 昇格)。 例外: `'transparent'` / `'rgba()'` 半透明は通過。 例外 marker (`// eslint-disable-next-line local/no-color-hex-literal-in-stylesheet // reason: <一文>`) は **5 件以下上限** (`scripts/check-eslint-disable-count.mjs` で CI 監視、 PR-E で同梱予定)、 reason 用途: 写真 overlay text 固定 / PDF/SVG export 紙白固定 / Pro 金 badge 上 `ON_BRAND` 文字。 Sess69 で R-58 既存 rule (token 名 base) が hex literal を見逃した盲点が判明 (4 file 残存: BonsaiTimelineTab:246 / EventRowCompact:143 / EventRowDetailed:309 / SearchResultRows:226) → 本 R-59 で構造禁止化。 詳細: `eslint-rules/no-color-hex-literal-in-stylesheet.js` |
 | **R-60** | 新画面 PR は dark mode SS 添付必須 (Sess70 PR-D 起票) | 新画面追加 PR (`app/**/*.tsx` 新規 file) では PR 本文に **dark mode で撮影した SS を最低 1 枚添付**必須。 PR テンプレに「☐ dark mode SS 添付」 check 項目を追加 (PR-E 同梱予定)、 将来 hook (`scripts/check-pr-dark-ss.mjs`) で機械検証も検討。 Sess65→69 で「ユーザーが dark mode で実機テストして報告 → 開発者が cascade 漏れに気付く」 を 4 回繰り返した root cause = 「新画面で dark mode 視覚検証が任意」 の仕組み欠落。 開発者の「dark mode 後回し」 認知バイアスを構造的に抑制 (R-25 機械判定 + Claude Read pattern と整合)。 |
 | **R-61** | 人間判定 → 機械判定 + 安全網 (meta-rule、 Sess71 PR-5 起票 / ADR-0046 Amendment) | 個別ルール (R-58/59/60 等) の上位に位置する **meta-rule**。 新規 R / ADR / hook / check / lint を **足す前に**、 ADR-0046 Amendment の 4 つ目自問「人間判定が必要か? 機械判定に置き換えられないか?」 を必須 self-check。 「念のため XX しよう」「経験で判断」 のような mental model を仕組み化対象として認識し、 機械判定 (file pattern / hash / git diff / npm audit / lint / hook) で代替可能なら必ず機械化。 適用例: build vs reload 判定 (Sess70 → Sess71 PR-1〜PR-3 で `scripts/check-native-impact.mjs` + PostToolUse hook + reload-app.sh 拡張で完全自動化、 月 30-60 分節約) / 新画面 dark SS 必要性 (R-60 で機械化済) / ESLint 例外許可 (R-59 reason marker + 5 件以下) / dependency 安全度 (npm audit 機械化候補)。 安全網: 機械判定の bug を恐れて手動 fallback を残す場合は明示的 reason 必須。 詳細: `recurrence-prevention/specialized.md` / `docs/adr/ADR-0046` Notes Amended (Sess71) / `docs/how-to/development/dev-workflow.md` |
+| **R-62** | Component SoT 化時は Layout Contract も同じ ADR で SoT 化必須 (Sess72 ADR-0054 起票) | R-61 と並列の **meta-rule**。 Component (FAB / BottomSheet / Header / KAV / Modal 等) の SoT 化 ADR を書く時、 必ず **その Component を使う画面側の Layout Contract (scroll content padding / margin / safe area / KeyboardAvoiding offset / focus management / animation timing)** も同じ ADR で SoT 化する。 Component と Layout Contract は **2 つの SoT として扱う**。 違反例: Sess36 ADR-0042 D3 で FAB component SoT は確立したが、 4 画面の ScrollView paddingBottom 計算 (Layout Contract) が散在 → `FAB top edge > paddingBottom` で 40〜74 px の重なり、 Sess72 テスター報告で発覚 → ADR-0042 D3 撤回 + ADR-0054 起票の手戻り。 検出: 静的解析困難 (画面コンテキスト依存)、 ADR Acceptance に「Layout Contract 検証 (短/長 list + dynamic insets) 必須」 明文化 + PR template §7.5 + Maestro 「最下端 scroll → 最終 testID visible」 共通 helper 化。 詳細: `recurrence-prevention/specialized.md` / `docs/adr/ADR-0054-bottom-cta-bar.md` / `docs/adr/ADR-0042-*` Notes Amended (Sess72) |
 
 ---
 
@@ -150,7 +151,7 @@
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
-- `.claude/recurrence-prevention/specialized.md` — R-13 〜 R-57 詳細記述
+- `.claude/recurrence-prevention/specialized.md` — R-13 〜 R-62 詳細記述
 - `.claude/hooks/` — 構造的防止 Hook 群（R-16/R-18/R-19/R-20 自動化）
 - `.claude/settings.json` — Hook 登録
 - `docs/reference/tasks/lessons/` — 技術 lesson（領域別フォルダ、`lessons/db.md` 等）
