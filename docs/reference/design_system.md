@@ -146,6 +146,9 @@ const styles = StyleSheet.create({
 #### 検出仕組み
 
 1. **ESLint custom rule** `local/no-color-token-in-stylesheet` (`eslint-rules/no-color-token-in-stylesheet.js`)
+   - **Sess66 PR3 (#940)**: `'warn'` level 導入 (段階導入、 既存 ~245 違反は許容)
+   - **Sess66 PR4-6 + Sess68 PR #A/B/C (#950-#952)**: 累計 245 → 0 違反完走
+   - **Sess68 PR #D**: `'error'` level 昇格、 構造禁止恒久化 (新規違反は CI で merge block)
 2. **a11y contrast CI** `pnpm a11y:contrast` (`scripts/a11y-contrast-check.mjs`) で代表 14 pair × WCAG AA 4.5:1 / UI 3.0:1 を機械検証
 3. **R-58** (`.claude/recurrence-prevention/specialized.md`): 画面追加 / 色変更 PR では `pnpm verify:a11y` + dark SS verify 必須
 
