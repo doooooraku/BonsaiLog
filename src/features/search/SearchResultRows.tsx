@@ -17,12 +17,24 @@ import { EventIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 // Sess66 PR6c: theme-dependent token を inline c.* に (dark cascade)。
+// Sess70 PR-C2: snippetMatch hex '#EDE7D8' を scheme-aware (c.tintSubtle) に移行
+// (15766 検索画面薄枠解消、 ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import type { EventWithSnippet } from '@/src/db/eventRepository';
 import { BONSAI_STYLES, type EventType } from '@/src/db/schema';
 import { BonsaiPlaceholder } from '@/src/features/bonsai/BonsaiPlaceholder';
 
 import type { BonsaiResult } from './useBonsaiSearch';
+
+/** snippet 一致部分の inline highlight ThemedText (useColors hook を使うため小 component 化、 Sess70 PR-C2)。 */
+function SnippetMatch({ children }: { children: React.ReactNode }) {
+  const c = useColors();
+  return (
+    <ThemedText style={[styles.snippetMatch, { backgroundColor: c.tintSubtle }]}>
+      {children}
+    </ThemedText>
+  );
+}
 
 /** FTS5 snippet の `«match»` 部分をインライン highlight で強調表示する pure inline component。 */
 export function SnippetSpans({ text }: { text: string }) {
@@ -47,9 +59,7 @@ export function SnippetSpans({ text }: { text: string }) {
     <>
       {segments.map((s, i) =>
         s.highlight ? (
-          <ThemedText key={i} style={styles.snippetMatch}>
-            {s.value}
-          </ThemedText>
+          <SnippetMatch key={i}>{s.value}</SnippetMatch>
         ) : (
           <ThemedText key={i}>{s.value}</ThemedText>
         ),
@@ -84,11 +94,7 @@ export function HighlightQuery({ text, query }: { text: string; query: string })
       break;
     }
     if (idx > i) out.push(<ThemedText key={key++}>{text.slice(i, idx)}</ThemedText>);
-    out.push(
-      <ThemedText key={key++} style={styles.snippetMatch}>
-        {text.slice(idx, idx + query.length)}
-      </ThemedText>,
-    );
+    out.push(<SnippetMatch key={key++}>{text.slice(idx, idx + query.length)}</SnippetMatch>);
     i = idx + query.length;
   }
   return <>{out}</>;
@@ -220,10 +226,9 @@ export function EventResultRow({
 }
 
 const styles = StyleSheet.create({
-  // Sess66 PR6c: theme-dependent 色は inline c.* に。 snippetMatch の色は washi highlight 文脈で
-  // brand-specific bg を維持 + 文字色は cascade 化 (dark で見える程度の明色を保持)。
+  // Sess66 PR6c: theme-dependent 色は inline c.* に。
+  // Sess70 PR-C2: bg は inline c.tintSubtle (scheme-aware、 15766 検索画面薄枠解消)。
   snippetMatch: {
-    backgroundColor: '#EDE7D8',
     fontWeight: '600',
   },
   // 盆栽結果行
