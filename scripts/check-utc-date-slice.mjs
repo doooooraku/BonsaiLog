@@ -16,9 +16,14 @@
  * - `nowUtc().slice(0, 10)` (UTC 日付取得)
  * - `(nowUtc() as string).slice(0, 10)` (Branded Type unwrap 経由、 同じ本質)
  * - `new Date().toISOString().slice(0, 10)` (ESLint 既存禁止 pattern も再保険)
+ * - `<variable>.toISOString().slice(0, 10)` (Sess67 LabeledDateRow bug 由来、 変数経由でもアウト)
  *
  * 例外 (機械処理用、 user 体感「日付」 ではない):
  * - `app/export/*` — CSV ファイル名 / PDF 生成時刻ラベル等
+ *
+ * 行末 suppress: `// lint:utc-date-slice-allow` を同行に付けると skip。
+ * 「ローカル日 0:00 を UTC ms に丸めてから ISO 化する正規トリック」 (dateUtils.ts toLocalDateKey 等)
+ * のみで使用すること。 通常の UTC 日付取得は禁止 (本 lint の存在意義)。
  *
  * 違反検出時 exit 1。 `pnpm verify` chain (package.json) に組込。
  *
@@ -32,6 +37,7 @@ const ROOT = process.cwd();
 const TARGET_DIRS = ['src', 'app'];
 const EXCLUDE_DIRS = ['node_modules', '.git', '__tests__'];
 const EXCLUDE_PATHS = ['app/export']; // 機械処理用 (CSV ファイル名 / PDF ラベル)
+const ALLOW_MARKER = 'lint:utc-date-slice-allow';
 
 // Forbidden patterns (UTC 日付取得 → ローカル日付として誤用)
 const FORBIDDEN_PATTERNS = [
@@ -46,6 +52,12 @@ const FORBIDDEN_PATTERNS = [
   {
     re: /new\s+Date\(\)\.toISOString\(\)\.slice\(0,\s*10\)/,
     message: 'new Date().toISOString().slice(0, 10) は UTC 日付を返す',
+  },
+  {
+    // Sess67 追加: 変数経由でも UTC 日付化 → ローカル日付の誤用は同じ本質。
+    // false positive は同行 `// lint:utc-date-slice-allow` で抑止。
+    re: /\b\w+\.toISOString\(\)\.slice\(0,\s*10\)/,
+    message: '<variable>.toISOString().slice(0, 10) は UTC 日付を返す (Sess67 LabeledDateRow bug)',
   },
 ];
 
@@ -92,6 +104,9 @@ for (const targetDir of TARGET_DIRS) {
     for (let i = 0; i < lines.length; i++) {
       let code = lines[i];
 
+      // Sess67 追加: 同行 allow marker は line comment 除去前に判定 (marker は通常 // ... に含まれる)
+      const hasAllowMarker = code.includes(ALLOW_MARKER);
+
       // block comment 除外
       if (inBlockComment) {
         const endIdx = code.indexOf('*/');
@@ -106,6 +121,8 @@ for (const targetDir of TARGET_DIRS) {
 
       // line comment 除外
       const codeOnly = code.split('//')[0];
+
+      if (hasAllowMarker) continue;
 
       for (const pattern of FORBIDDEN_PATTERNS) {
         if (pattern.re.test(codeOnly)) {

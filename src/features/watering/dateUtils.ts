@@ -23,32 +23,12 @@
  * - これにより本関数自体は TZ 非依存・テスト容易。
  */
 
+import { toLocalDateKey } from '@/src/core/datetime/localDateKey';
 import type { Event } from '@/src/db/schema';
 
-/**
- * UTC ISO 文字列からローカル日付キー (YYYY-MM-DD) を取り出すヘルパー。
- * tzOffsetMin = ユーザーローカルの UTC オフセット (分単位、JST=540)。
- *
- * fix/248 (実機検証で発覚): 旧データの occurredAtUtc が空文字 / 不正形式 / 巨大値だと
- * `new Date(...)` が NaN または範囲外 Date となり、`toISOString()` が
- * `RangeError: Date value out of bounds` を投げてアプリがクラッシュ。
- * NaN / Infinity / 範囲外は epoch (1970-01-01) にフォールバック (記録の表示が
- * 不正でも他の盆栽カードは表示される、ADR-0011 「記録のみ」哲学)。
- */
-export function toLocalDateKey(isoUtc: string, tzOffsetMin: number): string {
-  const utcMs = new Date(isoUtc).getTime();
-  if (!Number.isFinite(utcMs)) return '1970-01-01';
-  const localMs = utcMs + tzOffsetMin * 60_000;
-  // JS の Date は ±8.64e15 ms (約 ±27 万年) を超えると Invalid Date になる。
-  // 通常データではあり得ないが、ファイル破損 / 攻撃的入力に備えて clamp。
-  if (Math.abs(localMs) > 8.64e15) return '1970-01-01';
-  const local = new Date(localMs);
-  if (Number.isNaN(local.getTime())) return '1970-01-01';
-  // toISOString は常に UTC 表現なので、ローカル時刻にオフセットを足してから
-  // toISOString して "YYYY-MM-DD" 部分を取り出す技法。new Date 直接 .getFullYear()
-  // 系は環境依存のため使わない。
-  return local.toISOString().slice(0, 10);
-}
+// Sess67: `toLocalDateKey` は core/datetime に正規移設 (FSD boundary 整合)。
+// 既存 features/* consumers の import 互換を保つため re-export を維持。
+export { toLocalDateKey } from '@/src/core/datetime/localDateKey';
 
 /**
  * 2 つの YYYY-MM-DD キーから経過日数を算出 (b - a の日数差、負値もあり得る)。

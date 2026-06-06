@@ -5,8 +5,10 @@
  * UI を持たない純粋な導出のみ (hook 不使用、テスト容易)。
  */
 import { nowUtc } from '@/src/core/datetime';
+import { getTzOffsetMin } from '@/src/core/datetime/tz';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { type Event } from '@/src/db/schema';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import {
   classifyWiringDuration,
   getDaysSinceWired,
@@ -38,7 +40,8 @@ function formatDate(iso: string, locale: string): string {
       day: 'numeric',
     }).format(date);
   } catch {
-    return date.toISOString().slice(0, 10);
+    // Sess67 fix: Intl 失敗時の fallback でも UTC 日付化を避ける (JST 深夜で 1 日前表示の防止)。
+    return toLocalDateKey(date.toISOString(), getTzOffsetMin());
   }
 }
 

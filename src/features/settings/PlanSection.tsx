@@ -18,9 +18,11 @@ import React from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { getTzOffsetMin } from '@/src/core/datetime/tz';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { ACCENT_GOLD, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import { useProStore } from '@/src/stores/proStore';
 
 import { SettingsSection } from './SettingsSection';
@@ -85,7 +87,8 @@ function formatRenewalDate(iso: string | null, lang: string): string | null {
       day: 'numeric',
     }).format(date);
   } catch {
-    return date.toISOString().slice(0, 10);
+    // Sess67 fix: Intl 失敗時の fallback でも UTC 日付化を避ける (JST 深夜で 1 日前表示の防止)。
+    return toLocalDateKey(date.toISOString(), getTzOffsetMin());
   }
 }
 

@@ -17,6 +17,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { CloseIcon } from '@/src/components/icons';
 import { nowUtc } from '@/src/core/datetime/clock';
+import { toLocalDateKey } from '@/src/core/datetime/localDateKey';
+import { getTzOffsetMin } from '@/src/core/datetime/tz';
 import { BG_PRIMARY, DANGER, ON_BRAND, TEXT_MUTED } from '@/src/core/theme/colors';
 import { formOptional, formRequired } from '@/src/core/theme/typography';
 import { useColors } from '@/src/core/theme/useColors';
@@ -104,7 +106,10 @@ export function LabeledDateRow({
           onChange={(event: DateTimePickerEvent, date?: Date) => {
             setShow(false);
             if (event.type === 'set' && date) {
-              onChangeText(date.toISOString().slice(0, 10));
+              // Sess67 fix: native picker が返す date はローカル時刻。 直接 toISOString() で UTC 化すると
+              // JST 深夜 (0:00-8:59) に「今日」 を選んでも前日の YYYY-MM-DD になる (off-by-one)。
+              // toLocalDateKey(isoUtc, tzOffsetMin) で local 日付キーを正しく抽出する。
+              onChangeText(toLocalDateKey(date.toISOString(), getTzOffsetMin()));
             }
           }}
         />
