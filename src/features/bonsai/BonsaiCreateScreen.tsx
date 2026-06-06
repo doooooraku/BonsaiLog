@@ -14,6 +14,7 @@ import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'r
 import { ThemedText } from '@/components/themed-text';
 import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
+import { useScrollPreservation } from '@/src/core/hooks/useScrollPreservation';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT は inline c.* 化。
 // Sess69 PR-B: BRAND_GREEN / DISABLED_BG / ON_BRAND も scheme-aware
@@ -31,6 +32,11 @@ export default function BonsaiCreateScreen() {
   const kavProps = useKeyboardAvoidingProps();
   // Sess31 PR-1 (R-46 拡張): ScrollView ref + メモ欄 onFocus → scrollToEnd で IME 起動時の可視性確保。
   const scrollRef = React.useRef<ScrollView>(null);
+  // Sess72 PR-2 (ADR-0040 D5 予定 / R-62 予定): 子画面 (tag-edit) から push で戻った時の scroll
+  // 位置保持。 useFocusEffect 内 setSelectedTagIds + setRecentTags 2 連で TagSection layout が
+  // 「empty 縦」 → 「wrap row 横」 に変化し ScrollView contentOffset が 0 リセットされる挙動を
+  // 構造的に解消 (テスター苦情「タグ追加から戻ると先頭に戻る」 への hook 化対応)。
+  const { onScroll, scrollEventThrottle } = useScrollPreservation(scrollRef);
   const handleMemoFocus = React.useCallback(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
   }, []);
@@ -54,6 +60,8 @@ export default function BonsaiCreateScreen() {
       <KeyboardAvoidingView style={styles.flexOne} {...kavProps}>
         <ScrollView
           ref={scrollRef}
+          onScroll={onScroll}
+          scrollEventThrottle={scrollEventThrottle}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
