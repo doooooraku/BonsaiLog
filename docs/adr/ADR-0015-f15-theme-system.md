@@ -641,3 +641,66 @@ F-15 を以下の構成で実装する。
 ### 将来の再導入
 
 Tamagui を将来 UI 基盤として再評価したい場合は、本 ADR を超える新 ADR 起票 (Tamagui-based 全画面再構築の設計 + 移行計画) を前提とする。`pnpm add tamagui ...` で再導入可。
+
+---
+
+## Notes Amended (2026-06-06、 Sess66 PR4): Dark 配色を navy 寒色 → 宵墨 (yoizumi) warm 暖色 に pivot
+
+### 改訂内容
+
+本 ADR で当初定義した dark mode の hex 値 (`#0A0E1A` 等、 OLED 焼付き配慮 + Material 3 baseline 由来) は、 ブランド哲学「washi 和紙 → sumi 墨 → fukamidori 深緑」 と整合する **暖色** 系ではなく、 **寒色系 navy** に振れていた。 Claude Design `tokens.css` `[data-theme="dark"]` 提案値整合 + Sess66 議論 (10 専門家 + 3 ペルソナ全員一致) で、 暖色 **宵墨 (yoizumi)** 系に pivot することを決定。
+
+### 改訂前 (navy 寒色、 旧)
+
+| Token              | 旧 HEX    |
+| ------------------ | --------- |
+| `--bg-primary`     | `#0A0E1A` |
+| `--bg-surface`     | `#131826` |
+| `--text-primary`   | `#E8E4D6` |
+| `--text-secondary` | `#B0A897` |
+| `--text-muted`     | `#7A7265` |
+| `--primary`        | `#6B9B7F` |
+| `--primary-hover`  | `#7FB095` |
+| `--accent-bark`    | `#8C7561` |
+| `--danger`         | `#C9575D` |
+| `--success`        | `#7DAE7A` |
+| `--border`         | `#2A2F3E` |
+| `--border-strong`  | `#4A5060` |
+
+### 改訂後 (宵墨 warm 暖色、 Sess66 採用)
+
+| Token              | 新 HEX           | 由来 / 意図                        |
+| ------------------ | ---------------- | ---------------------------------- |
+| `--bg-primary`     | `#16140F`        | 宵墨 yoizumi — 暖かい墨            |
+| `--bg-surface`     | `#211E18`        | 重ねの紙                           |
+| `--text-primary`   | `#ECE6D6`        | 淡 washi                           |
+| `--text-secondary` | `#B3AA97`        | warm sumi 系の補助                 |
+| `--text-muted`     | `#837A68`        | warm sumi 系の 3 次                |
+| `--primary`        | `#7FA98A`        | 苔緑 — 夜目に映える深緑            |
+| `--primary-hover`  | `#93BD9E`        | brand hover (light + tint)         |
+| `--accent-bark`    | `#A1886F`        | 樹皮色 (warm)                      |
+| `--danger`         | `#CE7A72`        | warm sumi 系の赤                   |
+| `--success`        | `#88B083`        | warm sumi 系の緑                   |
+| `--border`         | `#2C2820`        | 茶味の枠線 (warm)                  |
+| `--border-strong`  | `#4A4534`        | 強調枠線 (warm)                    |
+| `--accent-gold`    | `#D4B062` (不変) | Pro バッジ専用、 両 theme 同色維持 |
+
+### 採用理由
+
+1. **ブランド哲学整合 (P3 永く変わらない)**: 「washi → sumi → fukamidori」 を dark mode まで延長、 navy 寒色は「テック寄り」 で P3 と矛盾していた。
+2. **WCAG AA 全 pair 達成**: `pnpm a11y:contrast` (Sess66 PR3 で導入の自動 gate) で 12 pair × light/dark すべて pass 確認 — 新 token で text × bg 15.13:1 (AAA)、 primary × bg 6.07:1 (AA+)。
+3. **クローズドテスト中ゆえ既存ユーザー色変更ショック影響 0** — リリース前タイミングでの pivot が最も低リスク。
+4. **Claude Design 提案整合**: `tokens.css` `[data-theme="dark"]` の宵墨パレットを正式採用、 design system SoT (`design_system.md` §2-2) と完全整合化。
+
+### 影響範囲
+
+- `constants/theme.ts` `DARK_TOKENS` 13 値 (本 PR4 で更新済)
+- `docs/reference/design_system.md` §2-2 表 (本 PR4 で更新済)
+- snapshot test (`__tests__/__snapshots__/`) — `jest -u` で再生成
+- 既存実装の `c.background` / `c.surface` / `c.text` / `c.tint` 等 inline 利用箇所はそのまま追従 (PR3 cascade pattern による)
+
+### 関連
+
+- Sess66 PR3 (ADR-0052): Dark Theme Cascade Pattern (useColors + ESLint rule + a11y CI、 本 PR4 の安全網)
+- Sess66 PR5 (予定、 ADR-0053): Navigation Header SoT 統一
+- Sess66 PR6 (予定): ThemedView/ThemedText 全画面適用
