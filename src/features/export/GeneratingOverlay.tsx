@@ -17,13 +17,9 @@ import { ActivityIndicator, Modal, Pressable, StyleSheet, View } from 'react-nat
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_PRIMARY,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_PRIMARY / BORDER_DEFAULT / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN は brand-static で保持。
+import { BRAND_GREEN } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { ExportFormatBadge, type ExportFmt } from './ExportFormatBadge';
 
 type Props = {
@@ -52,6 +48,7 @@ export function GeneratingOverlay({
   delayMs = DEFAULT_SHOW_DELAY_MS,
 }: Props) {
   const { t } = useTranslation();
+  const c = useColors();
   // 遅延表示: visible が delayMs 以上続いた時だけ実際に Modal を出す (瞬間完了のチラつき防止)。
   const [shown, setShown] = useState(false);
   // 多写真 PDF は数十秒かかることがあるため、表示後さらに一定時間で「お待ちください」を追加表示。
@@ -83,7 +80,7 @@ export function GeneratingOverlay({
     <Modal visible={shown} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.backdrop}>
         <View
-          style={styles.card}
+          style={[styles.card, { backgroundColor: c.background }]}
           accessibilityViewIsModal
           accessibilityRole="alert"
           testID="e2e_export_generating_overlay"
@@ -91,7 +88,7 @@ export function GeneratingOverlay({
           <View style={styles.headerCol}>
             {format ? <ExportFormatBadge fmt={format} size={40} /> : null}
             <ThemedText
-              style={styles.title}
+              style={[styles.title, { color: c.text }]}
               numberOfLines={2}
               ellipsizeMode="tail"
               testID="e2e_export_generating_title"
@@ -103,7 +100,10 @@ export function GeneratingOverlay({
           <ActivityIndicator size="large" color={BRAND_GREEN} />
 
           {slow ? (
-            <ThemedText style={styles.slowHint} testID="e2e_export_generating_slow_hint">
+            <ThemedText
+              style={[styles.slowHint, { color: c.textSecondary }]}
+              testID="e2e_export_generating_slow_hint"
+            >
               {t('exportPdfSlowHint')}
             </ThemedText>
           ) : null}
@@ -114,10 +114,12 @@ export function GeneratingOverlay({
                 accessibilityRole="button"
                 accessibilityLabel={t('cancel')}
                 onPress={onCancel}
-                style={styles.cancel}
+                style={[styles.cancel, { borderColor: c.border }]}
                 testID="e2e_export_generating_cancel"
               >
-                <ThemedText style={styles.cancelText}>{t('cancel')}</ThemedText>
+                <ThemedText style={[styles.cancelText, { color: c.textSecondary }]}>
+                  {t('cancel')}
+                </ThemedText>
               </Pressable>
             </View>
           ) : null}
@@ -138,7 +140,6 @@ const styles = StyleSheet.create({
   card: {
     minWidth: 260,
     maxWidth: '90%',
-    backgroundColor: BG_PRIMARY,
     borderRadius: 16,
     paddingVertical: 24,
     paddingHorizontal: 24,
@@ -149,8 +150,8 @@ const styles = StyleSheet.create({
   // 横並び (flex:1 で title が wrap) では多言語超長文や種別名長で破綻するため、縦並び + 中央寄せ
   // + numberOfLines={2} ellipsize の組み合わせで保険を掛ける。詳細は ADR-0016 Sess56 Amend 参照。
   headerCol: { flexDirection: 'column', alignItems: 'center', gap: 12 },
-  title: { fontSize: 16, fontWeight: '500', color: TEXT_PRIMARY, textAlign: 'center' },
-  slowHint: { fontSize: 13, lineHeight: 19, color: TEXT_SECONDARY, textAlign: 'center' },
+  title: { fontSize: 16, fontWeight: '500', textAlign: 'center' },
+  slowHint: { fontSize: 13, lineHeight: 19, textAlign: 'center' },
   footerRow: { flexDirection: 'row', justifyContent: 'flex-end' },
   cancel: {
     minHeight: 40,
@@ -158,7 +159,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
   },
-  cancelText: { fontSize: 14, color: TEXT_SECONDARY },
+  cancelText: { fontSize: 14 },
 });
