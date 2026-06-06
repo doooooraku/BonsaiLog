@@ -19,14 +19,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { SearchIcon } from '@/src/components/icons';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess66 PR6a.1: theme-dependent token を inline c.* に (dark cascade)。
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { BonsaiResultRow, EventResultRow } from '@/src/features/search/SearchResultRows';
 import { useBonsaiSearch } from '@/src/features/search/useBonsaiSearch';
@@ -61,8 +55,8 @@ export default function LookBackSearchScreen() {
       testID="e2e_find_screen"
     >
       {/* Search-as-Header: back + 🔍 + input + clear */}
-      <SafeAreaView edges={['top']} style={styles.headerSafe}>
-        <View style={styles.header}>
+      <SafeAreaView edges={['top']} style={[styles.headerSafe, { backgroundColor: c.surface }]}>
+        <View style={[styles.header, { borderBottomColor: c.border }]}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('cancel')}
@@ -71,10 +65,10 @@ export default function LookBackSearchScreen() {
             onPress={() => router.back()}
             hitSlop={8}
           >
-            <ThemedText style={styles.backButtonText}>{'‹'}</ThemedText>
+            <ThemedText style={[styles.backButtonText, { color: c.text }]}>{'‹'}</ThemedText>
           </Pressable>
-          <View style={[styles.inputRow, { borderColor: c.border, backgroundColor: BG_SURFACE }]}>
-            <SearchIcon size={18} color={TEXT_SECONDARY} />
+          <View style={[styles.inputRow, { borderColor: c.border, backgroundColor: c.surface }]}>
+            <SearchIcon size={18} color={c.textSecondary} />
             <TextInput
               accessibilityLabel={t('searchPlaceholder')}
               testID="e2e_find_input"
@@ -98,7 +92,7 @@ export default function LookBackSearchScreen() {
                 onPress={() => setQuery('')}
                 hitSlop={8}
               >
-                <ThemedText style={styles.clearButtonX}>×</ThemedText>
+                <ThemedText style={[styles.clearButtonX, { color: c.textSecondary }]}>×</ThemedText>
               </Pressable>
             )}
           </View>
@@ -111,7 +105,7 @@ export default function LookBackSearchScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.filterRow}
             testID="e2e_find_filter_row"
-            style={{ borderBottomWidth: 1, borderBottomColor: BORDER_DEFAULT }}
+            style={{ borderBottomWidth: 1, borderBottomColor: c.border }}
           >
             {recentTags.map((tg) => {
               const selected = selectedTagId === tg.id;
@@ -139,15 +133,17 @@ export default function LookBackSearchScreen() {
         {/* 空 / 短クエリ状態: 「N 文字以上」ヒント + 検索履歴リスト */}
         {showMinCharsHint && (
           <>
-            <ThemedText style={styles.minCharsHint}>
+            <ThemedText style={[styles.minCharsHint, { color: c.textSecondary }]}>
               {t('searchMinChars').replace('{count}', String(minChars))}
             </ThemedText>
             {searchHistory.length > 0 && (
               <View testID="e2e_find_recent_history">
-                <ThemedText style={styles.sectionLabel}>{t('searchRecentTitle')}</ThemedText>
+                <ThemedText style={[styles.sectionLabel, { color: c.textSecondary }]}>
+                  {t('searchRecentTitle')}
+                </ThemedText>
                 {searchHistory.slice(0, 3).map((q) => (
-                  <View key={q} style={styles.historyRow}>
-                    <SearchIcon size={16} color={TEXT_SECONDARY} />
+                  <View key={q} style={[styles.historyRow, { borderBottomColor: c.border }]}>
+                    <SearchIcon size={16} color={c.textSecondary} />
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={q}
@@ -158,7 +154,7 @@ export default function LookBackSearchScreen() {
                         void runSearchWith(q);
                       }}
                     >
-                      <ThemedText style={styles.historyText}>{q}</ThemedText>
+                      <ThemedText style={[styles.historyText, { color: c.text }]}>{q}</ThemedText>
                     </Pressable>
                     <Pressable
                       accessibilityRole="button"
@@ -168,7 +164,9 @@ export default function LookBackSearchScreen() {
                       onPress={() => removeHistory(q)}
                       hitSlop={8}
                     >
-                      <ThemedText style={styles.clearButtonX}>×</ThemedText>
+                      <ThemedText style={[styles.clearButtonX, { color: c.textSecondary }]}>
+                        ×
+                      </ThemedText>
                     </Pressable>
                   </View>
                 ))}
@@ -185,7 +183,7 @@ export default function LookBackSearchScreen() {
         {/* 盆栽セクション */}
         {bonsaiResults.length > 0 && (
           <View style={styles.section} testID="e2e_find_bonsai_section">
-            <ThemedText style={styles.sectionLabel}>
+            <ThemedText style={[styles.sectionLabel, { color: c.textSecondary }]}>
               {t('searchBonsaiSection')}
               {' · '}
               {bonsaiResults.length}
@@ -199,7 +197,7 @@ export default function LookBackSearchScreen() {
         {/* 作業履歴セクション */}
         {eventResults.length > 0 && (
           <View style={styles.section} testID="e2e_find_event_section">
-            <ThemedText style={styles.sectionLabel}>
+            <ThemedText style={[styles.sectionLabel, { color: c.textSecondary }]}>
               {t('searchEventSection')}
               {' · '}
               {eventResults.length}
@@ -216,7 +214,8 @@ export default function LookBackSearchScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  headerSafe: { backgroundColor: BG_SURFACE },
+  // Sess66 PR6a.1: bg/border/text color は inline c.* (dark cascade)。
+  headerSafe: {},
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -224,7 +223,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
   },
   backButton: {
     width: 36,
@@ -232,7 +230,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  backButtonText: { fontSize: 28, color: TEXT_PRIMARY, lineHeight: 28 },
+  backButtonText: { fontSize: 28, lineHeight: 28 },
   inputRow: {
     flex: 1,
     flexDirection: 'row',
@@ -254,7 +252,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  clearButtonX: { fontSize: 20, color: TEXT_SECONDARY, lineHeight: 20 },
+  clearButtonX: { fontSize: 20, lineHeight: 20 },
   // フィルタ行
   filterRow: {
     flexDirection: 'row',
@@ -268,12 +266,11 @@ const styles = StyleSheet.create({
     minHeight: 32,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     backgroundColor: 'transparent',
     justifyContent: 'center',
   },
   filterChipSel: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
-  filterChipText: { fontSize: 12, color: TEXT_SECONDARY, fontWeight: '500' },
+  filterChipText: { fontSize: 12, fontWeight: '500' },
   filterChipTextSel: { color: ON_BRAND, fontWeight: '600' },
   // スクロールエリア
   scroll: { padding: 16, gap: 16, paddingBottom: 96 },
@@ -281,7 +278,6 @@ const styles = StyleSheet.create({
   minCharsHint: {
     textAlign: 'center',
     fontSize: 14,
-    color: TEXT_SECONDARY,
     paddingVertical: 24,
     opacity: 0.7,
   },
@@ -292,11 +288,10 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
     minHeight: 48,
   },
   historyTextWrap: { flex: 1 },
-  historyText: { fontSize: 15, color: TEXT_PRIMARY },
+  historyText: { fontSize: 15 },
   historyDeleteWrap: {
     width: 32,
     height: 32,
@@ -309,7 +304,6 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontFamily: 'Inter_400Regular',
     fontSize: 11,
-    color: TEXT_SECONDARY,
     textTransform: 'uppercase',
     letterSpacing: 1.4,
     marginBottom: 4,

@@ -26,14 +26,8 @@ import { ThemedView } from '@/components/themed-view';
 import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { ChevronRightIcon } from '@/src/components/icons';
 import { type TranslationKey, useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  TEXT_MUTED,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess66 PR6a.1: theme-dependent token を inline c.* に (dark cascade)。
+import { useColors } from '@/src/core/theme/useColors';
 import { ExportFormatBadge, type ExportFmt } from '@/src/features/export/ExportFormatBadge';
 import { ExportOptionsSheet } from '@/src/features/export/ExportOptionsSheet';
 import type { ExportOptions, ExportTypeKey } from '@/src/features/export/exportFlow';
@@ -79,27 +73,30 @@ const EXPORT_TYPES: readonly ExportTypeDef[] = [
 
 function ExportRow({ def, onPress }: { def: ExportTypeDef; onPress: () => void }) {
   const { t } = useTranslation();
+  const c = useColors();
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={t(def.titleKey)}
       testID={`e2e_export_hub_row_${def.k}`}
-      style={styles.row}
+      style={[styles.row, { backgroundColor: c.surface, borderColor: c.border }]}
       onPress={onPress}
     >
       <ExportFormatBadge fmt={def.fmt} />
       <View style={styles.rowMain}>
         <View style={styles.rowTitleLine}>
-          <ThemedText type="defaultSemiBold" style={styles.rowTitle}>
+          <ThemedText type="defaultSemiBold" style={[styles.rowTitle, { color: c.text }]}>
             {t(def.titleKey)}
           </ThemedText>
           <View style={styles.proBadge}>
-            <ThemedText style={styles.proBadgeText}>{t('proBadgeShort')}</ThemedText>
+            <ThemedText style={[styles.proBadgeText, { color: c.text }]}>
+              {t('proBadgeShort')}
+            </ThemedText>
           </View>
         </View>
-        <ThemedText style={styles.rowSub}>{t(def.subKey)}</ThemedText>
+        <ThemedText style={[styles.rowSub, { color: c.textSecondary }]}>{t(def.subKey)}</ThemedText>
       </View>
-      <ChevronRightIcon size={16} color={TEXT_MUTED} />
+      <ChevronRightIcon size={16} color={c.textMuted} />
     </Pressable>
   );
 }
@@ -107,6 +104,7 @@ function ExportRow({ def, onPress }: { def: ExportTypeDef; onPress: () => void }
 export default function ExportHubScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
+  const c = useColors();
   const isPro = useProStore((s) => s.isPro);
   const goToPaywall = useGoToPaywall();
   const [sheetType, setSheetType] = useState<ExportTypeKey | null>(null);
@@ -147,15 +145,24 @@ export default function ExportHubScreen() {
   const generatingFmt: ExportFmt = generatingDef?.fmt ?? 'CSV';
 
   return (
-    <ThemedView style={styles.container} testID="e2e_export_hub_screen">
+    <ThemedView
+      style={[styles.container, { backgroundColor: c.background }]}
+      testID="e2e_export_hub_screen"
+    >
       <FormScreenHeader title={t('settingsExportSection')} testID="e2e_export_hub_header" />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.hero}>
-          <ThemedText style={styles.heroTitle}>{t('exportHubHeroTitle')}</ThemedText>
-          <ThemedText style={styles.heroBody}>{t('exportHubHeroBody')}</ThemedText>
+          <ThemedText style={[styles.heroTitle, { color: c.text }]}>
+            {t('exportHubHeroTitle')}
+          </ThemedText>
+          <ThemedText style={[styles.heroBody, { color: c.textSecondary }]}>
+            {t('exportHubHeroBody')}
+          </ThemedText>
         </View>
 
-        <ThemedText style={styles.sectionLabel}>{t('exportHubCsvSection')}</ThemedText>
+        <ThemedText style={[styles.sectionLabel, { color: c.textMuted }]}>
+          {t('exportHubCsvSection')}
+        </ThemedText>
         {csvTypes.map((def) => (
           <ExportRow key={def.k} def={def} onPress={() => handlePick(def.k)} />
         ))}
@@ -192,25 +199,23 @@ export default function ExportHubScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG_PRIMARY },
+  // Sess66 PR6a.1: bg/border/text color は inline c.* (dark cascade)。
+  container: { flex: 1 },
   scroll: { padding: 16, paddingBottom: 40 },
   hero: { marginBottom: 20 },
   heroTitle: {
     fontFamily: 'NotoSerifJP_500Medium',
     fontSize: 22,
     lineHeight: 32,
-    color: TEXT_PRIMARY,
   },
   heroBody: {
     marginTop: 10,
     fontSize: 14,
     lineHeight: 22,
-    color: TEXT_SECONDARY,
   },
   sectionLabel: {
     fontSize: 11,
     letterSpacing: 1.4,
-    color: TEXT_MUTED,
     marginTop: 8,
     marginBottom: 8,
     marginLeft: 4,
@@ -224,20 +229,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 6,
     minHeight: 64,
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
   },
   rowMain: { flex: 1, minWidth: 0 },
   rowTitleLine: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  rowTitle: { fontSize: 15, color: TEXT_PRIMARY },
-  rowSub: { fontSize: 12, color: TEXT_SECONDARY, marginTop: 2, lineHeight: 18 },
+  rowTitle: { fontSize: 15 },
+  rowSub: { fontSize: 12, marginTop: 2, lineHeight: 18 },
   proBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     backgroundColor: 'rgba(198,158,72,0.18)',
   },
-  proBadgeText: { fontSize: 9, letterSpacing: 0.6, color: TEXT_PRIMARY, fontWeight: '600' },
+  proBadgeText: { fontSize: 9, letterSpacing: 0.6, fontWeight: '600' },
 });
