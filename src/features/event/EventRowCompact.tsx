@@ -62,7 +62,9 @@ export function EventRowCompact({
     <Pressable
       style={[
         styles.eventRow,
-        { backgroundColor: c.surface, borderColor: c.border },
+        // Sess73 PR-2: borderStrong で dark mode card 境界視認性確保
+        // (c.border vs c.surface = 1.4:1 → c.borderStrong = 3.18:1 AA pass)。
+        { backgroundColor: c.surface, borderColor: c.borderStrong },
         indent && styles.eventRowIndent,
         highlighted && [
           styles.rowHighlighted,
