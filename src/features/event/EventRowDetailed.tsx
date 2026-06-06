@@ -14,14 +14,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { MoreVerticalIcon } from '@/src/components/icons';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BUTTON_SECONDARY_BG,
-  BUTTON_SECONDARY_TEXT,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess66 PR6c.1: theme-dependent token を inline c.* に (dark cascade)。
+import { BUTTON_SECONDARY_BG, BUTTON_SECONDARY_TEXT } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import {
   eventRowMemo,
   eventRowMemoSectionLabel,
@@ -131,6 +126,7 @@ export function EventRowDetailed({
   kebabTestID,
   highlighted = false,
 }: EventRowProps) {
+  const c = useColors();
   // detailed mode は event 紐付け写真を fetch
   const [repPhoto, setRepPhoto] = useState<PhotoRead | null>(null);
   const [totalPhotos, setTotalPhotos] = useState<number>(0);
@@ -167,6 +163,7 @@ export function EventRowDetailed({
     <Pressable
       style={[
         styles.detailedCard,
+        { backgroundColor: c.surface, borderColor: c.border },
         indent && styles.detailedCardIndent,
         highlighted && styles.rowHighlighted,
       ]}
@@ -183,13 +180,17 @@ export function EventRowDetailed({
       <View style={styles.detailedHeader}>
         <View style={styles.detailedHeaderTitleArea}>
           {showBonsaiName && bonsaiName ? (
-            <ThemedText style={styles.detailedTitle} numberOfLines={1}>
+            <ThemedText style={[styles.detailedTitle, { color: c.text }]} numberOfLines={1}>
               {bonsaiName}
             </ThemedText>
           ) : (
             <>
-              <ThemedText style={styles.detailedTitle}>{eventLabel}</ThemedText>
-              <ThemedText style={styles.detailedSubtitle}>{dateLabel}</ThemedText>
+              <ThemedText style={[styles.detailedTitle, { color: c.text }]}>
+                {eventLabel}
+              </ThemedText>
+              <ThemedText style={[styles.detailedSubtitle, { color: c.textSecondary }]}>
+                {dateLabel}
+              </ThemedText>
             </>
           )}
         </View>
@@ -202,7 +203,7 @@ export function EventRowDetailed({
             onPress={() => onKebabPress(ev)}
             testID={kebabTestID}
           >
-            <MoreVerticalIcon size={20} color={TEXT_SECONDARY} />
+            <MoreVerticalIcon size={20} color={c.textSecondary} />
           </Pressable>
         )}
       </View>
@@ -210,31 +211,37 @@ export function EventRowDetailed({
       {/* labeled chips block + wiring duration / scheduled unwire (wiring 時) */}
       {(hasChips || hasWiringInfo) && (
         <>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: c.border }]} />
           <View style={styles.detailedChipsBlock}>
             {hasChips && <HistoryChipRow chips={chips} maxVisible={DETAILED_CHIPS_MAX_VISIBLE} />}
             {/* ADR-0041 Phase θ D11: wiring の WiringPeriodDisplay も labeled chip 同列 */}
             {wiringDuration && (
               <View style={styles.labeledRowInline}>
-                <ThemedText style={styles.fieldLabelInline} numberOfLines={1}>
+                <ThemedText
+                  style={[styles.fieldLabelInline, { color: c.textSecondary }]}
+                  numberOfLines={1}
+                >
                   {`${t('workLogWireDuration')}:`}
                 </ThemedText>
                 <WiringPeriodDisplay
                   weeks={wiringDuration.weeks}
                   kind={wiringDuration.kind}
                   isUnwired={wiringDuration.isUnwired}
-                  style={styles.wiringInlineText}
+                  style={[styles.wiringInlineText, { color: c.textSecondary }]}
                   testID={`e2e_wiring_duration_${ev.id}`}
                 />
               </View>
             )}
             {scheduledUnwireLabel && (
               <View style={styles.labeledRowInline}>
-                <ThemedText style={styles.fieldLabelInline} numberOfLines={1}>
+                <ThemedText
+                  style={[styles.fieldLabelInline, { color: c.textSecondary }]}
+                  numberOfLines={1}
+                >
                   {`${t('workLogWireUnwireDate')}:`}
                 </ThemedText>
                 <ThemedText
-                  style={styles.wiringInlineText}
+                  style={[styles.wiringInlineText, { color: c.textSecondary }]}
                   testID={`e2e_wiring_scheduled_${ev.id}`}
                 >
                   {scheduledUnwireLabel.replace(
@@ -253,7 +260,7 @@ export function EventRowDetailed({
           左 border は付けない (user 指摘で確定、 視覚ノイズ防止)。 */}
       {hasMemo && (
         <>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: c.border }]} />
           <View style={styles.detailedMemoBlock}>
             <ThemedText style={styles.memoSectionLabel}>{t('workLogNote')}</ThemedText>
             <MemoWithReadMore
@@ -302,15 +309,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5EEDD',
     borderColor: BUTTON_SECONDARY_TEXT,
   },
-  // detailed mode (Phase θ D1): vertical stack card
+  // detailed mode (Phase θ D1): vertical stack card。 Sess66 PR6c.1: bg/border は inline c.*。
   detailedCard: {
     flexDirection: 'column',
     gap: 8,
     paddingVertical: 14,
     paddingHorizontal: 14,
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
     marginBottom: 8,
   },
@@ -322,9 +327,10 @@ const styles = StyleSheet.create({
   },
   detailedHeaderTitleArea: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 8 },
   // Sess37 PR-1 C5: detailedTitle 16 維持 (盆栽名等)、 detailedSubtitle 12→13 (副情報強調)
-  detailedTitle: { fontSize: 16, color: TEXT_PRIMARY, fontWeight: '600' },
-  detailedSubtitle: { fontSize: 13, color: TEXT_SECONDARY },
-  divider: { height: 1, backgroundColor: BORDER_DEFAULT, marginVertical: 4 },
+  // Sess66 PR6c.1: color は inline c.* (dark cascade)。
+  detailedTitle: { fontSize: 16, fontWeight: '600' },
+  detailedSubtitle: { fontSize: 13 },
+  divider: { height: 1, marginVertical: 4 },
   detailedChipsBlock: { flexDirection: 'column', gap: 4 },
   detailedMemoBlock: { flexDirection: 'column', gap: 2 },
   // Sess37 PR-1 C6: memo セクションラベル「メモ」 (token 経由)
@@ -339,12 +345,10 @@ const styles = StyleSheet.create({
   },
   fieldLabelInline: {
     fontSize: 11,
-    color: TEXT_SECONDARY,
     minWidth: 64,
   },
   wiringInlineText: {
     fontSize: 11,
-    color: TEXT_SECONDARY,
   },
   // memo 本文 (Sess37 PR-1 C5: token 経由、 lineHeight 22 で可読性 ↑)
   eventRowNote: { ...eventRowMemo, marginTop: 2 },
