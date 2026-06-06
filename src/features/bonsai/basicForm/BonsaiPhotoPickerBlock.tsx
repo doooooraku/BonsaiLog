@@ -4,7 +4,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { CameraIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BG_SURFACE, BORDER_DEFAULT, TEXT_MUTED, TEXT_SECONDARY } from '@/src/core/theme/colors';
+// Sess66 PR6c.2: theme-dependent token を inline c.* に (dark cascade)。
+import { useColors } from '@/src/core/theme/useColors';
 import type { BonsaiBasicFormState } from '@/src/features/bonsai/BonsaiBasicForm';
 
 /**
@@ -18,6 +19,7 @@ import type { BonsaiBasicFormState } from '@/src/features/bonsai/BonsaiBasicForm
  */
 export function BonsaiPhotoPickerBlock({ form }: { form: BonsaiBasicFormState }) {
   const { t } = useTranslation();
+  const c = useColors();
   const {
     pendingPhotos,
     handlePickPhoto,
@@ -32,14 +34,16 @@ export function BonsaiPhotoPickerBlock({ form }: { form: BonsaiBasicFormState })
         <ThemedText type="defaultSemiBold">
           {t('bonsaiFieldPhotos')} ({pendingPhotos.length})
         </ThemedText>
-        <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+        <ThemedText style={[styles.optionalLabel, { color: c.textMuted }]}>
+          {t('fieldOptionalLabel')}
+        </ThemedText>
       </View>
       {/* Sess13 PR-J: Repolog 流 2 button (カメラ / ライブラリ) 並列。 */}
       <View style={styles.photoSourceRow}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('photoSourceCamera')}
-          style={styles.photoSourceButton}
+          style={[styles.photoSourceButton, { backgroundColor: c.surface, borderColor: c.border }]}
           onPress={handleTakePhotoCamera}
           testID="e2e_bonsai_create_photo_camera"
         >
@@ -49,7 +53,7 @@ export function BonsaiPhotoPickerBlock({ form }: { form: BonsaiBasicFormState })
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('photoSourceLibrary')}
-          style={styles.photoSourceButton}
+          style={[styles.photoSourceButton, { backgroundColor: c.surface, borderColor: c.border }]}
           onPress={handlePickPhoto}
           testID="e2e_bonsai_create_photo_library"
         >
@@ -57,21 +61,32 @@ export function BonsaiPhotoPickerBlock({ form }: { form: BonsaiBasicFormState })
         </Pressable>
       </View>
       {pendingPhotos.length > 0 && (
-        <ThemedText style={styles.photoHelpText}>{t('photoReorderHelp')}</ThemedText>
+        <ThemedText style={[styles.photoHelpText, { color: c.textMuted }]}>
+          {t('photoReorderHelp')}
+        </ThemedText>
       )}
       {pendingPhotos.map((p, idx) => {
         const isFirst = idx === 0;
         const isLast = idx === pendingPhotos.length - 1;
         return (
-          <View key={`${p.uri}-${idx}`} style={styles.photoCard}>
+          <View
+            key={`${p.uri}-${idx}`}
+            style={[styles.photoCard, { backgroundColor: c.surface, borderColor: c.border }]}
+          >
             <View style={styles.photoCardToolbar}>
-              <ThemedText style={styles.photoCardIndex}>{idx + 1}</ThemedText>
+              <ThemedText style={[styles.photoCardIndex, { color: c.textSecondary }]}>
+                {idx + 1}
+              </ThemedText>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={t('photoMoveUp')}
                 accessibilityState={{ disabled: isFirst }}
                 disabled={isFirst}
-                style={[styles.photoMoveButton, isFirst && styles.photoMoveButtonDisabled]}
+                style={[
+                  styles.photoMoveButton,
+                  { backgroundColor: c.surface },
+                  isFirst && styles.photoMoveButtonDisabled,
+                ]}
                 onPress={() => handleMovePendingPhoto(idx, idx - 1)}
                 testID={`e2e_bonsai_create_photo_move_up_${idx}`}
               >
@@ -82,7 +97,11 @@ export function BonsaiPhotoPickerBlock({ form }: { form: BonsaiBasicFormState })
                 accessibilityLabel={t('photoMoveDown')}
                 accessibilityState={{ disabled: isLast }}
                 disabled={isLast}
-                style={[styles.photoMoveButton, isLast && styles.photoMoveButtonDisabled]}
+                style={[
+                  styles.photoMoveButton,
+                  { backgroundColor: c.surface },
+                  isLast && styles.photoMoveButtonDisabled,
+                ]}
                 onPress={() => handleMovePendingPhoto(idx, idx + 1)}
                 testID={`e2e_bonsai_create_photo_move_down_${idx}`}
               >
@@ -92,11 +111,13 @@ export function BonsaiPhotoPickerBlock({ form }: { form: BonsaiBasicFormState })
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={t('delete')}
-                style={styles.photoCardDeleteButton}
+                style={[styles.photoCardDeleteButton, { backgroundColor: c.surface }]}
                 onPress={() => handleRemovePendingPhoto(idx)}
                 testID={`e2e_bonsai_create_photo_remove_${idx}`}
               >
-                <ThemedText style={styles.photoCardDeleteText}>×</ThemedText>
+                <ThemedText style={[styles.photoCardDeleteText, { color: c.textSecondary }]}>
+                  ×
+                </ThemedText>
               </Pressable>
             </View>
             <Image source={{ uri: p.uri }} style={styles.photoCardImage} contentFit="cover" />
@@ -108,12 +129,12 @@ export function BonsaiPhotoPickerBlock({ form }: { form: BonsaiBasicFormState })
 }
 
 const styles = StyleSheet.create({
+  // Sess66 PR6c.2: bg/border/text color は inline c.* (dark cascade)。
   field: { gap: 8 },
   fieldLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   optionalLabel: {
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
-    color: TEXT_MUTED,
     letterSpacing: 0.8,
   },
   // Sess13 PR-J: Repolog 流写真カード
@@ -122,23 +143,19 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 44,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: BG_SURFACE,
   },
   photoSourceText: { fontSize: 14, fontWeight: '500' },
-  photoHelpText: { fontSize: 12, color: TEXT_MUTED, marginTop: 4 },
+  photoHelpText: { fontSize: 12, marginTop: 4 },
   photoCard: {
     marginTop: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     overflow: 'hidden',
-    backgroundColor: BG_SURFACE,
   },
   photoCardToolbar: {
     flexDirection: 'row',
@@ -147,14 +164,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     gap: 8,
   },
-  photoCardIndex: { fontSize: 14, color: TEXT_SECONDARY, minWidth: 16 },
+  photoCardIndex: { fontSize: 14, minWidth: 16 },
   photoMoveButton: {
     width: 32,
     height: 32,
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: BG_SURFACE,
   },
   photoMoveButtonDisabled: { opacity: 0.3 },
   photoMoveText: { fontSize: 18 },
@@ -164,9 +180,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: BG_SURFACE,
   },
-  photoCardDeleteText: { fontSize: 20, lineHeight: 22, color: TEXT_SECONDARY },
+  photoCardDeleteText: { fontSize: 20, lineHeight: 22 },
   // 4:3 横長 (Q-10 b 採用)
   photoCardImage: { width: '100%', aspectRatio: 4 / 3 },
 });
