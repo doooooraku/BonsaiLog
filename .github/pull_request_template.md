@@ -202,6 +202,25 @@ PR Template
 
 ---
 
+### 7.5.6. BottomCtaBar 配置画面チェックリスト (R-62 / ADR-0054 D2 / REQUIRED if 新画面に BottomCtaBar 配置 or ScrollView paddingBottom 変更)
+
+> **背景**: Sess36 ADR-0042 D3 で FAB component の SoT は確立したが、 4 画面の ScrollView paddingBottom 計算 (Layout Contract) が散在 = SoT 漏れで Sess72 にテスター報告「FAB がリストと重なる」 発覚。 ADR-0054 で BottomCtaBar 全面化 + R-62「Component SoT + Layout Contract SoT」 起票。 新画面に BottomCtaBar を追加する時、 または既存画面の ScrollView paddingBottom を変更する時、 本チェックを実施。
+
+- [ ] **inline 配置の徹底**: BottomCtaBar を `position: 'absolute'` で配置していない (inline = container 内の flex 順序で配置)
+  - 配置箇所: \_\_\_\_\_ (ファイル名 / 行番号)
+- [ ] **paddingBottom 計算式の不在**: ScrollView / FlatList の contentContainerStyle.paddingBottom に `tabBarHeight + ...` 等の magic number 計算を **書いていない** (BottomCtaBar が inline で自動的に list の下に配置されるため)
+  - 例外: 視覚 breathing room の `paddingBottom: 16` 程度の小値は許容、 ただし BottomCtaBar 高さの計算は不要
+- [ ] **theme-aware bg**: `<BottomCtaBar />` 経由なので token 直書きなし (R-58 整合、 c.tint / c.onTint / c.disabledBg が自動)
+- [ ] **testID 規約**: `e2e_<screen>_bottom_cta_<action>` 命名 (例: `e2e_home_bottom_cta_create`)
+- [ ] **label = i18n key 経由**: `label={t('XxxCta')}` で文字列直書きなし (ADR-0033 / R-41)
+- [ ] **disabled 条件の明示**: plan mode の過去日等で `disabled` を渡す時、 条件を screen 内 comment で説明
+- [ ] **ふりかえり tab には配置しない**: ナビゲーション hub のため CTA 不要 (ADR-0054 D5)
+- [ ] **実機検証**: 短リスト (0-1 件) + 長リスト (50+ 件) で BottomCtaBar が画面下端固定、 last item が bar に隠れない (Layout Contract 検証 R-62)
+
+> 適用対象外の場合: [ ] 本 PR は BottomCtaBar 追加 / ScrollView paddingBottom 変更を含まない
+
+---
+
 ## 7.6. Claude Read 評価ガイド遵守（ui-diff / 達成判定 PR で REQUIRED）
 
 > **背景**: 2026-05-11 セッションで ImageMagick RMSE のみで「達成」 と判定し、bonsai-detail 3 タブで構造的大差を見逃した (Issue #439-#441 で再起票)。PR #442 で「ImageMagick は第一フィルタ、最終判定は Claude Read 主導」 に運用切替。
