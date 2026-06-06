@@ -62,6 +62,81 @@
 | `--primary`      | `#000080` | プライマリ |
 | `--border`       | `#000000` | 境界線     |
 
+> 注: 屋外モードは ADR-0015 Notes Amended 2026-05-10 で **撤去済**。 上表は歴史的参考。 PR4 配色 pivot で本節は更新予定。
+
+### 2-4. Dark Theme Cascade 規約 (ADR-0052 / Sess66 PR3)
+
+dark mode 視認性破綻が PR1 / PR2 / PR3 と 3 回連続再発した root cause = StyleSheet 内に
+theme-dependent color token (`BG_PRIMARY` 等 light only static) を書く慣行。
+ADR-0052 で **「StyleSheet 内 static 色禁止、 inline `c.*` 必須」** を SoT 化、 ESLint custom
+rule `local/no-color-token-in-stylesheet` で CI gate、 `pnpm a11y:contrast` で WCAG AA 検証。
+
+#### 必須パターン
+
+```tsx
+// ✅ 正しい — useColors() hook + inline c.* で theme cascade
+import { useColors } from '@/src/core/theme/useColors';
+
+function MyCard() {
+  const c = useColors();
+  return (
+    <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
+      <Text style={[styles.title, { color: c.text }]}>...</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  // layout / radius / typography のみ。 色は inline へ。
+  card: { padding: 16, borderRadius: 12, borderWidth: 1 },
+  title: { fontSize: 16, fontWeight: '600' },
+});
+```
+
+#### 禁止パターン (ESLint で error)
+
+```tsx
+// ❌ 違反 — StyleSheet 内 theme-dependent token
+import { BG_PRIMARY, TEXT_PRIMARY, BORDER_DEFAULT } from '@/src/core/theme/colors';
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: BG_SURFACE, // ❌ dark mode 追従しない
+    borderColor: BORDER_DEFAULT, // ❌
+  },
+  title: { color: TEXT_PRIMARY }, // ❌
+});
+```
+
+#### Forbidden tokens (StyleSheet 内利用禁止)
+
+| Token                                                             | 用途 (Light) | 用途 (Dark)           |
+| ----------------------------------------------------------------- | ------------ | --------------------- |
+| `BG_PRIMARY` / `BG_SURFACE`                                       | washi / 白   | 暗背景 / dark surface |
+| `TEXT_PRIMARY` / `TEXT_SECONDARY` / `TEXT_MUTED` / `TEXT_DEFAULT` | sumi 墨色    | 淡 cream              |
+| `BORDER_DEFAULT` / `BORDER_STRONG`                                | cream 細枠   | 暗枠                  |
+
+→ すべて `c.background` / `c.surface` / `c.text` / `c.textSecondary` / `c.textMuted` / `c.border` (inline) で参照。
+
+#### Allowed tokens (theme-invariant、 StyleSheet 内 OK)
+
+| Token                                 | 値                   | 用途                                                                                                                |
+| ------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `ON_BRAND`                            | `#FFFFFF`            | brand 上の白文字 (Pro バッジ等)、 両 theme で白固定                                                                 |
+| `ACCENT_GOLD`                         | `#C69E48`            | Pro バッジ専用、 両 theme で同色 (秋葉色)                                                                           |
+| `ACCENT_BARK`                         | `#5A4637`            | 樹皮色                                                                                                              |
+| `DANGER` / `SUCCESS` / `OVERLIMIT`    | 赤 / 緑 / 赤         | status 色、 両 theme で同色維持                                                                                     |
+| `DISABLED_BG`                         | `#9E9E9E`            | disabled 状態                                                                                                       |
+| `HEATMAP_COLORS`                      | 4 段階緑             | F-04 ヒートマップ専用                                                                                               |
+| `BADGE_SOFT_*` / `BUTTON_SECONDARY_*` | `#E8F0EA` / brand 緑 | brand-static 薄緑                                                                                                   |
+| `BRAND_GREEN*`                        | 深緑 fukamidori 系   | CTA primary、 brand intent で両 theme 同色 (※ Pressable selected 等で dark 追従させたい場合は inline `c.tint` 推奨) |
+
+#### 検出仕組み
+
+1. **ESLint custom rule** `local/no-color-token-in-stylesheet` (`eslint-rules/no-color-token-in-stylesheet.js`)
+2. **a11y contrast CI** `pnpm a11y:contrast` (`scripts/a11y-contrast-check.mjs`) で代表 14 pair × WCAG AA 4.5:1 / UI 3.0:1 を機械検証
+3. **R-58** (`.claude/recurrence-prevention/specialized.md`): 画面追加 / 色変更 PR では `pnpm verify:a11y` + dark SS verify 必須
+
 ## 3. タイポグラフィ
 
 ### 3-1. フォントスタック
