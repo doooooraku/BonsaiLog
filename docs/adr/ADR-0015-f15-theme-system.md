@@ -704,3 +704,58 @@ Tamagui を将来 UI 基盤として再評価したい場合は、本 ADR を超
 - Sess66 PR3 (ADR-0052): Dark Theme Cascade Pattern (useColors + ESLint rule + a11y CI、 本 PR4 の安全網)
 - Sess66 PR5 (予定、 ADR-0053): Navigation Header SoT 統一
 - Sess66 PR6 (予定): ThemedView/ThemedText 全画面適用
+
+---
+
+## Notes Amended (2026-06-06、 Sess69 PR-A): brand 色も scheme-aware が原則、 brand-static literal は禁止
+
+### 改訂背景
+
+Sess66 PR4 で dark mode の base 色 (bg/text/surface) を 宵墨 (yoizumi) warm sumi に pivot し、 Sess66 PR3 ADR-0052 で `useColors()` hook + ESLint rule + a11y CI の 3 層 cascade pattern を確立した。 Sess68 で 245 → 0 ESLint 違反まで cascade を完走したが、 **Sess69 で user 実機 SS から brand 色が dark mode で「沈む」 状況が再々々々々発** (Sess65→66→67→68→69 連続 5 回)。 真因は ADR-0052 の Allowed tokens (brand-static、 「brand intent token は両 mode で同色 OK」) という前提が誤りで、 light `BRAND_GREEN = #1F3A2E` 深緑が dark `#16140F` 上で contrast 1.5:1 (≪ AA 3.0:1) で破綻するためだった。
+
+### 改訂内容
+
+brand 色も **scheme-aware** であることを本 ADR の原則として明記する。 `BRAND_GREEN` / `BRAND_GREEN_HOVER` / `BRAND_GREEN_BG` / `BADGE_SOFT_BG` / `BADGE_SOFT_TEXT` / `BUTTON_SECONDARY_BG` / `BUTTON_SECONDARY_TEXT` / `DISABLED_BG` の直接 literal 利用を全 component で禁止し、 inline `c.tint` / `c.tintSubtle` / `c.badgeBg` / `c.buttonSecondaryBg` / `c.onTint` / `c.disabledBg` 経由必須とする (`useColors()` 戻り値の prop を Sess69 PR-A で 7 種拡張)。
+
+### 新 token (Sess69 PR-A 追加、 DARK_TOKENS 7 値 + Colors.{light,dark} 7 prop)
+
+| Token (useColors)     | Light HEX                       | Dark HEX                | 用途                               | dark contrast (vs bg)               |
+| --------------------- | ------------------------------- | ----------------------- | ---------------------------------- | ----------------------------------- |
+| `c.tint`              | `#1F3A2E` (BRAND_GREEN)         | `#7FA98A` (苔緑)        | CTA primary / 選択中 / brand 強調  | 6.96:1 (AAA)                        |
+| `c.tintSubtle`        | `#F1F8F2` (BRAND_GREEN_BG)      | `#2A3328` (暗緑紙)      | 選択中 row 背景 / Comparison 表    | 4.96:1 (AA) tint との pair          |
+| `c.badgeBg`           | `#E8F0EA` (BADGE_SOFT_BG)       | `#2C3329` (暗緑)        | ×n / N 日連続バッジ背景            | 4.93:1 (AA)                         |
+| `c.buttonSecondaryBg` | `#E8F0EA` (BUTTON_SECONDARY_BG) | `#2C3329`               | Secondary CTA button bg (薄緑)     | 4.93:1 (AA)                         |
+| `c.onTint`            | `#FFFFFF` (ON_BRAND)            | `#1A1A1A` (sumi 文字)   | tint bg 上の文字色                 | 6.58:1 (AAA dark) / 12.33:1 (light) |
+| `c.disabledBg`        | `#9E9E9E` (DISABLED_BG)         | `#3A3631` (sumi 重ね灰) | Disabled button / AdMob banner     | (UI 要素、 3:1 必達)                |
+| `c.placeholderBg`     | `#E0E0E0`                       | `#3A3631`               | 画像 fallback (BonsaiPlaceholder)  | (UI 要素)                           |
+| `c.accentBark`        | `#5A4637` (ACCENT_BARK)         | `#A1886F` (warm 樹皮)   | タグ / 区切り / Calendar planned ○ | --                                  |
+| `c.dangerColor`       | `#8B2E2E` (DANGER)              | `#CE7A72`               | エラー / 削除確認                  | 5.83:1 (AA dark)                    |
+
+### WCAG 検証 (`pnpm a11y:contrast` 22 pair、 Sess69 PR-A で 14 → 22 pair 拡張)
+
+- 21 pair が AA 4.5:1 以上達成 (うち多数が AAA 7:1 以上)
+- 1 pair で warning: TEXT_MUTED (`#837A68`) × BG_SURFACE (`#211E18`) dark = 3.92:1 < AA 4.5
+  - **対応**: 3 次テキストは UI 要素扱いで 3:1 達成 (3.92:1 ≧ 3.0)、 本文用途禁止 (design_system.md §2-2 改訂で明文化)。 4.5:1 必達なら token を `#948B78` 系まで明るく上げる (将来 PR、 影響範囲は全 dark 画面、 慎重決定要)。 本 PR-A では warning 受容、 Phase B-0 段階での既知技術的負債として記録
+
+### 採用理由
+
+1. **Sess65→69 連続 5 回の dark cascade 再発を構造的に停止** — brand 色 contrast を a11y CI で機械検証、 ESLint rule で literal 使用を禁止 (PR-D で error 昇格)
+2. **既存 `useColors()` 資産活用** — 新 prop 7 種追加のみ、 全 component で同じ inline pattern を踏襲
+3. **WCAG EU EAA 2025-06 施行整合** — 視覚障害ユーザーへの不利益解消、 法的リスク低減
+4. **Claude Design `tokens.css` 設計整合** — brand 色 scheme-aware は web の `[data-theme="dark"]` 標準
+
+### 影響範囲
+
+- `constants/theme.ts` (Colors / DARK_TOKENS) — 本 PR-A で 7 prop / 7 値追加 (✅)
+- `scripts/a11y-contrast-check.mjs` — 14 → 22 pair 拡張 (本 PR-A で実施 ✅)
+- `docs/reference/design_system.md` §2-2 / §2-4 — brand token 表 + cascade 規約を更新 (本 PR-A で実施)
+- `docs/adr/ADR-0052-dark-theme-cascade.md` — Allowed tokens 縮小 Amendment (本 PR-A で実施)
+- 既存実装の `BRAND_GREEN` / `BRAND_GREEN_BG` / `BADGE_SOFT_BG` / `BUTTON_SECONDARY_BG` literal 利用 ~30 file — 次 PR (PR-B / PR-C) で inline `c.tint` 等に置換
+
+### 関連 (Sess69 PR-A)
+
+- ADR-0052 Amendment: Allowed tokens 縮小、 brand-static 撤回
+- design_system.md §2-2 + §2-4 更新: brand token 表 + cascade 規約
+- 次 PR-B (Sess69): TabBar / Calendar / bonsai-new brand-static → inline c.tint
+- 次 PR-C: 残 cascade + hex literal 4 件
+- 次 PR-D: ESLint FORBIDDEN 8 種拡張 + 新 rule `no-color-hex-literal-in-stylesheet` + R-58/59/60
