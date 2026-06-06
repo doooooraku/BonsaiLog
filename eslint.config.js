@@ -3,6 +3,9 @@ const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const boundaries = require('eslint-plugin-boundaries');
 
+// Sess66 PR3 / ADR-0052: local plugin で dark cascade 違反 (StyleSheet 内 static 色) を CI gate。
+const localPlugin = require('./eslint-rules');
+
 module.exports = defineConfig([
   expoConfig,
   {
@@ -162,6 +165,30 @@ module.exports = defineConfig([
     files: ['app.config.ts'],
     rules: {
       'expo/no-dynamic-env-var': 'off',
+    },
+  },
+  // -----------------------------------------------------------------------
+  // Sess66 PR3 / ADR-0052: dark theme cascade ガード (段階導入)。
+  // StyleSheet.create() 内に theme-dependent color token (BG_PRIMARY 等) を書くことを
+  // 構造検出し、 inline c.* (useColors hook 経由) を促す。
+  //
+  // 段階運用:
+  //   - PR3 (本 PR、 Sess66):    rule 導入 + 'warn' level + 既存 ~245 違反は許容
+  //   - PR4-6 (Sess67-68):       配色 pivot / 戻る動線統一 / component 徹底化と並行して
+  //                              違反を漸進修正、 PR ごとに数十件ずつ解消
+  //   - 違反 0 到達後 (最終 PR): 'error' に昇格、 CI で構造禁止 (新規違反 0 を恒久維持)
+  //
+  // 既に dark 対応済 (Sess65 PR1/PR2 + 本 PR3) のファイルでも、 まだ別の static 色を
+  // 含む箇所が残存している可能性があり、 一括 error 化は scope 過大。 warn で「次に
+  // 触る人へのヒント」 として機能させ、 PR 単位で計画的に解消する。
+  //
+  // 関連: ADR-0052 / docs/reference/design_system.md §2-4 / Sess65 PR #938 #939
+  // -----------------------------------------------------------------------
+  {
+    files: ['src/**/*.{ts,tsx}', 'app/**/*.{ts,tsx}'],
+    plugins: { local: localPlugin },
+    rules: {
+      'local/no-color-token-in-stylesheet': 'warn',
     },
   },
   // -----------------------------------------------------------------------

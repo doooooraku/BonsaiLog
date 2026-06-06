@@ -11,7 +11,7 @@
  * - [DEV] テストデータ → DevSettingsSection (本番枝刈り)
  * coordinator は各 section の row 配線 + ナビゲーションのみ。AsyncStorage key / URL route / i18n 不変。
  */
-import { useRouter, type Href } from 'expo-router';
+import { Stack, useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -24,7 +24,8 @@ import { useColors } from '@/src/core/theme/useColors';
 import { countArchivedBonsai } from '@/src/db/bonsaiRepository';
 import { countAllTags } from '@/src/db/tagRepository';
 import { DevSettingsSection } from '@/src/dev/DevSettingsSection';
-import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
+// Sess66 PR5 (ADR-0053): SearchHeader showBack 撤去、 Expo Stack native header に統一。
+// import { SearchHeader } from '@/src/features/bonsai/SearchHeader';  // 削除
 import { LegalLinksRow } from '@/src/features/legal/LegalLinksRow';
 import { NotificationSettingsSection } from '@/src/features/settings/NotificationSettingsSection';
 import { PlanSection } from '@/src/features/settings/PlanSection';
@@ -119,16 +120,10 @@ export default function SettingsScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_settings_screen"
     >
-      {/* ADR-0020 Phase 7 / Issue #255: SearchHeader (タイトル「設定」)。設定タブ自身では Cog 不要。
-          Sess65: 設定画面は root Stack 直下で戻る動線が必要 (ユーザー報告 #4)。 showBack={true}
-          で SearchHeader 左に `<` 戻るボタンを表示、 router.back() で前画面 (タブ画面) に戻る。 */}
-      <SearchHeader
-        title={t('tabSettings')}
-        testIdSuffix="settings"
-        showSearch={false}
-        showSettings={false}
-        showBack
-      />
+      {/* Sess66 PR5 (ADR-0053): Expo Stack native header に SoT 統一。 旧 SearchHeader showBack
+          自前 (Sess65 PR1) は撤去、 OS native の戻るボタン + headerTintColor (c.text) を採用。
+          OS HIG / Material Design 準拠で a11y / RTL / swipe-back ジェスチャを native 享受。 */}
+      <Stack.Screen options={{ title: t('tabSettings') }} />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* === mockup v1.0 SettingsScreen 8 セクション順序 (Issue #330): アカウント→表示→通知→
             アーカイブ→書き出し→バックアップ→その他法令→バージョン。実機固有 (検索/ヘルプ/DEV) は末尾。 */}

@@ -36,22 +36,34 @@
 | `--button-secondary-bg`   | `#E8F0EA` | Secondary CTA button 背景 (ADR-0038 Sess29、 §22 SoT)              |
 | `--button-secondary-text` | `#1F3A2E` | Secondary CTA button 文字色 (= primary、 token 統一参照)           |
 
-### 2-2. ダークモード（OLED焼き付き配慮）
+### 2-2. ダークモード — 宵墨 (yoizumi) warm sumi (Sess66 PR4、 ADR-0015 Amendment)
 
-| Token              | HEX       | 用途                   |
-| ------------------ | --------- | ---------------------- |
-| `--bg-primary`     | `#0A0E1A` | 背景                   |
-| `--bg-surface`     | `#131826` | カード背景             |
-| `--text-primary`   | `#E8E4D6` | 本文（淡washi）        |
-| `--text-secondary` | `#B0A897` | 補助                   |
-| `--text-muted`     | `#7A7265` | 3次                    |
-| `--primary`        | `#6B9B7F` | プライマリ（夜目の緑） |
-| `--primary-hover`  | `#7FB095` | 押下                   |
-| `--accent-bark`    | `#8C7561` | 樹皮色                 |
-| `--accent-gold`    | `#D4B062` | 秋葉                   |
-| `--danger`         | `#C9575D` | 危険                   |
-| `--success`        | `#7DAE7A` | 成功                   |
-| `--border`         | `#2A2F3E` | 境界線                 |
+ブランド「washi 和紙 → sumi 墨 → fukamidori 深緑」 を dark mode まで延長 (P3 永く変わらない整合)。 旧 navy 寒色系 (#0A0E1A 等) から **暖墨** 系に pivot (Sess66 PR4、 Claude Design `tokens.css` `[data-theme="dark"]` 提案値整合)。
+
+| Token              | HEX       | 用途                                  |
+| ------------------ | --------- | ------------------------------------- |
+| `--bg-primary`     | `#16140F` | 背景 (宵墨 yoizumi、 暖かい墨)        |
+| `--bg-surface`     | `#211E18` | カード背景 (重ねの紙)                 |
+| `--text-primary`   | `#ECE6D6` | 本文 (淡 washi)                       |
+| `--text-secondary` | `#B3AA97` | 補助                                  |
+| `--text-muted`     | `#837A68` | 3 次                                  |
+| `--primary`        | `#7FA98A` | プライマリ (苔緑、 夜目に映える深緑)  |
+| `--primary-hover`  | `#93BD9E` | 押下                                  |
+| `--accent-bark`    | `#A1886F` | 樹皮色 (warm)                         |
+| `--accent-gold`    | `#D4B062` | 秋葉 (Pro バッジ、 両 theme 同色維持) |
+| `--danger`         | `#CE7A72` | 危険                                  |
+| `--success`        | `#88B083` | 成功                                  |
+| `--border`         | `#2C2820` | 境界線 (茶味の枠線)                   |
+| `--border-strong`  | `#4A4534` | 強調境界線                            |
+
+WCAG AA 検証 (`pnpm a11y:contrast`):
+
+| pair                                   | 比      | 等級                    |
+| -------------------------------------- | ------- | ----------------------- |
+| text (#ECE6D6) × bg (#16140F)          | 15.13:1 | AAA                     |
+| text (#ECE6D6) × surface (#211E18)     | 13.91:1 | AAA                     |
+| textSecondary (#B3AA97) × bg (#16140F) | 8.15:1  | AAA                     |
+| primary (#7FA98A) × bg (#16140F)       | 6.07:1  | AA (UI 要素 / 大字 AAA) |
 
 ### 2-3. 屋外モード（直射日光下、WCAG AAA 7:1目標）
 
@@ -61,6 +73,81 @@
 | `--text-primary` | `#000000` | 本文       |
 | `--primary`      | `#000080` | プライマリ |
 | `--border`       | `#000000` | 境界線     |
+
+> 注: 屋外モードは ADR-0015 Notes Amended 2026-05-10 で **撤去済**。 上表は歴史的参考。 PR4 配色 pivot で本節は更新予定。
+
+### 2-4. Dark Theme Cascade 規約 (ADR-0052 / Sess66 PR3)
+
+dark mode 視認性破綻が PR1 / PR2 / PR3 と 3 回連続再発した root cause = StyleSheet 内に
+theme-dependent color token (`BG_PRIMARY` 等 light only static) を書く慣行。
+ADR-0052 で **「StyleSheet 内 static 色禁止、 inline `c.*` 必須」** を SoT 化、 ESLint custom
+rule `local/no-color-token-in-stylesheet` で CI gate、 `pnpm a11y:contrast` で WCAG AA 検証。
+
+#### 必須パターン
+
+```tsx
+// ✅ 正しい — useColors() hook + inline c.* で theme cascade
+import { useColors } from '@/src/core/theme/useColors';
+
+function MyCard() {
+  const c = useColors();
+  return (
+    <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
+      <Text style={[styles.title, { color: c.text }]}>...</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  // layout / radius / typography のみ。 色は inline へ。
+  card: { padding: 16, borderRadius: 12, borderWidth: 1 },
+  title: { fontSize: 16, fontWeight: '600' },
+});
+```
+
+#### 禁止パターン (ESLint で error)
+
+```tsx
+// ❌ 違反 — StyleSheet 内 theme-dependent token
+import { BG_PRIMARY, TEXT_PRIMARY, BORDER_DEFAULT } from '@/src/core/theme/colors';
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: BG_SURFACE, // ❌ dark mode 追従しない
+    borderColor: BORDER_DEFAULT, // ❌
+  },
+  title: { color: TEXT_PRIMARY }, // ❌
+});
+```
+
+#### Forbidden tokens (StyleSheet 内利用禁止)
+
+| Token                                                             | 用途 (Light) | 用途 (Dark)           |
+| ----------------------------------------------------------------- | ------------ | --------------------- |
+| `BG_PRIMARY` / `BG_SURFACE`                                       | washi / 白   | 暗背景 / dark surface |
+| `TEXT_PRIMARY` / `TEXT_SECONDARY` / `TEXT_MUTED` / `TEXT_DEFAULT` | sumi 墨色    | 淡 cream              |
+| `BORDER_DEFAULT` / `BORDER_STRONG`                                | cream 細枠   | 暗枠                  |
+
+→ すべて `c.background` / `c.surface` / `c.text` / `c.textSecondary` / `c.textMuted` / `c.border` (inline) で参照。
+
+#### Allowed tokens (theme-invariant、 StyleSheet 内 OK)
+
+| Token                                 | 値                   | 用途                                                                                                                |
+| ------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `ON_BRAND`                            | `#FFFFFF`            | brand 上の白文字 (Pro バッジ等)、 両 theme で白固定                                                                 |
+| `ACCENT_GOLD`                         | `#C69E48`            | Pro バッジ専用、 両 theme で同色 (秋葉色)                                                                           |
+| `ACCENT_BARK`                         | `#5A4637`            | 樹皮色                                                                                                              |
+| `DANGER` / `SUCCESS` / `OVERLIMIT`    | 赤 / 緑 / 赤         | status 色、 両 theme で同色維持                                                                                     |
+| `DISABLED_BG`                         | `#9E9E9E`            | disabled 状態                                                                                                       |
+| `HEATMAP_COLORS`                      | 4 段階緑             | F-04 ヒートマップ専用                                                                                               |
+| `BADGE_SOFT_*` / `BUTTON_SECONDARY_*` | `#E8F0EA` / brand 緑 | brand-static 薄緑                                                                                                   |
+| `BRAND_GREEN*`                        | 深緑 fukamidori 系   | CTA primary、 brand intent で両 theme 同色 (※ Pressable selected 等で dark 追従させたい場合は inline `c.tint` 推奨) |
+
+#### 検出仕組み
+
+1. **ESLint custom rule** `local/no-color-token-in-stylesheet` (`eslint-rules/no-color-token-in-stylesheet.js`)
+2. **a11y contrast CI** `pnpm a11y:contrast` (`scripts/a11y-contrast-check.mjs`) で代表 14 pair × WCAG AA 4.5:1 / UI 3.0:1 を機械検証
+3. **R-58** (`.claude/recurrence-prevention/specialized.md`): 画面追加 / 色変更 PR では `pnpm verify:a11y` + dark SS verify 必須
 
 ## 3. タイポグラフィ
 

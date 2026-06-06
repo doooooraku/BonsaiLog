@@ -26,13 +26,9 @@ import { ThemedText } from '@/components/themed-text';
 import { CameraIcon } from '@/src/components/icons';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { formOptional } from '@/src/core/theme/typography';
-import {
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess66 PR3: gallery card + toolbar の static 色 (BG_PRIMARY / BG_SURFACE / BORDER_DEFAULT /
+// TEXT_PRIMARY / TEXT_SECONDARY) を StyleSheet から撤去し inline c.* に。 sourceButton は
+// Sess65 PR2-c で既に対応済。
 import { useColors } from '@/src/core/theme/useColors';
 import { FREE_PHOTO_LIMIT_PER_EVENT } from '@/src/db/photoRepository';
 
@@ -207,12 +203,20 @@ export function PhotoField({
         </Pressable>
       </View>
       {photos.length > 0 && (
-        <ThemedText style={styles.helpText}>{t('photoReorderHelp' as TranslationKey)}</ThemedText>
+        <ThemedText style={[styles.helpText, { color: c.textSecondary }]}>
+          {t('photoReorderHelp' as TranslationKey)}
+        </ThemedText>
       )}
       {photos.map((photo, index) => (
-        <View key={`${photo.uri}-${index}`} style={styles.card} testID={`e2e_photo_field_${index}`}>
-          <View style={styles.toolbar}>
-            <ThemedText style={styles.indexLabel}>
+        <View
+          key={`${photo.uri}-${index}`}
+          style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}
+          testID={`e2e_photo_field_${index}`}
+        >
+          <View
+            style={[styles.toolbar, { backgroundColor: c.background, borderBottomColor: c.border }]}
+          >
+            <ThemedText style={[styles.indexLabel, { color: c.textSecondary }]}>
               {index + 1} / {photos.length}
             </ThemedText>
             <Pressable
@@ -224,7 +228,7 @@ export function PhotoField({
               disabled={index === 0}
               testID={`e2e_photo_field_move_up_${index}`}
             >
-              <ThemedText style={styles.moveText}>↑</ThemedText>
+              <ThemedText style={[styles.moveText, { color: c.text }]}>↑</ThemedText>
             </Pressable>
             <Pressable
               accessibilityRole="button"
@@ -235,7 +239,7 @@ export function PhotoField({
               disabled={index === photos.length - 1}
               testID={`e2e_photo_field_move_down_${index}`}
             >
-              <ThemedText style={styles.moveText}>↓</ThemedText>
+              <ThemedText style={[styles.moveText, { color: c.text }]}>↓</ThemedText>
             </Pressable>
             <View style={styles.spacer} />
             <Pressable
@@ -245,7 +249,7 @@ export function PhotoField({
               onPress={() => handleRemove(index)}
               testID={`e2e_photo_field_delete_${index}`}
             >
-              <ThemedText style={styles.deleteButtonText}>×</ThemedText>
+              <ThemedText style={[styles.deleteButtonText, { color: c.text }]}>×</ThemedText>
             </Pressable>
           </View>
           <Image source={{ uri: photo.uri }} style={styles.thumb} contentFit="cover" />
@@ -273,14 +277,13 @@ const styles = StyleSheet.create({
   },
   sourceButtonDisabled: { opacity: 0.4 },
   sourceText: { fontSize: 14, fontWeight: '500' },
-  helpText: { fontSize: 12, color: TEXT_SECONDARY },
+  // Sess66 PR3: 全 static color を撤去し inline c.* で指定 (dark mode 追従)。
+  helpText: { fontSize: 12 },
   card: {
     flexDirection: 'column',
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
   },
   toolbar: {
     flexDirection: 'row',
@@ -288,11 +291,9 @@ const styles = StyleSheet.create({
     height: 40,
     paddingHorizontal: 8,
     gap: 6,
-    backgroundColor: BG_PRIMARY,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: BORDER_DEFAULT,
   },
-  indexLabel: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY, marginRight: 4 },
+  indexLabel: { fontSize: 13, fontWeight: '500', marginRight: 4 },
   moveButton: {
     width: 32,
     height: 32,
@@ -301,7 +302,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   moveButtonDisabled: { opacity: 0.3 },
-  moveText: { fontSize: 18, color: TEXT_PRIMARY },
+  moveText: { fontSize: 18 },
   spacer: { flex: 1 },
   deleteButton: {
     width: 28,
@@ -311,6 +312,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  deleteButtonText: { fontSize: 18, fontWeight: '700', color: TEXT_PRIMARY, lineHeight: 20 },
+  deleteButtonText: { fontSize: 18, fontWeight: '700', lineHeight: 20 },
   thumb: { width: '100%', aspectRatio: 4 / 3 },
 });
