@@ -19,7 +19,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { findLanguageOption } from '@/src/core/i18n/languageOptions';
-import { ACCENT_GOLD, BORDER_DEFAULT, ON_BRAND } from '@/src/core/theme/colors';
+// Sess66 PR6a: BORDER_DEFAULT を inline c.border に移行 (dark cascade)。
+import { ACCENT_GOLD, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { countArchivedBonsai } from '@/src/db/bonsaiRepository';
 import { countAllTags } from '@/src/db/tagRepository';
@@ -138,7 +139,7 @@ export default function SettingsScreen() {
             accessibilityLabel={t('settingsLanguageRowLabel')}
             accessibilityValue={{ text: currentLanguageLabel }}
             testID="e2e_settings_language_row"
-            style={styles.entry}
+            style={[styles.entry, { borderBottomColor: c.border }]}
             onPress={() => router.push('/settings/language' as Href)}
           >
             <View style={styles.rowInner}>
@@ -154,7 +155,7 @@ export default function SettingsScreen() {
             accessibilityLabel={t('settingsThemeRowLabel')}
             accessibilityValue={{ text: themePicker.currentLabel }}
             testID="e2e_theme_mode_row"
-            style={styles.entry}
+            style={[styles.entry, { borderBottomColor: c.border }]}
             onPress={themePicker.onPress}
           >
             <View style={styles.rowInner}>
@@ -170,7 +171,7 @@ export default function SettingsScreen() {
             accessibilityLabel={t('settingsPotUnit')}
             accessibilityValue={{ text: potUnit }}
             testID="e2e_pot_unit_row"
-            style={styles.entry}
+            style={[styles.entry, { borderBottomColor: c.border }]}
             onPress={potUnitPicker.onPress}
           >
             <View style={styles.rowInner}>
@@ -193,7 +194,7 @@ export default function SettingsScreen() {
             accessibilityLabel={t('settingsArchiveTitle')}
             accessibilityHint={t('settingsArchiveDesc')}
             testID="e2e_open_archive"
-            style={styles.entry}
+            style={[styles.entry, { borderBottomColor: c.border }]}
             onPress={() => router.push('/settings/archived' as Href)}
           >
             <View style={styles.rowInner}>
@@ -215,7 +216,7 @@ export default function SettingsScreen() {
             accessibilityLabel={t('settingsExportSection')}
             accessibilityHint={t('exportHubHeroBody')}
             testID="e2e_open_export_hub"
-            style={styles.entry}
+            style={[styles.entry, { borderBottomColor: c.border }]}
             onPress={() => router.push('/export' as Href)}
           >
             <View style={styles.rowInner}>
@@ -237,7 +238,7 @@ export default function SettingsScreen() {
             accessibilityLabel={t('backupTitle')}
             accessibilityHint={t('backupExportDesc')}
             testID="e2e_open_backup"
-            style={styles.entry}
+            style={[styles.entry, { borderBottomColor: c.border }]}
             onPress={() => router.push('/backup' as Href)}
           >
             <View style={styles.rowInner}>
@@ -257,7 +258,7 @@ export default function SettingsScreen() {
               accessibilityLabel={t('settingsAdPrivacyOptionsTitle')}
               accessibilityHint={t('settingsAdPrivacyOptionsDesc')}
               testID="e2e_open_ad_privacy_options"
-              style={styles.entry}
+              style={[styles.entry, { borderBottomColor: c.border }]}
               onPress={handleAdPrivacyOptionsPress}
             >
               <View style={styles.rowInner}>
@@ -277,7 +278,7 @@ export default function SettingsScreen() {
             accessibilityLabel={t('searchAction')}
             accessibilityHint={t('searchDesc')}
             testID="e2e_open_search"
-            style={styles.entry}
+            style={[styles.entry, { borderBottomColor: c.border }]}
             onPress={() => router.push('/(tabs)/look-back/search' as Href)}
           >
             <View style={styles.rowInner}>
@@ -290,7 +291,7 @@ export default function SettingsScreen() {
             accessibilityLabel={t('tagsManagerTitle')}
             accessibilityHint={t('tagsManagerDesc')}
             testID="e2e_open_tags"
-            style={styles.entry}
+            style={[styles.entry, { borderBottomColor: c.border }]}
             onPress={() => router.push('/tags' as Href)}
           >
             <View style={styles.rowInner}>
@@ -312,7 +313,7 @@ export default function SettingsScreen() {
             accessibilityLabel={t('settingsTutorialReplayTitle')}
             accessibilityHint={t('settingsTutorialReplayDesc')}
             testID="e2e_open_tutorial_replay"
-            style={styles.entry}
+            style={[styles.entry, { borderBottomColor: c.border }]}
             onPress={() => {
               // resetTutorial() で tut1-5 をリセット → /onboarding/tut/tut1 へ
               useOnboardingStore.getState().resetTutorial();
@@ -336,13 +337,12 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  // backgroundColor は useColors の c.background で動的指定
+  // backgroundColor / borderBottomColor は useColors の c.background / c.border で動的指定 (Sess66 PR6a)。
   container: { flex: 1 },
   scroll: { padding: 16, gap: 16 },
   entry: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
     gap: 6,
   },
   // Phase 1.6-T6 (Issue #330 A1): list-row 共通 style (label / value / chevron)。

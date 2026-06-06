@@ -19,7 +19,9 @@ import { CloseIcon } from '@/src/components/icons';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { toLocalDateKey } from '@/src/core/datetime/localDateKey';
 import { getTzOffsetMin } from '@/src/core/datetime/tz';
-import { BG_PRIMARY, DANGER, ON_BRAND, TEXT_MUTED } from '@/src/core/theme/colors';
+// Sess66 PR6b: BG_PRIMARY → ON_BRAND (badge 白文字 theme-invariant)、 TEXT_MUTED は inline c.textMuted。
+// Sess68 統合時に Sess67 TZ fix の toLocalDateKey + getTzOffsetMin import を保持。
+import { DANGER, ON_BRAND } from '@/src/core/theme/colors';
 import { formOptional, formRequired } from '@/src/core/theme/typography';
 import { useColors } from '@/src/core/theme/useColors';
 
@@ -88,7 +90,7 @@ export function LabeledDateRow({
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`${label}: clear`}
-            style={styles.clearButton}
+            style={[styles.clearButton, { backgroundColor: c.textMuted }]}
             hitSlop={6}
             onPress={() => onChangeText('')}
             testID={testIDClear}
@@ -121,14 +123,14 @@ export function LabeledDateRow({
 const styles = StyleSheet.create({
   field: { gap: 6 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  // Sess14 PR-R: hardcoded color → DANGER / BG_PRIMARY 既存 theme constant 経由統合。
+  // Sess14 PR-R: hardcoded color → DANGER / ON_BRAND 既存 theme constant 経由統合 (Sess66 PR6b 更新)。
   requiredBadge: {
     backgroundColor: DANGER,
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { ...formRequired, color: BG_PRIMARY },
+  requiredText: { ...formRequired, color: ON_BRAND },
   optionalText: formOptional,
   rowWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   row: {
@@ -140,12 +142,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   // Sess15 PR-II: 案 a = 灰 circle 32x32 (hitSlop で 44pt 確保) + 白 X icon。
+  // Sess66 PR6b: backgroundColor は inline c.textMuted (dark cascade)。
   clearButton: {
     width: 32,
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 16,
-    backgroundColor: TEXT_MUTED,
   },
 });

@@ -17,15 +17,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { PotIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  DANGER,
-  ON_BRAND,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess66 PR6a: BG_SURFACE / BORDER_DEFAULT / TEXT_PRIMARY / TEXT_SECONDARY を inline c.* に。
+import { BRAND_GREEN, DANGER, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
   getAllArchivedBonsai,
@@ -113,7 +106,10 @@ export default function ArchivedBonsaiScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: ArchivedRow }) => (
-      <View style={[styles.row, { borderColor: c.border }]} testID={`e2e_archived_row_${item.id}`}>
+      <View
+        style={[styles.row, { backgroundColor: c.surface, borderColor: c.border }]}
+        testID={`e2e_archived_row_${item.id}`}
+      >
         <View style={styles.rowTop}>
           {item.coverUri != null && item.coverUri.length > 0 ? (
             <Image source={{ uri: item.coverUri }} style={styles.thumb} contentFit="cover" />
@@ -121,15 +117,19 @@ export default function ArchivedBonsaiScreen() {
             <BonsaiPlaceholder w={THUMB} h={THUMB} radius={10} seed={hashSeed(item.id)} />
           )}
           <View style={styles.info}>
-            <ThemedText type="defaultSemiBold" style={styles.name} numberOfLines={1}>
+            <ThemedText
+              type="defaultSemiBold"
+              style={[styles.name, { color: c.text }]}
+              numberOfLines={1}
+            >
               {item.name}
             </ThemedText>
             {item.speciesName != null && item.speciesName.length > 0 ? (
-              <ThemedText style={styles.species} numberOfLines={1}>
+              <ThemedText style={[styles.species, { color: c.textSecondary }]} numberOfLines={1}>
                 {item.speciesName}
               </ThemedText>
             ) : null}
-            <ThemedText style={styles.archivedAt} numberOfLines={1}>
+            <ThemedText style={[styles.archivedAt, { color: c.textSecondary }]} numberOfLines={1}>
               {formatArchivedAt(item.archivedAt)}
             </ThemedText>
           </View>
@@ -200,10 +200,9 @@ export default function ArchivedBonsaiScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   listContent: { padding: 16, gap: 12 },
+  // Sess66 PR6a: bg/border/color は inline c.* に (dark cascade)。
   row: {
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
     padding: 12,
     gap: 12,
@@ -211,9 +210,9 @@ const styles = StyleSheet.create({
   rowTop: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   thumb: { width: THUMB, height: THUMB, borderRadius: 10 },
   info: { flex: 1, gap: 2 },
-  name: { fontSize: 16, color: TEXT_PRIMARY },
-  species: { fontSize: 13, color: TEXT_SECONDARY },
-  archivedAt: { fontSize: 12, color: TEXT_SECONDARY },
+  name: { fontSize: 16 },
+  species: { fontSize: 13 },
+  archivedAt: { fontSize: 12 },
   actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
   actionBtn: {
     paddingHorizontal: 16,
