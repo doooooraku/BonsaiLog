@@ -4,8 +4,10 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-// Sess68 PR #C: TEXT_SECONDARY は inline c.* 化、 BADGE / BRAND_GREEN は brand-static で保持。
-import { BADGE_SOFT_BG, BADGE_SOFT_TEXT, BRAND_GREEN } from '@/src/core/theme/colors';
+// Sess68 PR #C: TEXT_SECONDARY は inline c.* 化。
+// Sess70 PR-C1: BADGE_SOFT_BG/TEXT / BRAND_GREEN / hex '#FFFFFF' を scheme-aware
+// (c.badgeBg / c.tint / c.surface) に移行 (dark mode で timeline 沈み + dot 白浮きを解消、
+// ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import type { Event } from '@/src/db/schema';
 import { formatDate } from '@/src/features/bonsai/detail/dateFormat';
@@ -56,16 +58,25 @@ export function BonsaiTimelineTab({
           <View key="__today__" style={styles.timelineRow} testID="e2e_timeline_today">
             <View style={styles.timelineLeft}>
               <View style={[styles.timelineLine, styles.timelineLineHidden]} />
-              <View style={[styles.timelineDot, styles.timelineDotToday]} />
+              <View
+                style={[
+                  styles.timelineDot,
+                  styles.timelineDotToday,
+                  { backgroundColor: c.tint, borderColor: c.tint },
+                ]}
+              />
               <View
                 style={[
                   styles.timelineLine,
+                  { backgroundColor: c.tint },
                   plannedEvents.length === 0 && styles.timelineLineHidden,
                 ]}
               />
             </View>
             <View style={styles.timelineContent}>
-              <ThemedText style={styles.timelineTodayLabel}>{todayLabel}</ThemedText>
+              <ThemedText style={[styles.timelineTodayLabel, { color: c.tint }]}>
+                {todayLabel}
+              </ThemedText>
               <ThemedText style={[styles.timelineTodayDate, { color: c.textSecondary }]}>
                 {todayDate}
               </ThemedText>
@@ -132,16 +143,30 @@ function TimelineRow({
         {' '}
         {/* group always has ≥1 event by construction */}
         <View style={styles.timelineLeft}>
-          <View style={[styles.timelineLine, isFirst && styles.timelineLineHidden]} />
-          <View style={styles.timelineDot} />
-          <View style={[styles.timelineLine, isLast && styles.timelineLineHidden]} />
+          <View
+            style={[
+              styles.timelineLine,
+              { backgroundColor: c.tint },
+              isFirst && styles.timelineLineHidden,
+            ]}
+          />
+          <View style={[styles.timelineDot, { borderColor: c.tint, backgroundColor: c.surface }]} />
+          <View
+            style={[
+              styles.timelineLine,
+              { backgroundColor: c.tint },
+              isLast && styles.timelineLineHidden,
+            ]}
+          />
         </View>
         <View style={styles.timelineContent}>
           <View style={styles.timelineRowMain}>
             <ThemedText style={[styles.timelineDateRange, { color: c.textSecondary }]}>
               {startLabel} ～ {endLabel}
             </ThemedText>
-            <ThemedText style={styles.timelineConsecutive}>
+            <ThemedText
+              style={[styles.timelineConsecutive, { backgroundColor: c.badgeBg, color: c.tint }]}
+            >
               {t('timelineConsecutive').replace('{count}', String(entry.events.length))}
             </ThemedText>
           </View>
@@ -149,8 +174,10 @@ function TimelineRow({
             <ThemedText style={styles.eventLabel}>
               {t(`eventType_${entry.type}` as TranslationKey)}
             </ThemedText>
-            <View style={styles.eventCountBadge}>
-              <ThemedText style={styles.eventCountBadgeText}>×{entry.events.length}</ThemedText>
+            <View style={[styles.eventCountBadge, { backgroundColor: c.badgeBg }]}>
+              <ThemedText style={[styles.eventCountBadgeText, { color: c.tint }]}>
+                ×{entry.events.length}
+              </ThemedText>
             </View>
           </View>
           {note && (
@@ -166,9 +193,21 @@ function TimelineRow({
   return (
     <View style={styles.timelineRow} testID={`e2e_timeline_event_${ev.id}`}>
       <View style={styles.timelineLeft}>
-        <View style={[styles.timelineLine, isFirst && styles.timelineLineHidden]} />
-        <View style={styles.timelineDot} />
-        <View style={[styles.timelineLine, isLast && styles.timelineLineHidden]} />
+        <View
+          style={[
+            styles.timelineLine,
+            { backgroundColor: c.tint },
+            isFirst && styles.timelineLineHidden,
+          ]}
+        />
+        <View style={[styles.timelineDot, { borderColor: c.tint, backgroundColor: c.surface }]} />
+        <View
+          style={[
+            styles.timelineLine,
+            { backgroundColor: c.tint },
+            isLast && styles.timelineLineHidden,
+          ]}
+        />
       </View>
       <View style={styles.timelineContent}>
         <ThemedText style={[styles.timelineDateRange, { color: c.textSecondary }]}>
@@ -199,14 +238,13 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   // Sess28 PR-5 (ADR-0037 D3): BADGE_SOFT token 参照 (薄緑 + 濃緑文字、 design_system §20 整合)。
+  // Sess70 PR-C1: bg / color は inline c.badgeBg / c.tint (scheme-aware)。
   eventCountBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
-    backgroundColor: BADGE_SOFT_BG,
   },
   eventCountBadgeText: {
-    color: BADGE_SOFT_TEXT,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 0.4,
@@ -229,11 +267,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 0,
   },
+  // Sess70 PR-C1: bg / borderColor / color は inline c.tint / c.surface (scheme-aware)。
   // 縦線 (上半 + 下半)。flex:1 で row の縦方向に伸ばす。
   timelineLine: {
     flex: 1,
     width: 2,
-    backgroundColor: BRAND_GREEN,
   },
   timelineLineHidden: { backgroundColor: 'transparent' },
   // 緑円マーカー (mockup 整合)
@@ -242,8 +280,6 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     borderWidth: 2,
-    borderColor: BRAND_GREEN,
-    backgroundColor: '#FFFFFF',
     marginVertical: 2,
   },
   // Sess12 PR-J: 「今日」 大円マーカー (mockup bonsai-detail-timeline-01/02 整合)
@@ -251,13 +287,11 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: BRAND_GREEN,
   },
   // 「今日」 ラベル + 日付 (mockup line 1 「今日 / 4月25日」 整合)
   timelineTodayLabel: {
     fontSize: 16,
     fontWeight: '700',
-    color: BRAND_GREEN,
   },
   timelineTodayDate: {
     fontSize: 12,
@@ -272,14 +306,13 @@ const styles = StyleSheet.create({
   timelineRowMain: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   timelineDateRange: { fontSize: 13, fontVariant: ['tabular-nums'] },
   // Sess28 PR-5 (ADR-0037 D3): ad-hoc HEX '#E8F0EA' を BADGE_SOFT token 参照に統一。
+  // Sess70 PR-C1: color / bg は inline c.tint / c.badgeBg (scheme-aware)。
   timelineConsecutive: {
     fontSize: 11,
-    color: BADGE_SOFT_TEXT,
     fontWeight: '600',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
-    backgroundColor: BADGE_SOFT_BG,
   },
   eventRowNote: { fontSize: 13, lineHeight: 20, marginTop: 4 },
 });

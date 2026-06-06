@@ -12,7 +12,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
 // Sess66 PR6c.1: theme-dependent token を inline c.* に (dark cascade)。
-import { BUTTON_SECONDARY_BG, BUTTON_SECONDARY_TEXT } from '@/src/core/theme/colors';
+// Sess70 PR-C1: BUTTON_SECONDARY_BG/TEXT + hex '#F5EEDD' を scheme-aware
+// (c.buttonSecondaryBg / c.tint / c.background) に移行 (dark mode で薄緑沈み + 薄washi 浮き解消、
+// ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import { eventRowMemo } from '@/src/core/theme/typography';
 import { type EventType } from '@/src/db/schema';
@@ -62,7 +64,10 @@ export function EventRowCompact({
         styles.eventRow,
         { backgroundColor: c.surface, borderColor: c.border },
         indent && styles.eventRowIndent,
-        highlighted && styles.rowHighlighted,
+        highlighted && [
+          styles.rowHighlighted,
+          { backgroundColor: c.buttonSecondaryBg, borderColor: c.tint },
+        ],
       ]}
       accessibilityRole="button"
       accessibilityLabel={
@@ -114,10 +119,12 @@ export function EventRowCompact({
             accessibilityRole="button"
             accessibilityLabel={actionButtonLabel}
             onPress={() => onActionPress(ev)}
-            style={styles.actionButton}
+            style={[styles.actionButton, { backgroundColor: c.buttonSecondaryBg }]}
             testID={actionButtonTestID}
           >
-            <ThemedText style={styles.actionButtonText}>{actionButtonLabel}</ThemedText>
+            <ThemedText style={[styles.actionButtonText, { color: c.tint }]}>
+              {actionButtonLabel}
+            </ThemedText>
           </Pressable>
         )}
       </View>
@@ -138,11 +145,8 @@ export function EventRowCompact({
 }
 
 const styles = StyleSheet.create({
-  // 改善① 検索ジャンプ時の一時ハイライト (washi 系・薄め。 数秒後に解除)。
-  rowHighlighted: {
-    backgroundColor: '#F5EEDD',
-    borderColor: BUTTON_SECONDARY_TEXT,
-  },
+  // 改善① 検索ジャンプ時の一時ハイライト。 Sess70 PR-C1: bg/border は inline c.* (scheme-aware)。
+  rowHighlighted: {},
   // compact mode (default、 既存 callsite 後方互換)。 Sess66 PR6c.1: bg/border/color は inline c.*。
   eventRow: {
     flexDirection: 'row',
@@ -171,15 +175,15 @@ const styles = StyleSheet.create({
   // memo 本文 (Sess37 PR-1 C5: token 経由、 lineHeight 22 で可読性 ↑)
   eventRowNote: { ...eventRowMemo, marginTop: 2 },
   // Sess29 ADR-0038 D4 / R-48: BUTTON_SECONDARY token 参照 (薄緑 + 濃緑文字、 design_system §22 Secondary CTA)。
+  // Sess70 PR-C1: bg / color は inline c.buttonSecondaryBg / c.tint (scheme-aware)。
   actionButton: {
     marginTop: 8,
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: BUTTON_SECONDARY_BG,
   },
-  actionButtonText: { fontSize: 12, fontWeight: '600', color: BUTTON_SECONDARY_TEXT },
+  actionButtonText: { fontSize: 12, fontWeight: '600' },
   // ADR-0036 D7 拡張 (Sess27 PR-5): 個別 row 右端 kebab ⋮ button
   kebabButton: {
     width: 32,

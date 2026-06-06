@@ -5,7 +5,8 @@ import { ThemedText } from '@/components/themed-text';
 import { EventIcon } from '@/src/components/icons';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 // Sess66 PR6c.2: theme-dependent token を inline c.* に (dark cascade)。
-import { BADGE_SOFT_BG, BADGE_SOFT_TEXT, BRAND_GREEN } from '@/src/core/theme/colors';
+// Sess70 PR-C1: BADGE_SOFT_BG/TEXT / BRAND_GREEN を scheme-aware (c.badgeBg / c.tint / c.onTint)
+// に移行 (dark mode で chip 深緑沈み + badge 薄緑浮きを解消、 ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import type { Event, EventType } from '@/src/db/schema';
 import { formatDate } from '@/src/features/bonsai/detail/dateFormat';
@@ -74,13 +75,16 @@ export function BonsaiHistoryTab({
               style={[
                 styles.historyFilterChip,
                 { backgroundColor: c.surface, borderColor: c.border },
-                on && styles.historyFilterChipOn,
+                on && { backgroundColor: c.tint, borderColor: c.tint },
               ]}
               onPress={() => setHistoryFilter(f)}
               testID={`e2e_history_filter_${f}`}
             >
               <ThemedText
-                style={[styles.historyFilterChipText, on && styles.historyFilterChipTextOn]}
+                style={[
+                  styles.historyFilterChipText,
+                  on && [styles.historyFilterChipTextOn, { color: c.onTint }],
+                ]}
               >
                 {t(labelKey)}
               </ThemedText>
@@ -118,8 +122,8 @@ export function BonsaiHistoryTab({
                       <ThemedText style={styles.eventLabel}>
                         {t(`eventType_${entry.type}` as TranslationKey)}
                       </ThemedText>
-                      <View style={styles.eventCountBadge}>
-                        <ThemedText style={styles.eventCountBadgeText}>
+                      <View style={[styles.eventCountBadge, { backgroundColor: c.badgeBg }]}>
+                        <ThemedText style={[styles.eventCountBadgeText, { color: c.tint }]}>
                           ×{entry.events.length}
                         </ThemedText>
                       </View>
@@ -146,15 +150,20 @@ export function BonsaiHistoryTab({
                           <View
                             style={[
                               styles.historyExpandedLine,
+                              { backgroundColor: c.tint },
                               isFirst && styles.historyExpandedLineHidden,
                             ]}
                           />
                           <View
-                            style={[styles.historyExpandedDot, { backgroundColor: c.surface }]}
+                            style={[
+                              styles.historyExpandedDot,
+                              { backgroundColor: c.surface, borderColor: c.tint },
+                            ]}
                           />
                           <View
                             style={[
                               styles.historyExpandedLine,
+                              { backgroundColor: c.tint },
                               isLast && styles.historyExpandedLineHidden,
                             ]}
                           />
@@ -230,20 +239,19 @@ const styles = StyleSheet.create({
     minHeight: 36,
     justifyContent: 'center',
   },
-  historyFilterChipOn: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
+  // Sess70 PR-C1: bg/border/color は inline c.tint / c.onTint (scheme-aware)。
   historyFilterChipText: { fontSize: 13 },
-  historyFilterChipTextOn: { color: '#FFFFFF', fontWeight: '600' },
+  historyFilterChipTextOn: { fontWeight: '600' },
   // Issue #440 Phase 1: 連続日 group の `×N` バッジ + 「N 回まとめて表示 個別に開く ▼」
   eventLabelWithCount: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   // Sess28 PR-5 (ADR-0037 D3): BADGE_SOFT token 参照 (薄緑 + 濃緑文字、 design_system §20 整合)。
+  // Sess70 PR-C1: bg / color は inline c.badgeBg / c.tint (scheme-aware)。
   eventCountBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
-    backgroundColor: BADGE_SOFT_BG,
   },
   eventCountBadgeText: {
-    color: BADGE_SOFT_TEXT,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 0.4,
@@ -253,10 +261,10 @@ const styles = StyleSheet.create({
   historyExpandedContainer: { marginLeft: 16, marginTop: 4, marginBottom: 4 },
   historyExpandedRow: { flexDirection: 'row', alignItems: 'stretch' },
   historyExpandedLeft: { width: 24, alignItems: 'center' },
+  // Sess70 PR-C1: bg / borderColor は inline c.tint (scheme-aware)。
   historyExpandedLine: {
     flex: 1,
     width: 2,
-    backgroundColor: BRAND_GREEN,
   },
   historyExpandedLineHidden: { backgroundColor: 'transparent' },
   historyExpandedDot: {
@@ -264,7 +272,6 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: BRAND_GREEN,
     marginVertical: 2,
   },
   historyExpandedRowContent: { flex: 1, paddingLeft: 8 },

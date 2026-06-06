@@ -2,8 +2,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-// Sess68 PR #C: BORDER_DEFAULT は inline c.border 化、 BRAND_GREEN は brand-static で保持。
-import { BRAND_GREEN } from '@/src/core/theme/colors';
+// Sess68 PR #C: BORDER_DEFAULT は inline c.border 化。
+// Sess70 PR-C1: BRAND_GREEN も scheme-aware (c.tint) に移行 (dark mode で深緑 active タブ
+// border + text が沈む罠を解消、 ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import type { DetailTab } from '@/src/features/bonsai/detail/useBonsaiDetailTabs';
 
@@ -40,14 +41,14 @@ export function BonsaiDetailTabs({
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
             accessibilityLabel={t(labelKey)}
-            style={[styles.detailTab, on && styles.detailTabOn]}
+            style={[styles.detailTab, on && { borderBottomColor: c.tint }]}
             onPress={() => onChange(tab)}
             testID={`e2e_detail_tab_${tab}`}
           >
             <ThemedText
               style={[
                 styles.detailTabText,
-                on ? styles.detailTabTextOn : { color: c.textSecondary },
+                on ? [styles.detailTabTextOn, { color: c.tint }] : { color: c.textSecondary },
               ]}
             >
               {t(labelKey)}
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
-  detailTabOn: { borderBottomColor: BRAND_GREEN },
+  // Sess70 PR-C1: borderBottomColor / color は inline c.tint (scheme-aware)。
   detailTabText: { fontSize: 14, fontWeight: '400' },
-  detailTabTextOn: { color: BRAND_GREEN, fontWeight: '500' },
+  detailTabTextOn: { fontWeight: '500' },
 });
