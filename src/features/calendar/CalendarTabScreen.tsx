@@ -17,7 +17,7 @@ import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedView } from '@/components/themed-view';
-import { FAB } from '@/src/components/common/FAB';
+import { BottomCtaBar } from '@/src/components/common/BottomCtaBar';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
@@ -107,16 +107,18 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
         />
       </ScrollView>
 
-      {/* FAB: plan は過去日 disabled、 record は常に有効 (ADR-0042 D3 で共通 component 化) */}
-      <FAB
+      {/* Sess72 ADR-0054 D1: FAB -> BottomCtaBar replacement. plan mode disables
+          on past dates, record mode always enabled. Inline layout solves overlap
+          structurally (R-62 Layout Contract). */}
+      <BottomCtaBar
         onPress={() =>
           startBulkAction(
             data.bonsai.map((b) => ({ id: b.id, name: b.name })),
             data.selectedDateKey,
           )
         }
-        accessibilityLabel={t(fabAccessibilityLabelKey)}
-        testID={`e2e_${testIdPrefix}_fab_action`}
+        label={t(fabAccessibilityLabelKey)}
+        testID={`e2e_${testIdPrefix}_bottom_cta_action`}
         disabled={data.isFabDisabled}
       />
 
@@ -185,5 +187,8 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { paddingBottom: 96 },
+  // Sess72 ADR-0054 D1: 旧 paddingBottom 96 (FAB クリアランス) は撤去。 BottomCtaBar
+  // (画面下端 inline) が container に直接配置され、 ScrollView は BottomCtaBar の上で
+  // 自然に終わるため paddingBottom 計算不要 (R-62 Layout Contract 構造解決)。
+  scrollContent: { paddingBottom: 16 },
 });
