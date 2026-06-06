@@ -1076,7 +1076,7 @@ const { onScroll, scrollEventThrottle } = useScrollPreservation(scrollRef);
 
 ## 26. Bottom CTA Bar SoT (ADR-0054 D2 / Sess72 PR-5 由来、 旧 FAB 廃止)
 
-画面下端 Bottom CTA Bar は **本セクションが SoT**、 全画面で共通 component `src/components/common/BottomCtaBar.tsx` を使用。 inline 実装禁止。 ADR-0042 D3 で確立した旧 `<FAB />` (画面右下絶対配置 + 56×56 円形 + アイコンのみ) は本 ADR-0054 で **撤回**、 `<BottomCtaBar />` (画面下端 inline 配置 + height 72 全幅 + アイコン + ラベル付き) に置換。
+画面下端 Bottom CTA Bar は **本セクションが SoT**、 全画面で共通 component `src/components/common/BottomCtaBar.tsx` を使用。 inline 実装禁止。 ADR-0042 D3 で確立した旧 `<FAB />` (画面右下絶対配置 + 56×56 円形 + アイコンのみ) は本 ADR-0054 で **撤回**、 `<BottomCtaBar />` (画面下端 inline 配置 + height 64 全幅 + アイコン + ラベル付き、 Sess73 PR-1 Amendment で 72→64dp 統一) に置換。
 
 ### 移行根拠 (旧 FAB → 新 BottomCtaBar)
 
@@ -1087,23 +1087,34 @@ const { onScroll, scrollEventThrottle } = useScrollPreservation(scrollRef);
 
 ### BottomCtaBar 位置・サイズ token
 
-| 項目                | 値             | 根拠                                                                                 |
-| ------------------- | -------------- | ------------------------------------------------------------------------------------ |
-| `paddingHorizontal` | **16**         | 既存 `emptyCtaWrap` 整合、 画面端からの余白                                          |
-| `paddingTop`        | **8**          | 上の content (FlatList/ScrollView) との視覚分離                                      |
-| `paddingBottom`     | **8**          | 下の AdBanner / TabBar との視覚分離                                                  |
-| `height`            | **72dp**       | 既存 `emptyCta` pattern 踏襲、 WCAG 2.5.8 (44dp 最低) を余裕クリア                   |
-| `borderRadius`      | **14**         | 既存 `emptyCta` 整合 (pill 寄りの角丸)                                               |
-| `position`          | 標準 flex 配置 | inline = 親 container の flex 順序で配置 (absolute 不要、 R-62 Layout Contract 解決) |
-| `flexDirection`     | `'row'`        | アイコン横にラベル                                                                   |
-| `gap`               | **10**         | アイコン ↔ ラベル間隔                                                                |
+| 項目                | 値             | 根拠                                                                                                                                          |
+| ------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `paddingHorizontal` | **16**         | 既存 `emptyCtaWrap` 整合、 画面端からの余白                                                                                                   |
+| `paddingTop`        | **8**          | 上の content (FlatList/ScrollView) との視覚分離                                                                                               |
+| `paddingBottom`     | **8**          | 下の AdBanner / TabBar との視覚分離                                                                                                           |
+| `height`            | **64dp**       | Sess73 PR-1 Amendment (旧 72dp / ADR-0054 D2 初出 56dp の drift を統一)、 親指リーチ最適化 + 圧迫感緩和、 WCAG 2.5.8 (44dp 最低) を余裕クリア |
+| `borderRadius`      | **14**         | 既存 `emptyCta` 整合 (pill 寄りの角丸)                                                                                                        |
+| `position`          | 標準 flex 配置 | inline = 親 container の flex 順序で配置 (absolute 不要、 R-62 Layout Contract 解決)                                                          |
+| `flexDirection`     | `'row'`        | アイコン横にラベル                                                                                                                            |
+| `gap`               | **10**         | アイコン ↔ ラベル間隔                                                                                                                         |
 
 ### BottomCtaBar icon + label
 
 - **default icon**: `<PlusIcon size={20} color={c.onTint} />` (NavIcons.tsx)
 - **label**: i18n key 解決後の文字列を渡す (例: `t('bonsaiCreateNew')` = '盆栽を登録')
 - **fontSize**: 20、 **fontWeight**: '500'、 **letterSpacing**: 0.8 (既存 emptyCtaText 整合)
+- **lineHeight**: **28** (= fontSize 20 × 1.4、 Sess73 PR-1 R-62 拡張: descender g/p/q/y クリアランス確保、 en「Register new bonsai」 / 「Log a care event」 / 「Log care」 の g 見切れ防止)
 - カスタム icon が必要な画面は `icon` prop で override 可 (color は呼び出し側で `c.onTint` に揃える)
+
+### BottomCtaBar Multilingual Visual Contract (Sess73 PR-1 / R-62 拡張)
+
+label を表示する `<ThemedText>` に以下 3 prop を **必須**:
+
+- `numberOfLines={1}` — 全 19 言語で 1 行維持。 長文言語 (ru「Запланировать задачи」 (20 字) / ru「Зарегистрировать новый бонсай」 (28 字) / de「Aufgaben planen」 / vi「Đăng ký bonsai mới」 等) の 2 行折返しを防止し、 height 64dp で overflow しない構造保証
+- `adjustsFontSizeToFit` — 1 行内に収まらない場合 font を自動縮小
+- `minimumFontScale={0.85}` — 縮小下限。 fontSize 20 × 0.85 = 17px が最小 (WCAG 視認下限を考慮)
+
+これは旧 ADR-0054 D2 に欠落していた **多言語 line metrics / overflow handling** を SoT 化したもの (R-62「Layout Contract」 を「Multilingual Visual Contract」 含む 2 contract に拡張)。 i18n key を追加 / 変更する PR は **en / de / ru / vi 4 言語の visual smoke** (descender + 長文 overflow) を Acceptance test 必須。
 
 ### BottomCtaBar 色 token (theme-aware、 R-58 dark cascade 整合)
 

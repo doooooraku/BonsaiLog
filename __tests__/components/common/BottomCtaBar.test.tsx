@@ -1,9 +1,15 @@
 /**
- * BottomCtaBar 静的解析 test (Sess72 PR-2: ADR-0054 D2 / FAB → BottomCtaBar 移行)。
+ * BottomCtaBar 静的解析 test (Sess72 PR-2 新設、 Sess73 PR-1 Amendment 追加)。
  *
  * 旧 FAB component の置換として、 inline 配置 + theme-aware bg + label 必須 + R-58 dark
  * cascade 整合の構造を静的に検証。 render-based test は他 component (Toast / ConfirmDialog 等)
  * と同じ静的解析 pattern を踏襲。
+ *
+ * Sess73 PR-1 Amendment (R-62 拡張 + ADR-0054 D2 改訂):
+ * - height 72dp → 64dp (ADR-0054 D2 docs と旧実装 drift 解消)
+ * - label lineHeight: 28 明示 (descender クリアランス、 g/p/q/y 見切れ防止)
+ * - ThemedText numberOfLines={1} + adjustsFontSizeToFit minimumFontScale={0.85}
+ *   (長文言語 ru / de / vi 等の overflow 防止)
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -13,7 +19,7 @@ const SRC = readFileSync(
   'utf8',
 );
 
-describe('BottomCtaBar (Sess72 PR-2: FAB 置換、 ADR-0054 D2)', () => {
+describe('BottomCtaBar (Sess72 PR-2 / Sess73 PR-1 Amendment、 ADR-0054 D2)', () => {
   test('1. BottomCtaBar function + BottomCtaBarProps type を export', () => {
     expect(SRC).toMatch(/export\s+function\s+BottomCtaBar\(/);
     expect(SRC).toMatch(/export\s+type\s+BottomCtaBarProps\s*=\s*\{/);
@@ -62,8 +68,10 @@ describe('BottomCtaBar (Sess72 PR-2: FAB 置換、 ADR-0054 D2)', () => {
     expect(SRC).toMatch(/disabled\s*\?\s*c\.disabledBg\s*:\s*c\.tint/);
   });
 
-  test('9. height 72 + borderRadius 14 (既存 homeEmptyCta pattern 完全踏襲)', () => {
-    expect(SRC).toMatch(/height:\s*72/);
+  test('9. height 64 + borderRadius 14 (Sess73 PR-1 Amendment、 ADR-0054 D2 docs 整合)', () => {
+    // height 72 (旧 Sess72 値) は drift。 Sess73 PR-1 で 64dp に統一 (ADR-0054 D2 改訂)。
+    expect(SRC).toMatch(/height:\s*64/);
+    expect(SRC).not.toMatch(/height:\s*72/);
     expect(SRC).toMatch(/borderRadius:\s*14/);
   });
 
@@ -74,5 +82,22 @@ describe('BottomCtaBar (Sess72 PR-2: FAB 置換、 ADR-0054 D2)', () => {
   test('11. accessibilityRole + accessibilityState で a11y 完備', () => {
     expect(SRC).toMatch(/accessibilityRole="button"/);
     expect(SRC).toMatch(/accessibilityState=\{\{\s*disabled\s*\}\}/);
+  });
+
+  test('12. label lineHeight 28 明示 (Sess73 R-62 拡張: descender g/p/q/y クリアランス)', () => {
+    // fontSize 20 × 1.4 = 28、 en「Register new bonsai」 / 「Log a care event」 等の g
+    // 見切れ防止 (Latin descender 文字全 19 言語に効く)。
+    expect(SRC).toMatch(/lineHeight:\s*28/);
+  });
+
+  test('13. label に numberOfLines={1} (Sess73 R-62 拡張: 長文言語 1 行維持)', () => {
+    // ru「Запланировать задачи」 / de / vi で 2 行折返し → height 64 で overflow 防止。
+    expect(SRC).toMatch(/numberOfLines=\{1\}/);
+  });
+
+  test('14. label に adjustsFontSizeToFit + minimumFontScale 0.85 (Sess73 R-62 拡張)', () => {
+    // 1 行維持しつつ font 自動縮小 (20px → 最低 17px) で長文言語の overflow 構造解消。
+    expect(SRC).toMatch(/adjustsFontSizeToFit/);
+    expect(SRC).toMatch(/minimumFontScale=\{0\.85\}/);
   });
 });
