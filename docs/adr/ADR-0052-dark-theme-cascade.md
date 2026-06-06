@@ -135,3 +135,60 @@ PR3 (Sess66) で実装:
 - Sess66 PR4 (予定): DARK_TOKENS 宵墨 (warm sumi) pivot
 - Sess66 PR5 (予定): Navigation Header SoT (ADR-0053)
 - Sess66 PR6 (予定): ThemedView/ThemedText 全画面適用
+
+---
+
+## Notes Amended (2026-06-06、 Sess69 PR-A): Allowed tokens 縮小 (brand-static 撤回)
+
+### 改訂背景
+
+Sess66 PR3 で確立した cascade pattern (`useColors()` + ESLint rule + a11y CI) の Allowed tokens (theme-invariant、 StyleSheet 内 OK) に **brand-static 7 種** (`BRAND_GREEN` / `BRAND_GREEN_HOVER` / `BRAND_GREEN_BG` / `BADGE_SOFT_BG` / `BADGE_SOFT_TEXT` / `BUTTON_SECONDARY_BG` / `BUTTON_SECONDARY_TEXT`) を含めていた。 「brand intent token は両 mode で同色で OK」 という前提だったが、 Sess69 で **真因確定**: light `BRAND_GREEN = #1F3A2E` 深緑が dark `#16140F` 上で contrast 1.5:1 ≪ AA 3.0:1 で破綻 (識別困難)、 dark mode で「沈む」「見えない」「灰色に見える」 として 5 回連続再発の主要因。 さらに `DISABLED_BG = #9E9E9E` も dark mode で意図不明な灰色として浮く。
+
+### 改訂内容
+
+Allowed tokens から brand-static 7 種 + `DISABLED_BG` (計 8 種) を削除する (PR-D で ESLint `FORBIDDEN_TOKENS` 拡張、 PR-C までで違反 0 化)。 代わりに ADR-0015 Amendment (2026-06-06) で新設した scheme-aware brand tokens (Colors 7 prop 追加) を inline `c.tint` / `c.tintSubtle` / `c.badgeBg` / `c.buttonSecondaryBg` / `c.onTint` / `c.disabledBg` / `c.placeholderBg` / `c.accentBark` / `c.dangerColor` 経由で使用する。
+
+### 改訂後 Allowed tokens (theme-invariant、 厳格化)
+
+| Token                                  | 用途                             | 理由                                                       |
+| -------------------------------------- | -------------------------------- | ---------------------------------------------------------- |
+| `ON_BRAND` (#FFFFFF)                   | brand bg 上の白文字 (light のみ) | light tint 用、 dark は `c.onTint` (= sumi #1A1A1A) を使う |
+| `ACCENT_GOLD` (#C69E48)                | Pro バッジ専用                   | 両 theme 同色維持 (UX 一貫性)                              |
+| `DANGER` / `SUCCESS` / `OVERLIMIT`     | 状態色                           | 意図的に固定 (赤/緑の認知不変)                             |
+| `HEATMAP_COLORS` (F-04 4 色)           | F-04 ヒートマップ専用            | ADR-0013 で固定                                            |
+| (削除予定) ~~`BRAND_GREEN`~~           | → `c.tint` 経由                  | dark で苔緑 (#7FA98A)                                      |
+| (削除予定) ~~`BRAND_GREEN_HOVER`~~     | → `c.tintHover` (将来追加候補)   | dark で苔緑 hover (#93BD9E)                                |
+| (削除予定) ~~`BRAND_GREEN_BG`~~        | → `c.tintSubtle` 経由            | dark で暗緑紙 (#2A3328)                                    |
+| (削除予定) ~~`BADGE_SOFT_BG`~~         | → `c.badgeBg` 経由               | dark で暗緑 (#2C3329)                                      |
+| (削除予定) ~~`BADGE_SOFT_TEXT`~~       | → `c.tint` (= BRAND_GREEN 等価)  | --                                                         |
+| (削除予定) ~~`BUTTON_SECONDARY_BG`~~   | → `c.buttonSecondaryBg` 経由     | dark で暗緑                                                |
+| (削除予定) ~~`BUTTON_SECONDARY_TEXT`~~ | → `c.tint` 等価                  | --                                                         |
+| (削除予定) ~~`DISABLED_BG`~~           | → `c.disabledBg` 経由            | dark で sumi 重ね灰 (#3A3631)                              |
+
+### hex 直書き禁止 (新 rule、 PR-D で追加予告)
+
+ADR-0052 起票時の盲点 = ESLint rule `no-color-token-in-stylesheet` は token 名 base のため **raw hex literal** (`'#FFFFFF'` / `'#F5EEDD'` 等) を見逃す。 Sess69 で 4 file で発見:
+
+- `src/features/bonsai/detail/BonsaiTimelineTab.tsx:246` — `backgroundColor: '#FFFFFF'`
+- `src/features/event/EventRowCompact.tsx:143` — `'#F5EEDD'` (light washi)
+- `src/features/event/EventRowDetailed.tsx:309` — `'#F5EEDD'`
+- `src/features/search/SearchResultRows.tsx:226` — `'#EDE7D8'` (light washi)
+
+新 rule `no-color-hex-literal-in-stylesheet` を PR-D で追加し、 StyleSheet 内の `'#XXX'` / `'#XXXXXX'` を error で禁止。 例外: `'transparent'` / `'rgba(...)'` 半透明 + 写真 overlay / PDF export / SVG export 等の **固定背景上のテキスト色** は `// eslint-disable-next-line local/no-color-hex-literal-in-stylesheet // reason: <一文>` marker 必須、 PR レビューで監視 (5 件以下上限)。
+
+### TabBar 強制 light 固定の根絶 (Sess6 PR-1 leftover)
+
+`app/(tabs)/_layout.tsx:28` で `const c = Colors.light` (literal) として TabBar を **light 固定** していた (Sess6 PR-1 のコメント「dark mode 完全対応は Phase C 別 PR で扱う」、 60+ session 放置)。 PR-B で `useColors()` 切替に修正、 PR-D で `Colors.light` literal を `app/**` で grep 禁止 (新 rule or hook で gate)。
+
+### 段階移行 (warn → error)
+
+1. **本 PR-A (Sess69)**: ADR Amendment + 新 token 7 種 + a11y pair 拡張のみ。 ESLint rule は変更しない (既存違反 0 維持)
+2. **PR-B (Sess69)**: TabBar + Calendar + bonsai-new の brand-static literal を inline c.tint 系に置換 (~12 file)
+3. **PR-C (次セッション)**: 残 ~20 file の brand-static + hex literal 4 件を置換
+4. **PR-D (次次セッション)**: ESLint `FORBIDDEN_TOKENS` 8 種追加 + 新 rule `no-color-hex-literal-in-stylesheet` 追加 + 違反 0 を `'error'` で恒久化
+
+### 関連 (Sess69 PR-A)
+
+- ADR-0015 Amendment (2026-06-06 Sess69 PR-A): brand 色 scheme-aware 原則
+- design_system.md §2-2 + §2-4 更新: 新 brand token 表 + 改訂後 Allowed tokens
+- R-58 拡張 + R-59 + R-60 起票 (PR-D で実施): brand scheme-aware / hex literal 禁止 / 新画面 dark SS 必須

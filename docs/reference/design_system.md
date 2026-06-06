@@ -40,30 +40,43 @@
 
 ブランド「washi 和紙 → sumi 墨 → fukamidori 深緑」 を dark mode まで延長 (P3 永く変わらない整合)。 旧 navy 寒色系 (#0A0E1A 等) から **暖墨** 系に pivot (Sess66 PR4、 Claude Design `tokens.css` `[data-theme="dark"]` 提案値整合)。
 
-| Token              | HEX       | 用途                                  |
-| ------------------ | --------- | ------------------------------------- |
-| `--bg-primary`     | `#16140F` | 背景 (宵墨 yoizumi、 暖かい墨)        |
-| `--bg-surface`     | `#211E18` | カード背景 (重ねの紙)                 |
-| `--text-primary`   | `#ECE6D6` | 本文 (淡 washi)                       |
-| `--text-secondary` | `#B3AA97` | 補助                                  |
-| `--text-muted`     | `#837A68` | 3 次                                  |
-| `--primary`        | `#7FA98A` | プライマリ (苔緑、 夜目に映える深緑)  |
-| `--primary-hover`  | `#93BD9E` | 押下                                  |
-| `--accent-bark`    | `#A1886F` | 樹皮色 (warm)                         |
-| `--accent-gold`    | `#D4B062` | 秋葉 (Pro バッジ、 両 theme 同色維持) |
-| `--danger`         | `#CE7A72` | 危険                                  |
-| `--success`        | `#88B083` | 成功                                  |
-| `--border`         | `#2C2820` | 境界線 (茶味の枠線)                   |
-| `--border-strong`  | `#4A4534` | 強調境界線                            |
+| Token                   | HEX       | 用途                                                                   |
+| ----------------------- | --------- | ---------------------------------------------------------------------- |
+| `--bg-primary`          | `#16140F` | 背景 (宵墨 yoizumi、 暖かい墨)                                         |
+| `--bg-surface`          | `#211E18` | カード背景 (重ねの紙)                                                  |
+| `--text-primary`        | `#ECE6D6` | 本文 (淡 washi)                                                        |
+| `--text-secondary`      | `#B3AA97` | 補助                                                                   |
+| `--text-muted`          | `#837A68` | 3 次 (※ BG_SURFACE 上で AA 3.92:1、 UI 要素 3:1 OK、 本文用途は別配色) |
+| `--primary`             | `#7FA98A` | プライマリ (苔緑、 夜目に映える深緑) — inline `c.tint` 経由            |
+| `--primary-hover`       | `#93BD9E` | 押下                                                                   |
+| `--tint-subtle`         | `#2A3328` | 選択中 row 背景 / Comparison 表 (Sess69 PR-A、 inline `c.tintSubtle`)  |
+| `--badge-bg`            | `#2C3329` | ×n / N 日連続バッジ背景 (Sess69 PR-A、 inline `c.badgeBg`)             |
+| `--button-secondary-bg` | `#2C3329` | Secondary CTA 背景 (Sess69 PR-A、 inline `c.buttonSecondaryBg`)        |
+| `--on-tint`             | `#1A1A1A` | tint bg 上の sumi 文字 (苔緑上 9.5:1 AAA、 Sess69 PR-A `c.onTint`)     |
+| `--disabled-bg`         | `#3A3631` | disabled 背景 (Sess69 PR-A、 inline `c.disabledBg`)                    |
+| `--placeholder-bg`      | `#3A3631` | 画像 fallback (Sess69 PR-A、 inline `c.placeholderBg`)                 |
+| `--accent-bark`         | `#A1886F` | 樹皮色 (warm) — inline `c.accentBark` (Sess69 PR-A 経由化)             |
+| `--accent-gold`         | `#D4B062` | 秋葉 (Pro バッジ、 両 theme 同色維持)                                  |
+| `--danger`              | `#CE7A72` | 危険 — inline `c.dangerColor` (Sess69 PR-A 経由化)                     |
+| `--success`             | `#88B083` | 成功                                                                   |
+| `--border`              | `#2C2820` | 境界線 (茶味の枠線)                                                    |
+| `--border-strong`       | `#4A4534` | 強調境界線                                                             |
 
-WCAG AA 検証 (`pnpm a11y:contrast`):
+WCAG AA 検証 (`pnpm a11y:contrast` 22 pair、 Sess69 PR-A で 14 → 22 pair 拡張):
 
-| pair                                   | 比      | 等級                    |
-| -------------------------------------- | ------- | ----------------------- |
-| text (#ECE6D6) × bg (#16140F)          | 15.13:1 | AAA                     |
-| text (#ECE6D6) × surface (#211E18)     | 13.91:1 | AAA                     |
-| textSecondary (#B3AA97) × bg (#16140F) | 8.15:1  | AAA                     |
-| primary (#7FA98A) × bg (#16140F)       | 6.07:1  | AA (UI 要素 / 大字 AAA) |
+| pair                                   | 比      | 等級                           |
+| -------------------------------------- | ------- | ------------------------------ |
+| text (#ECE6D6) × bg (#16140F)          | 14.77:1 | AAA                            |
+| text (#ECE6D6) × surface (#211E18)     | 13.34:1 | AAA                            |
+| textSecondary (#B3AA97) × bg (#16140F) | 7.99:1  | AAA                            |
+| textSecondary (#B3AA97) × surface      | 7.21:1  | AAA                            |
+| textMuted (#837A68) × surface          | 3.92:1  | ⚠ AA 4.5 不達 (UI 要素 3:1 OK) |
+| tint (#7FA98A 苔緑) × bg (#16140F)     | 6.96:1  | AA (大字 AAA)                  |
+| onTint (#1A1A1A sumi) × tint (#7FA98A) | 6.58:1  | AA (大字 AAA)                  |
+| danger (#CE7A72) × bg (#16140F)        | 5.83:1  | AA                             |
+| tint (#7FA98A) × tintSubtle (#2A3328)  | 4.96:1  | AA                             |
+| tint (#7FA98A) × badgeBg (#2C3329)     | 4.93:1  | AA                             |
+| tint (#7FA98A) × buttonSecondaryBg     | 4.93:1  | AA                             |
 
 ### 2-3. 屋外モード（直射日光下、WCAG AAA 7:1目標）
 
@@ -130,18 +143,30 @@ const styles = StyleSheet.create({
 
 → すべて `c.background` / `c.surface` / `c.text` / `c.textSecondary` / `c.textMuted` / `c.border` (inline) で参照。
 
-#### Allowed tokens (theme-invariant、 StyleSheet 内 OK)
+#### Allowed tokens (theme-invariant、 StyleSheet 内 OK) — Sess69 PR-A 改訂
 
-| Token                                 | 値                   | 用途                                                                                                                |
-| ------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `ON_BRAND`                            | `#FFFFFF`            | brand 上の白文字 (Pro バッジ等)、 両 theme で白固定                                                                 |
-| `ACCENT_GOLD`                         | `#C69E48`            | Pro バッジ専用、 両 theme で同色 (秋葉色)                                                                           |
-| `ACCENT_BARK`                         | `#5A4637`            | 樹皮色                                                                                                              |
-| `DANGER` / `SUCCESS` / `OVERLIMIT`    | 赤 / 緑 / 赤         | status 色、 両 theme で同色維持                                                                                     |
-| `DISABLED_BG`                         | `#9E9E9E`            | disabled 状態                                                                                                       |
-| `HEATMAP_COLORS`                      | 4 段階緑             | F-04 ヒートマップ専用                                                                                               |
-| `BADGE_SOFT_*` / `BUTTON_SECONDARY_*` | `#E8F0EA` / brand 緑 | brand-static 薄緑                                                                                                   |
-| `BRAND_GREEN*`                        | 深緑 fukamidori 系   | CTA primary、 brand intent で両 theme 同色 (※ Pressable selected 等で dark 追従させたい場合は inline `c.tint` 推奨) |
+| Token                              | 値           | 用途                                                            |
+| ---------------------------------- | ------------ | --------------------------------------------------------------- |
+| `ON_BRAND`                         | `#FFFFFF`    | light tint bg 上の白文字 (dark は `c.onTint` 経由)              |
+| `ACCENT_GOLD`                      | `#C69E48`    | Pro バッジ専用、 両 theme で同色 (秋葉色)                       |
+| `DANGER` / `SUCCESS` / `OVERLIMIT` | 赤 / 緑 / 赤 | status 色 — ※ 但し `DANGER` の dark 追従は `c.dangerColor` 推奨 |
+| `HEATMAP_COLORS`                   | 4 段階緑     | F-04 ヒートマップ専用 (ADR-0013)                                |
+
+#### 撤回された Allowed tokens (Sess69 PR-A、 brand scheme-aware 化)
+
+下記 8 種は Sess69 PR-A で **撤回**、 inline `c.*` 経由必須。 PR-D で ESLint `FORBIDDEN_TOKENS` 拡張で構造禁止化。
+
+| 旧 Allowed (撤回)           | 置換先 (scheme-aware)    | 撤回理由                                                            |
+| --------------------------- | ------------------------ | ------------------------------------------------------------------- |
+| ~~`BRAND_GREEN`~~           | `c.tint`                 | dark `#16140F` 上で `#1F3A2E` 深緑 contrast 1.5:1 ≪ AA 3.0:1 で破綻 |
+| ~~`BRAND_GREEN_HOVER`~~     | `c.tintHover` (将来追加) | 同上                                                                |
+| ~~`BRAND_GREEN_BG`~~        | `c.tintSubtle`           | dark で薄緑 `#F1F8F2` が白カードのように浮く                        |
+| ~~`BADGE_SOFT_BG`~~         | `c.badgeBg`              | 同上                                                                |
+| ~~`BADGE_SOFT_TEXT`~~       | `c.tint`                 | -- (BRAND_GREEN 等価)                                               |
+| ~~`BUTTON_SECONDARY_BG`~~   | `c.buttonSecondaryBg`    | dark で薄緑 `#E8F0EA` が白 button のように浮く                      |
+| ~~`BUTTON_SECONDARY_TEXT`~~ | `c.tint`                 | --                                                                  |
+| ~~`DISABLED_BG`~~           | `c.disabledBg`           | dark で `#9E9E9E` 灰色が意図不明に浮く                              |
+| ~~`ACCENT_BARK`~~           | `c.accentBark`           | dark で `#5A4637` 樹皮色が沈む (dark `#A1886F` warm 樹皮へ)         |
 
 #### 検出仕組み
 
@@ -149,8 +174,15 @@ const styles = StyleSheet.create({
    - **Sess66 PR3 (#940)**: `'warn'` level 導入 (段階導入、 既存 ~245 違反は許容)
    - **Sess66 PR4-6 + Sess68 PR #A/B/C (#950-#952)**: 累計 245 → 0 違反完走
    - **Sess68 PR #D**: `'error'` level 昇格、 構造禁止恒久化 (新規違反は CI で merge block)
-2. **a11y contrast CI** `pnpm a11y:contrast` (`scripts/a11y-contrast-check.mjs`) で代表 14 pair × WCAG AA 4.5:1 / UI 3.0:1 を機械検証
-3. **R-58** (`.claude/recurrence-prevention/specialized.md`): 画面追加 / 色変更 PR では `pnpm verify:a11y` + dark SS verify 必須
+   - **Sess69 PR-D (予定)**: FORBIDDEN_TOKENS に brand-static 8 種追加 (上記撤回リスト)
+2. **新 ESLint rule (Sess69 PR-D 予定)** `local/no-color-hex-literal-in-stylesheet`
+   - hex 直書き (`'#XXX'` / `'#XXXXXX'`) を StyleSheet 内禁止
+   - 例外: `'transparent'` / `'rgba(...)'` 半透明 + 写真 overlay / PDF / SVG export 上の固定背景色は `// eslint-disable-next-line ... // reason: <一文>` marker 必須
+3. **a11y contrast CI** `pnpm a11y:contrast` (`scripts/a11y-contrast-check.mjs`) で代表 22 pair × WCAG AA 4.5:1 / UI 3.0:1 を機械検証
+   - **Sess66 PR3**: 14 pair で導入
+   - **Sess69 PR-A**: 22 pair に拡張 (brand pair 8 種追加: tint / tintSubtle / badgeBg / buttonSecondaryBg × light/dark)
+4. **R-58** (`.claude/recurrence-prevention/specialized.md`): 画面追加 / 色変更 PR では `pnpm verify:a11y` + dark SS verify 必須
+5. **R-59 + R-60 (Sess69 PR-D 起票予定)**: brand tokens scheme-aware 必須 / 新画面 PR は dark SS 添付必須
 
 ## 3. タイポグラフィ
 

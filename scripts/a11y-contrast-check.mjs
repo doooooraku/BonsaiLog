@@ -32,23 +32,55 @@ function contrastRatio(fg, bg) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-/** design_system.md §2 で定義された 3 themes × 主要色対 (テキスト × 背景)。 */
+/** design_system.md §2 で定義された 2 themes × 主要色対 (テキスト × 背景 / brand 色)。
+ *
+ * Sess69 PR-A (2026-06-06): Sess66 PR4 宵墨 (yoizumi) warm sumi pivot 反映 +
+ * brand-static 撤回に伴う brand scheme-aware pair 8 種追加 (light + dark で
+ * tint / tintSubtle / badgeBg / buttonSecondaryBg の 4 pair)。 計 22 pair。
+ */
 const PAIRS = [
-  // light theme (washi 背景)
+  // ============= Light theme (washi 和紙背景) =============
   { theme: 'light', label: 'TEXT_PRIMARY × BG_SURFACE', fg: '#1A1A1A', bg: '#FFFFFF' },
   { theme: 'light', label: 'TEXT_PRIMARY × BG_PRIMARY', fg: '#1A1A1A', bg: '#F7F3E8' },
   { theme: 'light', label: 'TEXT_SECONDARY × BG_SURFACE', fg: '#5A5248', bg: '#FFFFFF' },
   { theme: 'light', label: 'TEXT_SECONDARY × BG_PRIMARY', fg: '#5A5248', bg: '#F7F3E8' },
   { theme: 'light', label: 'TEXT_MUTED × BG_SURFACE', fg: '#767066', bg: '#FFFFFF' },
-  { theme: 'light', label: 'BRAND_GREEN × BG_PRIMARY', fg: '#1F3A2E', bg: '#F7F3E8' },
-  { theme: 'light', label: 'ON_BRAND × BRAND_GREEN', fg: '#FFFFFF', bg: '#1F3A2E' },
+  { theme: 'light', label: 'tint (BRAND_GREEN) × BG_PRIMARY', fg: '#1F3A2E', bg: '#F7F3E8' },
+  { theme: 'light', label: 'onTint (ON_BRAND) × tint (BRAND_GREEN)', fg: '#FFFFFF', bg: '#1F3A2E' },
   { theme: 'light', label: 'DANGER × BG_PRIMARY', fg: '#8B2E2E', bg: '#F7F3E8' },
-  // dark theme
-  { theme: 'dark', label: 'TEXT_PRIMARY × BG_PRIMARY', fg: '#E8E4D6', bg: '#0A0E1A' },
-  { theme: 'dark', label: 'TEXT_PRIMARY × BG_SURFACE', fg: '#E8E4D6', bg: '#131826' },
-  { theme: 'dark', label: 'TEXT_SECONDARY × BG_PRIMARY', fg: '#B0A897', bg: '#0A0E1A' },
-  { theme: 'dark', label: 'BRAND_GREEN × BG_PRIMARY', fg: '#6B9B7F', bg: '#0A0E1A' },
-  // outdoor theme: ADR-0015 Notes Amended (2026-05-10、PR #312) で v1.0 不採用、削除済
+  // Sess69 PR-A: brand subtle / badge / button-secondary pair (light)
+  {
+    theme: 'light',
+    label: 'tint × tintSubtle (BRAND_GREEN × BRAND_GREEN_BG)',
+    fg: '#1F3A2E',
+    bg: '#F1F8F2',
+  },
+  {
+    theme: 'light',
+    label: 'tint × badgeBg (BRAND_GREEN × BADGE_SOFT_BG)',
+    fg: '#1F3A2E',
+    bg: '#E8F0EA',
+  },
+  { theme: 'light', label: 'tint × buttonSecondaryBg', fg: '#1F3A2E', bg: '#E8F0EA' },
+  // ============= Dark theme (yoizumi 宵墨 warm sumi) =============
+  // Sess66 PR4 ADR-0015 Amendment: navy 寒色 → 宵墨 warm 暖墨 pivot 反映
+  { theme: 'dark', label: 'TEXT_PRIMARY × BG_PRIMARY', fg: '#ECE6D6', bg: '#16140F' },
+  { theme: 'dark', label: 'TEXT_PRIMARY × BG_SURFACE', fg: '#ECE6D6', bg: '#211E18' },
+  { theme: 'dark', label: 'TEXT_SECONDARY × BG_PRIMARY', fg: '#B3AA97', bg: '#16140F' },
+  { theme: 'dark', label: 'TEXT_SECONDARY × BG_SURFACE', fg: '#B3AA97', bg: '#211E18' },
+  { theme: 'dark', label: 'TEXT_MUTED × BG_SURFACE', fg: '#837A68', bg: '#211E18' },
+  { theme: 'dark', label: 'tint (苔緑 #7FA98A) × BG_PRIMARY', fg: '#7FA98A', bg: '#16140F' },
+  {
+    theme: 'dark',
+    label: 'onTint (#1A1A1A sumi) × tint (#7FA98A 苔緑)',
+    fg: '#1A1A1A',
+    bg: '#7FA98A',
+  },
+  { theme: 'dark', label: 'DANGER (#CE7A72) × BG_PRIMARY', fg: '#CE7A72', bg: '#16140F' },
+  // Sess69 PR-A: brand subtle / badge / button-secondary pair (dark)
+  { theme: 'dark', label: 'tint × tintSubtle', fg: '#7FA98A', bg: '#2A3328' },
+  { theme: 'dark', label: 'tint × badgeBg', fg: '#7FA98A', bg: '#2C3329' },
+  { theme: 'dark', label: 'tint × buttonSecondaryBg', fg: '#7FA98A', bg: '#2C3329' },
 ];
 
 const AA = 4.5;

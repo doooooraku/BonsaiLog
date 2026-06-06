@@ -15,11 +15,18 @@
 import { Platform } from 'react-native';
 
 import {
+  ACCENT_BARK,
   ACCENT_GOLD,
+  BADGE_SOFT_BG,
   BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
   BRAND_GREEN,
+  BRAND_GREEN_BG,
+  BUTTON_SECONDARY_BG,
+  DANGER,
+  DISABLED_BG,
+  ON_BRAND,
   TEXT_MUTED,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
@@ -31,6 +38,12 @@ import {
  * Sess66 PR4 (ADR-0015 Amendment): 配色を navy 寒色 系から **宵墨 (yoizumi) warm
  * 暖墨** 系に pivot。 「washi 和紙 → sumi 墨 → fukamidori 深緑」 のブランド哲学を
  * dark mode まで延長 (P3「永く、 変わらない」 整合)。
+ *
+ * Sess69 PR-A (ADR-0015 Amendment / ADR-0052 Amendment): brand-static 撤回。
+ * brand 色 (tint / tintSubtle / badgeBg / buttonSecondaryBg / onTint / disabledBg /
+ * placeholderBg) も scheme-aware にし、 inline `c.*` 経由でのみ参照する。 light の
+ * `BRAND_GREEN = #1F3A2E` 深緑が dark mode `#16140F` 上で contrast 1.5:1 (≪ AA 3.0:1)
+ * で破綻する罠を構造的に排除。
  *
  * 参考: Claude Design `tokens.css` `[data-theme="dark"]` 提案値整合。
  * 旧 navy 系 (#0A0E1A / #131826 / #6B9B7F / #2A2F3E 等) は Sess66 Sess67 で完全置換。
@@ -49,11 +62,23 @@ export const DARK_TOKENS = {
   success: '#88B083',
   border: '#2C2820', // 茶味の枠線
   borderStrong: '#4A4534',
+  // Sess69 PR-A: brand scheme-aware tokens (ADR-0015 Amendment 2026-06-06)
+  tintSubtle: '#2A3328', // dark 用 brand-subtle bg (light: BRAND_GREEN_BG #F1F8F2 等価)
+  badgeBg: '#2C3329', // dark 用 BADGE_SOFT_BG 等価 (light: #E8F0EA)
+  buttonSecondaryBg: '#2C3329', // dark 用 BUTTON_SECONDARY_BG 等価 (light: #E8F0EA、 badge と用途分離維持で同色)
+  onTint: '#1A1A1A', // 苔緑 #7FA98A bg 上で sumi 文字 (contrast 9.5:1 AAA)
+  disabledBg: '#3A3631', // dark 用 DISABLED_BG 等価 (light: #9E9E9E、 sumi 重ね灰)
+  placeholderBg: '#3A3631', // 画像 fallback (light: #E0E0E0、 暗灰)
 } as const;
 
 /**
  * React Navigation `Theme` の `colors` 互換マップ。
  * 各 scheme は ThemedText/ThemedView から `useThemeColor()` 経由で参照される。
+ *
+ * Sess69 PR-A: brand scheme-aware 7 prop 追加 (tintSubtle / badgeBg / buttonSecondaryBg /
+ * onTint / disabledBg / placeholderBg / accentBark / dangerColor)。 これらは Sess66 PR3
+ * ADR-0052 の Allowed tokens (brand-static) を撤回するための受け皿で、 既存
+ * `BRAND_GREEN_BG` / `BADGE_SOFT_BG` 等の literal を inline `c.tintSubtle` 等に置換する。
  */
 export const Colors = {
   light: {
@@ -68,6 +93,15 @@ export const Colors = {
     icon: TEXT_SECONDARY,
     tabIconDefault: TEXT_MUTED,
     tabIconSelected: BRAND_GREEN,
+    // Sess69 PR-A: scheme-aware brand tokens
+    tintSubtle: BRAND_GREEN_BG, // #F1F8F2 薄緑
+    badgeBg: BADGE_SOFT_BG, // #E8F0EA
+    buttonSecondaryBg: BUTTON_SECONDARY_BG, // #E8F0EA
+    onTint: ON_BRAND, // #FFFFFF
+    disabledBg: DISABLED_BG, // #9E9E9E
+    placeholderBg: '#E0E0E0', // 画像 fallback (BonsaiPlaceholder.tsx で個別利用)
+    accentBark: ACCENT_BARK, // #5A4637
+    dangerColor: DANGER, // #8B2E2E (`danger` は React Navigation 既存 prop と衝突回避で `dangerColor`)
   },
   dark: {
     text: DARK_TOKENS.textPrimary,
@@ -81,6 +115,15 @@ export const Colors = {
     icon: DARK_TOKENS.textSecondary,
     tabIconDefault: DARK_TOKENS.textMuted,
     tabIconSelected: DARK_TOKENS.brandGreen,
+    // Sess69 PR-A: scheme-aware brand tokens
+    tintSubtle: DARK_TOKENS.tintSubtle, // #2A3328
+    badgeBg: DARK_TOKENS.badgeBg, // #2C3329
+    buttonSecondaryBg: DARK_TOKENS.buttonSecondaryBg, // #2C3329
+    onTint: DARK_TOKENS.onTint, // #1A1A1A sumi 文字 (苔緑 bg 上 AAA 9.5:1)
+    disabledBg: DARK_TOKENS.disabledBg, // #3A3631
+    placeholderBg: DARK_TOKENS.placeholderBg, // #3A3631
+    accentBark: DARK_TOKENS.accentBark, // #A1886F
+    dangerColor: DARK_TOKENS.danger, // #CE7A72
   },
 } as const;
 
