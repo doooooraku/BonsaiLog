@@ -13,11 +13,14 @@ import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BORDER_DEFAULT } from '@/src/core/theme/colors';
+// Sess68 PR #C: BORDER_DEFAULT は inline c.border 化。
+import { useColors } from '@/src/core/theme/useColors';
 import { getLegalLinks, openExternalLink } from '@/src/services/legalService';
 
 export function LegalLinksRow() {
   const { t, lang } = useTranslation();
+  const c = useColors();
+  const entryThemed = { borderBottomColor: c.border };
 
   const handleOpen = React.useCallback(
     async (url: string) => {
@@ -35,7 +38,7 @@ export function LegalLinksRow() {
         accessibilityRole="link"
         accessibilityLabel={t('settingsLegalTerms')}
         testID="e2e_open_legal_terms"
-        style={styles.entry}
+        style={[styles.entry, entryThemed]}
         onPress={() => {
           void handleOpen(links.termsUrl);
         }}
@@ -49,7 +52,7 @@ export function LegalLinksRow() {
         accessibilityRole="link"
         accessibilityLabel={t('settingsLegalPrivacy')}
         testID="e2e_open_legal_privacy"
-        style={styles.entry}
+        style={[styles.entry, entryThemed]}
         onPress={() => {
           void handleOpen(links.privacyUrl);
         }}
@@ -67,7 +70,6 @@ const styles = StyleSheet.create({
   entry: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
     gap: 6,
   },
   rowInner: {

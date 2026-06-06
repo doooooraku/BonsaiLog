@@ -34,13 +34,8 @@ import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoFiel
 import { useToastStore } from '@/src/components/Toast';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
-import {
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: BORDER_DEFAULT / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
   convertPlannedToRecorded,
@@ -276,10 +271,12 @@ export default function WorkLogConfirmScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <ThemedText style={styles.title}>
+            <ThemedText style={[styles.title, { color: c.text }]}>
               {t('workLogTitle').replace('{type}', titleLabel)}
             </ThemedText>
-            <ThemedText style={styles.subject}>{bonsaiName}</ThemedText>
+            <ThemedText style={[styles.subject, { color: c.textSecondary }]}>
+              {bonsaiName}
+            </ThemedText>
           </View>
 
           {/* Sess16 PR-A2: 日付選択 (mockup 14 種別共通 field、 全 form の先頭に配置)。 */}
@@ -387,17 +384,15 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'NotoSerifJP_500Medium',
     fontSize: 20,
-    color: TEXT_PRIMARY,
     letterSpacing: 0.4,
   },
-  subject: { fontSize: 13, color: TEXT_SECONDARY },
+  subject: { fontSize: 13 },
   field: { marginBottom: 18 },
   footer: {
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 34,
     borderTopWidth: 1,
-    borderTopColor: BORDER_DEFAULT,
   },
   saveBtn: {
     height: 56,

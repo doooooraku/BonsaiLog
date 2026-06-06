@@ -15,19 +15,16 @@ import { ThemedText } from '@/components/themed-text';
 import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  DISABLED_BG,
-  ON_BRAND,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT は inline c.* 化、 BRAND_GREEN / DISABLED_BG / ON_BRAND は brand-static で保持。
+import { BRAND_GREEN, DISABLED_BG, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { BonsaiBasicFormFields, useBonsaiBasicForm } from '@/src/features/bonsai/BonsaiBasicForm';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
 export default function BonsaiCreateScreen() {
   const { t } = useTranslation();
+  const c = useColors();
   // Sess28 PR-2 (ADR-0037 D1 / R-46): キーボード回避 props を共通 hook で取得 (KAV、 container 縮小)。
   const kavProps = useKeyboardAvoidingProps();
   // Sess31 PR-1 (R-46 拡張): ScrollView ref + メモ欄 onFocus → scrollToEnd で IME 起動時の可視性確保。
@@ -61,7 +58,7 @@ export default function BonsaiCreateScreen() {
           <BonsaiBasicFormFields form={form} showPhotos onMemoFocus={handleMemoFocus} />
         </ScrollView>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { borderTopColor: c.border, backgroundColor: c.surface }]}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('save')}
@@ -99,8 +96,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
   },
   footerButton: {
     height: 56,

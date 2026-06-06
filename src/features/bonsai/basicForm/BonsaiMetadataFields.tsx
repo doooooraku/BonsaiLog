@@ -5,13 +5,9 @@ import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_MUTED,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import type { BonsaiBasicFormState } from '@/src/features/bonsai/BonsaiBasicForm';
 
 /**
@@ -22,6 +18,7 @@ import type { BonsaiBasicFormState } from '@/src/features/bonsai/BonsaiBasicForm
  */
 export function BonsaiMetadataFields({ form }: { form: BonsaiBasicFormState }) {
   const { t } = useTranslation();
+  const c = useColors();
   const {
     acquiredAt,
     setAcquiredAt,
@@ -50,7 +47,9 @@ export function BonsaiMetadataFields({ form }: { form: BonsaiBasicFormState }) {
       <View style={styles.field}>
         <View style={styles.fieldLabelRow}>
           <ThemedText type="defaultSemiBold">{t('bonsaiFieldEstimatedAge')}</ThemedText>
-          <ThemedText style={styles.optionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+          <ThemedText style={[styles.optionalLabel, { color: c.textMuted }]}>
+            {t('fieldOptionalLabel')}
+          </ThemedText>
         </View>
         {/* Sess14 PR-O: 樹齢 を LabeledNumberInput へ移行 + 「不明」 checkbox 横並び維持 */}
         <View style={styles.ageRow}>
@@ -82,7 +81,13 @@ export function BonsaiMetadataFields({ form }: { form: BonsaiBasicFormState }) {
             }}
             testID="e2e_bonsai_create_age_unknown"
           >
-            <View style={[styles.checkbox, ageUnknown && styles.checkboxChecked]}>
+            <View
+              style={[
+                styles.checkbox,
+                { borderColor: c.border, backgroundColor: c.surface },
+                ageUnknown && styles.checkboxChecked,
+              ]}
+            >
               {ageUnknown && <ThemedText style={styles.checkboxMark}>✓</ThemedText>}
             </View>
             <ThemedText style={styles.ageUnknownLabel}>
@@ -115,7 +120,6 @@ const styles = StyleSheet.create({
   optionalLabel: {
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
-    color: TEXT_MUTED,
     letterSpacing: 0.8,
   },
   // Sess13 PR-D: 樹齢「不明」 checkbox 横並び。
@@ -126,8 +130,6 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 4,
     borderWidth: 1.5,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
     alignItems: 'center',
     justifyContent: 'center',
   },

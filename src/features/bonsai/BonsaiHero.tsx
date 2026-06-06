@@ -17,7 +17,9 @@ import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { PotIcon } from '@/src/components/icons';
-import { BG_PRIMARY, ON_BRAND } from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_PRIMARY は inline c.background 化、 ON_BRAND は brand-static で保持。
+import { ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 
 type Props = {
   coverUri: string | null;
@@ -25,10 +27,11 @@ type Props = {
 };
 
 export function BonsaiHero({ coverUri, bonsaiName }: Props) {
+  const c = useColors();
   const hasCover = coverUri != null && coverUri.length > 0;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: c.background }]}>
       {hasCover ? (
         <>
           <Image source={{ uri: coverUri }} style={styles.image} contentFit="cover" />
@@ -50,7 +53,7 @@ export function BonsaiHero({ coverUri, bonsaiName }: Props) {
 
 const styles = StyleSheet.create({
   // Sess29 PR-5 (ADR-0038 D5): height 180 → 280 撤回 (Sess28 PR-4 部分 revert、 画像サイズ復元)
-  container: { width: '100%', height: 280, position: 'relative', backgroundColor: BG_PRIMARY },
+  container: { width: '100%', height: 280, position: 'relative' },
   image: { width: '100%', height: '100%' },
   // Sess28 確定: overlay 64px 維持 (盆栽名 1 行 + padding 分のみ、 Sess29 でも維持)
   overlay: {

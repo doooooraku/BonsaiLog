@@ -17,7 +17,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { CheckIcon } from '@/src/components/icons';
-import { BG_SURFACE, BORDER_DEFAULT, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT は inline c.* 化 (既に inline 反映済)、 BRAND_GREEN / ON_BRAND は brand-static で保持。
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { BonsaiPlaceholder, hashSeed } from '@/src/features/bonsai/BonsaiPlaceholder';
 
@@ -76,7 +77,7 @@ export function BonsaiSelectableCard({
           styles.checkBox,
           {
             backgroundColor: selected ? BRAND_GREEN : 'transparent',
-            borderColor: selected ? BRAND_GREEN : BORDER_DEFAULT,
+            borderColor: selected ? BRAND_GREEN : c.border,
           },
         ]}
       >
@@ -94,8 +95,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    backgroundColor: BG_SURFACE,
-    borderColor: BORDER_DEFAULT,
   },
   cardSelected: {
     backgroundColor: 'rgba(31,58,46,0.06)',

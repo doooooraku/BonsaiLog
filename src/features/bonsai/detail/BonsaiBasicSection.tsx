@@ -7,7 +7,9 @@ import {
   type BonsaiBasicFormState,
 } from '@/src/features/bonsai/BonsaiBasicForm';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BORDER_DEFAULT, BRAND_GREEN, DANGER } from '@/src/core/theme/colors';
+// Sess68 PR #C: BORDER_DEFAULT は inline c.border 化、 BRAND_GREEN / DANGER は brand-static で保持。
+import { BRAND_GREEN, DANGER } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 
 /**
  * Issue #439: 基本情報タブの inline 編集フォーム。
@@ -30,6 +32,7 @@ export function BonsaiBasicSection({
   onMemoFocus?: () => void;
 }) {
   const { t } = useTranslation();
+  const c = useColors();
   return (
     <View style={styles.basicFormSection}>
       <BonsaiBasicFormFields
@@ -53,7 +56,10 @@ export function BonsaiBasicSection({
         accessibilityRole="button"
         accessibilityLabel={t('save')}
         accessibilityState={{ disabled: !form.canSubmit }}
-        style={[styles.basicSaveButton, !form.canSubmit && styles.basicSaveButtonDisabled]}
+        style={[
+          styles.basicSaveButton,
+          !form.canSubmit && [styles.basicSaveButtonDisabled, { backgroundColor: c.border }],
+        ]}
         onPress={() => void form.handleSubmit()}
         disabled={!form.canSubmit}
         testID="e2e_detail_basic_save_button"
@@ -73,9 +79,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  basicSaveButtonDisabled: {
-    backgroundColor: BORDER_DEFAULT,
-  },
+  basicSaveButtonDisabled: {},
   basicSaveButtonText: {
     color: '#FFFFFF',
     fontSize: 17,

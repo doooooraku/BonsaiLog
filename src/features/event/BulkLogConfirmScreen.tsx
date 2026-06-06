@@ -41,7 +41,8 @@ import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoFiel
 import { useToastStore } from '@/src/components/Toast';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
-import { BORDER_DEFAULT, ON_BRAND, TEXT_PRIMARY, TEXT_SECONDARY } from '@/src/core/theme/colors';
+// Sess68 PR #C: BORDER_DEFAULT / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化、 ON_BRAND は brand-static で保持。
+import { ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
   bulkConvertPlannedToRecorded,
@@ -301,12 +302,14 @@ export default function BulkLogConfirmScreen() {
         >
           {/* Sess33 PR-1: タイトル + サブタイトルを ScrollView 内 (旧 sticky header 廃止)。 */}
           <View style={styles.titleBlock}>
-            <ThemedText style={styles.title}>
+            <ThemedText style={[styles.title, { color: c.text }]}>
               {t('bulkLogConfirmTitle')
                 .replace('{label}', typeLabel)
                 .replace('{count}', String(selectedBonsais.length))}
             </ThemedText>
-            <ThemedText style={styles.sub}>{t('bulkLogConfirmSub')}</ThemedText>
+            <ThemedText style={[styles.sub, { color: c.textSecondary }]}>
+              {t('bulkLogConfirmSub')}
+            </ThemedText>
           </View>
 
           {/* Sess32 PR-2 (継続): horizontal ScrollView は親 flex に縦 stretch される default を
@@ -316,7 +319,7 @@ export default function BulkLogConfirmScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             style={styles.chipsScroll}
-            contentContainerStyle={styles.chipsRow}
+            contentContainerStyle={[styles.chipsRow, { borderBottomColor: c.border }]}
           >
             {selectedBonsais.map((b) => (
               <SelectedBonsaiChip key={b.id} name={b.name} testID={`e2e_bulk_log_chip_${b.id}`} />
@@ -423,11 +426,10 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'NotoSerifJP_500Medium',
     fontSize: 20,
-    color: TEXT_PRIMARY,
     letterSpacing: 0.4,
     textAlign: 'center',
   },
-  sub: { fontSize: 12, color: TEXT_SECONDARY },
+  sub: { fontSize: 12 },
   // Sess32 PR-2 + Sess33 PR-1: flexGrow:0 で縦 stretch 抑制 (継続)。
   // marginHorizontal: -16 で body padding (16) を相殺し chips を画面端まで届かせる。
   chipsScroll: {
@@ -440,7 +442,6 @@ const styles = StyleSheet.create({
     gap: 6,
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
   },
   // Sess31 PR-1: 旧 chip + chipText styles は SelectedBonsaiChip component に集約済、 物理削除。
   body: { padding: 16, gap: 12 },

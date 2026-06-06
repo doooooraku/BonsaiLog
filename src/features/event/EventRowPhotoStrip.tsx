@@ -21,12 +21,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BADGE_SOFT_BG,
-  BADGE_SOFT_TEXT,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT は inline c.* 化、 BADGE は brand-static で保持。
+import { BADGE_SOFT_BG, BADGE_SOFT_TEXT } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import type { PhotoRead } from '@/src/db/photoRepository';
 
 export type EventRowPhotoStripProps = {
@@ -48,6 +45,7 @@ export function EventRowPhotoStrip({
 }: EventRowPhotoStripProps) {
   const router = useRouter();
   const { t } = useTranslation();
+  const c = useColors();
 
   const remaining = Math.max(0, totalCount - 1);
   const a11yLabel = t('photoStripAccessibility').replace('{count}', String(totalCount));
@@ -61,7 +59,7 @@ export function EventRowPhotoStrip({
       accessibilityRole="button"
       accessibilityLabel={a11yLabel}
       onPress={handlePress}
-      style={styles.container}
+      style={[styles.container, { borderColor: c.border, backgroundColor: c.surface }]}
       testID={testID}
     >
       <Image
@@ -86,8 +84,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
   },
   thumb: {
     width: '100%',

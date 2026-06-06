@@ -21,7 +21,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BonsaiSelectableCard } from '@/src/features/bonsai/BonsaiSelectableCard';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { ON_BRAND, TEXT_SECONDARY } from '@/src/core/theme/colors';
+// Sess68 PR #C: TEXT_SECONDARY は inline c.* 化、 ON_BRAND は brand-static で保持。
+import { ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies, type BonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
@@ -170,7 +171,6 @@ const styles = StyleSheet.create({
   },
   sub: {
     fontSize: 13,
-    color: TEXT_SECONDARY,
   },
   loadingBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyBox: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },

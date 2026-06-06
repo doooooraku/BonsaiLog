@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { CameraIcon } from '@/src/components/icons';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-import { BG_SURFACE, BORDER_DEFAULT, TEXT_MUTED } from '@/src/core/theme/colors';
+// Sess68 PR #C: 全 forbidden token を inline c.* 化。
+import { useColors } from '@/src/core/theme/useColors';
 import type { PhotoRead } from '@/src/db/photoRepository';
 import { PhotoCard } from '@/src/features/bonsai/PhotoCard';
 import { PhotoUndoBanner } from '@/src/features/bonsai/PhotoUndoBanner';
@@ -43,6 +44,7 @@ export function BonsaiPhotoSection({
   handleDeletePhoto: (photo: PhotoRead) => void;
   handleUndoDeletion: () => void;
 }) {
+  const c = useColors();
   const photoCount = photos.length;
   return (
     <View style={styles.section}>
@@ -50,13 +52,15 @@ export function BonsaiPhotoSection({
         <ThemedText type="defaultSemiBold">
           {t('bonsaiFieldPhotos')} ({photoCount})
         </ThemedText>
-        <ThemedText style={styles.photoSectionOptionalLabel}>{t('fieldOptionalLabel')}</ThemedText>
+        <ThemedText style={[styles.photoSectionOptionalLabel, { color: c.textMuted }]}>
+          {t('fieldOptionalLabel')}
+        </ThemedText>
       </View>
       <View style={styles.photoSourceRow}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('photoSourceCamera')}
-          style={styles.photoSourceButton}
+          style={[styles.photoSourceButton, { borderColor: c.border, backgroundColor: c.surface }]}
           onPress={() => void pickAndSavePhoto('camera')}
           testID="e2e_detail_photo_camera"
         >
@@ -66,7 +70,7 @@ export function BonsaiPhotoSection({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('photoSourceLibrary')}
-          style={styles.photoSourceButton}
+          style={[styles.photoSourceButton, { borderColor: c.border, backgroundColor: c.surface }]}
           onPress={() => void pickAndSavePhoto('library')}
           testID="e2e_detail_photo_library"
         >
@@ -111,7 +115,6 @@ const styles = StyleSheet.create({
   photoSectionOptionalLabel: {
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
-    color: TEXT_MUTED,
     letterSpacing: 0.8,
   },
   photoSourceRow: { flexDirection: 'row', gap: 10 },
@@ -119,13 +122,11 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 44,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: BG_SURFACE,
   },
   photoSourceText: { fontSize: 14, fontWeight: '500' },
   emptyPhotos: { opacity: 0.6, textAlign: 'center', paddingVertical: 12 },
