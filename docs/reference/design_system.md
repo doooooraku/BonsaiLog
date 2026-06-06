@@ -1048,57 +1048,86 @@ const handleNoteFocus = React.useCallback(() => {
 
 ---
 
-## 26. FAB SoT (ADR-0042 D3 / Sess36 PR-4 由来)
+## 26. Bottom CTA Bar SoT (ADR-0054 D2 / Sess72 PR-5 由来、 旧 FAB 廃止)
 
-画面右下 Floating Action Button (FAB) は **本セクションが SoT**、 全画面で共通 component `src/components/common/FAB.tsx` を使用。 inline 実装禁止 (将来 lint 自動化検討、 Sess36 PR-6 の R-X 候補)。
+画面下端 Bottom CTA Bar は **本セクションが SoT**、 全画面で共通 component `src/components/common/BottomCtaBar.tsx` を使用。 inline 実装禁止。 ADR-0042 D3 で確立した旧 `<FAB />` (画面右下絶対配置 + 56×56 円形 + アイコンのみ) は本 ADR-0054 で **撤回**、 `<BottomCtaBar />` (画面下端 inline 配置 + height 72 全幅 + アイコン + ラベル付き) に置換。
 
-### FAB 位置・サイズ token
+### 移行根拠 (旧 FAB → 新 BottomCtaBar)
 
-| 項目               | 値                                                                                 | 根拠                                                                                                          |
-| ------------------ | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `right`            | **20**                                                                             | 8px grid 整合 + 端からの誤タップ余裕 (旧 inline は 16、 高橋 62 歳ペルソナで「画面端から指 1 本分」 懸念解消) |
-| `bottom` (計算式)  | `tabBarHeight + (showAdBanner ? AD_BANNER_HEIGHT_APPROX : 0) + insets.bottom + 16` | tab bar 上 + AdBanner 上 + SafeArea (iOS Home Indicator 34pt / Android gesture nav) 反映                      |
-| `width` × `height` | **56 × 56dp**                                                                      | Material 3 FAB 標準、 WCAG 2.2 SC 2.5.8 minTarget 44dp を余裕クリア                                           |
-| `borderRadius`     | **28**                                                                             | 完全円 (size / 2)                                                                                             |
-| `position`         | `'absolute'`                                                                       | 画面右下固定                                                                                                  |
-| `zIndex`           | **10**                                                                             | 他 UI 上に表示                                                                                                |
+- **重なり問題の構造解消**: 旧 FAB は absolute 配置で ScrollView/FlatList の last item が FAB に隠れる Layout Contract 漏れ (R-62)。 新 BottomCtaBar は inline 配置で ScrollView が bar の上で自然に終わるため、 paddingBottom 計算不要 + 重なりが構造的に発生不可
+- **発見性向上**: アイコンのみ → アイコン + ラベル併記 (WCAG 2.4.6 / 3.2.4、 シニア高橋 62 ペルソナ配慮、 R-14 整合)
+- **業界トレンド整合**: Material 3 / Apple HIG / Nielsen Norman 2024 共に「FAB → ラベル付き / Bottom CTA Bar」 へのシフト推奨
+- **既存資産流用**: 空状態 `homeEmptyCta` の bar 実装 visual を全画面 list 表示時にも展開、 アプリ内 CTA pattern 一貫化
 
-### FAB icon
+### BottomCtaBar 位置・サイズ token
 
-- **default**: `<PlusIcon size={28} color={ON_BRAND} />` (NavIcons.tsx)
-- 旧 bonsai-detail で `<ThemedText>+</ThemedText>` 文字列実装の不整合 → Sess36 PR-3 で PlusIcon に統一済
-- カスタム icon が必要な画面は `icon` prop で override 可
+| 項目                | 値             | 根拠                                                                                 |
+| ------------------- | -------------- | ------------------------------------------------------------------------------------ |
+| `paddingHorizontal` | **16**         | 既存 `emptyCtaWrap` 整合、 画面端からの余白                                          |
+| `paddingTop`        | **8**          | 上の content (FlatList/ScrollView) との視覚分離                                      |
+| `paddingBottom`     | **8**          | 下の AdBanner / TabBar との視覚分離                                                  |
+| `height`            | **72dp**       | 既存 `emptyCta` pattern 踏襲、 WCAG 2.5.8 (44dp 最低) を余裕クリア                   |
+| `borderRadius`      | **14**         | 既存 `emptyCta` 整合 (pill 寄りの角丸)                                               |
+| `position`          | 標準 flex 配置 | inline = 親 container の flex 順序で配置 (absolute 不要、 R-62 Layout Contract 解決) |
+| `flexDirection`     | `'row'`        | アイコン横にラベル                                                                   |
+| `gap`               | **10**         | アイコン ↔ ラベル間隔                                                                |
 
-### FAB 色 token
+### BottomCtaBar icon + label
 
-| state    | bg            | icon color           | shadow                             |
-| -------- | ------------- | -------------------- | ---------------------------------- |
-| 通常     | `BRAND_GREEN` | `ON_BRAND` (#FFFFFF) | shadow + elevation 6               |
-| disabled | `TEXT_MUTED`  | `ON_BRAND`           | opacity 0.5、 shadow + elevation 0 |
+- **default icon**: `<PlusIcon size={20} color={c.onTint} />` (NavIcons.tsx)
+- **label**: i18n key 解決後の文字列を渡す (例: `t('bonsaiCreateNew')` = '盆栽を登録')
+- **fontSize**: 20、 **fontWeight**: '500'、 **letterSpacing**: 0.8 (既存 emptyCtaText 整合)
+- カスタム icon が必要な画面は `icon` prop で override 可 (color は呼び出し側で `c.onTint` に揃える)
 
-### FAB 適用画面 (Sess36 PR-3 時点)
+### BottomCtaBar 色 token (theme-aware、 R-58 dark cascade 整合)
 
-| 画面                                       | testID                  | a11y label key    | showAdBanner               | disabled 条件           |
-| ------------------------------------------ | ----------------------- | ----------------- | -------------------------- | ----------------------- |
-| 盆栽 tab                                   | `e2e_home_fab_create`   | `bonsaiCreateNew` | **true** (AdBanner と併用) | なし                    |
-| 予定 tab (CalendarTabScreen mode='plan')   | `e2e_plan_fab_action`   | `planFabLabel`    | false                      | 過去日選択時 true       |
-| 記録 tab (CalendarTabScreen mode='record') | `e2e_record_fab_action` | `recordFabLabel`  | false                      | なし (記録は過去日有効) |
-| bonsai-detail history タブ                 | `e2e_history_fab`       | `eventLogCta`     | false                      | なし                    |
-| bonsai-detail timeline タブ                | `e2e_timeline_fab`      | `addScheduleCta`  | false                      | なし                    |
+| state    | bg             | text + icon color | 補足                              |
+| -------- | -------------- | ----------------- | --------------------------------- |
+| 通常     | `c.tint`       | `c.onTint`        | `useColors()` 経由、 scheme-aware |
+| disabled | `c.disabledBg` | `c.onTint`        | opacity 0.5、 旧 FAB と挙動互換   |
+
+raw color token (`BRAND_GREEN` / `ON_BRAND`) 直書きは R-58 構造禁止 (`local/no-color-token-in-stylesheet`)。
+
+### BottomCtaBar 適用画面 (Sess72 PR-3 時点)
+
+| 画面                                       | testID                         | label key         | disabled 条件                                     |
+| ------------------------------------------ | ------------------------------ | ----------------- | ------------------------------------------------- |
+| 盆栽 tab list 表示                         | `e2e_home_bottom_cta_create`   | `bonsaiCreateNew` | なし                                              |
+| 盆栽 tab 空状態                            | `e2e_home_empty_cta`           | `homeEmptyCta`    | なし (BottomCtaBar と異なる、 既存 emptyCta 維持) |
+| 予定 tab (CalendarTabScreen mode='plan')   | `e2e_plan_bottom_cta_action`   | `planFabLabel`    | 過去日選択時 true                                 |
+| 記録 tab (CalendarTabScreen mode='record') | `e2e_record_bottom_cta_action` | `recordFabLabel`  | なし (記録は過去日有効)                           |
+| bonsai-detail history タブ                 | `e2e_history_bottom_cta`       | `eventLogCta`     | なし                                              |
+| bonsai-detail timeline タブ                | `e2e_timeline_bottom_cta`      | `addScheduleCta`  | なし                                              |
+
+ふりかえり tab は配置なし (ナビゲーション hub のため CTA バー不要、 ADR-0054 D5 / D-1 採用)。
+
+### Layout Contract (R-62 構造禁止、 paddingBottom 計算不要)
+
+旧 FAB は absolute 配置で screen 側の `ScrollView/FlatList contentContainerStyle.paddingBottom` を `tabBarHeight + insets.bottom + 72` 程度に計算する必要があり、 4 画面で計算式が散在 = Layout Contract SoT 漏れ (R-62 起票根拠)。
+
+新 BottomCtaBar は inline 配置のため:
+
+- ScrollView / FlatList は flex:1 で BottomCtaBar の上端まで占有、 last item は bar の上で自然に終わる
+- screen 側で paddingBottom 計算 **不要** (FAB 用 magic number 全撤去)
+- 例外: visual breathing room のため `paddingBottom: 16` 程度の小さな値は許容 (BottomCtaBar とは無関係の余白)
 
 ### §22 (4 階層 CTA) との整合
 
-§22 の 4 階層 CTA (Primary / Secondary / Tertiary / Destructive) は **画面内固定配置** の button pattern。 FAB は **floating CTA カテゴリ** として独立 (画面外 absolute 配置)、 §22 の Primary と同色 BRAND_GREEN bg + ON_BRAND text/icon で視覚一貫性を維持。
+§22 の 4 階層 CTA (Primary / Secondary / Tertiary / Destructive) は **画面内固定配置** の button pattern。 BottomCtaBar は **sticky CTA カテゴリ** として独立 (画面下端 inline 配置)、 §22 の Primary と同色 `c.tint` bg + `c.onTint` text/icon で視覚一貫性を維持。
 
 ### 実装ファイル (SoT 参照先)
 
-- `src/components/common/FAB.tsx` (component 実装)
-- 使用箇所: `app/(tabs)/bonsai/index.tsx` / `src/features/calendar/CalendarTabScreen.tsx` / `app/(tabs)/bonsai/[id]/index.tsx` (history + timeline 2 箇所)
+- `src/components/common/BottomCtaBar.tsx` (component 実装、 Sess72 PR-2 新設)
+- `__tests__/components/common/BottomCtaBar.test.tsx` (静的解析 11 ケース)
+- 使用箇所: `app/(tabs)/bonsai/index.tsx` (list 表示) / `src/features/calendar/CalendarTabScreen.tsx` (plan/record 共用) / `app/(tabs)/bonsai/[id]/index.tsx` (history + timeline 2 箇所)
 
-### 関連 ADR
+### 関連 ADR / R
 
-- ADR-0042 D3 (本 SoT の出典)
-- 過去 issue: #440 / #441 (Phase 1 で初期実装、 Sess36 で SoT 化)
+- **ADR-0054 D1/D2** (本 SoT の出典、 Sess72)
+- **ADR-0042 D3** (旧 FAB SoT、 Sess72 ADR-0054 で Superseded、 D1/D2/D4/D5 は無傷で維持)
+- **R-58** (dark theme cascade 構造禁止、 token 経由整合)
+- **R-62** (Component SoT + Layout Contract 2 SoT meta-rule、 ADR-0054 D5 起票)
+- 過去 issue: #440 / #441 (Phase 1 で初期実装、 Sess36 で FAB SoT 化、 Sess72 で BottomCtaBar 移行)
 
 ---
 
