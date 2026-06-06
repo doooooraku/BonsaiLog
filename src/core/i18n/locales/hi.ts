@@ -616,7 +616,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'टाइमलाइन',
   timelineConsecutive: '{count} consecutive days',
-  detailTimelinePastCollapsed: '{count} पुराने रिकॉर्ड दिखाएँ',
+  detailTimelinePastCollapsed: 'पुराने रिकॉर्ड छिपे हुए',
 
   // i18n fallback for PR #466-#471 new keys (R-1 pattern)
   settingsArchivedCountValue: '{count} items',
@@ -631,7 +631,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'वापस',
   tabRecord: 'रिकॉर्ड',
-  planFabLabel: 'आज का कार्य दर्ज',
+  planFabLabel: 'कार्य निर्धारित करें',
   bulkSelectModalTitle: 'बोनसाई चुनें',
   bulkSelectModalNotice: 'रिकॉर्ड या योजना के लिए बोनसाई चुनें ({count} चयनित)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',

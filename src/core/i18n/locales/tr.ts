@@ -616,7 +616,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'Zaman çizelgesi',
   timelineConsecutive: '{count} consecutive days',
-  detailTimelinePastCollapsed: '{count} eski kaydı göster',
+  detailTimelinePastCollapsed: 'Geçmiş kayıtlar gizli',
 
   // i18n fallback for PR #466-#471 new keys (R-1 pattern)
   settingsArchivedCountValue: '{count} items',
@@ -631,7 +631,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Geri',
   tabRecord: 'Kaydet',
-  planFabLabel: 'Bugünün işini kaydet',
+  planFabLabel: 'Görevleri planla',
   bulkSelectModalTitle: 'Bonsai seç',
   bulkSelectModalNotice: 'Kaydetmek veya planlamak için bonsaileri seçin ({count} seçili)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
