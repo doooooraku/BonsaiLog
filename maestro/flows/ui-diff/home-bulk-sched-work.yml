@@ -147,11 +147,11 @@ tags:
 
 - extendedWaitUntil:
     visible:
-      id: 'e2e_plan_fab_action'
+      id: 'e2e_plan_bottom_cta_action'
     timeout: 15000
 
 - tapOn:
-    id: 'e2e_plan_fab_action'
+    id: 'e2e_plan_bottom_cta_action'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 

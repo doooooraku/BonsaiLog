@@ -51,7 +51,7 @@ appId: 'com.dooooraku.bonsailog'
 
 # Step 5: 「記録」 tab FAB tap → mode='log' で 5 ステップ動線開始
 - tapOn:
-    id: 'e2e_record_fab_action'
+    id: 'e2e_record_bottom_cta_action'
 - waitForAnimationToEnd:
     timeout: 3000
 - extendedWaitUntil:

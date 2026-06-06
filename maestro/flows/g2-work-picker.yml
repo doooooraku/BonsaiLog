@@ -139,10 +139,10 @@ appId: 'com.dooooraku.bonsailog'
 # 詳細画面で作業履歴タブが default 表示、緑 FAB tap
 - extendedWaitUntil:
     visible:
-      id: 'e2e_history_fab'
+      id: 'e2e_history_bottom_cta'
     timeout: 10000
 - tapOn:
-    id: 'e2e_history_fab'
+    id: 'e2e_history_bottom_cta'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
@@ -160,4 +160,4 @@ appId: 'com.dooooraku.bonsailog'
 
 # 詳細画面の履歴タブ FAB 再表示で動作確認 (work-picker → WorkLogConfirmSheet 自動展開予定だが本 flow では FAB 可視で OK)
 - assertVisible:
-    id: 'e2e_history_fab'
+    id: 'e2e_history_bottom_cta'

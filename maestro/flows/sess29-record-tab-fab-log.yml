@@ -8,7 +8,7 @@
 # 3. home list 表示確認
 # 4. 「記録」 タブ tap (e2e_tab_record)
 # 5. e2e_record_screen 表示確認 (タブハイライト整合 = タブ標準遵守)
-# 6. FAB tap (e2e_record_fab_action)
+# 6. FAB tap (e2e_record_bottom_cta_action)
 # 7. e2e_bonsai_multi_select_screen 表示確認 (mode='log' で 5 ステップ動線開始)
 appId: 'com.dooooraku.bonsailog'
 ---
@@ -44,7 +44,7 @@ appId: 'com.dooooraku.bonsailog'
 
 # FAB tap (Sess29 ADR-0038 D1、 useBulkActionFlow('log') で「作業を記録」 5 ステップ flow 起動)
 - tapOn:
-    id: 'e2e_record_fab_action'
+    id: 'e2e_record_bottom_cta_action'
 - waitForAnimationToEnd:
     timeout: 3000
 
