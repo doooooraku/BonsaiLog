@@ -22,14 +22,7 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useColors } from '@/src/core/theme/useColors';
-import {
-  BG_SURFACE,
-  BRAND_GREEN,
-  DANGER,
-  ON_BRAND,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { DANGER, ON_BRAND } from '@/src/core/theme/colors';
 
 export type ConfirmDialogProps = {
   visible: boolean;
@@ -83,28 +76,42 @@ export function ConfirmDialog({
         testID={testID}
       >
         {/* 内側 card は tap 透過しない (Pressable nested で gesture 独立) */}
+        {/* Sess65: title/description/secondary-button の static 色 (TEXT_PRIMARY/TEXT_SECONDARY/BG_SURFACE)
+            を useColors 経由化。 dark mode で title/desc が「dark navy on dark navy」 で埋没していた問題
+            (ユーザー報告 #2) の根本修正。 destructive button は常に DANGER 赤、 primary button は常に
+            BRAND_GREEN (両 mode で識別性保持)。 */}
         <Pressable
-          style={[styles.card, { backgroundColor: c.background }]}
+          style={[styles.card, { backgroundColor: c.surface }]}
           onPress={(e) => e.stopPropagation()}
         >
-          <ThemedText type="defaultSemiBold" style={styles.title}>
+          <ThemedText type="defaultSemiBold" style={[styles.title, { color: c.text }]}>
             {title}
           </ThemedText>
-          {description ? <ThemedText style={styles.description}>{description}</ThemedText> : null}
+          {description ? (
+            <ThemedText style={[styles.description, { color: c.textSecondary }]}>
+              {description}
+            </ThemedText>
+          ) : null}
           <View style={styles.actions}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={cancelLabel}
-              style={[styles.button, styles.buttonSecondary]}
+              style={[styles.button, { backgroundColor: c.background, borderColor: c.border }]}
               onPress={onCancel}
               testID={testID ? `${testID}_cancel` : undefined}
             >
-              <ThemedText style={styles.buttonSecondaryText}>{cancelLabel}</ThemedText>
+              <ThemedText style={[styles.buttonSecondaryText, { color: c.text }]}>
+                {cancelLabel}
+              </ThemedText>
             </Pressable>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={confirmLabel}
-              style={[styles.button, destructive ? styles.buttonDestructive : styles.buttonPrimary]}
+              style={[
+                styles.button,
+                destructive ? styles.buttonDestructive : styles.buttonPrimary,
+                !destructive && { backgroundColor: c.tint, borderColor: c.tint },
+              ]}
               onPress={handleConfirm}
               testID={testID ? `${testID}_confirm` : undefined}
             >
@@ -134,8 +141,8 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 14,
   },
-  title: { fontSize: 16, color: TEXT_PRIMARY },
-  description: { fontSize: 14, color: TEXT_SECONDARY, lineHeight: 20 },
+  title: { fontSize: 16 },
+  description: { fontSize: 14, lineHeight: 20 },
   actions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
   button: {
     paddingHorizontal: 18,
@@ -143,10 +150,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     minWidth: 80,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
-  buttonSecondary: { backgroundColor: BG_SURFACE },
-  buttonSecondaryText: { color: TEXT_PRIMARY },
-  buttonPrimary: { backgroundColor: BRAND_GREEN },
-  buttonDestructive: { backgroundColor: DANGER },
+  buttonSecondaryText: {},
+  // primary button: inline で c.tint 上書きするため、 base は空 (test 6 が styles.buttonPrimary 参照を要求)
+  buttonPrimary: {},
+  buttonDestructive: { backgroundColor: DANGER, borderColor: DANGER },
   buttonPrimaryText: { color: ON_BRAND, fontWeight: '600' },
 });

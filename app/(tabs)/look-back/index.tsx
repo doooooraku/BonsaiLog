@@ -38,15 +38,6 @@ import {
   WireIcon,
 } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  TEXT_MUTED,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 
@@ -113,7 +104,12 @@ export default function LookBackHubScreen() {
       <SearchHeader title={t('tabLookBack')} testIdSuffix="look_back" showSearch={false} />
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        <ThemedText style={styles.subtitle}>{t('lookBackHubSubtitle')}</ThemedText>
+        {/* Sess65: subtitle/cardDesc/icon/chevron/proBadge の static 色 (TEXT_SECONDARY/BRAND_GREEN/TEXT_MUTED/TEXT_PRIMARY)
+            を useColors 経由化。 dark mode で 4 card の発見性ゼロ問題 (ユーザー報告 #1) の根本修正。
+            icon は c.tint (dark で brandGreen `#6B9B7F` に明色化) で contrast 確保。 */}
+        <ThemedText style={[styles.subtitle, { color: c.textSecondary }]}>
+          {t('lookBackHubSubtitle')}
+        </ThemedText>
 
         {cards.map((card) => (
           <Pressable
@@ -127,7 +123,7 @@ export default function LookBackHubScreen() {
             <View
               style={[styles.iconBox, { backgroundColor: c.background, borderColor: c.border }]}
             >
-              <card.Icon size={22} color={BRAND_GREEN} />
+              <card.Icon size={22} color={c.tint} />
             </View>
             <View style={styles.cardBody}>
               <View style={styles.titleRow}>
@@ -136,13 +132,17 @@ export default function LookBackHubScreen() {
                 </ThemedText>
                 {card.pro ? (
                   <View style={styles.proBadge}>
-                    <ThemedText style={styles.proBadgeText}>{t('proBadgeShort')}</ThemedText>
+                    <ThemedText style={[styles.proBadgeText, { color: c.text }]}>
+                      {t('proBadgeShort')}
+                    </ThemedText>
                   </View>
                 ) : null}
               </View>
-              <ThemedText style={styles.cardDesc}>{card.desc}</ThemedText>
+              <ThemedText style={[styles.cardDesc, { color: c.textSecondary }]}>
+                {card.desc}
+              </ThemedText>
             </View>
-            <ChevronRightIcon size={20} color={TEXT_MUTED} />
+            <ChevronRightIcon size={20} color={c.textMuted} />
           </Pressable>
         ))}
       </ScrollView>
@@ -155,7 +155,6 @@ const styles = StyleSheet.create({
   scroll: { padding: 16, paddingTop: 24, paddingBottom: 96, gap: 12 },
   subtitle: {
     fontSize: 13,
-    color: TEXT_SECONDARY,
     lineHeight: 20,
     marginBottom: 8,
   },
@@ -166,17 +165,13 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 14,
     borderWidth: 1,
-    backgroundColor: BG_SURFACE,
-    borderColor: BORDER_DEFAULT,
     minHeight: 76,
   },
   iconBox: {
     width: 44,
     height: 44,
     borderRadius: 11,
-    backgroundColor: BG_PRIMARY,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
@@ -184,12 +179,12 @@ const styles = StyleSheet.create({
   cardBody: { flex: 1, minWidth: 0, gap: 2 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   cardTitle: { fontSize: 17 },
-  cardDesc: { fontSize: 13, color: TEXT_SECONDARY, lineHeight: 18 },
+  cardDesc: { fontSize: 13, lineHeight: 18 },
   proBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     backgroundColor: 'rgba(198,158,72,0.18)',
   },
-  proBadgeText: { fontSize: 9, letterSpacing: 0.6, color: TEXT_PRIMARY, fontWeight: '600' },
+  proBadgeText: { fontSize: 9, letterSpacing: 0.6, fontWeight: '600' },
 });

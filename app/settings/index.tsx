@@ -119,12 +119,15 @@ export default function SettingsScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_settings_screen"
     >
-      {/* ADR-0020 Phase 7 / Issue #255: SearchHeader (タイトル「設定」)。設定タブ自身では Cog 不要。 */}
+      {/* ADR-0020 Phase 7 / Issue #255: SearchHeader (タイトル「設定」)。設定タブ自身では Cog 不要。
+          Sess65: 設定画面は root Stack 直下で戻る動線が必要 (ユーザー報告 #4)。 showBack={true}
+          で SearchHeader 左に `<` 戻るボタンを表示、 router.back() で前画面 (タブ画面) に戻る。 */}
       <SearchHeader
         title={t('tabSettings')}
         testIdSuffix="settings"
         showSearch={false}
         showSettings={false}
+        showBack
       />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* === mockup v1.0 SettingsScreen 8 セクション順序 (Issue #330): アカウント→表示→通知→

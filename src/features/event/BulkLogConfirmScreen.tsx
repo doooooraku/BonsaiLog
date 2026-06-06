@@ -41,13 +41,7 @@ import { PhotoField, type PhotoFieldItem } from '@/src/components/form/PhotoFiel
 import { useToastStore } from '@/src/components/Toast';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
-import {
-  BG_PRIMARY,
-  BORDER_DEFAULT,
-  ON_BRAND,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { BORDER_DEFAULT, ON_BRAND, TEXT_PRIMARY, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
   bulkConvertPlannedToRecorded,
@@ -286,11 +280,16 @@ export default function BulkLogConfirmScreen() {
   const typeLabel = t(`eventType_${selectedType}` as TranslationKey);
 
   return (
-    <View style={styles.container} testID="e2e_bulk_log_confirm_screen">
+    <View
+      style={[styles.container, { backgroundColor: c.background }]}
+      testID="e2e_bulk_log_confirm_screen"
+    >
       {/* Sess33 PR-1 (ADR-0039 起票予定): Stack header 廃止 + FormScreenHeader sticky。
           タイトル + chips + フォームを全部 ScrollView 内に統合し、 IME 起動時にも
           画面全体スクロール (full-screen scroll) 可能に。 旧 sticky header (タイトル + chips)
-          は ScrollView の **外** にあり IME 起動時に縦領域を圧迫していた問題を構造解消。 */}
+          は ScrollView の **外** にあり IME 起動時に縦領域を圧迫していた問題を構造解消。
+          Sess65: container.backgroundColor = BG_PRIMARY (washi 固定) を inline c.background 動的化。
+          dark mode で header dark + body washi の混在 (ユーザー報告 #3) の根本修正。 */}
       <Stack.Screen options={{ headerShown: false }} />
       <FormScreenHeader testID="e2e_bulk_log_form_header" />
 
@@ -416,7 +415,7 @@ export default function BulkLogConfirmScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG_PRIMARY },
+  container: { flex: 1 },
   flexOne: { flex: 1 },
   // Sess33 PR-1: 旧 `header` style (sticky 用、 paddingTop:8 + alignItems:center) は ScrollView
   // 内タイトルブロックに置換 → `titleBlock` に rename + paddingTop 拡張 (header 直下 spacing)。
