@@ -631,7 +631,7 @@ const baseEn = {
   detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: 'No records yet',
   addScheduleTitle: 'Add a scheduled task',
-  addScheduleCta: 'Add a scheduled task',
+  addScheduleCta: 'Add schedule',
   historyFilterAll: 'All',
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'Timeline',
