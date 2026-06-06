@@ -14,11 +14,14 @@ import { ThemedText } from '@/components/themed-text';
 import { setLang, useTranslation } from '@/src/core/i18n/i18n';
 import type { Lang } from '@/src/core/i18n/langCode';
 import { LANGUAGE_OPTIONS } from '@/src/core/i18n/languageOptions';
-import { BORDER_DEFAULT, BRAND_GREEN, BRAND_GREEN_BG } from '@/src/core/theme/colors';
+// Sess66 PR6a (ADR-0052): BORDER_DEFAULT を inline c.border に移行 (dark cascade)。
+import { BRAND_GREEN, BRAND_GREEN_BG } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 
 export default function SettingsLanguageScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
+  const c = useColors();
 
   const handlePick = React.useCallback(
     (code: Lang) => {
@@ -41,7 +44,7 @@ export default function SettingsLanguageScreen() {
               accessibilityState={{ selected }}
               accessibilityLabel={opt.native}
               testID={`e2e_settings_lang_${opt.code}`}
-              style={[styles.row, selected && styles.rowSelected]}
+              style={[styles.row, { borderColor: c.border }, selected && styles.rowSelected]}
               onPress={() => handlePick(opt.code)}
             >
               <View style={styles.rowMain}>
@@ -50,7 +53,9 @@ export default function SettingsLanguageScreen() {
                 </ThemedText>
                 <ThemedText style={styles.latin}>{opt.latin}</ThemedText>
               </View>
-              <View style={[styles.radio, selected && styles.radioSelected]}>
+              <View
+                style={[styles.radio, { borderColor: c.border }, selected && styles.radioSelected]}
+              >
                 {selected && <View style={styles.radioDot} />}
               </View>
             </Pressable>
@@ -65,6 +70,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1 },
   list: { flex: 1 },
   listContent: { gap: 6, padding: 16 },
+  // Sess66 PR6a: borderColor は inline c.border (dark cascade)。
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -72,7 +78,6 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
   },
   rowSelected: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN_BG, borderWidth: 2 },
   rowMain: { flex: 1, gap: 2 },
@@ -83,7 +88,6 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: BORDER_DEFAULT,
     alignItems: 'center',
     justifyContent: 'center',
   },

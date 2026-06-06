@@ -19,15 +19,13 @@ import { ThemedView } from '@/components/themed-view';
 import { WireIcon } from '@/src/components/icons';
 import { nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
+// Sess66 PR6a: theme-dependent token (BG_*/TEXT_PRIMARY/BORDER_*) は inline c.* 経由。
+// TEXT_MUTED / TEXT_SECONDARY は JSX inline / function return で利用継続。
 import {
   ACCENT_GOLD,
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
   BRAND_GREEN,
   DANGER,
   TEXT_MUTED,
-  TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
@@ -221,7 +219,11 @@ export default function WiringListScreen() {
                 key={row.event.id}
                 accessibilityRole="button"
                 accessibilityLabel={row.bonsai?.name ?? ''}
-                style={[styles.card, row.kind === 'overdue' && styles.cardWarn]}
+                style={[
+                  styles.card,
+                  { backgroundColor: c.surface, borderColor: c.border },
+                  row.kind === 'overdue' && styles.cardWarn,
+                ]}
                 onPress={() => router.push(`/(tabs)/bonsai/${row.event.bonsaiId}` as Href)}
                 testID={`e2e_wiring_row_${row.event.id}`}
               >
@@ -229,13 +231,13 @@ export default function WiringListScreen() {
                 {row.bonsai && photoMap.get(row.bonsai.id) ? (
                   <Image
                     source={{ uri: photoMap.get(row.bonsai.id)! }}
-                    style={styles.thumb}
+                    style={[styles.thumb, { backgroundColor: c.background }]}
                     contentFit="cover"
                     testID={`e2e_wiring_thumb_${row.event.id}`}
                   />
                 ) : (
                   <View
-                    style={styles.thumbPlaceholder}
+                    style={[styles.thumbPlaceholder, { backgroundColor: c.background }]}
                     testID={`e2e_wiring_thumb_placeholder_${row.event.id}`}
                   >
                     <WireIcon size={24} color={TEXT_MUTED} />
@@ -243,7 +245,7 @@ export default function WiringListScreen() {
                 )}
                 <View style={styles.cardBody}>
                   <View style={styles.cardHeaderRow}>
-                    <ThemedText style={styles.cardName} numberOfLines={1}>
+                    <ThemedText style={[styles.cardName, { color: c.text }]} numberOfLines={1}>
                       {row.bonsai?.name ?? ''}
                     </ThemedText>
                     {row.kind === 'overdue' && (
@@ -301,25 +303,23 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   listContent: { padding: 16, gap: 8, paddingBottom: 96 },
   emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 32 },
+  // Sess66 PR6a: bg/border は inline c.* (dark cascade)。
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     padding: 12,
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
     minHeight: 96,
   },
   cardWarn: { borderColor: DANGER },
   // Issue #326: mockup v1.0 64×64 thumbnail (radius 8、cover photo)
-  thumb: { width: 64, height: 64, borderRadius: 8, backgroundColor: BG_PRIMARY },
+  thumb: { width: 64, height: 64, borderRadius: 8 },
   thumbPlaceholder: {
     width: 64,
     height: 64,
     borderRadius: 8,
-    backgroundColor: BG_PRIMARY,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -337,7 +337,8 @@ const styles = StyleSheet.create({
   unwireButtonText: { fontSize: 13, fontWeight: '500', color: BRAND_GREEN },
   cardBody: { flex: 1, minWidth: 0, gap: 4 },
   cardHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  cardName: { fontSize: 16, fontWeight: '500', color: TEXT_PRIMARY, flex: 1 },
+  // Sess66 PR6a: color は inline c.text (dark cascade)。
+  cardName: { fontSize: 16, fontWeight: '500', flex: 1 },
   warnBadge: {
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
@@ -348,5 +349,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     letterSpacing: 0.6,
   },
-  cardSchedule: { fontSize: 13, color: TEXT_SECONDARY },
+  // Sess66 PR6a: scheduleColor() で動的指定 (上書き)、 fallback も inline c.textSecondary 推奨。
+  cardSchedule: { fontSize: 13 },
 });
