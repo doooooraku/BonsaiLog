@@ -11,14 +11,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BUTTON_SECONDARY_BG,
-  BUTTON_SECONDARY_TEXT,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess66 PR6c.1: theme-dependent token を inline c.* に (dark cascade)。
+import { BUTTON_SECONDARY_BG, BUTTON_SECONDARY_TEXT } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { eventRowMemo } from '@/src/core/theme/typography';
 import { type EventType } from '@/src/db/schema';
 import { buildHistoryChips } from '@/src/features/event/buildHistoryChips';
@@ -48,6 +43,7 @@ export function EventRowCompact({
   kebabTestID,
   highlighted = false,
 }: EventRowProps) {
+  const c = useColors();
   const { eventLabel, dateLabel, wiringDuration, scheduledUnwireLabel } = getEventRowDisplay(
     ev,
     eventsForBonsai,
@@ -64,6 +60,7 @@ export function EventRowCompact({
     <Pressable
       style={[
         styles.eventRow,
+        { backgroundColor: c.surface, borderColor: c.border },
         indent && styles.eventRowIndent,
         highlighted && styles.rowHighlighted,
       ]}
@@ -74,19 +71,21 @@ export function EventRowCompact({
       onPress={onPress ? () => onPress(ev) : undefined}
       onLongPress={onLongPress ? () => onLongPress(ev) : undefined}
     >
-      <View style={styles.eventIconBox}>
+      <View style={[styles.eventIconBox, { backgroundColor: c.surface, borderColor: c.border }]}>
         <EventIcon type={ev.type as EventType} size={20} />
       </View>
       <View style={styles.eventContent}>
         <View style={styles.eventRowMain}>
           {showBonsaiName && bonsaiName ? (
-            <ThemedText style={styles.eventBonsaiName} numberOfLines={1}>
+            <ThemedText style={[styles.eventBonsaiName, { color: c.text }]} numberOfLines={1}>
               {bonsaiName}
             </ThemedText>
           ) : (
             <>
-              <ThemedText style={styles.eventLabel}>{eventLabel}</ThemedText>
-              <ThemedText style={styles.eventRowDate}>{dateLabel}</ThemedText>
+              <ThemedText style={[styles.eventLabel, { color: c.text }]}>{eventLabel}</ThemedText>
+              <ThemedText style={[styles.eventRowDate, { color: c.textSecondary }]}>
+                {dateLabel}
+              </ThemedText>
             </>
           )}
         </View>
@@ -131,7 +130,7 @@ export function EventRowCompact({
           onPress={() => onKebabPress(ev)}
           testID={kebabTestID}
         >
-          <MoreVerticalIcon size={20} color={TEXT_SECONDARY} />
+          <MoreVerticalIcon size={20} color={c.textSecondary} />
         </Pressable>
       )}
     </Pressable>
@@ -144,16 +143,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5EEDD',
     borderColor: BUTTON_SECONDARY_TEXT,
   },
-  // compact mode (default、 既存 callsite 後方互換)
+  // compact mode (default、 既存 callsite 後方互換)。 Sess66 PR6c.1: bg/border/color は inline c.*。
   eventRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
     marginBottom: 6,
   },
@@ -162,17 +159,15 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 9,
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     alignItems: 'center',
     justifyContent: 'center',
   },
   eventContent: { flex: 1, minWidth: 0, gap: 2 },
   eventRowMain: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  eventLabel: { fontSize: 14, color: TEXT_PRIMARY, fontWeight: '500' },
-  eventBonsaiName: { fontSize: 15, color: TEXT_PRIMARY, fontWeight: '500' },
-  eventRowDate: { fontSize: 12, color: TEXT_SECONDARY },
+  eventLabel: { fontSize: 14, fontWeight: '500' },
+  eventBonsaiName: { fontSize: 15, fontWeight: '500' },
+  eventRowDate: { fontSize: 12 },
   // memo 本文 (Sess37 PR-1 C5: token 経由、 lineHeight 22 で可読性 ↑)
   eventRowNote: { ...eventRowMemo, marginTop: 2 },
   // Sess29 ADR-0038 D4 / R-48: BUTTON_SECONDARY token 参照 (薄緑 + 濃緑文字、 design_system §22 Secondary CTA)。
