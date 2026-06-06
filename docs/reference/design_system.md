@@ -36,22 +36,34 @@
 | `--button-secondary-bg`   | `#E8F0EA` | Secondary CTA button 背景 (ADR-0038 Sess29、 §22 SoT)              |
 | `--button-secondary-text` | `#1F3A2E` | Secondary CTA button 文字色 (= primary、 token 統一参照)           |
 
-### 2-2. ダークモード（OLED焼き付き配慮）
+### 2-2. ダークモード — 宵墨 (yoizumi) warm sumi (Sess66 PR4、 ADR-0015 Amendment)
 
-| Token              | HEX       | 用途                   |
-| ------------------ | --------- | ---------------------- |
-| `--bg-primary`     | `#0A0E1A` | 背景                   |
-| `--bg-surface`     | `#131826` | カード背景             |
-| `--text-primary`   | `#E8E4D6` | 本文（淡washi）        |
-| `--text-secondary` | `#B0A897` | 補助                   |
-| `--text-muted`     | `#7A7265` | 3次                    |
-| `--primary`        | `#6B9B7F` | プライマリ（夜目の緑） |
-| `--primary-hover`  | `#7FB095` | 押下                   |
-| `--accent-bark`    | `#8C7561` | 樹皮色                 |
-| `--accent-gold`    | `#D4B062` | 秋葉                   |
-| `--danger`         | `#C9575D` | 危険                   |
-| `--success`        | `#7DAE7A` | 成功                   |
-| `--border`         | `#2A2F3E` | 境界線                 |
+ブランド「washi 和紙 → sumi 墨 → fukamidori 深緑」 を dark mode まで延長 (P3 永く変わらない整合)。 旧 navy 寒色系 (#0A0E1A 等) から **暖墨** 系に pivot (Sess66 PR4、 Claude Design `tokens.css` `[data-theme="dark"]` 提案値整合)。
+
+| Token              | HEX       | 用途                                  |
+| ------------------ | --------- | ------------------------------------- |
+| `--bg-primary`     | `#16140F` | 背景 (宵墨 yoizumi、 暖かい墨)        |
+| `--bg-surface`     | `#211E18` | カード背景 (重ねの紙)                 |
+| `--text-primary`   | `#ECE6D6` | 本文 (淡 washi)                       |
+| `--text-secondary` | `#B3AA97` | 補助                                  |
+| `--text-muted`     | `#837A68` | 3 次                                  |
+| `--primary`        | `#7FA98A` | プライマリ (苔緑、 夜目に映える深緑)  |
+| `--primary-hover`  | `#93BD9E` | 押下                                  |
+| `--accent-bark`    | `#A1886F` | 樹皮色 (warm)                         |
+| `--accent-gold`    | `#D4B062` | 秋葉 (Pro バッジ、 両 theme 同色維持) |
+| `--danger`         | `#CE7A72` | 危険                                  |
+| `--success`        | `#88B083` | 成功                                  |
+| `--border`         | `#2C2820` | 境界線 (茶味の枠線)                   |
+| `--border-strong`  | `#4A4534` | 強調境界線                            |
+
+WCAG AA 検証 (`pnpm a11y:contrast`):
+
+| pair                                   | 比      | 等級                    |
+| -------------------------------------- | ------- | ----------------------- |
+| text (#ECE6D6) × bg (#16140F)          | 15.13:1 | AAA                     |
+| text (#ECE6D6) × surface (#211E18)     | 13.91:1 | AAA                     |
+| textSecondary (#B3AA97) × bg (#16140F) | 8.15:1  | AAA                     |
+| primary (#7FA98A) × bg (#16140F)       | 6.07:1  | AA (UI 要素 / 大字 AAA) |
 
 ### 2-3. 屋外モード（直射日光下、WCAG AAA 7:1目標）
 
