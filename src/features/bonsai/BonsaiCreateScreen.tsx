@@ -15,8 +15,10 @@ import { ThemedText } from '@/components/themed-text';
 import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingProps';
 import { useTranslation } from '@/src/core/i18n/i18n';
-// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT は inline c.* 化、 BRAND_GREEN / DISABLED_BG / ON_BRAND は brand-static で保持。
-import { BRAND_GREEN, DISABLED_BG, ON_BRAND } from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT は inline c.* 化。
+// Sess69 PR-B: BRAND_GREEN / DISABLED_BG / ON_BRAND も scheme-aware
+// (c.tint / c.disabledBg / c.onTint) に移行 (dark mode で深緑保存ボタンが沈む / 灰色 disabled が
+// 意図不明に浮く罠を解消、 ADR-0015/ADR-0052 Amendment)。
 import { useColors } from '@/src/core/theme/useColors';
 import { BonsaiBasicFormFields, useBonsaiBasicForm } from '@/src/features/bonsai/BonsaiBasicForm';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
@@ -63,12 +65,17 @@ export default function BonsaiCreateScreen() {
             accessibilityRole="button"
             accessibilityLabel={t('save')}
             accessibilityState={{ disabled: !form.canSubmit }}
-            style={[styles.footerButton, !form.canSubmit && styles.footerButtonDisabled]}
+            style={[
+              styles.footerButton,
+              { backgroundColor: form.canSubmit ? c.tint : c.disabledBg },
+            ]}
             onPress={() => void form.handleSubmit()}
             disabled={!form.canSubmit}
             testID="e2e_bonsai_create_submit"
           >
-            <ThemedText style={styles.footerButtonText}>{t('save')}</ThemedText>
+            <ThemedText style={[styles.footerButtonText, { color: c.onTint }]}>
+              {t('save')}
+            </ThemedText>
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -97,13 +104,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
+  // Sess69 PR-B: bg / disabled / text 色は inline c.tint / c.disabledBg / c.onTint (scheme-aware)。
   footerButton: {
     height: 56,
     borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  footerButtonDisabled: { backgroundColor: DISABLED_BG },
-  footerButtonText: { color: ON_BRAND, fontSize: 17, fontWeight: '500', letterSpacing: 0.5 },
+  footerButtonText: { fontSize: 17, fontWeight: '500', letterSpacing: 0.5 },
 });

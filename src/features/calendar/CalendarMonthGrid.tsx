@@ -9,8 +9,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-// Sess68 PR #C: TEXT_MUTED / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / DANGER は status/brand-static で保持。
-import { BRAND_GREEN, DANGER, TEXT_MUTED } from '@/src/core/theme/colors';
+// Sess68 PR #C: TEXT_MUTED / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化。
+// Sess69 PR-B: BRAND_GREEN / DANGER も scheme-aware (c.tint / c.dangerColor) に
+// 移行 (dark mode で深緑/深赤が沈む罠を解消、 ADR-0015/ADR-0052 Amendment)。
 import { useColors } from '@/src/core/theme/useColors';
 import { type EventType } from '@/src/db/schema';
 import { CalendarDot } from '@/src/features/plan/CalendarDot';
@@ -82,13 +83,13 @@ export function CalendarMonthGrid({
   };
 
   const dowLabels: readonly { label: string; color: string }[] = [
-    { label: t('dowSun'), color: DANGER },
-    { label: t('dowMon'), color: TEXT_MUTED },
-    { label: t('dowTue'), color: TEXT_MUTED },
-    { label: t('dowWed'), color: TEXT_MUTED },
-    { label: t('dowThu'), color: TEXT_MUTED },
-    { label: t('dowFri'), color: TEXT_MUTED },
-    { label: t('dowSat'), color: BRAND_GREEN },
+    { label: t('dowSun'), color: c.dangerColor },
+    { label: t('dowMon'), color: c.textMuted },
+    { label: t('dowTue'), color: c.textMuted },
+    { label: t('dowWed'), color: c.textMuted },
+    { label: t('dowThu'), color: c.textMuted },
+    { label: t('dowFri'), color: c.textMuted },
+    { label: t('dowSat'), color: c.tint },
   ];
 
   return (
@@ -148,14 +149,20 @@ export function CalendarMonthGrid({
                   key={i}
                   accessibilityRole="button"
                   accessibilityLabel={`${d}日, ${t('planLegendDotPlannedLabel').replace(' (○)', '')} ${renderedPlanned}件, ${t('planLegendDotRecordedLabel').replace(' (●)', '')} ${renderedLogged}件`}
-                  style={[styles.cell, isSel && styles.cellSel]}
+                  style={[
+                    styles.cell,
+                    isSel && [
+                      styles.cellSel,
+                      { borderColor: c.tint, backgroundColor: c.tintSubtle },
+                    ],
+                  ]}
                   onPress={() => onSelectDate(dateKey)}
                   testID={`e2e_${testIdPrefix}_cell_${dateKey}`}
                 >
                   <ThemedText
                     style={[
                       styles.cellText,
-                      { color: isToday ? BRAND_GREEN : c.text },
+                      { color: isToday ? c.tint : c.text },
                       isToday && styles.cellTextToday,
                     ]}
                   >
@@ -168,7 +175,9 @@ export function CalendarMonthGrid({
                     {Array.from({ length: renderedLogged }).map((_, k) => (
                       <CalendarDot key={`logged-${k}`} status="logged" />
                     ))}
-                    {totalUniqueCount > 3 && <ThemedText style={styles.dotPlus}>+</ThemedText>}
+                    {totalUniqueCount > 3 && (
+                      <ThemedText style={[styles.dotPlus, { color: c.tint }]}>+</ThemedText>
+                    )}
                   </View>
                 </Pressable>
               );
@@ -215,13 +224,11 @@ const styles = StyleSheet.create({
     padding: 4,
     gap: 3,
   },
-  cellSel: {
-    borderWidth: 1,
-    borderColor: BRAND_GREEN,
-    backgroundColor: 'rgba(31,58,46,0.06)',
-  },
+  // Sess69 PR-B: borderColor / backgroundColor は inline c.tint / c.tintSubtle (scheme-aware)。
+  cellSel: { borderWidth: 1 },
   cellText: { fontSize: 15 },
   cellTextToday: { fontWeight: '700' },
   dotRow: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 6 },
-  dotPlus: { fontSize: 10, lineHeight: 10, color: BRAND_GREEN, fontWeight: '700' },
+  // Sess69 PR-B: color は inline c.tint (scheme-aware)。
+  dotPlus: { fontSize: 10, lineHeight: 10, fontWeight: '700' },
 });

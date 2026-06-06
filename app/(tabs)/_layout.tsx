@@ -16,16 +16,19 @@ import { Tabs, useRouter, type Href } from 'expo-router';
 import React, { useCallback } from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { Colors } from '@/constants/theme';
 import { CalendarIcon, LeafIcon, NotebookIcon, PencilNavIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
+import { useColors } from '@/src/core/theme/useColors';
 
 export default function TabLayout() {
   const { t } = useTranslation();
   const router = useRouter();
-  // Sess6 PR-1: TabBar 強制 light 固定 (user 「ライトモード設定なのに dark」 bug 解消、
-  // dark mode 完全対応は Phase C 別 PR で扱う、 ADR-0015 TT2 パターン拡張)。
-  const c = Colors.light;
+  // Sess69 PR-B: Sess6 PR-1 leftover (`const c = Colors.light` 強制 light 固定) 解消。
+  // 60+ session 放置されていた技術的負債、 ADR-0052 Amendment (Sess69 PR-A) で
+  // 「Colors.light literal を app/** で禁止」 を明文化、 cascade pattern に合流。
+  // useColors hook が themeMode (system/light/dark) + OS appearance を resolveEffectiveScheme で
+  // 統合済みなので、 Sess6 PR-1 の「light mode 設定なのに dark」 bug は再発しない。
+  const c = useColors();
 
   // ADR-0035 D2 (Sess23 PR-2-1): 予定タブ tap で source=tab 付与 → PlanScreen で明日 default selectedDateKey
   const handlePlanTabPress = useCallback(

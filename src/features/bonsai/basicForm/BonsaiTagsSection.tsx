@@ -5,8 +5,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { PlusIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
-// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_SECONDARY は inline c.* 化。
+// Sess69 PR-B: BRAND_GREEN / ON_BRAND も scheme-aware (c.tint / c.onTint) に移行
+// (dark mode で選択中 chip 深緑が沈む + 追加 chip 緑文字消える罠を解消、 ADR-0015/ADR-0052 Amendment)。
 import { useColors } from '@/src/core/theme/useColors';
 import type { BonsaiBasicFormState } from '@/src/features/bonsai/BonsaiBasicForm';
 
@@ -51,12 +52,14 @@ export function BonsaiTagsSection({ form }: { form: BonsaiBasicFormState }) {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('bonsaiTagsAddCta')}
-            style={styles.tagAddChip}
+            style={[styles.tagAddChip, { borderColor: c.tint }]}
             onPress={() => router.push('/tag-edit?returnTo=bonsai-create' as Href)}
             testID="e2e_bonsai_tag_add"
           >
-            <PlusIcon size={16} color={BRAND_GREEN} />
-            <ThemedText style={styles.tagAddChipText}>{t('bonsaiTagsAddCta')}</ThemedText>
+            <PlusIcon size={16} color={c.tint} />
+            <ThemedText style={[styles.tagAddChipText, { color: c.tint }]}>
+              {t('bonsaiTagsAddCta')}
+            </ThemedText>
           </Pressable>
         </View>
       ) : (
@@ -72,12 +75,18 @@ export function BonsaiTagsSection({ form }: { form: BonsaiBasicFormState }) {
                 style={[
                   styles.tagChip,
                   { backgroundColor: c.surface, borderColor: c.border },
-                  selected && styles.tagChipSelected,
+                  selected && { backgroundColor: c.tint, borderColor: c.tint },
                 ]}
                 onPress={() => toggleTag(tg.id)}
                 testID={`e2e_bonsai_create_tag_chip_${tg.id}`}
               >
-                <ThemedText style={selected ? styles.tagChipTextSelected : styles.tagChipText}>
+                <ThemedText
+                  style={
+                    selected
+                      ? [styles.tagChipTextSelected, { color: c.onTint }]
+                      : styles.tagChipText
+                  }
+                >
                   {tg.name}
                 </ThemedText>
               </Pressable>
@@ -106,12 +115,14 @@ export function BonsaiTagsSection({ form }: { form: BonsaiBasicFormState }) {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('bonsaiTagsAddCta')}
-            style={styles.tagAddChip}
+            style={[styles.tagAddChip, { borderColor: c.tint }]}
             onPress={() => router.push('/tag-edit?returnTo=bonsai-create' as Href)}
             testID="e2e_bonsai_tag_add"
           >
-            <PlusIcon size={16} color={BRAND_GREEN} />
-            <ThemedText style={styles.tagAddChipText}>{t('bonsaiTagsAddCta')}</ThemedText>
+            <PlusIcon size={16} color={c.tint} />
+            <ThemedText style={[styles.tagAddChipText, { color: c.tint }]}>
+              {t('bonsaiTagsAddCta')}
+            </ThemedText>
           </Pressable>
         </View>
       )}
@@ -136,19 +147,19 @@ const styles = StyleSheet.create({
     minHeight: 36,
     justifyContent: 'center',
   },
-  tagChipSelected: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
+  // Sess69 PR-B: tagChipSelected bg/border は inline c.tint、 文字は c.onTint (scheme-aware)。
   tagChipText: { fontSize: 13 },
-  tagChipTextSelected: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
+  tagChipTextSelected: { fontSize: 13, fontWeight: '600' },
   tagsEmpty: { fontSize: 13 },
   // Sess15 PR-DD: empty 時の縦並び container (alignSelf で button を左寄せ)。
   tagEmptyColumn: { gap: 8 },
-  // Sess15 PR-EE: 案 D2 統一 (dashed gray → solid 1.5px BRAND_GREEN + BRAND_GREEN テキスト + PlusIcon)。
+  // Sess15 PR-EE: 案 D2 統一 (dashed gray → solid 1.5px tint + tint テキスト + PlusIcon)。
+  // Sess69 PR-B: borderColor / color は inline c.tint (scheme-aware)。
   tagAddChip: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: BRAND_GREEN,
     minHeight: 36,
     flexDirection: 'row',
     alignItems: 'center',
@@ -156,7 +167,7 @@ const styles = StyleSheet.create({
     gap: 4,
     alignSelf: 'flex-start',
   },
-  tagAddChipText: { fontSize: 13, color: BRAND_GREEN, fontWeight: '600' },
+  tagAddChipText: { fontSize: 13, fontWeight: '600' },
   // Sess15 PR-MM: 「+N 件」 / 「閉じる」 折りたたみ chip。 tag chip と同じ size、 grey 系で secondary。
   tagMoreChip: {
     paddingHorizontal: 12,

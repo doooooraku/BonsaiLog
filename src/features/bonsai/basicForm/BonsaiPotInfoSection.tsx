@@ -4,8 +4,9 @@ import { ThemedText } from '@/components/themed-text';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { useTranslation } from '@/src/core/i18n/i18n';
-// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_SECONDARY は inline c.* 化。
+// Sess69 PR-B: BRAND_GREEN / ON_BRAND も scheme-aware (c.tint / c.onTint) に移行
+// (dark mode で active segment 深緑が沈む罠を解消、 ADR-0015/ADR-0052 Amendment)。
 import { useColors } from '@/src/core/theme/useColors';
 import type { BonsaiBasicFormState } from '@/src/features/bonsai/BonsaiBasicForm';
 
@@ -67,14 +68,17 @@ export function BonsaiPotInfoSection({ form }: { form: BonsaiBasicFormState }) {
                     accessibilityRole="button"
                     accessibilityLabel={`unit ${u}`}
                     accessibilityState={{ selected: active }}
-                    style={[styles.potUnitSegment, active && styles.potUnitSegmentActive]}
+                    style={[
+                      styles.potUnitSegment,
+                      active && [styles.potUnitSegmentActive, { backgroundColor: c.tint }],
+                    ]}
                     onPress={() => setDisplayPotUnit(u)}
                     testID={`e2e_bonsai_create_pot_unit_${u}`}
                   >
                     <ThemedText
                       style={
                         active
-                          ? styles.potUnitSegmentTextActive
+                          ? [styles.potUnitSegmentTextActive, { color: c.onTint }]
                           : [styles.potUnitSegmentText, { color: c.textSecondary }]
                       }
                     >
@@ -158,7 +162,8 @@ const styles = StyleSheet.create({
     minWidth: 48,
     alignItems: 'center',
   },
-  potUnitSegmentActive: { backgroundColor: BRAND_GREEN },
+  // Sess69 PR-B: bg / text 色は inline c.tint / c.onTint (scheme-aware)。
+  potUnitSegmentActive: {},
   potUnitSegmentText: { fontSize: 13 },
-  potUnitSegmentTextActive: { fontSize: 13, color: ON_BRAND, fontWeight: '600' },
+  potUnitSegmentTextActive: { fontSize: 13, fontWeight: '600' },
 });
