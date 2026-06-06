@@ -16,7 +16,8 @@ import { ThemedText } from '@/components/themed-text';
 import { EventIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-import { BG_SURFACE, BORDER_DEFAULT, TEXT_PRIMARY, TEXT_SECONDARY } from '@/src/core/theme/colors';
+// Sess66 PR6c: theme-dependent token を inline c.* に (dark cascade)。
+import { useColors } from '@/src/core/theme/useColors';
 import type { EventWithSnippet } from '@/src/db/eventRepository';
 import { BONSAI_STYLES, type EventType } from '@/src/db/schema';
 import { BonsaiPlaceholder } from '@/src/features/bonsai/BonsaiPlaceholder';
@@ -102,6 +103,7 @@ export function BonsaiResultRow({
 }) {
   const { t } = useTranslation();
   const router = useRouter();
+  const c = useColors();
   const { bonsai: b, coverUri, speciesLabel } = result;
 
   // 樹形ラベル: 標準5種は i18n、カスタムは bonsai.style の生テキストをそのまま表示。
@@ -115,7 +117,7 @@ export function BonsaiResultRow({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={b.name}
-      style={styles.bonsaiRow}
+      style={[styles.bonsaiRow, { borderBottomColor: c.border }]}
       onPress={() => router.push(`/(tabs)/bonsai/${b.id}` as Href)}
     >
       <View style={styles.thumbWrap}>
@@ -126,11 +128,11 @@ export function BonsaiResultRow({
         )}
       </View>
       <View style={styles.bonsaiTextCol}>
-        <ThemedText style={styles.bonsaiName} numberOfLines={1}>
+        <ThemedText style={[styles.bonsaiName, { color: c.text }]} numberOfLines={1}>
           <HighlightQuery text={b.name} query={highlightQuery} />
         </ThemedText>
         {(speciesLabel || stl) && (
-          <ThemedText style={styles.speciesLine} numberOfLines={1}>
+          <ThemedText style={[styles.speciesLine, { color: c.textSecondary }]} numberOfLines={1}>
             {speciesLabel ? <HighlightQuery text={speciesLabel} query={highlightQuery} /> : null}
             {speciesLabel && stl ? ' · ' : ''}
             {stl ? <HighlightQuery text={stl} query={highlightQuery} /> : null}
@@ -150,6 +152,7 @@ export function EventResultRow({
 }) {
   const { t, lang } = useTranslation();
   const router = useRouter();
+  const c = useColors();
   const typeLabel = t(`eventType_${e.type}` as TranslationKey);
   // メモ表示: trigram 経路は snippet(«»)、LIKE 経路 (snippet=null) は note 全文を query ハイライト。
   const memoText = e.snippet ?? e.note ?? '';
@@ -159,30 +162,36 @@ export function EventResultRow({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={e.note ?? typeLabel}
-      style={styles.eventRow}
+      style={[styles.eventRow, { borderBottomColor: c.border }]}
       onPress={() =>
         router.push(`/(tabs)/bonsai/${e.bonsaiId}?tab=history&focusEventId=${e.id}` as Href)
       }
     >
-      <View style={styles.eventIconBox}>
+      <View style={[styles.eventIconBox, { backgroundColor: c.surface, borderColor: c.border }]}>
         <EventIcon type={e.type as EventType} size={18} />
       </View>
       <View style={styles.eventTextCol}>
         {/* 作業 (作業名) + 日付 */}
         <View style={styles.eventTopRow}>
           <View style={styles.eventLabelGroup}>
-            <ThemedText style={styles.eventFieldLabel}>{t('searchWorkLabel')}</ThemedText>
+            <ThemedText style={[styles.eventFieldLabel, { color: c.textSecondary }]}>
+              {t('searchWorkLabel')}
+            </ThemedText>
             <ThemedText type="defaultSemiBold" style={styles.eventLabel} numberOfLines={1}>
               {typeLabel}
             </ThemedText>
           </View>
-          <ThemedText style={styles.eventDate}>{formatMonthDay(e.occurredAtUtc, lang)}</ThemedText>
+          <ThemedText style={[styles.eventDate, { color: c.textSecondary }]}>
+            {formatMonthDay(e.occurredAtUtc, lang)}
+          </ThemedText>
         </View>
         {/* 盆栽 (盆栽名) */}
         {e.bonsaiName ? (
           <View style={styles.eventFieldRow}>
-            <ThemedText style={styles.eventFieldLabel}>{t('searchBonsaiSection')}</ThemedText>
-            <ThemedText style={styles.eventFieldValue} numberOfLines={1}>
+            <ThemedText style={[styles.eventFieldLabel, { color: c.textSecondary }]}>
+              {t('searchBonsaiSection')}
+            </ThemedText>
+            <ThemedText style={[styles.eventFieldValue, { color: c.text }]} numberOfLines={1}>
               <HighlightQuery text={e.bonsaiName} query={highlightQuery} />
             </ThemedText>
           </View>
@@ -190,8 +199,13 @@ export function EventResultRow({
         {/* メモ */}
         {hasMemo ? (
           <View style={styles.eventFieldRow}>
-            <ThemedText style={styles.eventFieldLabel}>{t('workLogNote')}</ThemedText>
-            <ThemedText style={styles.eventMemoValue} numberOfLines={2}>
+            <ThemedText style={[styles.eventFieldLabel, { color: c.textSecondary }]}>
+              {t('workLogNote')}
+            </ThemedText>
+            <ThemedText
+              style={[styles.eventMemoValue, { color: c.textSecondary }]}
+              numberOfLines={2}
+            >
               {e.snippet != null ? (
                 <SnippetSpans text={e.snippet} />
               ) : (
@@ -206,10 +220,10 @@ export function EventResultRow({
 }
 
 const styles = StyleSheet.create({
-  // Issue #339 Phase 3: FTS5 snippet match highlight (#EDE7D8 系 washi 背景)
+  // Sess66 PR6c: theme-dependent 色は inline c.* に。 snippetMatch の色は washi highlight 文脈で
+  // brand-specific bg を維持 + 文字色は cascade 化 (dark で見える程度の明色を保持)。
   snippetMatch: {
     backgroundColor: '#EDE7D8',
-    color: TEXT_SECONDARY,
     fontWeight: '600',
   },
   // 盆栽結果行
@@ -218,7 +232,6 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
     alignItems: 'center',
   },
   thumbWrap: {
@@ -230,15 +243,14 @@ const styles = StyleSheet.create({
   },
   thumb: { width: 56, height: 56 },
   bonsaiTextCol: { flex: 1, minWidth: 0, gap: 2 },
-  bonsaiName: { fontFamily: 'NotoSerifJP_500Medium', fontSize: 17, color: TEXT_PRIMARY },
-  speciesLine: { fontSize: 12, color: TEXT_SECONDARY },
+  bonsaiName: { fontFamily: 'NotoSerifJP_500Medium', fontSize: 17 },
+  speciesLine: { fontSize: 12 },
   // 作業履歴行
   eventRow: {
     flexDirection: 'row',
     gap: 12,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
     alignItems: 'flex-start',
   },
   eventIconBox: {
@@ -246,8 +258,6 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 9,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
@@ -269,7 +279,6 @@ const styles = StyleSheet.create({
   eventLabel: { fontSize: 15, flexShrink: 1, minWidth: 0 },
   eventDate: {
     fontSize: 11,
-    color: TEXT_SECONDARY,
     letterSpacing: 0.6,
     flexShrink: 0,
   },
@@ -281,11 +290,10 @@ const styles = StyleSheet.create({
   },
   eventFieldLabel: {
     fontSize: 11,
-    color: TEXT_SECONDARY,
     letterSpacing: 0.4,
     minWidth: 30,
     lineHeight: 18,
   },
-  eventFieldValue: { flex: 1, minWidth: 0, fontSize: 14, color: TEXT_PRIMARY, lineHeight: 18 },
-  eventMemoValue: { flex: 1, minWidth: 0, fontSize: 13, color: TEXT_SECONDARY, lineHeight: 18 },
+  eventFieldValue: { flex: 1, minWidth: 0, fontSize: 14, lineHeight: 18 },
+  eventMemoValue: { flex: 1, minWidth: 0, fontSize: 13, lineHeight: 18 },
 });

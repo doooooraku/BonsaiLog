@@ -24,16 +24,9 @@ import { Dimensions, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { CheckIcon, DropletIcon, ScissorsIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  ACCENT_BARK,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_MUTED,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess66 PR6c: theme-dependent token を inline c.* に (dark cascade)。
+import { ACCENT_BARK, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 
 import { BonsaiPlaceholder, hashSeed } from './BonsaiPlaceholder';
 
@@ -85,6 +78,7 @@ export function BonsaiCard({
   testID,
 }: Props) {
   const { t } = useTranslation();
+  const c = useColors();
   const seed = hashSeed(data.id);
 
   // commentText: lastAction.note → speciesCommonName → "—" の優先順位 (mockup L871 整合)。
@@ -99,7 +93,11 @@ export function BonsaiCard({
       accessibilityRole="button"
       accessibilityLabel={data.name}
       accessibilityState={selecting ? { selected } : undefined}
-      style={[styles.card, selected && styles.cardSelected]}
+      style={[
+        styles.card,
+        { backgroundColor: c.surface, borderColor: c.border },
+        selected && styles.cardSelected,
+      ]}
       onPress={() => onPress(data.id)}
       onLongPress={onLongPress != null ? () => onLongPress(data.id) : undefined}
       testID={testID}
@@ -135,7 +133,7 @@ export function BonsaiCard({
       </View>
 
       <View style={styles.body}>
-        <ThemedText style={styles.title} numberOfLines={1}>
+        <ThemedText style={[styles.title, { color: c.text }]} numberOfLines={1}>
           {data.name}
         </ThemedText>
 
@@ -153,7 +151,7 @@ export function BonsaiCard({
                 ) : (
                   <DropletIcon size={14} />
                 )}
-                <ThemedText style={styles.kindText}>
+                <ThemedText style={[styles.kindText, { color: c.textSecondary }]}>
                   {data.lastAction.kind === 'pruning'
                     ? t('eventType_pruning')
                     : t('eventType_watering')}
@@ -161,14 +159,16 @@ export function BonsaiCard({
               </View>
             </>
           ) : (
-            <ThemedText style={styles.noLogText}>{t('homeCardNoLog')}</ThemedText>
+            <ThemedText style={[styles.noLogText, { color: c.textMuted }]}>
+              {t('homeCardNoLog')}
+            </ThemedText>
           )}
           {data.ageText != null && data.ageText.length > 0 && (
             <ThemedText style={styles.ageText}>{data.ageText}</ThemedText>
           )}
         </View>
 
-        <ThemedText style={styles.comment} numberOfLines={1}>
+        <ThemedText style={[styles.comment, { color: c.textSecondary }]} numberOfLines={1}>
           {commentText}
         </ThemedText>
       </View>
@@ -177,12 +177,11 @@ export function BonsaiCard({
 }
 
 const styles = StyleSheet.create({
+  // Sess66 PR6c: bg/border は inline c.* (dark cascade)。
   card: {
     marginHorizontal: 16,
     marginBottom: 16,
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 14,
     overflow: 'hidden',
     shadowColor: '#1F3A2E',
@@ -219,7 +218,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 28,
     fontWeight: '600',
-    color: TEXT_PRIMARY,
     letterSpacing: 0.36,
   },
   metaRow: {
@@ -236,8 +234,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.56,
   },
   kindBox: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  kindText: { fontSize: 14, lineHeight: 20, color: TEXT_SECONDARY },
-  noLogText: { fontSize: 14, lineHeight: 20, color: TEXT_MUTED },
+  kindText: { fontSize: 14, lineHeight: 20 },
+  noLogText: { fontSize: 14, lineHeight: 20 },
   ageText: {
     marginLeft: 'auto',
     fontFamily: 'Inter_400Regular',
@@ -246,5 +244,5 @@ const styles = StyleSheet.create({
     color: ACCENT_BARK,
     letterSpacing: 0.26,
   },
-  comment: { fontSize: 14, lineHeight: 20, color: TEXT_SECONDARY },
+  comment: { fontSize: 14, lineHeight: 20 },
 });
