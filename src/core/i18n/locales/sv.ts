@@ -775,7 +775,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '{count} plan(er) borttagna',
   undoSnackbarLoggedDeleteN: '{count} post(er) borttagna',
   undoSnackbarAction: 'Ångra',
-  recordFabLabel: '作業を記録',
+  recordFabLabel: 'Logga skötsel',
   historyLabelPruneAmountFew: 'Lite',
   historyLabelPruneAmountSome: 'Måttligt',
   historyLabelPruneAmountLot: 'Mycket',

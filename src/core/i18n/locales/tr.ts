@@ -774,7 +774,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '{count} plan silindi',
   undoSnackbarLoggedDeleteN: '{count} kayıt silindi',
   undoSnackbarAction: 'Geri al',
-  recordFabLabel: '作業を記録',
+  recordFabLabel: 'Bakımı kaydet',
   historyLabelPruneAmountFew: 'Az',
   historyLabelPruneAmountSome: 'Orta',
   historyLabelPruneAmountLot: 'Çok',

@@ -773,7 +773,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: 'Đã xóa {count} kế hoạch',
   undoSnackbarLoggedDeleteN: 'Đã xóa {count} bản ghi',
   undoSnackbarAction: 'Hoàn tác',
-  recordFabLabel: '作業を記録',
+  recordFabLabel: 'Ghi chăm sóc',
   historyLabelPruneAmountFew: 'Một chút',
   historyLabelPruneAmountSome: 'Vừa phải',
   historyLabelPruneAmountLot: 'Nhiều',

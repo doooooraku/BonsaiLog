@@ -782,7 +782,7 @@ const baseEn = {
   undoSnackbarPlannedDeleteN: 'Deleted {count} plan(s)',
   undoSnackbarLoggedDeleteN: 'Deleted {count} record(s)',
   undoSnackbarAction: 'Undo',
-  recordFabLabel: '作業を記録',
+  recordFabLabel: 'Log care',
   historyLabelPruneAmountFew: 'A little',
   historyLabelPruneAmountSome: 'Some',
   historyLabelPruneAmountLot: 'A lot',

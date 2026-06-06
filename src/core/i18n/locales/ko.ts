@@ -772,7 +772,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   undoSnackbarPlannedDeleteN: '계획 {count} 건 삭제됨',
   undoSnackbarLoggedDeleteN: '기록 {count} 건 삭제됨',
   undoSnackbarAction: '되돌리기',
-  recordFabLabel: '作業を記録',
+  recordFabLabel: '관리 기록',
   historyLabelPruneAmountFew: '조금',
   historyLabelPruneAmountSome: '적당히',
   historyLabelPruneAmountLot: '많이',
