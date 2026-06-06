@@ -21,7 +21,7 @@ import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
-import { CogIcon, SearchIcon } from '@/src/components/icons';
+import { BackIcon, CogIcon, SearchIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
@@ -32,6 +32,12 @@ type Props = {
   showSearch?: boolean;
   /** 設定タブ遷移ボタン (Cog) を表示するか (default true、設定タブ自身では false) */
   showSettings?: boolean;
+  /**
+   * 戻るボタン (左 `<` 矢印) を表示するか (default false)。
+   * Sess65: 設定画面 (root Stack 直下) など、 タブ外画面の戻る動線確保のために追加。
+   * default false なのでタブメイン画面 (盆栽/予定/記録/ふりかえり) の挙動は変わらない。
+   */
+  showBack?: boolean;
   /** 検索ボタン押下時の遷移先 (default '/(tabs)/look-back/search') */
   searchHref?: Href;
   style?: ViewStyle;
@@ -42,6 +48,7 @@ export function SearchHeader({
   title,
   showSearch = true,
   showSettings = true,
+  showBack = false,
   searchHref = '/(tabs)/look-back/search' as Href,
   style,
   testIdSuffix = 'header',
@@ -66,6 +73,18 @@ export function SearchHeader({
         style,
       ]}
     >
+      {showBack && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('back')}
+          testID={`e2e_${testIdSuffix}_back`}
+          style={styles.iconBtn}
+          hitSlop={8}
+          onPress={() => router.back()}
+        >
+          <BackIcon size={24} color={c.text} />
+        </Pressable>
+      )}
       <ThemedText
         style={[styles.title, { color: c.text }]}
         numberOfLines={1}

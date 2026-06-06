@@ -35,8 +35,8 @@ describe('ConfirmDialog (ADR-0036 D1)', () => {
   test('5. description は optional (ADR-0036 D4「desc 不要」 整合)', () => {
     // type で description?: string
     expect(SRC).toMatch(/description\?:\s*string/);
-    // render では条件付き
-    expect(SRC).toMatch(/description\s*\?\s*<ThemedText/);
+    // render では条件付き (prettier multiline `description ? ( <ThemedText` も許容、 Sess65)
+    expect(SRC).toMatch(/description\s*\?\s*\(?\s*<ThemedText/);
   });
 
   test('6. destructive=true で DANGER 赤 button (削除等)', () => {

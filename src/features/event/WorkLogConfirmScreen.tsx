@@ -35,13 +35,13 @@ import { useToastStore } from '@/src/components/Toast';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import {
-  BG_PRIMARY,
   BORDER_DEFAULT,
   BRAND_GREEN,
   ON_BRAND,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import {
   convertPlannedToRecorded,
   createEvent,
@@ -66,6 +66,8 @@ import {
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
+  // Sess65: container/footer の static BG_PRIMARY を c.background 動的化するため hook 追加。
+  const c = useColors();
   // Sess28 PR-3 (ADR-0037 D1 / R-46): キーボード回避 props 共通 hook 適用 (KAV、 container 縮小)。
   const kavProps = useKeyboardAvoidingProps();
   // Sess31 PR-1 (R-46 拡張): ScrollView ref + メモ欄 onFocus → scrollToEnd で IME 起動時の可視性確保。
@@ -255,10 +257,15 @@ export default function WorkLogConfirmScreen() {
   const titleLabel = t(`eventType_${selectedType}` as TranslationKey);
 
   return (
-    <View style={styles.container} testID="e2e_work_log_confirm_screen">
+    <View
+      style={[styles.container, { backgroundColor: c.background }]}
+      testID="e2e_work_log_confirm_screen"
+    >
       {/* Sess33 PR-4 (ADR-0039 起票予定): Stack header 廃止 + FormScreenHeader sticky。
           タイトル + bonsaiName は既に ScrollView 内に統合済 → header (sticky) を消して
-          full-screen scroll 化。 既存 scrollToEnd (R-46 v3 タイプ A) はそのまま維持。 */}
+          full-screen scroll 化。 既存 scrollToEnd (R-46 v3 タイプ A) はそのまま維持。
+          Sess65: container/footer の static BG_PRIMARY (washi 固定) を inline c.background 動的化。
+          BulkLogConfirmScreen と同 pattern。 */}
       <Stack.Screen options={{ headerShown: false }} />
       <FormScreenHeader testID="e2e_work_log_form_header" />
 
@@ -344,7 +351,7 @@ export default function WorkLogConfirmScreen() {
           </View>
         </ScrollView>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { backgroundColor: c.background, borderTopColor: c.border }]}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('workLogSaveCta')}
@@ -373,7 +380,7 @@ export default function WorkLogConfirmScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG_PRIMARY },
+  container: { flex: 1 },
   flexOne: { flex: 1 },
   content: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 96 },
   header: { paddingTop: 8, paddingBottom: 16, alignItems: 'center', gap: 4 },
@@ -389,7 +396,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 34,
-    backgroundColor: BG_PRIMARY,
     borderTopWidth: 1,
     borderTopColor: BORDER_DEFAULT,
   },
