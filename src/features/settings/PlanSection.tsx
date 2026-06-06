@@ -19,16 +19,8 @@ import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
-import {
-  ACCENT_GOLD,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_MUTED,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { ACCENT_GOLD, BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { useProStore } from '@/src/stores/proStore';
 
 import { SettingsSection } from './SettingsSection';
@@ -100,6 +92,7 @@ function formatRenewalDate(iso: string | null, lang: string): string | null {
 export function PlanSection() {
   const { t, lang } = useTranslation();
   const router = useRouter();
+  const c = useColors();
   const isPro = useProStore((s) => s.isPro);
   const planType = useProStore((s) => s.planType);
   const expirationDate = useProStore((s) => s.expirationDate);
@@ -134,6 +127,9 @@ export function PlanSection() {
     return t('settingsRenewsOn').replace('{date}', formatted);
   }, [isPro, planType, expirationDate, lang, t]);
 
+  // Sess65 PR2-a: dark mode で「白カード + dark token (薄ベージュ) text」 で全 row 判読不能だった
+  // 問題を解消するため、 row border / body text / feature 表 / status badge の static 色を
+  // inline c.* で上書き。 primaryCta / planUpgradeBadge は BRAND_GREEN 固定維持 (両 mode で識別性高い)。
   return (
     <SettingsSection title={t('settingsAccountSection')}>
       {/* 1. 現在のプラン row (Free/Pro/Lifetime badge + Free 時は Upgrade CTA badge) */}
@@ -141,14 +137,18 @@ export function PlanSection() {
         accessibilityRole="button"
         accessibilityLabel={t('proTitle')}
         testID="e2e_open_paywall"
-        style={styles.entry}
+        style={[styles.entry, { borderBottomColor: c.border }]}
         onPress={() => router.push('/pro' as Href)}
       >
         <View style={styles.rowInner}>
           <ThemedText type="defaultSemiBold">{t('settingsCurrentPlan')}</ThemedText>
           <View style={styles.rowRight}>
             <View
-              style={[styles.planStatusBadge, isPro && styles.planStatusBadgePro]}
+              style={[
+                styles.planStatusBadge,
+                { backgroundColor: c.surface, borderColor: c.border },
+                isPro && styles.planStatusBadgePro,
+              ]}
               testID="e2e_settings_plan_status_badge"
             >
               <ThemedText
@@ -171,36 +171,48 @@ export function PlanSection() {
       {/* 2-3. (Pro 期限あり/Lifetime のみ) 更新日 or 永久アクセス */}
       {renewalLabel && (
         <View style={styles.body}>
-          <ThemedText style={styles.bodyText}>{renewalLabel}</ThemedText>
+          <ThemedText style={[styles.bodyText, { color: c.textSecondary }]}>
+            {renewalLabel}
+          </ThemedText>
         </View>
       )}
 
       {/* 4. 説明文 (Free=アップグレード訴求 / Pro=感謝) */}
       <View style={styles.body}>
-        <ThemedText style={styles.bodyText}>
+        <ThemedText style={[styles.bodyText, { color: c.textSecondary }]}>
           {isPro ? t('settingsDescPro') : t('settingsDescFree')}
         </ThemedText>
       </View>
 
       {/* 5. (Free のみ) Pro メリット 3 列表 (機能 / Free / Pro) - Sess60 PR3 で bullet → table 化 */}
       {!isPro && (
-        <View style={styles.featureTable} testID="e2e_settings_plan_feature_table">
-          <View style={styles.featureHeader}>
-            <ThemedText style={styles.featureHeaderLabel}>{t('paywallFeatureColLabel')}</ThemedText>
-            <ThemedText style={styles.featureHeaderFree}>FREE</ThemedText>
-            <ThemedText style={styles.featureHeaderPro}>PRO</ThemedText>
+        <View
+          style={[styles.featureTable, { borderColor: c.border }]}
+          testID="e2e_settings_plan_feature_table"
+        >
+          <View style={[styles.featureHeader, { borderBottomColor: c.border }]}>
+            <ThemedText style={[styles.featureHeaderLabel, { color: c.textMuted }]}>
+              {t('paywallFeatureColLabel')}
+            </ThemedText>
+            <ThemedText style={[styles.featureHeaderFree, { color: c.textMuted }]}>FREE</ThemedText>
+            <ThemedText style={[styles.featureHeaderPro, { color: c.tint }]}>PRO</ThemedText>
           </View>
           {PRO_FEATURE_ROWS.map((row, idx) => (
             <View
               key={row.label}
               style={[
                 styles.featureRow,
+                { borderBottomColor: c.border },
                 idx === PRO_FEATURE_ROWS.length - 1 && styles.featureRowLast,
               ]}
             >
-              <ThemedText style={styles.featureLabel}>{t(row.label)}</ThemedText>
-              <ThemedText style={styles.featureFree}>{t(row.free)}</ThemedText>
-              <ThemedText style={styles.featurePro}>{t(row.pro)}</ThemedText>
+              <ThemedText style={[styles.featureLabel, { color: c.text }]}>
+                {t(row.label)}
+              </ThemedText>
+              <ThemedText style={[styles.featureFree, { color: c.textSecondary }]}>
+                {t(row.free)}
+              </ThemedText>
+              <ThemedText style={[styles.featurePro, { color: c.tint }]}>{t(row.pro)}</ThemedText>
             </View>
           ))}
         </View>
@@ -212,7 +224,7 @@ export function PlanSection() {
           accessibilityRole="button"
           accessibilityLabel={t('settingsViewProPlans')}
           testID="e2e_view_pro_plans"
-          style={styles.primaryCta}
+          style={[styles.primaryCta, { backgroundColor: c.tint }]}
           onPress={() => router.push('/pro' as Href)}
         >
           <ThemedText style={styles.primaryCtaText}>{t('settingsViewProPlans')}</ThemedText>
@@ -225,7 +237,7 @@ export function PlanSection() {
         accessibilityLabel={t('settingsRestoreTitle')}
         accessibilityHint={t('settingsRestoreDesc')}
         testID="e2e_settings_restore_purchase"
-        style={[styles.entry, restoring && styles.entryDisabled]}
+        style={[styles.entry, { borderBottomColor: c.border }, restoring && styles.entryDisabled]}
         disabled={restoring}
         onPress={handleRestorePress}
       >
@@ -238,11 +250,12 @@ export function PlanSection() {
   );
 }
 
+// Sess65 PR2-a: 色は全て inline c.* で動的指定するため StyleSheet からは削除。
+// レイアウト + font 関連のみ static で保持。 BORDER_DEFAULT / TEXT_* / BG_SURFACE 参照を除去。
 const styles = StyleSheet.create({
   entry: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
     gap: 6,
   },
   entryDisabled: { opacity: 0.6 },
@@ -255,7 +268,7 @@ const styles = StyleSheet.create({
   rowRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   chevron: { fontSize: 18, opacity: 0.5, lineHeight: 18 },
   body: { paddingHorizontal: 16, paddingTop: 8 },
-  bodyText: { fontSize: 13, color: TEXT_SECONDARY, lineHeight: 20 },
+  bodyText: { fontSize: 13, lineHeight: 20 },
   // Sess60 PR3: Settings PlanSection bullet → 3 列表に変更 (PaywallScreen FeatureRow と同設計)
   // 幅 720dp で 機能 60% / Free 20% / Pro 20% を flexbox で割り当て
   featureTable: {
@@ -263,7 +276,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 4,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 10,
     paddingHorizontal: 12,
   },
@@ -272,12 +284,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
   },
   featureHeaderLabel: {
     flex: 1,
     fontSize: 10,
-    color: TEXT_MUTED,
     letterSpacing: 1.0,
     textTransform: 'uppercase',
     fontWeight: '600',
@@ -286,7 +296,6 @@ const styles = StyleSheet.create({
     width: 60,
     textAlign: 'center',
     fontSize: 10,
-    color: TEXT_MUTED,
     letterSpacing: 1.0,
     fontWeight: '600',
   },
@@ -294,7 +303,6 @@ const styles = StyleSheet.create({
     width: 60,
     textAlign: 'center',
     fontSize: 10,
-    color: BRAND_GREEN,
     letterSpacing: 1.0,
     fontWeight: '700',
   },
@@ -303,7 +311,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: BORDER_DEFAULT,
   },
   featureRowLast: {
     borderBottomWidth: 0,
@@ -311,19 +318,16 @@ const styles = StyleSheet.create({
   featureLabel: {
     flex: 1,
     fontSize: 13,
-    color: TEXT_PRIMARY,
   },
   featureFree: {
     width: 60,
     textAlign: 'center',
     fontSize: 12,
-    color: TEXT_SECONDARY,
   },
   featurePro: {
     width: 60,
     textAlign: 'center',
     fontSize: 12,
-    color: BRAND_GREEN,
     fontWeight: '600',
   },
   primaryCta: {
@@ -332,7 +336,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     paddingVertical: 12,
     borderRadius: 10,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
   },
   primaryCtaText: {
@@ -346,8 +349,6 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
   },
   planStatusBadgePro: { borderColor: ACCENT_GOLD, backgroundColor: ACCENT_GOLD },
   planStatusBadgeText: { fontSize: 11, fontWeight: '600', letterSpacing: 0.4 },

@@ -20,7 +20,8 @@ import Svg, { Path } from 'react-native-svg';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
-import { BG_PRIMARY, BRAND_GREEN, ON_BRAND, TEXT_SECONDARY } from '@/src/core/theme/colors';
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { getNextOnboardingStep } from '@/src/features/onboarding/onboardingFlow';
 import {
   TUTORIAL_STEPS,
@@ -32,6 +33,9 @@ import { useOnboardingStore, type OnboardingStep } from '@/src/stores/onboarding
 export default function OnboardingTutScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  // Sess65 PR2-d: safe bg + title/body color を useColors 動的化。 OS dark でも washi beige
+  // 残存していた tut 5 step を dark 追従化。
+  const c = useColors();
   const params = useLocalSearchParams<{ step?: string }>();
 
   const stepParam = typeof params.step === 'string' ? params.step : '';
@@ -85,7 +89,11 @@ export default function OnboardingTutScreen() {
   const ctaHandler = handleNext;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']} testID="e2e_onboarding_tut">
+    <SafeAreaView
+      style={[styles.safe, { backgroundColor: c.background }]}
+      edges={['top', 'bottom']}
+      testID="e2e_onboarding_tut"
+    >
       <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
@@ -109,8 +117,12 @@ export default function OnboardingTutScreen() {
             </ThemedText>
           )}
         </View>
-        <ThemedText style={styles.title}>{t(meta.titleKey as TranslationKey)}</ThemedText>
-        <ThemedText style={styles.body}>{t(meta.bodyKey as TranslationKey)}</ThemedText>
+        <ThemedText style={[styles.title, { color: c.text }]}>
+          {t(meta.titleKey as TranslationKey)}
+        </ThemedText>
+        <ThemedText style={[styles.body, { color: c.textSecondary }]}>
+          {t(meta.bodyKey as TranslationKey)}
+        </ThemedText>
       </ScrollView>
 
       <View style={styles.actions}>
@@ -167,7 +179,7 @@ function BellIcon({ size = 64, color = BRAND_GREEN }: { size?: number; color?: s
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: BG_PRIMARY },
+  safe: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -193,7 +205,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.5,
   },
-  body: { textAlign: 'center', fontSize: 16, lineHeight: 26, color: TEXT_SECONDARY },
+  body: { textAlign: 'center', fontSize: 16, lineHeight: 26 },
   actions: { padding: 24, gap: 12 },
   cta: {
     paddingVertical: 16,

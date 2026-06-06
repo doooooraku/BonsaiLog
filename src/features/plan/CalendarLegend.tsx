@@ -17,13 +17,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 
 import { CalendarDot } from './CalendarDot';
 
@@ -34,9 +28,15 @@ type CalendarLegendProps = {
 
 export function CalendarLegend({ collapsed, onToggle }: CalendarLegendProps) {
   const { t } = useTranslation();
+  // Sess65 PR2-b: container/header/items の static 色を useColors 動的化。 dark mode で
+  // 記録 tab 凡例 card が白固定で内部 text dark token と「白の上に白」 化していた問題を解消。
+  const c = useColors();
 
   return (
-    <View style={styles.container} testID="e2e_plan_legend">
+    <View
+      style={[styles.container, { backgroundColor: c.surface, borderColor: c.border }]}
+      testID="e2e_plan_legend"
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={collapsed ? t('planLegendToggleShow') : t('planLegendToggleHide')}
@@ -45,8 +45,10 @@ export function CalendarLegend({ collapsed, onToggle }: CalendarLegendProps) {
         style={styles.header}
         testID="e2e_plan_legend_toggle"
       >
-        <ThemedText style={styles.headerTitle}>{t('planLegendTitle')}</ThemedText>
-        <ThemedText style={styles.headerToggle}>
+        <ThemedText style={[styles.headerTitle, { color: c.text }]}>
+          {t('planLegendTitle')}
+        </ThemedText>
+        <ThemedText style={[styles.headerToggle, { color: c.textSecondary }]}>
           {collapsed ? t('planLegendToggleShow') : t('planLegendToggleHide')}{' '}
           {collapsed ? '▼' : '▲'}
         </ThemedText>
@@ -56,15 +58,21 @@ export function CalendarLegend({ collapsed, onToggle }: CalendarLegendProps) {
           {/* ADR-0035 D5 (Sess23): planned (○) を上 / logged (●) を下 に flip (時間軸 予定 → 記録) */}
           <View style={styles.item} testID="e2e_plan_legend_item_planned">
             <CalendarDot status="planned" size={10} />
-            <ThemedText style={styles.itemLabel}>{t('planLegendDotPlannedLabel')}</ThemedText>
+            <ThemedText style={[styles.itemLabel, { color: c.textSecondary }]}>
+              {t('planLegendDotPlannedLabel')}
+            </ThemedText>
           </View>
           <View style={styles.item} testID="e2e_plan_legend_item_logged">
             <CalendarDot status="logged" size={10} />
-            <ThemedText style={styles.itemLabel}>{t('planLegendDotRecordedLabel')}</ThemedText>
+            <ThemedText style={[styles.itemLabel, { color: c.textSecondary }]}>
+              {t('planLegendDotRecordedLabel')}
+            </ThemedText>
           </View>
           <View style={styles.item} testID="e2e_plan_legend_item_multiple">
-            <ThemedText style={styles.plusSymbol}>+</ThemedText>
-            <ThemedText style={styles.itemLabel}>{t('planLegendDotMultipleLabel')}</ThemedText>
+            <ThemedText style={[styles.plusSymbol, { color: c.tint }]}>+</ThemedText>
+            <ThemedText style={[styles.itemLabel, { color: c.textSecondary }]}>
+              {t('planLegendDotMultipleLabel')}
+            </ThemedText>
           </View>
         </View>
       )}
@@ -76,9 +84,7 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
     marginBottom: 8,
-    backgroundColor: BG_SURFACE,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -93,12 +99,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 13,
     fontWeight: '600',
-    color: TEXT_PRIMARY,
     letterSpacing: 0.4,
   },
   headerToggle: {
     fontSize: 11,
-    color: TEXT_SECONDARY,
   },
   items: {
     paddingHorizontal: 14,
@@ -114,11 +118,9 @@ const styles = StyleSheet.create({
     width: 10,
     fontSize: 12,
     fontWeight: '700',
-    color: BRAND_GREEN,
     textAlign: 'center',
   },
   itemLabel: {
     fontSize: 12,
-    color: TEXT_SECONDARY,
   },
 });

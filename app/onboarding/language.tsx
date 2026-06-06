@@ -21,13 +21,17 @@ import { ThemedText } from '@/components/themed-text';
 import { setLang, useTranslation } from '@/src/core/i18n/i18n';
 import type { Lang } from '@/src/core/i18n/langCode';
 import { LANGUAGE_OPTIONS } from '@/src/core/i18n/languageOptions';
-import { BORDER_DEFAULT, BRAND_GREEN, BRAND_GREEN_BG, ON_BRAND } from '@/src/core/theme/colors';
+import { BRAND_GREEN, BRAND_GREEN_BG, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { getNextOnboardingStep } from '@/src/features/onboarding/onboardingFlow';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
 
 export default function OnboardingLanguageScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
+  // Sess65 PR2-d: SafeAreaView / row 等の bg を c.background / c.surface 動的化、 row border /
+  // text 系も useColors 経由化。 OS dark でも washi beige のまま残っていた問題を解消。
+  const c = useColors();
   const markDismissed = useOnboardingStore((s) => s.markDismissed);
   const dismissed = useOnboardingStore((s) => s.dismissed);
 
@@ -77,7 +81,11 @@ export default function OnboardingLanguageScreen() {
   }, [router, markDismissed, dismissed]);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']} testID="e2e_onboarding_language">
+    <SafeAreaView
+      style={[styles.safe, { backgroundColor: c.background }]}
+      edges={['top', 'bottom']}
+      testID="e2e_onboarding_language"
+    >
       <View style={styles.container}>
         <View style={styles.header}>
           <Pressable
@@ -91,10 +99,12 @@ export default function OnboardingLanguageScreen() {
             <ThemedText style={styles.backIcon}>‹</ThemedText>
           </Pressable>
         </View>
-        <ThemedText type="title" style={styles.title}>
+        <ThemedText type="title" style={[styles.title, { color: c.text }]}>
           {t('onboardingLanguageTitle')}
         </ThemedText>
-        <ThemedText style={styles.desc}>{t('onboardingLanguageDesc')}</ThemedText>
+        <ThemedText style={[styles.desc, { color: c.textSecondary }]}>
+          {t('onboardingLanguageDesc')}
+        </ThemedText>
 
         <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
           {sortedOptions.map((opt) => {
@@ -107,14 +117,16 @@ export default function OnboardingLanguageScreen() {
                 accessibilityState={{ selected }}
                 accessibilityLabel={opt.native}
                 testID={`e2e_onboarding_lang_${opt.code}`}
-                style={[styles.row, selected && styles.rowSelected]}
+                style={[styles.row, { borderColor: c.border }, selected && styles.rowSelected]}
                 onPress={() => handlePick(opt.code)}
               >
                 <View style={styles.rowMain}>
-                  <ThemedText type="defaultSemiBold" style={styles.native}>
+                  <ThemedText type="defaultSemiBold" style={[styles.native, { color: c.text }]}>
                     {opt.native}
                   </ThemedText>
-                  <ThemedText style={styles.latin}>{opt.latin}</ThemedText>
+                  <ThemedText style={[styles.latin, { color: c.textSecondary }]}>
+                    {opt.latin}
+                  </ThemedText>
                 </View>
                 {isOs && (
                   <View style={styles.osBadge}>
@@ -123,7 +135,13 @@ export default function OnboardingLanguageScreen() {
                     </ThemedText>
                   </View>
                 )}
-                <View style={[styles.radio, selected && styles.radioSelected]}>
+                <View
+                  style={[
+                    styles.radio,
+                    { borderColor: c.border },
+                    selected && styles.radioSelected,
+                  ]}
+                >
                   {selected && <View style={styles.radioDot} />}
                 </View>
               </Pressable>
@@ -168,7 +186,6 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
   },
   rowSelected: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN_BG, borderWidth: 2 },
   rowMain: { flex: 1, gap: 2 },
@@ -186,7 +203,6 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: BORDER_DEFAULT,
     alignItems: 'center',
     justifyContent: 'center',
   },

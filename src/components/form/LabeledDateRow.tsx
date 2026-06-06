@@ -17,16 +17,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { CloseIcon } from '@/src/components/icons';
 import { nowUtc } from '@/src/core/datetime/clock';
-import {
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  DANGER,
-  ON_BRAND,
-  TEXT_MUTED,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { BG_PRIMARY, DANGER, ON_BRAND, TEXT_MUTED } from '@/src/core/theme/colors';
 import { formOptional, formRequired } from '@/src/core/theme/typography';
+import { useColors } from '@/src/core/theme/useColors';
 
 // Sess17 PR-C1: hardcoded fontSize/fontWeight → typography.ts token 経由化 (ADR-0029 D1)。
 
@@ -61,6 +54,8 @@ export function LabeledDateRow({
 }: LabeledDateRowProps) {
   const [show, setShow] = useState(false);
   const hasValue = value.length > 0;
+  // Sess65 PR2-c: row bg / border + placeholder color を useColors 動的化。
+  const c = useColors();
 
   return (
     <View style={styles.field}>
@@ -79,11 +74,11 @@ export function LabeledDateRow({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={label}
-          style={styles.row}
+          style={[styles.row, { backgroundColor: c.surface, borderColor: c.border }]}
           onPress={() => setShow(true)}
           testID={testID}
         >
-          <ThemedText style={hasValue ? undefined : styles.placeholderText}>
+          <ThemedText style={hasValue ? { color: c.text } : { color: c.textMuted }}>
             {hasValue ? value : placeholder}
           </ThemedText>
         </Pressable>
@@ -136,13 +131,9 @@ const styles = StyleSheet.create({
     height: 44,
     paddingHorizontal: 14,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
-    backgroundColor: BG_SURFACE,
     justifyContent: 'center',
   },
-  // Sess16 PR-P: placeholder の色を TEXT_MUTED (薄グレー) → TEXT_SECONDARY (中濃) に変更、 視認性改善。
-  placeholderText: { color: TEXT_SECONDARY },
   // Sess15 PR-II: 案 a = 灰 circle 32x32 (hitSlop で 44pt 確保) + 白 X icon。
   clearButton: {
     width: 32,

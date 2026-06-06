@@ -5,12 +5,16 @@
  * 内部 entries の構造を統一。`titleType` で section title type を切替 (DEV は subtitle)。
  *
  * SettingsScreen 本体と DevSettingsSection の両方が使うため専用モジュールに切り出し。
+ *
+ * Sess65 PR2-a: sectionCard.backgroundColor = BG_SURFACE (白固定) を inline c.surface 動的化。
+ * dark mode で card 白 + 内部 row text (dark token = 薄ベージュ) で「白の上に白」 化していた問題
+ * を解消 (Pattern B 修正)。
  */
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BG_SURFACE } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 
 export function SettingsSection({
   title,
@@ -21,12 +25,13 @@ export function SettingsSection({
   titleType?: 'defaultSemiBold' | 'subtitle';
   children: React.ReactNode;
 }) {
+  const c = useColors();
   return (
     <View style={styles.section}>
       <ThemedText type={titleType} style={styles.sectionTitle}>
         {title}
       </ThemedText>
-      <View style={styles.sectionCard}>{children}</View>
+      <View style={[styles.sectionCard, { backgroundColor: c.surface }]}>{children}</View>
     </View>
   );
 }
@@ -34,7 +39,6 @@ export function SettingsSection({
 const styles = StyleSheet.create({
   section: { gap: 8 },
   sectionCard: {
-    backgroundColor: BG_SURFACE,
     borderRadius: 12,
     overflow: 'hidden',
   },

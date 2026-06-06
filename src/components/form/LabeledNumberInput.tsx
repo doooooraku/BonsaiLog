@@ -15,9 +15,8 @@ import React from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BG_PRIMARY, BG_SURFACE, BORDER_DEFAULT, DANGER } from '@/src/core/theme/colors';
+import { BG_PRIMARY, DANGER } from '@/src/core/theme/colors';
 import {
-  FORM_PLACEHOLDER_COLOR,
   formCounter,
   formCounterOver,
   formInput,
@@ -25,6 +24,7 @@ import {
   formRequired,
   formSuffix,
 } from '@/src/core/theme/typography';
+import { useColors } from '@/src/core/theme/useColors';
 
 // Sess14 PR-R: hardcoded color → 既存 theme constant 経由統合。
 // Sess17 PR-C1: hardcoded fontSize/fontWeight → typography.ts token 経由化 (ADR-0029 D1)。
@@ -72,6 +72,8 @@ export function LabeledNumberInput({
   const length = value.length;
   const overLimit = maxLength != null && length >= maxLength;
   const showCountText = showCounter && maxLength != null;
+  // Sess65 PR2-c: inputWrap bg/border + input text + placeholder を useColors 動的化。
+  const c = useColors();
 
   // Sess14 PR-Q: label="" 時は labelRow skip (caller 側で外部ラベル提供時の余白問題回避)。
   const hasLabel = label.length > 0;
@@ -96,13 +98,19 @@ export function LabeledNumberInput({
           )}
         </View>
       )}
-      <View style={[styles.inputWrap, !editable && styles.inputDisabled]}>
+      <View
+        style={[
+          styles.inputWrap,
+          { backgroundColor: c.surface, borderColor: c.border },
+          !editable && styles.inputDisabled,
+        ]}
+      >
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: c.text }]}
           value={value}
           onChangeText={handleChange}
           placeholder={placeholder}
-          placeholderTextColor={FORM_PLACEHOLDER_COLOR}
+          placeholderTextColor={c.textMuted}
           keyboardType="numeric"
           maxLength={maxLength}
           editable={editable}
@@ -133,9 +141,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 44,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 12,
-    backgroundColor: BG_SURFACE,
     paddingHorizontal: 14,
   },
   input: { flex: 1, ...formInput },
