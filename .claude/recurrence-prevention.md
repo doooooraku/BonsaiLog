@@ -90,7 +90,7 @@
 
 ---
 
-## 専門ルール R-13 〜 R-57（詳細は `recurrence-prevention/specialized.md`）
+## 専門ルール R-13 〜 R-58（詳細は `recurrence-prevention/specialized.md`）
 
 | ID | テーマ | 1 行サマリ |
 |----|--------|-----------|
@@ -127,6 +127,7 @@
 | **R-55** | 問題発見時の関連項目網羅調査必須 (Sess37 PR-1 由来) | user から問題 / 修正対象を 1 つ指摘されたら、 実装着手前に **同 pattern を持つ他箇所を grep / inventory で網羅調査** する。 Self-check 5 項目: ①同パターン全件 grep ②i18n key inventory ③form ↔ display ↔ SoT 整合性検証 ④副次的問題発見の能動的姿勢 ⑤PR 範囲拡張判断を user に提示。 Sess37 PR-1 C4 で「dilution_ratio + count 修正指示 → 関連調査で 4 件発見 (en 'count' 不自然 / position `→` 重複 / 19 言語 i18n 既完備 / wire mm cm OK)」 → user 再修正リクエスト未然防止の威力実証。 詳細: `recurrence-prevention/specialized.md` |
 | **R-56** | 議論で言及する技術参照は実在 grep 確認必須 (Sess38 retro 由来) | 議論 (`/discuss` / Plan mode) で具体的な i18n key / file path / function 名 / 型名を user に推薦する前に、 **grep で実在を確認** する。 推測ベース議論禁止。 Self-check 4 項目: ①言及 i18n key を `grep -rn` で 19 言語完備確認 ②言及 file path を `ls` / Read で実在確認 ③言及 function / 型名を `grep -rn` で実在確認 ④不在の場合「新規追加 N entries」 と明示。 Sess37 PR-1 議論で `workLogMemoTitle` を「既存流用」 と推薦 → Plan agent validation で 0/19 言語存在判明 → `workLogNote` に訂正の事象由来。 詳細: `recurrence-prevention/specialized.md` |
 | **R-57** | PR マージ時にブランチを都度削除 (Sess51 由来) | PR を main にマージしたら、 ローカル・リモート両方の作業ブランチを**その場で削除**し溜めない。 マージは `gh pr merge <PR番号> --squash --delete-branch`(ローカル + リモート枝を同時削除)+ 直後に `git fetch --prune`(死んだ追跡参照掃除)。 GitHub repo 設定 `delete_branch_on_merge=true`(Sess51 で ON)で web UI マージでも remote 枝は自動削除。 Sess51 で `git fetch --prune` 時にローカル 126 本 + リモート 75 本の枝累積が発覚し一括掃除した事象由来 (root cause = 自動削除設定 OFF + 手順非明記)。 詳細: `recurrence-prevention/specialized.md` |
+| **R-58** | dark theme cascade 構造禁止 (Sess66-68 / ADR-0052) | 画面追加 / 色変更 / theme 関連 PR では (1) `StyleSheet.create()` 内に theme-dependent color token (`BG_PRIMARY` / `BG_SURFACE` / `TEXT_*` / `BORDER_*`) を**書かない** (`local/no-color-token-in-stylesheet` rule で `'error'` 強制、 CI で merge block)、 (2) `useColors()` hook + inline `c.*` で動的色注入、 (3) `pnpm a11y:contrast` で全 12 pair WCAG AA pass 必須、 (4) dark mode 実機 SS で視認性確認。 Sess65 user 報告「設定画面が dark で真っ白」 + Sess66 残 245 違反 + Sess68 PR #A/B/C で完走 → PR #D で恒久化 (warn → error) 由来。 構造的に新規違反は CI で即時 block されるため、 開発者は `c.*` inline 規約を ESLint 即時 feedback で学習。 brand-static tokens (`BRAND_GREEN` / `ON_BRAND` / `DANGER` / `BADGE_*` / `DISABLED_BG`) は両 theme 同色維持で許容。 詳細: `docs/adr/ADR-0052-dark-theme-cascade.md` |
 
 ---
 
