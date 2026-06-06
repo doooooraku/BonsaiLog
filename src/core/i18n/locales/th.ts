@@ -614,7 +614,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'ไทม์ไลน์',
   timelineConsecutive: '{count} consecutive days',
-  detailTimelinePastCollapsed: 'แสดงบันทึกเก่า {count} รายการ',
+  detailTimelinePastCollapsed: 'บันทึกเก่าซ่อนอยู่',
 
   // i18n fallback for PR #466-#471 new keys (R-1 pattern)
   settingsArchivedCountValue: '{count} items',
@@ -629,7 +629,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'ย้อนกลับ',
   tabRecord: 'บันทึก',
-  planFabLabel: 'บันทึกงานวันนี้',
+  planFabLabel: 'กำหนดงาน',
   bulkSelectModalTitle: 'เลือกบอนไซ',
   bulkSelectModalNotice: 'เลือกบอนไซเพื่อบันทึกหรือกำหนดการ (เลือก {count})',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',

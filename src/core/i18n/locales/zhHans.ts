@@ -603,7 +603,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: '时间线',
   timelineConsecutive: '{count} consecutive days',
-  detailTimelinePastCollapsed: '显示 {count} 条历史记录',
+  detailTimelinePastCollapsed: '历史记录已折叠',
 
   // i18n fallback for PR #466-#471 new keys (R-1 pattern)
   settingsArchivedCountValue: '{count} items',
@@ -618,7 +618,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: '返回',
   tabRecord: '记录',
-  planFabLabel: '记录今天的作业',
+  planFabLabel: '安排任务',
   bulkSelectModalTitle: '选择盆栽',
   bulkSelectModalNotice: '选择要记录或预定的盆栽 (已选 {count})',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',

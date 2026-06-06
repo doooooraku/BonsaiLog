@@ -614,7 +614,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: '타임라인',
   timelineConsecutive: '{count} consecutive days',
-  detailTimelinePastCollapsed: '이전 기록 {count} 개 보기',
+  detailTimelinePastCollapsed: '이전 기록 숨김',
 
   // i18n fallback for PR #466-#471 new keys (R-1 pattern)
   settingsArchivedCountValue: '{count} items',
@@ -629,7 +629,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: '뒤로',
   tabRecord: '기록',
-  planFabLabel: '오늘 작업 기록',
+  planFabLabel: '작업 예약',
   bulkSelectModalTitle: '분재 선택',
   bulkSelectModalNotice: '기록하거나 예정할 분재를 선택하세요 ({count}개 선택됨)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',

@@ -618,7 +618,7 @@ const es: Partial<Record<TranslationKey, string>> = {
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'Cronología',
   timelineConsecutive: '{count} consecutive days',
-  detailTimelinePastCollapsed: 'Mostrar {count} registros anteriores',
+  detailTimelinePastCollapsed: 'Registros pasados ocultos',
 
   // i18n fallback for PR #466-#471 new keys (R-1 pattern)
   settingsArchivedCountValue: '{count} items',
@@ -633,7 +633,7 @@ const es: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Atrás',
   tabRecord: 'Registrar',
-  planFabLabel: 'Registrar el trabajo de hoy',
+  planFabLabel: 'Planificar tareas',
   bulkSelectModalTitle: 'Seleccionar bonsái',
   bulkSelectModalNotice: 'Elige los bonsáis para registrar o programar ({count} seleccionados)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',

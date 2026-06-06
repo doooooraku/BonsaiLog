@@ -617,7 +617,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'Tidslinje',
   timelineConsecutive: '{count} consecutive days',
-  detailTimelinePastCollapsed: 'Visa {count} tidigare poster',
+  detailTimelinePastCollapsed: 'Tidigare poster dolda',
 
   // i18n fallback for PR #466-#471 new keys (R-1 pattern)
   settingsArchivedCountValue: '{count} items',
@@ -632,7 +632,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Tillbaka',
   tabRecord: 'Logga',
-  planFabLabel: 'Logga dagens arbete',
+  planFabLabel: 'Schemalägg uppgifter',
   bulkSelectModalTitle: 'Välj bonsai',
   bulkSelectModalNotice: 'Välj bonsai att registrera eller schemalägga ({count} valda)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',

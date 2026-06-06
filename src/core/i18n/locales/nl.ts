@@ -616,7 +616,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'Tijdlijn',
   timelineConsecutive: '{count} consecutive days',
-  detailTimelinePastCollapsed: '{count} eerdere records tonen',
+  detailTimelinePastCollapsed: 'Eerdere records verborgen',
 
   // i18n fallback for PR #466-#471 new keys (R-1 pattern)
   settingsArchivedCountValue: '{count} items',
@@ -631,7 +631,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Terug',
   tabRecord: 'Loggen',
-  planFabLabel: 'Werk van vandaag loggen',
+  planFabLabel: 'Taken plannen',
   bulkSelectModalTitle: 'Bonsai selecteren',
   bulkSelectModalNotice: 'Kies bonsai om te registreren of plannen ({count} geselecteerd)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',

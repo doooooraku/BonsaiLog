@@ -615,7 +615,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'Dòng thời gian',
   timelineConsecutive: '{count} consecutive days',
-  detailTimelinePastCollapsed: 'Xem {count} bản ghi cũ',
+  detailTimelinePastCollapsed: 'Bản ghi cũ đã ẩn',
 
   // i18n fallback for PR #466-#471 new keys (R-1 pattern)
   settingsArchivedCountValue: '{count} items',
@@ -630,7 +630,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Quay lại',
   tabRecord: 'Ghi',
-  planFabLabel: 'Ghi công việc hôm nay',
+  planFabLabel: 'Lập lịch công việc',
   bulkSelectModalTitle: 'Chọn bonsai',
   bulkSelectModalNotice: 'Chọn bonsai để ghi lại hoặc lên kế hoạch (đã chọn {count})',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
