@@ -18,11 +18,14 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } fro
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BRAND_GREEN, ON_BRAND, TEXT_SECONDARY } from '@/src/core/theme/colors';
+// Sess66 PR6a: TEXT_SECONDARY を inline c.textSecondary に移行 (dark cascade)。
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { BackupError, exportBackup, importBackup } from '@/src/features/backup/backupService';
 
 export default function BackupScreen() {
   const { t } = useTranslation();
+  const c = useColors();
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const busy = exporting || importing;
@@ -118,7 +121,9 @@ export default function BackupScreen() {
           <ThemedText style={styles.body}>{t('backupExportDesc')}</ThemedText>
 
           {/* 暗号化なし注記 (constraints §5-1: クラウド保存は自己責任を明示)。枠なし 1 行 */}
-          <ThemedText style={styles.note}>{t('backupEncryptionWarning')}</ThemedText>
+          <ThemedText style={[styles.note, { color: c.textSecondary }]}>
+            {t('backupEncryptionWarning')}
+          </ThemedText>
 
           <Pressable
             accessibilityRole="button"
@@ -173,7 +178,8 @@ const styles = StyleSheet.create({
   section: { gap: 12 },
   title: { marginBottom: 4 },
   body: { lineHeight: 22 },
-  note: { fontSize: 12, lineHeight: 17, color: TEXT_SECONDARY },
+  // Sess66 PR6a: color は inline c.textSecondary (dark cascade)。
+  note: { fontSize: 12, lineHeight: 17 },
   divider: { height: 1, backgroundColor: 'rgba(0, 0, 0, 0.08)', marginVertical: 4 },
   primaryButton: {
     marginTop: 4,

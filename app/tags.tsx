@@ -31,15 +31,8 @@ import {
   nowUtc,
 } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_MUTED,
-  TEXT_PRIMARY,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess66 PR6a: theme-dependent token を inline c.* に。 TEXT_PRIMARY/TEXT_MUTED は JSX inline で利用継続。
+import { BRAND_GREEN, ON_BRAND, TEXT_MUTED, TEXT_PRIMARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getTagsWithStats, type TagWithStats } from '@/src/db/tagRepository';
@@ -153,7 +146,9 @@ export default function TagsManagerScreen() {
         <ThemedText type="title" style={styles.title}>
           {t('tagsManagerTitle')}
         </ThemedText>
-        <ThemedText style={styles.desc}>{t('tagsManagerDesc')}</ThemedText>
+        <ThemedText style={[styles.desc, { color: c.textSecondary }]}>
+          {t('tagsManagerDesc')}
+        </ThemedText>
 
         <Pressable
           accessibilityRole="button"
@@ -165,14 +160,18 @@ export default function TagsManagerScreen() {
           <ThemedText style={styles.addBtnText}>+ {t('tagEditTitleAdd')}</ThemedText>
         </Pressable>
 
-        {tags.length === 0 && <ThemedText style={styles.empty}>{t('tagsEmpty')}</ThemedText>}
+        {tags.length === 0 && (
+          <ThemedText style={[styles.empty, { color: c.textSecondary }]}>
+            {t('tagsEmpty')}
+          </ThemedText>
+        )}
 
         {tags.map((tg) => {
           const isExpanded = expandedTagId === tg.id;
           const togglable = tg.usageCount > 0;
           return (
             <React.Fragment key={tg.id}>
-              <View style={styles.row}>
+              <View style={[styles.row, { backgroundColor: c.surface, borderColor: c.border }]}>
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={isExpanded ? t('tagsToggleCollapse') : t('tagsToggleExpand')}
@@ -201,7 +200,11 @@ export default function TagsManagerScreen() {
                 >
                   <ThemedText type="defaultSemiBold">{tg.name}</ThemedText>
                   <ThemedText
-                    style={[styles.rowStats, tg.usageCount === 0 && styles.rowStatsUnused]}
+                    style={[
+                      styles.rowStats,
+                      { color: c.textSecondary },
+                      tg.usageCount === 0 && [styles.rowStatsUnused, { color: c.textMuted }],
+                    ]}
                   >
                     {buildStatsLabel(tg)}
                   </ThemedText>
@@ -211,7 +214,9 @@ export default function TagsManagerScreen() {
               {isExpanded && (
                 <View style={styles.expandedArea} testID={`e2e_tags_expanded_${tg.id}`}>
                   {loadingBonsai && (
-                    <ThemedText style={styles.expandedLoading}>{t('loading')}</ThemedText>
+                    <ThemedText style={[styles.expandedLoading, { color: c.textSecondary }]}>
+                      {t('loading')}
+                    </ThemedText>
                   )}
                   {!loadingBonsai &&
                     visibleBonsai.map((b) => (
@@ -252,7 +257,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { padding: 16, gap: 12 },
   title: { marginBottom: 4 },
-  desc: { fontSize: 13, color: TEXT_SECONDARY, marginBottom: 12, lineHeight: 18 },
+  // Sess66 PR6a: color は inline c.* (dark cascade)。
+  desc: { fontSize: 13, marginBottom: 12, lineHeight: 18 },
   addBtn: {
     paddingVertical: 14,
     minHeight: 56,
@@ -263,7 +269,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   addBtnText: { color: ON_BRAND, fontSize: 17, fontWeight: '600', letterSpacing: 0.5 },
-  empty: { textAlign: 'center', color: TEXT_SECONDARY, paddingVertical: 24 },
+  empty: { textAlign: 'center', paddingVertical: 24 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -272,8 +278,6 @@ const styles = StyleSheet.create({
     minHeight: 56,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
   },
   // Sess9 PR-10: 左端 ▶/▼ toggle area (44 px ヒット領域、 シニア UX 確保)
   toggleArea: {
@@ -292,11 +296,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     minHeight: 48,
   },
-  rowStats: { fontSize: 12, color: TEXT_SECONDARY },
-  rowStatsUnused: { color: TEXT_MUTED, fontStyle: 'italic' },
+  rowStats: { fontSize: 12 },
+  rowStatsUnused: { fontStyle: 'italic' },
   // Sess9 PR-10: 展開エリア (BonsaiCard inline 表示)
   expandedArea: { gap: 8, paddingLeft: 16, paddingTop: 4 },
-  expandedLoading: { textAlign: 'center', color: TEXT_SECONDARY, paddingVertical: 16 },
+  expandedLoading: { textAlign: 'center', paddingVertical: 16 },
   moreLink: { paddingVertical: 12, alignItems: 'center' },
   moreLinkText: { color: BRAND_GREEN, fontSize: 14, fontWeight: '500' },
 });

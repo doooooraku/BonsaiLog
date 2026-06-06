@@ -22,13 +22,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-} from '@/src/core/theme/colors';
+// Sess66 PR6a: BG_*/BORDER_* を inline c.* に。 BRAND_GREEN / ON_BRAND は theme-invariant ゆえ static 維持。
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
@@ -112,7 +107,10 @@ export default function ExportPdfScreen() {
   );
 
   return (
-    <ThemedView style={styles.container} testID="e2e_export_pdf_screen">
+    <ThemedView
+      style={[styles.container, { backgroundColor: c.background }]}
+      testID="e2e_export_pdf_screen"
+    >
       <FormScreenHeader title={t('exportHubBonsaiPdfTitle')} testID="e2e_export_pdf_header" />
       <FlatList
         data={items}
@@ -156,7 +154,7 @@ export default function ExportPdfScreen() {
                   </ThemedText>
                 ) : null}
               </View>
-              <View style={[styles.radio, selected && styles.radioOn]}>
+              <View style={[styles.radio, { borderColor: c.border }, selected && styles.radioOn]}>
                 {selected ? <ThemedText style={styles.radioCheck}>✓</ThemedText> : null}
               </View>
             </Pressable>
@@ -164,7 +162,16 @@ export default function ExportPdfScreen() {
         }}
       />
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
+      <View
+        style={[
+          styles.footer,
+          {
+            backgroundColor: c.background,
+            borderTopColor: c.border,
+            paddingBottom: insets.bottom + 12,
+          },
+        ]}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('exportOptExport')}
@@ -194,7 +201,8 @@ export default function ExportPdfScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG_PRIMARY },
+  // Sess66 PR6a: bg/border は inline c.* (dark cascade)。
+  container: { flex: 1 },
   listContent: { padding: 16, gap: 8, paddingBottom: 32 },
   desc: { fontSize: 13, opacity: 0.7, marginBottom: 8, lineHeight: 18 },
   empty: { textAlign: 'center', opacity: 0.7, paddingVertical: 24 },
@@ -205,8 +213,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    backgroundColor: BG_SURFACE,
-    borderColor: BORDER_DEFAULT,
   },
   thumbBox: { width: 56, height: 56, borderRadius: 10, overflow: 'hidden' },
   thumb: { width: 56, height: 56 },
@@ -218,7 +224,6 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -228,8 +233,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: BORDER_DEFAULT,
-    backgroundColor: BG_PRIMARY,
   },
   cta: {
     minHeight: 56,
