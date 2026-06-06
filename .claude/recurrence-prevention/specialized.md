@@ -692,9 +692,87 @@ Component (例: FAB / BottomSheet / Header / KAV / Modal) の SoT 化を ADR で
 
 ---
 
+## R-63. 子画面 push 遷移を許す form 画面は scroll 復元 hook 必須 (Sess72 ADR-0040 D5 Amendment 由来)
+
+### ルール
+
+form 画面 (`<FormScreenHeader />` + `<ScrollView>`) で `router.push` する flow がある画面は、 戻り時の scroll 位置保持を `src/core/hooks/useScrollPreservation.ts` (Sess72 PR-1 #969) で**明示**する。
+
+### 真因
+
+React Native の ScrollView は子要素の layout が変動した瞬間に **contentOffset を 0 にリセット**する挙動を持つ (RN core 実装、 native-stack の screen preserve とは別レイヤー)。 form 画面で子画面に `router.push` して戻った時:
+
+1. `useFocusEffect` 内で `consumeXxxResult()` → setState (例: `setSelectedTagIds` + `setRecentTags`)
+2. 2 連 setState で子 component (例: `BonsaiTagsSection`) の JSX 分岐が変化
+3. layout pattern が「empty 縦並び」 → 「wrap row 横並び」 に変化
+4. 親 ScrollView の contentSize が変動
+5. ★ contentOffset が 0 にリセットされる
+
+つまり「子画面に行って戻ると、 直前まで見ていた位置 (例: タグ欄、 高さ 420px) が一瞬で「先頭 (高さ 0)」 に巻き戻される」。
+
+### 解決 (hook 化)
+
+```tsx
+import { useScrollPreservation } from '@/src/core/hooks/useScrollPreservation';
+
+const scrollRef = useRef<ScrollView>(null);
+const { onScroll, scrollEventThrottle } = useScrollPreservation(scrollRef);
+
+<ScrollView
+  ref={scrollRef}
+  onScroll={onScroll}
+  scrollEventThrottle={scrollEventThrottle}
+>
+  ...
+</ScrollView>
+```
+
+hook 内では:
+
+- `onScroll` callback で `contentOffset.y` を `useRef` に保存
+- `useFocusEffect` + `requestAnimationFrame` で setState commit 後の描画タイミングに `scrollTo` 復元 (race 防止)
+- cleanup で `cancelAnimationFrame` (focus 後すぐ離脱した race 防止)
+- 初回フォーカス時 `lastOffset=0` で `scrollTo(0)` は no-op として安全
+
+### 検出
+
+`scripts/check-form-screen-scroll.mjs` (R-51 既存) を拡張し、 以下を warn:
+
+- `FormScreenHeader` を import し `<ScrollView>` を使う画面で `useScrollPreservation` を import していない → warn 起動 (warn → 違反 0 確認後 error 昇格、 Sess68 と同じ階段)
+
+除外: 子画面 push が無い form 画面 (`router.replace` のみ等) は `// scroll-preservation: no-child-push (<理由>)` 注釈で明示。
+
+### 適用先 (Sess72 PR-2/3/4 で完遂)
+
+- `src/features/bonsai/BonsaiCreateScreen.tsx` (新規登録 modal、 tag-edit へ push) — PR-2 #970
+- `app/(tabs)/bonsai/[id]/index.tsx` (詳細画面、 タグ追加 / picker / work-picker へ push) — PR-3 #971
+- `app/export/index.tsx` (Export Hub、 個別盆栽 PDF へ push) — PR-4 #972
+
+### 除外 (PR-0 調査で子画面 push なしと判明)
+
+- `src/features/event/WorkLogConfirmScreen.tsx` (`router.replace` のみ)
+- `src/features/event/BulkLogConfirmScreen.tsx` (`router.replace` のみ)
+- `app/export/pdf.tsx` (内部 share sheet + FlatList ベース、 ScrollView ではない)
+
+### 由来
+
+Sess72 テスター苦情「タグ追加画面から基本情報画面に戻ると必ず画面の先頭に戻ってしまうのが気になりました」。 ADR-0040 (Sess33 form 構造統一) の Future Work にすら明記されていなかった盲点で、 「子画面 push → 戻り flow」 が Sess33 検証シナリオに含まれていなかった root cause。
+
+なぜなぜ分析 (5 回深掘り) で「**画面間の遷移後の state/UI 復元を見る規約・自動チェックが未整備**」 が真因の真因と判明、 本 R-63 で構造化。 R-25 (機械判定のみで「達成」 判定禁止、 Claude Read 主導) と整合。
+
+### 関連
+
+- **ADR-0040 D5 Amendment** (Sess72 PR-5、 2026-06-07): form 画面 scroll 構造統一に scroll 位置保持を追加
+- **PR-1 #969**: `useScrollPreservation` hook 新設 + Jest 6/6
+- **R-46 v4** (KAV + auto-scroll): 既存 hook と併存、 別 trigger で衝突なし
+- **R-51** (FormScreenHeader + full-screen scroll、 CI 自動化): 同 lint script に統合
+- **R-25** (Claude Read 主導): scroll 位置のような non-React state は人手の実機検証 + hook 化で対応
+
+---
+
 ## 関連
 
-- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-62 索引 + 運用ルール)
+- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-63 索引 + 運用ルール)
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
