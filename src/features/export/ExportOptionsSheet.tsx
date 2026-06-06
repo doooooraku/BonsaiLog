@@ -19,15 +19,9 @@ import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { LabeledSegmented } from '@/src/components/form/LabeledSegmented';
 import { type TranslationKey, useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_PRIMARY,
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  ON_BRAND,
-  TEXT_MUTED,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+// Sess68 PR #C: BG_PRIMARY / BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
 import { getMostUsedTags, type TagRecord } from '@/src/db/tagRepository';
@@ -72,6 +66,7 @@ type Props = {
 
 export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props) {
   const { t, lang } = useTranslation();
+  const c = useColors();
   const [period, setPeriod] = useState<ExportPeriod>('all');
   const [scope, setScope] = useState<ExportScope>('all');
   const [includeArchived, setIncludeArchived] = useState(false);
@@ -184,11 +179,11 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} testID="e2e_export_options_backdrop">
         <Pressable
-          style={styles.sheet}
+          style={[styles.sheet, { backgroundColor: c.background }]}
           onPress={(e) => e.stopPropagation()}
           testID="e2e_export_options_sheet"
         >
-          <View style={styles.grabber} />
+          <View style={[styles.grabber, { backgroundColor: c.border }]} />
           <ThemedText type="defaultSemiBold" style={styles.sheetTitle}>
             {t(TITLE_KEY[type])}
           </ThemedText>
@@ -240,7 +235,7 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
                 />
                 {scope === 'selected' && (
                   <View style={styles.pickList}>
-                    <ThemedText style={styles.pickHint}>
+                    <ThemedText style={[styles.pickHint, { color: c.textMuted }]}>
                       {t('exportOptSelectedCount').replace('{count}', String(selectedIds.length))}
                     </ThemedText>
                     {bonsaiCards.map((card) => (
@@ -260,18 +255,30 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
                 {scope === 'tag' && (
                   <View style={styles.tagWrap}>
                     {tags.length === 0 ? (
-                      <ThemedText style={styles.pickHint}>{t('exportOptNoTags')}</ThemedText>
+                      <ThemedText style={[styles.pickHint, { color: c.textMuted }]}>
+                        {t('exportOptNoTags')}
+                      </ThemedText>
                     ) : (
                       tags.map((tg) => {
                         const on = tagId === tg.id;
                         return (
                           <Pressable
                             key={tg.id}
-                            style={[styles.tagChip, on && styles.tagChipOn]}
+                            style={[
+                              styles.tagChip,
+                              { borderColor: c.border, backgroundColor: c.surface },
+                              on && styles.tagChipOn,
+                            ]}
                             onPress={() => setTagId(on ? undefined : tg.id)}
                             testID={`e2e_export_opt_tag_${tg.id}`}
                           >
-                            <ThemedText style={[styles.tagChipText, on && styles.tagChipTextOn]}>
+                            <ThemedText
+                              style={[
+                                styles.tagChipText,
+                                { color: c.textSecondary },
+                                on && styles.tagChipTextOn,
+                              ]}
+                            >
                               {tg.name}
                             </ThemedText>
                           </Pressable>
@@ -286,14 +293,20 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
             {showArchived && (
               <View style={styles.field}>
                 <Pressable
-                  style={styles.toggle}
+                  style={[styles.toggle, { borderColor: c.border, backgroundColor: c.surface }]}
                   onPress={() => setIncludeArchived((v) => !v)}
                   testID="e2e_export_opt_archived"
                 >
                   <ThemedText style={styles.toggleLabel}>
                     {t('exportOptIncludeArchived')}
                   </ThemedText>
-                  <View style={[styles.switch, includeArchived && styles.switchOn]}>
+                  <View
+                    style={[
+                      styles.switch,
+                      { backgroundColor: c.border },
+                      includeArchived && styles.switchOn,
+                    ]}
+                  >
                     <View style={[styles.knob, includeArchived && styles.knobOn]} />
                   </View>
                 </Pressable>
@@ -301,14 +314,20 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
             )}
 
             <View style={styles.field}>
-              <ThemedText style={styles.fieldLabel}>{t('exportOptFilenameLabel')}</ThemedText>
-              <View style={styles.filenameBox}>
-                <ThemedText style={styles.filenameText}>{fileName}</ThemedText>
+              <ThemedText style={[styles.fieldLabel, { color: c.textSecondary }]}>
+                {t('exportOptFilenameLabel')}
+              </ThemedText>
+              <View
+                style={[styles.filenameBox, { borderColor: c.border, backgroundColor: c.surface }]}
+              >
+                <ThemedText style={[styles.filenameText, { color: c.textSecondary }]}>
+                  {fileName}
+                </ThemedText>
               </View>
             </View>
           </ScrollView>
 
-          <View style={styles.footer}>
+          <View style={[styles.footer, { borderTopColor: c.border }]}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('exportOptExport')}
@@ -329,7 +348,6 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(26,26,26,0.4)', justifyContent: 'flex-end' },
   sheet: {
     maxHeight: '82%',
-    backgroundColor: BG_PRIMARY,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingBottom: 34,
@@ -338,7 +356,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 5,
     borderRadius: 3,
-    backgroundColor: BORDER_DEFAULT,
     alignSelf: 'center',
     marginTop: 10,
     marginBottom: 6,
@@ -346,10 +363,10 @@ const styles = StyleSheet.create({
   sheetTitle: { textAlign: 'center', fontSize: 18, paddingHorizontal: 24, paddingBottom: 8 },
   scroll: { paddingHorizontal: 16, paddingBottom: 16 },
   field: { marginBottom: 18 },
-  fieldLabel: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY, marginBottom: 8 },
+  fieldLabel: { fontSize: 13, fontWeight: '500', marginBottom: 8 },
   dateRange: { marginTop: 10, gap: 8 },
   pickList: { marginTop: 8, gap: 8 },
-  pickHint: { fontSize: 12, color: TEXT_MUTED, marginBottom: 4 },
+  pickHint: { fontSize: 12, marginBottom: 4 },
   tagWrap: { marginTop: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tagChip: {
     minHeight: 36,
@@ -357,11 +374,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
   },
   tagChipOn: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN },
-  tagChipText: { fontSize: 13, color: TEXT_SECONDARY },
+  tagChipText: { fontSize: 13 },
   tagChipTextOn: { color: ON_BRAND },
   toggle: {
     flexDirection: 'row',
@@ -371,11 +386,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
   },
   toggleLabel: { fontSize: 14 },
-  switch: { width: 36, height: 22, borderRadius: 11, backgroundColor: BORDER_DEFAULT, padding: 2 },
+  switch: { width: 36, height: 22, borderRadius: 11, padding: 2 },
   switchOn: { backgroundColor: BRAND_GREEN },
   knob: { width: 18, height: 18, borderRadius: 9, backgroundColor: ON_BRAND },
   knobOn: { alignSelf: 'flex-end' },
@@ -385,15 +398,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: BG_SURFACE,
   },
-  filenameText: { fontSize: 13, color: TEXT_SECONDARY },
+  filenameText: { fontSize: 13 },
   footer: {
     paddingHorizontal: 16,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: BORDER_DEFAULT,
   },
   cta: {
     minHeight: 56,
