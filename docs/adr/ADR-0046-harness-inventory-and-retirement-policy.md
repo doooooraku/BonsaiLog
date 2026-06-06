@@ -180,3 +180,60 @@
 ```
 足す前ゲート: (a)構造で防げない=型/lintでは表現不可 (b)重複なし(grep "xxx"で確認) (c)R-12を同時retire可
 ```
+
+---
+
+## Notes Amended (2026-06-07、 Sess71): 「人間判定 vs 機械判定」 4 つ目自問追加
+
+### 改訂背景
+
+Sess70 で「JS-only 変更なのに build を選択した」 事象 (1 セッション 10-15 分時間ロス) が発生。 user 指摘「そもそも人間が判定する必要性ってどこにある? Claude Code が file の変更種類で分かるんだから」 を契機に、 ADR-0046 D-3「足す前ゲート (3 自問)」 に **「人間判定 vs 機械判定」 の 4 つ目自問** が欠落していたことが判明。
+
+個別ルール (R-58/59/60 等) は「特定の場面で何をすべきか」 を決めるが、 「人間判定の存在自体を疑う」 視点が ADR レベルにも欠けていた。 例:
+
+- build vs reload 判定 (Sess70 で発覚) → 人間判断に依存
+- dependency 更新の安全度判断 → 人間判断に依存 (npm audit 機械化可能)
+- 新画面の dark SS 必要性 → R-60 で機械化済
+
+### 改訂内容: D-3 を 3 自問 → 4 自問 に拡張
+
+新規 R / ADR / hook / check を **足す前に**、 以下 4 自問を行い、 答えを Issue/PR に 1 行記載する:
+
+1. **構造で防げないか?** (型 / lint / CI / hook / DB CHECK で「違反が書けない形」 にできないか)
+2. **既存と重複しないか?** (grep 確認、 R-9 整合)
+3. **代わりに目的を終えた既存ルールを 1 つ廃止できないか?** (足す前ゲートの本旨、 アーカイブ方式)
+4. **(新) 人間判定が必要か? 機械判定に置き換えられないか?**
+   - 「念のため XX しよう」 「経験で判断」 のような mental model を仕組み化対象として認識
+   - 機械判定 (file pattern / hash / git diff / npm audit / lint 等) で代替可能なら必ず機械化
+   - 安全網: 機械判定の bug を恐れて手動 fallback を残す場合は明示的に reason を記載
+
+### 適用例 (Sess71 PR-1〜PR-5)
+
+| 場面                       | 旧 (人間判定)                                   | 新 (機械判定)                                                                |
+| -------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------- |
+| build vs reload            | 「念のため build しよう」 と Claude/user が悩む | PostToolUse hook + git diff 補完で自動判定 (scripts/check-native-impact.mjs) |
+| 新画面の dark SS 必要性    | 「dark mode 影響あるか」 と人間が悩む           | R-60 で機械判定 (新画面なら強制)                                             |
+| ESLint rule 違反の許可判断 | 「この hex literal は例外で OK?」 と人間が悩む  | reason marker 必須 + 5 件以下 monitor (R-59)                                 |
+| dependency 更新の安全度    | 「メジャー更新だけど大丈夫か」 と人間が悩む     | npm audit + 自動 PR check (将来検討)                                         |
+
+### R-61 起票 (本 Amendment と同時、 Sess71 PR-5)
+
+「人間判定 → 機械判定 + 安全網」 を BonsaiLog 共通設計原理として明文化:
+
+- R-58/59/60 が個別ルール (「特定場面で何をする」)
+- R-61 がメタルール (「ルール作る時に何を意識する」)
+- 詳細: `.claude/recurrence-prevention/specialized.md` R-61
+
+### Implementation (Sess71 PR-1〜PR-5)
+
+1. PR-1 (#960): `scripts/check-native-impact.mjs` 共通核 + 17 unit test
+2. PR-2 (#961): `.claude/hooks/check-native-impact-hook.mjs` PostToolUse hook 連携
+3. PR-3 (#962): `scripts/dev/reload-app.sh` + `dev-start.sh` 起動時 flag check + 自動 build
+4. PR-4 (本 PR): `docs/how-to/development/dev-workflow.md` + ADR-0046 Amendment + MEMORY.md
+5. PR-5: R-61 起票 (`.claude/recurrence-prevention.md` 索引 + `specialized.md` 詳細)
+
+### 関連
+
+- Sess71 plan: `/home/doooo/.claude/plans/ok-1-playful-fern.md`
+- `docs/how-to/development/dev-workflow.md` (本 Amendment の実装解説)
+- R-61 (Sess71 起票): 「人間判定 → 機械判定」 メタルール
