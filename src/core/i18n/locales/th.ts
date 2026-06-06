@@ -609,7 +609,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: 'ยังไม่มีบันทึก',
   addScheduleTitle: 'Add a scheduled task',
-  addScheduleCta: 'Add a scheduled task',
+  addScheduleCta: 'เพิ่มกำหนดการ',
   historyFilterAll: 'All',
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'ไทม์ไลน์',

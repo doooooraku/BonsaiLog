@@ -598,7 +598,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: '暂无记录',
   addScheduleTitle: 'Add a scheduled task',
-  addScheduleCta: 'Add a scheduled task',
+  addScheduleCta: '添加日程',
   historyFilterAll: 'All',
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: '时间线',

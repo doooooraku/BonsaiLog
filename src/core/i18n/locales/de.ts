@@ -612,7 +612,7 @@ const de: Partial<Record<TranslationKey, string>> = {
   detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: 'Noch keine Einträge',
   addScheduleTitle: 'Add a scheduled task',
-  addScheduleCta: 'Add a scheduled task',
+  addScheduleCta: 'Termin hinzufügen',
   historyFilterAll: 'All',
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'Zeitleiste',

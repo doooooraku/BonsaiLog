@@ -612,7 +612,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: 'Inga poster än',
   addScheduleTitle: 'Add a scheduled task',
-  addScheduleCta: 'Add a scheduled task',
+  addScheduleCta: 'Lägg till schema',
   historyFilterAll: 'All',
   historyGroupToggle: '{count} entries · tap to expand {caret}',
   detailTimelineSectionTitle: 'Tidslinje',
