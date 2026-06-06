@@ -1,8 +1,8 @@
-# 再発防止プロトコル — 専門ルール (R-13 〜 R-60)
+# 再発防止プロトコル — 専門ルール (R-13 〜 R-61)
 
 > 本ファイルは `.claude/recurrence-prevention.md` (親) の詳細部分。
-> 親ファイル = R-1 〜 R-12 全文 + R-13 〜 R-60 索引 + 運用ルール。
-> 本ファイル = R-13 〜 R-60 詳細記述。
+> 親ファイル = R-1 〜 R-12 全文 + R-13 〜 R-61 索引 + 運用ルール。
+> 本ファイル = R-13 〜 R-61 詳細記述。
 > 親ファイルの「専門ルール 索引」 から各 R-N に飛ぶ運用。
 
 ---
@@ -569,9 +569,80 @@
 
 ---
 
+### R-61. 人間判定 → 機械判定 + 安全網 (meta-rule、 Sess71 PR-5 起票 / ADR-0046 Amendment)
+
+> **位置付け**: 個別ルール (R-58/59/60 等) の上位に位置する **meta-rule (= ルールのルール)**。 個別ルールが「特定場面で何をする」 を決めるのに対し、 本 R-61 は「ルールを作る時に何を意識する」 を決める。
+
+#### ルール本文
+
+新規 R / ADR / hook / check / lint を **足す前に**、 ADR-0046 Amendment (Sess71) の 4 つ目自問:
+
+> **「人間判定が必要か? 機械判定に置き換えられないか?」**
+
+を必須 self-check する。 「念のため XX しよう」 「経験で判断」 「経験者なら分かる」 のような mental model を **仕組み化対象として認識** し、 機械判定 (file pattern / hash / git diff / npm audit / lint / hook / regex) で代替可能なら **必ず機械化**。
+
+#### 安全網 (機械判定の bug 対策)
+
+- 機械判定の bug を恐れて手動 fallback を残す場合は **明示的 reason を必須記載**
+- 例: 「`--dry-run` mode で false positive 検出可」 「環境変数 `SKIP_XX_CHECK=1` で緊急時 skip 可」
+- 完全自動化が原則、 手動 fallback は最後の安全網
+
+#### 適用例 (BonsaiLog 既存 + 新規)
+
+| 場面 | 旧 (人間判定) | 新 (機械判定) | 起票 / 実装 |
+|---|---|---|---|
+| build vs reload 判定 | 「念のため build しよう」 | PostToolUse hook + git diff 補完で自動判定 | Sess71 PR-1〜PR-3 (`scripts/check-native-impact.mjs`) |
+| 新画面の dark SS 必要性 | 「dark mode 影響あるか」 と人間が悩む | R-60 で機械判定 (新画面なら強制) | Sess70 PR-D 起票 |
+| ESLint 例外許可判断 | 「この hex literal は例外で OK?」 | reason marker 必須 + 5 件以下 monitor | R-59 (Sess70 PR-D) |
+| dependency 更新の安全度 | 「メジャー更新だけど大丈夫か」 | `npm audit` + 自動 PR check | 将来検討 (機械化候補) |
+| dark mode token 違反 | 「これは brand-static で OK?」 | ESLint rule で FORBIDDEN | R-58 (Sess66 PR3 → Sess70 PR-D で 8→16 種) |
+| カスタム iconMap 重複 | 「icon 重複してない?」 | `scripts/check-icon-duplication.mjs` で CI 強制 | R-53 (Sess36) |
+
+#### Sess70 → Sess71 の根拠 (なぜなぜ 5 回からの導出)
+
+**問題**: Sess70 で「JS-only 変更なのに build を選択した」 = 時間ロス + token 消費
+
+- なぜ 1: build 選んだ → 「念のため」 安全側
+- なぜ 2: 念のため → JS bundle キャッシュ懸念、 dev-client + Metro 仕組み失念
+- なぜ 3: 仕組み失念 → 「build vs reload 判定指針」 が BonsaiLog ドキュメントに明文化なし
+- なぜ 4: 判定指針未明文化 → 「開発者の経験で判断」 という暗黙ルール
+- なぜ 5: 暗黙ルールが見えなかった → **meta-rule (人間判定の存在を疑う視点) が無い**
+
+**根本原因**: ADR-0046 「足す前ゲート」 の 3 自問に「人間判定 vs 機械判定」 が欠落。 個別ルール (R-58/59/60) は「特定場面で何をする」 を決めるが、 「人間判定の存在自体を疑う」 視点が ADR レベルにも欠けていた。
+
+**恒久策**: 本 R-61 起票 + ADR-0046 Amendment (D-3 を 3 → 4 自問拡張)。
+
+#### Sess71 実装 (本 R-61 の最初の適用)
+
+1. **PR-1 (#960)**: `scripts/check-native-impact.mjs` 共通核 (17 unit test) — 編集 file 種別で機械判定
+2. **PR-2 (#961)**: `.claude/hooks/check-native-impact-hook.mjs` PostToolUse 連携 — Claude 編集を即時 detect
+3. **PR-3 (#962)**: `scripts/dev/reload-app.sh` + `dev-start.sh` 起動時 flag check + 自動 build
+4. **PR-4 (#963)**: `docs/how-to/development/dev-workflow.md` 新規 + ADR-0046 Notes Amended
+5. **PR-5 (本)**: R-61 起票 (索引 + 詳細)
+
+期待される効果: 1 セッション 1-2 回 × 月 N セッション = **月 30-60 分節約** + 「念のため build」 認知バイアスの構造的根絶。
+
+#### 横断適用 (Sess71 以降の検討候補)
+
+1. **dependency 更新の安全度** → npm audit + automated PR check (Snyk / Dependabot 連動)
+2. **新規 i18n key の網羅性** → `scripts/check-i18n-key-references.mjs` 既存、 hook 化検討
+3. **TZ off-by-one (Sess67)** → `scripts/check-utc-date-slice.mjs` で機械検出済
+4. **ADR 重複起票** → R-9 既存、 grep 機械化済
+
+#### 関連
+
+- ADR-0046 Notes Amended (Sess71): 「人間判定 vs 機械判定」 4 つ目自問追加
+- ADR-0052 Notes Amended (Sess66 PR4 + Sess69 PR-A + Sess70 PR-D): dark cascade 構造禁止
+- R-58 / R-59 / R-60 (Sess70 PR-D): 個別ルール、 R-61 のメタ rule に従って起票された
+- `docs/how-to/development/dev-workflow.md` (Sess71 PR-4): R-61 の最初の実装解説
+- `scripts/check-native-impact.mjs` (Sess71 PR-1): 共通核 (file pattern 判定)
+- Sess70 retrospective: 「人間判定の暗黙ルール」 が仕組み化対象として見えていなかった事象
+
+---
+
 ## 関連
 
-- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-60 索引 + 運用ルール)
+- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-61 索引 + 運用ルール)
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
