@@ -28,13 +28,17 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BG_PRIMARY, BORDER_DEFAULT, BRAND_GREEN, DANGER, ON_BRAND } from '@/src/core/theme/colors';
+// Sess66 PR3: BG_PRIMARY / BORDER_DEFAULT / BRAND_GREEN を StyleSheet から撤去し inline c.* 化
+// (dark mode で BORDER_DEFAULT cream border + BRAND_GREEN #1F3A2E 選択 bg が dark 上で
+//  浮く / 沈む問題を解消)。 ON_BRAND (白) + DANGER (赤) は theme-invariant ゆえ static 維持。
+import { DANGER, ON_BRAND } from '@/src/core/theme/colors';
 import {
   formOptional,
   formRequired,
   formSegmentText,
   formSegmentTextOn,
 } from '@/src/core/theme/typography';
+import { useColors } from '@/src/core/theme/useColors';
 
 // Sess17 PR-E1: typography.ts token 経由 (ADR-0029 D1)。
 
@@ -73,6 +77,8 @@ export function LabeledSegmented({
   requiredText = '必須',
   testID,
 }: LabeledSegmentedProps) {
+  // Sess66 PR3: dark mode で segment border / selected bg をテーマ追従させる。
+  const c = useColors();
   const hasLabel = label.length > 0;
   return (
     <View style={styles.field} testID={testID}>
@@ -98,7 +104,13 @@ export function LabeledSegmented({
               accessibilityRole="button"
               accessibilityState={{ selected: on }}
               accessibilityLabel={it.l}
-              style={[styles.segment, on && styles.segmentOn]}
+              style={[
+                styles.segment,
+                {
+                  borderColor: on ? c.tint : c.border,
+                  backgroundColor: on ? c.tint : 'transparent',
+                },
+              ]}
               onPress={() => onChange(it.v)}
               testID={testID ? `${testID}_${it.v}` : undefined}
             >
@@ -122,20 +134,19 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { ...formRequired, color: BG_PRIMARY },
+  // Sess66 PR3: badge 内白文字は theme-invariant ゆえ ON_BRAND 維持 (旧 BG_PRIMARY = bug)。
+  requiredText: { ...formRequired, color: ON_BRAND },
   optionalText: formOptional,
   segmented: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  // Sess66 PR3: borderColor / backgroundColor は inline で c.border / c.tint 動的指定。
   segment: {
     paddingHorizontal: 14,
     minHeight: 40,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  segmentOn: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN },
   segmentText: formSegmentText,
   segmentTextOn: { ...formSegmentTextOn, color: ON_BRAND },
 });

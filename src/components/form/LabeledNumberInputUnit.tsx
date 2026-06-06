@@ -27,13 +27,15 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BG_PRIMARY, BORDER_DEFAULT, BRAND_GREEN, DANGER, ON_BRAND } from '@/src/core/theme/colors';
+// Sess66 PR3: BG_PRIMARY / BORDER_DEFAULT / BRAND_GREEN を StyleSheet から撤去し inline c.* 化。
+import { DANGER, ON_BRAND } from '@/src/core/theme/colors';
 import {
   formOptional,
   formRequired,
   formSegmentText,
   formSegmentTextOn,
 } from '@/src/core/theme/typography';
+import { useColors } from '@/src/core/theme/useColors';
 import type { LengthUnit } from '@/src/core/util/unitConvert';
 
 import { LabeledNumberInput } from './LabeledNumberInput';
@@ -81,6 +83,8 @@ export function LabeledNumberInputUnit({
   testID,
   testIDUnit,
 }: LabeledNumberInputUnitProps) {
+  // Sess66 PR3: 単位 segmented control の border + active bg をテーマ追従。
+  const c = useColors();
   const hasLabel = label.length > 0;
   const suffix = suffixOverride ?? unit;
   return (
@@ -99,7 +103,7 @@ export function LabeledNumberInputUnit({
         </View>
       )}
       {/* 単位切替 segmented control (BonsaiBasicForm pattern 整合)。 */}
-      <View style={styles.unitSegmented}>
+      <View style={[styles.unitSegmented, { borderColor: c.border }]}>
         {units.map((u) => {
           const active = unit === u;
           return (
@@ -108,7 +112,7 @@ export function LabeledNumberInputUnit({
               accessibilityRole="button"
               accessibilityLabel={`unit ${u}`}
               accessibilityState={{ selected: active }}
-              style={[styles.unitSegment, active && styles.unitSegmentActive]}
+              style={[styles.unitSegment, active && { backgroundColor: c.tint }]}
               onPress={() => onChangeUnit(u)}
               testID={testIDUnit ? `${testIDUnit}_${u}` : undefined}
             >
@@ -141,14 +145,14 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { ...formRequired, color: BG_PRIMARY },
+  // Sess66 PR3: badge 内白文字は theme-invariant ゆえ ON_BRAND 維持 (旧 BG_PRIMARY = bug)。
+  requiredText: { ...formRequired, color: ON_BRAND },
   optionalText: formOptional,
-  // 単位切替 segmented (BonsaiBasicForm L1209-L1226 pattern 整合)
+  // 単位切替 segmented (BonsaiBasicForm L1209-L1226 pattern 整合)。 borderColor は inline c.border。
   unitSegmented: {
     flexDirection: 'row',
     alignSelf: 'flex-start',
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
     borderRadius: 8,
     overflow: 'hidden',
   },
@@ -159,7 +163,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  unitSegmentActive: { backgroundColor: BRAND_GREEN },
+  // unitSegmentActive: backgroundColor は inline c.tint で指定。
   unitSegmentText: formSegmentText,
   unitSegmentTextActive: { ...formSegmentTextOn, color: ON_BRAND, fontWeight: '600' },
 });

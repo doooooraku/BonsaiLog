@@ -29,13 +29,15 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BG_PRIMARY, BORDER_DEFAULT, BRAND_GREEN, DANGER, ON_BRAND } from '@/src/core/theme/colors';
+// Sess66 PR3: BG_PRIMARY / BORDER_DEFAULT / BRAND_GREEN を StyleSheet から撤去し inline c.* 化。
+import { DANGER, ON_BRAND } from '@/src/core/theme/colors';
 import {
   formOptional,
   formRequired,
   formSegmentText,
   formSegmentTextOn,
 } from '@/src/core/theme/typography';
+import { useColors } from '@/src/core/theme/useColors';
 
 import { LabeledNumberInput } from './LabeledNumberInput';
 
@@ -81,6 +83,8 @@ export function LabeledNumberSegmentOrFree({
   requiredText = '必須',
   testID,
 }: LabeledNumberSegmentOrFreeProps) {
+  // Sess66 PR3: segment border + selected bg をテーマ追従。
+  const c = useColors();
   const isFree = !segments.some((s) => s.value === value);
   const hasLabel = label.length > 0;
   return (
@@ -107,7 +111,13 @@ export function LabeledNumberSegmentOrFree({
               accessibilityRole="button"
               accessibilityState={{ selected: on }}
               accessibilityLabel={s.label}
-              style={[styles.segment, on && styles.segmentOn]}
+              style={[
+                styles.segment,
+                {
+                  borderColor: on ? c.tint : c.border,
+                  backgroundColor: on ? c.tint : 'transparent',
+                },
+              ]}
               onPress={() => onChangeValue(s.value)}
               testID={testID ? `${testID}_${s.value}` : undefined}
             >
@@ -122,7 +132,13 @@ export function LabeledNumberSegmentOrFree({
           accessibilityRole="button"
           accessibilityState={{ selected: isFree }}
           accessibilityLabel={freeLabel}
-          style={[styles.segment, isFree && styles.segmentOn]}
+          style={[
+            styles.segment,
+            {
+              borderColor: isFree ? c.tint : c.border,
+              backgroundColor: isFree ? c.tint : 'transparent',
+            },
+          ]}
           onPress={() => {
             // free 選択時は value を '' にして free input を空欄で開く
             // (segment 内のいずれの値とも一致しない状態にする)
@@ -162,7 +178,8 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { ...formRequired, color: BG_PRIMARY },
+  // Sess66 PR3: badge 内白文字は theme-invariant ゆえ ON_BRAND 維持 (旧 BG_PRIMARY = bug)。
+  requiredText: { ...formRequired, color: ON_BRAND },
   optionalText: formOptional,
   segmented: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   segment: {
@@ -170,12 +187,9 @@ const styles = StyleSheet.create({
     minHeight: 40,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: BORDER_DEFAULT,
-    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  segmentOn: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN },
   segmentText: formSegmentText,
   segmentTextOn: { ...formSegmentTextOn, color: ON_BRAND },
   freeInputWrap: { marginTop: 4 },
