@@ -59,6 +59,41 @@ done
 
 cd "$PROJECT_ROOT"
 
+# --- Step 0 (Sess71 PR-3): Native fingerprint check ---
+# 編集 file が Native 影響あれば自動 build + install。 JS-only なら skip して Metro 直行。
+# 環境変数:
+#   SKIP_BUILD_CHECK=1     check 自体を skip (緊急時用)
+#   AUTO_BUILD=0           flag あっても自動 build せず警告のみ (default: 1)
+if [ "${SKIP_BUILD_CHECK:-0}" != "1" ]; then
+  FLAG_PATH="${PROJECT_ROOT}/dist/.native-dirty"
+  echo "=== Step 0: Native fingerprint check (Sess71 PR-3) ==="
+  if [ -f "${FLAG_PATH}" ]; then
+    echo "  Native flag found at ${FLAG_PATH}"
+  else
+    # 補完: git diff で hook 経由でない手動編集も検出
+    echo "  No flag, checking via git diff (CLI mode)..."
+    PATH=/home/doooo/.local/bin:/usr/bin:/bin:${PATH:-} node "${PROJECT_ROOT}/scripts/check-native-impact.mjs" --from=cli 2>&1 | sed 's/^/  /'
+  fi
+  if [ -f "${FLAG_PATH}" ]; then
+    if [ "${AUTO_BUILD:-1}" != "0" ]; then
+      echo "  Native impact detected → starting auto build (pnpm build:android:dev:local)"
+      echo "  This takes 10-15 minutes. Press Ctrl+C to skip (not recommended)."
+      PATH=/home/doooo/.local/bin:/usr/bin:/bin:${PATH:-} pnpm build:android:dev:local
+      echo "  Build done. Installing dev APK..."
+      PATH=/home/doooo/.local/bin:/usr/bin:/bin:${PATH:-} pnpm install:device:dev
+      echo "  Install done. Removing flag."
+      rm -f "${FLAG_PATH}"
+    else
+      echo "  AUTO_BUILD=0, skipping auto build. Run manually:"
+      echo "    pnpm build:android:dev:local && pnpm install:device:dev"
+      echo "    rm ${FLAG_PATH}"
+    fi
+  else
+    echo "  JS-only (or no changes), Metro reload sufficient."
+  fi
+  echo ""
+fi
+
 # --- Step 1: Verify ADB connection ---
 echo "=== Step 1: Checking ADB connection ==="
 # WSL2 workaround: unset ADB_SERVER_SOCKET to avoid router-IP socket issue
