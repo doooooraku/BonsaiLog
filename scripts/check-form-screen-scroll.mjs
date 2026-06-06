@@ -8,12 +8,19 @@
  * 3. measureLayout 使用時は `UIManager.measureLayout` (公式 native API) 強制
  *    (instance method `ref.current?.measureLayout(...)` は forwardRef 経由で Console Error)
  *
- * 違反検出時 exit 1。 `pnpm verify` に組込予定。
+ * Sess72 PR-5 拡張 (R-63 自動化、 ADR-0040 D5 Amendment):
+ * 4. FormScreenHeader を使う画面で `router.push` する flow がある場合、
+ *    `useScrollPreservation` (Sess72 PR-1 #969) 適用必須。 未適用は warn (exit 0)。
+ *    除外: `// scroll-preservation: no-child-push (<理由>)` 注釈で明示。
+ *    warn 起動 → 違反 0 確認後 error 昇格 (Sess68 と同じ階段)。
  *
- * @see docs/adr/ADR-0040-form-screen-scroll-unification.md
- * @see .claude/recurrence-prevention/specialized.md R-51
+ * 違反検出時 exit 1 (R-51 違反)。 warn は exit 0 (R-63、 将来 error 昇格)。 `pnpm verify` に組込済。
+ *
+ * @see docs/adr/ADR-0040-form-screen-scroll-unification.md (D1-D5)
+ * @see .claude/recurrence-prevention/specialized.md R-51 / R-63
  * @see docs/reference/design_system.md §23
  */
+import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -83,3 +90,61 @@ if (errors.length > 0) {
 }
 
 console.log(`Form screen scroll check: ${TARGETS.length} files passed`);
+
+// ── R-63 (Sess72 PR-5、 ADR-0040 D5 Amendment) ────────────────────────
+// FormScreenHeader を使う全画面で scroll preservation hook 適用必須を warn check。
+// 子画面 push がある画面のみ対象 (router.replace のみは対象外)。
+// warn 起動 → 違反 0 確認後 error 昇格 (Sess68 と同じ階段)。
+const warnings = [];
+
+function findFormScreenFiles() {
+  try {
+    const out = execSync(
+      `grep -rln "FormScreenHeader" src/ app/ --include="*.tsx" --include="*.ts" 2>/dev/null`,
+      { encoding: 'utf8', cwd: ROOT },
+    );
+    return out
+      .split('\n')
+      .filter(Boolean)
+      .map((p) => path.resolve(ROOT, p));
+  } catch {
+    // grep が一致 0 件で exit 1 を返した場合も含めて安全に空配列
+    return [];
+  }
+}
+
+const formScreenFiles = findFormScreenFiles();
+
+for (const filePath of formScreenFiles) {
+  const relPath = path.relative(ROOT, filePath);
+  if (!fs.existsSync(filePath)) continue;
+  const source = fs.readFileSync(filePath, 'utf8');
+
+  // ScrollView を使わない画面 (例: FlatList ベース) は対象外
+  if (!/<ScrollView\b/.test(source)) continue;
+
+  // router.push 有無を判定 (router.replace は対象外)
+  const hasRouterPush = /\brouter\.push\s*\(/.test(source);
+  const hasUseScrollPreservation = /useScrollPreservation/.test(source);
+  const hasExemptMarker = /scroll-preservation:\s*no-child-push/.test(source);
+
+  if (hasRouterPush && !hasUseScrollPreservation && !hasExemptMarker) {
+    warnings.push(
+      `[R-63 warn] ${relPath}: router.push があるが useScrollPreservation 未適用。 src/core/hooks/useScrollPreservation.ts を適用するか、 「// scroll-preservation: no-child-push (<理由>)」 注釈で除外を明示してください`,
+    );
+  }
+}
+
+if (warnings.length > 0) {
+  console.warn(`Form screen scroll preservation check: ${warnings.length} warning(s)`);
+  for (const w of warnings) {
+    console.warn('  - ' + w);
+  }
+  console.warn(
+    '  ★ R-63 (Sess72 PR-5 起票、 ADR-0040 D5 Amendment): 現在 warn 起動中、 違反 0 確認後 error 昇格予定',
+  );
+} else if (formScreenFiles.length > 0) {
+  console.log(
+    `Form screen scroll preservation check: ${formScreenFiles.length} FormScreenHeader files inspected, all passed (R-63)`,
+  );
+}

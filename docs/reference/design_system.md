@@ -878,12 +878,36 @@ const handleNoteFocus = React.useCallback(() => {
 
 ❌ 禁止 pattern: `inputRef.current?.measureLayout(...)` — forwardRef 経由 ref では「native component ref」 として認識されず Console Error。
 
-### 23-3. 対象外
+### 23-3. Scroll 位置保持 hook (Sess72 PR-5、 ADR-0040 D5 Amendment / R-63 由来)
+
+子画面 (tag-edit / picker / work-picker 等) に `router.push` する flow がある form 画面は、 戻り時の scroll 位置保持を `useScrollPreservation` hook で**明示**する。
+
+```tsx
+import { useScrollPreservation } from '@/src/core/hooks/useScrollPreservation';
+
+const scrollRef = React.useRef<ScrollView>(null);
+const { onScroll, scrollEventThrottle } = useScrollPreservation(scrollRef);
+
+<ScrollView ref={scrollRef} onScroll={onScroll} scrollEventThrottle={scrollEventThrottle}>
+  ...
+</ScrollView>;
+```
+
+真因: `useFocusEffect` 内 setState で子要素 layout が変動 → 親 ScrollView の contentSize 変動 → contentOffset 暗黙リセット (RN ScrollView 仕様)。 Sess72 テスター苦情「タグ追加から戻ると先頭に戻る」 由来。
+
+適用先 (Sess72 PR-2/3/4 完遂): `BonsaiCreateScreen` / `app/(tabs)/bonsai/[id]/index.tsx` / `app/export/index.tsx`。
+
+除外 (`router.replace` のみで子画面 push なし): `WorkLogConfirmScreen` / `BulkLogConfirmScreen` / `app/export/pdf.tsx` (FlatList ベース)。 除外は `// scroll-preservation: no-child-push (<理由>)` 注釈で明示。
+
+検出: `scripts/check-form-screen-scroll.mjs` R-63 拡張で warn 起動 → 違反 0 確認後 error 昇格。
+
+### 23-4. 対象外
 
 - `bonsai-detail/[id]` (詳細画面 + タブ切替、 Stack header にタイトル必要)
+  - ※ ただし scroll 位置保持 (23-3) は対象 (Sess72 PR-3 で適用済)
 - picker / multi-select modal (選択画面、 form ではない)
 
-### 23-4. 検証必須項目 (R-46 v4 / R-51)
+### 23-5. 検証必須項目 (R-46 v4 / R-51)
 
 実機検証時は以下を **全部** 確認:
 
@@ -893,13 +917,15 @@ const handleNoteFocus = React.useCallback(() => {
 4. ✅ Dev menu Console: Error 0 件 (赤バー非表示)
 5. ✅ 戻るボタン sticky 残存、 tap で `router.back()` 動作
 
-### 23-5. 関連
+### 23-6. 関連
 
-- ADR-0040 (本セクション由来、 Sess33)
+- ADR-0040 (本セクション由来、 Sess33、 D5 Amendment: Sess72 PR-5)
 - R-46 v4 (KAV + auto-scroll 2 タイプ + logcat 検証強制)
 - R-51 (FormScreenHeader + full-screen scroll 必須)
+- R-63 (Sess72 PR-5: 子画面 push 戻り scroll 復元 hook 必須)
 - `src/components/form/FormScreenHeader.tsx`
 - `src/core/hooks/useKeyboardAvoidingProps.ts`
+- `src/core/hooks/useScrollPreservation.ts` (Sess72 PR-1 #969)
 
 ---
 

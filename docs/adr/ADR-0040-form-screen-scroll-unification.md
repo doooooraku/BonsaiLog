@@ -97,6 +97,47 @@ design_system.md §21 (KeyboardAvoidingView 統一 pattern) には header 構造
 - (P2-2) scripts/check-form-screen-scroll.mjs で構造逸脱を CI で block
 - (将来) ESLint custom rule で AST レベル検出 (eslint-plugin-bonsailog 新設要)
 - (将来) dark mode token 対応 (現状 FormScreenHeader は `useColors()` で背景連動済 = 既に対応)
+- ~~scroll 位置保持 (子画面 push から戻る時)~~ → **Sess72 PR-5 で D5 として正式採用** (下記 Notes Amended 参照)
+
+---
+
+## Notes Amended (Sess72 PR-5、 2026-06-07)
+
+### D5. 子画面 push 遷移を許す form 画面は `useScrollPreservation` hook 必須
+
+**背景**: テスター苦情「タグ追加画面から基本情報画面に戻ると必ず画面の先頭に戻ってしまう」 (Sess72)。 真因は React Native ScrollView の挙動 — 戻り時 `useFocusEffect` 内の 2 連 setState (`setSelectedTagIds` + `setRecentTags`) で TagSection の layout pattern が「empty 縦」 → 「wrap row 横」 に変化 → 親 ScrollView の contentSize 変動 → contentOffset 0 にリセット。 D1〜D4 (構造統一) では scroll preservation 未対応で残った穴で、 ADR 起票時に Future Work にすら明記されていなかった盲点。
+
+**決定**: form 画面 (FormScreenHeader + ScrollView) で **子画面に `router.push` する flow がある画面**は、 `src/core/hooks/useScrollPreservation.ts` を使用すること。
+
+```tsx
+import { useScrollPreservation } from '@/src/core/hooks/useScrollPreservation';
+
+const scrollRef = useRef<ScrollView>(null);
+const { onScroll, scrollEventThrottle } = useScrollPreservation(scrollRef);
+
+<ScrollView ref={scrollRef} onScroll={onScroll} scrollEventThrottle={scrollEventThrottle}>
+  ...
+</ScrollView>;
+```
+
+**適用先 (Sess72 PR-2/3/4 で完遂)**:
+
+- `src/features/bonsai/BonsaiCreateScreen.tsx` (新規登録 modal、 tag-edit へ push)
+- `app/(tabs)/bonsai/[id]/index.tsx` (詳細画面、 タグ追加 / picker / work-picker へ push)
+- `app/export/index.tsx` (Export Hub、 個別盆栽 PDF へ push)
+
+**除外 (PR-0 調査で子画面 push なしと判明)**:
+
+- `src/features/event/WorkLogConfirmScreen.tsx` (`router.replace` のみ、 push なし)
+- `src/features/event/BulkLogConfirmScreen.tsx` (`router.replace` のみ、 push なし)
+- `app/export/pdf.tsx` (内部 share sheet + FlatList ベース、 ScrollView ではない)
+
+**仕組み化 (Sess72 PR-5 同時実施)**:
+
+- `scripts/check-form-screen-scroll.mjs` (R-51 既存) に「FormScreenHeader + ScrollView を使う画面で `useScrollPreservation` 未適用なら **warn**」 を追加 (warn 起動 → 違反 0 確認後 error 昇格、 Sess68 と同じ階段)
+- 除外画面は適用除外注釈 `// scroll-preservation: no-child-push (<理由>)` で明示
+
+**関連**: R-63 (Sess72 PR-5 起票)、 `useScrollPreservation` hook (Sess72 PR-1 #969)、 design_system.md §23 (4 要素 → 5 要素に拡張予定)
 
 ---
 
