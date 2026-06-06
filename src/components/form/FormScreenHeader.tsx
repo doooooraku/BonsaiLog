@@ -29,7 +29,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { BackIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BORDER_DEFAULT, TEXT_PRIMARY } from '@/src/core/theme/colors';
+// Sess66 PR6b: BORDER_DEFAULT / TEXT_PRIMARY を撤去、 全 inline c.* で動的指定 (既に JSX 側で対応済)。
 import { useColors } from '@/src/core/theme/useColors';
 
 type Props = {
@@ -90,12 +90,12 @@ export function FormScreenHeader({ title, onBack, testID = 'e2e_form_screen_head
 }
 
 const styles = StyleSheet.create({
+  // Sess66 PR6b: borderBottomColor / title color は inline c.* (JSX 側で c.border / c.text 指定済)。
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_DEFAULT,
   },
   iconBtn: {
     width: 44,
@@ -109,7 +109,6 @@ const styles = StyleSheet.create({
     fontFamily: 'NotoSerifJP_500Medium',
     fontSize: 18,
     letterSpacing: 0.4,
-    color: TEXT_PRIMARY,
     textAlign: 'center',
   },
   spacer: {
