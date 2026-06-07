@@ -184,3 +184,31 @@
 - shakan (斜幹) — 風雪表現
 - kengai (懸崖) — 崖を表現、 動きあり
 - kabudachi (株立ち) — 複数幹、 樹海表現
+
+### §Notes Amended Sess74 PR-1 (2026-06-07) — master タグ 2 件追加 (= 樹種 / 樹形 / タグ の master/custom パターン 3 領域統一)
+
+**背景**: テスター FB 「タグが思い浮かばない」 を受け、 本 ADR で確立した「master/custom 分離 + カスタム入力主軸」 パターンを **タグ機能 (F-09)** にも拡張する。 樹種 (5 種 master + custom) / 樹形 (5 種 master + custom) に続き、 タグ (2 件 master + custom) で 3 領域統一。
+
+**追加 master タグ 2 件** (Sess74 plan v2、 19 言語フル翻訳):
+
+| id          | ja         | en        | カテゴリ |
+| ----------- | ---------- | --------- | -------- |
+| `favorite`  | お気に入り | Favorite  | 感情     |
+| `flowering` | 花あり     | Flowering | 特性     |
+
+**「master = const 多言語 / custom = 生 string」 二層原則の明示** (Sess74 PR-1 で恒久化):
+
+- master データ (アプリ提供物) は const 配列に閉じ、 多言語翻訳を提供 = `SPECIES_SEED` (`names.ja/en` + 他言語は en fallback) / `BONSAI_STYLES` (enum + i18n key 経由) / `TAG_PRESETS` (19 言語フル翻訳)
+- custom データ (user 入力物) は SQLite に生 string で保存 = `bonsai_species_custom.name` / `bonsai_styles_custom.name` / `tags.name`
+- カスタム入力主軸 (ADR-0026 本文) は維持。 master は「思い浮かばない初心者の最低ライン」 として 2-5 件に厳格固定
+
+**理由**: アプリ提供物と user 入力物の境界が不明瞭だと、 多言語切替時に user の認知が混乱する (= タグ「お気に入り」 を JA で attach 後、 EN 切替で「Favorite」 と表示されると「自分が書いたのに?」 と違和感)。 二層原則により「master のみ翻訳 = アプリの責任、 custom は生 string = user の責任」 を明確化。
+
+**Free 上限カウント方針 (ADR-0049 §Notes Amended Sess74 PR-1 と整合)**:
+
+- 樹種 ⑥: master 5 種は Free 上限カウント対象外、 custom のみ 3 件まで
+- 樹形 ⑥: master 5 種は Free 上限カウント対象外、 custom のみ 3 件まで
+- タグ ②: master 2 件は Free 上限カウント対象外、 custom のみ 3 件まで (Sess74 PR-1 で実装)
+
+**実装 PR**: Sess74 PR-1 (本 Amendment + `src/db/seedTagPresets.ts` 新規 + `tagRepository.ts` 拡張) + PR-2 (UI 配線、 BonsaiTagsSection / tag-edit / Settings タグ管理)。
+**関連**: ADR-0049 §Notes Amended Sess74 PR-1 / `functional_spec.md` §14.3.3 (master/custom 2 種別明文化)。

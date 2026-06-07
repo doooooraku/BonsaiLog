@@ -14,6 +14,7 @@ import { ulid } from 'ulid';
 import { nowUtc } from '@/src/core/datetime';
 
 import { getDb } from './db';
+import { TAG_PRESET_NAMES_NORMALIZED } from './seedTagPresets';
 
 /**
  * タグ名の正規化純関数 (case-insensitive 比較用)。
@@ -145,24 +146,59 @@ export async function countAllTags(): Promise<number> {
 /**
  * Free 上限タグ数 (ADR-0049 Sess58 確定 機能 ②、 Sess59 PR4 で実装)。
  * Pro user は無制限。 rename は別 API (renameTag) で無制限。
+ * Sess74 PR-1: master tag (TAG_PRESETS 19 言語 × 2 件) は本上限の対象外
+ * (countCustomTags で除外、 カスタム樹種 ADR-0049 ⑥ パターンと整合)。
  */
 export const FREE_TAG_LIMIT = 3;
 
 /**
- * 新規タグ作成が可能か判定 (ADR-0049 Sess59 PR4)。
+ * カスタムタグ (= master 以外) の件数を返す
+ * (Sess74 PR-1、 ADR-0049 §Notes Amended / ADR-0026 §Notes Amended)。
  *
+ * - master tag = TAG_PRESETS の 19 言語名 (= 38 normalized name) と一致する row
+ * - SQL: `WHERE name_normalized NOT IN (...preset names)`
+ * - canCreateNewTag が countAllTags の代わりに本関数を使用
+ *
+ * カスタム樹種パターン (FREE_CUSTOM_SPECIES_LIMIT、
+ * `bonsaiSpeciesCustomRepository.ts`) と思想完全相同:
+ * 「master 種は count 除外、 user 由来のみ Free 上限カウント」。
+ */
+export async function countCustomTags(): Promise<number> {
+  const db = await getDb();
+  const presetNames = Array.from(TAG_PRESET_NAMES_NORMALIZED);
+  if (presetNames.length === 0) {
+    // defensive: preset 配列が空なら全件 custom 扱い (既存挙動と同じ)
+    return countAllTags();
+  }
+  const placeholders = presetNames.map(() => '?').join(', ');
+  const row = await db.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) AS count FROM tags WHERE name_normalized NOT IN (${placeholders});`,
+    presetNames,
+  );
+  return row?.count ?? 0;
+}
+
+/**
+ * 新規タグ作成が可能か判定 (ADR-0049 Sess59 PR4、 Sess74 PR-1 で preset 除外拡張)。
+ *
+ * - 入力名が master preset と一致 → true (master attach、 上限カウント対象外)
  * - 入力名が既存タグ (正規化一致) と重複 → true (createOrFindTag が既存返却 = 新規追加にならない)
- * - 重複なし + Pro → true
- * - 重複なし + Free + countAllTags() < 3 → true
+ * - Pro → true
+ * - Free + countCustomTags() < 3 → true
  * - 上記以外 → false (Paywall 誘導)
  *
  * Grandfathered (ADR-0049 Decision §): 既存 4+ 件タグは表示 OK + rename OK +
  * 新規追加のみ Paywall (Slack 2022 churn 事件回避)。
+ *
+ * Sess74 PR-1: master preset (19 言語 × 2 件 = 38 normalized name) は常に attach 可能
+ * → テスター発言「タグが思い浮かばない」 を解消するため、 master chip 提供 (PR-2)。
  */
 export async function canCreateNewTag(rawName: string, isPro: boolean): Promise<boolean> {
   if (isPro) return true;
   const normalized = normalizeTagName(rawName);
   if (normalized.length === 0) return false;
+  // Sess74 PR-1: master preset 一致 → 上限カウント対象外で常に許可
+  if (TAG_PRESET_NAMES_NORMALIZED.has(normalized)) return true;
   const db = await getDb();
   // 既存タグ重複なら新規追加にならないので OK
   const existing = await db.getFirstAsync<{ id: string }>(
@@ -170,8 +206,8 @@ export async function canCreateNewTag(rawName: string, isPro: boolean): Promise<
     [normalized],
   );
   if (existing) return true;
-  // 新規追加するなら Free 上限 check
-  const count = await countAllTags();
+  // 新規追加するなら Free 上限 check (Sess74 PR-1 で countAllTags → countCustomTags に差し替え)
+  const count = await countCustomTags();
   return count < FREE_TAG_LIMIT;
 }
 

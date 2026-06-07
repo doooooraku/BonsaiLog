@@ -259,3 +259,30 @@ R1-R4 で実装計画を詰めた:
 - ADR Amendment は履歴管理に有効だが、 主題が変わる場合は新規 ADR が適切
 - 「実装ゼロの i18n key だけ UI 露出」 は構造的に防ぐべき (Sess58 年次タイムライン教訓、 R-57 候補)
 - Grandfathered 戦略は churn 防止に必須 (Slack 2022 事件の轍を踏まない)
+
+### §Notes Amended Sess74 PR-1 (2026-06-07) — タグ ② に master プリセット 2 件追加
+
+**背景**: テスター FB 「基本的なタグが事前に入っていると入力の手間が省ける。 盆栽に使うタグが思い浮かばなかった」 への対応。 カスタム樹種 ⑥ パターン (master 5 種は Free 利用無制限 + custom 3 件 Free) と整合させ、 タグ ② にも master プリセットを導入する。
+
+**変更内容**:
+
+- **master tag = const 2 件**: `お気に入り` (favorite) + `花あり` (flowering)、 19 言語フル翻訳 (`src/db/seedTagPresets.ts`)
+- **Free 上限カウントから除外**: 既存 `canCreateNewTag` (`countAllTags() < 3`) → `countCustomTags() < 3` に差し替え。 `countCustomTags` は `WHERE name_normalized NOT IN (preset 38 names)` で SQL レベル除外。 master tag を 2 件 attach しても Free 上限を消費しない。
+- **schema 変更ゼロ**: `tags` table は既存のまま (DB migration 不要)。 master tag は user が chip tap した時点で初めて `tags` 行が生成される (= 既存 user に対して silent な insert は発生しない)。
+
+**カスタム樹種 ⑥ との対応関係**:
+
+| 項目                | カスタム樹種 (⑥)                           | タグ (② Sess74 PR-1)                                                |
+| ------------------- | ------------------------------------------ | ------------------------------------------------------------------- |
+| master 定義         | `SPECIES_SEED` 5 種固定配列                | `TAG_PRESETS` 2 件固定配列                                          |
+| 多言語              | names.ja/en (他 17 言語は en fallback)     | names で 19 言語フル翻訳 (en fallback なし)                         |
+| master の Free 利用 | 無制限 (常に利用可)                        | 無制限 (常に attach 可)                                             |
+| custom Free 上限    | `FREE_CUSTOM_SPECIES_LIMIT = 3`            | `FREE_TAG_LIMIT = 3`                                                |
+| 上限カウント関数    | `countAllCustomSpecies()`                  | `countCustomTags()`                                                 |
+| Pro user            | 無制限                                     | 無制限                                                              |
+| Grandfathered       | 既存 4+ 件 表示/削除 OK + 追加のみ Paywall | 既存 4+ 件 表示/rename OK + 追加のみ Paywall (master attach は除外) |
+
+**多言語切替時の挙動 (受容)**: `tags.name` は user 入力の生 string 原則 (functional_spec §14.3.3 / ADR-0033) を維持。 user が JA「お気に入り」 を attach 後に EN へ切替えると、 EN 用 master chip 「Favorite」 は別 row として attach 可能 (= 2 row 化)。 これは「タグは言語非依存」 原則の自然な帰結であり、 user 意思尊重として受容。 将来、 言語非依存 tag id を導入する場合は別 ADR 起票。
+
+**実装 PR**: Sess74 PR-1 (本 Amendment) + PR-2 (UI 配線)。
+**関連**: `src/db/seedTagPresets.ts` (新規) / `src/db/tagRepository.ts` (`countCustomTags` 追加 + `canCreateNewTag` 修正) / `__tests__/db/seedTagPresets.test.ts` (新規) / `functional_spec.md` §14.3.3 (master/custom 2 種別明文化) / ADR-0026 §Notes Amended Sess74 PR-1 (master プリセット 2 件のメタデータ参照)。

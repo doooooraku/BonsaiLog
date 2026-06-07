@@ -555,6 +555,12 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: '标签',
   bonsaiTagsEmpty: '暂无标签',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: '收藏',
+  presetTagName_flowering: '开花',
+  tagSectionPresets: '推荐',
+  tagPresetBadgeMaster: '预设',
+  tagPresetLockedToast: '预设标签无法编辑',
   settingsThemeRowLabel: '主题',
   settingsLanguageRowLabel: '语言',
   settingsNotificationRowLabel: '通知',

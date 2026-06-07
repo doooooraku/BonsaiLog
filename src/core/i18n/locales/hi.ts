@@ -567,6 +567,12 @@ const hi: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'टैग',
   bonsaiTagsEmpty: 'कोई टैग नहीं',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: 'पसंदीदा',
+  presetTagName_flowering: 'फूल वाला',
+  tagSectionPresets: 'सुझाव',
+  tagPresetBadgeMaster: 'मानक',
+  tagPresetLockedToast: 'मानक टैग को संपादित नहीं किया जा सकता',
   settingsThemeRowLabel: 'थीम',
   settingsLanguageRowLabel: 'भाषा',
   settingsNotificationRowLabel: 'सूचनाएँ',

@@ -568,6 +568,12 @@ const sv: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Taggar',
   bonsaiTagsEmpty: 'Inga taggar än',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: 'Favorit',
+  presetTagName_flowering: 'Blommande',
+  tagSectionPresets: 'Föreslagna',
+  tagPresetBadgeMaster: 'Förinställd',
+  tagPresetLockedToast: 'Förinställda taggar kan inte redigeras',
   settingsThemeRowLabel: 'Tema',
   settingsLanguageRowLabel: 'Språk',
   settingsNotificationRowLabel: 'Aviseringar',

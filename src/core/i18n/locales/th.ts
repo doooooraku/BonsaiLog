@@ -565,6 +565,12 @@ const th: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'แท็ก',
   bonsaiTagsEmpty: 'ยังไม่มีแท็ก',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: 'รายการโปรด',
+  presetTagName_flowering: 'ออกดอก',
+  tagSectionPresets: 'แนะนำ',
+  tagPresetBadgeMaster: 'ค่าตั้งต้น',
+  tagPresetLockedToast: 'ไม่สามารถแก้ไขแท็กค่าตั้งต้นได้',
   settingsThemeRowLabel: 'ธีม',
   settingsLanguageRowLabel: 'ภาษา',
   settingsNotificationRowLabel: 'การแจ้งเตือน',

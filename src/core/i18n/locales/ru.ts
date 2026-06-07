@@ -568,6 +568,12 @@ const ru: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Теги',
   bonsaiTagsEmpty: 'Тегов пока нет',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: 'Избранное',
+  presetTagName_flowering: 'Цветёт',
+  tagSectionPresets: 'Рекомендуемые',
+  tagPresetBadgeMaster: 'Шаблон',
+  tagPresetLockedToast: 'Шаблонные теги нельзя редактировать',
   settingsThemeRowLabel: 'Тема',
   settingsLanguageRowLabel: 'Язык',
   settingsNotificationRowLabel: 'Уведомления',

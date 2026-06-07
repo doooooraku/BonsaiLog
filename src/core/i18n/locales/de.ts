@@ -568,6 +568,12 @@ const de: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Tags',
   bonsaiTagsEmpty: 'Noch keine Tags',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: 'Favorit',
+  presetTagName_flowering: 'Blühend',
+  tagSectionPresets: 'Vorschläge',
+  tagPresetBadgeMaster: 'Vorlage',
+  tagPresetLockedToast: 'Vorgegebene Tags können nicht bearbeitet werden',
   settingsThemeRowLabel: 'Thema',
   settingsLanguageRowLabel: 'Sprache',
   settingsNotificationRowLabel: 'Benachrichtigungen',
