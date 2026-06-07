@@ -10,8 +10,7 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-// Sess68 PR #C: BORDER_DEFAULT / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess74 PR-2 (R-55): BRAND_GREEN / ON_BRAND を scheme-aware (c.tint / c.onTint) へ移行 (ADR-0052 cascade 完走)。
 import { useColors } from '@/src/core/theme/useColors';
 
 export type FilterChip = {
@@ -44,7 +43,11 @@ export function HomeFilterTabs({ chips, selectedId, onSelect, testID }: Props) {
               accessibilityRole="button"
               accessibilityState={{ selected: on }}
               accessibilityLabel={c.label}
-              style={[styles.chip, { borderColor: themeColors.border }, on && styles.chipOn]}
+              style={[
+                styles.chip,
+                { borderColor: themeColors.border },
+                on && [styles.chipOn, { borderColor: themeColors.tint, backgroundColor: themeColors.tint }],
+              ]}
               onPress={() => onSelect(c.id)}
               testID={`e2e_home_filter_chip_${c.id}`}
             >
@@ -52,7 +55,7 @@ export function HomeFilterTabs({ chips, selectedId, onSelect, testID }: Props) {
                 style={[
                   styles.chipText,
                   { color: themeColors.textSecondary },
-                  on && styles.chipTextOn,
+                  on && [styles.chipTextOn, { color: themeColors.onTint }],
                 ]}
                 numberOfLines={1}
               >
@@ -79,7 +82,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  chipOn: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN },
+  // Sess74 PR-2 (R-55): 色は inline c.tint / c.onTint へ移譲 (scheme-aware)。
+  chipOn: {},
   chipText: { fontSize: 13, letterSpacing: 0.3 },
-  chipTextOn: { color: ON_BRAND, fontWeight: '500' },
+  chipTextOn: { fontWeight: '500' },
 });

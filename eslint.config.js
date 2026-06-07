@@ -189,9 +189,10 @@ module.exports = defineConfig([
     plugins: { local: localPlugin },
     rules: {
       // Sess70 PR-D: FORBIDDEN_TOKENS 8 種 → 16 種拡張 (brand-static 撤回)。
-      // 既存 PR-C1-C3 で主要 cascade 対応、 残違反は PR-E (将来) で 0 化 → error 昇格予定。
-      // Sess66 PR3 → Sess68 PR #D と同じ段階移行 (warn → 違反 0 化 → error)。
-      'local/no-color-token-in-stylesheet': 'warn',
+      // Sess74 PR-2 (R-55): 残違反 14 件 全潰し完了 (StylePicker / HomeFilterTabs / PhotoUndoBanner /
+      // BonsaiBasicSection / BonsaiMetadataFields) → 'warn' → 'error' 昇格、 cascade 完走 (PR-E)。
+      // 今後の新規違反を CI で構造ブロック。
+      'local/no-color-token-in-stylesheet': 'error',
       // Sess70 PR-D / ADR-0052 Amendment: hex literal 禁止 (StyleSheet 内)。
       // 例外: 'transparent' / 'rgba()' は通過、 写真 overlay 等は reason marker (5 件以下上限)。
       // PR-D 段階導入 (warn)、 既存違反 0 化後 error 昇格予定 (PR-E)。

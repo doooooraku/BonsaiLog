@@ -5,8 +5,7 @@ import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';
 import { LabeledTextInput } from '@/src/components/form/LabeledTextInput';
 import { useTranslation } from '@/src/core/i18n/i18n';
-// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess74 PR-2 (R-55): BRAND_GREEN / ON_BRAND を scheme-aware (c.tint / c.onTint) へ移行。
 import { useColors } from '@/src/core/theme/useColors';
 import type { BonsaiBasicFormState } from '@/src/features/bonsai/BonsaiBasicForm';
 
@@ -85,10 +84,12 @@ export function BonsaiMetadataFields({ form }: { form: BonsaiBasicFormState }) {
               style={[
                 styles.checkbox,
                 { borderColor: c.border, backgroundColor: c.surface },
-                ageUnknown && styles.checkboxChecked,
+                ageUnknown && [styles.checkboxChecked, { backgroundColor: c.tint, borderColor: c.tint }],
               ]}
             >
-              {ageUnknown && <ThemedText style={styles.checkboxMark}>✓</ThemedText>}
+              {ageUnknown && (
+                <ThemedText style={[styles.checkboxMark, { color: c.onTint }]}>✓</ThemedText>
+              )}
             </View>
             <ThemedText style={styles.ageUnknownLabel}>
               {t('bonsaiFieldEstimatedAgeUnknown')}
@@ -133,7 +134,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkboxChecked: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
-  checkboxMark: { color: ON_BRAND, fontSize: 14, fontWeight: '700', lineHeight: 16 },
+  // Sess74 PR-2 (R-55): 色は inline c.tint / c.onTint へ移譲。
+  checkboxChecked: {},
+  checkboxMark: { fontSize: 14, fontWeight: '700', lineHeight: 16 },
   ageUnknownLabel: { fontSize: 14 },
 });

@@ -17,8 +17,8 @@ import { ThemedText } from '@/components/themed-text';
 import { PlusIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_PRIMARY / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN* / DISABLED_BG / ON_BRAND は brand-static で保持。
-import { BRAND_GREEN, BRAND_GREEN_BG, DISABLED_BG, ON_BRAND } from '@/src/core/theme/colors';
+// Sess74 PR-2 (R-55): BRAND_GREEN* / BRAND_GREEN_BG / DISABLED_BG / ON_BRAND を scheme-aware
+// (c.tint / c.tintSubtle / c.disabledBg / c.onTint) へ移行 (ADR-0052 cascade 完走、 PR-E)。
 import { useColors } from '@/src/core/theme/useColors';
 import {
   canCreateNewCustomStyle,
@@ -142,7 +142,14 @@ export default function StylePickerScreen() {
               testID={`e2e_style_option_${s}`}
               accessibilityRole="button"
               accessibilityLabel={t(labelKey)}
-              style={[styles.row, { borderBottomColor: c.border }, selected && styles.rowSelected]}
+              style={[
+                styles.row,
+                { borderBottomColor: c.border },
+                selected && [
+                  styles.rowSelected,
+                  { backgroundColor: c.tintSubtle, borderBottomColor: c.tint },
+                ],
+              ]}
               onPress={() => handleSelect(s)}
             >
               <ThemedText style={selected ? styles.rowTextSelected : styles.rowText}>
@@ -177,15 +184,20 @@ export default function StylePickerScreen() {
                 styles.row,
                 { borderBottomColor: c.border },
                 styles.rowCustom,
-                selected && styles.rowSelected,
+                selected && [
+                  styles.rowSelected,
+                  { backgroundColor: c.tintSubtle, borderBottomColor: c.tint },
+                ],
               ]}
               onPress={() => handleSelect(cs.name)}
             >
               <ThemedText style={selected ? styles.rowTextSelected : styles.rowText}>
                 {cs.name}
               </ThemedText>
-              <View style={styles.customBadge}>
-                <ThemedText style={styles.customBadgeText}>{t('pickerCustomBadge')}</ThemedText>
+              <View style={[styles.customBadge, { borderColor: c.tint }]}>
+                <ThemedText style={[styles.customBadgeText, { color: c.tint }]}>
+                  {t('pickerCustomBadge')}
+                </ThemedText>
               </View>
             </Pressable>
           );
@@ -196,12 +208,14 @@ export default function StylePickerScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('customInputAdd')}
-          style={styles.customAddButton}
+          style={[styles.customAddButton, { borderColor: c.tint }]}
           onPress={() => setShowCustomModal(true)}
           testID="e2e_style_picker_custom_add"
         >
-          <PlusIcon size={18} color={BRAND_GREEN} />
-          <ThemedText style={styles.customAddText}>{t('customInputAdd')}</ThemedText>
+          <PlusIcon size={18} color={c.tint} />
+          <ThemedText style={[styles.customAddText, { color: c.tint }]}>
+            {t('customInputAdd')}
+          </ThemedText>
         </Pressable>
       </View>
       <Modal
@@ -249,13 +263,19 @@ export default function StylePickerScreen() {
                 style={[
                   styles.modalButton,
                   styles.modalButtonPrimary,
-                  customInput.trim().length === 0 && styles.modalButtonDisabled,
+                  { backgroundColor: c.tint },
+                  customInput.trim().length === 0 && [
+                    styles.modalButtonDisabled,
+                    { backgroundColor: c.disabledBg },
+                  ],
                 ]}
                 disabled={customInput.trim().length === 0}
                 onPress={handleCreateCustom}
                 testID="e2e_style_picker_custom_create"
               >
-                <ThemedText style={styles.modalButtonPrimaryText}>{t('create')}</ThemedText>
+                <ThemedText style={[styles.modalButtonPrimaryText, { color: c.onTint }]}>
+                  {t('create')}
+                </ThemedText>
               </Pressable>
             </View>
           </View>
@@ -291,7 +311,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 8,
   },
-  rowSelected: { backgroundColor: BRAND_GREEN_BG, borderBottomColor: BRAND_GREEN },
+  // Sess74 PR-2 (R-55): 色は inline c.tintSubtle / c.tint へ移譲 (scheme-aware)。
+  rowSelected: {},
   rowText: { fontSize: 16 },
   rowTextSelected: { fontSize: 16, fontWeight: '600' },
   // Sess60 PR3: マスタ/カスタム section header (視覚的区切り、 uppercase + small text)
@@ -312,18 +333,16 @@ const styles = StyleSheet.create({
   sectionHeaderCounter: {
     fontSize: 12,
   },
-  // Sess60 PR3: カスタム badge (BRAND_GREEN outline chip、 small)
+  // Sess74 PR-2 (R-55): カスタム badge — borderColor / color は inline c.tint へ移譲。
   customBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: BRAND_GREEN,
     maxWidth: 100,
   },
   customBadgeText: {
     fontSize: 10,
-    color: BRAND_GREEN,
     fontWeight: '600',
   },
   footerWrap: {
@@ -331,18 +350,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
-  // Sess15 PR-AA: dashed gray → solid BRAND_GREEN (案 D2、 Home Empty CTA と統一 color family)。
+  // Sess74 PR-2 (R-55): borderColor / color は inline c.tint へ移譲。
   customAddButton: {
     paddingVertical: 14,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: BRAND_GREEN,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
   },
-  customAddText: { fontSize: 14, color: BRAND_GREEN, fontWeight: '600' },
+  customAddText: { fontSize: 14, fontWeight: '600' },
   // Sess15 PR-HH: キーボード表示時に modal とキーボードが重ならないよう画面上部 (paddingTop) に配置。
   modalBackdrop: {
     flex: 1,
@@ -377,7 +395,8 @@ const styles = StyleSheet.create({
   },
   modalButtonSecondary: {},
   modalButtonSecondaryText: {},
-  modalButtonPrimary: { backgroundColor: BRAND_GREEN },
-  modalButtonPrimaryText: { color: ON_BRAND, fontWeight: '600' },
-  modalButtonDisabled: { backgroundColor: DISABLED_BG },
+  // Sess74 PR-2 (R-55): 色は inline c.tint / c.onTint / c.disabledBg へ移譲 (scheme-aware)。
+  modalButtonPrimary: {},
+  modalButtonPrimaryText: { fontWeight: '600' },
+  modalButtonDisabled: {},
 });
