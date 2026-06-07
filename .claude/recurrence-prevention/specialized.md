@@ -646,7 +646,7 @@
 
 #### ルール本文
 
-Component (例: FAB / BottomSheet / Header / KAV / Modal) の SoT 化を ADR で決定する時、 必ず **「その Component を使う画面側の Layout Contract (= scroll content padding / margin / safe area / KeyboardAvoiding offset / focus management / animation timing)」 も同じ ADR で SoT 化** する。 Component と Layout Contract は **2 つの SoT として扱う**。
+Component (例: FAB / BottomSheet / Header / KAV / Modal / BottomCtaBar) の SoT 化を ADR で決定する時、 必ず **「その Component を使う画面側の Layout Contract + Multilingual Visual Contract」 も同じ ADR で SoT 化** する。 Component / Layout Contract / Multilingual Visual Contract は **3 つの SoT として扱う** (Sess73 PR-1 で「Multilingual Visual Contract」 を Sess72 当時の 2 contract に追加拡張)。
 
 #### Layout Contract の典型項目
 
@@ -655,6 +655,21 @@ Component (例: FAB / BottomSheet / Header / KAV / Modal) の SoT 化を ADR で
 - **KeyboardAvoiding offset**: KAV の `keyboardVerticalOffset` 計算式 (Component と KAV の重なり防止)
 - **focus management**: 画面遷移時の focus 移動 (`React.useFocusEffect` + `useRef` 連携)
 - **animation timing**: 画面入退場の animation duration (Component と画面の同期)
+
+#### Multilingual Visual Contract の典型項目 (Sess73 PR-1 拡張)
+
+- **lineHeight 明示**: descender (g/p/q/y) のクリアランス確保。 fontSize × 1.4 が標準目安 (Noto Sans JP / Inter / NotoSerifJP 全フォント対応)。 未明示時 RN default は OS 依存で約 1.2、 descender が visualBox を超過し下端で切れる
+- **numberOfLines + adjustsFontSizeToFit**: 長文言語 (ru / de / vi / zhHans 等) の overflow を構造解消。 `numberOfLines={1}` で 1 行維持 + `adjustsFontSizeToFit minimumFontScale={0.85}` で font 自動縮小、 layout 不変を保証
+- **RTL 対応** (将来 ar / he 追加時): `textAlign` の SoT、 アイコン位置の `flexDirection: 'row-reverse'` 切替 SoT
+- **数字 fallback**: 言語によって異なる数字書記 (例: hi デーヴァナーガリー数字、 ar アラビア数字) の `Intl.NumberFormat` SoT
+
+#### Multilingual Visual Contract の Acceptance test テンプレ拡張 (Sess73)
+
+Component SoT 化 ADR の PR 完了条件に以下を **必須項目** として追加:
+
+- **代表 4 言語の visual smoke**: en (Latin descender g/p/q/y 確認) + de (中長文) + ru (キリル長文 + descender なし言語特性) + vi (合成文字付き Latin) で実機 or Jest snapshot SS 撮影
+- **長文 overflow 検証**: 各 component の最大文字数想定 (i18n key 全 19 言語 max length grep) で layout 破綻なし確認
+- **descender 検証**: Latin / Cyrillic / Vietnamese で g/p/q/y を含む実 i18n key (例 `bonsaiCreateNew` en = "Register new bonsai") で 1 文字も切れない確認
 
 #### 違反例 (Sess36 ADR-0042 の SoT 漏れ)
 
@@ -665,15 +680,23 @@ Component (例: FAB / BottomSheet / Header / KAV / Modal) の SoT 化を ADR で
 - 2026-06-03 テスター報告「FAB がリストと重なる」 → Sess72 で ADR-0042 D3 撤回 + ADR-0054 起票の手戻り
 - ADR-0042 Acceptance test では「FAB が tabBar / banner にかぶらない」 は検証したが、 「FAB が ScrollView 最終項目にかぶらない」 は検証項目になかった (Layout Contract SoT 化漏れ)
 
+#### 違反例 2 (Sess72 ADR-0054 の Multilingual Visual Contract 漏れ、 Sess73 で発見)
+
+- ADR-0054 D2 で **BottomCtaBar component の SoT** + **Layout Contract** (inline 配置 → paddingBottom 計算不要) は確立
+- しかし **Multilingual Visual Contract** (lineHeight / numberOfLines / adjustsFontSizeToFit / descender clearance) が SoT 化対象から漏れた
+- 結果として 2026-06-07 user 報告で en「Register new bonsai」 / 「Log a care event」 の **g 見切れ** + ru「Запланировать задачи」 等の **長文 overflow リスク** が顕在化
+- 真因: ADR-0054 D2 議論時 ja-only mock で確認したため Latin descender 文字 / 長文非日本語が登場せず、 Acceptance test の PR-2 完了条件に「multi-language visual smoke」 が抜けていた
+- 対策: Sess73 PR-1 で本 R-62 を「Layout Contract + Multilingual Visual Contract」 の 2 contract に拡張、 typical 項目 + Acceptance test テンプレ追加
+
 #### 適用例 (Sess72 以降の将来想定)
 
-| Component | Layout Contract 項目 |
-|---|---|
-| `<BottomCtaBar />` (Sess72 ADR-0054) | 画面下端固定 = paddingBottom 計算不要、 ただし AdBanner / TabBar との順序保証 |
-| `<BottomSheet />` (将来) | 画面下半分占有時の content scroll 動作 / focus 管理 |
-| `<StickyHeader />` (将来) | scroll 時の content paddingTop / status bar 整合 |
-| `<KeyboardAvoidingView />` (ADR-0037 既存) | keyboardVerticalOffset = Stack header 高さ + safe area inset、 form 画面の inner ScrollView padding |
-| `<Modal />` / `<FormSheet />` (ADR-0024) | backdrop + 親画面 scroll lock / focus trap |
+| Component | Layout Contract 項目 | Multilingual Visual Contract 項目 |
+|---|---|---|
+| `<BottomCtaBar />` (Sess72 ADR-0054 + Sess73 PR-1) | 画面下端固定 = paddingBottom 計算不要、 ただし AdBanner / TabBar との順序保証 | lineHeight 28 (descender クリアランス) + numberOfLines={1} + adjustsFontSizeToFit minimumFontScale=0.85 (Sess73 PR-1 で SoT 化) |
+| `<BottomSheet />` (将来) | 画面下半分占有時の content scroll 動作 / focus 管理 | sheet title / cta label の長文 overflow / 折返し可否 |
+| `<StickyHeader />` (将来) | scroll 時の content paddingTop / status bar 整合 | header title 長文 truncation (numberOfLines={1} + ellipsizeMode) |
+| `<KeyboardAvoidingView />` (ADR-0037 既存) | keyboardVerticalOffset = Stack header 高さ + safe area inset、 form 画面の inner ScrollView padding | placeholder / submit cta の各言語長による layout 影響 |
+| `<Modal />` / `<FormSheet />` (ADR-0024) | backdrop + 親画面 scroll lock / focus trap | modal title / body / cta の各言語 line wrap 確認 |
 
 #### 検出 / 自動化方針
 
