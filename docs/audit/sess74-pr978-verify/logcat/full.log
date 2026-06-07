@@ -1,0 +1,1062 @@
+--------- beginning of main
+06-07 11:37:58.240   904   970 E BufferQueueDebug: [ff5384c PopupWindow:967cfb7#303752](this:0xb4000074365b33e8,id:-1,api:0,p:-1,c:-1) id info cannot be read from 'ff5384c PopupWindow:967cfb7#303752'
+06-07 11:37:58.240   904   970 I BufferQueueDebug: [ff5384c PopupWindow:967cfb7#303752](this:0xb4000074365b33e8,id:-1,api:0,p:-1,c:-1) BufferQueue core=(904:/system/bin/surfaceflinger)
+06-07 11:37:58.243 11846 11846 D InputTransport: Create ARC handle: 0xb4000075989c5030
+06-07 11:37:58.243 11846 11846 D InputEventReceiver: Input log is disabled in InputEventReceiver.
+06-07 11:37:58.243 11846 11846 D InputTransport: Input log is disabled in InputChannel.
+--------- beginning of system
+06-07 11:37:58.245  1501  2965 D CoreBackPreview: Window{ff5384c u0 PopupWindow:967cfb7}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@b65e5aa, mPriority=0, mIsAnimationCallback=false}
+06-07 11:37:58.245   904   970 E BufferQueueDebug: [PopupWindow:967cfb7#303753](this:0xb400007436541568,id:-1,api:0,p:-1,c:-1) id info cannot be read from 'PopupWindow:967cfb7#303753'
+06-07 11:37:58.245   904   970 I BufferQueueDebug: [PopupWindow:967cfb7#303753](this:0xb400007436541568,id:-1,api:0,p:-1,c:-1) BufferQueue core=(904:/system/bin/surfaceflinger)
+06-07 11:37:58.253 11846 11846 D BufferQueueConsumer: [](id:2e460000003c,api:0,p:-1,c:11846) connect: controlledByApp=false
+06-07 11:37:58.255 11846 11885 E OpenGLRenderer: Unable to match the desired swap behavior.
+06-07 11:37:58.260 11846 11885 D BLASTBufferQueue: [VRI[PopupWindow:967cfb7]#60](f:0,a:1) acquireNextBufferLocked size=720x47 mFrameNumber=1 applyTransaction=true mTimestamp=3862395857604522(auto) mPendingTransactions.size=0 graphicBufferId=50878182588657 transform=0
+06-07 11:37:58.261  1501  4150 W WindowManager: finishDrawingWindow: Window{ff5384c u0 PopupWindow:967cfb7} mDrawState=DRAW_PENDING
+06-07 11:37:58.262  1501  1685 W WindowManager: real show surface PopupWindow:967cfb7 sc:Surface(name=PopupWindow:967cfb7)/@0xeba6111
+06-07 11:37:58.263 11846 11846 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@64f6842
+06-07 11:37:58.264 11846 11846 D View    : [Warning] assignParent to null: this = android.widget.PopupWindow$PopupDecorView{825bd9a V.E...... R......D 0,0-720,47}
+06-07 11:37:58.266  1501  2965 W InputManager-JNI: Input channel object 'ff5384c PopupWindow:967cfb7 (client)' was disposed without first being removed with the input manager!
+06-07 11:37:58.266  1501  2965 D WindowManager: setParent old=Window{96f4205 u0 com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity},new=null,this window=Window{ff5384c u0 PopupWindow:967cfb7},callers=com.android.server.wm.WindowContainer.removeChild:761 com.android.server.wm.WindowContainer.removeImmediately:819 com.android.server.wm.WindowState.removeImmediately:2392 com.android.server.wm.WindowState.removeIfPossible:2552 com.android.server.wm.WindowManagerService.removeWindow:2120 com.android.server.wm.Session.remove:241 
+06-07 11:37:58.268 11846 11846 D InputTransport: Destroy ARC handle: 0xb4000075989c5030
+06-07 11:37:58.276  1501  4150 W WindowManager: Failed looking up window session=Session{af1ccb5 11846:u0a11407} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6253 com.android.server.wm.WindowManagerService.finishDrawingWindow:2859 com.android.server.wm.Session.finishDrawing:303 
+06-07 11:37:58.276  1501  4150 W WindowManager: finishDrawingWindow: null mDrawState=null
+06-07 11:37:58.278 11846 11857 D BLASTBufferQueue: [VRI[PopupWindow:967cfb7]#60](f:0,a:1) destructor()
+06-07 11:37:58.278 11846 11857 D BufferQueueConsumer: [VRI[PopupWindow:967cfb7]#60(BLAST Consumer)60](id:2e460000003c,api:0,p:-1,c:11846) disconnect
+06-07 11:37:58.278  1501  2965 W WindowManager: Failed looking up window session=Session{af1ccb5 11846:u0a11407} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6253 com.android.server.wm.Session.setOnBackInvokedCallbackInfo:954 android.view.IWindowSession$Stub.onTransact:1155 
+06-07 11:37:58.278  1501  2965 I WindowManager: setOnBackInvokedCallback(): No window state for package:com.dooooraku.bonsailog
+06-07 11:37:58.290   904   904 I BufferQueueDebug: [ff5384c PopupWindow:967cfb7#303752](this:0xb4000074365b33e8,id:-1,api:0,p:-1,c:904) onDestructor()
+06-07 11:37:58.355   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:37:58.461 13844 13844 W RefBase : RefBase: Explicit destruction, weak count = 0 (in 0x73f1ba5cd0). Use sp<> to manage this object.
+06-07 11:37:58.465 13844 13844 D RefBase :   #00 pc 00000000000cd8f0  /apex/com.android.runtime/lib64/bionic/libc.so (__cxa_finalize+144) (BuildId: 19c32900d9d702c303d2b4164fbba76c)
+06-07 11:37:58.465 13844 13844 D RefBase :   #01 pc 00000000000bfa98  /apex/com.android.runtime/lib64/bionic/libc.so (exit+24) (BuildId: 19c32900d9d702c303d2b4164fbba76c)
+06-07 11:37:58.465 13844 13844 D RefBase :   #02 pc 00000000000546ec  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+108) (BuildId: 19c32900d9d702c303d2b4164fbba76c)
+06-07 11:37:58.488   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=13.83 dur=1952.54 max=1418.00 min=16.52
+06-07 11:37:58.613  7798  7856 W ProxyAndroidLoggerBackend: Too many Flogger logs received before configuration. Dropping old logs.
+06-07 11:37:58.648   904   970 D SurfaceFlinger: [SF client] NEW(0xb400007416c59030) for (11846:com.dooooraku.bonsailog)
+06-07 11:37:58.652 11846 11846 D VRI[PopupWindow:6f2d6cb]: hardware acceleration = true, forceHwAccelerated = false
+06-07 11:37:58.655   904   969 E BufferQueueDebug: [56044e4 PopupWindow:6f2d6cb#303754](this:0xb4000074365c4548,id:-1,api:0,p:-1,c:-1) id info cannot be read from '56044e4 PopupWindow:6f2d6cb#303754'
+06-07 11:37:58.655   904   969 I BufferQueueDebug: [56044e4 PopupWindow:6f2d6cb#303754](this:0xb4000074365c4548,id:-1,api:0,p:-1,c:-1) BufferQueue core=(904:/system/bin/surfaceflinger)
+06-07 11:37:58.662 11846 11846 D InputTransport: Create ARC handle: 0xb4000075989d02b0
+06-07 11:37:58.662 11846 11846 D InputEventReceiver: Input log is disabled in InputEventReceiver.
+06-07 11:37:58.662 11846 11846 D InputTransport: Input log is disabled in InputChannel.
+06-07 11:37:58.664   873   940 W AString : ctor got NULL, using empty string instead
+06-07 11:37:58.665   873   940 I SensorSavedChannel: [704,6010,1627]==>gyro_bias.json
+06-07 11:37:58.666  1501  2965 D CoreBackPreview: Window{56044e4 u0 PopupWindow:6f2d6cb}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@2118002, mPriority=0, mIsAnimationCallback=false}
+06-07 11:37:58.667   904   970 E BufferQueueDebug: [PopupWindow:6f2d6cb#303755](this:0xb4000074365a2288,id:-1,api:0,p:-1,c:-1) id info cannot be read from 'PopupWindow:6f2d6cb#303755'
+06-07 11:37:58.667   904   970 I BufferQueueDebug: [PopupWindow:6f2d6cb#303755](this:0xb4000074365a2288,id:-1,api:0,p:-1,c:-1) BufferQueue core=(904:/system/bin/surfaceflinger)
+06-07 11:37:58.677 11846 11846 D BufferQueueConsumer: [](id:2e460000003d,api:0,p:-1,c:11846) connect: controlledByApp=false
+06-07 11:37:58.681 11846 11885 E OpenGLRenderer: Unable to match the desired swap behavior.
+06-07 11:37:58.684 11846 11885 D BLASTBufferQueue: [VRI[PopupWindow:6f2d6cb]#61](f:0,a:1) acquireNextBufferLocked size=720x47 mFrameNumber=1 applyTransaction=true mTimestamp=3862396281442753(auto) mPendingTransactions.size=0 graphicBufferId=50878182588660 transform=0
+06-07 11:37:58.686  1501  4150 W WindowManager: finishDrawingWindow: Window{56044e4 u0 PopupWindow:6f2d6cb} mDrawState=DRAW_PENDING
+06-07 11:37:58.686 11846 11846 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@7921966
+06-07 11:37:58.687 11846 11846 D View    : [Warning] assignParent to null: this = android.widget.PopupWindow$PopupDecorView{dc55443 V.E...... R......D 0,0-720,47}
+06-07 11:37:58.689  1501  1685 W WindowManager: real show surface PopupWindow:6f2d6cb sc:Surface(name=PopupWindow:6f2d6cb)/@0x85f2149
+06-07 11:37:58.690   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:37:58.690   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:56
+06-07 11:37:58.695  1501  4150 D CoreBackPreview: Window{56044e4 u0 PopupWindow:6f2d6cb}: Setting back callback null
+06-07 11:37:58.699  1501  2965 W InputManager-JNI: Input channel object '56044e4 PopupWindow:6f2d6cb (client)' was disposed without first being removed with the input manager!
+06-07 11:37:58.699  1501  2965 D WindowManager: setParent old=Window{96f4205 u0 com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity},new=null,this window=Window{56044e4 u0 PopupWindow:6f2d6cb},callers=com.android.server.wm.WindowContainer.removeChild:761 com.android.server.wm.WindowContainer.removeImmediately:819 com.android.server.wm.WindowState.removeImmediately:2392 com.android.server.wm.WindowState.removeIfPossible:2552 com.android.server.wm.WindowManagerService.removeWindow:2120 com.android.server.wm.Session.remove:241 
+06-07 11:37:58.700 11846 11846 D InputTransport: Destroy ARC handle: 0xb4000075989d02b0
+06-07 11:37:58.701 11846 11857 D BLASTBufferQueue: [VRI[PopupWindow:6f2d6cb]#61](f:0,a:1) destructor()
+06-07 11:37:58.701 11846 11857 D BufferQueueConsumer: [VRI[PopupWindow:6f2d6cb]#61(BLAST Consumer)61](id:2e460000003d,api:0,p:-1,c:11846) disconnect
+06-07 11:37:58.726   904   904 I BufferQueueDebug: [PopupWindow:6f2d6cb#303755](this:0xb4000074365a2288,id:-1,api:0,p:-1,c:904) onDestructor()
+06-07 11:37:58.726   904   904 I BufferQueueDebug: [56044e4 PopupWindow:6f2d6cb#303754](this:0xb4000074365c4548,id:-1,api:0,p:-1,c:904) onDestructor()
+06-07 11:37:58.818  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:37:58.827   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:37:59.118   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:37:59.199 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:37:59.690   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:37:59.690   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:37:59.690   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:37:59.692   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:37:59.695   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:37:59.695   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:37:59.935 11846 12127 I DynamiteModule: Considering local module com.google.android.gms.ads.dynamite:0 and remote module com.google.android.gms.ads.dynamite:260480602
+06-07 11:37:59.935 11846 12127 I DynamiteModule: Selected remote version of com.google.android.gms.ads.dynamite, version >= 260480602
+06-07 11:37:59.935 11846 12127 V DynamiteModule: Dynamite loader version >= 2, using loadModule2NoCrashUtils
+06-07 11:37:59.950 11846 12127 I Ads     : Use RequestConfiguration.Builder().setTestDeviceIds(Arrays.asList("AD1E4590B96C9FF99A3B8A6EA76915B3")) to get test ads on this device.
+06-07 11:37:59.959   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=10.88 dur=1470.63 max=1200.43 min=16.29
+06-07 11:37:59.964   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:12.162744,dur:1973.24,max:1107.23,min:13.40  
+06-07 11:37:59.973  1501  2965 I AS.AudioService: getMode, get current owner's mode
+06-07 11:37:59.973  1501  2965 I AS.AudioService: getMode, currentModeHandler is null
+06-07 11:38:00.027   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:00.037 11846 13849 W ServiceBindIntentUtils: Dynamic lookup for intent failed for action: com.google.android.gms.ads.service.START
+06-07 11:38:00.046  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:00.049 25384 25384 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.ads.service.START pkg=com.google.android.gms }
+06-07 11:38:00.050 25384 25384 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.ads.service.START pkg=com.google.android.gms }
+06-07 11:38:00.060   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=1.51 dur=1992.57 max=1203.43 min=300.26
+06-07 11:38:00.076   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.48 dur=2088.93 max=2088.93 min=2088.93
+06-07 11:38:00.078 25384 12304 I DynamiteModule: Considering local module com.google.android.gms.ads.dynamite:0 and remote module com.google.android.gms.ads.dynamite:260480602
+06-07 11:38:00.079 25384 12304 I DynamiteModule: Selected remote version of com.google.android.gms.ads.dynamite, version >= 260480602
+06-07 11:38:00.127 25384 13814 W SQLiteLog: (28) double-quoted string literal: "1780627080127"
+06-07 11:38:00.127 25384 13814 W SQLiteLog: (28) double-quoted string literal: "1"
+06-07 11:38:00.143   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:00.319 25384 13812 I Ads     : SDK version: afma-sdk-a-v260480999.260480000.1
+06-07 11:38:00.321 25384 13812 I Ads     : HTTP timeout: 60000 milliseconds.
+06-07 11:38:00.505  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:00.559 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:00.563 17898 18064 I NearbyDiscovery: (REDACTED) [trigger-id=ScanC78042B3] FastPairCache: Bloom filter changed, %s, newData=%s, oldData=%s, scanMode=%s
+06-07 11:38:00.564 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:00.691   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:00.691   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:00.962 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:00.962 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:00.962 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:00.962 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:00.962 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:00.963  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:00.981  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:00.981  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:00.984  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:01.033   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:3.741975,dur:1068.95,max:857.91,min:20.01  
+06-07 11:38:01.087 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:01.087 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:01.090 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:01.095   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:01.125   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=1.88 dur=1064.90 max=950.09 min=114.82
+06-07 11:38:01.172  1123  1123 I thermal_repeater: [recvMdThermalInfo] ret=5, strLen=127, ERROR
+06-07 11:38:01.271   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:01.623  1501  2965 I AppsFilter: interaction: PackageSetting{6c07576 com.dooooraku.bonsailog/11407} -> PackageSetting{fc3fb4c com.android.adbkeyboard/10561} BLOCKED
+06-07 11:38:01.692   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:01.692   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:01.819  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:01.837 11846 11846 I DynamiteModule: Considering local module com.google.android.gms.ads.dynamite:0 and remote module com.google.android.gms.ads.dynamite:260480602
+06-07 11:38:01.838 11846 11846 I DynamiteModule: Selected remote version of com.google.android.gms.ads.dynamite, version >= 260480602
+06-07 11:38:01.889 11980 12087 E chromium: [ERROR:cc/tiles/tile_manager.cc:1012] WARNING: tile memory limits exceeded, some content may not draw
+06-07 11:38:01.889 11980 12087 E chromium: [ERROR:cc/tiles/tile_manager.cc:1012] WARNING: tile memory limits exceeded, some content may not draw
+06-07 11:38:01.913   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.51 dur=1954.56 max=1954.56 min=1954.56
+06-07 11:38:01.947 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:01.947 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:01.947 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:01.947 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:02.037   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:7.968885,dur:1003.90,max:791.25,min:14.59  
+06-07 11:38:02.551   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:02.581   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.69 dur=1456.15 max=1456.15 min=1456.15
+06-07 11:38:02.692   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:02.692   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:60
+06-07 11:38:02.692   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:38:02.694   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:38:02.694   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:02.694   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:03.327 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:03.333 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:03.334   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=23.93 dur=1421.01 max=849.17 min=16.19
+06-07 11:38:03.340   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:22.260851,dur:1302.74,max:758.02,min:15.39  
+06-07 11:38:03.399   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:03.423   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:03.693   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:03.694   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:58
+06-07 11:38:03.823   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:03.852   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=1.57 dur=1270.46 max=832.89 min=437.57
+06-07 11:38:03.982 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:03.982 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:03.982 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:03.982 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:03.983 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:03.983  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:04.099 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:04.099 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:04.103 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:04.693   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:04.693   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:04.693   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:38:04.694   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:38:04.695   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:04.695   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:04.820  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:04.996  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:05.575   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:05.694   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:05.694   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:05.761  2431 19573 D IpClient/wlan0: addressUpdated: 2408:211:24c6:7d00:ac06:eeff:fe83:861d/64 on ifindex 33 flags 0x00000100 scope 0
+06-07 11:38:05.763  2431 19573 D IpClient/wlan0: addressUpdated: 2408:211:24c6:7d00:b9a4:cd86:9e7a:c666/64 on ifindex 33 flags 0x00000001 scope 0
+06-07 11:38:05.765  2431 19573 D IpClient/wlan0: addressUpdated: 2408:211:24c6:7d00:4d6e:3689:f88e:af2a/64 on ifindex 33 flags 0x00000021 scope 0
+06-07 11:38:05.765  2431 19573 W AlarmManager: Unrecognized alarm listener com.android.networkstack.android.net.ip.IpClientLinkObserver$Dhcp6PdPreferredPrefixAlarmListener@bf2106b
+06-07 11:38:05.771   852  1342 W Netd    : No subsystem found in netlink event
+06-07 11:38:06.190   873   940 W AString : ctor got NULL, using empty string instead
+06-07 11:38:06.191   873   940 I SensorSavedChannel: [752,6005,1525]==>gyro_bias.json
+06-07 11:38:06.566 25384 25384 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.ads.service.START pkg=com.google.android.gms }
+06-07 11:38:06.567  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:06.694   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:06.694   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:06.843   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=4.84 dur=3509.31 max=3088.52 min=16.37
+06-07 11:38:06.847 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:06.850   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:5.413622,dur:3509.67,max:2997.34,min:14.20  
+06-07 11:38:07.001 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:07.001 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:07.001 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:07.002 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:07.002 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:07.002  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:07.112 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:07.112 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:07.118 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:07.547   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:07.580   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.27 dur=3728.14 max=3728.14 min=3728.14
+06-07 11:38:07.694   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:61
+06-07 11:38:07.695   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:38:07.696   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:38:07.696   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:07.696   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:07.727   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:07.821  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:08.694   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:08.695   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:38:08.696   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:38:08.696   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:08.696   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:08.929 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:08.935 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:09.695   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:09.879   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:10.021 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:10.021 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:10.021 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:10.022 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:10.022 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:10.023  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:10.041  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:10.042  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:10.044  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:10.085   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.20 dur=10009.71 max=9057.04 min=952.67
+06-07 11:38:10.091   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:12.031759,dur:3241.42,max:2510.56,min:15.87  
+06-07 11:38:10.123 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:10.124 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:10.128 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:10.151   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:10.183   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.38 dur=2603.44 max=2603.44 min=2603.44
+06-07 11:38:10.695   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:10.696   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:10.822  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:11.180  1123  1123 I thermal_repeater: [recvMdThermalInfo] ret=5, strLen=127, ERROR
+06-07 11:38:11.696   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:11.696   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:11.840   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=7.61 dur=4996.34 max=4358.35 min=16.32
+06-07 11:38:11.846   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:1.139961,dur:1754.45,max:1661.56,min:92.89  
+06-07 11:38:11.855 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:12.031   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:12.543   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:12.576   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.42 dur=2392.68 max=2392.68 min=2392.68
+06-07 11:38:12.696   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:12.696   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:61
+06-07 11:38:12.696   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:38:12.697   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:38:12.698   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:12.698   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:13.042 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:13.042 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:13.042 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:13.042 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:13.042 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:13.043  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:13.062  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:13.062  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:13.064  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:13.110   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.33 dur=3024.49 max=3024.49 min=3024.49
+06-07 11:38:13.116   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:30.695646,dur:1270.54,max:539.34,min:15.30  
+06-07 11:38:13.138 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:13.138 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:13.142 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:13.179   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:13.650   873   940 W AString : ctor got NULL, using empty string instead
+06-07 11:38:13.651   873   940 I SensorSavedChannel: [718,6027,1528]==>gyro_bias.json
+06-07 11:38:13.696   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:13.696   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:13.696   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:38:13.698   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:38:13.698   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:13.698   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:13.823  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:14.184   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:14.518 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:14.523 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:14.526 17898 18064 I NearbyDiscovery: (REDACTED) %s
+06-07 11:38:14.533 17898 18064 I NearbyDiscovery: (REDACTED) %s
+06-07 11:38:14.537 17898 18064 I NearbyDiscovery: (REDACTED) %s
+06-07 11:38:14.696   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:14.697   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:15.138  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:15.138  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:15.697   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:15.697   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:16.061 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:16.061 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:16.061 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:16.062 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:16.062 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:16.063  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:16.147 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:16.147 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:16.151 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:16.337   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:16.697   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:16.697   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:16.824  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:16.836   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=7.61 dur=4996.53 max=4358.77 min=16.16
+06-07 11:38:16.842   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:0.536803,dur:3725.76,max:3633.28,min:92.49  
+06-07 11:38:16.857 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:17.310 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:17.316 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:17.523   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:17.556   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.40 dur=4980.07 max=4348.04 min=632.03
+06-07 11:38:17.697   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:17.698   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:61
+06-07 11:38:17.698   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:38:17.699   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:38:17.699   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:17.699   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:18.488   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:18.698   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:18.698   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:18.698   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:38:18.699   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:38:18.699   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:18.699   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:19.082 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:19.082 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:19.082 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:19.082 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:19.082 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:19.083  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:19.161 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:19.162 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:19.167 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:19.698   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:19.825  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:20.024   952   952 I libPerfCtl: xgfGetCmd ioctl_ret:-1
+06-07 11:38:20.112 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:20.117 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:20.454  7798  7846 I native  : I0000 00:00:1780799900.454171    7846 soda_async_impl.cc:1424] Current audio timestamp: 1780799900322681
+06-07 11:38:20.640   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:20.699   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:21.188  1123  1123 I thermal_repeater: [recvMdThermalInfo] ret=5, strLen=127, ERROR
+06-07 11:38:21.230   873   940 W AString : ctor got NULL, using empty string instead
+06-07 11:38:21.231   873   940 I SensorSavedChannel: [664,6025,1732]==>gyro_bias.json
+06-07 11:38:21.699   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:21.833   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=7.61 dur=4996.26 max=4375.35 min=16.26
+06-07 11:38:21.839   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:7.804177,dur:4997.32,max:4282.40,min:14.20  
+06-07 11:38:21.856 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:22.102 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:22.102 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:22.102 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:22.102 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:22.102 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:22.103  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:22.122  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:22.122  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:22.124  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:22.153   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.11 dur=9043.26 max=9043.26 min=9043.26
+06-07 11:38:22.176 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:22.176 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:22.179 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:22.535   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:22.551   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.20 dur=4995.50 max=4995.50 min=4995.50
+06-07 11:38:22.699   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:22.700   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:61
+06-07 11:38:22.700   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:38:22.701   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:38:22.701   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:22.701   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:22.790   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:22.826  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:22.919 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:22.924 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:23.700   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:23.700   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:23.700   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:38:23.701   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:38:23.702   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:23.702   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:24.700   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:24.700   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:24.943   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:25.121 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:25.121 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:25.121 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:25.122 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:25.122 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:25.123  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:25.141  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:25.142  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:25.144  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:25.187 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:25.187 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:25.191   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.33 dur=3038.43 max=3038.43 min=3038.43
+06-07 11:38:25.193 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:25.197   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:11.911630,dur:3358.06,max:2644.93,min:12.87  
+06-07 11:38:25.259   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:25.289   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.37 dur=2737.40 max=2737.40 min=2737.40
+06-07 11:38:25.695 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:25.700   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:25.700   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:25.704 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:25.709 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:25.827  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:26.124  1501  1688 D AES     : AEEIOCTL_GET/SET_SF_STATE IOCTL,cmd= 1074294797, lParam=0. 
+06-07 11:38:26.124  1501  1688 D AES     : AEEIOCTL_RT_MON_Kick IOCTL,cmd= 2147774474, lParam=300. 
+06-07 11:38:26.701   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:26.701   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:26.846   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=7.78 dur=5013.06 max=4374.97 min=16.33
+06-07 11:38:26.847 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:26.852   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:1.208786,dur:1654.55,max:1562.05,min:92.50  
+06-07 11:38:27.095   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:27.135 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:27.195   909   928 D ccci_mdinit: (1):monitor_time_update_thread round:229046 ########
+06-07 11:38:27.551   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:27.581   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.44 dur=2291.96 max=2291.96 min=2291.96
+06-07 11:38:27.701   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:27.701   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:60
+06-07 11:38:27.701   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:38:27.703   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:38:27.703   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:27.703   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:28.142 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:28.142 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:28.142 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:28.143 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:28.143 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:28.144  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:28.200 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:28.200 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:28.205 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:28.500 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:28.504 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:28.613  7798  7856 W ProxyAndroidLoggerBackend: Too many Flogger logs received before configuration. Dropping old logs.
+06-07 11:38:28.701   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:28.702   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:28.702   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:38:28.703   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:38:28.703   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:28.703   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:28.750   873   940 W AString : ctor got NULL, using empty string instead
+06-07 11:38:28.750   873   940 I SensorSavedChannel: [676,5965,1874]==>gyro_bias.json
+06-07 11:38:28.828  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:29.248   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:29.702   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:29.702   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:30.703   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:30.704   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:31.161 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:31.162 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:31.162 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:31.162 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:31.162 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:31.163  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:31.181  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:31.181  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:31.184  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:31.198  1123  1123 I thermal_repeater: [recvMdThermalInfo] ret=5, strLen=127, ERROR
+06-07 11:38:31.215 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:31.215 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:31.220 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:31.224   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.17 dur=6032.59 max=6032.59 min=6032.59
+06-07 11:38:31.230   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:8.908675,dur:4377.76,max:3647.92,min:15.00  
+06-07 11:38:31.288   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:31.305   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.27 dur=3724.66 max=3724.66 min=3724.66
+06-07 11:38:31.310 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:31.316 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:31.316 17898 13653 I NearbyDiscovery: (REDACTED) loadFastPairModule: checkFeaturesAreAvailable:%d
+06-07 11:38:31.317 17898 13653 I NearbyDiscovery: loadFastPairModule: FastPair module is downloaded. [CONTEXT service_id=265 ]
+06-07 11:38:31.401   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:31.704   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:31.829  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:31.842   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=7.61 dur=4996.58 max=4358.45 min=16.25
+06-07 11:38:31.848 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:32.233   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:23.927729,dur:1003.02,max:541.38,min:15.66  
+06-07 11:38:32.547   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:32.578   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.79 dur=1273.06 max=1273.06 min=1273.06
+06-07 11:38:32.704   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:61
+06-07 11:38:32.704   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:38:32.705   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:38:32.706   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:32.706   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:33.307  2431 19573 D IpClient/wlan0: addressUpdated: 2408:211:24c6:7d00:ac06:eeff:fe83:861d/64 on ifindex 33 flags 0x00000100 scope 0
+06-07 11:38:33.310  2431 19573 D IpClient/wlan0: addressUpdated: 2408:211:24c6:7d00:b9a4:cd86:9e7a:c666/64 on ifindex 33 flags 0x00000001 scope 0
+06-07 11:38:33.312  2431 19573 D IpClient/wlan0: addressUpdated: 2408:211:24c6:7d00:4d6e:3689:f88e:af2a/64 on ifindex 33 flags 0x00000021 scope 0
+06-07 11:38:33.314  2431 19573 W AlarmManager: Unrecognized alarm listener com.android.networkstack.android.net.ip.IpClientLinkObserver$Dhcp6PdPreferredPrefixAlarmListener@bf2106b
+06-07 11:38:33.319   852  1342 W Netd    : No subsystem found in netlink event
+06-07 11:38:33.553   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:33.704   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:33.705   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:38:33.706   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:38:33.706   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:33.706   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:34.111 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:34.116 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:34.181 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:34.181 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:34.181 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:34.182 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:34.182 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:34.183  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:34.197  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:34.197  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:34.199  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:34.227 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:34.228 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:34.233 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:34.249   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.33 dur=3024.63 max=3024.63 min=3024.63
+06-07 11:38:34.255   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:8.407341,dur:2022.04,max:1675.17,min:16.08  
+06-07 11:38:34.315   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:34.347   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.57 dur=1768.05 max=1768.05 min=1768.05
+06-07 11:38:34.705   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:34.705   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:34.831  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:35.010 25384 25384 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.ads.service.CACHE pkg=com.google.android.gms }
+06-07 11:38:35.012  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:35.012  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:35.705   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:35.705   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:35.706   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:35.895 11846 11852 I oraku.bonsailog: Background young concurrent copying GC freed 13MB AllocSpace bytes, 57(8408KB) LOS objects, 42% free, 28MB/50MB, paused 454us,79us total 100.030ms
+06-07 11:38:35.917   904   970 D SurfaceFlinger: [SF client] REMOVE (0xb400007416c59030) for (11846:com.dooooraku.bonsailog)
+06-07 11:38:35.917   904   969 D SurfaceFlinger: [SF client] REMOVE (0xb400007416c33da0) for (11846:com.dooooraku.bonsailog)
+06-07 11:38:36.249   873   940 W AString : ctor got NULL, using empty string instead
+06-07 11:38:36.250   873   940 I SensorSavedChannel: [624,6053,1764]==>gyro_bias.json
+06-07 11:38:36.706   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:36.706   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:36.839   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=7.61 dur=4996.66 max=4358.77 min=16.20
+06-07 11:38:36.840 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:36.845   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:0.772138,dur:2590.21,max:2497.33,min:92.88  
+06-07 11:38:36.891 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:36.926 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:36.935 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:37.198 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:37.198 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:37.198 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:37.199 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:37.199 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:37.200  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:37.217  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:37.217  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:37.218  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:37.237 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:37.237 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:37.243   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.33 dur=2994.07 max=2994.07 min=2994.07
+06-07 11:38:37.244 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:37.539   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:37.558   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.31 dur=3211.17 max=3211.17 min=3211.17
+06-07 11:38:37.640   881   901 D power@timer: [mtkPowerTimer] visRead:0
+06-07 11:38:37.706   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:37.706   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:61
+06-07 11:38:37.706   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:38:37.708   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:38:37.708   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:37.708   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:37.832  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:37.859   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:38.131  1143  1193 V directcharged: ControllerService::onHealthInfoChangedHandler(HealthInfo)
+06-07 11:38:38.145  2260 11037 D PowerUI : can't show warning due to - plugged: true status unknown: false
+06-07 11:38:38.146   883   883 I vendor.sharp.hardware.intelligentcharge.directcharge@1.0-service: DirectCharge::getStatus() -> INACTIVE
+06-07 11:38:38.181   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:29.185392,dur:1336.28,max:622.38,min:15.91  
+06-07 11:38:38.243   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:38.328 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:38.706   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:38.706   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:38.706   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:38:38.707   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:38:38.707   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:38.707   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:38.710  7871  8790 D MainJobService: BATTERY_FULL_CHARGED: start
+06-07 11:38:38.713  7871  8790 D MainJobService: BATTERY_FULL_CHARGED: end
+06-07 11:38:38.715  7871  7887 I WM-WorkerWrapper: Worker result SUCCESS for Work [ id=f0471f94-39a6-4bab-9af1-6432e826d829, tags={ jp.co.sharp.android.ichargeservice.MainJobService } ]
+06-07 11:38:39.213 25247 25247 E iCharge.Receiver: jp.co.sharp.android.ichargeservice.action.BATTERY_FULL_CHARGED
+06-07 11:38:39.268 25247 25270 D MainJobService: ACTION_BATTERY_FULL_CHARGED: start
+06-07 11:38:39.269 25247 25270 D MainJobService: ACTION_BATTERY_FULL_CHARGED: end
+06-07 11:38:39.269 25247 25265 I WM-WorkerWrapper: Worker result SUCCESS for Work [ id=a5b01373-7235-4560-8d11-796ea79da0f1, tags={ jp.co.sharp.android.icharge.services.MainJobService } ]
+06-07 11:38:39.669  2497  2497 D CarrierSvcBindHelper: onPackageModified: jp.co.sharp.android.icharge
+06-07 11:38:39.669  2497  2720 D EuiccConnector: handleMessage: E msg.what=1
+06-07 11:38:39.669  2497  2720 D EuiccConnector: processMsg: ConnectedState
+06-07 11:38:39.669  2497  2720 D EuiccConnector: processMsg: DisconnectedState
+06-07 11:38:39.669  2779  7587 I PermissionControllerServiceImpl: Updating user sensitive for uid 10194
+06-07 11:38:39.670  2497  2497 D CarrierSvcBindHelper: No carrier app for: 0
+06-07 11:38:39.670  2497  2497 D CarrierSvcBindHelper: No carrier app for: 1
+06-07 11:38:39.670  2497  2720 D EuiccConnector: handleMessage: X
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: Unable to load component info ResolveInfo{d2b872f jp.co.shiftplus.iammobile/.MainActivity m=0x108000 userHandle=UserHandle{0}}
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: org.xmlpull.v1.XmlPullParserException: No android.nfc.action.TECH_DISCOVERED meta-data
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at com.android.nfc.RegisteredComponentCache.parseComponentInfo(RegisteredComponentCache.java:190)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at com.android.nfc.RegisteredComponentCache.generateComponentsList(RegisteredComponentCache.java:165)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at com.android.nfc.RegisteredComponentCache$1.onReceive(RegisteredComponentCache.java:69)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at android.app.LoadedApk$ReceiverDispatcher$Args.lambda$getRunnable$0(LoadedApk.java:1830)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at android.app.LoadedApk$ReceiverDispatcher$Args.$r8$lambda$gDuJqgxY6Zb-ifyeubKeivTLAwk(Unknown Source:0)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0.run(Unknown Source:2)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at android.os.Handler.handleCallback(Handler.java:958)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at android.os.Looper.loopOnce(Looper.java:205)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at android.os.Looper.loop(Looper.java:294)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at android.app.ActivityThread.main(ActivityThread.java:8282)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at java.lang.reflect.Method.invoke(Native Method)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:573)
+06-07 11:38:39.672  3581  3581 W RegisteredComponentCache: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1049)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: Unable to load component info ResolveInfo{2ed117d jp.co.unisys.android.yamadamobile/com.casmartpop.sdk.nfc.NfcActivity m=0x108000 userHandle=UserHandle{0}}
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: org.xmlpull.v1.XmlPullParserException: No android.nfc.action.TECH_DISCOVERED meta-data
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at com.android.nfc.RegisteredComponentCache.parseComponentInfo(RegisteredComponentCache.java:190)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at com.android.nfc.RegisteredComponentCache.generateComponentsList(RegisteredComponentCache.java:165)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at com.android.nfc.RegisteredComponentCache$1.onReceive(RegisteredComponentCache.java:69)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at android.app.LoadedApk$ReceiverDispatcher$Args.lambda$getRunnable$0(LoadedApk.java:1830)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at android.app.LoadedApk$ReceiverDispatcher$Args.$r8$lambda$gDuJqgxY6Zb-ifyeubKeivTLAwk(Unknown Source:0)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0.run(Unknown Source:2)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at android.os.Handler.handleCallback(Handler.java:958)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at android.os.Looper.loopOnce(Looper.java:205)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at android.os.Looper.loop(Looper.java:294)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at android.app.ActivityThread.main(ActivityThread.java:8282)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at java.lang.reflect.Method.invoke(Native Method)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:573)
+06-07 11:38:39.675  3581  3581 W RegisteredComponentCache: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1049)
+06-07 11:38:39.678  2497  2720 D EuiccConnector: handleMessage: E msg.what=1
+06-07 11:38:39.678  2497  2720 D EuiccConnector: processMsg: ConnectedState
+06-07 11:38:39.678  2497  2720 D EuiccConnector: processMsg: DisconnectedState
+06-07 11:38:39.678  2779  7587 I PermissionControllerServiceImpl: Updating user sensitive for uid 10180
+06-07 11:38:39.679  2497  2720 D EuiccConnector: handleMessage: X
+06-07 11:38:39.680  1501  2125 I InputReader: Reconfiguring input devices, changes=KEYBOARD_LAYOUTS
+06-07 11:38:39.683  1501  2125 I InputReader: Reconfiguring input devices, changes=KEYBOARD_LAYOUTS
+06-07 11:38:39.685 24614 24614 I PkDeviceHelper: PkDeviceHelper.refreshDevices():87 refreshing devices
+06-07 11:38:39.687 24614 24614 I PkDeviceHelper: PkDeviceHelper.refreshDevices():87 refreshing devices
+06-07 11:38:39.688 24614 24614 I PkDeviceHelper: PkDeviceHelper.refreshDevices():87 refreshing devices
+06-07 11:38:39.694 24614 24614 I PkDeviceHelper: PkDeviceHelper.refreshDevices():87 refreshing devices
+06-07 11:38:39.706   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:39.706   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:39.708  3581  3581 I libnfc_nci: [INFO:SecureElement.cpp(1456)] SecureElement::getEseHandleFromGenericId: enter; ESE-ID = 0x00
+06-07 11:38:39.708  3581  3581 I libnfc_nci: [INFO:SecureElement.cpp(1497)] SecureElement::getEseHandleFromGenericId: enter; ESE-Handle = 0x400
+06-07 11:38:39.708  3581  3581 E AidRoutingManager: Size of routing table970
+06-07 11:38:39.708  3581  3581 I NfcService: Add T4T Nfcee AID
+06-07 11:38:39.710  3581  3581 D RegisteredNfcFServicesCache: Service unchanged, not updating
+06-07 11:38:39.714  2497  2834 D ImsResolver: maybeAddedImsService, packageName: jp.co.sharp.android.icharge
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: Unable to load component info ResolveInfo{38496da jp.co.shiftplus.iammobile/.MainActivity m=0x108000 userHandle=UserHandle{0}}
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: org.xmlpull.v1.XmlPullParserException: No android.nfc.action.TECH_DISCOVERED meta-data
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at com.android.nfc.RegisteredComponentCache.parseComponentInfo(RegisteredComponentCache.java:190)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at com.android.nfc.RegisteredComponentCache.generateComponentsList(RegisteredComponentCache.java:165)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at com.android.nfc.RegisteredComponentCache$1.onReceive(RegisteredComponentCache.java:69)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at android.app.LoadedApk$ReceiverDispatcher$Args.lambda$getRunnable$0(LoadedApk.java:1830)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at android.app.LoadedApk$ReceiverDispatcher$Args.$r8$lambda$gDuJqgxY6Zb-ifyeubKeivTLAwk(Unknown Source:0)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0.run(Unknown Source:2)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at android.os.Handler.handleCallback(Handler.java:958)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at android.os.Looper.loopOnce(Looper.java:205)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at android.os.Looper.loop(Looper.java:294)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at android.app.ActivityThread.main(ActivityThread.java:8282)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at java.lang.reflect.Method.invoke(Native Method)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:573)
+06-07 11:38:39.714  3581  3581 W RegisteredComponentCache: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1049)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: Unable to load component info ResolveInfo{80b3e00 jp.co.unisys.android.yamadamobile/com.casmartpop.sdk.nfc.NfcActivity m=0x108000 userHandle=UserHandle{0}}
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: org.xmlpull.v1.XmlPullParserException: No android.nfc.action.TECH_DISCOVERED meta-data
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at com.android.nfc.RegisteredComponentCache.parseComponentInfo(RegisteredComponentCache.java:190)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at com.android.nfc.RegisteredComponentCache.generateComponentsList(RegisteredComponentCache.java:165)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at com.android.nfc.RegisteredComponentCache$1.onReceive(RegisteredComponentCache.java:69)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at android.app.LoadedApk$ReceiverDispatcher$Args.lambda$getRunnable$0(LoadedApk.java:1830)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at android.app.LoadedApk$ReceiverDispatcher$Args.$r8$lambda$gDuJqgxY6Zb-ifyeubKeivTLAwk(Unknown Source:0)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0.run(Unknown Source:2)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at android.os.Handler.handleCallback(Handler.java:958)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at android.os.Looper.loopOnce(Looper.java:205)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at android.os.Looper.loop(Looper.java:294)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at android.app.ActivityThread.main(ActivityThread.java:8282)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at java.lang.reflect.Method.invoke(Native Method)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:573)
+06-07 11:38:39.716  3581  3581 W RegisteredComponentCache: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1049)
+06-07 11:38:39.723  2497  2497 D CarrierSvcBindHelper: onPackageModified: jp.co.sharp.android.ichargeservice
+06-07 11:38:39.723  2497  2497 D CarrierSvcBindHelper: No carrier app for: 0
+06-07 11:38:39.724  2497  2497 D CarrierSvcBindHelper: No carrier app for: 1
+06-07 11:38:39.728  1501  7934 W BatteryExternalStatsWorker: error reading Bluetooth stats: 11
+06-07 11:38:39.733  3581  3581 I libnfc_nci: [INFO:SecureElement.cpp(1456)] SecureElement::getEseHandleFromGenericId: enter; ESE-ID = 0x00
+06-07 11:38:39.733  3581  3581 I libnfc_nci: [INFO:SecureElement.cpp(1497)] SecureElement::getEseHandleFromGenericId: enter; ESE-Handle = 0x400
+06-07 11:38:39.733  3581  3581 E AidRoutingManager: Size of routing table970
+06-07 11:38:39.733  3581  3581 I NfcService: Add T4T Nfcee AID
+06-07 11:38:39.735  3581  3581 D RegisteredNfcFServicesCache: Service unchanged, not updating
+06-07 11:38:39.735  3581  3581 I libnfc_nci: [INFO:NativeT4tNfcee.cpp(869)] nfcManager_isFwSupportNonStdT4TAid Enter isFwSupport = 1
+06-07 11:38:39.735  3581  3581 I libnfc_nci: [INFO:SecureElement.cpp(1456)] SecureElement::getEseHandleFromGenericId: enter; ESE-ID = 0x7F
+06-07 11:38:39.735  3581  3581 I libnfc_nci: [INFO:SecureElement.cpp(1497)] SecureElement::getEseHandleFromGenericId: enter; ESE-Handle = 0x410
+06-07 11:38:39.735  3581  3581 E libnfc_nci: [ERROR:nfa_ee_api.cc(661)] Bad ee_handle or AID (len=7)
+06-07 11:38:39.735  3581  3581 E libnfc_nci: [ERROR:RoutingManager.cpp(492)] RoutingManager::addAidRouting: failed to route AID
+06-07 11:38:39.735  2485  9747 D SecureElementService: getReaders() for com.android.nfc
+06-07 11:38:39.738  3581  3581 I libnfc_nci: [INFO:NativeT4tNfcee.cpp(869)] nfcManager_isFwSupportNonStdT4TAid Enter isFwSupport = 1
+06-07 11:38:39.738  3581  3581 I libnfc_nci: [INFO:SecureElement.cpp(1456)] SecureElement::getEseHandleFromGenericId: enter; ESE-ID = 0x7F
+06-07 11:38:39.738  3581  3581 I libnfc_nci: [INFO:SecureElement.cpp(1497)] SecureElement::getEseHandleFromGenericId: enter; ESE-Handle = 0x410
+06-07 11:38:39.738  3581  3581 E libnfc_nci: [ERROR:nfa_ee_api.cc(661)] Bad ee_handle or AID (len=7)
+06-07 11:38:39.738  3581  3581 E libnfc_nci: [ERROR:RoutingManager.cpp(492)] RoutingManager::addAidRouting: failed to route AID
+06-07 11:38:39.739  2485  9747 D SecureElementService: getReaders() for com.android.nfc
+06-07 11:38:39.745  2497  2834 D ImsResolver: maybeAddedImsService, packageName: jp.co.sharp.android.ichargeservice
+06-07 11:38:39.760  1501  2965 D TelephonyManager: requestModemActivityInfo: Sending result to app: ModemActivityInfo{ mTimestamp=5160837646 mSleepTimeMs=707998505 mIdleTimeMs=157855126 mActivityStatsTechSpecificInfo=[{mRat=UNKNOWN,mFrequencyRange=UNKNOWN,mTxTimeMs[]=[0, 0, 0, 0, 0],mRxTimeMs=0}]}
+06-07 11:38:39.766 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:39.911  2497  2720 D EuiccConnector: handleMessage: E msg.what=3
+06-07 11:38:39.911  2497  2720 D EuiccConnector: processMsg: ConnectedState
+06-07 11:38:39.917  2497  2720 D EuiccConnector: transitionTo: destState=AvailableState
+06-07 11:38:39.918  2497  2720 D EuiccConnector: handleMessage: new destination call exit/enter
+06-07 11:38:39.918  2497  2720 D EuiccConnector: setupTempStateStackWithStatesToEnter: X mTempStateStackCount=2,curStateInfo: null
+06-07 11:38:39.918  2497  2720 D EuiccConnector: invokeExitMethods: ConnectedState
+06-07 11:38:39.919  2497  2720 D EuiccConnector: invokeExitMethods: DisconnectedState
+06-07 11:38:39.919  2497  2720 D EuiccConnector: moveTempStackToStateStack: i=1,j=0
+06-07 11:38:39.919  2497  2720 D EuiccConnector: moveTempStackToStateStack: i=0,j=1
+06-07 11:38:39.919  2497  2720 D EuiccConnector: moveTempStackToStateStack: X mStateStackTop=1,startingIndex=0,Top=AvailableState
+06-07 11:38:39.919  2497  2720 D EuiccConnector: invokeEnterMethods: UnavailableState
+06-07 11:38:39.920  2497  2720 D EuiccConnector: invokeEnterMethods: AvailableState
+06-07 11:38:39.920  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:39.920  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:39.920  2497  2720 D EuiccConnector: handleMessage: X
+06-07 11:38:39.922 11338 11338 I EuiccGoogle: [2] EuiccServiceImpl.onDestroy: onDestroy: EuiccService on destroy.
+06-07 11:38:39.923  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:39.925  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:40.011   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:40.169  2260  2260 D ControlsListingControllerImpl: ServiceConfig reloaded, count: 1
+06-07 11:38:40.175  2260  2260 D ControlsListingControllerImpl: ServiceConfig reloaded, count: 1
+06-07 11:38:40.192 11218 11218 I Bugle   : BroadcastReceiverAsyncWorkTracker: Acknowledging broadcast of dksx@40dac01
+06-07 11:38:40.195  2779  3382 I ServiceLiveData: Detected WallpaperServices: []
+06-07 11:38:40.195  2779  3380 I ServiceLiveData: Not exempting com.android.bips - not an active PrintService for u0
+06-07 11:38:40.196  2779  3383 I ServiceLiveData: Not exempting com.openai.chatgpt - not an active VoiceInteractionService for u0
+06-07 11:38:40.196  2779  3380 I ServiceLiveData: Detected PrintServices: []
+06-07 11:38:40.196 11218 13860 I Bugle   : BroadcastReceiverAsyncWorkTracker: Acknowledging broadcast of dksx@40dac01
+06-07 11:38:40.196  2779  3381 I ServiceLiveData: Not exempting com.android.systemui.accessibility.accessibilitymenu - not an active AccessibilityService for u0
+06-07 11:38:40.196  2779  6537 I ServiceLiveData: Not exempting com.android.dreams.basic - not an active DreamService for u0
+06-07 11:38:40.197  2779  3380 I ServiceLiveData: Not exempting com.google.android.gms - not an active DEVICE_ADMIN_SERVICE for u0
+06-07 11:38:40.197  2779  3381 I ServiceLiveData: Not exempting com.google.android.accessibility.switchaccess - not an active AccessibilityService for u0
+06-07 11:38:40.197  2779  3380 I ServiceLiveData: Detected DEVICE_ADMIN_SERVICEs: []
+06-07 11:38:40.197  2779  3386 I ServiceLiveData: Not exempting com.google.android.tts - not an active InputMethod for u0
+06-07 11:38:40.197  2779  3382 I ServiceLiveData: Not exempting com.google.android.gms - not an active AutofillService for u0
+06-07 11:38:40.197  2779  6537 I ServiceLiveData: Not exempting com.google.android.apps.photos - not an active DreamService for u0
+06-07 11:38:40.197  2779  6537 I ServiceLiveData: Not exempting com.google.android.deskclock - not an active DreamService for u0
+06-07 11:38:40.198  2779  3381 I ServiceLiveData: Not exempting com.google.android.marvin.talkback - not an active AccessibilityService for u0
+06-07 11:38:40.198  2779  3380 I BroadcastReceiverLiveData: Not exempting com.google.android.gms - not an active DEVICE_ADMIN_ENABLED for u0
+06-07 11:38:40.198  2779  3382 I ServiceLiveData: Detected AutofillServices: []
+06-07 11:38:40.198  2779  6537 I ServiceLiveData: Detected DreamServices: []
+06-07 11:38:40.199  2779  3383 I ServiceLiveData: Detected VoiceInteractionServices: [com.google.android.googlequicksearchbox]
+06-07 11:38:40.199  2779  3385 I ServiceLiveData: Not exempting com.google.ambient.streaming - not an active NotificationListenerService for u0
+06-07 11:38:40.199  2779  3381 I ServiceLiveData: Not exempting com.google.android.marvin.talkback - not an active AccessibilityService for u0
+06-07 11:38:40.199  2779  3385 I ServiceLiveData: Not exempting com.google.ambient.streaming - not an active NotificationListenerService for u0
+06-07 11:38:40.200  2779  3386 I ServiceLiveData: Detected InputMethods: [com.google.android.inputmethod.latin, com.android.adbkeyboard]
+06-07 11:38:40.201  2779  3380 I BroadcastReceiverLiveData: Not exempting droom.sleepIfUCan - not an active DEVICE_ADMIN_ENABLED for u0
+06-07 11:38:40.201  2779  3385 I ServiceLiveData: Not exempting com.google.android.as - not an active NotificationListenerService for u0
+06-07 11:38:40.201  2779  3381 I ServiceLiveData: Not exempting com.openai.chatgpt - not an active AccessibilityService for u0
+06-07 11:38:40.202  2779  3385 I ServiceLiveData: Not exempting com.google.android.contacts - not an active NotificationListenerService for u0
+06-07 11:38:40.202  2779  3380 I BroadcastReceiverLiveData: Detected DEVICE_ADMIN_ENABLEDs: []
+06-07 11:38:40.202  2779  3385 I ServiceLiveData: Not exempting com.google.android.gms - not an active NotificationListenerService for u0
+06-07 11:38:40.203  2779  3381 I ServiceLiveData: Not exempting com.trendmicro.tmmspersonal.jp.googleplayversion - not an active AccessibilityService for u0
+06-07 11:38:40.203  2779  3385 I ServiceLiveData: Not exempting com.google.android.googlequicksearchbox - not an active NotificationListenerService for u0
+06-07 11:38:40.203  2779  3381 I ServiceLiveData: Not exempting droom.sleepIfUCan - not an active AccessibilityService for u0
+06-07 11:38:40.203  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:40.204  2779  3385 I ServiceLiveData: Not exempting jp.co.sharp.android.emopar - not an active NotificationListenerService for u0
+06-07 11:38:40.204  2779  3381 I ServiceLiveData: Detected AccessibilityServices: []
+06-07 11:38:40.204  2779  3385 I ServiceLiveData: Not exempting jp.co.sharp.android.scshocapture2 - not an active NotificationListenerService for u0
+06-07 11:38:40.205  2779  3385 I ServiceLiveData: Not exempting com.sony.songpal.mdr - not an active NotificationListenerService for u0
+06-07 11:38:40.205  2779  3385 I ServiceLiveData: Not exempting com.trendmicro.tmmspersonal.jp.googleplayversion - not an active NotificationListenerService for u0
+06-07 11:38:40.205  2779  3385 I ServiceLiveData: Not exempting pedometer.steptracker.calorieburner.stepcounter - not an active NotificationListenerService for u0
+06-07 11:38:40.205  2779  3385 I ServiceLiveData: Detected NotificationListenerServices: [com.google.android.projection.gearhead, jp.co.sharp.android.launcher3, jp.co.sharp.android.launcher3.junior, jp.co.sharp.android.launcher3.simple]
+06-07 11:38:40.215 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:40.215 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:40.215 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:40.215 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:40.215 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:40.216  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:40.221  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:40.231 25384 13863 I ComponentChangedIO: Feature is not enabled, skipping component changed intent operation [CONTEXT service_id=469 ]
+06-07 11:38:40.234 25384 13863 I ComponentChangedIO: Feature is not enabled, skipping component changed intent operation [CONTEXT service_id=469 ]
+06-07 11:38:40.251 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:40.252 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:40.257 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:40.457  2779  3382 I ServiceLiveData: Not exempting com.google.android.tts - not an active InputMethod for u0
+06-07 11:38:40.457  2779  3386 I ServiceLiveData: Detected WallpaperServices: []
+06-07 11:38:40.457  2779  3382 I ServiceLiveData: Detected InputMethods: [com.google.android.inputmethod.latin, com.android.adbkeyboard]
+06-07 11:38:40.458  2779  3381 I ServiceLiveData: Not exempting com.android.bips - not an active PrintService for u0
+06-07 11:38:40.458  2779  3380 I ServiceLiveData: Not exempting com.openai.chatgpt - not an active VoiceInteractionService for u0
+06-07 11:38:40.458  2779  3381 I ServiceLiveData: Detected PrintServices: []
+06-07 11:38:40.458  2779  3383 I ServiceLiveData: Not exempting com.android.systemui.accessibility.accessibilitymenu - not an active AccessibilityService for u0
+06-07 11:38:40.458  2779  3382 I ServiceLiveData: Not exempting com.google.android.gms - not an active AutofillService for u0
+06-07 11:38:40.458  2779  3385 I ServiceLiveData: Not exempting com.android.dreams.basic - not an active DreamService for u0
+06-07 11:38:40.458  2779  3380 I ServiceLiveData: Detected VoiceInteractionServices: [com.google.android.googlequicksearchbox]
+06-07 11:38:40.458  2779  3382 I ServiceLiveData: Detected AutofillServices: []
+06-07 11:38:40.458  2779  3384 I BroadcastReceiverLiveData: Not exempting com.google.android.gms - not an active DEVICE_ADMIN_ENABLED for u0
+06-07 11:38:40.458  2779  3386 I ServiceLiveData: Not exempting com.google.android.gms - not an active DEVICE_ADMIN_SERVICE for u0
+06-07 11:38:40.458  2779  6537 I ServiceLiveData: Not exempting com.google.ambient.streaming - not an active NotificationListenerService for u0
+06-07 11:38:40.458  2779  3383 I ServiceLiveData: Not exempting com.google.android.accessibility.switchaccess - not an active AccessibilityService for u0
+06-07 11:38:40.459  2779  6537 I ServiceLiveData: Not exempting com.google.ambient.streaming - not an active NotificationListenerService for u0
+06-07 11:38:40.459  2779  3384 I BroadcastReceiverLiveData: Not exempting droom.sleepIfUCan - not an active DEVICE_ADMIN_ENABLED for u0
+06-07 11:38:40.459  2779  3384 I BroadcastReceiverLiveData: Detected DEVICE_ADMIN_ENABLEDs: []
+06-07 11:38:40.459  2779  3383 I ServiceLiveData: Not exempting com.google.android.marvin.talkback - not an active AccessibilityService for u0
+06-07 11:38:40.460  2779  3383 I ServiceLiveData: Not exempting com.google.android.marvin.talkback - not an active AccessibilityService for u0
+06-07 11:38:40.460  2779  6537 I ServiceLiveData: Not exempting com.google.android.as - not an active NotificationListenerService for u0
+06-07 11:38:40.460  2779  3386 I ServiceLiveData: Detected DEVICE_ADMIN_SERVICEs: []
+06-07 11:38:40.460  2779  6537 I ServiceLiveData: Not exempting com.google.android.contacts - not an active NotificationListenerService for u0
+06-07 11:38:40.460  2779  3385 I ServiceLiveData: Not exempting com.google.android.apps.photos - not an active DreamService for u0
+06-07 11:38:40.460  2779  3383 I ServiceLiveData: Not exempting com.openai.chatgpt - not an active AccessibilityService for u0
+06-07 11:38:40.461  2779  6537 I ServiceLiveData: Not exempting com.google.android.gms - not an active NotificationListenerService for u0
+06-07 11:38:40.461  2779  3385 I ServiceLiveData: Not exempting com.google.android.deskclock - not an active DreamService for u0
+06-07 11:38:40.461  2779  6537 I ServiceLiveData: Not exempting com.google.android.googlequicksearchbox - not an active NotificationListenerService for u0
+06-07 11:38:40.461  2779  3383 I ServiceLiveData: Not exempting com.trendmicro.tmmspersonal.jp.googleplayversion - not an active AccessibilityService for u0
+06-07 11:38:40.461  2779  6537 I ServiceLiveData: Not exempting jp.co.sharp.android.emopar - not an active NotificationListenerService for u0
+06-07 11:38:40.461  2779  3385 I ServiceLiveData: Detected DreamServices: []
+06-07 11:38:40.461  2779  6537 I ServiceLiveData: Not exempting jp.co.sharp.android.scshocapture2 - not an active NotificationListenerService for u0
+06-07 11:38:40.461  2779  3383 I ServiceLiveData: Not exempting droom.sleepIfUCan - not an active AccessibilityService for u0
+06-07 11:38:40.461  2779  6537 I ServiceLiveData: Not exempting com.sony.songpal.mdr - not an active NotificationListenerService for u0
+06-07 11:38:40.461  2779  6537 I ServiceLiveData: Not exempting com.trendmicro.tmmspersonal.jp.googleplayversion - not an active NotificationListenerService for u0
+06-07 11:38:40.462  2779  3383 I ServiceLiveData: Detected AccessibilityServices: []
+06-07 11:38:40.462  2779  6537 I ServiceLiveData: Not exempting pedometer.steptracker.calorieburner.stepcounter - not an active NotificationListenerService for u0
+06-07 11:38:40.462  2779  6537 I ServiceLiveData: Detected NotificationListenerServices: [com.google.android.projection.gearhead, jp.co.sharp.android.launcher3, jp.co.sharp.android.launcher3.junior, jp.co.sharp.android.launcher3.simple]
+06-07 11:38:40.707   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:40.707   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:40.833  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:41.207  1123  1123 I thermal_repeater: [recvMdThermalInfo] ret=5, strLen=127, ERROR
+06-07 11:38:41.707   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:41.707   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:41.835   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=7.61 dur=4996.35 max=4358.83 min=16.26
+06-07 11:38:41.841   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:0.546441,dur:3660.05,max:3567.27,min:92.78  
+06-07 11:38:41.862 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:42.164   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:42.527 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:42.532 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:42.559   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:42.587   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.40 dur=5029.32 max=4313.85 min=715.47
+06-07 11:38:42.707   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:42.708   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:61
+06-07 11:38:42.708   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:38:42.709   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:38:42.710   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:42.710   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:43.231 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:43.231 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:43.231 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:43.232 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:43.232 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:43.233  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:43.252  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:43.252  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:43.254  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:43.263 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:43.263 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:43.267 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:43.289   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.33 dur=6046.16 max=5113.32 min=932.84
+06-07 11:38:43.295   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:27.514446,dur:1453.78,max:707.15,min:16.02  
+06-07 11:38:43.359   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:43.708   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:43.708   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:38:43.709   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:38:43.709   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:43.709   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:43.790   873   940 W AString : ctor got NULL, using empty string instead
+06-07 11:38:43.790   873   940 I SensorSavedChannel: [607,5999,1741]==>gyro_bias.json
+06-07 11:38:43.837  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:44.315   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:44.710   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:45.360 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:45.364 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:45.710   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:46.251 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:46.251 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:46.251 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:46.252 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:46.252 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:46.253  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:46.267  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:46.267  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:46.270  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:46.274 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:46.274 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:46.278 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:46.313   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.33 dur=3024.45 max=3024.45 min=3024.45
+06-07 11:38:46.319   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:0.661349,dur:3024.12,max:2931.95,min:92.17  
+06-07 11:38:46.379   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:46.411   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.52 dur=3823.96 max=3024.72 min=799.25
+06-07 11:38:46.467   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:46.710   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:46.711   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:46.831   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=7.81 dur=4996.27 max=4341.85 min=16.46
+06-07 11:38:46.838  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:46.851 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:47.230  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:47.232   851   864 E statsd  : Could not find a broadcast receiver for (10185 987654323)
+06-07 11:38:47.241  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:38:47.322   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:30.910837,dur:1002.88,max:425.11,min:14.67  
+06-07 11:38:47.535   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:47.567   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.86 dur=1156.33 max=1156.33 min=1156.33
+06-07 11:38:47.711   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:47.711   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:61
+06-07 11:38:47.711   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:38:47.712   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:38:47.712   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:47.712   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:48.619   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:48.711   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:48.711   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:48.711   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:38:48.712   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:38:48.712   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:48.712   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:49.266 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:49.266 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:49.266 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:49.267 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:49.267 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:49.268  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:49.283  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:49.283  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:49.284 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:49.284 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:49.286  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:49.288 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:49.321   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.33 dur=3008.06 max=3008.06 min=3008.06
+06-07 11:38:49.327   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:5.485210,dur:2005.39,max:1759.17,min:16.10  
+06-07 11:38:49.387   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:49.419   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.54 dur=1851.59 max=1851.59 min=1851.59
+06-07 11:38:49.711   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:49.711   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:49.839  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:50.455  7798  7846 I native  : I0000 00:00:1780799930.455658    7846 soda_async_impl.cc:1424] Current audio timestamp: 1780799930322681
+06-07 11:38:50.712   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:50.712   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:50.771   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:50.930 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:50.936 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:51.215  1123  1123 I thermal_repeater: [recvMdThermalInfo] ret=5, strLen=127, ERROR
+06-07 11:38:51.249   873   940 W AString : ctor got NULL, using empty string instead
+06-07 11:38:51.250   873   940 I SensorSavedChannel: [548,6124,1676]==>gyro_bias.json
+06-07 11:38:51.712   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:51.712   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:51.845   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=7.78 dur=5013.26 max=4375.20 min=16.34
+06-07 11:38:51.849 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:51.851   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:0.792441,dur:2523.85,max:2431.36,min:92.48  
+06-07 11:38:52.284 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:52.285 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:52.285 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:52.285 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:52.285 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:52.285  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:52.295 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:52.295 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:52.300 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:52.307  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:52.309  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:52.313  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:52.332   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.33 dur=3010.95 max=3010.95 min=3010.95
+06-07 11:38:52.547   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:52.563   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.32 dur=3143.74 max=3143.74 min=3143.74
+06-07 11:38:52.712   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:52.712   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:61
+06-07 11:38:52.712   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:38:52.713   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:38:52.714   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:52.714   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:52.840  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:52.923   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:53.233 17898 13653 I CastDatabase: Saving the database
+06-07 11:38:53.247 17898 13653 I SQLiteCastStore: [CastNetworkInfo] saved: 0, skipped: 0, [CastDeviceInfo]: saved 0, skipped 0, [ProbedNetworks]: saved 0, skipped: 0, [ProbedSocketAddress]: saved 0, skipped: 0, [Network-Device pairs]: saved: 0
+06-07 11:38:53.712   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:53.712   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:53.713   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:38:53.714   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:38:53.714   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:53.714   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:54.714   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:54.714   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:55.075   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:55.297 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:55.297 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:55.297 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:55.298 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:55.298 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:55.299  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:55.308 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:55.309 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:55.314 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:55.316  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:55.316  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:55.318  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:55.354   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.33 dur=3021.51 max=3021.51 min=3021.51
+06-07 11:38:55.360   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:11.114226,dur:3509.02,max:2796.67,min:15.68  
+06-07 11:38:55.423   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:55.451   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.35 dur=2888.72 max=2888.72 min=2888.72
+06-07 11:38:55.714   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:55.841  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:56.125  1501  1688 D AES     : AEEIOCTL_GET/SET_SF_STATE IOCTL,cmd= 1074294797, lParam=0. 
+06-07 11:38:56.125  1501  1688 D AES     : AEEIOCTL_RT_MON_Kick IOCTL,cmd= 2147774474, lParam=300. 
+06-07 11:38:56.459   860   860 D [BT]    : mtk_bt_op: BT_VND_OP_LPM_WAKE_SET_STATE
+06-07 11:38:56.469 12160 12187 I bluetooth: ack_pause: Client already in paused state
+06-07 11:38:56.494   860   860 D mtk.hal.bt@1.1-impl: BtHostDebugInfo
+06-07 11:38:56.494   860   860 D [BT]    : mtk_bt_op: BT_VND_OP_SET_BTHOST
+06-07 11:38:56.501 12160 12187 I bluetooth: OnCommandComplete: Received command complete with op_code LE_SET_RANDOM_ADDRESS
+06-07 11:38:56.507 12160 12187 I bluetooth: OnCommandComplete: update random address : xx:xx:xx:xx:bb:ca
+06-07 11:38:56.507 12160 12187 I bluetooth: resume_registered_clients: Resuming registered clients
+06-07 11:38:56.511   860   860 D mtk.hal.bt@1.1-impl: BtHostDebugInfo
+06-07 11:38:56.511   860   860 D [BT]    : mtk_bt_op: BT_VND_OP_SET_BTHOST
+06-07 11:38:56.715   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:56.841   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=7.61 dur=4996.34 max=4358.71 min=16.07
+06-07 11:38:56.845 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:38:56.848   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:1.344712,dur:1487.31,max:1395.34,min:91.97  
+06-07 11:38:57.223   909   928 D ccci_mdinit: (1):monitor_time_update_thread round:229047 ########
+06-07 11:38:57.227   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:57.527   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:57.544   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.48 dur=2092.44 max=2092.44 min=2092.44
+06-07 11:38:57.715   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:59
+06-07 11:38:57.715   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:38:57.716   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:38:57.717   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:57.717   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:58.027 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:38:58.032 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:38:58.317 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:38:58.317 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:38:58.317 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:38:58.318 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:38:58.318 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:38:58.318  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:38:58.322 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:38:58.323 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:38:58.327 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:38:58.335  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:38:58.336  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:38:58.337  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:38:58.379   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.33 dur=3024.69 max=3024.69 min=3024.69
+06-07 11:38:58.385   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:24.719015,dur:1537.28,max:839.95,min:15.98  
+06-07 11:38:58.447   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:38:58.614  7798  7856 W ProxyAndroidLoggerBackend: Too many Flogger logs received before configuration. Dropping old logs.
+06-07 11:38:58.716   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:58.716   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:38:58.716   881   947 I libPowerHal: [updateFPS] pid(11846) : 60 => -1
+06-07 11:38:58.717   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:-1
+06-07 11:38:58.717   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:38:58.717   881   958 I TouchUtility: notifyAppState error = NULL
+06-07 11:38:58.771   873   940 W AString : ctor got NULL, using empty string instead
+06-07 11:38:58.771   873   940 I SensorSavedChannel: [610,6110,1712]==>gyro_bias.json
+06-07 11:38:58.843  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:38:59.379   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:38:59.716   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:38:59.716   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:39:00.066   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.59 dur=1687.51 max=1687.51 min=1687.51
+06-07 11:39:00.072   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:1.185462,dur:1687.11,max:1594.69,min:92.42  
+06-07 11:39:00.135   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:39:00.164   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.76 dur=2620.11 max=1687.30 min=932.80
+06-07 11:39:00.506  1501  1682 E ApplicationHelper: Fail to get PackageManager
+06-07 11:39:00.716   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:39:00.716   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:39:00.821 12160 12193 I bt_shim_scanner: handle_remote_properties: handle_remote_properties Update device_type=0x2 addr_type=0x1
+06-07 11:39:00.826 17898 18064 I NearbyDiscovery: (REDACTED) BloomFilterAdvManager: Detected bloom filter but too far away, ignoring. %sm, %s
+06-07 11:39:01.225  1123  1123 I thermal_repeater: [recvMdThermalInfo] ret=5, strLen=127, ERROR
+06-07 11:39:01.335 30810 30810 D MonitoringService: sessionMs=0 effMin=0 active=false spans=0 app=対象アプリ stage=監視待機
+06-07 11:39:01.336 30810 30810 D MonitoringService: No target span. Foreground packages in window: [com.android.systemui, jp.co.sharp.android.launcher3, com.dooooraku.bonsailog]
+06-07 11:39:01.337 24357 24357 I WifiHAL : Get link layer stats
+06-07 11:39:01.337 24357 24357 I WifiHAL : GetLinkStatsCommand::create
+06-07 11:39:01.337 24357 24357 D android.hardware.wifi@1.0-service-lazy: WifiRequest::create vendor command to iface 33, vendor_id=0x1a11, subcmd=0x1200, res=0
+06-07 11:39:01.337 24357 24357 I android.hardware.wifi@1.0-service-lazy: WifiCommand::requestResponse err=-14
+06-07 11:39:01.337 24357 24357 I WifiHAL : wifi_get_link_stats: result=-1
+06-07 11:39:01.338  1501  2143 E WifiStaIfaceHidlImpl: getLinkLayerStatsV1_5 failed with status: {.code = ERROR_UNKNOWN, .description = unknown}
+06-07 11:39:01.340 30810 30810 D MonitoringService: DailyPenaltyCheck: isProCached=true demoMode=false firedHasPenalty=false targetActiveLongEnough=false sessionMs=0
+06-07 11:39:01.358  2260  2260 D WifiSignalController: isWifi6: false,wifiVisible: true
+06-07 11:39:01.358  2260  2260 D WifiSignalController: iconId: 17302925
+06-07 11:39:01.360  2260  2260 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+06-07 11:39:01.403   904   904 I BufferQueueProducer: [StatusBar#90](this:0xb400007436530408,id:-1,api:0,p:-1,c:904) queueBuffer: fps=0.75 dur=1337.05 max=1337.05 min=1337.05
+06-07 11:39:01.409   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:1.495864,dur:1337.02,max:1244.14,min:92.88  
+06-07 11:39:01.471   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:39:01.501   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.75 dur=1336.93 max=1336.93 min=1336.93
+06-07 11:39:01.531   641  4459 E NxpTml  : PN54X - Error in I2C Read.....
+06-07 11:39:01.717   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:39:01.717   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:-1
+06-07 11:39:01.837   904   904 I BufferQueueProducer: [com.dooooraku.bonsailog/com.dooooraku.bonsailog.MainActivity#303577](this:0xb4000074365665b8,id:-1,api:0,p:-1,c:904) queueBuffer: fps=7.41 dur=4996.41 max=4375.23 min=16.35
+06-07 11:39:01.841 11846 11885 E GPUAUX  : [AUX]GuiExtAuxCheckAuxPath:670: Null anb
+06-07 11:39:01.846  1114  1247 D ULogGuard: Monitoring: 16 threads, 0 requests, 0 time-bombs; 2 guards. ResetFlags = 0x7
+06-07 11:39:02.412   868   986 I hwcomposer: [HWCDisplay] [Display_0 (type:1)] fps:34.905746,dur:1002.70,max:341.72,min:16.02  
+06-07 11:39:02.539   868  1268 I hwcomposer: [HWC] (0)fire a callback of refresh to SF[4]  
+06-07 11:39:02.557   904   904 I BufferQueueProducer: [FramebufferSurface](this:0xb4000073463c6d00,id:-1,api:1,p:904,c:904) queueBuffer: fps=0.95 dur=1055.90 max=1055.90 min=1055.90
+06-07 11:39:02.717   881   947 I libPerfCtl: xgfGetFPS pid:2260 fps:-1
+06-07 11:39:02.717   881   947 I libPerfCtl: xgfGetFPS pid:11846 fps:61
+06-07 11:39:02.717   881   947 I libPowerHal: [updateFPS] pid(11846) : -1 => 60
+06-07 11:39:02.718   881   958 I libPowerHal: [perfNotifyAppState] pack:com.dooooraku.bonsailog, act:com.dooooraku.bonsailog.MainActivity, state:5, pid:11846, uid:11407, fps:60
+06-07 11:39:02.722   881   958 E UxUtility: notifyAppState error = NULL
+06-07 11:39:02.722   881   958 I TouchUtility: notifyAppState error = NULL
