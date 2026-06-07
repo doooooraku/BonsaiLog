@@ -13,8 +13,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-// Sess68 PR #C: BG_SURFACE / BORDER_DEFAULT / TEXT_PRIMARY は inline c.* 化、 BRAND_GREEN は brand-static で保持。
-import { BRAND_GREEN } from '@/src/core/theme/colors';
+// Sess74 PR-2 (R-55): BRAND_GREEN を scheme-aware (c.tint) へ移行 (ADR-0052 cascade 完走)。
 import { useColors } from '@/src/core/theme/useColors';
 
 type Props = {
@@ -38,7 +37,7 @@ export function PhotoUndoBanner({ text, actionLabel, onUndo }: Props) {
         testID="e2e_photo_undo_button"
         hitSlop={8}
       >
-        <ThemedText style={styles.actionText}>{actionLabel}</ThemedText>
+        <ThemedText style={[styles.actionText, { color: c.tint }]}>{actionLabel}</ThemedText>
       </Pressable>
     </View>
   );
@@ -60,9 +59,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
   },
+  // Sess74 PR-2 (R-55): color は inline c.tint へ移譲。
   actionText: {
     fontSize: 13,
     fontWeight: '700',
-    color: BRAND_GREEN,
   },
 });

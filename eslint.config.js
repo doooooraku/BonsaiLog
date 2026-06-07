@@ -189,7 +189,10 @@ module.exports = defineConfig([
     plugins: { local: localPlugin },
     rules: {
       // Sess70 PR-D: FORBIDDEN_TOKENS 8 種 → 16 種拡張 (brand-static 撤回)。
-      // 既存 PR-C1-C3 で主要 cascade 対応、 残違反は PR-E (将来) で 0 化 → error 昇格予定。
+      // Sess74 PR-2 (R-55): 5 file 修正完了 (StylePicker 8 + HomeFilterTabs 3 + PhotoUndoBanner 1 +
+      // BonsaiBasicSection 1 + BonsaiMetadataFields 2 = 15 warn → 0)。 残違反 (look-back/search,
+      // plan/wiring, export/pdf, onboarding/tut, settings/archived, tag-edit, tags, Toast,
+      // ExportOptionsSheet, PaywallScreen 等 ~10 file) は別 PR で完走、 その後 error 昇格予定。
       // Sess66 PR3 → Sess68 PR #D と同じ段階移行 (warn → 違反 0 化 → error)。
       'local/no-color-token-in-stylesheet': 'warn',
       // Sess70 PR-D / ADR-0052 Amendment: hex literal 禁止 (StyleSheet 内)。

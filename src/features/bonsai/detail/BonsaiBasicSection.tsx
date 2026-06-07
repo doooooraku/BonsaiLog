@@ -7,8 +7,8 @@ import {
   type BonsaiBasicFormState,
 } from '@/src/features/bonsai/BonsaiBasicForm';
 import { useTranslation } from '@/src/core/i18n/i18n';
-// Sess68 PR #C: BORDER_DEFAULT は inline c.border 化、 BRAND_GREEN / DANGER は brand-static で保持。
-import { BRAND_GREEN, DANGER } from '@/src/core/theme/colors';
+// Sess74 PR-2 (R-55): BRAND_GREEN を scheme-aware (c.tint) へ移行。 DANGER は theme-invariant で保持。
+import { DANGER } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 
 /**
@@ -58,13 +58,16 @@ export function BonsaiBasicSection({
         accessibilityState={{ disabled: !form.canSubmit }}
         style={[
           styles.basicSaveButton,
+          { backgroundColor: c.tint },
           !form.canSubmit && [styles.basicSaveButtonDisabled, { backgroundColor: c.border }],
         ]}
         onPress={() => void form.handleSubmit()}
         disabled={!form.canSubmit}
         testID="e2e_detail_basic_save_button"
       >
-        <ThemedText style={styles.basicSaveButtonText}>{t('save')}</ThemedText>
+        <ThemedText style={[styles.basicSaveButtonText, { color: c.onTint }]}>
+          {t('save')}
+        </ThemedText>
       </Pressable>
     </View>
   );
@@ -72,16 +75,15 @@ export function BonsaiBasicSection({
 
 const styles = StyleSheet.create({
   // Sess15 PR-SS: 基本情報タブ inline 保存 button (sticky footer 廃止 + PR-NN design 復活)。
+  // Sess74 PR-2 (R-55): backgroundColor / color は inline c.tint / c.onTint へ移譲。
   basicSaveButton: {
     height: 56,
     borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
   },
   basicSaveButtonDisabled: {},
   basicSaveButtonText: {
-    color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '500',
     letterSpacing: 0.5,
