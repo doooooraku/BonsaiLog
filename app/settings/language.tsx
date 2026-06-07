@@ -14,8 +14,10 @@ import { ThemedText } from '@/components/themed-text';
 import { setLang, useTranslation } from '@/src/core/i18n/i18n';
 import type { Lang } from '@/src/core/i18n/langCode';
 import { LANGUAGE_OPTIONS } from '@/src/core/i18n/languageOptions';
-// Sess66 PR6a (ADR-0052): BORDER_DEFAULT を inline c.border に移行 (dark cascade)。
-import { BRAND_GREEN, BRAND_GREEN_BG } from '@/src/core/theme/colors';
+// Sess74: BRAND_GREEN / BRAND_GREEN_BG を scheme-aware (c.tint / c.tintSubtle) に移行
+// (Sess70 PR-C2 #957 で onboarding/language.tsx は修正済、 settings/language.tsx は漏落 →
+// dark mode で選択中行が cream bg + cream 文字 contrast 1.1:1 で判読不能 = 本 PR で解消、
+// ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 
 export default function SettingsLanguageScreen() {
@@ -44,19 +46,32 @@ export default function SettingsLanguageScreen() {
               accessibilityState={{ selected }}
               accessibilityLabel={opt.native}
               testID={`e2e_settings_lang_${opt.code}`}
-              style={[styles.row, { borderColor: c.border }, selected && styles.rowSelected]}
+              style={[
+                styles.row,
+                { borderColor: c.border },
+                selected && [
+                  styles.rowSelected,
+                  { borderColor: c.tint, backgroundColor: c.tintSubtle },
+                ],
+              ]}
               onPress={() => handlePick(opt.code)}
             >
               <View style={styles.rowMain}>
-                <ThemedText type="defaultSemiBold" style={styles.native}>
+                <ThemedText type="defaultSemiBold" style={[styles.native, { color: c.text }]}>
                   {opt.native}
                 </ThemedText>
-                <ThemedText style={styles.latin}>{opt.latin}</ThemedText>
+                <ThemedText style={[styles.latin, { color: c.textSecondary }]}>
+                  {opt.latin}
+                </ThemedText>
               </View>
               <View
-                style={[styles.radio, { borderColor: c.border }, selected && styles.radioSelected]}
+                style={[
+                  styles.radio,
+                  { borderColor: c.border },
+                  selected && { borderColor: c.tint },
+                ]}
               >
-                {selected && <View style={styles.radioDot} />}
+                {selected && <View style={[styles.radioDot, { backgroundColor: c.tint }]} />}
               </View>
             </Pressable>
           );
@@ -79,7 +94,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  rowSelected: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN_BG, borderWidth: 2 },
+  // Sess74: borderColor / backgroundColor は inline c.tint / c.tintSubtle (scheme-aware)
+  // (onboarding/language.tsx line 202 と同 pattern)。
+  rowSelected: { borderWidth: 2 },
   rowMain: { flex: 1, gap: 2 },
   native: { fontSize: 16 },
   latin: { fontSize: 12, opacity: 0.6, fontStyle: 'italic' },
@@ -91,11 +108,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioSelected: { borderColor: BRAND_GREEN },
+  // Sess74: radioSelected は inline 化のため StyleSheet entry 削除済。
   radioDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: BRAND_GREEN,
   },
 });
