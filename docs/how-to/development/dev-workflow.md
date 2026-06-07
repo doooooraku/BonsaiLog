@@ -284,3 +284,57 @@ echo '{"tool_input":{"file_path":"package.json"}}' | node .claude/hooks/check-na
 - R-61 (Sess71 起票): 「人間判定が必要な場面は機械判定に置き換える」 メタルール
 - ADR-0050: Android release automation (prod build 自動化、 dev は本仕組みで対応)
 - Plan: `/home/doooo/.claude/plans/ok-1-playful-fern.md` (Sess71)
+
+---
+
+## 10. Worktree 利用時の準備 (Sess75 PR-A、 R-64 起票)
+
+並行作業や検証隔離で `git worktree add` を使う時、 新 worktree には `.env` と `node_modules` がないため **`pnpm dev` / `pnpm verify` が即 fail** する罠がある (Sess73 + Sess75 で 2 回再発)。
+
+### 真因
+
+- Expo の `app.config.ts` が `required('APP_NAME')` 等で .env を強制参照 → `.env` 不在で Metro 起動 fail (`Missing required env var: APP_NAME`)
+- worktree の `node_modules` は親 repo と独立、 worktree ごとに `pnpm install` (5-10 分) するのは時間浪費
+
+### 解決: `worktree-init.sh` (1 行自動化)
+
+新 worktree 作成直後に 1 回だけ実行:
+
+```bash
+# 1. worktree 作成
+git worktree add .claude/worktrees/<name> -b feat-<name>
+cd .claude/worktrees/<name>
+
+# 2. 初期化 (= .env + node_modules を親 repo から symlink)
+bash scripts/dev/worktree-init.sh
+# → linked .env → /path/to/main/.env
+# → linked node_modules → /path/to/main/node_modules
+# → done — pnpm dev / pnpm verify can be run now
+
+# 3. 開発開始
+pnpm dev
+```
+
+### 仕組み
+
+`scripts/dev/worktree-init.sh` (約 80 行):
+
+| 動作                        | 詳細                                                                       |
+| --------------------------- | -------------------------------------------------------------------------- |
+| **main worktree 自動検出**  | `git worktree list --porcelain` の 1 行目から main path を取得             |
+| **.env を symlink**         | `ln -s $MAIN_WORKTREE/.env $CURRENT/.env` (既存 symlink は skip)           |
+| **node_modules を symlink** | 同上、 `node_modules` を symlink (pnpm install 5-10 分の節約)              |
+| **safe 動作**               | 既存 real file (= symlink でない) は **上書きしない** (user 編集の保護)    |
+| **再 link option**          | `FORCE_RELINK=1 bash scripts/dev/worktree-init.sh` で既存 symlink を再作成 |
+
+### 適用シーン
+
+- 並行 PR 検証 (Sess67/Sess72/Sess73/Sess75 pattern)
+- 統合 worktree (Sess73 `sess73-verify-integration` pattern)
+- /loop / 自動改善ループの一時 worktree
+
+### Future Work
+
+- (a) Claude Code の EnterWorktree tool に PostCreate hook で `worktree-init.sh` 自動実行 (今は手動)
+- (b) `.claude/hooks/check-worktree-init.mjs` で worktree 内 `pnpm dev` 直前に `.env` / `node_modules` 存在チェック (= 罠の事前検出)
+- 本 PR scope では (a)(b) 共に保留、 manual run + R-64 で運用
