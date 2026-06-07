@@ -222,8 +222,8 @@ const vi: Partial<Record<TranslationKey, string>> = {
   // --- F-09 Search (Phase A、English fallback) ---
   settingsSearchSection: 'Tìm kiếm',
   searchAction: 'Tìm',
-  bulkLog: 'Log all',
-  bulkSchedule: 'Select task',
+  bulkLog: 'Tiếp theo',
+  bulkSchedule: 'Tiếp theo',
   bulkPickerSheetSub: 'Add the same schedule to {count} bonsai',
   bulkScheduleDoneToast: 'Schedule added to {count} bonsai',
   bulkPickerSheetSubLog: 'Log the same action to {count} bonsai',

@@ -214,8 +214,8 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   // --- F-09 Search (Phase A、English fallback) ---
   settingsSearchSection: '搜索',
   searchAction: '搜索',
-  bulkLog: 'Log all',
-  bulkSchedule: 'Select task',
+  bulkLog: '下一步',
+  bulkSchedule: '下一步',
   bulkPickerSheetSub: 'Add the same schedule to {count} bonsai',
   bulkScheduleDoneToast: 'Schedule added to {count} bonsai',
   bulkPickerSheetSubLog: 'Log the same action to {count} bonsai',

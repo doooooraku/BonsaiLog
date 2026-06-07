@@ -234,8 +234,10 @@ const baseEn = {
   // --- F-09 Search (Phase A: bonsai name LIKE + events FTS5, ADR-0008 改訂) ---
   settingsSearchSection: 'Search',
   searchAction: 'Search',
-  bulkLog: 'Log all',
-  bulkSchedule: 'Select task',
+  // Sess73 PR-3: bonsai-multi-select CTA を「Next」 (動作予告型) 統一。 旧「Log all」
+  // 「Select task」 は次画面遷移予告として不明瞭、 ja 「次へ」 と同パターン。
+  bulkLog: 'Next',
+  bulkSchedule: 'Next',
   bulkPickerSheetSub: 'Add the same schedule to {count} bonsai',
   bulkScheduleDoneToast: 'Schedule added to {count} bonsai',
   bulkPickerSheetSubLog: 'Log the same action to {count} bonsai',

@@ -222,8 +222,8 @@ const ko: Partial<Record<TranslationKey, string>> = {
   // --- F-09 Search (Phase A、English fallback) ---
   settingsSearchSection: '검색',
   searchAction: '검색',
-  bulkLog: 'Log all',
-  bulkSchedule: 'Select task',
+  bulkLog: '다음',
+  bulkSchedule: '다음',
   bulkPickerSheetSub: 'Add the same schedule to {count} bonsai',
   bulkScheduleDoneToast: 'Schedule added to {count} bonsai',
   bulkPickerSheetSubLog: 'Log the same action to {count} bonsai',
