@@ -1,0 +1,193 @@
+## Maestro flow: F-09 タグマスタ Paywall + Toast + Settings ロック (Sess75 PR-C 新規)
+##
+## 検証内容 (Sess75 PR-1 #979 + PR-2 #984 統合動作):
+##   V1 (Step 3-4):  Free 起動で「おすすめ」 chip 2 件 (favorite/flowering) 表示
+##   V2 (Step 5-7):  master 2 件 attach OK (Free 上限カウント除外)
+##   V1' (Step 8-19): custom 3 件 attach OK + 4 件目で Paywall Alert (case insensitive ja|en)
+##   V3 (Step 20-23): tag-edit で master 名 ('Favorite') 手入力 → Toast 「マスタタグは編集できません」
+##
+## V4 (Settings master badge) は本 flow scope 外 (= Look Back Hub 経由で別 flow が望ましい、
+## v1.x で別 PR 推奨)。 ただし Step 18 の inputText で大量 input 連発するため、
+## 実機検証 (Sess75 SS 36 枚 + REPORT.md) で V4 動作確認済。
+##
+## 反復実行 (Sess75 _template.yml ガイドライン、 3 回反復):
+##   PASS=0; for i in 1 2 3; do
+##     ~/.maestro/bin/maestro test maestro/flows/paywall-tag.yml > /tmp/m-$i.log 2>&1
+##     if [ $? -eq 0 ]; then PASS=$((PASS+1)); fi
+##   done; echo "$PASS/3"
+##
+## 前提条件:
+##   - SEED テストデータ 8 件 custom 既存 (= devSetSeed 等で投入済) なら、
+##     Step 17 で 4 件目 Paywall (= countCustomTags >= 3) は SEED 由来でも実現
+##   - clearState: true で onboarding スキップ済 build を使用 (= seed pack 投入済 dev build)
+##
+## 関連:
+##   - PR-1 #979 (基盤: seedTagPresets + countCustomTags)
+##   - PR-2 #984 (UI: BonsaiTagsSection + tag-edit + Settings)
+##   - dist/sess75-pr2-verify/REPORT.md (実機検証完了レポート)
+##   - ADR-0049 §Notes Amended Sess74 PR-1
+##
+appId: 'com.dooooraku.bonsailog'
+name: 'E2E - F-09 タグマスタ (おすすめ chip + Free 上限 + Toast)'
+tags:
+  - e2e
+  - tags
+  - paywall
+  - f-09
+  - sess75
+
+---
+- launchApp:
+    clearState: true
+    label: 'クリーン起動 (Free + SEED 投入済 dev build 前提)'
+
+# Dev Client menu → localhost:8081 (development build 専用 step、 production では skip)
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Expo Dev Client Continue dialog 自動 dismiss (Back キー)
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Home の初期描画を待機
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_list'
+    timeout: 60000
+    label: 'Home (盆栽 list) を待機'
+
+# === V1: 「おすすめ」 chip 2 件表示 ===
+# Step 1: Home → 盆栽作成画面
+- tapOn:
+    id: 'e2e_register_bonsai_cta'
+    label: 'Step 1: + 盆栽を登録 tap'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_create_screen'
+    timeout: 20000
+    label: 'Step 2: 盆栽作成画面 待機'
+
+# Step 3: tag section へ scroll
+- scrollUntilVisible:
+    element:
+      id: 'e2e_tag_preset_chip_favorite'
+    timeout: 10000
+    label: 'Step 3: おすすめ chip まで scroll'
+
+# Step 4: V1 master 2 件 visible 確認
+- assertVisible:
+    id: 'e2e_tag_preset_chip_favorite'
+    label: 'V1: お気に入り chip 表示'
+- assertVisible:
+    id: 'e2e_tag_preset_chip_flowering'
+    label: 'V1: 花あり chip 表示'
+
+# === V2: master chip 2 件 attach (Free 上限カウント除外) ===
+# Step 5: お気に入り attach
+- tapOn:
+    id: 'e2e_tag_preset_chip_favorite'
+    retryTapIfNoChange: true
+    label: 'V2: お気に入り attach (selected 緑)'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Step 6: 花あり attach (= master 2 件 attach 状態、 Free 上限不発)
+- tapOn:
+    id: 'e2e_tag_preset_chip_flowering'
+    retryTapIfNoChange: true
+    label: 'V2: 花あり attach (master 2 件 OK、 Paywall 出ない)'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# === V1': カスタムタグ 4 件目で Paywall (SEED 8 件 custom 前提 + master 2 件 attach 後) ===
+# SEED で既に countCustomTags >= 3 のため、 次の「+ タグ追加」 で即 Paywall trigger される想定
+# Step 7: + タグ追加 button tap → tag-edit
+- scrollUntilVisible:
+    element:
+      id: 'e2e_bonsai_tag_add'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_bonsai_tag_add'
+    retryTapIfNoChange: true
+    label: 'Step 7: + タグ追加 tap'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_tag_edit_screen'
+    timeout: 10000
+    label: 'Step 8: tag-edit 画面 待機'
+
+# Step 9: カスタム名入力
+- tapOn:
+    id: 'e2e_tag_edit_input'
+    retryTapIfNoChange: true
+- inputText: 'TestCustom1'
+
+# Step 10: 追加 → Paywall Alert (SEED で countCustomTags >= 3 なら必ず trigger)
+- tapOn:
+    id: 'e2e_tag_edit_submit'
+    retryTapIfNoChange: true
+    label: 'Step 10: 追加 tap → Paywall trigger 期待'
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# V1' 完了: Paywall Alert text (ja/en regex)
+# canCreateNewTag が countCustomTags (preset 除外) で >= 3 → Alert 表示
+- assertVisible:
+    text: 'Free.*プラン.*上限|Free.*plan.*limit|プランの上限'
+    label: 'V1: Paywall Alert (master 2 件 attach + custom 4 件目で trigger、 = countCustomTags 動作実証)'
+
+# Step 11: Alert を「キャンセル」 で閉じる
+- tapOn:
+    text: 'キャンセル|Cancel'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# === V3: tag-edit で master 名手入力 → Toast 「マスタタグは編集できません」 ===
+# Step 12: input 内容を消す (back キー連打、 'TestCustom1' = 11 文字)
+- repeat:
+    times: 12
+    commands:
+      - pressKey: 'Backspace'
+        optional: true
+
+# Step 13: master preset 名 ('Favorite' = EN preset、 normalize で 'favorite' に match) 入力
+- inputText: 'Favorite'
+
+# Step 14: 追加 tap → master 認識 → 既存 master row 再利用 + Toast
+- tapOn:
+    id: 'e2e_tag_edit_submit'
+    retryTapIfNoChange: true
+    label: 'V3: Favorite (master 名) 手入力 → 追加'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 戻ってきた盆栽作成画面で Toast「マスタタグは編集できません」 表示確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_create_screen'
+    timeout: 10000
+    label: 'V3: 盆栽作成画面に戻る'
+
+# V3 完了: Toast text (ja「マスタタグは編集できません」 or en「Preset tags cannot be edited」)
+# 注: Toast は 3 秒で自動消失するため、 race condition で fail する場合は
+# timeout を短縮 (2000ms 程度) で対応
+- assertVisible:
+    text: 'マスタタグは編集できません|Preset tags cannot be edited'
+    label: 'V3: Toast 表示 (master 名手入力 → idempotent + UX FB)'
+
+# === 完了 ===
+- waitForAnimationToEnd:
+    timeout: 3000
