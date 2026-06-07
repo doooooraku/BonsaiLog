@@ -84,7 +84,10 @@ export function BonsaiMetadataFields({ form }: { form: BonsaiBasicFormState }) {
               style={[
                 styles.checkbox,
                 { borderColor: c.border, backgroundColor: c.surface },
-                ageUnknown && [styles.checkboxChecked, { backgroundColor: c.tint, borderColor: c.tint }],
+                ageUnknown && [
+                  styles.checkboxChecked,
+                  { backgroundColor: c.tint, borderColor: c.tint },
+                ],
               ]}
             >
               {ageUnknown && (

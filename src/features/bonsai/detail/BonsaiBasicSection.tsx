@@ -65,7 +65,9 @@ export function BonsaiBasicSection({
         disabled={!form.canSubmit}
         testID="e2e_detail_basic_save_button"
       >
-        <ThemedText style={[styles.basicSaveButtonText, { color: c.onTint }]}>{t('save')}</ThemedText>
+        <ThemedText style={[styles.basicSaveButtonText, { color: c.onTint }]}>
+          {t('save')}
+        </ThemedText>
       </Pressable>
     </View>
   );

@@ -46,7 +46,10 @@ export function HomeFilterTabs({ chips, selectedId, onSelect, testID }: Props) {
               style={[
                 styles.chip,
                 { borderColor: themeColors.border },
-                on && [styles.chipOn, { borderColor: themeColors.tint, backgroundColor: themeColors.tint }],
+                on && [
+                  styles.chipOn,
+                  { borderColor: themeColors.tint, backgroundColor: themeColors.tint },
+                ],
               ]}
               onPress={() => onSelect(c.id)}
               testID={`e2e_home_filter_chip_${c.id}`}
