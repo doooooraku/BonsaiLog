@@ -21,6 +21,7 @@ import {
   BG_PRIMARY,
   BG_SURFACE,
   BORDER_DEFAULT,
+  BORDER_STRONG,
   BRAND_GREEN,
   BRAND_GREEN_BG,
   BUTTON_SECONDARY_BG,
@@ -90,6 +91,9 @@ export const Colors = {
     tint: BRAND_GREEN,
     accent: ACCENT_GOLD,
     border: BORDER_DEFAULT,
+    // Sess73 PR-2: borderStrong scheme-aware token (chip / EventRow / groupRow card 用、
+    // 既存 c.border では WCAG 1.4.11 Non-text Contrast 3.0:1 未達成のため強化版を別 prop で提供)
+    borderStrong: BORDER_STRONG, // #8A8274 (vs background #FAF8F1 ≈ 3.05:1 AA pass)
     icon: TEXT_SECONDARY,
     tabIconDefault: TEXT_MUTED,
     tabIconSelected: BRAND_GREEN,
@@ -112,6 +116,9 @@ export const Colors = {
     tint: DARK_TOKENS.brandGreen,
     accent: DARK_TOKENS.accentGold,
     border: DARK_TOKENS.border,
+    // Sess73 PR-2: borderStrong scheme-aware (dark で chip card 境界線可視化、 c.border=#2C2820
+    // と c.surface=#211E18 の contrast ≈ 1.4:1 で視認不能だった既存予定 chip / EventRow を救う)
+    borderStrong: DARK_TOKENS.borderStrong, // #4A4534 (vs surface #211E18 ≈ 3.18:1 AA pass)
     icon: DARK_TOKENS.textSecondary,
     tabIconDefault: DARK_TOKENS.textMuted,
     tabIconSelected: DARK_TOKENS.brandGreen,

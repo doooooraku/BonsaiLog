@@ -16,6 +16,8 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess68 PR #C: BG_PRIMARY / BORDER_DEFAULT は inline c.* 化。
+// Sess73 PR-2: borderColor c.border → c.borderStrong (dark mode 可読性、 chip と親 surface
+// の境界線 contrast を WCAG AA 3.0:1 達成。 c.background bg は維持で文字 contrast は不変)。
 import { useColors } from '@/src/core/theme/useColors';
 import { eventRowChipLabel, eventRowChipText } from '@/src/core/theme/typography';
 
@@ -40,7 +42,7 @@ export function HistoryChip({ chip }: { chip: HistoryChipData }) {
         <ThemedText style={styles.fieldLabel} numberOfLines={1}>
           {`${t(chip.fieldLabelKey)}:`}
         </ThemedText>
-        <View style={[styles.chip, { borderColor: c.border, backgroundColor: c.background }]}>
+        <View style={[styles.chip, { borderColor: c.borderStrong, backgroundColor: c.background }]}>
           <ThemedText style={styles.chipText} numberOfLines={1}>
             {valueLabel}
           </ThemedText>
@@ -51,7 +53,7 @@ export function HistoryChip({ chip }: { chip: HistoryChipData }) {
 
   // 後方互換: fieldLabelKey なしは chip のみ (旧 compact 表示)
   return (
-    <View style={[styles.chip, { borderColor: c.border, backgroundColor: c.background }]}>
+    <View style={[styles.chip, { borderColor: c.borderStrong, backgroundColor: c.background }]}>
       <ThemedText style={styles.chipText} numberOfLines={1}>
         {valueLabel}
       </ThemedText>
@@ -65,7 +67,7 @@ export function HistoryChip({ chip }: { chip: HistoryChipData }) {
 function OverflowChip({ count }: { count: number }) {
   const c = useColors();
   return (
-    <View style={[styles.chip, { borderColor: c.border, backgroundColor: c.background }]}>
+    <View style={[styles.chip, { borderColor: c.borderStrong, backgroundColor: c.background }]}>
       <ThemedText style={styles.chipText} numberOfLines={1}>{`+${count}`}</ThemedText>
     </View>
   );

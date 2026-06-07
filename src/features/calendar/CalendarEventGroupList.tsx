@@ -125,7 +125,10 @@ export function CalendarEventGroupList({
                       accessibilityState={{ expanded: isExpanded }}
                       style={[
                         styles.groupRow,
-                        { backgroundColor: c.surface, borderColor: c.border },
+                        // Sess73 PR-2: borderStrong で dark mode 可読性改善 (c.border=#2C2820 vs
+                        // c.surface=#211E18 ≈ 1.4:1 NG → c.borderStrong=#4A4534 ≈ 3.18:1 AA pass)。
+                        // light も BORDER_STRONG=#8A8274 vs BG_PRIMARY=#FAF8F1 ≈ 3.05:1 で改善。
+                        { backgroundColor: c.surface, borderColor: c.borderStrong },
                         hasOverdue && styles.groupRowOverdue,
                       ]}
                       onPress={() => toggleExpand(type)}
@@ -272,7 +275,8 @@ export function CalendarEventGroupList({
                       accessibilityState={{ expanded: isExpanded }}
                       style={[
                         styles.groupRow,
-                        { backgroundColor: c.surface, borderColor: c.border },
+                        // Sess73 PR-2: planned card と同じ borderStrong 強化 (dark mode 可読性)。
+                        { backgroundColor: c.surface, borderColor: c.borderStrong },
                       ]}
                       onPress={() => toggleExpand(type)}
                       onLongPress={() => confirmDeleteGroup('logged', type, events)}
@@ -396,7 +400,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
   },
-  groupRowOverdue: { opacity: 0.6 },
+  // Sess73 PR-2: opacity 0.6 → 0.75。 過去日 card が dark mode で textMuted + opacity 0.6
+  // で完全に沈んでいた問題を緩和、 視認性確保しつつ「過ぎた」 視覚記号は維持。
+  groupRowOverdue: { opacity: 0.75 },
   // 1 段目: アイコン + 種類名クラスタ + kebab (横並び)。
   groupLine: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   // 種類名 + 件数バッジを flex:1 + minWidth:0 の塊にし、長言語名は label 側で… 省略 (案B)。
