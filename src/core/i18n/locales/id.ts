@@ -567,6 +567,12 @@ const id: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Tag',
   bonsaiTagsEmpty: 'Belum ada tag',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: 'Favorit',
+  presetTagName_flowering: 'Berbunga',
+  tagSectionPresets: 'Saran',
+  tagPresetBadgeMaster: 'Standar',
+  tagPresetLockedToast: 'Tag standar tidak dapat diedit',
   settingsThemeRowLabel: 'Tema',
   settingsLanguageRowLabel: 'Bahasa',
   settingsNotificationRowLabel: 'Notifikasi',

@@ -565,6 +565,12 @@ const ko: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: '태그',
   bonsaiTagsEmpty: '태그 없음',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: '즐겨찾기',
+  presetTagName_flowering: '개화',
+  tagSectionPresets: '추천',
+  tagPresetBadgeMaster: '기본',
+  tagPresetLockedToast: '기본 태그는 편집할 수 없습니다',
   settingsThemeRowLabel: '테마',
   settingsLanguageRowLabel: '언어',
   settingsNotificationRowLabel: '알림',

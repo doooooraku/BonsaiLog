@@ -567,6 +567,12 @@ const tr: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Etiketler',
   bonsaiTagsEmpty: 'Henüz etiket yok',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: 'Favori',
+  presetTagName_flowering: 'Çiçekli',
+  tagSectionPresets: 'Öneriler',
+  tagPresetBadgeMaster: 'Şablon',
+  tagPresetLockedToast: 'Şablon etiketler düzenlenemez',
   settingsThemeRowLabel: 'Tema',
   settingsLanguageRowLabel: 'Dil',
   settingsNotificationRowLabel: 'Bildirimler',

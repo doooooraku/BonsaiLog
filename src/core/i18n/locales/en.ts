@@ -589,6 +589,12 @@ const baseEn = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Tags',
   bonsaiTagsEmpty: 'No tags yet',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: 'Favorite',
+  presetTagName_flowering: 'Flowering',
+  tagSectionPresets: 'Suggested',
+  tagPresetBadgeMaster: 'Preset',
+  tagPresetLockedToast: 'Preset tags cannot be edited',
   settingsThemeRowLabel: 'Theme',
   settingsLanguageRowLabel: 'Language',
   settingsNotificationRowLabel: 'Notifications',

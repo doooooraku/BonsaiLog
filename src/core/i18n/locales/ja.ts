@@ -590,6 +590,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 タグ入力 (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'タグ',
   bonsaiTagsEmpty: '最近使ったタグはまだありません',
+  // --- Sess74 PR-1: F-09 タグマスタ (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: 'お気に入り',
+  presetTagName_flowering: '花あり',
+  tagSectionPresets: 'おすすめ',
+  tagPresetBadgeMaster: 'マスタ',
+  tagPresetLockedToast: 'マスタタグは編集できません',
   settingsThemeRowLabel: 'テーマ',
   settingsLanguageRowLabel: '言語',
   settingsNotificationRowLabel: '通知設定',

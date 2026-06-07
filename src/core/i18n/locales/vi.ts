@@ -566,6 +566,12 @@ const vi: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Thẻ',
   bonsaiTagsEmpty: 'Chưa có thẻ',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: 'Yêu thích',
+  presetTagName_flowering: 'Ra hoa',
+  tagSectionPresets: 'Đề xuất',
+  tagPresetBadgeMaster: 'Mặc định',
+  tagPresetLockedToast: 'Không thể chỉnh sửa tag mặc định',
   settingsThemeRowLabel: 'Chủ đề',
   settingsLanguageRowLabel: 'Ngôn ngữ',
   settingsNotificationRowLabel: 'Thông báo',

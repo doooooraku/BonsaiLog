@@ -567,6 +567,12 @@ const nl: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Tags',
   bonsaiTagsEmpty: 'Nog geen tags',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: 'Favoriet',
+  presetTagName_flowering: 'Bloeiend',
+  tagSectionPresets: 'Aanbevolen',
+  tagPresetBadgeMaster: 'Standaard',
+  tagPresetLockedToast: 'Standaardtags kunnen niet worden bewerkt',
   settingsThemeRowLabel: 'Thema',
   settingsLanguageRowLabel: 'Taal',
   settingsNotificationRowLabel: 'Meldingen',

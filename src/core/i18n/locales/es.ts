@@ -569,6 +569,12 @@ const es: Partial<Record<TranslationKey, string>> = {
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Etiquetas',
   bonsaiTagsEmpty: 'Sin etiquetas',
+  // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
+  presetTagName_favorite: 'Favorito',
+  presetTagName_flowering: 'En flor',
+  tagSectionPresets: 'Sugeridos',
+  tagPresetBadgeMaster: 'Predefinido',
+  tagPresetLockedToast: 'Las etiquetas predefinidas no se pueden editar',
   settingsThemeRowLabel: 'Tema',
   settingsLanguageRowLabel: 'Idioma',
   settingsNotificationRowLabel: 'Notificaciones',

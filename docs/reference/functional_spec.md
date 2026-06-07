@@ -1138,6 +1138,26 @@ GROUP BY t.id ORDER BY cnt DESC LIMIT 3;
 - タグ名最大 **32 文字** (TL1、Bear / Notion 慣行)
 - タグ名 0 文字: バリデーション NG
 
+**タグの 2 種別** (Sess74 PR-1、 ADR-0049 §Notes Amended / ADR-0026 §Notes Amended):
+
+タグは以下の 2 種別を区別する (master/custom 分離 = 樹種・樹形と統一パターン):
+
+| 種別                      | 定義                      | 件数                                       | 多言語                                           | Free 上限                                             | rename/削除                                                 |
+| ------------------------- | ------------------------- | ------------------------------------------ | ------------------------------------------------ | ----------------------------------------------------- | ----------------------------------------------------------- |
+| **master (プリセット)**   | アプリが提供する固定タグ  | 2 件 (`お気に入り` / `花あり`)             | 19 言語フル翻訳 (`src/db/seedTagPresets.ts`)     | カウント対象外 (常に attach 可)                       | 不可 (Settings タグ管理画面で「マスタ」 badge + 編集ロック) |
+| **custom (ユーザー作成)** | user が入力で作成したタグ | 制限なし (アプリ全体)、 各盆栽 10 タグまで | 生 string (user 入力、 言語非依存、 G1 都度作成) | `FREE_TAG_LIMIT = 3` (ADR-0049 ②、 Pro user は無制限) | 可 (Settings タグ管理画面で rename / 削除)                  |
+
+**master tag の DB 取扱い**:
+
+- 起動時 / migration での `tags` 行 insert はしない (= 既存 user の DB に master row を勝手に追加しない)
+- user が「おすすめタグ」 chip を tap した時点で `createOrFindTag(localized name)` が呼ばれ、 初めて `tags` 行が生成される
+- normalized name (lowercase + trim + 連続空白圧縮) で UNIQUE 制約 (= 同名手入力は既存 master row を再利用、 idempotent)
+- master 判定は name match (`TAG_PRESET_NAMES_NORMALIZED` 38 entries の `Set<string>` で O(1) lookup、 `isPresetTagName` helper)
+
+**多言語切替時の挙動** (Sess74 PR-1 で受容):
+
+`tags.name` は user 入力の生 string 原則を維持するため、 user が JA「お気に入り」 を attach 後に EN へ切替えると、 EN 用 master chip「Favorite」 は別 row として attach 可能 (= 2 row 化)。 これは「タグは言語非依存」 原則の自然な帰結であり、 user 意思尊重として受容する。 将来「言語非依存 tag id」 を導入する場合は別 ADR 起票が必要。
+
 #### §14.3.4 検索履歴
 
 - 端末内、最大 20 件（AsyncStorage に保存）
