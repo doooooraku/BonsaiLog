@@ -17,6 +17,7 @@ import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
+import { useToastStore } from '@/src/components/Toast';
 import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import {
@@ -29,6 +30,7 @@ import {
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getDb } from '@/src/db/db';
+import { isPresetTagName } from '@/src/db/seedTagPresets';
 import {
   canCreateNewTag,
   countBonsaiByTag,
@@ -138,6 +140,7 @@ export default function TagEditScreen() {
       } else {
         // ADR-0049 Sess59 PR4 + Sess60 PR1: 新規タグ作成 Free 上限 3 ガード (rename は無制限)
         // Sess60 PR1: photoLimit* 流用 → tagLimit* 専用 key に切替 (Sess59 検証で文言不整合発覚)
+        // Sess74 PR-2: canCreateNewTag は master preset を常に true 返却 (countCustomTags 除外)
         const canCreate = await canCreateNewTag(trimmed, isPro);
         if (!canCreate) {
           Alert.alert(
@@ -157,6 +160,12 @@ export default function TagEditScreen() {
           return;
         }
         const created = await createOrFindTag(trimmed);
+        // Sess74 PR-2: 手入力 name が master preset と一致 → user に「マスタタグです」
+        // を Toast で説明 (rename/削除不可、 ロック挙動)。 既存 master row を再利用するため
+        // 機能には影響なし、 純粋に UX FB のみ。
+        if (isPresetTagName(trimmed)) {
+          useToastStore.getState().show(t('tagPresetLockedToast'));
+        }
         // Sess13 PR-C: returnTo=bonsai-create で呼ばれた場合は caller で auto-select するため
         // tagAddResult に新規 tagId を入れる (caller の useFocusEffect で consume)。
         if (returnTo === 'bonsai-create') {
