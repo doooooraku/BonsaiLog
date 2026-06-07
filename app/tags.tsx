@@ -24,6 +24,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ChevronRightIcon } from '@/src/components/icons';
+import { useToastStore } from '@/src/components/Toast';
 import {
   elapsedDaysFromIsoUtc,
   formatElapsedDays,
@@ -35,6 +36,7 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 import { BRAND_GREEN, ON_BRAND, TEXT_MUTED, TEXT_PRIMARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
+import { isPresetTagName } from '@/src/db/seedTagPresets';
 import { getTagsWithStats, type TagWithStats } from '@/src/db/tagRepository';
 import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCard';
 import { buildBonsaiCardData } from '@/src/features/bonsai/cardDataBuilder';
@@ -169,6 +171,10 @@ export default function TagsManagerScreen() {
         {tags.map((tg) => {
           const isExpanded = expandedTagId === tg.id;
           const togglable = tg.usageCount > 0;
+          // Sess74 PR-2: master preset 一致 → 「マスタ」 badge + 編集ロック
+          // (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended)。 rename/削除は不可、
+          // tap 時は Toast で説明。 toggle (▶/▼ 展開) は引き続き有効 (使用件数を確認可能)。
+          const isMaster = isPresetTagName(tg.nameNormalized);
           return (
             <React.Fragment key={tg.id}>
               <View style={[styles.row, { backgroundColor: c.surface, borderColor: c.border }]}>
@@ -193,12 +199,32 @@ export default function TagsManagerScreen() {
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`${tg.name} ${tg.usageCount}件`}
+                  accessibilityLabel={`${tg.name} ${tg.usageCount}件${isMaster ? ' (マスタ)' : ''}`}
+                  accessibilityState={{ disabled: isMaster }}
                   testID={`e2e_tags_row_${tg.id}`}
                   style={styles.rowMain}
-                  onPress={() => openEdit(tg)}
+                  onPress={() => {
+                    if (isMaster) {
+                      // Sess74 PR-2: master row は rename/削除不可 → Toast で説明
+                      useToastStore.getState().show(t('tagPresetLockedToast'));
+                      return;
+                    }
+                    openEdit(tg);
+                  }}
                 >
-                  <ThemedText type="defaultSemiBold">{tg.name}</ThemedText>
+                  <View style={styles.rowMainTextWrap}>
+                    <ThemedText type="defaultSemiBold">{tg.name}</ThemedText>
+                    {isMaster && (
+                      <View
+                        style={[styles.masterBadge, { borderColor: c.textMuted }]}
+                        testID={`e2e_tags_master_badge_${tg.id}`}
+                      >
+                        <ThemedText style={[styles.masterBadgeText, { color: c.textMuted }]}>
+                          {t('tagPresetBadgeMaster')}
+                        </ThemedText>
+                      </View>
+                    )}
+                  </View>
                   <ThemedText
                     style={[
                       styles.rowStats,
@@ -295,6 +321,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 8,
     minHeight: 48,
+  },
+  // Sess74 PR-2: name + master badge を横並びにする wrapper。
+  rowMainTextWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 1,
+  },
+  // Sess74 PR-2: master badge (灰 outline、 SpeciesPickerScreen customBadge から色反転)。
+  masterBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  masterBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
   },
   rowStats: { fontSize: 12 },
   rowStatsUnused: { fontStyle: 'italic' },

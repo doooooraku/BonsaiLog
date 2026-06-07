@@ -37,6 +37,7 @@ import { isoToYmd, parsePotInfo, toIsoUtc } from './bonsaiFormUtils';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 import {
   attachTagToBonsai,
+  createOrFindTag,
   detachTagFromBonsai,
   getRecentTags,
   getTagsByBonsai,
@@ -336,6 +337,34 @@ export function useBonsaiBasicForm({
     });
   }, []);
 
+  /**
+   * Sess74 PR-2: master プリセットタグの toggle (localizedName 経由)。
+   *
+   * preset chip 初回 tap 時はまだ DB row が存在しないため、 createOrFindTag で
+   * 取得 (既存なら再利用、 idempotent) → selectedTagIds に add/remove。
+   * recentTags にも追加 (selected 表示判定用)。
+   *
+   * normalize 一致で既存 row が再利用されるため、 言語切替後の重複 row 化は
+   * 避けられない (functional_spec §14.3.3 受容、 ADR-0026/ADR-0049 §Notes Amended)。
+   */
+  const togglePresetTag = useCallback(async (localizedName: string): Promise<void> => {
+    try {
+      const tag = await createOrFindTag(localizedName);
+      setSelectedTagIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(tag.id)) next.delete(tag.id);
+        else next.add(tag.id);
+        return next;
+      });
+      setRecentTags((prev) => {
+        if (prev.find((r) => r.id === tag.id)) return prev;
+        return [tag, ...prev];
+      });
+    } catch (err) {
+      console.warn('[BonsaiBasicForm] togglePresetTag failed (continuing):', err);
+    }
+  }, []);
+
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;
     setSubmitting(true);
@@ -491,6 +520,7 @@ export function useBonsaiBasicForm({
     recentTags,
     selectedTagIds,
     toggleTag,
+    togglePresetTag,
     pendingPhotos,
     handlePickPhoto,
     handleRemovePendingPhoto,
