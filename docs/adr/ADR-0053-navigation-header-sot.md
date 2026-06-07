@@ -152,12 +152,12 @@ Sess74 PR #978 実機検証で **E2 = Stack header transient re-render 漏れ bu
 
 ### 真因 (一次資料調査)
 
-| 項目 | 実態 |
-|---|---|
-| i18n store | Zustand + selector `useI18nStore((s) => s.lang)` で正しく re-render trigger |
-| root Stack | `app/_layout.tsx:167` `<Stack.Screen name="settings" options={{ headerShown: false }} />` で settings group 子画面の lazy cycle 起点 |
-| 子 Stack | `app/settings/_layout.tsx` で `useColors()` のみ refresh、 child screen の Stack.Screen options 再評価 trigger なし |
-| 個別 screen | `<Stack.Screen options={{ title: t('xxx') }} />` は **初回 mount 時のみ評価**、 lang 変更で再評価されない (Expo Router 仕様) |
+| 項目        | 実態                                                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| i18n store  | Zustand + selector `useI18nStore((s) => s.lang)` で正しく re-render trigger                                                          |
+| root Stack  | `app/_layout.tsx:167` `<Stack.Screen name="settings" options={{ headerShown: false }} />` で settings group 子画面の lazy cycle 起点 |
+| 子 Stack    | `app/settings/_layout.tsx` で `useColors()` のみ refresh、 child screen の Stack.Screen options 再評価 trigger なし                  |
+| 個別 screen | `<Stack.Screen options={{ title: t('xxx') }} />` は **初回 mount 時のみ評価**、 lang 変更で再評価されない (Expo Router 仕様)         |
 
 → React Navigation の **declarative API は初回 mount のみ反映**、 lang 動的更新には **imperative API (`useNavigation().setOptions()`) が必要**。
 
@@ -180,7 +180,7 @@ export default function MyScreen() {
 
   return (
     <ThemedView>
-      <Stack.Screen options={{ title: t('xxx') }} />  {/* 初回 mount 用 fallback */}
+      <Stack.Screen options={{ title: t('xxx') }} /> {/* 初回 mount 用 fallback */}
       <ScrollView>...</ScrollView>
     </ThemedView>
   );
@@ -195,13 +195,13 @@ export default function MyScreen() {
 
 ### 適用範囲 (Sess74 PR-3 = 個別 screen file 5 件)
 
-| file | 既存 | Amendment 適用 |
-|---|---|---|
-| `app/settings/index.tsx:127` | `<Stack.Screen options={{ title: t('tabSettings') }} />` | useEffect setOptions 追加 |
-| `app/settings/archived.tsx:164` | `t('settingsArchiveTitle')` | 同上 |
-| `app/settings/language.tsx:38` | `t('settingsLanguageRowLabel')` | 同上 |
-| `app/backup/index.tsx:115` | `t('backupTitle')` | 同上 |
-| `app/tag-edit.tsx` | (空 title) | 該当なし (skip) |
+| file                            | 既存                                                     | Amendment 適用            |
+| ------------------------------- | -------------------------------------------------------- | ------------------------- |
+| `app/settings/index.tsx:127`    | `<Stack.Screen options={{ title: t('tabSettings') }} />` | useEffect setOptions 追加 |
+| `app/settings/archived.tsx:164` | `t('settingsArchiveTitle')`                              | 同上                      |
+| `app/settings/language.tsx:38`  | `t('settingsLanguageRowLabel')`                          | 同上                      |
+| `app/backup/index.tsx:115`      | `t('backupTitle')`                                       | 同上                      |
+| `app/tag-edit.tsx`              | (空 title)                                               | 該当なし (skip)           |
 
 ### 別 PR スコープ (modal 系 layout で title 集約)
 
