@@ -139,7 +139,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // --- Pro / Paywall ---
   proTitle: 'Proにアップグレード',
   settingsPlanLabel: 'プラン',
-  settingsPlanUpgradeBadge: 'Upgrade',
+  settingsPlanUpgradeBadge: 'アップグレード',
   paywallModalHeaderTitle: 'BonsaiLog Pro',
   proPlanFreeTitle: '無料',
   proPlanMonthlyTitle: '月額',
@@ -413,7 +413,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogWireDurationHint: '外し時期の通知に使用',
 
   // --- ADR-0020 v1.x-5: Paywall Claude Design (Hero + FeatureRow テーブル) ---
-  paywallHeroEyebrow: 'Unlock',
+  paywallHeroEyebrow: '解放',
   paywallHeroTitle: '鉢1本ずつ、一生分。',
   paywallHeroBody: 'Pro で、記録の可能性を解き放つ。',
   paywallFeatureColLabel: '機能',
@@ -686,7 +686,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsPotUnit: '鉢サイズ単位',
   settingsPotUnitCm: 'cm',
   settingsPotUnitMm: 'mm',
-  settingsPotUnitInch: 'inch',
+  settingsPotUnitInch: 'インチ',
   photoSourceCamera: 'カメラ',
   photoSourceLibrary: 'ライブラリ',
   photoReorderHelp: '↑↓で並べ替え、 ×で削除できます。',

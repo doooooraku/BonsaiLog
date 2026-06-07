@@ -625,7 +625,7 @@ const de: Partial<Record<TranslationKey, string>> = {
   tagShowMore: '+{count} mehr',
   tagShowLess: 'Weniger anzeigen',
   settingsPlanLabel: 'Plan',
-  settingsPlanUpgradeBadge: 'Upgrade',
+  settingsPlanUpgradeBadge: 'Aktualisieren',
   bonsaiFieldAcquiredFrom: 'Erworben von',
   bonsaiFieldAcquiredFromPlaceholder: 'z. B. Gärtnereiname',
   bonsaiFieldPotInfo: 'Topf',
