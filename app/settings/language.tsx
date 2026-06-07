@@ -5,7 +5,7 @@
  * `src/core/i18n/languageOptions.ts` から共有取得。
  * 設定経由では「タップで setLang → router.back()」のシンプルな振る舞いのみ。
  */
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useNavigation, useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,7 +23,14 @@ import { useColors } from '@/src/core/theme/useColors';
 export default function SettingsLanguageScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
+  const navigation = useNavigation();
   const c = useColors();
+
+  // Sess74 PR-3 (ADR-0053 Amendment / E2): 言語切替直後の Stack header transient re-render 漏れ
+  // を回避するため、 useNavigation().setOptions で動的更新 (lang dependency)。
+  React.useEffect(() => {
+    navigation.setOptions({ title: t('settingsLanguageRowLabel') });
+  }, [navigation, t, lang]);
 
   const handlePick = React.useCallback(
     (code: Lang) => {

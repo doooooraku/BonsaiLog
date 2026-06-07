@@ -141,3 +141,78 @@ export default function GroupLayout() {
 - Sess66 PR3 #940: ESLint rule + a11y CI + ADR-0052
 - Sess66 PR4 #941: DARK_TOKENS 宵墨 warm pivot
 - Sess66 PR6 (予定、 3 分割): ThemedView/ThemedText 全画面適用
+
+---
+
+## Amendment (2026-06-07 / Sess74 PR-3 / E2 動的 title 更新)
+
+### 背景
+
+Sess74 PR #978 実機検証で **E2 = Stack header transient re-render 漏れ bug** を確認。 言語切替直後、 親画面 (例: 設定 root) の Stack header text が前言語のまま残る (例: 中国語に切替えても「Settings」 en のまま、 画面遷移で再評価され「设置」 zh 表示)。 Sess73 でも同型観察あり (en+ru transit 混在)。
+
+### 真因 (一次資料調査)
+
+| 項目        | 実態                                                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| i18n store  | Zustand + selector `useI18nStore((s) => s.lang)` で正しく re-render trigger                                                          |
+| root Stack  | `app/_layout.tsx:167` `<Stack.Screen name="settings" options={{ headerShown: false }} />` で settings group 子画面の lazy cycle 起点 |
+| 子 Stack    | `app/settings/_layout.tsx` で `useColors()` のみ refresh、 child screen の Stack.Screen options 再評価 trigger なし                  |
+| 個別 screen | `<Stack.Screen options={{ title: t('xxx') }} />` は **初回 mount 時のみ評価**、 lang 変更で再評価されない (Expo Router 仕様)         |
+
+→ React Navigation の **declarative API は初回 mount のみ反映**、 lang 動的更新には **imperative API (`useNavigation().setOptions()`) が必要**。
+
+### Amendment 採用 pattern
+
+```tsx
+// app/<group>/<screen>.tsx
+import { Stack, useNavigation } from 'expo-router';
+import React from 'react';
+import { useTranslation } from '@/src/core/i18n/i18n';
+
+export default function MyScreen() {
+  const { t, lang } = useTranslation();
+  const navigation = useNavigation();
+
+  // E2 動的 title 更新 (lang 変更で即時反映、 transient bug 解消)
+  React.useEffect(() => {
+    navigation.setOptions({ title: t('xxx') });
+  }, [navigation, t, lang]);
+
+  return (
+    <ThemedView>
+      <Stack.Screen options={{ title: t('xxx') }} /> {/* 初回 mount 用 fallback */}
+      <ScrollView>...</ScrollView>
+    </ThemedView>
+  );
+}
+```
+
+### 採用理由
+
+1. **公式 API**: React Navigation 公式の `useNavigation().setOptions()` で imperative update
+2. **`Stack.Screen options` 併存**: 初回 mount 用 fallback として残す (= 既存コード変更最小、 退行リスク低)
+3. **lang dependency 明示**: useEffect deps に `lang` を含めることで「lang 変更時のみ trigger」 を保証 (毎 render trigger 回避)
+
+### 適用範囲 (Sess74 PR-3 = 個別 screen file 5 件)
+
+| file                            | 既存                                                     | Amendment 適用            |
+| ------------------------------- | -------------------------------------------------------- | ------------------------- |
+| `app/settings/index.tsx:127`    | `<Stack.Screen options={{ title: t('tabSettings') }} />` | useEffect setOptions 追加 |
+| `app/settings/archived.tsx:164` | `t('settingsArchiveTitle')`                              | 同上                      |
+| `app/settings/language.tsx:38`  | `t('settingsLanguageRowLabel')`                          | 同上                      |
+| `app/backup/index.tsx:115`      | `t('backupTitle')`                                       | 同上                      |
+| `app/tag-edit.tsx`              | (空 title)                                               | 該当なし (skip)           |
+
+### 別 PR スコープ (modal 系 layout で title 集約)
+
+`app/(modals)/_layout.tsx:34-56` で 6 screen の title を集約定義 (`SpeciesPicker / StylePicker / WorkLog / BulkLog / BonsaiCreate / photo-viewer`)。 各 screen file での setOptions 追加は別 PR 候補 (PR-4)。
+
+### R-65 (新) recurrence-prevention 起票候補
+
+「Stack 子画面で title を持つ screen は **`<Stack.Screen options>` (fallback) + `useEffect navigation.setOptions` (動的更新) 両方使用必須**」 を `.claude/recurrence-prevention/specialized.md` に追加 (本 PR で起票)。
+
+### 関連
+
+- Sess74 PR #978 実機検証 REPORT (E2 発端)
+- Sess73 BottomCtaBar verify 時 en+ru transit 観察 (同型既知)
+- React Navigation 公式 docs: useNavigation().setOptions()
