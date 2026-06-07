@@ -11,7 +11,7 @@
  * - エラーは BackupError.code 別にメッセージ切り替え
  * - 色は BRAND_GREEN / ON_BRAND トークン経由 (旧 import.tsx の #2E7D32 直書き drift 解消)
  */
-import { Stack } from 'expo-router';
+import { Stack, useNavigation } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -25,11 +25,18 @@ import { useColors } from '@/src/core/theme/useColors';
 import { BackupError, exportBackup, importBackup } from '@/src/features/backup/backupService';
 
 export default function BackupScreen() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const navigation = useNavigation();
   const c = useColors();
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const busy = exporting || importing;
+
+  // Sess74 PR-3 (ADR-0053 Amendment / E2): 言語切替直後の Stack header transient re-render 漏れ
+  // を回避するため、 useNavigation().setOptions で動的更新 (lang dependency)。
+  React.useEffect(() => {
+    navigation.setOptions({ title: t('backupTitle') });
+  }, [navigation, t, lang]);
 
   const handleExport = async () => {
     if (busy) return;

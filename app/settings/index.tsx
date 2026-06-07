@@ -11,7 +11,7 @@
  * - [DEV] テストデータ → DevSettingsSection (本番枝刈り)
  * coordinator は各 section の row 配線 + ナビゲーションのみ。AsyncStorage key / URL route / i18n 不変。
  */
-import { Stack, useRouter, type Href } from 'expo-router';
+import { Stack, useNavigation, useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -43,6 +43,7 @@ import { useSettingsStore } from '@/src/stores/settingsStore';
 export default function SettingsScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
+  const navigation = useNavigation();
   const c = useColors();
   const isPro = useProStore((s) => s.isPro);
 
@@ -85,6 +86,12 @@ export default function SettingsScreen() {
   const currentLanguageLabel = React.useMemo(() => {
     return findLanguageOption(lang)?.native ?? lang;
   }, [lang]);
+
+  // Sess74 PR-3 (ADR-0053 Amendment / E2): 言語切替直後の Stack header transient re-render 漏れ
+  // を回避するため、 useNavigation().setOptions で動的更新 (lang dependency)。
+  React.useEffect(() => {
+    navigation.setOptions({ title: t('tabSettings') });
+  }, [navigation, t, lang]);
 
   // Phase 1.6-T6 (Issue #330 A1): テーマ 3 mode を 1 行 list + Alert (themeMode 維持、 UI 表現のみ整合)。
   const themeMode = useSettingsStore((s) => s.themeMode);

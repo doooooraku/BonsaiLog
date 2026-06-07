@@ -8,7 +8,7 @@
  * - 確認窓は Home / 詳細画面と同一の ConfirmDialog (ADR-0036 D1 統一)
  */
 import { Image } from 'expo-image';
-import { Stack, useFocusEffect } from 'expo-router';
+import { Stack, useFocusEffect, useNavigation } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -43,10 +43,17 @@ const THUMB = 64;
 
 export default function ArchivedBonsaiScreen() {
   const { t, lang } = useTranslation();
+  const navigation = useNavigation();
   const c = useColors();
   const [rows, setRows] = useState<ArchivedRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState<PendingAction>(null);
+
+  // Sess74 PR-3 (ADR-0053 Amendment / E2): 言語切替直後の Stack header transient re-render 漏れ
+  // を回避するため、 useNavigation().setOptions で動的更新 (lang dependency)。
+  React.useEffect(() => {
+    navigation.setOptions({ title: t('settingsArchiveTitle') });
+  }, [navigation, t, lang]);
 
   const reload = useCallback(async () => {
     setLoading(true);
