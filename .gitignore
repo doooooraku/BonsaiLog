@@ -1,7 +1,10 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # dependencies
-node_modules/
+# Sess79 PR-6c hotfix: trailing slash 削除で symlink (= worktree-init.sh の node_modules symlink) も ignore 対象に。
+# 旧 `node_modules/` (trailing slash あり) は directory のみ ignore、 symlink は 対象外で commit に混入する罠あり
+# (Sess79 PR-6 #999 で 循環 symlink commit 事故発生、 PR-6b #1000 で symlink 物理削除済、 本 PR で 構造防止)。
+node_modules
 
 # Expo
 .expo/
