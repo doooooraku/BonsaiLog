@@ -11,7 +11,7 @@
  * 静的検証は `__tests__/db/purgeBonsaiCompletely.test.ts`。
  */
 import { purgeBonsaiDbRows } from '@/src/db/bonsaiRepository';
-import { getPhotosByBonsai, insertPhoto } from '@/src/db/photoRepository';
+import { deletePhoto, getPhotosByBonsai, insertPhoto } from '@/src/db/photoRepository';
 import type { Photo } from '@/src/db/schema';
 import { deletePhotoFile, persistPhotoFile } from '@/src/services/photoFileService';
 
@@ -42,6 +42,29 @@ export async function addPhotoFromUri(input: AddPhotoFromUriInput): Promise<Phot
     caption: input.caption ?? null,
     eventId: input.eventId ?? null,
   });
+}
+
+/**
+ * 単一写真を完全削除 (ファイル + DB 行)。 ADR-0055 Sess77 PR-4 で 編集モードの写真差分処理に使用。
+ *
+ * 順序 (孤児データ防止、 Sess44 / purgeBonsaiCompletely 整合):
+ * 1. DB から photo を取得 (absoluteUri を 取得するため)
+ * 2. 実ファイル削除 (deletePhotoFile)
+ * 3. DB 行削除 (deletePhoto、 カバー写真昇格 logic 込み)
+ *
+ * 既存 `deletePhoto` は DB のみ、 本 helper は ファイル + DB の 2 操作を 束ねる。
+ * 失敗時は throws、 caller (WorkLogConfirmScreen) で try/catch + Toast「写真の一部失敗」 表示。
+ */
+export async function removePhotoById(id: string, absoluteUri: string): Promise<void> {
+  // 1. 実ファイル削除 (DB 行削除より先、 孤児ファイル防止)。
+  //    削除失敗は ignore (ファイル不在等の race condition)、 DB 削除を継続。
+  try {
+    await deletePhotoFile(absoluteUri);
+  } catch (err) {
+    console.warn('[removePhotoById] file delete failed (continuing)', err);
+  }
+  // 2. DB 行削除 (内部 atomic、 カバー写真自動昇格 込み)。
+  await deletePhoto(id);
 }
 
 /**
