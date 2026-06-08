@@ -21,10 +21,13 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { useToastStore } from '@/src/components/Toast';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess68 PR #C: 全 forbidden token を inline c.* 化。
 import { useColors } from '@/src/core/theme/useColors';
+import { updateEvent } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
+import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore, type WorkPickerMode } from '@/src/stores/pickerStore';
 
@@ -35,13 +38,37 @@ export default function WorkPickerScreen() {
     bonsaiName?: string;
     bonsaiId?: string;
     mode?: WorkPickerMode;
+    /**
+     * Sess77 Follow-up (ADR-0055 Notes Amended): planned event 編集モード trigger。
+     * 指定時、 種別 tap で `updateEvent(id, {type: newType, payload: {}})` を 呼び、
+     * 元 planned event の 作業種別を 差し替え (payload はリセット)。
+     */
+    editingPlannedId?: string;
+    /** 編集モードで 現在の type を highlighted 表示するための param */
+    currentType?: EventType;
   }>();
   const bonsaiName = params.bonsaiName ?? '';
   const bonsaiId = params.bonsaiId ?? '';
   const mode: WorkPickerMode = params.mode === 'schedule' ? 'schedule' : 'log';
+  const editingPlannedId = params.editingPlannedId ?? null;
+  const currentType = params.currentType ?? null;
 
   const items = EVENT_TYPES;
-  const handleSelect = (type: EventType) => {
+  const handleSelect = async (type: EventType) => {
+    if (editingPlannedId) {
+      // Sess77 Follow-up: 編集モード = 既存 planned event の 種別差し替え。
+      // payload は型整合性のため {} reset (type に応じた default 値で 再入力できる)。
+      try {
+        await updateEvent(editingPlannedId, { type, payload: {} });
+        void triggerSummaryReschedule(t);
+        useToastStore.getState().show(t('workLogPlannedTypeUpdatedToast'));
+        router.back();
+      } catch (err) {
+        console.warn('[WorkPickerScreen] planned type update failed', err);
+        useToastStore.getState().show(t('error'));
+      }
+      return;
+    }
     if (mode === 'log') {
       // Sess18 PR-1 (ADR-0030 D2): Case C 解消、 WorkLogConfirm に直接 push。
       // user 体感「← で 1 画面ずつ戻る」 達成 (Stack: detail → picker → confirm)。
@@ -66,21 +93,29 @@ export default function WorkPickerScreen() {
         <ThemedText style={[styles.subject, { color: c.text }]}>{bonsaiName}</ThemedText>
       </View>
       <View style={styles.grid} testID="e2e_work_picker_grid">
-        {items.map((type) => (
-          <Pressable
-            key={type}
-            accessibilityRole="button"
-            accessibilityLabel={t(`eventType_${type}` as Parameters<typeof t>[0])}
-            style={[styles.cell, { backgroundColor: c.surface, borderColor: c.border }]}
-            onPress={() => handleSelect(type)}
-            testID={`e2e_work_picker_${type}`}
-          >
-            <WorkTypeIcon type={type} size={32} color={c.text} />
-            <ThemedText style={[styles.label, { color: c.text }]}>
-              {t(`eventType_${type}` as Parameters<typeof t>[0])}
-            </ThemedText>
-          </Pressable>
-        ))}
+        {items.map((type) => {
+          // Sess77 Follow-up: 編集モードで 現在 type を 視覚的 highlighted
+          const isCurrent = editingPlannedId !== null && currentType === type;
+          return (
+            <Pressable
+              key={type}
+              accessibilityRole="button"
+              accessibilityLabel={t(`eventType_${type}` as Parameters<typeof t>[0])}
+              style={[
+                styles.cell,
+                { backgroundColor: c.surface, borderColor: c.border },
+                isCurrent && { borderColor: c.tint, borderWidth: 2 },
+              ]}
+              onPress={() => handleSelect(type)}
+              testID={`e2e_work_picker_${type}`}
+            >
+              <WorkTypeIcon type={type} size={32} color={isCurrent ? c.tint : c.text} />
+              <ThemedText style={[styles.label, { color: isCurrent ? c.tint : c.text }]}>
+                {t(`eventType_${type}` as Parameters<typeof t>[0])}
+              </ThemedText>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );

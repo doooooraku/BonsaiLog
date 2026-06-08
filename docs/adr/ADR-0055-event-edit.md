@@ -272,3 +272,48 @@
 ### Sess77 議論プロセス
 
 6 専門家 (テックリード / QA / UX/UI / PM / エンドユーザー / セキュリティ) + フラット視点 + 4 ペルソナ全員一致推薦、 user Q1-Q4 全 A + 解釈 ② 編集機能を中核 + 解釈 ① 発見性向上を副次タスクで両方対応 (B 案)、 アプローチ A (kebab に「編集」)、 今すぐ着手 (rollout 前)、 PR-1 で R-65 + ADR テンプレ + docs-lint 同時整備。
+
+---
+
+## Notes Amended
+
+### 2026-06-08 Sess77 Follow-up — status 別意味分化 + 起点戻り + row tap scroll
+
+Sess77 PR-3 で planned/logged を 同じ edit mode に 統合したが、 **user 実機検証 で 設計ミス発覚** (Sess77 議論 B-1/C-3 拡張/D-1):
+
+#### 問題 1: planned event の編集 = 種別差し替え が user 真意 (議題 B-1)
+
+- planned event の payload は 通常空 (= user が 予定立て時、 種別 + 盆栽 + 日付のみ指定、 payload 詳細は logged 時に入力)
+- Sess77 PR-3 の edit mode を そのまま流用すると 「謎の payload prefill」 (例: 剪定タイプ「枝」 + そこそこ default) を 表示 → user 認知不整合
+- **修正**: planned event の kebab「編集」 = **WorkPicker (種別 picker) 起動**、 種別 tap で `updateEvent({type: newType, payload: {}})` 実行 + payload リセット
+- logged event の kebab「編集」 = 現状 edit mode (WorkLogConfirm payload 編集) 維持
+- 実装: `useCalendarEventActions.handleEditPlannedEvent` 新規 + `CalendarTabScreen` RowActionMenu items を status 分岐
+- WorkPicker 拡張: `editingPlannedId` + `currentType` URL param 受領 + 種別 tap 時 updateEvent 呼出 + Toast `workLogPlannedTypeUpdatedToast`
+- `UpdateEventInput.type?: EventType` 追加 (eventRepository)、 type 変更時の payload reset 対応
+
+#### 問題 2: 編集後の戻り遷移先 (議題 D-1)
+
+- Sess77 PR-3 で `router.replace('/(tabs)/record?selectedDateKey=...')` 固定実装
+- bonsai-detail 履歴起点で 編集 → 保存後 record タブに 強制遷移 = user 注意の連続性破壊
+- **修正**: edit mode 保存後 `router.back()` で **起点 (caller) に戻る**:
+  - bonsai-detail 履歴起点 → 履歴に戻る
+  - カレンダー (record / plan) 起点 → カレンダーに戻る
+- `allowNavigation()` 同期呼出で 未保存ガード bypass (useUnsavedChangesGuard 整合、 Sess42 バグ 2 fix pattern)
+
+#### 問題 3: 個別 row tap → 該当 event 位置 scroll (議題 C-3 拡張)
+
+- 現状 `router.push('/(tabs)/bonsai/${bonsaiId}?tab=history')` で 該当盆栽の 履歴 tab に nav するが、 該当 event 位置までは scroll しない
+- **修正**: 既存 `focusEventId` URL param + `useScrollToEvent` hook を 流用 (Sess32 で 確立済 / 検索結果 tap で 動作中)
+- logged 個別 row onPress に `&focusEventId=${ev.id}` 付与
+- planned 個別 row は scroll なし (= focusEventId logic は logged のみ対応)、 user 言及も logged のみ
+
+#### 関連
+
+- 議題 C (row tap = bonsai-detail nav) は 採用 C-3 = 現状維持 + onboarding hint (別 PR、 緊急度低)
+- 議題 E (E3-E10) 残課題は v1.x 検討候補 (写真区別 UI / Toast 詳細化 / メモ placeholder edit mode 区別 / etc)
+- R-67 (新規) 候補: 「status 列を 持つ entity の 機能設計時、 各 status での 操作意味を matrix で 明示」
+
+#### 関連 PR
+
+- Sess77 PR-1 #987 〜 PR-5 #991 (= 初期実装、 全 main merge)
+- Sess77 Follow-up PR (= 本 Notes Amended で 設計修正 反映)

@@ -961,5 +961,6 @@ const it: Partial<Record<TranslationKey, string>> = {
   workLogUpdateCta: 'Update',
   workLogUpdatedToast: 'Updated',
   dateFieldHint: 'Tap to change date',
+  workLogPlannedTypeUpdatedToast: 'Work type updated',
 };
 export default it;

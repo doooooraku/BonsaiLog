@@ -43,6 +43,13 @@ export type CreateEventInput = {
 };
 
 export type UpdateEventInput = {
+  /**
+   * Sess77 Follow-up (ADR-0055 Notes Amended): type 変更を許可。
+   * planned event の 種別差し替え (例: 水やり → 剪定) で使用。
+   * type 変更時は payload を {} reset すべき (payload schema は type 依存のため)。
+   * CHECK 制約 (EVENT_TYPES) で valid type のみ受領、 invalid は DB レベルで reject。
+   */
+  type?: EventType;
   status?: EventStatus;
   occurredAtUtc?: string;
   durationMin?: number | null;
@@ -270,6 +277,13 @@ export async function updateEvent(id: string, input: UpdateEventInput): Promise<
   const fields: string[] = ['updated_at = ?'];
   const values: (string | number | null)[] = [now];
 
+  // Sess77 Follow-up: type 変更 (planned event の 種別差し替え)。
+  // CHECK 制約 (EVENT_TYPES) で valid type のみ通過、 invalid は DB reject。
+  // payload は type 依存のため、 type 変更時は input.payload で {} 等を 明示 reset 推奨。
+  if (input.type !== undefined) {
+    fields.push('type = ?');
+    values.push(input.type);
+  }
   if (input.status !== undefined) {
     fields.push('status = ?');
     values.push(input.status);
@@ -283,7 +297,9 @@ export async function updateEvent(id: string, input: UpdateEventInput): Promise<
     values.push(input.durationMin);
   }
   if (input.payload !== undefined) {
-    const payloadJson = serializeEventPayload(event.type, input.payload);
+    // type 変更時は input.type を 優先、 そうでなければ 既存 event.type を 使用
+    const effectiveType = input.type ?? event.type;
+    const payloadJson = serializeEventPayload(effectiveType, input.payload);
     fields.push('payload_json = ?');
     values.push(payloadJson);
   }

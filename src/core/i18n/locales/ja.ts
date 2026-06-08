@@ -972,6 +972,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogUpdateCta: '更新する',
   workLogUpdatedToast: '更新しました',
   dateFieldHint: 'タップで日付を変更できます',
+  workLogPlannedTypeUpdatedToast: '作業種別を変更しました',
 };
 
 export default ja;

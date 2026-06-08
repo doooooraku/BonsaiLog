@@ -73,7 +73,7 @@ export function useCalendarEventActions({ bonsaiMap, reload, t }: UseCalendarEve
     [bonsaiMap, router],
   );
 
-  // ADR-0055 Sess77 PR-3: 編集動線 (個別 row kebab → 「編集」)。
+  // ADR-0055 Sess77 PR-3: 編集動線 (個別 row kebab → 「編集」、 logged event 用)。
   // WorkLogConfirmScreen を edit mode で起動 (eventId param trigger、 mode === 'edit')。
   // 既存 fromPlannedId (convert mode) とは排他、 mode 判定は受信側で実施。
   const handleEditEvent = useCallback(
@@ -84,6 +84,21 @@ export function useCalendarEventActions({ bonsaiMap, reload, t }: UseCalendarEve
         `/work-log-confirm?eventId=${ev.id}&bonsaiId=${ev.bonsaiId}&bonsaiName=${bonsaiNameParam}&type=${ev.type}` as Href,
       );
       // kebab menu は press 後 dismiss
+      setKebabMenu(null);
+    },
+    [bonsaiMap, router],
+  );
+
+  // Sess77 Follow-up (ADR-0055 Notes Amended): planned event の 編集動線 = WorkPicker 起動。
+  // planned event の payload は 通常空 (= 「予定の中身」 は 種別 + 盆栽 + 日付 のみ)、 編集 = 種別差し替え が user 真意。
+  // WorkPicker を editingPlannedId + currentType param 付きで 起動 → 種別 tap で updateEvent({type, payload:{}}) 実行。
+  const handleEditPlannedEvent = useCallback(
+    (ev: Event) => {
+      const b = bonsaiMap.get(ev.bonsaiId);
+      const bonsaiNameParam = encodeURIComponent(b?.name ?? '');
+      router.push(
+        `/work-picker?mode=schedule&editingPlannedId=${ev.id}&bonsaiId=${ev.bonsaiId}&bonsaiName=${bonsaiNameParam}&currentType=${ev.type}` as Href,
+      );
       setKebabMenu(null);
     },
     [bonsaiMap, router],
@@ -208,6 +223,7 @@ export function useCalendarEventActions({ bonsaiMap, reload, t }: UseCalendarEve
     handleSingleConvert,
     handleBulkConvert,
     handleEditEvent,
+    handleEditPlannedEvent,
     showIndividualDeleteDialog,
     confirmDeleteEvent,
     confirmDeleteGroup,
