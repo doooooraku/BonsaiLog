@@ -144,11 +144,17 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
                 const status = actions.kebabMenu.status;
                 const type = actions.kebabMenu.type;
                 const events = actions.kebabMenu.events;
+                // Sess77 Follow-up (ADR-0055 Notes Amended): planned/logged で 編集動線 分岐。
+                // - planned: 種別差し替え (= WorkPicker 起動)
+                // - logged: payload 編集 (= 現状 WorkLogConfirm edit mode)
                 const editItem: RowActionMenuItem | null = isIndividual
                   ? {
                       key: 'edit',
                       label: t('rowActionMenuEdit'),
-                      onPress: () => actions.handleEditEvent(events[0]!),
+                      onPress: () =>
+                        status === 'planned'
+                          ? actions.handleEditPlannedEvent(events[0]!)
+                          : actions.handleEditEvent(events[0]!),
                       testID: `e2e_${testIdPrefix}_kebab_edit_${type}`,
                     }
                   : null;

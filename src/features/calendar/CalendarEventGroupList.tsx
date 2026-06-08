@@ -348,7 +348,11 @@ export function CalendarEventGroupList({
                                 lang={lang}
                                 t={t}
                                 onPress={(ev) =>
-                                  router.push(`/(tabs)/bonsai/${ev.bonsaiId}?tab=history` as Href)
+                                  // Sess77 Follow-up (議題 C-3 拡張): focusEventId 付与で 履歴 tab で 該当 event 位置まで scroll
+                                  // (検索パターン転用、 useScrollToEvent + setActiveTab('history') で 起動済 logic 流用)。
+                                  router.push(
+                                    `/(tabs)/bonsai/${ev.bonsaiId}?tab=history&focusEventId=${ev.id}` as Href,
+                                  )
                                 }
                                 onLongPress={confirmDeleteEvent}
                                 onKebabPress={(ev) =>

@@ -224,7 +224,7 @@ export default function WorkLogConfirmScreen() {
     }
     return baseDirty || photosDirty;
   }, [mode, note, occurredAtDate, photos, formState, wireUnwireDate]);
-  const { guardVisible, confirmDiscard, cancelDiscard } = useUnsavedChangesGuard({
+  const { guardVisible, confirmDiscard, cancelDiscard, allowNavigation } = useUnsavedChangesGuard({
     isDirty,
     bypass: isSubmitting,
   });
@@ -297,8 +297,13 @@ export default function WorkLogConfirmScreen() {
           } else {
             useToastStore.getState().show(t('workLogUpdatedToast'));
           }
-          const dateKey = occurredAtDate || occurredAtUtc.slice(0, 10);
-          router.replace(`/(tabs)/record?selectedDateKey=${dateKey}` as Href);
+          // Sess77 Follow-up (議題 D-1): 編集後の戻り遷移 = 起点 (履歴 / カレンダー どちらでも自然)。
+          // 旧 router.replace('/(tabs)/record?selectedDateKey=...') は record tab 強制遷移で
+          // 履歴起点の場合に「履歴 → 編集 → カレンダー」 と 注意の連続性が 破壊された。
+          // router.back() で navigation stack を pop し、 起点 (caller) に 戻る = 自然な戻り遷移。
+          // 未保存ガード bypass のため allowNavigation() を 同期呼出 (useUnsavedChangesGuard 整合)。
+          allowNavigation();
+          router.back();
           return;
         }
         let created;
