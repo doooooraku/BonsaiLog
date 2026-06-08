@@ -46,7 +46,7 @@ import {
   updateEvent,
 } from '@/src/db/eventRepository';
 import { getAllPhotosByEventId, FREE_PHOTO_LIMIT_PER_EVENT } from '@/src/db/photoRepository';
-import { addPhotoFromUri } from '@/src/features/photos/photoOrchestrator';
+import { addPhotoFromUri, removePhotoById } from '@/src/features/photos/photoOrchestrator';
 import type { EventType } from '@/src/db/schema';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
@@ -153,6 +153,8 @@ export default function WorkLogConfirmScreen() {
   const initialOccurredAtDateRef = React.useRef(occurredAtDate);
   const initialFormStateRef = React.useRef(formState);
   const initialWireUnwireDateRef = React.useRef(wireUnwireDate);
+  // ADR-0055 Sess77 PR-4: 編集モードの写真差分計算用 (削除集合 = initial − current の id-set 差分)。
+  const initialPhotosRef = React.useRef<readonly PhotoFieldItem[]>(photos);
   const prefilledRef = React.useRef(false);
 
   // ADR-0055 Sess77 PR-3: edit mode の prefill effect。
@@ -189,6 +191,7 @@ export default function WorkLogConfirmScreen() {
         initialOccurredAtDateRef.current = occurred;
         initialNoteRef.current = noteVal;
         initialWireUnwireDateRef.current = wireDateVal;
+        initialPhotosRef.current = photoItems; // PR-4 写真差分計算用 base
         prefilledRef.current = true;
       } catch (err) {
         // 編集対象 event が見つからない / 異常時は new mode と同様 base default のまま継続。
@@ -197,8 +200,9 @@ export default function WorkLogConfirmScreen() {
       }
     })();
   }, [mode, editingEventId, selectedType, settingsPotUnit]);
-  // ADR-0055 Sess77 PR-3: edit mode の prefill 完了前は isDirty 算出を抑止 (false 固定)、
+  // ADR-0055 Sess77 PR-3/PR-4: edit mode の prefill 完了前は isDirty 算出を抑止 (false 固定)、
   // 完了後は通常通り diff 比較。 new/convert mode は従来通り、 photos.length > 0 で dirty 判定。
+  // PR-4: photos の diff は id-set 比較で正確化 (削除集合 + 追加集合の どちらかが空でなければ dirty)。
   const isDirty = React.useMemo(() => {
     if (mode === 'edit' && !prefilledRef.current) return false;
     const baseDirty =
@@ -206,11 +210,18 @@ export default function WorkLogConfirmScreen() {
       occurredAtDate !== initialOccurredAtDateRef.current ||
       JSON.stringify(formState) !== JSON.stringify(initialFormStateRef.current) ||
       wireUnwireDate !== initialWireUnwireDateRef.current;
-    // photos.length は edit mode では initial 値からの差分、 new/convert は length > 0 で dirty
-    const photosDirty =
-      mode === 'edit'
-        ? photos.length !== (initialFormStateRef.current ? photos.length : 0) // edit 時は length 同等は ok (差分は別判定、 PR-4 で詳細化)
-        : photos.length > 0;
+    let photosDirty = false;
+    if (mode === 'edit') {
+      const initialIds = new Set(
+        initialPhotosRef.current.map((p) => p.id).filter((id): id is string => Boolean(id)),
+      );
+      const currentIds = new Set(photos.map((p) => p.id).filter((id): id is string => Boolean(id)));
+      const hasDeleted = [...initialIds].some((id) => !currentIds.has(id));
+      const hasAdded = photos.some((p) => !p.id);
+      photosDirty = hasDeleted || hasAdded;
+    } else {
+      photosDirty = photos.length > 0;
+    }
     return baseDirty || photosDirty;
   }, [mode, note, occurredAtDate, photos, formState, wireUnwireDate]);
   const { guardVisible, confirmDiscard, cancelDiscard } = useUnsavedChangesGuard({
@@ -227,25 +238,65 @@ export default function WorkLogConfirmScreen() {
     async (payload: Record<string, unknown>, occurredAtUtc: string) => {
       if (!bonsaiId || !selectedType) return;
       try {
-        // === edit mode (ADR-0055 Sess77 PR-3) ===
+        // === edit mode (ADR-0055 Sess77 PR-3 + PR-4 写真差分 + 通知 reschedule) ===
         if (mode === 'edit' && editingEventId) {
           const noteText = note.trim().length > 0 ? note.trim() : null;
+          // 1. updateEvent atomic (FTS5 sync 含む)、 先行で成功させる。 失敗時は Alert で UI 復帰。
           await updateEvent(editingEventId, {
             occurredAtUtc,
             payload,
             note: noteText,
           });
-          // 写真の新規追加 (id を持たない item = 新規)。 既存 (id 持ち) はそのまま維持 (PR-4 で削除 UI 追加予定)。
+          // 2. 写真差分処理 (ADR-0055 §Decision):
+          //    - 削除集合 = initialPhotosRef にあって photos に id 不在
+          //    - 追加集合 = photos の id を持たない item
+          //    partial failure は try/catch で吸収、 rollback はしない (記録本体は保存済が user メリット大、
+          //    ADR-0055 §Negative Consequences)。
+          const initialMap = new Map(
+            initialPhotosRef.current
+              .filter((p): p is PhotoFieldItem & { id: string } => Boolean(p.id))
+              .map((p) => [p.id, p]),
+          );
+          const currentIds = new Set(
+            photos.map((p) => p.id).filter((id): id is string => Boolean(id)),
+          );
+          const toDelete = [...initialMap.values()].filter((p) => !currentIds.has(p.id));
           const toAdd = photos.filter((p) => !p.id);
-          for (const p of toAdd) {
-            await addPhotoFromUri({
-              bonsaiId,
-              sourceUri: p.uri,
-              eventId: editingEventId,
-            });
+          let photoErrors = 0;
+          for (const p of toDelete) {
+            try {
+              await removePhotoById(p.id, p.uri);
+            } catch (err) {
+              photoErrors++;
+              console.warn('[WorkLogConfirmScreen] photo delete failed', err);
+            }
           }
+          for (const p of toAdd) {
+            try {
+              await addPhotoFromUri({
+                bonsaiId,
+                sourceUri: p.uri,
+                eventId: editingEventId,
+              });
+            } catch (err) {
+              photoErrors++;
+              console.warn('[WorkLogConfirmScreen] photo add failed', err);
+            }
+          }
+          // 3. 通知 reschedule (ADR-0055 §Decision):
+          //    scheduled_unwire_at 変更を確実に反映するため 既存 scheduled を 全 cancel →
+          //    SUMMARY 通知再計算で 新値 pickup。 logged → planned に status 変更なし (本 mode は payload 編集のみ)
+          //    だが、 wiring scheduled_unwire_at 変更 ケース で必要。
+          await cancelForEvent(editingEventId, t);
           void triggerSummaryReschedule(t);
-          useToastStore.getState().show(t('workLogUpdatedToast'));
+          // 4. Toast: 写真 partial failure があれば 件数を 表示、 なければ「更新しました」 のみ。
+          if (photoErrors > 0) {
+            useToastStore
+              .getState()
+              .show(`${t('workLogUpdatedToast')} (photos: ${photoErrors} failed)`);
+          } else {
+            useToastStore.getState().show(t('workLogUpdatedToast'));
+          }
           const dateKey = occurredAtDate || occurredAtUtc.slice(0, 10);
           router.replace(`/(tabs)/record?selectedDateKey=${dateKey}` as Href);
           return;
