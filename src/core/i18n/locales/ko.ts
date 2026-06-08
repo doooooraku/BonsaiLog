@@ -952,5 +952,10 @@ const ko: Partial<Record<TranslationKey, string>> = {
   pickerSectionCustom: '사용자 정의',
   pickerCustomBadge: '사용자 정의',
   pickerCustomCounter: '{used}/{limit}',
+  rowActionMenuEdit: 'Edit',
+  workLogTitleEditing: 'Edit {type}',
+  workLogUpdateCta: 'Update',
+  workLogUpdatedToast: 'Updated',
+  dateFieldHint: 'Tap to change date',
 };
 export default ko;

@@ -73,6 +73,22 @@ export function useCalendarEventActions({ bonsaiMap, reload, t }: UseCalendarEve
     [bonsaiMap, router],
   );
 
+  // ADR-0055 Sess77 PR-3: 編集動線 (個別 row kebab → 「編集」)。
+  // WorkLogConfirmScreen を edit mode で起動 (eventId param trigger、 mode === 'edit')。
+  // 既存 fromPlannedId (convert mode) とは排他、 mode 判定は受信側で実施。
+  const handleEditEvent = useCallback(
+    (ev: Event) => {
+      const b = bonsaiMap.get(ev.bonsaiId);
+      const bonsaiNameParam = encodeURIComponent(b?.name ?? '');
+      router.push(
+        `/work-log-confirm?eventId=${ev.id}&bonsaiId=${ev.bonsaiId}&bonsaiName=${bonsaiNameParam}&type=${ev.type}` as Href,
+      );
+      // kebab menu は press 後 dismiss
+      setKebabMenu(null);
+    },
+    [bonsaiMap, router],
+  );
+
   const handleBulkConvert = useCallback(
     (type: EventType, groupEvents: readonly Event[]) => {
       const csvIds = groupEvents.map((e) => e.id).join(',');
@@ -191,6 +207,7 @@ export function useCalendarEventActions({ bonsaiMap, reload, t }: UseCalendarEve
     kebabMenu,
     handleSingleConvert,
     handleBulkConvert,
+    handleEditEvent,
     showIndividualDeleteDialog,
     confirmDeleteEvent,
     confirmDeleteGroup,

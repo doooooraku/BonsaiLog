@@ -29,6 +29,7 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 import { useColors } from '@/src/core/theme/useColors';
 
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
+import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
 import { getTzOffsetMin } from '@/src/core/datetime';
 import {
   findGroupKeyForEvent,
@@ -130,18 +131,30 @@ export default function BonsaiDetailScreen() {
   });
 
   // R8/R9 (Phase 4 A1-12): イベント削除 + アーカイブ (ADR-0036 D1-D4)。
-  // ConfirmDialog 本体 JSX は下の render に残置し、本フックの visible state で駆動する。
+  // Sess77 PR-3 (ADR-0055): kebab tap → RowActionMenu (編集 + 削除) → 各 handler。
+  // ConfirmDialog / RowActionMenu 本体 JSX は下の render に残置し、本フックの state で駆動する。
   const {
     deleteConfirmVisible,
     confirmDeleteEvent,
-    kebabDeleteEvent,
     handleConfirmDelete,
     handleCancelDelete,
+    kebabPressEvent,
+    pendingKebabEvent,
+    handleKebabDismiss,
+    handleEditFromKebab,
+    handleDeleteFromKebab,
     archiveConfirmVisible,
     handleArchive,
     handleConfirmArchive,
     handleCancelArchive,
-  } = useEventActions({ item, reload, t, onArchived: () => router.back() });
+  } = useEventActions({
+    bonsaiName: item?.name ?? '',
+    bonsaiId: id,
+    item,
+    reload,
+    t,
+    onArchived: () => router.back(),
+  });
 
   // R7 (Phase 4 A1-7): 検索結果タップ → 該当作業へジャンプ + 一時ハイライト (measureLayout)。
   const { highlightedEventId, registerRow, scrollToEvent } = useScrollToEvent({
@@ -300,7 +313,7 @@ export default function BonsaiDetailScreen() {
                 registerRow={registerRow}
                 highlightedEventId={highlightedEventId}
                 onLongPressEvent={confirmDeleteEvent}
-                onKebabPressEvent={kebabDeleteEvent}
+                onKebabPressEvent={kebabPressEvent}
               />
             )}
 
@@ -393,6 +406,33 @@ export default function BonsaiDetailScreen() {
         onConfirm={handleConfirmArchive}
         onCancel={handleCancelArchive}
         testID="e2e_bonsai_detail_confirm_archive"
+      />
+
+      {/* ADR-0055 Sess77 PR-3: 個別 row kebab → RowActionMenu (編集 + 削除)。
+          CalendarTabScreen と同じ pattern で動線統一。 */}
+      <RowActionMenu
+        visible={pendingKebabEvent !== null}
+        items={
+          pendingKebabEvent === null
+            ? []
+            : ([
+                {
+                  key: 'edit',
+                  label: t('rowActionMenuEdit'),
+                  onPress: handleEditFromKebab,
+                  testID: `e2e_bonsai_detail_kebab_edit_${pendingKebabEvent.type}`,
+                },
+                {
+                  key: 'delete',
+                  label: t('rowActionMenuDelete'),
+                  destructive: true,
+                  onPress: handleDeleteFromKebab,
+                  testID: `e2e_bonsai_detail_kebab_delete_${pendingKebabEvent.type}`,
+                },
+              ] satisfies RowActionMenuItem[])
+        }
+        onDismiss={handleKebabDismiss}
+        testID="e2e_bonsai_detail_kebab_menu"
       />
     </ThemedView>
   );

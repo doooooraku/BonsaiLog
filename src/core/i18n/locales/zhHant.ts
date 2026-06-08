@@ -939,5 +939,10 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   pickerSectionCustom: '自訂',
   pickerCustomBadge: '自訂',
   pickerCustomCounter: '{used}/{limit}',
+  rowActionMenuEdit: 'Edit',
+  workLogTitleEditing: 'Edit {type}',
+  workLogUpdateCta: 'Update',
+  workLogUpdatedToast: 'Updated',
+  dateFieldHint: 'Tap to change date',
 };
 export default zhHant;

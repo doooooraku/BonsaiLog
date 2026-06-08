@@ -956,5 +956,10 @@ const it: Partial<Record<TranslationKey, string>> = {
   pickerSectionCustom: 'Personalizzato',
   pickerCustomBadge: 'Personalizzato',
   pickerCustomCounter: '{used}/{limit}',
+  rowActionMenuEdit: 'Edit',
+  workLogTitleEditing: 'Edit {type}',
+  workLogUpdateCta: 'Update',
+  workLogUpdatedToast: 'Updated',
+  dateFieldHint: 'Tap to change date',
 };
 export default it;

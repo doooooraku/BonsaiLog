@@ -967,6 +967,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   pickerSectionCustom: 'カスタム',
   pickerCustomBadge: 'カスタム',
   pickerCustomCounter: '{used}/{limit}',
+  rowActionMenuEdit: '編集',
+  workLogTitleEditing: '{type}を編集',
+  workLogUpdateCta: '更新する',
+  workLogUpdatedToast: '更新しました',
+  dateFieldHint: 'タップで日付を変更できます',
 };
 
 export default ja;

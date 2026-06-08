@@ -954,5 +954,10 @@ const ru: Partial<Record<TranslationKey, string>> = {
   pickerSectionCustom: 'Свои',
   pickerCustomBadge: 'Своё',
   pickerCustomCounter: '{used}/{limit}',
+  rowActionMenuEdit: 'Edit',
+  workLogTitleEditing: 'Edit {type}',
+  workLogUpdateCta: 'Update',
+  workLogUpdatedToast: 'Updated',
+  dateFieldHint: 'Tap to change date',
 };
 export default ru;

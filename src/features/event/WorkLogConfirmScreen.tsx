@@ -42,8 +42,10 @@ import {
   convertPlannedToRecorded,
   createEvent,
   findPlannedEventByCondition,
+  getEventById,
+  updateEvent,
 } from '@/src/db/eventRepository';
-import { FREE_PHOTO_LIMIT_PER_EVENT } from '@/src/db/photoRepository';
+import { getAllPhotosByEventId, FREE_PHOTO_LIMIT_PER_EVENT } from '@/src/db/photoRepository';
 import { addPhotoFromUri } from '@/src/features/photos/photoOrchestrator';
 import type { EventType } from '@/src/db/schema';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
@@ -59,6 +61,7 @@ import {
   getWorkLogNotePlaceholderKey,
   type WorkLogTypeFormState,
 } from './WorkLogTypeFormFields';
+import { payloadToFormState } from './payloadToFormState';
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
@@ -78,11 +81,23 @@ export default function WorkLogConfirmScreen() {
     fromPlannedId?: string;
     /** wiring-list「外す」から渡す body_part 初期値 (Sess41 アプローチC プリセット) */
     initialBodyPart?: string;
+    /** ADR-0055 Sess77: edit mode trigger (個別 row kebab → 「編集」 経由)。
+     *  eventId が指定されたら既存 event を fetch して form を prefill、 保存時 updateEvent を呼ぶ。
+     *  fromPlannedId とは排他 (両方指定は invariant 違反、 edit mode 優先)。 */
+    eventId?: string;
   }>();
   const bonsaiName = params.bonsaiName ?? '';
   const bonsaiId = params.bonsaiId ?? '';
   const selectedType = (params.type ?? null) as EventType | null;
   const fromPlannedId = params.fromPlannedId ?? null;
+  const editingEventId = params.eventId ?? null;
+  // ADR-0055 Sess77 PR-3: 3 mode (new / convert / edit) を eventId / fromPlannedId で判別。
+  // eventId が優先 (両方指定は invariant 違反、 dev assert は処理省略で production safe 化)。
+  const mode: 'new' | 'convert' | 'edit' = editingEventId
+    ? 'edit'
+    : fromPlannedId
+      ? 'convert'
+      : 'new';
 
   const [note, setNote] = React.useState('');
   // Sess36 PR-7 (ADR-0042 関連 fix): TZ 安全な local 「今日」 (toLocalDateKey)。
@@ -132,19 +147,72 @@ export default function WorkLogConfirmScreen() {
   // Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog。
   // mount 時の initial state を useRef で固定 → form state と diff 比較で isDirty 算出。
   // navigation back 試行時に dialog 表示、 「破棄」 で navigation 完遂、 「編集を続ける」 で残留。
+  // ADR-0055 Sess77 PR-3: edit mode では prefill 完了後に initial refs を fetched 値で同期更新
+  // (isDirty 誤発火防止)、 prefill 中の二重 fetch は prefilledRef flag で防止。
   const initialNoteRef = React.useRef(note);
   const initialOccurredAtDateRef = React.useRef(occurredAtDate);
   const initialFormStateRef = React.useRef(formState);
   const initialWireUnwireDateRef = React.useRef(wireUnwireDate);
-  const isDirty = React.useMemo(
-    () =>
+  const prefilledRef = React.useRef(false);
+
+  // ADR-0055 Sess77 PR-3: edit mode の prefill effect。
+  // getEventById + getAllPhotosByEventId で fetch、 payloadToFormState で逆変換、 state + initial refs 同期更新。
+  React.useEffect(() => {
+    if (mode !== 'edit' || prefilledRef.current || !editingEventId || !selectedType) return;
+    void (async () => {
+      try {
+        const ev = await getEventById(editingEventId);
+        if (!ev) return;
+        // ev.type は Drizzle $inferSelect で string、 EVENT_TYPES CHECK 制約で 14 種別 enforced。
+        // payloadToFormState は不正 type で safeParse fail → base default 返却で defensive。
+        const fs = payloadToFormState(ev.type as EventType, ev.payloadJson, settingsPotUnit);
+        const occurred = ev.occurredAtUtc.slice(0, 10);
+        const noteVal = ev.note ?? '';
+        // wiring の scheduled_unwire_at は payloadToFormState で fs.wireUnwireDate に
+        // 抽出済 (但し caller 側で別 state なので同期する)
+        const wireDateVal = fs.wireUnwireDate;
+        setFormState(fs);
+        setOccurredAtDate(occurred);
+        setNote(noteVal);
+        setWireUnwireDate(wireDateVal);
+        // 既存写真を prefill (PhotoFieldItem に id 設定、 ADR-0055 PR-2 で追加した field)
+        const existingPhotos = await getAllPhotosByEventId(editingEventId);
+        const photoItems: PhotoFieldItem[] = existingPhotos.map((p) => ({
+          id: p.id,
+          uri: p.absoluteUri,
+          width: p.width,
+          height: p.height,
+        }));
+        setPhotos(photoItems);
+        // initial refs を fetched 値で同期更新 → isDirty 誤発火防止
+        initialFormStateRef.current = fs;
+        initialOccurredAtDateRef.current = occurred;
+        initialNoteRef.current = noteVal;
+        initialWireUnwireDateRef.current = wireDateVal;
+        prefilledRef.current = true;
+      } catch (err) {
+        // 編集対象 event が見つからない / 異常時は new mode と同様 base default のまま継続。
+        // user は通常 form を「新規記録」 として完了できる (defensive、 crash 回避)。
+        console.warn('[WorkLogConfirmScreen] edit mode prefill failed', err);
+      }
+    })();
+  }, [mode, editingEventId, selectedType, settingsPotUnit]);
+  // ADR-0055 Sess77 PR-3: edit mode の prefill 完了前は isDirty 算出を抑止 (false 固定)、
+  // 完了後は通常通り diff 比較。 new/convert mode は従来通り、 photos.length > 0 で dirty 判定。
+  const isDirty = React.useMemo(() => {
+    if (mode === 'edit' && !prefilledRef.current) return false;
+    const baseDirty =
       note !== initialNoteRef.current ||
       occurredAtDate !== initialOccurredAtDateRef.current ||
-      photos.length > 0 ||
       JSON.stringify(formState) !== JSON.stringify(initialFormStateRef.current) ||
-      wireUnwireDate !== initialWireUnwireDateRef.current,
-    [note, occurredAtDate, photos, formState, wireUnwireDate],
-  );
+      wireUnwireDate !== initialWireUnwireDateRef.current;
+    // photos.length は edit mode では initial 値からの差分、 new/convert は length > 0 で dirty
+    const photosDirty =
+      mode === 'edit'
+        ? photos.length !== (initialFormStateRef.current ? photos.length : 0) // edit 時は length 同等は ok (差分は別判定、 PR-4 で詳細化)
+        : photos.length > 0;
+    return baseDirty || photosDirty;
+  }, [mode, note, occurredAtDate, photos, formState, wireUnwireDate]);
   const { guardVisible, confirmDiscard, cancelDiscard } = useUnsavedChangesGuard({
     isDirty,
     bypass: isSubmitting,
@@ -152,10 +220,36 @@ export default function WorkLogConfirmScreen() {
 
   // Sess19 PR-4 (ADR-0031 D3 + D4): 直接 await + router.replace でカレンダー遷移。
   // Sess23 PR-4-3 (ADR-0035 D7/D8): fromPlannedId 指定時 → atomic 変換、 通常 FAB 経路 → 同条件 planned auto-cancel。
+  // ADR-0055 Sess77 PR-3: edit mode (eventId 指定) は updateEvent + 写真追加 + Toast「更新しました」 + router.replace。
+  // 写真差分処理 (削除) は PR-4 で 実装、 PR-3 は新規追加のみ (既存写真の uri は変わらないので addPhotoFromUri が
+  // id 持ち item には no-op 効果、 厳密には PhotoField の delete UI が PR-4 まで露出しない)。
   const persistAndNavigate = React.useCallback(
     async (payload: Record<string, unknown>, occurredAtUtc: string) => {
       if (!bonsaiId || !selectedType) return;
       try {
+        // === edit mode (ADR-0055 Sess77 PR-3) ===
+        if (mode === 'edit' && editingEventId) {
+          const noteText = note.trim().length > 0 ? note.trim() : null;
+          await updateEvent(editingEventId, {
+            occurredAtUtc,
+            payload,
+            note: noteText,
+          });
+          // 写真の新規追加 (id を持たない item = 新規)。 既存 (id 持ち) はそのまま維持 (PR-4 で削除 UI 追加予定)。
+          const toAdd = photos.filter((p) => !p.id);
+          for (const p of toAdd) {
+            await addPhotoFromUri({
+              bonsaiId,
+              sourceUri: p.uri,
+              eventId: editingEventId,
+            });
+          }
+          void triggerSummaryReschedule(t);
+          useToastStore.getState().show(t('workLogUpdatedToast'));
+          const dateKey = occurredAtDate || occurredAtUtc.slice(0, 10);
+          router.replace(`/(tabs)/record?selectedDateKey=${dateKey}` as Href);
+          return;
+        }
         let created;
         let convertedCount = 0;
         const noteText = note.trim().length > 0 ? note.trim() : undefined;
@@ -230,7 +324,7 @@ export default function WorkLogConfirmScreen() {
         setIsSubmitting(false);
       }
     },
-    [bonsaiId, selectedType, note, photos, occurredAtDate, fromPlannedId, t],
+    [bonsaiId, selectedType, note, photos, occurredAtDate, fromPlannedId, mode, editingEventId, t],
   );
 
   const handleSubmit = async () => {
@@ -251,6 +345,13 @@ export default function WorkLogConfirmScreen() {
 
   if (selectedType == null) return null;
   const titleLabel = t(`eventType_${selectedType}` as TranslationKey);
+  // ADR-0055 Sess77 PR-3: mode で title + Save CTA 切替。
+  // edit mode → 「{type}を編集」 + 「更新する」、 new/convert mode → 既存「{type} の記録」 + 「保存する」。
+  const titleText =
+    mode === 'edit'
+      ? t('workLogTitleEditing').replace('{type}', titleLabel)
+      : t('workLogTitle').replace('{type}', titleLabel);
+  const saveCtaLabel = mode === 'edit' ? t('workLogUpdateCta') : t('workLogSaveCta');
 
   return (
     <View
@@ -272,15 +373,17 @@ export default function WorkLogConfirmScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <ThemedText style={[styles.title, { color: c.text }]}>
-              {t('workLogTitle').replace('{type}', titleLabel)}
-            </ThemedText>
+            <ThemedText style={[styles.title, { color: c.text }]}>{titleText}</ThemedText>
             <ThemedText style={[styles.subject, { color: c.textSecondary }]}>
               {bonsaiName}
             </ThemedText>
           </View>
 
-          {/* Sess16 PR-A2: 日付選択 (mockup 14 種別共通 field、 全 form の先頭に配置)。 */}
+          {/* Sess16 PR-A2: 日付選択 (mockup 14 種別共通 field、 全 form の先頭に配置)。
+              ADR-0055 Sess77 PR-3 (解釈 ① 発見性向上): 直下に inline hint テキスト
+              「タップで日付を変更できます」 を 毎回表示 (dismiss flag なし、 19 言語整合)。
+              テスター苦情「過去の作業の入力ができないようだ」 = 日付欄が tap で 変更可能なことに
+              気づかなかった発見性の低さが真因、 hint で構造解決。 */}
           <View style={styles.field}>
             <LabeledDateRow
               label={t('workLogDateField')}
@@ -293,6 +396,12 @@ export default function WorkLogConfirmScreen() {
               testID="e2e_work_log_date"
               testIDClear="e2e_work_log_date_clear"
             />
+            <ThemedText
+              style={[styles.dateHint, { color: c.textSecondary }]}
+              testID="e2e_work_log_date_hint"
+            >
+              {t('dateFieldHint')}
+            </ThemedText>
           </View>
 
           {/* Sess17 PR-G1: 14 種別固有 form を WorkLogTypeFormFields に委譲 (controlled)。 */}
@@ -352,14 +461,12 @@ export default function WorkLogConfirmScreen() {
         <View style={[styles.footer, { backgroundColor: c.background, borderTopColor: c.border }]}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('workLogSaveCta')}
+            accessibilityLabel={saveCtaLabel}
             style={[styles.saveBtn, { backgroundColor: c.tint }]}
             onPress={handleSubmit}
             testID="e2e_work_log_save"
           >
-            <ThemedText style={[styles.saveText, { color: c.onTint }]}>
-              {t('workLogSaveCta')}
-            </ThemedText>
+            <ThemedText style={[styles.saveText, { color: c.onTint }]}>{saveCtaLabel}</ThemedText>
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -391,6 +498,8 @@ const styles = StyleSheet.create({
   },
   subject: { fontSize: 13 },
   field: { marginBottom: 18 },
+  // ADR-0055 Sess77 PR-3: 日付欄直下 inline hint (解釈 ① 発見性向上)
+  dateHint: { fontSize: 11, marginTop: 4 },
   footer: {
     paddingHorizontal: 16,
     paddingTop: 12,

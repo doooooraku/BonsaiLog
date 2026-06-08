@@ -939,5 +939,10 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   pickerSectionCustom: '自定义',
   pickerCustomBadge: '自定义',
   pickerCustomCounter: '{used}/{limit}',
+  rowActionMenuEdit: 'Edit',
+  workLogTitleEditing: 'Edit {type}',
+  workLogUpdateCta: 'Update',
+  workLogUpdatedToast: 'Updated',
+  dateFieldHint: 'Tap to change date',
 };
 export default zhHans;
