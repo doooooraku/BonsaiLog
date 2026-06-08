@@ -100,7 +100,6 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
           formatGroupAccessibility={actions.formatGroupAccessibility}
           confirmDeleteEvent={actions.confirmDeleteEvent}
           confirmDeleteGroup={actions.confirmDeleteGroup}
-          showIndividualDeleteDialog={actions.showIndividualDeleteDialog}
           handleKebabPress={actions.handleKebabPress}
           handleBulkConvert={actions.handleBulkConvert}
           handleSingleConvert={actions.handleSingleConvert}

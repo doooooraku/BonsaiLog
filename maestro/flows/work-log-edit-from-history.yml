@@ -1,0 +1,81 @@
+# maestro/flows/work-log-edit-from-history.yml
+# Sess77 PR-5 (ADR-0055): 盆栽詳細 → 履歴タブ → 個別 row kebab → 「編集」 → 編集画面 → 更新する。
+#
+# CalendarTabScreen 経由 (work-log-edit.yml) と 並列の動線、 bonsai-detail から の edit。
+# useEventActions の kebabPressEvent → RowActionMenu → edit item → router.push 経路を検証。
+appId: 'com.dooooraku.bonsailog'
+---
+- launchApp:
+    clearState: false
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 30000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_list'
+    timeout: 30000
+
+# 1 つ目の盆栽 tap → 詳細画面
+- tapOn:
+    id: 'e2e_bonsai_card_0'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 履歴タブ tap (default が basic で 開く想定)
+- tapOn:
+    text: '作業履歴'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 個別 row kebab tap (= bonsai-detail history の event kebab、 useEventActions.kebabPressEvent → menu 表示)
+# 注: event id は dynamic ULID のため、 partial id grep でなく text + position tap で 1 件目を 取得。
+- tapOn:
+    point: '90%, 50%' # 1 件目 row の kebab 想定位置 (画面右端)
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# RowActionMenu 表示
+- assertVisible:
+    id: 'e2e_bonsai_detail_kebab_menu'
+    optional: true
+
+# 編集 item tap (種別問わず、 type partial では event の type に依存)
+- tapOn:
+    text: '編集'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# WorkLogConfirmScreen が edit mode で開く
+- assertVisible:
+    id: 'e2e_work_log_confirm_screen'
+- assertVisible:
+    id: 'e2e_work_log_date_hint'
+
+# メモを変更
+- tapOn:
+    id: 'e2e_work_log_note'
+    retryTapIfNoChange: true
+- inputText: ' [edited from history]'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 「更新する」 tap
+- tapOn:
+    id: 'e2e_work_log_save'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertVisible: '更新しました'
