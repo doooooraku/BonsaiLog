@@ -973,6 +973,21 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogUpdatedToast: '更新しました',
   dateFieldHint: 'タップで日付を変更できます',
   workLogPlannedTypeUpdatedToast: '作業種別を変更しました',
+  recurringPickerToggle: '繰り返し',
+  recurringPresetDaily: '毎日',
+  recurringPresetWeeklyMonday: '毎週月曜',
+  recurringPresetWeekly: '毎週',
+  recurringPresetBiweekly: '隔週',
+  recurringPresetMonthly: '毎月',
+  recurringPresetCustom: '3 ヶ月ごと',
+  recurringEndDateOneYear: '1 年後 (おすすめ)',
+  recurringEndDateSpecific: '日付を指定',
+  recurringEndDateNever: 'なし',
+  recurringRuleCreatedToast: '定期予定を{count}件分作成しました',
+  recurringRuleEditScopeThis: 'この 1 件だけ',
+  recurringRuleEditScopeFollowing: 'これ以降すべて',
+  recurringRuleEditScopeAll: 'すべて',
+  recurringEventBadgeLabel: '定期予定',
 };
 
 export default ja;
