@@ -133,6 +133,25 @@ Accepted後に現実として起きることを書く。
 
 ---
 
+## CRUD Coverage（CRUD 系機能を扱う ADR で必須、 R-65 整合）
+
+<!--
+ADR-0055 由来。 「機能の追加」 議論に偏らず、 既存機能の **完備性** (= U/D の対称性、 C/R の到達性) を 構造的に評価する。
+CRUD 系機能 (data 操作 = C/R/U/D を user が行う機能) を扱う ADR で必須記載。
+非 CRUD 系 ADR (UI 統一 / 文書整備 / build 設定 等) は本 section スキップ可、 ただし title に CRUD 動詞 (create/edit/update/delete) を含む場合は記載必須 (`pnpm docs:lint` で警告)。
+
+各 cell に「対応する PR / Issue」 または「未対応の理由」 を記載。 「将来対応」 は ADR 内で言及 + Follow-ups に追加。
+-->
+
+| Operation  | 状態                     | 動線 / 制約 |
+| ---------- | ------------------------ | ----------- |
+| C (Create) | 対応 / 未対応 / 将来対応 |             |
+| R (Read)   | 対応 / 未対応 / 将来対応 |             |
+| U (Update) | 対応 / 未対応 / 将来対応 |             |
+| D (Delete) | 対応 / 未対応 / 将来対応 |             |
+
+---
+
 ## Rollout / Rollback（出し方/戻し方）
 
 <!--
