@@ -418,3 +418,41 @@ const todayLocal = toLocalDateKey(nowUtc() as string, getTzOffsetMin());
 - 親 PR: 検索画面 3 改善 PR-1 (改善③)
 - 出典 (LIKE エスケープ): `bonsaiRepository.ts` `searchBonsai`
 - functional_spec §14 を同改訂 (短文字経路を LIKE に統一)
+
+---
+
+## Notes Amended (2026-06-08、 Sess78 PR-1): §v1.x 拡張候補 「予定の繰り返し (RRULE)」 → 実装着手 (ADR-0056)
+
+### 背景
+
+本 ADR 上方 「v1.x 拡張候補 (本 ADR 対象外)」 line 275 に「予定の繰り返し (RRULE) — 現状は単発 plan のみ」 と 伏線で記載されていた項目を、 Sess78 で **実装着手** (versionCode 13 同梱予定)。
+
+### 経緯
+
+- 2026-06-08 Sess76 配信前のテスター 12 人から 「毎週月曜に水やりなど 定期的な予定が入力できたら 管理が楽になりそう」 という意見
+- Sess78 議論モード (R-13/R-16/R-17/R-20 遵守) で 6 専門家 + 4 ペルソナ + フラット視点 で アプローチ A/B/C/D 比較 → B 案 (RRULE 保持 + 連動更新) 全員一致採用
+- user 全 Q 承認 (B 案 / 今すぐ 5 PR 実装 / Free 3 件 Pro 無制限 / Y 廃棄統合)
+
+### 実装方針 (ADR-0056 D1-D9 SoT、 本 Notes は要約)
+
+- `recurrence_rules` 新規 table (id ULID PK + bonsai_id FK + event_type + rrule TEXT + start/end_at_utc + exdates JSON + deleted_at)
+- `events.recurrence_rule_id` (nullable FK、 ON DELETE SET NULL) 列追加 = 既存データ影響ゼロ
+- 起動時バッチで 8 週分先まで planned events を 事前展開、 上限 1000 件/rule
+- Apple Reminders 風 6 preset + Google Calendar 3 択 dialog (this/following/all) で 業界標準 UX
+- Pro 境界: Free 3 件 / Pro 無制限 (ADR-0049 ⑦ Amendment、 タグ ②・カスタム樹種 ⑥ pattern 踏襲)
+
+### TZ 3 層防御の拡張 (R-66 起票)
+
+RRULE 展開時、 `rrule` lib の戻り値を `toLocalDateKey(isoUtc, getTzOffsetMin())` で正規化。 `.toISOString().slice(0,10)` 直書きは ESLint で禁止済 (本 ADR §15 + R-55)、 R-66 で RRULE 展開固有の禁止 pattern を 追加明文化。
+
+### 関連 PR
+
+- Sess78 PR-1 (本 Notes Amended + ADR-0056 起票)
+- Sess78 PR-2 (DB schema 変更) / PR-3 (RRULE 計算) / PR-4 (UI) / PR-5 (連動編集 + Pro + E2E)
+
+### 関連
+
+- ADR-0056 (本 Notes Amended の親 ADR、 Decision SoT)
+- R-66 (RRULE 展開 toLocalDateKey 経由必須、 本 R-55 拡張)
+- R-67 (status を持つ entity の機能設計時、 各 status の操作意味を matrix で明示)
+- Sess14 ALTER TABLE 罠教訓 (PR-2 で nullable 列のみで回避)
