@@ -901,6 +901,83 @@ ADR-0008 (event data model) で **U (Update)** が DB 層のみ実装され、 U
 
 ---
 
+## R-66 RRULE 展開時の TZ 罠防止 (Sess78 ADR-0056 起票)
+
+### ルール
+
+RRULE 展開時 (= recurring schedule から planned events を 生成する 処理)、 `rrule` lib の `between(from, to)` の 戻り値 (= Date 配列) を **必ず `toLocalDateKey(isoUtc, getTzOffsetMin())` で 正規化** してから DB 保存。
+
+- ❌ `rrule.between(from, to).map(d => d.toISOString().slice(0, 10))` — UTC 日付を返す、 JST 早朝 (0:00-8:59) に「昨日」 化、 ADR-0008 §TZ 3 層防御違反
+- ❌ `rrule.between(from, to).map(d => d.toISOString().slice(0, 10))` (Branded Type unwrap だけで本質は同じ)
+- ✅ `rrule.between(from, to).map(d => toLocalDateKey(d.toISOString() as IsoUtc, getTzOffsetMin()))`
+
+### 適用範囲
+
+- `src/core/recurrence/rrule.ts` (Sess78 PR-3 新規)
+- `src/db/recurrenceRuleRepository.ts` の `expandFutureEvents` (Sess78 PR-3 新規)
+- 将来 .ics export 等で RRULE を 扱う 全コード
+
+### 検出
+
+- 自動: `scripts/check-utc-date-slice.mjs` 既存 (Sess36 PR-9 R-55) で `nowUtc.*slice|new Date().*slice` を grep、 RRULE 展開 file も対象に含む (`src/core/recurrence/*` を対象 dir に追加)
+- 例外: なし (recurrence は user 体感「日付」 そのものなので 例外不要)
+
+### 由来
+
+- ADR-0008 §TZ 3 層防御 ラッパー 6 つ (Notes Amended 2026-05-23 で `toLocalDateKey` を 6 つ目に追加) の RRULE 拡張
+- R-55「関連項目網羅調査」 の RRULE 展開固有 pattern として 明示化
+- Sess36 PR-7 の `(nowUtc() as string).slice(0, 10)` 罠の 3 件発覚教訓踏襲
+
+### 関連
+
+- ADR-0008 §TZ 3 層防御 ラッパー 6 (`toLocalDateKey`)
+- ADR-0056 (本 R 同時起票、 recurring schedule の Decision SoT)
+- R-55 (CLAUDE.md §2 関連項目網羅調査、 本 R の 親規約)
+- Sess14 ALTER TABLE 罠 (PR-2 で nullable 列のみで回避、 schema migration 失敗の 別罠)
+
+---
+
+## R-67 status を持つ entity の 機能設計時、 各 status の操作意味を matrix で明示
+
+### ルール
+
+ADR 起票時、 該当機能が `status` 列を 持つ entity (例: `events.status = 'planned' | 'logged' | 'cancelled'`) に対する 操作を 定義する 場合、 **各 status での 操作意味を matrix で 明示** する。 「個別だけ評価」 で `status` 漏れによる 設計ミスを 構造的に防止。
+
+### Matrix template
+
+| 粒度 / 操作 | planned | logged | cancelled | 備考 |
+| --- | --- | --- | --- | --- |
+| C (Create) | (UI 動線) | (UI 動線) | (通常 user 操作なし) | |
+| R (Read) | (表示位置) | (表示位置) | (履歴のみ) | |
+| U (Update) | (編集動作 = 例: 種別差し替え) | (編集動作 = 例: payload 編集) | (通常 user 操作なし) | |
+| D (Delete) | (削除動作) | (削除動作) | (= 物理削除) | |
+
+### 適用範囲
+
+- ADR 起票時、 events / future event-like entity (例: PR-2 の recurrence_rules) の機能設計時 必須
+- ADR-0055 (event 編集機能) で Sess77 Follow-up「planned/logged で 編集の意味分化」 が 設計ミスとして発覚 → 本 R 起票
+- ADR-0056 (recurring schedule、 本 R 同時起票) で 早期適用
+
+### 検出
+
+- 手動: ADR review 時に matrix 存在 + 各 cell の妥当性 確認
+- 自動 (将来検討): `scripts/docs-lint.mjs` で `events.status` / `recurrence_rules` 等を 言及する ADR に 本 matrix の heading (`## Status Matrix` 等) 存在 check (false positive 防止で warn のみ)
+
+### 由来
+
+- 2026-06-08 Sess77 PR-3 で planned/logged を 同じ edit mode に統合 → user 実機検証で 「planned event の payload は通常空、 編集 = 種別差し替えが真意」 と発覚 → Follow-up PR で status 別意味分化
+- 「個別だけ評価」 = 1 status だけ想定で 設計し、 他 status が 漏れる パターン が ADR-0036 (R-44 削除側) + ADR-0055 (編集側) で 2 回 発覚 → 構造問題認定
+- CLAUDE.md §9「2 回再発で hook 化検討、 3 回目で必須」 該当 → 本 R で 構造化
+
+### 関連
+
+- ADR-0055 §Notes Amended Sess77 Follow-up (本 R の問題提起元)
+- ADR-0056 (本 R 同時起票、 D6 3 択 dialog で 適用)
+- R-65 (CRUD カバレッジ、 本 R の 補完規約: R-65 = C/R/U/D 完備性 / R-67 = status × 操作 意味分化)
+- ADR-0036 (破壊的操作 D7 kebab pattern + R-44 削除側 matrix)
+
+---
+
 ## 関連
 
 - 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-65 索引 + 運用ルール)

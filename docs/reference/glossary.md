@@ -863,4 +863,52 @@ UI 文言・コード内コメント・i18n キー値で以下を使わない:
 - 使う場面：
 - 例：
 - 関連（F-xx / S-xx / UC-xx / TC-xx / ADR）：
+
+---
+
+## 13. 定期予定 (Recurring Schedule、 Sess78 ADR-0056 由来)
+
+Sess78 (2026-06-08) で ADR-0056 起票時に 追加された用語群。 RFC 5545 RRULE 業界標準に準拠。
+
+### 定期予定 / Recurring Schedule
+
+- 定義: 「毎週月曜に水やり」 のような繰り返し予定。 1 件のルールから 複数の `planned` events が自動生成される
+- 同義語: 繰り返し予定 / Recurring event / Recurring task
+- 禁止語: 自動推奨 (= AI 判断の意味、 ADR-0011 哲学違反) / Reminder (= 通知系の用語と混同)
+- 使う場面: 予定タブ FAB → 種別/盆栽選択 → 🔁 繰り返し toggle → 6 preset 選択
+- 例: 「黒松に毎週月曜 水やり (1 年後まで)」 = 1 ルールで 52 件の planned events 生成
+- 関連: F-02 (作業履歴) / S-08 (予定タブ) / ADR-0008 (events) / ADR-0056 (本機能 SoT)
+
+### recurrence_rule
+
+- 定義: DB 上の `recurrence_rules` テーブル 1 行。 id (ULID) / bonsai_id / event_type / rrule (RFC 5545 文字列) / start_at_utc / end_at_utc / exdates / deleted_at で 構成
+- 同義語: ルール / RRULE row
+- 禁止語: スケジュール (= 曖昧、 「予定」 か 「ルール」 か 区別不能)
+- 使う場面: コード/Issue/PR で 「定期予定」 機能のデータ実体を指す
+- 例: `recurrenceRuleRepository.createRecurrenceRule({...})` で 1 行 insert
+- 関連: ADR-0056 D2 (schema 定義) / `src/db/recurrenceRuleRepository.ts` (新規 Sess78 PR-3)
+
+### RRULE / Recurrence Rule String
+
+- 定義: RFC 5545 で 定義された 繰り返しルール文字列。 例 `FREQ=WEEKLY;BYDAY=MO`、 `FREQ=MONTHLY;BYMONTHDAY=15`
+- 同義語: RFC 5545 RRULE / iCalendar RRULE
+- 使う場面: `recurrence_rules.rrule` 列値、 `rrule` npm lib (jakubroztocil/rrule) で展開
+- 例: `FREQ=DAILY` (毎日) / `FREQ=WEEKLY;BYDAY=MO,WE,FR` (月水金) / `FREQ=MONTHLY;INTERVAL=3` (3 ヶ月ごと)
+- 関連: ADR-0056 D2 / [RFC 5545](https://www.rfc-editor.org/rfc/rfc5545#section-3.3.10) / [rrule npm lib](https://github.com/jakubroztocil/rrule)
+
+### EXDATE / 例外日
+
+- 定義: recurrence_rule の `exdates` 列 (JSON array of YYYY-MM-DD)。 「この 1 件だけ skip」 操作で 該当日が追加される
+- 同義語: 例外日 / exception date
+- 使う場面: ⋮ 編集 dialog 「この 1 件だけ削除」 で exdates に追加 + 該当 event soft-delete
+- 例: `["2026-06-22", "2026-07-13"]` (この 2 日は recurring 由来 events 生成しない)
+- 関連: ADR-0056 D6 (3 択 dialog 'this' scope) / RFC 5545 EXDATE 仕様
+
+### detached event / 切り離し event
+
+- 定義: recurring 由来 event が個別編集された結果、 元 rule から「切り離された」 event。 `events.recurrence_rule_id` を NULL にする + 編集内容で update
+- 同義語: 単独化された event
+- 使う場面: ⋮ 編集 dialog 「この 1 件だけ編集」 (= 'this' scope) を 「skip + 個別 event 化」 として実装する選択肢の用語
+- 例: 6/22 の水やり予定を 個別に「メモ追加」 編集 → recurrence_rule_id を NULL に + メモ update、 元 rule の exdates に 6/22 追加
+- 関連: ADR-0056 D6 / Google Calendar API recurringEventId pattern
 - 正（どこが真実？）：

@@ -286,3 +286,40 @@ R1-R4 で実装計画を詰めた:
 
 **実装 PR**: Sess74 PR-1 (本 Amendment) + PR-2 (UI 配線)。
 **関連**: `src/db/seedTagPresets.ts` (新規) / `src/db/tagRepository.ts` (`countCustomTags` 追加 + `canCreateNewTag` 修正) / `__tests__/db/seedTagPresets.test.ts` (新規) / `functional_spec.md` §14.3.3 (master/custom 2 種別明文化) / ADR-0026 §Notes Amended Sess74 PR-1 (master プリセット 2 件のメタデータ参照)。
+
+---
+
+### §Notes Amended Sess78 PR-1 (2026-06-08) — Pro 機能 7 項目目「⑦ 定期予定」 追加 (ADR-0056)
+
+**背景**: テスター 12 人から「毎週月曜に水やりなど 定期的な予定が入力できたら 管理が楽になりそう」 という要望、 Sess78 議論モードで 6 名チーム + 4 ペルソナ全員推薦 B 案 (RRULE 保持 + 連動更新、 ADR-0056) で 実装着手。 versionCode 13 同梱予定。
+
+**Pro 機能 6 → 7 項目に拡張**:
+
+| #     | Pro 機能                        | Free                              | Pro            | 該当 PR                           |
+| ----- | ------------------------------- | --------------------------------- | -------------- | --------------------------------- |
+| ①     | 基本情報 写真                   | 各盆栽 3 枚まで                   | 無制限         | Sess59 PR3                        |
+| ②     | タグ作成 (rename は無制限)      | 自作 3 個まで (master 2 件は除外) | 無制限         | Sess59 PR4 + Sess74/75 master     |
+| ③     | 作業記録 写真                   | 各記録 3 枚まで (表示は全 Free)   | 無制限         | Sess59 PR3                        |
+| ④     | CSV/PDF エクスポート (5 種類)   | 不可                              | 可             | 既存 (`csvExport.ts` Pro guard)   |
+| ⑤     | 広告非表示                      | AdMob バナー (Home 下部のみ)      | 完全非表示     | 既存 (`adService.ts` isPro 判定)  |
+| ⑥     | カスタム樹種・樹形 作成         | マスタ 5 種 + カスタム 3 件       | カスタム無制限 | Sess59 PR5                        |
+| **⑦** | **定期予定 (recurring) ルール** | **3 件まで**                      | **無制限**     | **Sess78 PR-2〜5 (本 Amendment)** |
+
+**実装パターン (タグ ②・カスタム樹種 ⑥ と完全同型)**:
+
+- `FREE_RECURRENCE_RULE_LIMIT = 3` const (`src/db/recurrenceRuleRepository.ts`、 `FREE_TAG_LIMIT` / `FREE_CUSTOM_SPECIES_LIMIT` pattern 踏襲)
+- `countActiveRecurrenceRules(): Promise<number>` (`countCustomTags` pattern)
+- `canCreateRecurrenceRule(): Promise<boolean>` (`canCreateNewTag` pattern)
+- `useProGuard({ feature: 'recurring_rule', currentCount })` で UI 配線
+
+**Grandfathered 戦略**: 既存 4+ rule (仕様上ありえないが保証) 表示/編集/削除 OK + 追加のみ Paywall (Slack 2022 churn 事件回避、 本 ADR の Driver 2 整合)。
+
+**UI 影響**:
+
+- PaywallScreen FeatureRow 6 → 7 行化 (`src/features/pro/PaywallScreen.tsx`、 Sess78 PR-5)
+- Settings PlanSection bullet 6 → 7 個化 (`app/settings/index.tsx`、 Sess78 PR-5)
+- IAP 説明文に「定期予定: Free 3 件 / Pro 無制限」 反映 (App Store Connect + Google Play Console、 Sess58 教訓踏襲)
+
+**Maestro E2E**: `maestro/flows/paywall-recurring.yml` 新規 (Sess78 PR-5、 3 件 + 4 件目で Paywall 起動)。
+
+**関連**: ADR-0056 (本 Amendment の親 ADR、 Decision D7 が SoT) / `src/db/recurrenceRuleRepository.ts` (新規、 Sess78 PR-3) / Sess78 PR-1 (本 Notes Amended + ADR-0056 起票)。
