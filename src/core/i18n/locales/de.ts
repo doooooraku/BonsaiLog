@@ -956,5 +956,10 @@ const de: Partial<Record<TranslationKey, string>> = {
   pickerSectionCustom: 'Eigene',
   pickerCustomBadge: 'Eigene',
   pickerCustomCounter: '{used}/{limit}',
+  rowActionMenuEdit: 'Edit',
+  workLogTitleEditing: 'Edit {type}',
+  workLogUpdateCta: 'Update',
+  workLogUpdatedToast: 'Updated',
+  dateFieldHint: 'Tap to change date',
 };
 export default de;

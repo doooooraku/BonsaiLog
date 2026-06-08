@@ -954,5 +954,10 @@ const tr: Partial<Record<TranslationKey, string>> = {
   pickerSectionCustom: 'Özel',
   pickerCustomBadge: 'Özel',
   pickerCustomCounter: '{used}/{limit}',
+  rowActionMenuEdit: 'Edit',
+  workLogTitleEditing: 'Edit {type}',
+  workLogUpdateCta: 'Update',
+  workLogUpdatedToast: 'Updated',
+  dateFieldHint: 'Tap to change date',
 };
 export default tr;

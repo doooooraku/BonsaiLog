@@ -952,5 +952,10 @@ const th: Partial<Record<TranslationKey, string>> = {
   pickerSectionCustom: 'กำหนดเอง',
   pickerCustomBadge: 'กำหนดเอง',
   pickerCustomCounter: '{used}/{limit}',
+  rowActionMenuEdit: 'Edit',
+  workLogTitleEditing: 'Edit {type}',
+  workLogUpdateCta: 'Update',
+  workLogUpdatedToast: 'Updated',
+  dateFieldHint: 'Tap to change date',
 };
 export default th;

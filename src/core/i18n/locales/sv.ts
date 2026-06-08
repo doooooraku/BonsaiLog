@@ -954,5 +954,10 @@ const sv: Partial<Record<TranslationKey, string>> = {
   pickerSectionCustom: 'Egna',
   pickerCustomBadge: 'Egna',
   pickerCustomCounter: '{used}/{limit}',
+  rowActionMenuEdit: 'Edit',
+  workLogTitleEditing: 'Edit {type}',
+  workLogUpdateCta: 'Update',
+  workLogUpdatedToast: 'Updated',
+  dateFieldHint: 'Tap to change date',
 };
 export default sv;

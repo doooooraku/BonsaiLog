@@ -954,5 +954,10 @@ const id: Partial<Record<TranslationKey, string>> = {
   pickerSectionCustom: 'Khusus',
   pickerCustomBadge: 'Khusus',
   pickerCustomCounter: '{used}/{limit}',
+  rowActionMenuEdit: 'Edit',
+  workLogTitleEditing: 'Edit {type}',
+  workLogUpdateCta: 'Update',
+  workLogUpdatedToast: 'Updated',
+  dateFieldHint: 'Tap to change date',
 };
 export default id;

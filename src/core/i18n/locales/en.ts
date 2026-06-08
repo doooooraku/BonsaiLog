@@ -967,6 +967,11 @@ const baseEn = {
   pickerSectionCustom: 'Custom',
   pickerCustomBadge: 'Custom',
   pickerCustomCounter: '{used}/{limit}',
+  rowActionMenuEdit: 'Edit',
+  workLogTitleEditing: 'Edit {type}',
+  workLogUpdateCta: 'Update',
+  workLogUpdatedToast: 'Updated',
+  dateFieldHint: 'Tap to change date',
 };
 
 export type TranslationKey = keyof typeof baseEn;

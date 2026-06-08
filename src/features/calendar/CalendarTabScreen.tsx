@@ -138,45 +138,41 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
         items={
           actions.kebabMenu === null
             ? []
-            : actions.kebabMenu.status === 'planned'
-              ? ([
-                  {
-                    key: 'delete',
-                    label: t('rowActionMenuDelete'),
-                    destructive: true,
-                    onPress: () =>
-                      actions.confirmDeleteGroup(
-                        'planned',
-                        actions.kebabMenu!.type,
-                        actions.kebabMenu!.events,
-                      ),
-                    testID: `e2e_${testIdPrefix}_kebab_delete_${actions.kebabMenu.type}`,
-                  },
-                  {
+            : (() => {
+                // ADR-0055 Sess77 PR-3: 個別 row kebab (events.length === 1) で「編集」 item を先頭に追加。
+                // group kebab (events.length > 1) では編集を出さない (個別行のみ、 group 編集は意味不明)。
+                const isIndividual = actions.kebabMenu.events.length === 1;
+                const status = actions.kebabMenu.status;
+                const type = actions.kebabMenu.type;
+                const events = actions.kebabMenu.events;
+                const editItem: RowActionMenuItem | null = isIndividual
+                  ? {
+                      key: 'edit',
+                      label: t('rowActionMenuEdit'),
+                      onPress: () => actions.handleEditEvent(events[0]!),
+                      testID: `e2e_${testIdPrefix}_kebab_edit_${type}`,
+                    }
+                  : null;
+                const deleteItem: RowActionMenuItem = {
+                  key: 'delete',
+                  label: t('rowActionMenuDelete'),
+                  destructive: true,
+                  onPress: () => actions.confirmDeleteGroup(status, type, events),
+                  testID: `e2e_${testIdPrefix}_kebab_delete_${type}`,
+                };
+                if (status === 'planned') {
+                  const recordAllItem: RowActionMenuItem = {
                     key: 'record-all',
-                    label: t('rowActionMenuRecordAll').replace(
-                      '{count}',
-                      String(actions.kebabMenu.events.length),
-                    ),
-                    onPress: () =>
-                      actions.handleBulkConvert(actions.kebabMenu!.type, actions.kebabMenu!.events),
-                    testID: `e2e_${testIdPrefix}_kebab_record_all_${actions.kebabMenu.type}`,
-                  },
-                ] satisfies RowActionMenuItem[])
-              : ([
-                  {
-                    key: 'delete',
-                    label: t('rowActionMenuDelete'),
-                    destructive: true,
-                    onPress: () =>
-                      actions.confirmDeleteGroup(
-                        'logged',
-                        actions.kebabMenu!.type,
-                        actions.kebabMenu!.events,
-                      ),
-                    testID: `e2e_${testIdPrefix}_kebab_delete_${actions.kebabMenu.type}`,
-                  },
-                ] satisfies RowActionMenuItem[])
+                    label: t('rowActionMenuRecordAll').replace('{count}', String(events.length)),
+                    onPress: () => actions.handleBulkConvert(type, events),
+                    testID: `e2e_${testIdPrefix}_kebab_record_all_${type}`,
+                  };
+                  return editItem
+                    ? [editItem, deleteItem, recordAllItem]
+                    : [deleteItem, recordAllItem];
+                }
+                return editItem ? [editItem, deleteItem] : [deleteItem];
+              })()
         }
         onDismiss={actions.handleKebabDismiss}
         testID={`e2e_${testIdPrefix}_kebab_menu`}
