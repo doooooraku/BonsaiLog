@@ -189,10 +189,12 @@ bash scripts/dev/reload-app.sh
 
 ### 環境変数で挙動制御
 
-| 環境変数             | デフォルト     | 効果                                                 |
-| -------------------- | -------------- | ---------------------------------------------------- |
-| `SKIP_BUILD_CHECK=1` | 0 (check 実行) | 緊急時に check を完全 skip                           |
-| `AUTO_BUILD=0`       | 1 (自動 build) | flag 検出時に build せず警告のみ (手動で build 実行) |
+| 環境変数                  | デフォルト     | 効果                                                                             |
+| ------------------------- | -------------- | -------------------------------------------------------------------------------- |
+| `SKIP_BUILD_CHECK=1`      | 0 (check 実行) | Step 0 Native fingerprint check を skip (緊急時用)                               |
+| `AUTO_BUILD=0`            | 1 (自動 build) | flag 検出時に build せず警告のみ (手動で build 実行)                             |
+| `SKIP_DEBUGGABLE_CHECK=1` | 0 (check 実行) | Step 0.5 APK debuggable check を skip (Sess77 Follow-up T3、 緊急時用)           |
+| `AUTO_FIX_DEBUGGABLE=1`   | 0 (warn のみ)  | Release/Preview APK 検出時、 自動 uninstall + dev APK install (★ DB データ wipe) |
 
 ```bash
 # 例: 緊急時に build check をスキップして reload のみ
@@ -200,7 +202,53 @@ SKIP_BUILD_CHECK=1 bash scripts/dev/reload-app.sh
 
 # 例: build は手動で走らせたい
 AUTO_BUILD=0 bash scripts/dev/reload-app.sh
+
+# 例: Release APK が installed の 状態を 自動修正 (= DB wipe して dev APK へ 切替)
+AUTO_FIX_DEBUGGABLE=1 bash scripts/dev/reload-app.sh
+
+# 例: debuggable check も skip (= Metro 反映期待しない 確認用、 通常不要)
+SKIP_DEBUGGABLE_CHECK=1 bash scripts/dev/reload-app.sh
 ```
+
+### Step 0.5 APK debuggable check (Sess77 Follow-up T3)
+
+Sess77 検証で 発覚した「Release APK (debuggable=false) installed のまま Metro reload して 10 分ロス」 罠を 構造的に防止。
+
+**検出方法**:
+
+```
+adb shell dumpsys package com.dooooraku.bonsailog | grep "pkgFlags=" | grep "DEBUGGABLE"
+```
+
+**動作**:
+
+- **Dev Build (debuggable=true)**: `pkgFlags=[ DEBUGGABLE HAS_CODE ... ]` 含む → ✅ continue
+- **Release/Preview Build (debuggable=false)**: `pkgFlags=[ HAS_CODE ... ]` のみ → ⚠️ warn + 対処方法表示 + exit 1
+- **パッケージ未 install**: clean install scenario として skip
+- **`SKIP_DEBUGGABLE_CHECK=1`**: check 自体を skip
+
+**Release/Preview APK 検出時の 対処方法 (出力例)**:
+
+```
+[reload-app] ⚠️  APK debuggable=false 検出 (Release/Preview build)
+[reload-app]    pkgFlags:     pkgFlags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP LARGE_HEAP ]
+[reload-app]    → embedded bundle を 使用するため、 Metro bundle が 反映されません
+[reload-app]    → Sess76 release APK が 残っている可能性、 dev APK への 切替推奨
+[reload-app] 対処方法:
+[reload-app]   (a) dev APK へ 切替 (DB wipe 伴う):
+[reload-app]       adb uninstall com.dooooraku.bonsailog && adb install dist/bonsailog-dev.apk
+[reload-app]   (b) Auto fix で 上記を 自動実行 (5秒 grace period 付き):
+[reload-app]       AUTO_FIX_DEBUGGABLE=1 bash scripts/dev/reload-app.sh
+[reload-app]   (c) 今回だけ skip (Metro 反映不可なので 検証は 期待通り動かない):
+[reload-app]       SKIP_DEBUGGABLE_CHECK=1 bash scripts/dev/reload-app.sh
+[reload-app]   (d) ローカル dev APK が 存在しない 場合は 先に build:
+[reload-app]       pnpm build:android:dev:local
+```
+
+**実装上の注意**:
+
+- adb shell 出力は CRLF (`\r\n`) なので `tr -d '\r'` で 正規化必須
+- `set -o pipefail` + `grep -q` は 早期 exit で SIGPIPE (rc=141) → 偽 false 検出。 `grep -c` (常に全 input 読込) + `|| true` で 回避
 
 ---
 
