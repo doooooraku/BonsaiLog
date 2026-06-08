@@ -33,6 +33,7 @@ export type ProGuardFeature =
   | 'photo_worklog' // 作業記録 写真 (ADR-0049 ③)
   | 'tag' // タグ作成 (ADR-0049 ②)
   | 'custom_species' // カスタム樹種・樹形 (ADR-0049 ⑥)
+  | 'recurring_rule' // 定期予定 (ADR-0049 ⑦ Sess78 Amendment、 ADR-0056 D7)
   | 'settings'; // Settings 画面からの「すべての Pro 機能を見る」 起動 (source 識別用)
 
 type UseProGuardArgs = {

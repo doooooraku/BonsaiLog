@@ -14,11 +14,9 @@
  */
 import { ulid } from 'ulid';
 
-import { nowUtc, getTzOffsetMin, getTzIana } from '@/src/core/datetime';
+import { nowUtc, getTzOffsetMin, getTzIana, toLocalDateKey } from '@/src/core/datetime';
 import type { IsoUtc } from '@/src/core/datetime/types';
 import { expandRRule } from '@/src/core/recurrence/rrule';
-// eslint-disable-next-line boundaries/dependencies -- toLocalDateKey は features/watering 由来の SoT (ADR-0008 R-55)、 Sess78 後の follow-up で core/datetime/format に移動予定
-import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 
 import { getDb } from './db';
 
