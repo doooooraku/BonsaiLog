@@ -35,6 +35,7 @@ import {
   schemaV11,
   schemaV12,
   schemaV13,
+  schemaV16,
 } from './schema';
 import { SPECIES_SEED, SPECIES_SEED_IDS } from './seedSpecies';
 
@@ -306,6 +307,25 @@ async function migrate(db: SQLite.SQLiteDatabase) {
       await db.execAsync('ALTER TABLE bonsai ADD COLUMN custom_species_id TEXT;');
     }
     version = 15;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v16 (Sess78 PR-2、 ADR-0056 定期予定機能 foundation): recurrence_rules
+  // 新規テーブル + events.recurrence_rule_id 列追加。
+  //
+  // - recurrence_rules: RFC 5545 RRULE を保持、 アプリで 8 週分先まで planned events を 事前展開
+  // - events.recurrence_rule_id: 定期予定由来 events の FK (nullable)
+  // - **Sess14 罠回避**: ALTER TABLE は REFERENCES 句なし版 (v15 修復 pattern と同型)
+  // - FK 整合性は recurrenceRuleRepository 層 (Sess78 PR-3) で 担保
+  // - hasColumn ガード + CREATE TABLE IF NOT EXISTS で 冪等 (二度目以降の起動 safe)
+  // ---------------------------------------------------------------------------
+  if (version < 16) {
+    await db.execAsync(schemaV16);
+    if (!(await hasColumn(db, 'events', 'recurrence_rule_id'))) {
+      // REFERENCES 句なし版 (Sess14 罠回避、 v15 PR-P pattern 踏襲)
+      await db.execAsync('ALTER TABLE events ADD COLUMN recurrence_rule_id TEXT;');
+    }
+    version = 16;
   }
 
   // Always set version UNCONDITIONALLY (not inside an if-block).
