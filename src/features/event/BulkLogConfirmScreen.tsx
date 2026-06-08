@@ -46,17 +46,28 @@ import { ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
   bulkConvertPlannedToRecorded,
+  bulkScheduleEvents,
   convertPlannedToRecorded,
   createEvent,
   findPlannedEventByCondition,
 } from '@/src/db/eventRepository';
 import { FREE_PHOTO_LIMIT_PER_EVENT } from '@/src/db/photoRepository';
+import {
+  countActiveRecurrenceRules,
+  createRecurrenceRule,
+} from '@/src/db/recurrenceRuleRepository';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { addPhotoFromUri } from '@/src/features/photos/photoOrchestrator';
 import { useProGuard } from '@/src/features/pro/useProGuard';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
+import {
+  RecurrencePicker,
+  DEFAULT_RECURRENCE_VALUE,
+  type RecurrenceValue,
+} from '@/src/components/form/RecurrencePicker';
+import { RECURRENCE_PRESETS } from '@/src/core/recurrence/rrule';
 // Sess31 PR-1: BonsaiPlaceholder/hashSeed import 削除 (chip 内の灰色丸を撤去、 SelectedBonsaiChip に集約)
 import { SelectedBonsaiChip } from '@/src/features/bonsai/SelectedBonsaiChip';
 import { usePickerStore } from '@/src/stores/pickerStore';
@@ -117,7 +128,10 @@ export default function BulkLogConfirmScreen() {
     type?: string;
     fromPlannedIds?: string;
     date?: string;
+    mode?: 'schedule' | 'log';
   }>();
+  // Sess79 PR-6 ADR-0056: schedule mode (= 予定追加、 status='planned') と log mode (= 記録、 status='logged') の判別
+  const isScheduleMode = params.mode === 'schedule';
   const selectedType = React.useMemo(() => parseType(params.type), [params.type]);
   const fromPlannedIds = React.useMemo<string[]>(
     () => (params.fromPlannedIds ? params.fromPlannedIds.split(',').filter(Boolean) : []),
@@ -155,6 +169,20 @@ export default function BulkLogConfirmScreen() {
     createWorkLogTypeFormInitialState(settingsPotUnit),
   );
 
+  // Sess79 PR-6 ADR-0056: 定期予定 (recurring) state、 schedule mode でのみ UI 表示。
+  const [recurrenceValue, setRecurrenceValue] =
+    React.useState<RecurrenceValue>(DEFAULT_RECURRENCE_VALUE);
+  // Pro 境界 (ADR-0049 ⑦): 現在 active rule 件数を 取得して useProGuard に渡す
+  const [activeRuleCount, setActiveRuleCount] = React.useState(0);
+  React.useEffect(() => {
+    if (!isScheduleMode) return;
+    void countActiveRecurrenceRules().then(setActiveRuleCount);
+  }, [isScheduleMode]);
+  const recurringGuard = useProGuard({
+    feature: 'recurring_rule',
+    currentCount: activeRuleCount,
+  });
+
   // Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog (WorkLogConfirmScreen と同 pattern)
   const initialNoteRef = React.useRef(note);
   const initialOccurredAtDateRef = React.useRef(occurredAtDate);
@@ -176,6 +204,11 @@ export default function BulkLogConfirmScreen() {
 
   const handleSave = async () => {
     if (isSubmitting) return;
+    // Sess79 PR-6 ADR-0056: recurring 有効 + Free 上限到達 → Paywall 起動 (= ADR-0049 ⑦ Grandfathered 整合)
+    if (isScheduleMode && recurrenceValue.enabled && !recurringGuard.canAdd) {
+      recurringGuard.openPaywall();
+      return;
+    }
     setIsSubmitting(true);
     const bonsaiIds = selectedBonsais.map((b) => b.id);
     const trimmed = note.trim();
@@ -188,7 +221,48 @@ export default function BulkLogConfirmScreen() {
     const noteValue = trimmed.length > 0 ? trimmed : null;
     let convertedCount = 0;
     let createdEvents: { id: string; bonsaiId: string }[] = [];
+    let recurringCreatedCount = 0;
     try {
+      // Sess79 PR-6 ADR-0056: schedule mode 分岐
+      if (isScheduleMode) {
+        const startAtUtc = occurredAtUtc ?? (nowUtc() as string);
+        if (recurrenceValue.enabled) {
+          // recurring rule 作成 (各 bonsai につき 1 ルール、 8 週分先まで planned events 自動生成)
+          const endAtUtcValue =
+            recurrenceValue.endType === 'oneYear'
+              ? new Date(new Date(startAtUtc).getTime() + 365 * 24 * 60 * 60 * 1000).toISOString()
+              : recurrenceValue.endType === 'specific' && recurrenceValue.endDate
+                ? `${recurrenceValue.endDate}T23:59:59.000Z`
+                : null;
+          for (const bid of bonsaiIds) {
+            await createRecurrenceRule({
+              bonsaiId: bid,
+              eventType: selectedType,
+              rrule: RECURRENCE_PRESETS[recurrenceValue.preset],
+              startAtUtc,
+              endAtUtc: endAtUtcValue,
+            });
+            recurringCreatedCount += 1;
+          }
+        } else {
+          // 単発 schedule (= 既存 bulkScheduleEvents pattern 流用、 BulkWorkPicker 直接呼出から移行)
+          // bulkScheduleEvents の occurredAtUtc は required、 default は startAtUtc (= 「今日」 fallback 含む)
+          await bulkScheduleEvents({
+            bonsaiIds,
+            type: selectedType,
+            occurredAtUtc: occurredAtUtc ?? startAtUtc,
+          });
+        }
+        void triggerSummaryReschedule(t);
+        const toastKey = recurrenceValue.enabled
+          ? 'recurringRuleCreatedToast'
+          : 'bulkScheduleDoneToast';
+        const toastCount = recurrenceValue.enabled ? recurringCreatedCount : bonsaiIds.length;
+        useToastStore.getState().show(t(toastKey).replace('{count}', String(toastCount)));
+        const dateKey = occurredAtDate || (occurredAtUtc?.slice(0, 10) ?? '');
+        router.replace(`/(tabs)/plan?selectedDateKey=${dateKey}`);
+        return;
+      }
       if (fromPlannedIds.length > 0) {
         // ADR-0035 D7 場面 A: bulk 変換 (各 planned に atomic transaction、 sequential)
         // fromPlannedIds と bonsaiIds は PlanScreen handleBulkConvert で同 events から構築済 (順序一致)
@@ -344,6 +418,17 @@ export default function BulkLogConfirmScreen() {
           {/* Sess17 PR-H2 (ADR-0029 D5): 14 種別固有 form を WorkLogTypeFormFields で
             WorkLogConfirm (Single) と 1:1 同じ UI 表示。 */}
           <WorkLogTypeFormFields type={selectedType} state={formState} onChange={setFormState} />
+
+          {/* Sess79 PR-6 ADR-0056: schedule mode でのみ RecurrencePicker 表示 (= 定期予定 toggle + 6 preset + 終了日 3 択) */}
+          {isScheduleMode ? (
+            <View style={styles.field}>
+              <RecurrencePicker
+                value={recurrenceValue}
+                onChange={setRecurrenceValue}
+                disabled={false}
+              />
+            </View>
+          ) : null}
 
           {/* Sess17 PR-H2: メモ入力 (atom 統一、 typography 整合)。
             Sess18 PR-10: placeholder を type-aware に (getWorkLogNotePlaceholderKey)。

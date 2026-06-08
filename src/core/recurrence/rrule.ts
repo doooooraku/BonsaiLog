@@ -15,9 +15,8 @@
  */
 import { rrulestr } from 'rrule';
 
+import { toLocalDateKey } from '@/src/core/datetime';
 import type { IsoUtc } from '@/src/core/datetime/types';
-// eslint-disable-next-line boundaries/dependencies -- toLocalDateKey は features/watering 由来の SoT (ADR-0008 R-55)、 Sess78 後の follow-up で core/datetime/format に移動予定
-import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 
 /**
  * RRULE を期間内の date 配列に展開。
