@@ -30,11 +30,12 @@
  * - v13: bonsai_styles_custom テーブル新規 (Sess13 PR-G、 カスタム樹形 user-defined β table)
  * - v14: bonsai_species_custom テーブル + bonsai.custom_species_id (Sess13 PR-H、 カスタム樹種 β table)
  * - v15: v14 修復 (Sess14 PR-P、 既存 DB で v14 が部分失敗していたユーザー向け idempotent re-run)
+ * - v16: recurrence_rules テーブル新規 + events.recurrence_rule_id 列追加 (Sess78 PR-2、 ADR-0056 定期予定機能、 ALTER TABLE は REFERENCES 句なし版で Sess14 罠回避)
  */
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 15;
+export const SCHEMA_VERSION = 16;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -204,6 +205,7 @@ export const events = sqliteTable(
     payloadJson: text('payload_json'), // Valibot validated JSON (PR-C で型付け)
     note: text('note'), // 自由記述、最大 2000 文字 (UI で enforce)、FTS5 対象
     deletedAt: text('deleted_at'), // 30 日ゴミ箱、partial index で除外
+    recurrenceRuleId: text('recurrence_rule_id'), // 定期予定由来 events の rule FK (Sess78 PR-2、 ADR-0056 D2、 nullable、 ALTER TABLE は REFERENCES 句なし版)
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
   },
@@ -211,6 +213,7 @@ export const events = sqliteTable(
     activeIdx: index('idx_events_active').on(table.bonsaiId, table.occurredAtUtc),
     statusIdx: index('idx_events_status').on(table.status, table.occurredAtUtc),
     typeIdx: index('idx_events_type').on(table.type, table.bonsaiId),
+    recurrenceIdx: index('idx_events_recurrence').on(table.recurrenceRuleId),
   }),
 );
 
@@ -584,6 +587,78 @@ export const bonsaiSpeciesCustom = sqliteTable('bonsai_species_custom', {
 });
 
 export type BonsaiSpeciesCustom = typeof bonsaiSpeciesCustom.$inferSelect;
+
+/**
+ * Migration v16 (Sess78 PR-2、 ADR-0056 定期予定機能の foundation): recurrence_rules 新規 +
+ * events.recurrence_rule_id 列追加。
+ *
+ * 設計方針:
+ * - recurrence_rules table = RFC 5545 RRULE を保持、 8 週分先まで planned events を 事前展開
+ * - events.recurrence_rule_id = 定期予定由来 events の FK (nullable)、 rule 削除時は SET NULL (アプリ層管理)
+ * - rule 削除は soft-delete (deleted_at、 30 日ゴミ箱整合 ADR-0008 §決定 12)
+ * - exdates = 例外日 JSON 配列 (「この 1 件だけ skip」 操作で 追加)
+ *
+ * Sess14 ALTER TABLE 罠回避 (db.ts v16 case で 適用):
+ * - events.recurrence_rule_id の ALTER TABLE は **REFERENCES 句なし版**
+ * - FK 整合性は recurrenceRuleRepository 層 (Sess78 PR-3) で 担保
+ * - v15 修復 pattern (Sess14 PR-P) と 完全同型
+ *
+ * CHECK 制約なし (event_type は EVENT_TYPES enum と一致を アプリ層で保証、 既存 events.type と同様)。
+ *
+ * partial index:
+ * - idx_recurrence_rules_active: WHERE deleted_at IS NULL でゴミ箱以外を高速化
+ * - idx_events_recurrence: events table 拡張、 rule 由来 events lookup 用
+ */
+export const schemaV16 = `
+CREATE TABLE IF NOT EXISTS recurrence_rules (
+  id TEXT PRIMARY KEY NOT NULL,
+  bonsai_id TEXT NOT NULL,
+  event_type TEXT NOT NULL,
+  rrule TEXT NOT NULL,
+  start_at_utc TEXT NOT NULL,
+  end_at_utc TEXT,
+  exdates TEXT NOT NULL DEFAULT '[]',
+  tz_iana TEXT NOT NULL,
+  deleted_at TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (bonsai_id) REFERENCES bonsai(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_recurrence_rules_active
+  ON recurrence_rules(bonsai_id, deleted_at) WHERE deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_events_recurrence
+  ON events(recurrence_rule_id) WHERE deleted_at IS NULL;
+`;
+
+/**
+ * Drizzle table 定義 (recurrence_rules)、 Sess78 PR-2 ADR-0056 D2。
+ */
+export const recurrenceRules = sqliteTable(
+  'recurrence_rules',
+  {
+    id: text('id').primaryKey().notNull(), // ULID
+    bonsaiId: text('bonsai_id')
+      .notNull()
+      .references(() => bonsai.id, { onDelete: 'cascade' }),
+    eventType: text('event_type').notNull(), // EVENT_TYPES enum
+    rrule: text('rrule').notNull(), // RFC 5545 例: "FREQ=WEEKLY;BYDAY=MO"
+    startAtUtc: text('start_at_utc').notNull(), // ISO 8601 UTC
+    endAtUtc: text('end_at_utc'), // null = 永遠、 default = +365 日 (UI 側 fallback)
+    exdates: text('exdates').notNull().default('[]'), // JSON array of YYYY-MM-DD
+    tzIana: text('tz_iana').notNull(), // ADR-0008 TZ 3 層防御整合
+    deletedAt: text('deleted_at'), // 30 日ゴミ箱
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => ({
+    activeIdx: index('idx_recurrence_rules_active').on(table.bonsaiId, table.deletedAt),
+  }),
+);
+
+export type RecurrenceRule = typeof recurrenceRules.$inferSelect;
+export type RecurrenceRuleInsert = typeof recurrenceRules.$inferInsert;
 
 // ---------------------------------------------------------------------------
 // TypeScript types (Drizzle inferSelect / inferInsert は PR-C Repository で使用)

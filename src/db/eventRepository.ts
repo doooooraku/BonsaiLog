@@ -112,6 +112,7 @@ export async function createEvent(input: CreateEventInput): Promise<Event> {
     payloadJson,
     note: input.note ?? null,
     deletedAt: null,
+    recurrenceRuleId: null, // Sess78 PR-2: 既存 createEvent は単発予定のみ、 recurring は PR-3 で 専用 fn 追加
     createdAt: now,
     updatedAt: now,
   };
@@ -813,6 +814,7 @@ export async function convertPlannedToRecorded(
     payloadJson,
     note,
     deletedAt: null,
+    recurrenceRuleId: null, // Sess78 PR-2: 既存 fn は単発予定のみ、 recurring は PR-3 で 専用 fn 追加
     createdAt: now,
     updatedAt: now,
   };
