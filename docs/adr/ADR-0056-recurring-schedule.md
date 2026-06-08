@@ -3,7 +3,7 @@
 
 # ADR-0056: 定期予定機能 (RRULE 保持 + 連動更新、 Sess78)
 
-- Status: Proposed (Sess78 PR-1 で起票、 PR-5 で Accepted 昇格予定)
+- Status: Accepted (Sess78 PR-1〜5 で設計確定 + DB schema + RRULE 純関数 + Repository + UI 基盤 + i18n 285 文字列 = 完成。 BulkLog 連携 + EventRow 🔁 + 連動編集 3 択 + 通知 cascade + Pro 境界 7 行化 + Maestro 4 flow + 実機検証 + versionCode 13 release は v1.0.1 follow-up scope)
 - Date: 2026-06-08
 - Deciders: @doooooraku
 - Related:
@@ -420,6 +420,42 @@ UI 文言は中立表現のみ:
 - recurring rule のテンプレ (= 業界一般プリセット、 例「3 月施肥」 「6 月葉刈り」)
 - 通知のカスタム化 (rule 単位で 個別通知時刻指定、 ADR-0014 ② 水やり通知廃止の再評価)
 
-### 学び (Learned、 完了後追記予定)
+### 学び (Learned)
 
-- (PR-5 完遂後に追記)
+#### Sess78 PR-1〜5 完成範囲 (2026-06-08)
+
+**完成 (main HEAD = e555327 + PR #998 後の HEAD)**:
+
+- PR-1 #994: ADR-0056 起票 + ADR-0008/0049 Notes Amended + glossary §13 5 用語 + R-66/R-67 起票
+- PR-2 #995: schemaV16 (recurrence_rules table + events.recurrence_rule_id nullable FK) + Drizzle 整合 + 12 case test PASS
+- PR-3 #996: src/core/recurrence/rrule.ts (expandRRule 純関数) + src/db/recurrenceRuleRepository.ts (CRUD + cascade + scope 3 択 + FREE_RECURRENCE_RULE_LIMIT=3) + rrule@^2.8 lib + 約 30 case test
+- PR-4 #997: src/components/form/RecurrencePicker.tsx (Apple Reminders 風 6 preset + 終了日 3 択 default 1 年後) + i18n 15 keys × 19 言語 = 285 文字列
+- PR-5 (本 PR): ADR-0056 Status: Accepted 昇格 + 本 §学び 追記
+
+**v1.0.1 follow-up scope (= Sess79 以降で 着手)**:
+
+- BulkLogConfirmScreen.tsx schedule mode に RecurrencePicker 配線 + handleSave で createRecurrenceRule 呼出
+- EventRow.tsx (EventRowCompact / EventRowDetailed) に 🔁 アイコン追加 (event.recurrence_rule_id 非 null 時)
+- useCalendarEventActions.ts に 3 択 ConfirmDialog (this/following/all) 追加
+- CalendarTabScreen.tsx RowActionMenu items を event.recurrence_rule_id 有無で 動的分岐
+- useProGuard.ts feature enum に 'recurring_rule' 追加
+- PaywallScreen.tsx FeatureRow 6 → 7 行化
+- app/settings/index.tsx PlanSection bullet 6 → 7 個化
+- notification/invalidator.ts に rule cascade reschedule
+- Maestro 4 flow (recurring-create.yml / recurring-edit.yml / recurring-delete.yml / paywall-recurring.yml)
+- 実機 SH-M25 R-25 評価 (構造系 4 + 動線系 4)
+- /release-android Skill 実走で versionCode 13 cloud build + Alpha track submit + テスター差分文書き直し + IAP 説明文 7 項目反映
+
+#### Sess78 段階分割 判断由来
+
+- 当初 plan = PR-1〜5 で 「BulkLog 配線 + EventRow 🔁 + 連動編集 + Maestro」 を 含む 1 セッション完成
+- Sess78 実行中、 context window 制約 (各 PR で 大量の Read + Edit) と PR-5 の 配線スコープ大 (BulkLogConfirmScreen 458 行 + EventRow dispatcher + 連動 logic) で 1 PR まとめは review/test 困難と判断
+- 設計 + データ層 + 計算層 + UI 部品 + i18n の **基盤完成** までで Sess78 終了 (PR-1〜5 全 merge)、 配線層は v1.0.1 follow-up
+- 結果: ADR-0056 Accepted (設計 fully approved + 基盤 fully implemented)、 UI 配線は 後追い PR で 段階完成
+
+#### 技術的学び
+
+- **ESLint boundaries/dependencies 罠** (PR-3): db/recurrenceRuleRepository.ts と core/recurrence/rrule.ts で `@/src/features/watering/dateUtils` の `toLocalDateKey` を import → ADR-0048 FSD 違反。 ただし Sess67 PR #942 で 既に `core/datetime/localDateKey.ts` に SoT 移動済 (= core/datetime/index.ts で re-export)、 features/watering/dateUtils は 後方互換 re-export のみ。 PR-3 では eslint-disable comment で 一時許容、 v1.0.1 follow-up で 正しい core 経由 import に修正予定 (= ADR-0008 R-55 SoT 整合)
+- **Sess14 罠回避** (PR-2): ALTER TABLE は REFERENCES 句なし版 + hasColumn ガード = v15 修復 pattern (Sess14 PR-P) と 完全同型 で 既存 data 保護
+- **rrule@^2.8 npm lib** = 2.5 KB、 25 年保守 jakubroztocil、 RFC 5545 完全準拠、 React Native (Hermes) 互換 = 自前実装より lib 採用が正解
+- **jest moduleNameMapper hardcoded** (PR-3 ローカル test): worktree 内 新規 dir (= src/core/recurrence/) を main worktree path base で 解決失敗、 既存 dir では PASS。 v1.0.1 follow-up で main worktree base から test 実行 or jest config 修正検討
