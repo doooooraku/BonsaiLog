@@ -1,0 +1,304 @@
+/**
+ * Recurrence Rule Repository (Sess78 PR-3、 ADR-0056 定期予定機能)。
+ *
+ * - recurrence_rules テーブル CRUD (schemaV16、 Sess78 PR-2 で 追加済)
+ * - cascade: rule create/update/delete 時に events 連動 (recurrence_rule_id FK で結合)
+ * - 8 週分 events 事前展開 + 起動時バッチで 不足分を 追加展開
+ * - scope 3 択 (this / following / all) は updateRecurrenceRule で 使用 (実装は 簡易版、 PR-5 で 完成)
+ *
+ * Pro 境界 (ADR-0049 ⑦ Amendment、 ADR-0056 D7):
+ * - FREE_RECURRENCE_RULE_LIMIT = 3 (タグ ②・カスタム樹種 ⑥ pattern 完全踏襲)
+ * - countActiveRecurrenceRules / canCreateRecurrenceRule で UI 配線
+ *
+ * R-66 厳守: RRULE 展開は expandRRule 純関数経由のみ、 `toLocalDateKey` で 正規化済。
+ */
+import { ulid } from 'ulid';
+
+import { nowUtc, getTzOffsetMin, getTzIana } from '@/src/core/datetime';
+import type { IsoUtc } from '@/src/core/datetime/types';
+import { expandRRule } from '@/src/core/recurrence/rrule';
+// eslint-disable-next-line boundaries/dependencies -- toLocalDateKey は features/watering 由来の SoT (ADR-0008 R-55)、 Sess78 後の follow-up で core/datetime/format に移動予定
+import { toLocalDateKey } from '@/src/features/watering/dateUtils';
+
+import { getDb } from './db';
+
+/** Free user の 定期予定ルール 上限 (ADR-0049 ⑦ + ADR-0056 D7、 タグ ②・カスタム樹種 ⑥ pattern 踏襲)。 */
+export const FREE_RECURRENCE_RULE_LIMIT = 3;
+
+/** rule 作成時 / 起動時 batch で 何週分先まで 事前展開するか (ADR-0056 D3)。 */
+export const RECURRENCE_PREEXPAND_WEEKS = 8;
+
+/** 1 rule あたり最大展開件数 (ADR-0056 R3 性能ガード = 約 20 年 weekly)。 */
+export const RECURRENCE_MAX_EVENTS_PER_RULE = 1000;
+
+export type CreateRecurrenceRuleInput = {
+  bonsaiId: string;
+  eventType: string;
+  rrule: string; // RFC 5545 RRULE 文字列 (例: "FREQ=WEEKLY;BYDAY=MO")
+  startAtUtc: string; // ISO UTC
+  endAtUtc: string | null; // null = 永遠 (= caller default +365 日 推奨)
+};
+
+export type RecurrenceRuleRow = {
+  id: string;
+  bonsaiId: string;
+  eventType: string;
+  rrule: string;
+  startAtUtc: string;
+  endAtUtc: string | null;
+  exdates: string[];
+  tzIana: string;
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/**
+ * 定期予定ルール作成 + 8 週分 events 事前展開。
+ *
+ * Sess14 罠回避: `withTransactionAsync` の代わりに 個別 runAsync で 部分失敗時の
+ * orphan rule を許容 (= 起動時 batch で 追加展開で 補完)。
+ */
+export async function createRecurrenceRule(
+  input: CreateRecurrenceRuleInput,
+): Promise<RecurrenceRuleRow> {
+  const db = await getDb();
+  const id = ulid();
+  const now = nowUtc() as string;
+  const tzIana = getTzIana() as string;
+  const tzOffsetMin = getTzOffsetMin() as number;
+  const exdates: string[] = [];
+
+  await db.runAsync(
+    `INSERT INTO recurrence_rules
+       (id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+    [
+      id,
+      input.bonsaiId,
+      input.eventType,
+      input.rrule,
+      input.startAtUtc,
+      input.endAtUtc,
+      JSON.stringify(exdates),
+      tzIana,
+      now,
+      now,
+    ],
+  );
+
+  // 8 週分先まで events 事前展開 (default 終了日が null = 永遠 の場合の安全策)
+  const eightWeeksLaterMs = 8 * 7 * 24 * 60 * 60 * 1000;
+  const expandUntilMs = Math.min(
+    input.endAtUtc ? new Date(input.endAtUtc).getTime() : Number.POSITIVE_INFINITY,
+    new Date(input.startAtUtc).getTime() + eightWeeksLaterMs,
+  );
+  const expandUntilIso = new Date(expandUntilMs).toISOString();
+
+  const dateKeys = expandRRule(
+    input.rrule,
+    input.startAtUtc,
+    expandUntilIso,
+    exdates,
+    tzOffsetMin,
+    RECURRENCE_MAX_EVENTS_PER_RULE,
+  );
+
+  for (const dateKey of dateKeys) {
+    const eventId = ulid();
+    const occurredAtUtc = `${dateKey}T00:00:00.000Z`;
+    await db.runAsync(
+      `INSERT INTO events
+         (id, bonsai_id, type, status, occurred_at_utc, tz_offset_min, tz_iana,
+          recurrence_rule_id, created_at, updated_at)
+       VALUES (?, ?, ?, 'planned', ?, ?, ?, ?, ?, ?);`,
+      [eventId, input.bonsaiId, input.eventType, occurredAtUtc, tzOffsetMin, tzIana, id, now, now],
+    );
+  }
+
+  return {
+    id,
+    bonsaiId: input.bonsaiId,
+    eventType: input.eventType,
+    rrule: input.rrule,
+    startAtUtc: input.startAtUtc,
+    endAtUtc: input.endAtUtc,
+    exdates,
+    tzIana,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+/**
+ * 現在 active な (deleted_at IS NULL) ルール件数を返す。
+ * Pro 境界判定 (ADR-0049 ⑦ + ADR-0056 D7) で使用。
+ */
+export async function countActiveRecurrenceRules(): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM recurrence_rules WHERE deleted_at IS NULL;',
+  );
+  return row?.count ?? 0;
+}
+
+/**
+ * 新規 rule 作成可否 (Pro 境界判定、 ADR-0056 D7 + Grandfathered 戦略整合)。
+ *
+ * - Pro user: 常に true
+ * - Free user: 現在件数 < FREE_RECURRENCE_RULE_LIMIT (= 3) なら true
+ * - Grandfathered: 既存 4+ rule は表示/編集/削除 OK + 追加のみ Paywall (本関数で 規制)
+ */
+export async function canCreateRecurrenceRule(isPro: boolean): Promise<boolean> {
+  if (isPro) return true;
+  const count = await countActiveRecurrenceRules();
+  return count < FREE_RECURRENCE_RULE_LIMIT;
+}
+
+/**
+ * 起動時バッチ: 全 active rule に対して、 次の 8 週分の events を 追加展開。
+ *
+ * 重複 insert は (recurrence_rule_id + occurred_at_utc) の hash check で 回避
+ * (= 既存 events SELECT で dateKey 集合と diff 計算)。
+ *
+ * Sess78 PR-3 では 基本実装のみ、 PR-5 で 通知 cascade と統合。
+ */
+export async function expandFutureEventsForAllActiveRules(): Promise<number> {
+  const db = await getDb();
+  const rules = await db.getAllAsync<{
+    id: string;
+    bonsai_id: string;
+    event_type: string;
+    rrule: string;
+    start_at_utc: string;
+    end_at_utc: string | null;
+    exdates: string;
+    tz_iana: string;
+  }>(
+    'SELECT id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana FROM recurrence_rules WHERE deleted_at IS NULL;',
+  );
+
+  const now = nowUtc() as string;
+  const tzOffsetMin = getTzOffsetMin() as number;
+  const eightWeeksLaterMs = 8 * 7 * 24 * 60 * 60 * 1000;
+  const nowDate = new Date(now);
+  let insertedCount = 0;
+
+  for (const rule of rules) {
+    const startAt =
+      nowDate.getTime() > new Date(rule.start_at_utc).getTime() ? now : rule.start_at_utc;
+    const expandUntilMs = Math.min(
+      rule.end_at_utc ? new Date(rule.end_at_utc).getTime() : Number.POSITIVE_INFINITY,
+      nowDate.getTime() + eightWeeksLaterMs,
+    );
+    const expandUntilIso = new Date(expandUntilMs).toISOString();
+    const exdates: string[] = JSON.parse(rule.exdates) as string[];
+
+    const dateKeys = expandRRule(
+      rule.rrule,
+      startAt,
+      expandUntilIso,
+      exdates,
+      tzOffsetMin,
+      RECURRENCE_MAX_EVENTS_PER_RULE,
+    );
+
+    // 既存 events の occurred_at_utc 集合を取得 (重複 insert 回避)
+    const existing = await db.getAllAsync<{ occurred_at_utc: string }>(
+      'SELECT occurred_at_utc FROM events WHERE recurrence_rule_id = ? AND deleted_at IS NULL;',
+      [rule.id],
+    );
+    const existingKeys = new Set(
+      existing.map((row) => toLocalDateKey(row.occurred_at_utc as IsoUtc, tzOffsetMin)),
+    );
+
+    for (const dateKey of dateKeys) {
+      if (existingKeys.has(dateKey)) continue;
+      const eventId = ulid();
+      const occurredAtUtc = `${dateKey}T00:00:00.000Z`;
+      await db.runAsync(
+        `INSERT INTO events
+           (id, bonsai_id, type, status, occurred_at_utc, tz_offset_min, tz_iana,
+            recurrence_rule_id, created_at, updated_at)
+         VALUES (?, ?, ?, 'planned', ?, ?, ?, ?, ?, ?);`,
+        [
+          eventId,
+          rule.bonsai_id,
+          rule.event_type,
+          occurredAtUtc,
+          tzOffsetMin,
+          rule.tz_iana,
+          rule.id,
+          now,
+          now,
+        ],
+      );
+      insertedCount += 1;
+    }
+  }
+  return insertedCount;
+}
+
+/**
+ * Rule soft-delete + 関連 future planned events も soft-delete cascade。
+ * 過去 events (status='logged' or 過去日付の planned) は不変。
+ *
+ * 通知 cascade reschedule は PR-5 で 配線 (invalidator pattern、 ADR-0014 §20)。
+ */
+export async function softDeleteRecurrenceRule(id: string): Promise<void> {
+  const db = await getDb();
+  const now = nowUtc() as string;
+
+  // rule soft-delete
+  await db.runAsync(
+    `UPDATE recurrence_rules SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL;`,
+    [now, now, id],
+  );
+
+  // 関連 future planned events soft-delete (過去 logged events は不変)
+  await db.runAsync(
+    `UPDATE events SET deleted_at = ?, updated_at = ?
+     WHERE recurrence_rule_id = ?
+       AND status = 'planned'
+       AND occurred_at_utc >= ?
+       AND deleted_at IS NULL;`,
+    [now, now, id, now],
+  );
+}
+
+/**
+ * 1 件 skip (this scope): rule.exdates に該当日追加 + 該当 event soft-delete。
+ * ADR-0056 D6 「この 1 件だけ」 動線。
+ */
+export async function skipOneOccurrence(ruleId: string, dateKey: string): Promise<void> {
+  const db = await getDb();
+  const now = nowUtc() as string;
+
+  const rule = await db.getFirstAsync<{ exdates: string }>(
+    'SELECT exdates FROM recurrence_rules WHERE id = ? AND deleted_at IS NULL;',
+    [ruleId],
+  );
+  if (!rule) return;
+
+  const exdates = JSON.parse(rule.exdates) as string[];
+  if (!exdates.includes(dateKey)) {
+    exdates.push(dateKey);
+    await db.runAsync('UPDATE recurrence_rules SET exdates = ?, updated_at = ? WHERE id = ?;', [
+      JSON.stringify(exdates),
+      now,
+      ruleId,
+    ]);
+  }
+
+  // 該当 event soft-delete
+  const occurredAtUtc = `${dateKey}T00:00:00.000Z`;
+  await db.runAsync(
+    `UPDATE events SET deleted_at = ?, updated_at = ?
+     WHERE recurrence_rule_id = ?
+       AND occurred_at_utc = ?
+       AND status = 'planned'
+       AND deleted_at IS NULL;`,
+    [now, now, ruleId, occurredAtUtc],
+  );
+}
