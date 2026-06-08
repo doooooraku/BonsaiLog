@@ -36,6 +36,13 @@ export const MAX_PHOTOS_PER_EVENT = 10;
 export { FREE_PHOTO_LIMIT_PER_EVENT };
 
 export type PhotoFieldItem = {
+  /**
+   * ADR-0055 Sess77 PR-2: 編集モードで既存写真と新規追加の区別に使用 (DB photos.id 保持)。
+   * - 既存写真 (DB から hydration): id 設定済 (`photoRepository.id`)
+   * - 新規追加 (ImagePicker / Camera): id undefined
+   * - 保存時 diff: `initialIds − currentIds` = 削除集合、 `currentItems.filter(p => !p.id)` = 新規追加集合
+   */
+  id?: string;
   uri: string;
   width: number | null;
   height: number | null;
