@@ -1,0 +1,81 @@
+# maestro/flows/work-log-edit-cancel.yml
+# Sess77 PR-5 (ADR-0055 + Sess39 issue #822 整合): 編集中に 戻る → 未保存ガード dialog → 破棄 で 戻る。
+#
+# useUnsavedChangesGuard hook (Sess39) を edit mode でも 機能することを確認。
+# prefill 完了後 → user が field 変更 → 戻る → 「破棄しますか?」 dialog → 「破棄」 で 復帰。
+appId: 'com.dooooraku.bonsailog'
+---
+- launchApp:
+    clearState: false
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 30000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_list'
+    timeout: 30000
+
+# 記録タブ
+- tapOn:
+    text: '記録'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_record_screen'
+    timeout: 10000
+
+# 当日 logged event group kebab → menu → edit item
+- tapOn:
+    id: 'e2e_record_group_kebab_logged_watering'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    id: 'e2e_record_kebab_edit_watering'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# WorkLogConfirmScreen open
+- assertVisible:
+    id: 'e2e_work_log_confirm_screen'
+
+# field 変更 (isDirty trigger、 prefill 完了 + initial refs 同期更新後の差分発生)
+- tapOn:
+    id: 'e2e_work_log_note'
+    retryTapIfNoChange: true
+- inputText: ' [unsaved change]'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Back press → useUnsavedChangesGuard が beforeRemove で intercept → dialog 表示
+- pressKey: 'Back'
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# ConfirmDialog (discardChanges) 表示
+- assertVisible:
+    id: 'e2e_discard_dialog_work_log_confirm'
+
+# 「破棄」 tap (destructive、 confirm) → 編集破棄して record タブに戻る
+- tapOn:
+    text: '破棄'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# 戻り遷移を確認 (record タブ表示)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_record_screen'
+    timeout: 10000

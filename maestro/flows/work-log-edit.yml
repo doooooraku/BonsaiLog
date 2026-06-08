@@ -1,0 +1,90 @@
+# maestro/flows/work-log-edit.yml
+# Sess77 PR-5 (ADR-0055 §Acceptance): 記録タブ から kebab → 「編集」 → 編集画面 → 更新する。
+#
+# 前提: SEED_PACK で logged events が複数存在 (R8 = 11 鉢 active + 全 14 種別)。
+# 検証: kebab menu に 「編集」 item 表示 + WorkLogConfirmScreen が 編集モード で開く + 保存後 Toast 表示。
+#
+# 注: 個別 row kebab は events.length === 1 のときのみ edit を出す (PR-3/5 仕様)。
+#     SEED は groupContinuousEvents で日付連続なら group 化、 単発記録は events.length === 1 の group。
+appId: 'com.dooooraku.bonsailog'
+---
+- launchApp:
+    clearState: false
+
+# Dev Client URL list 経由 (development build)
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 30000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_list'
+    timeout: 30000
+
+# 記録タブへ移動
+- tapOn:
+    text: '記録'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_record_screen'
+    timeout: 10000
+
+# SEED logged event のうち、 当日 (default) に 何らかの 種別を tap してグループ展開。
+# 当日 SEED に 水やり が 1 件のみ → group kebab ⋮ tap → menu に edit + delete 表示。
+- tapOn:
+    id: 'e2e_record_group_kebab_logged_watering'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# RowActionMenu 表示
+- assertVisible:
+    id: 'e2e_record_kebab_menu'
+    optional: true
+
+# 編集 item tap (events.length === 1 で 表示)
+- tapOn:
+    id: 'e2e_record_kebab_edit_watering'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# WorkLogConfirmScreen が edit mode で開く (title「水やりを編集」 / Save CTA「更新する」)
+- assertVisible:
+    id: 'e2e_work_log_confirm_screen'
+- assertVisible: '水やりを編集'
+- assertVisible: '更新する'
+- assertVisible:
+    id: 'e2e_work_log_date_hint'
+
+# メモを変更 (prefill された state から 修正)
+- tapOn:
+    id: 'e2e_work_log_note'
+    retryTapIfNoChange: true
+- inputText: ' [edited]'
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# 「更新する」 tap → updateEvent 実行 + Toast「更新しました」 + 記録タブに戻る
+- tapOn:
+    id: 'e2e_work_log_save'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Toast 表示確認
+- assertVisible: '更新しました'
+
+# 記録タブに戻ったことを確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_record_screen'
+    timeout: 10000

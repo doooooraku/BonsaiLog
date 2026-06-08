@@ -50,7 +50,6 @@ type CalendarEventGroupListProps = {
     type: EventType,
     groupEvents: readonly Event[],
   ) => void;
-  showIndividualDeleteDialog: (ev: Event) => void;
   handleKebabPress: (
     status: 'planned' | 'logged',
     type: EventType,
@@ -78,7 +77,6 @@ export function CalendarEventGroupList({
   formatGroupAccessibility,
   confirmDeleteEvent,
   confirmDeleteGroup,
-  showIndividualDeleteDialog,
   handleKebabPress,
   handleBulkConvert,
   handleSingleConvert,
@@ -236,7 +234,9 @@ export function CalendarEventGroupList({
                                   )
                                 }
                                 onLongPress={confirmDeleteEvent}
-                                onKebabPress={showIndividualDeleteDialog}
+                                onKebabPress={(ev) =>
+                                  handleKebabPress('planned', ev.type as EventType, [ev])
+                                }
                                 kebabTestID={`e2e_${testIdPrefix}_event_kebab_${e.id}`}
                                 actionButtonLabel={t('planEventRecordButtonSingle')}
                                 onActionPress={handleSingleConvert}
@@ -351,7 +351,9 @@ export function CalendarEventGroupList({
                                   router.push(`/(tabs)/bonsai/${ev.bonsaiId}?tab=history` as Href)
                                 }
                                 onLongPress={confirmDeleteEvent}
-                                onKebabPress={showIndividualDeleteDialog}
+                                onKebabPress={(ev) =>
+                                  handleKebabPress('logged', ev.type as EventType, [ev])
+                                }
                                 kebabTestID={`e2e_${testIdPrefix}_event_kebab_${e.id}`}
                                 showBonsaiName
                                 indent

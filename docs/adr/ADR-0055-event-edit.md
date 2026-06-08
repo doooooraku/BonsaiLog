@@ -3,7 +3,7 @@
 
 # ADR-0055: event 編集機能 (個別 row kebab メニュー経由、 Sess77)
 
-- Status: Proposed
+- Status: Accepted (Sess77 PR-5 で 5 PR 全実装完遂、 2026-06-08)
 - Date: 2026-06-08
 - Deciders: @doooooraku
 - Related:
