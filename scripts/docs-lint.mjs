@@ -9,6 +9,7 @@
  *   4. lessons.md 単体ファイルが新規 lesson を含んでいないか (索引のみ維持)
  *   5. ルール doc の行数上限 (recurrence-prevention.md ≤ 250 / lessons ≤ 200)
  *   6. Superseded ADR の後継リンク整合 (ADR-0046 廃止ポリシー、warning のみ)
+ *   7. ADR-0050 以降の CRUD Coverage section 整合 (R-65、 title に CRUD 動詞を含む ADR は section 必須、 warning のみ)
  *
  * 終了コード: 0 = OK, 1 = エラー検出 (warning は exit 0)
  */
@@ -173,6 +174,28 @@ function checkSupersededLinks() {
   }
 }
 
+// Check 7: ADR-0050 以降で title に CRUD 動詞を含む ADR は `## CRUD Coverage` section を持つか
+// (R-65 整合、 ADR-0055 起票)。 false positive 防止のため warning のみ。 ADR-0050 未満は遡及対象外。
+function checkAdrCrudCoverage() {
+  const adrDir = join(ROOT, 'docs/adr');
+  if (!existsSync(adrDir)) return;
+  const crudVerbRe = /create|edit|update|delete|crud/i;
+  for (const f of readdirSync(adrDir)) {
+    const m = f.match(/^ADR-(\d{4})-(.+)\.md$/);
+    if (!m) continue;
+    const num = parseInt(m[1], 10);
+    if (num < 50) continue; // 遡及対象外 (ADR-0001〜0049)
+    const titleSlug = m[2];
+    if (!crudVerbRe.test(titleSlug)) continue; // CRUD 動詞を含まない title はスキップ
+    const content = readFileSync(join(adrDir, f), 'utf8');
+    if (!/^##\s+CRUD\s+Coverage/m.test(content)) {
+      warnings.push(
+        `[R-65 CRUD Coverage] ${f}: title に CRUD 動詞を含むが \`## CRUD Coverage\` section が不在 → ADR テンプレ参照で 4 動詞 (C/R/U/D) 評価を明文化してください`,
+      );
+    }
+  }
+}
+
 // 実行
 checkCodexReferences();
 checkAdrSequence();
@@ -180,6 +203,7 @@ checkStrikethrough();
 checkLessonsIndex();
 checkRuleDocsLineLimit();
 checkSupersededLinks();
+checkAdrCrudCoverage();
 
 // 結果出力
 if (errors.length > 0) {

@@ -861,9 +861,49 @@ pnpm dev
 
 ---
 
+## R-65. CRUD 機能を扱う ADR は Create/Read/Update/Delete の 4 動詞を Acceptance に明示する (Sess77 ADR-0055 起票由来)
+
+### Rule
+
+新規 ADR (新機能 or 既存機能拡張) を 起票する時、 該当機能が **data 操作 (C/R/U/D) を扱う** 場合、 ADR 内に **「CRUD Coverage」 section** を必須記載する。 各 operation について「対応 / 未対応 / 将来対応」 と 動線 / 制約 を明示する。
+
+### Why
+
+ADR-0008 (event data model) で **U (Update)** が DB 層のみ実装され、 UI 動線が未整備のまま 1 年放置。 Sess76 Play Console alpha rollout 直前のテスター苦情「過去の作業は一切入力させない方針か?」 で顕在化。
+
+**真因**: ADR 議論で「機能の追加」 (= 新しい何かを足す) に focus が偏り、 「機能の完備性」 (= ユーザーが取れる操作が CRUD 全部揃っているか) を **構造的に評価する仕組み** が欠落。 ADR テンプレに CRUD 4 操作の明示欄が なかった。
+
+「破壊的操作 matrix」 (R-44 / Sess23 ADR-0036 由来) は「D = 削除」 を対象に明文化されたが、 「U = 更新」 は議論対象から漏れた。
+
+### How to apply
+
+1. **ADR 起票時**: data 操作 (C/R/U/D) を 扱う ADR は、 `## CRUD Coverage` section を必ず書く (ADR テンプレ参照、 ADR-0055 を 参照例 とする)。
+2. **各 cell に記載**: 「対応する PR / Issue」 または「未対応の理由」。 「将来対応」 は Follow-ups にも追加。
+3. **非 CRUD 系 ADR** (UI 統一 / 文書整備 / build 設定 等) は スキップ可。 ただし title に CRUD 動詞 (create/edit/update/delete) を含む場合は 記載必須 (`pnpm docs:lint` で 警告)。
+
+### 検出
+
+- 自動: `scripts/docs-lint.mjs` の `checkAdrCrudCoverage()` で ADR-0050 以降を走査、 title に CRUD 動詞を含むのに `## CRUD Coverage` heading 不在なら warn (false positive 防止で error 化はせず warn のみ)。
+- 手動: ADR review 時に CRUD Coverage section 存在 + 各 cell の妥当性 確認。
+
+### 関連
+
+- ADR-0055 (本 R 同時起票、 編集機能 ADR、 CRUD Coverage table 完全記載例)
+- ADR-0008 (event data model、 R 起票元の問題発生 ADR、 U 動線が放置された反省)
+- ADR-0036 (破壊的操作 D pattern、 R-44 = 削除側の matrix と本 R = CRUD 完備性 matrix の役割分担)
+- `docs/adr/adr_template.md` (本 R 整合で `## CRUD Coverage` section 追加)
+- `scripts/docs-lint.mjs` (`checkAdrCrudCoverage` 関数追加)
+
+### 由来
+
+- 2026-06-08 Sess77 ADR-0055 起票時、 user 改善要望「テスター苦情 = 編集できない問題」 のなぜなぜ 5 段分析で「ADR テンプレに CRUD カバレッジ評価仕組み欠落」 が 根本原因と確定
+- CLAUDE.md §9「2 回再発で hook 化検討、 3 回目で必須」 該当 (ADR-0008 + ADR-0027 で連続 U 議論漏れ = 構造問題認定)
+
+---
+
 ## 関連
 
-- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-64 索引 + 運用ルール)
+- 親ファイル: `.claude/recurrence-prevention.md` (R-1 〜 R-12 全文 + R-13 〜 R-65 索引 + 運用ルール)
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
