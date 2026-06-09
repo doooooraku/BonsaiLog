@@ -1,7 +1,55 @@
 # Retro Lessons (= sprint 振り返り 集約)
 
 > sprint / milestone 単位の retro 結果を 集約する file。 新 retro は **最新が上** で 追記。
->
+
+---
+
+## [2026-06-10] Sess90 画面ヘッダー font/背景 統一 + 検出 lint 配線 (3 PR)
+
+### Keep
+
+- **議論モード Explore agent + Plan agent cross-check** — 47 file 走査で hardcode 4 箇所分散 早期特定、 cross-check で gotcha 全潰し (= TypeScript 型制限 / nested cascade 等)
+- **token SoT 化を 1 session 完遂** — `screenTitleTab` / `screenTitleStack` + `c.background` で「change one place, takes effect everywhere」 保証
+- **段階導入の lint 配線** — ADR-0029 D1 form typography 同型、 warning のみ (exit 0) で false positive 観察期間を確保
+- **2 段 pattern を既存正典から流用** — settings/index.tsx (Sess74 PR-3) の `Stack.Screen + useEffect(setOptions)` をそのまま 3 manager screen に適用
+- **deep link で実機検証高速化** — `bonsailog://<route>` で screen 直接 navigate、 タブ → row tap の遷移省略
+
+### Problem
+
+- **Plan agent の cascade 認識誤り** — 「root → nested 自動 cascade」 と書かれていたが Expo Router は cascade しない、 実装中発覚で 4 nested layout 追加修正
+- **TypeScript 型制限を実装後発覚** — `headerTitleStyle` が `Pick<TextStyle, 'fontFamily'|'fontSize'|'fontWeight'> & { color? }` 限定で letterSpacing/lineHeight 除外要、 `screenTitleStack` を 2 プロパティに絞り直し
+- **JSDoc コメント内 `**/\*.tsx`syntax error** —`\*\*/`がブロックコメント terminator として誤認識、`app 配下の .tsx` 言い換えで回避
+- **PR-C lint script の false positive 17→3 件 縮減サイクル** — 初版は `c.surface` を全 file で検出、 body card 系 16 件誤検出 → header context lookback 追加で fix
+- **adb screencap CRLF 罠 3 回目再発** (Sess77/89/90) — `adb shell screencap > file.png` で PNG header に CRLF 混入、 `exec-out` で binary-safe 取得が正解
+- **設定 → テーマ tap 座標 2 回誤認識** — y=1040 で「言語」 row tap、 y=985 で再度「言語」 tap、 真の「テーマ」 row は y=1060。 dark mode 切替後の row 位置 ずれ + scroll position 認識誤り
+
+### Try (次回以降)
+
+1. ✅ **`scripts/dev/take-ss.sh` 起票** (= P0、 **Sess91 PR-A で完遂**) — adb exec-out + 連番命名 + REPORT.md 雛形 自動生成 + PNG ヘッダー verify で罠再発時の即検出
+2. ✅ **Plan agent 出力の critical claim を実装前に Read で 1 次資料確認** (= **Sess91 PR-A で `.claude/CLAUDE.md` §2 に追記済**) — cascade / 型挙動 等 framework specific は agent の memory に依存しがち
+3. **PR-C lint script を Sess92+ で error 昇格** — false positive 2 セッション以上観察、 残 3 件 (= body 内 NotoSerifJP) を別 PR で fix
+4. **`worktree-init.sh` で `check-hooks.mjs` 自動順序確認** — PR 毎の format check 失敗 → prettier auto-fix を構造排除
+5. **`docs/reference/deep-link-route-map.md` 起票** — `(tabs)` group route は tab tap 必須 等の罠を documented
+
+### 教訓 5 (= 次 app 作る時 必ず思い出す)
+
+1. **token SoT 化は 1 session 完遂可、 design system の hardcode 検出は grep lint で十分** — Sess90 PR-A/B/C 累計 2 時間で font/background/lint 全完遂、 ESLint AST rule 化は 3 回再発で検討 (= CLAUDE.md §9 段階昇華)
+2. **Expo Router の `<Stack screenOptions>` は nested Stack に cascade しない、 各 nested で明示 spread 必須** — Plan agent の認識誤りを実装中発覚、 R-75 で構造防止
+3. **user 報告「統一性がない」 は必ず全 file inventory 必須、 1 箇所修正で他 N 箇所漏れの罠** — R-55 関連項目網羅調査の典型例、 grep だけでは漏れる
+4. **dark mode 確認は OS uimode ではなく app 内 themeMode 切替が必要** — themeMode='light' 固定の app は OS 追従しない (= 設計通り)、 設定 → テーマ → ダーク tap 必須
+5. **adb screencap は `exec-out` で binary-safe、 shell pipe は CRLF 変換罠 (= 3 回目再発)** — Sess77/89/90 同型、 `scripts/dev/take-ss.sh` 起票が必須 → Sess91 PR-A で完遂
+
+### 関連
+
+- 詳細 plan: `~/.claude/plans/cuddly-enchanting-token.md` (= PR-A 計画 → Sess91 PR-A で 改善策 #1+#2 上書き)
+- 実機 検証 REPORT: `dist/sess90-verify/2026-06-10-0547/REPORT.md` (= 12 SS + 学び 4 件)
+- 連鎖 PR: #1041 (PR-A) → #1043 (PR-B) → #1044 (PR-C)
+- 起票 R 番号: R-74 (= Stack screen title 2 段 pattern) / R-75 (= screen header font geometry hardcode 禁止)
+- ADR Amendment: ADR-0053 Sess90 PR-A Amendment (font 統一) + Sess90 PR-B Amendment (背景 washi 統一)
+- design_system §3-4 Screen header background contract 新設
+
+---
+
 > 関連: `.claude/recurrence-prevention.md` (= 行動ルール R-1〜R-71)、 `lessons/README.md`
 
 ---
