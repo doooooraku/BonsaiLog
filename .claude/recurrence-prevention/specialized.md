@@ -1317,3 +1317,43 @@ Claude が以下のいずれかを armed する前に、 polling 内で実行さ
 - 同型 meta-rule: R-61 (= 機械判定 + 安全網) / R-25 (= 機械判定のみで達成判定禁止) / R-68 (= 外部サービス連携 ADR は preflight smoke test 配線済必須)
 - 由来 PR: Sess81 振り返り対策 PR-D/E/F/G (= #1014/1015/1016/1017) の CI 完了監視 + Sess82 PR-H (本 R 起票 + wait-pr-ci.mjs)
 - 「画面 = OK = リリース OK」 罠 (= IAP territory MN-only) と同型構造、 認知バイアス防止
+
+---
+
+## R-72 複数件 INSERT は bulk transaction ラッパー経由必須 (Sess89 PR-C 起票)
+
+### ルール
+
+caller が `recurrence_rules` / `events` / `bonsai` 等の DB エンティティを **複数件 INSERT** する場合、 必ず `bulkXxx` ラッパー (= `db.withTransactionAsync` 内で全件 INSERT、 失敗時 ROLLBACK 保証) を使用する。 caller での for ループ + 個別 `createXxx` 直接呼び出しは禁止。
+
+### Why
+
+- N 件中の M 件目で失敗した場合、 (1..M-1) 件は既に commit されていて、 (M..N) 件は未作成という **データ不整合** が発生する
+- user 体験罠: Toast「5 件作成しました」 と表示されるが、 実際 DB には 3 件しかない状態
+- 既存 `bulkScheduleEvents` / `bulkLogEvents` (Sess12) は本 pattern を踏襲済、 横断 SoT
+- Sess89 PR-C で 「定期予定 対象の盆栽 複数化」 → `bulkCreateRecurrenceRules` 新設で R-72 明文化
+
+### How to apply
+
+1. 複数件 INSERT する関数を新設する時は **`bulkXxx`** 命名を採用
+2. 内部実装は `await db.withTransactionAsync(async () => { for (...) await db.runAsync(INSERT); })`
+3. caller (= UI 層) は `inputs[]` 配列を渡すだけ、 transaction を意識しない
+4. test で 「N 件中 M 件目で例外 → 全件 rollback (DB に 0 件残る)」 を verify
+
+### 適用例 (Sess89 PR-C で実装)
+
+- `src/db/recurrenceRuleRepository.ts:131` に `bulkCreateRecurrenceRules(inputs)` 新設
+- `RecurrenceFormScreen.handleSave` で N 件 input 配列を一度に渡す
+- 既存 `createRecurrenceRule` (= 単数) は後方互換のため維持
+
+### 検出
+
+- 新規 PR の review 時、 caller 内の `for (...) await createXxx(...)` 直接呼び出しを grep で発見
+- ADR で「複数件作成」 use case が出てきたら R-72 適用を確認
+
+### 関連
+
+- 同型 pattern: `bulkScheduleEvents` (Sess12) / `bulkLogEvents` (Sess12) — 同 transaction wrapper
+- 由来 ADR: ADR-0056 D2 (= recurrence_rules schema、 単数 bonsai_id NOT NULL)
+- 由来 PR: Sess89 PR-C (本 R 起票)
+- meta-rule: R-25 (= 機械判定で達成確認) / R-70 (= 中間 log で silent failure 防止)

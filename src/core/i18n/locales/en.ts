@@ -1026,6 +1026,9 @@ const baseEn = {
   recurringEditSavedToast: 'Changes saved',
   recurringEditSaveFailedToast: 'Failed to save',
   recurringFormBonsaiLabel: 'Bonsai',
+  // Sess89 PR-C (ADR-0025 §7 Amendment): count-based header (= R-71 contract)
+  recurringFormBonsaisHeader: 'Add the same schedule to {count} bonsai',
+  recurringFormBonsaisHeaderSingle: 'Add a schedule for {name}',
   recurringFormEventTypeLabel: 'Work type',
   bulkPickerSheetSubLogSingle: 'Log care for {name}',
   bulkPickerSheetSubScheduleSingle: 'Add a schedule for {name}',
