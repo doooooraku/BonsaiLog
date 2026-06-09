@@ -100,7 +100,10 @@ describe('recurrenceRuleRepository ソースコード静的解析 (eventReposito
     );
     expect(src).toContain('VALUES (?');
     // 直接文字列展開していないか確認
-    expect(src).not.toMatch(/INSERT\s+INTO\s+recurrence_rules.*\$\{/s);
+    // Sess81 hotfix: 旧 regex `/INSERT\s+INTO\s+recurrence_rules.*\$\{/s` は dotall (s flag) +
+    // `.*` greedy で 後続別ステートメントの template literal (= `${dateKey}T00:00...`) と
+    // 誤マッチ。 SQL ステートメント単位 (= `;` で 区切る) に scope 限定。
+    expect(src).not.toMatch(/INSERT\s+INTO\s+recurrence_rules[^;]*\$\{/s);
   });
 
   test('deleted_at IS NULL で active rule のみ filter', () => {
