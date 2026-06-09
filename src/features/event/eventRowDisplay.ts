@@ -27,6 +27,11 @@ export type EventRowDisplay = {
   dateLabel: string;
   wiringDuration: WiringDurationDisplay | null;
   scheduledUnwireLabel: string | null;
+  /**
+   * Sess81 PR-7 (ADR-0056 D5): event.recurrenceRuleId が 非 null の場合 true。
+   * EventRow で 🔁 RepeatIcon を 作業名 inline に小型表示するための flag。
+   */
+  isRecurring: boolean;
 };
 
 /** 日付フォーマット (bonsai-detail/[id]/index.tsx と同等の local 実装)。 */
@@ -85,5 +90,6 @@ export function getEventRowDisplay(
     dateLabel: formatDate(ev.occurredAtUtc, lang),
     wiringDuration,
     scheduledUnwireLabel,
+    isRecurring: ev.recurrenceRuleId != null,
   };
 }
