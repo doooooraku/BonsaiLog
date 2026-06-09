@@ -27,6 +27,7 @@
     "config:check": "node scripts/config-check.mjs",
     "docs:lint": "node scripts/docs-lint.mjs",
     "harness:metrics": "node scripts/harness-metrics.mjs",
+    "metrics:doc-baseline": "node scripts/dev/analyze-doc-reads.mjs",
     "template:check": "node scripts/template-residue-check.mjs",
     "native:check": "node scripts/native-runtime-check.mjs",
     "theme:check": "node scripts/theme-legacy-check.mjs",
