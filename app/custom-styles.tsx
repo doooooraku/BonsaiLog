@@ -28,7 +28,7 @@ import { ChevronRightIcon, MoreVerticalIcon } from '@/src/components/icons';
 import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
 import { elapsedDaysFromIsoUtc, formatElapsedDays } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BRAND_GREEN, ON_BRAND, TEXT_MUTED, TEXT_PRIMARY } from '@/src/core/theme/colors';
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
   deleteCustomStyle,
@@ -172,14 +172,14 @@ export default function CustomStylesManagerScreen() {
               style={styles.rowMain}
               onPress={() => openEdit(item)}
             >
-              <ThemedText type="defaultSemiBold" style={{ color: TEXT_PRIMARY }}>
+              <ThemedText type="defaultSemiBold" style={{ color: c.text }}>
                 {item.name}
               </ThemedText>
               <ThemedText
                 style={[
                   styles.rowStats,
                   { color: c.textSecondary },
-                  item.usageCount === 0 && { color: TEXT_MUTED, fontStyle: 'italic' },
+                  item.usageCount === 0 && { color: c.textMuted, fontStyle: 'italic' },
                 ]}
               >
                 {buildStatsLabel(item)}
