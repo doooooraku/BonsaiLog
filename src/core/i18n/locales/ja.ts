@@ -1011,7 +1011,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   recurringListProBadgeOverLimit: 'Free 上限超過',
   recurringRruleHumanCustom: 'カスタム',
   // Sess82 PR-D: RecurrenceFormScreen + BottomCtaBar (= 新規作成 + 編集 動線)
-  recurringListCreateNewLabel: '+ 新規追加',
+  recurringListCreateNewLabel: '新規追加',
   recurringCreateScreenTitle: '新規定期予定',
   recurringEditScreenTitle: '定期予定を編集',
   recurringCreateSaveLabel: '作成',
