@@ -24,6 +24,7 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { BottomCtaBar } from '@/src/components/common/BottomCtaBar';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
 import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
@@ -36,6 +37,7 @@ import {
   type RecurrenceRuleRow,
 } from '@/src/db/recurrenceRuleRepository';
 import type { EventType } from '@/src/db/schema';
+import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
 import { useRecurrenceRules } from '@/src/features/recurrence/useRecurrenceRules';
 
 /**
@@ -57,6 +59,15 @@ export default function RecurrenceListScreen() {
   const c = useColors();
   const router = useRouter();
   const { rules, bonsaiMap, nextOccurrenceMap, loading, reload } = useRecurrenceRules();
+  // Sess82 PR-D: 「+ 新規追加」 BottomCtaBar = useBulkActionFlow('recurring') 経由で 盆栽 picker → BulkWorkPicker → /recurring-rules/new
+  const { startBulkAction } = useBulkActionFlow('recurring');
+  const handleCreateNew = useCallback((): void => {
+    const allBonsais = Array.from(bonsaiMap.values()).map((b) => ({
+      id: b.id,
+      name: b.name,
+    }));
+    startBulkAction(allBonsais);
+  }, [bonsaiMap, startBulkAction]);
   const [deleteTarget, setDeleteTarget] = useState<RecurrenceRuleRow | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   // Sess82 PR-C: kebab → RowActionMenu (= 編集 + 削除 2 択、 ADR-0036 D7 整合)
@@ -199,6 +210,13 @@ export default function RecurrenceListScreen() {
           }
         />
       )}
+
+      {/* Sess82 PR-D: BottomCtaBar 「+ 新規追加」 = useBulkActionFlow('recurring') 経由 */}
+      <BottomCtaBar
+        label={t('recurringListCreateNewLabel')}
+        onPress={handleCreateNew}
+        testID="e2e_recurrence_list_create_new"
+      />
 
       {/* Sess82 PR-C: kebab → RowActionMenu (= 編集 + 削除 2 択、 ADR-0036 D7 整合) */}
       <RowActionMenu

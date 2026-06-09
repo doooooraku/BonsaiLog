@@ -994,5 +994,16 @@ const pl: Partial<Record<TranslationKey, string>> = {
     'All future events will be deleted (30 days until permanent deletion)',
   recurringListProBadgeOverLimit: 'Over Free limit',
   recurringRruleHumanCustom: 'Custom',
+  // Sess82 PR-D: RecurrenceFormScreen + BottomCtaBar (= 新規作成 + 編集 動線)
+  recurringListCreateNewLabel: '+ New',
+  recurringCreateScreenTitle: 'New recurring schedule',
+  recurringEditScreenTitle: 'Edit recurring schedule',
+  recurringCreateSaveLabel: 'Create',
+  recurringEditSaveLabel: 'Save',
+  recurringEditRuleNotFoundToast: 'This recurring schedule has been deleted',
+  recurringEditSavedToast: 'Changes saved',
+  recurringEditSaveFailedToast: 'Failed to save',
+  recurringFormBonsaiLabel: 'Bonsai',
+  recurringFormEventTypeLabel: 'Work type',
 };
 export default pl;

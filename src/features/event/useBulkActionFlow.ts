@@ -21,7 +21,13 @@ import { useCallback } from 'react';
 
 import { usePickerStore, type BulkBonsaiRef } from '@/src/stores/pickerStore';
 
-export type BulkActionMode = 'log' | 'schedule';
+/**
+ * BulkActionMode = 一括動作モード:
+ * - 'log' = 一括記録 (= BulkWorkPicker → BulkLogConfirm)
+ * - 'schedule' = 一括予定追加 (= BulkWorkPicker → 1 タップ直接保存、 PR-6.5)
+ * - 'recurring' = 定期予定 新規作成 (= Sess82 PR-D、 BulkWorkPicker → /recurring-rules/new?bonsaiId=...&eventType=...)
+ */
+export type BulkActionMode = 'log' | 'schedule' | 'recurring';
 
 export function useBulkActionFlow(mode: BulkActionMode) {
   const router = useRouter();

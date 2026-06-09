@@ -41,8 +41,10 @@ const BULK_WORK_TYPES: readonly EventType[] = EVENT_TYPES;
 export default function BulkWorkPickerScreen() {
   const { t } = useTranslation();
   const c = useColors();
-  const params = useLocalSearchParams<{ mode?: 'schedule' | 'log'; date?: string }>();
-  const mode: 'schedule' | 'log' = params.mode === 'log' ? 'log' : 'schedule';
+  const params = useLocalSearchParams<{ mode?: 'schedule' | 'log' | 'recurring'; date?: string }>();
+  // Sess82 PR-D: 'recurring' mode 追加 (= 定期予定 新規作成動線、 BulkWorkPicker → /recurring-rules/new)
+  const mode: 'schedule' | 'log' | 'recurring' =
+    params.mode === 'log' ? 'log' : params.mode === 'recurring' ? 'recurring' : 'schedule';
   const scheduleDate = params.date ?? '';
 
   const selectedBonsais = usePickerStore((s) => s.bulkContext?.selectedBonsais ?? []);
@@ -79,6 +81,17 @@ export default function BulkWorkPickerScreen() {
         void triggerSummaryReschedule(t);
         // Sess12 PR-G 改善 I: router.replace で予定タブに直接遷移
         router.replace('/(tabs)/plan' as Href);
+        return;
+      }
+
+      // Sess82 PR-D: recurring mode = 定期予定 新規作成画面に push (= 1 番目 bonsai を 採用、 multi-select 非対応 v1.0.1)
+      if (mode === 'recurring') {
+        const firstBonsaiId = bonsaiIds[0];
+        if (!firstBonsaiId) {
+          router.back();
+          return;
+        }
+        router.replace(`/recurring-rules/new?bonsaiId=${firstBonsaiId}&eventType=${type}` as Href);
         return;
       }
 
