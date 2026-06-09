@@ -58,6 +58,10 @@ app-example
 # Claude Code 一時ファイル
 .claude/scheduled_tasks.lock
 
+# Sess89+ PR1/PR2 doc 計測 (= analyze-doc-reads.mjs + log-doc-reads.mjs 出力)
+# baseline-reads.csv (PR1) / doc-reads.jsonl (PR2) はローカル計測のみ commit 不要
+.claude/metrics/
+
 # Store screenshots output
 screenshots/
 # Whitelist: mockup v1.0 screenshots は写経駆動開発 (R-29) 参照用に commit する (T1-2)
