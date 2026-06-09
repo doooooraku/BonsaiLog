@@ -1397,7 +1397,7 @@ caller が `recurrence_rules` / `events` / `bonsai` 等の DB エンティティ
 
 - 新規 PR で `app/<screen>.tsx` を追加した時、 reviewer は `Stack.Screen` と `setOptions` の両方を grep
 - 既知の漏れ候補: `app/onboarding/welcome.tsx` (= `headerShown:false` で代替済、 適用外)
-- 後続 session 課題: `scripts/dev/check-stack-screen-title.mjs` で grep lint 起票候補 (= `app/*.tsx` で `useTranslation` 使用かつ `Stack.Screen options` か `setOptions` 片方欠落を warn)
+- **配線済 (Sess90 PR-C)**: `scripts/dev/check-stack-screen-title.mjs` で grep lint 配線 + `pnpm verify` に統合 (= `verify:stack-screen-title`)。 `useTranslation` 使用かつ `Stack.Screen options` / `setOptions` 片方欠落を warning 出力 (= ALLOWLIST = `app/tag-edit.tsx` 等の意図的 例外 除外)。 Sess90 PR-C 時点で全 35 file 走査 / ok=7 / skip=28 / warn=0。 ESLint AST rule 化は false positive 観察後 (Sess91+) で検討
 
 ### 関連
 
@@ -1458,7 +1458,7 @@ import { screenTitleStack } from '@/src/core/theme/typography';
 ### 検出
 
 - 新規 PR の review 時、 `app/**` 配下で `fontFamily: 'NotoSerifJP_500Medium'` / `fontSize: 17` / `fontSize: 18` / `fontSize: 22` の hardcode を grep
-- 後続 session 課題: `scripts/dev/check-screen-header-typography.mjs` で grep lint 起票候補 (= ADR-0029 D1 の `check-form-typography.mjs` 同型)
+- **配線済 (Sess90 PR-C)**: `scripts/dev/check-screen-header-typography.mjs` で grep lint 配線 + `pnpm verify` に統合 (= `verify:screen-header-typography`)。 header context (= `headerTitleStyle` / `headerStyle` / `headerTintColor` を直近 5 行 lookback) のみで font hardcode + `c.surface` 直書きを warning 出力 (= body の card 系 c.surface は誤検出回避)。 Sess90 PR-C 時点で全 47 file 走査 / warn=3 件 (= body 内 NotoSerifJP 残存 検出、 別 PR scope)
 - ESLint AST rule 化は 3 回再発 (= 本 PR で 1 回目) で検討 (CLAUDE.md §9 記憶の昇華ルール)
 
 ### 関連
