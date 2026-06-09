@@ -106,13 +106,9 @@ for (const { key, value, expectedPrefix } of RC_KEY_CHECKS) {
   }
 }
 if (prefixViolations.length > 0) {
-  console.error(
-    '\n\x1b[31m✗ RevenueCat API key prefix mismatch (Sess81 R-68):\x1b[0m\n',
-  );
+  console.error('\n\x1b[31m✗ RevenueCat API key prefix mismatch (Sess81 R-68):\x1b[0m\n');
   for (const v of prefixViolations) {
-    console.error(
-      `   - ${v.key}: expected "${v.expected}*", got "${v.actualPrefix}..."`,
-    );
+    console.error(`   - ${v.key}: expected "${v.expected}*", got "${v.actualPrefix}..."`);
   }
   console.error('\n  iOS / Android キーを取り違えていませんか?');
   console.error('  公開ドキュメント: https://www.revenuecat.com/docs/welcome/authentication\n');
