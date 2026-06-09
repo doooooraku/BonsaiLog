@@ -212,3 +212,63 @@
 
 **実装 PR**: Sess74 PR-1 (本 Amendment + `src/db/seedTagPresets.ts` 新規 + `tagRepository.ts` 拡張) + PR-2 (UI 配線、 BonsaiTagsSection / tag-edit / Settings タグ管理)。
 **関連**: ADR-0049 §Notes Amended Sess74 PR-1 / `functional_spec.md` §14.3.3 (master/custom 2 種別明文化)。
+
+---
+
+### §Notes Amended Sess89 PR-4 (2026-06-09) — 樹形 raw text 設計 + atomic NULL cascade (案 c) の明文化
+
+**背景**: Sess89 (= テスター苦情 「カスタム樹種/樹形の編集・削除動線がない」) で ADR-0049 ⑥ Grandfathered 緩 削除 OK の実装漏れを構造修復する際、 樹形は本 ADR §10.1 で確立した「`bonsai.style` raw text 保存」 設計のため、 **カスタム樹形削除時に 「幻の樹形」 (= 削除済 name が bonsai.style に残存) 問題** が顕在化。
+
+**真因 (= 本 ADR の二層原則の延長)**:
+
+- 樹種は `bonsai.custom_species_id` (FK + ON DELETE SET NULL) で **削除時 cascade 自動連動**
+- 樹形は `bonsai.style` raw text (enum 値 or custom name の生 string) で FK ではないため、 **削除時 orphan 参照が残る**
+- 本 ADR §Notes Amended Sess74 PR-1 「二層原則」 の盲点 = master/custom 区別と cascade pattern の対応関係が明示されていなかった
+
+**Sess89 確定 = 案 c (= atomic NULL cascade)**:
+
+`deleteCustomStyle(id)` 関数内で以下 3 stmt を 1 transaction で atomic 実行:
+
+```sql
+-- 1. 旧 name を取得
+SELECT name FROM bonsai_styles_custom WHERE id = ?;
+-- 2. master row 削除
+DELETE FROM bonsai_styles_custom WHERE id = ?;
+-- 3. orphan cleanup (= 旧 name を参照する bonsai を NULL に書換え)
+UPDATE bonsai SET style = NULL WHERE style = ?;
+```
+
+`renameCustomStyle(id, newRawName)` も同型 cascade:
+
+```sql
+-- 1. 重複検証
+SELECT id FROM bonsai_styles_custom WHERE name = ? AND id != ?;
+-- 2. 旧 name 取得 (= cascade 用)
+SELECT name FROM bonsai_styles_custom WHERE id = ?;
+-- 3. master row 更新
+UPDATE bonsai_styles_custom SET name = ? WHERE id = ?;
+-- 4. cascade UPDATE (= bonsai.style raw text を旧名 → 新名)
+UPDATE bonsai SET style = ? WHERE style = ?;
+```
+
+**他案との比較 (= Sess89 議論で却下)**:
+
+| 案           | 説明                                      | 採否    | 理由                                                                                                |
+| ------------ | ----------------------------------------- | ------- | --------------------------------------------------------------------------------------------------- |
+| **c** (採用) | `deleteCustomStyle` 内 atomic NULL 書換え | ✅ 採用 | 最小差分 + 関数 atomic + 「未設定」 と表示 (= システム中立) + 同名 user 再追加で復元可              |
+| b            | 「(削除済) {name}」 表示                  | ❌ 却下 | formatStyle 呼出箇所で `getAllCustomStyles()` fetch 必要 (= perf 懸念) + i18n key 19 言語追加負荷大 |
+| a            | 起動時 migration で一括 NULL 書換え       | ❌ 却下 | 出力過剰 (= 削除毎に動かない) + perf 上 1 回で並行 3 項目以上時冗長                                 |
+| 何もしない   | defensive code 任せ                       | ❌ 却下 | user 混乱 (= 削除したはずの名前が表示される)、 UX 致命傷                                            |
+
+**「master/custom 二層原則 + cascade pattern matrix」 (= 本 Amendment で恒久化)**:
+
+| 領域           | bonsai 参照型             | 削除時 cascade                                 | rename 時 cascade                                      |
+| -------------- | ------------------------- | ---------------------------------------------- | ------------------------------------------------------ |
+| カスタム樹種 ⑥ | `custom_species_id` (FK)  | ON DELETE SET NULL (= schema 自動)             | 不要 (= FK 自動追従)                                   |
+| カスタム樹形 ⑥ | `style` (raw text)        | **atomic UPDATE NULL** (= `deleteCustomStyle`) | **UPDATE bonsai.style = 新名 WHERE style = 旧名**      |
+| カスタムタグ ② | `bonsai_tags` (M:N table) | softDelete (= deleted_at セット)               | tagRepository.renameTag (= name 変更で FK 自動追従)    |
+| 定期予定 ⑦     | `recurrence_rule_id` (FK) | softDelete (= 関連 events も連動 softDelete)   | replaceRecurrenceRule (= softDelete + create ラッパー) |
+
+**実装 PR**: Sess89 PR #1031 (= Phase 3 = 樹形 management 画面 + 案 c 実装) / 本 PR (= ADR-0026 + ADR-0049 Amendment + R-72 起票)。
+
+**関連**: ADR-0049 §Notes Amended Sess89 PR-4 / R-72 (= master/custom CRUD pattern SoT) / `src/db/bonsaiStylesCustomRepository.ts` (= `deleteCustomStyle` 案 c + `renameCustomStyle` cascade)。

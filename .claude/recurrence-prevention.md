@@ -90,7 +90,7 @@
 
 ---
 
-## 専門ルール R-13 〜 R-71（詳細は `recurrence-prevention/specialized.md`）
+## 専門ルール R-13 〜 R-72（詳細は `recurrence-prevention/specialized.md`）
 
 | ID | テーマ | 1 行サマリ |
 |----|--------|-----------|
@@ -141,6 +141,7 @@
 | **R-69** | pre-commit hook は新規開発環境 (= worktree / clone) でも自動配線される仕組み必須 (Sess82 PR-F 起票) | R-61 (機械判定 + 安全網) 適用の運用ルール。 **`.lintstagedrc.js` + `.githooks/pre-commit` 等の既存資産が存在しても、 `core.hooksPath` が標準 (= `.git/hooks`) のままだと hook が動かない**。 由来: Sess81 で BonsaiLog の `.lintstagedrc.js` (Apr 2026 から存在) + `.githooks/pre-commit` (May 2026 から存在) が揃っているのに、 `package.json` `prepare` script (= `git config core.hooksPath .githooks`) が **worktree 内で `pnpm install` 後に再走らない** ことで `core.hooksPath = .git/hooks` のまま (= hook 無効)、 PR #1008 で prettier format 違反が commit 時に検出されず CI fail。 適用: `scripts/dev/check-hooks.mjs` で `core.hooksPath` verify + auto-fix、 `package.json` `prepare` script に呼出追加 (= clone / install 直後で自動配線)、 `verify:hooks` script で CI 検証も可。 詳細: `recurrence-prevention/specialized.md` |
 | **R-70** | Claude が長期 polling / Monitor を armed する前に「同コマンドの 1 サイクル分の中間値を log 出力で verify」 必須 (Sess82 PR-H 起票) | R-61 (機械判定 + 安全網) / R-25 (機械判定のみで達成判定禁止) の延長。 **Claude が `Monitor`、 `Bash run_in_background`、 cron polling 等の長期 polling を armed する前に、 polling 内で実行されるコマンドの「1 サイクル分の中間値」 を必ず log 出力で verify** する。 由来: Sess82 (2026-06-09) で Claude が 4 PR の CI 完了監視に Monitor を armed、 polling 内で `gh pr checks --json name,state` を使ったが、 `gh pr checks` は **`--json` フラグを完全サポートせず parse error**、 jq が空文字列を返し続け、 「空文字列 = まだ pending」 判定で **10 分 timeout まで silent failure**。 実際は既に 4 PR 全部 SUCCESS。 user 指摘で発覚、 「Sess81 振り返りで『画面 = OK = リリース OK』 罠を構造防御した直後に、 Claude 自身が『Monitor = 動いてる = OK』 同型の罠にハマった」 と認識。 適用: `scripts/dev/wait-pr-ci.mjs` (= Sess82 PR-H) で実装、 初回 cycle で必ず verbose log 出力 (= silent failure 即検出)、 `gh pr view --json statusCheckRollup` (= JSON 完全対応) を使用。 検出: 同型 Monitor / polling 設定時に「初回サイクル log なし」 を疑う、 「pending 永続」 が timeout 近くまで継続したら polling 経路の故障を仮定。 詳細: `recurrence-prevention/specialized.md` |
 | **R-71** | 件数分岐 hook の UI 表現契約 SoT 化 (Sess83 ADR-0025 起票) | `useBulkActionFlow` / 同型 hook で 0/1/N 件等の件数分岐で動線が変わる場合、 各分岐の **UI 表現 (chip / header 文言 / icon / hint / a11y)** を **同じ ADR の Decision §** で SoT 化必須。 ADR が動線のみ確定し UI 表現を別 PR で確定する **設計協調漏れ** を構造防止。 Sess83 user 実機検証で「BulkWorkPicker 1 件 case 文言『1 件の盆栽に**同じ**作業を記録』 + chip 視覚曖昧」 が user 不安を生む構造問題発覚 → ADR-0025 §7 + Sess80 PR-6.5 (#1002) + Sess82 PR-D (#1013) の 3 PR で同 hook 共有しながら 各 case の UI 表現を 統一しなかった真因。 R-62 (Layout Contract SoT) + R-67 (status 別意味分化) の系譜 meta-rule。 検出 (= follow-up): `scripts/check-i18n-plural-cohabit.mjs` で `{count}` placeholder と 複数前提語 (「同じ」「both」 等) の共存を静的検出。 詳細: `recurrence-prevention/specialized.md` |
+| **R-72** | master/custom CRUD pattern SoT (Sess89 ADR-0049 ⑥ 構造実装由来) | **master/custom 二層構造** で構成される領域 (= 樹種・樹形・タグ・定期予定 の 4 領域) は、 全領域で **CRUD 関数群が揃って実装** されていることを保証 (= Create / Rename / Delete / Count / canCreate / countBonsai / WithStats の 7 関数 set)。 「追加だけ実装、 編集/削除 UI 無し」 の構造実装漏れ (= ADR §Decision「削除 OK」 と書きながら 4 ヶ月削除関数なし、 Sess89 テスター苦情起点) を構造防止。 R-65 (= ADR 単独 CRUD カバレッジ) + R-67 (= status × 操作意味分化) と並列の meta-rule。 由来: Sess89 (= 2026-06-09) テスター苦情「樹種カスタムの編集、 削除機能は Pro? または今後の予定?」 を 4 PR で構造修復 (= #1028/1030/1031/本 PR)。 真因 = ADR § Decision と §Acceptance テスト記述の不整合 (= 削除動線 test 含まれず、 領域横断整合性検証なし)。 削除時 cascade matrix (= ADR-0026 §Notes Amended Sess89 で確立): FK (樹種) → ON DELETE SET NULL / raw text (樹形) → atomic UPDATE NULL (案 c) / M:N (タグ) + FK (定期予定) → softDelete。 検出 (= follow-up): `scripts/dev/check-custom-crud.mjs` で 4 領域 grep + 関数 set 揃い warn (= 未起票、 Sess90+ 候補)。 詳細: `recurrence-prevention/specialized.md` |
 
 ---
 
@@ -160,7 +161,7 @@
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
-- `.claude/recurrence-prevention/specialized.md` — R-13 〜 R-71 詳細記述
+- `.claude/recurrence-prevention/specialized.md` — R-13 〜 R-72 詳細記述
 - `.claude/hooks/` — 構造的防止 Hook 群（R-16/R-18/R-19/R-20 自動化）
 - `.claude/settings.json` — Hook 登録
 - `docs/reference/tasks/lessons/` — 技術 lesson（領域別フォルダ、`lessons/db.md` 等）

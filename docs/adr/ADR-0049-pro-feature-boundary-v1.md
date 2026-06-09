@@ -323,3 +323,46 @@ R1-R4 で実装計画を詰めた:
 **Maestro E2E**: `maestro/flows/paywall-recurring.yml` 新規 (Sess78 PR-5、 3 件 + 4 件目で Paywall 起動)。
 
 **関連**: ADR-0056 (本 Amendment の親 ADR、 Decision D7 が SoT) / `src/db/recurrenceRuleRepository.ts` (新規、 Sess78 PR-3) / Sess78 PR-1 (本 Notes Amended + ADR-0056 起票)。
+
+---
+
+### §Notes Amended Sess89 PR-4 (2026-06-09) — ⑥ Grandfathered 緩 削除/編集 OK の構造実装完了
+
+**背景**: テスター苦情「樹種カスタム、 樹形カスタムの編集、 削除機能は Pro? または今後の予定? どちらにせよ表記があったほうが」 (2026-06-09 = Sess89 議論起点)。 原因 = 本 ADR §Decision 「Grandfathered 緩: 既存 4+ 件 表示 OK + 削除 OK + 追加のみ Paywall」 と明記されていたが、 Sess59 PR5 (= 2026-05-31 実装時) では「追加 + Paywall ガード」 のみ実装、 **削除/編集動線が UI に存在しない構造実装漏れ** が 4 ヶ月放置。
+
+**Sess89 構造修復 (= 4 PR シリーズ)**:
+
+| PR    | 範囲                                                                                                     | 状態         |
+| ----- | -------------------------------------------------------------------------------------------------------- | ------------ |
+| #1028 | Phase 1 = i18n key 4 件 × 19 言語 (lookBackCardSpeciesTitle/Desc + lookBackCardStylesTitle/Desc)         | MERGED       |
+| #1030 | Phase 2 = カスタム樹種 管理画面 + 編集画面 + repository CRUD (rename / delete / countBonsai / WithStats) | MERGED       |
+| #1031 | Phase 3 = カスタム樹形 同型 + **案 c atomic NULL cascade** (= raw text 「幻の樹形」 問題解消)            | MERGED       |
+| 本 PR | Phase 4 = ADR-0049/0026 §Notes Amended + R-72 起票 + 整合性確保                                          | 本 Amendment |
+
+**実装 pattern (= タグ管理 Sess9 PR-6 + RecurrenceListScreen Sess82 PR-C 合成)**:
+
+- `app/custom-species.tsx` / `app/custom-styles.tsx` = 一覧 (createdAt ASC + 使用件数 + 最終使用日) + kebab → RowActionMenu (= 編集 / 削除 2 択) + ConfirmDialog (= 削除確認、 影響範囲警告 Linear pattern)
+- `app/custom-species/edit.tsx` / `app/custom-styles/edit.tsx` = TextInput + counter + save + delete + useUnsavedChangesGuard
+- look-back hub 5 → 7 card (= 樹種 LeafIcon + 樹形 CompassIcon を 6/7 番目に追加)
+
+**樹種 vs 樹形 cascade pattern の差分** (= 本 ADR Driver 2 「churn 最小化」 整合):
+
+| 項目              | 樹種 ⑥ (= Phase 2)               | 樹形 ⑥ (= Phase 3、 案 c)                                |
+| ----------------- | -------------------------------- | -------------------------------------------------------- |
+| bonsai 参照型     | `custom_species_id` (= FK)       | `style` (= raw text)                                     |
+| 削除時 cascade    | ON DELETE SET NULL (= 自動連動)  | **atomic UPDATE NULL** (= `deleteCustomStyle` 内 3 stmt) |
+| rename 時 cascade | 不要 (= name 変更で FK 自動追従) | **UPDATE bonsai.style = 新名 WHERE style = 旧名**        |
+| count 関数引数    | id                               | name                                                     |
+
+**Free 上限カウント方針 (現状維持)**:
+
+- ⑥ Free: master 5 種は対象外、 custom のみ 3 件まで (Sess89 で変更なし)
+- 既存 4+ 件は **表示 OK + 編集 OK + 削除 OK + 追加のみ Paywall** (Grandfathered 緩、 本 ADR Driver 2)
+
+**新規 R 番号**: R-72 (= master/custom CRUD pattern SoT、 本 Amendment と同時起票、 `.claude/recurrence-prevention/specialized.md`)
+
+**Maestro E2E**: 既存 `paywall-custom-species.yml` (= 4 件目で Paywall 起動) は維持、 Phase 4 で `paywall-custom-species-delete.yml` + `paywall-custom-styles-delete.yml` 追加予定 (= 削除 → Grandfathered 緩 再追加可)。
+
+**実機検証**: versionCode 13 release 前にまとめて (= Sess76 pattern 踏襲、 SH-M25 Dev Build + Metro 起動 dir 罠回避)。
+
+**関連**: Sess59 PR5 (= 当時の実装漏れ起点) / Sess89 PR #1028/1030/1031/本 PR / R-65 拡張 (= CRUD カバレッジ events → master/custom 全領域) / R-72 (= master/custom CRUD pattern SoT)。
