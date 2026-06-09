@@ -661,7 +661,6 @@ const baseEn = {
   tagEditNameLabel: 'Tag Name',
   tagEditAddCta: 'Add',
   tagEditUpdateCta: 'Update',
-  tagEditDeleteCta: 'Delete this tag',
   settingsTagsCountValue: '{count} tags',
   lookBackCardTagsTitle: 'Manage Tags',
   lookBackCardTagsDesc: 'Add / rename tags · See usage counts',
