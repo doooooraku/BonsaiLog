@@ -1006,6 +1006,17 @@ const ja: Partial<Record<TranslationKey, string>> = {
   recurringListDeleteConfirmDesc: '今後の予定もすべて削除されます (30 日後に完全削除)',
   recurringListProBadgeOverLimit: 'Free 上限超過',
   recurringRruleHumanCustom: 'カスタム',
+  // Sess82 PR-D: RecurrenceFormScreen + BottomCtaBar (= 新規作成 + 編集 動線)
+  recurringListCreateNewLabel: '+ 新規追加',
+  recurringCreateScreenTitle: '新規定期予定',
+  recurringEditScreenTitle: '定期予定を編集',
+  recurringCreateSaveLabel: '作成',
+  recurringEditSaveLabel: '保存',
+  recurringEditRuleNotFoundToast: 'この定期予定は削除されました',
+  recurringEditSavedToast: '変更を保存しました',
+  recurringEditSaveFailedToast: '保存に失敗しました',
+  recurringFormBonsaiLabel: '対象の盆栽',
+  recurringFormEventTypeLabel: '作業種別',
 };
 
 export default ja;

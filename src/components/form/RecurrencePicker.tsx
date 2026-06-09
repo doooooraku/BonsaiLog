@@ -33,7 +33,10 @@ export type RecurrenceValue = {
 export const DEFAULT_RECURRENCE_VALUE: RecurrenceValue = {
   enabled: false,
   preset: 'weeklyMonday',
-  endType: 'oneYear',
+  // Sess82 PR-D (ADR-0056 D4 改訂整合): default を 'oneYear' → 'never' に変更
+  // 業界整合 (Apple/Google/Things/Todoist/Outlook 全 5 件で default = なし)
+  // user 真意「ユーザーにとっては、永続的に登録される想定」
+  endType: 'never',
   endDate: null,
 };
 
