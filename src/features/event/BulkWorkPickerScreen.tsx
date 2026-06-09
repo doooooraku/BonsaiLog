@@ -104,12 +104,18 @@ export default function BulkWorkPickerScreen() {
       // - bonsai 情報は usePickerStore.bulkContext 経由 (= 既に setBulkContext 済、 全件 store 保持)
       // - URL param には eventType のみ載せて過大化回避
       // - RecurrenceFormScreen で usePickerStore.bulkContext.selectedBonsais を参照、 全件 Chip 表示
+      //
+      // Sess89 hotfix (2026-06-10): router.replace → router.push に変更。
+      // 真因 = replace だと履歴 entry を上書きするため、 RecurrenceFormScreen で 戻る tap 時に
+      // BulkWorkPicker (= 種別 grid) をスキップして BonsaiMultiSelect (or 「ふりかえり」 tab)
+      // まで一気に戻ってしまう UX 不整合。 push で履歴維持 → 戻る 1 タップで 種別選択画面に戻る、
+      // 業務プロ user が「種別だけ変えて作り直し」 動線が自然に成立。
       if (mode === 'recurring') {
         if (bonsaiIds.length === 0) {
           router.back();
           return;
         }
-        router.replace(`/recurring-rules/new?eventType=${type}` as Href);
+        router.push(`/recurring-rules/new?eventType=${type}` as Href);
         return;
       }
 
