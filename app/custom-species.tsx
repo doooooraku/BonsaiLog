@@ -1,17 +1,19 @@
 /**
- * F-08 カスタム樹種管理画面 (Sess89 Phase 2、 ADR-0049 ⑥ Grandfathered 緩 削除/編集 OK の構造実装)。
+ * F-08 カスタム樹種管理画面 (Sess89 Phase 2、 ADR-0049 ⑥ Grandfathered 緩 削除/編集 OK の構造実装、
+ * Sess91 PR-1 で /tags 同型の row 横並び layout + 共通 managerScreenStyles に統一)。
  *
  * 動線: ふりかえりタブ → 「樹種を管理」 card tap → 本画面
  *
  * 責務:
  * - カスタム樹種一覧 (createdAt ASC) + 使用件数 + 最終使用日
- * - 「+ 樹種を追加」 button → /custom-species/edit (add mode)
+ * - 「+ 樹種を追加」 button → /custom-species/edit (add mode、 JSX 側で `+ ` prefix)
  * - row 主部 tap → /custom-species/edit?id=xxx&initialName=yyy (edit mode)
  * - kebab (⋮) → RowActionMenu (= 編集 / 削除 2 択、 ADR-0036 D7 整合)
  * - 削除 → ConfirmDialog → deleteCustomSpecies + reload (= bonsai.custom_species_id ON DELETE SET NULL)
  *
- * 模倣 pattern:
- * - app/tags.tsx (= 一覧 + 件数 + 最終使用日)
+ * 模倣 pattern (= Sess91 PR-1 で SoT 化):
+ * - src/features/manager-screen/managerScreenStyles.ts (= 3 画面共通 styles SoT)
+ * - app/tags.tsx (= rowMain 横並び + rowMainTextWrap 構造)
  * - src/features/recurrence/RecurrenceListScreen.tsx (= kebab + RowActionMenu + ConfirmDialog)
  *
  * 注: master 5 種 (= SPECIES_SEED) は本画面に含めない (= 編集/削除不可、 picker でのみ表示)。
@@ -19,22 +21,22 @@
  */
 import { Stack, useFocusEffect, useNavigation, useRouter, type Href } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
-import { ChevronRightIcon, MoreVerticalIcon } from '@/src/components/icons';
+import { MoreVerticalIcon } from '@/src/components/icons';
 import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
 import { elapsedDaysFromIsoUtc, formatElapsedDays } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
   deleteCustomSpecies,
   getCustomSpeciesWithStats,
   type CustomSpeciesWithStats,
 } from '@/src/db/bonsaiSpeciesCustomRepository';
+import { managerScreenStyles as styles } from '@/src/features/manager-screen/managerScreenStyles';
 
 export default function CustomSpeciesManagerScreen() {
   const { t, lang } = useTranslation();
@@ -159,7 +161,8 @@ export default function CustomSpeciesManagerScreen() {
           style={styles.addBtn}
           onPress={openAdd}
         >
-          <ThemedText style={styles.addBtnText}>{t('customSpeciesAddCta')}</ThemedText>
+          {/* Sess91 PR-1: JSX 側で `+ ` prefix を統一 (= /tags pattern 同型、 i18n 値からは prefix 撤去)。 */}
+          <ThemedText style={styles.addBtnText}>+ {t('customSpeciesAddCta')}</ThemedText>
         </Pressable>
 
         {items.length === 0 && (
@@ -171,7 +174,7 @@ export default function CustomSpeciesManagerScreen() {
         {items.map((item) => (
           <View
             key={item.id}
-            style={[styles.row, { backgroundColor: c.surface, borderColor: c.border }]}
+            style={[styles.rowWithoutToggle, { backgroundColor: c.surface, borderColor: c.border }]}
           >
             <Pressable
               accessibilityRole="button"
@@ -180,14 +183,23 @@ export default function CustomSpeciesManagerScreen() {
               style={styles.rowMain}
               onPress={() => openEdit(item)}
             >
-              <ThemedText type="defaultSemiBold" style={{ color: c.text }}>
-                {item.name}
-              </ThemedText>
+              {/* Sess91 PR-1: /tags 同型の rowMainTextWrap 構造 (= 長文 name 時 flexShrink で
+                   stats と被らない、 PR-3 で master badge 拡張 余地)。 */}
+              <View style={styles.rowMainTextWrap}>
+                <ThemedText
+                  type="defaultSemiBold"
+                  style={{ color: c.text }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {item.name}
+                </ThemedText>
+              </View>
               <ThemedText
                 style={[
                   styles.rowStats,
                   { color: c.textSecondary },
-                  item.usageCount === 0 && { color: c.textMuted, fontStyle: 'italic' },
+                  item.usageCount === 0 && [styles.rowStatsUnused, { color: c.textMuted }],
                 ]}
               >
                 {buildStatsLabel(item)}
@@ -203,7 +215,8 @@ export default function CustomSpeciesManagerScreen() {
             >
               <MoreVerticalIcon size={20} color={c.textSecondary} />
             </Pressable>
-            <ChevronRightIcon size={16} color={c.textMuted} />
+            {/* Sess91 PR-1: 旧 右 ChevronRightIcon (size=16 vestigial 飾り chev) を物理削除。
+                 row 主部 tap は既に Pressable で配線済、 削除しても挙動変化なし。 */}
           </View>
         ))}
       </ScrollView>
@@ -229,42 +242,3 @@ export default function CustomSpeciesManagerScreen() {
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scroll: { padding: 16, gap: 12 },
-  // Sess90 PR-A: title style は body title 削除に伴い dead、 entry 撤去 (旧 marginBottom 4)。
-  desc: { fontSize: 13, marginBottom: 12, lineHeight: 18 },
-  addBtn: {
-    paddingVertical: 14,
-    minHeight: 56,
-    borderRadius: 14,
-    backgroundColor: BRAND_GREEN,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  addBtnText: { color: ON_BRAND, fontSize: 17, fontWeight: '600', letterSpacing: 0.5 },
-  empty: { textAlign: 'center', paddingVertical: 24 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    minHeight: 56,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 4,
-  },
-  rowMain: {
-    flex: 1,
-    minWidth: 0,
-    gap: 4,
-  },
-  rowStats: { fontSize: 12 },
-  kebabButton: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

@@ -1041,7 +1041,7 @@ const baseEn = {
   // Sess89 Phase 2: カスタム樹種 管理画面 + 編集画面 (= タグ管理 pattern 同型 + Recurring kebab pattern)
   customSpeciesManagerTitle: 'Manage species',
   customSpeciesManagerDesc: 'Add, rename, and delete custom species.',
-  customSpeciesAddCta: '+ Add species',
+  customSpeciesAddCta: 'Add species',
   customSpeciesEmpty: 'No custom species yet',
   customSpeciesUsageCountFormat: '{count} bonsai',
   customSpeciesLastUsedNever: 'unused',
@@ -1062,7 +1062,7 @@ const baseEn = {
   // Sess89 Phase 3: カスタム樹形 管理画面 + 編集画面 + 案 c atomic NULL cascade (= 「幻」 問題対応)
   customStylesManagerTitle: 'Manage styles',
   customStylesManagerDesc: 'Add, rename, and delete custom styles.',
-  customStylesAddCta: '+ Add style',
+  customStylesAddCta: 'Add style',
   customStylesEmpty: 'No custom styles yet',
   customStylesUsageCountFormat: '{count} bonsai',
   customStylesLastUsedNever: 'unused',

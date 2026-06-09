@@ -1040,7 +1040,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // Sess89 Phase 2: カスタム樹種 管理画面 + 編集画面 (= タグ管理 pattern 同型 + Recurring kebab pattern)
   customSpeciesManagerTitle: '樹種を管理',
   customSpeciesManagerDesc: 'カスタム樹種の追加・名前変更・削除を行います。',
-  customSpeciesAddCta: '+ 樹種を追加',
+  customSpeciesAddCta: '樹種を追加',
   customSpeciesEmpty: 'カスタム樹種はまだありません',
   customSpeciesUsageCountFormat: '{count} 件',
   customSpeciesLastUsedNever: '未使用',
@@ -1061,7 +1061,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // Sess89 Phase 3: カスタム樹形 管理画面 + 編集画面 + 案 c atomic NULL cascade (= 「幻」 問題対応)
   customStylesManagerTitle: '樹形を管理',
   customStylesManagerDesc: 'カスタム樹形の追加・名前変更・削除を行います。',
-  customStylesAddCta: '+ 樹形を追加',
+  customStylesAddCta: '樹形を追加',
   customStylesEmpty: 'カスタム樹形はまだありません',
   customStylesUsageCountFormat: '{count} 件',
   customStylesLastUsedNever: '未使用',
