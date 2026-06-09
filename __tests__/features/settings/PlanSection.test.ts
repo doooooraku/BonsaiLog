@@ -71,6 +71,13 @@ describe('PlanSection (Sess57 Repolog 風強化)', () => {
     expect(SRC).toContain("'paywallFeatureNoAds'");
   });
 
+  test('5c. Sess81 PR-9: ⑦ 定期予定行追加 (Pro 機能 6 → 7 行化、 ADR-0056 D7)', () => {
+    // ⑦ paywallFeatureRecurringRule (Free 3 件 / Pro 無制限)、 Sess81 PR-9 で追加
+    expect(SRC).toContain("'paywallFeatureRecurringRule'");
+    expect(SRC).toContain("'paywallFeatureRecurringRuleFreeValue'");
+    expect(SRC).toContain("'paywallFeatureRecurringRuleProValue'");
+  });
+
   test('6. Pro / Free 表示分岐 (isPro による条件レンダ)', () => {
     // bullet と CTA は Free 限定 (!isPro && ... の表現があること)
     expect(SRC).toMatch(/!isPro\s*&&/);

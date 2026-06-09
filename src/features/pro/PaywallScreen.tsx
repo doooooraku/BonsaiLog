@@ -262,6 +262,12 @@ export default function PaywallScreen() {
             free={t('paywallFeatureCustomSpeciesFreeValue')}
             pro={t('paywallFeatureCustomSpeciesProValue')}
           />
+          {/* ⑦ 定期予定 (Free 3 件 / Pro 無制限、 Sess81 PR-9、 ADR-0056 D7) */}
+          <FeatureRow
+            label={t('paywallFeatureRecurringRule')}
+            free={t('paywallFeatureRecurringRuleFreeValue')}
+            pro={t('paywallFeatureRecurringRuleProValue')}
+          />
         </View>
 
         {!hideSubscriptions && (
