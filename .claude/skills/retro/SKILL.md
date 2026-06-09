@@ -179,6 +179,46 @@ done | sort -n | head -10
 
 > グローバル `/memory-review`（Engram 対象・全プロジェクト共用）とは別物。本ステップは BonsaiLog のハーネス（ADR / R ルール）専用。手作業が 2 回以上再発したら `scripts/harness-inventory.mjs` への昇華を検討（既存の昇華方針）。
 
+### Step 10: Doc 棚卸し (削る側、 Phase 3 計測データ駆動)
+
+Step 9 (= ADR / R ルール対象) の **補完**として、 Doc 全般 (lessons / memory / how-to / explanation / skills / hooks 等) の棚卸を **PR1/PR2 計測データ駆動** で 回す。 **完全自動判定せず、 候補列挙 → user の 7 分類 判定 → ADR-0046 D-2 4 step** の流れを 維持 (R-11 整合)。
+
+#### 1. 計測データ確認
+
+```bash
+pnpm metrics:doc-baseline                           # 全期間 baseline (= PR1 #1039、 過去 transcript 集計)
+pnpm metrics:doc-30day-zero --days=30 --with-grep   # 過去 30 日 0-reads + 被参照件数 grep
+```
+
+出力:
+- `.claude/metrics/baseline-reads.csv` (= 全 doc の Read 頻度)
+- stdout に Markdown table (= 過去 N 日 0-reads 候補)
+
+#### 2. 7 分類 user 判定 (= 参考ガイド、 機械化しない)
+
+「読まれてない」 = 「不要」 と短絡判断しない。 7 つの理由を 1 件ずつ検討:
+
+| 分類 | 該当する場合 | アクション |
+|------|-------------|-----------|
+| **A 役目終** | superseded ADR / 廃止機能 lessons | retire (= D-2 実行) |
+| **B 眠ってる** | 災害復旧 / 法務 / 移行手順 (= 平時は不要、 緊急時に必須) | **keep** (= 索引確認のみ) |
+| **C 内在化** | 行動に反映済、 個別 Read 不要 (= Claude が暗黙知化) | keep (= 索引整理可) |
+| **D 索引漏れ** | リンク切れ孤児 (= 有用なのに到達できない) | **索引修復** |
+| **E 読ませたい** | 既存 feedback loop で 違反検出済 (= ESLint / hook / verify) | hint 強化 候補 |
+| **F 歴史的価値** | retro / 撤回案 (= 同じ罠を踏まないための証拠) | archive 階層分離 |
+| **G 検索バイアス** | 良 doc だが grep hit せず (= tag / 索引設計の問題) | tag 修復 |
+
+**1 ペルソナでも ✕ は再検討** (R-10 整合)。 「読まれてない」 だけで A と決めつけない。
+
+#### 3. A 確定候補のみ ADR-0046 D-2 (= 4 step) 実行
+
+1. **影響 grep** (= `--with-grep` で 自動化済の数字を確認)
+2. **user 承認** (= 判断材料 = 被参照件数 + 7 分類 + 代替の有無)
+3. **Status 変更** (= `Deprecated` / `Superseded by [後継]`、 番号保持、 物理削除 NG)
+4. **後継リンク** (= Superseded の場合のみ)
+
+> グローバル `/memory-review` とは 別物。 Step 10 は BonsaiLog 内 Doc 全般専用 (= Step 9 が ADR/R、 Step 10 が それ以外の Doc)。 同様に「手作業が 2 回以上再発したら 構造化を検討」 (R-46 整合)。
+
 ---
 
 ## 出力フォーマット
