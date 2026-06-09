@@ -998,7 +998,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   recurringListProBadgeOverLimit: 'Over Free limit',
   recurringRruleHumanCustom: 'Custom',
   // Sess82 PR-D: RecurrenceFormScreen + BottomCtaBar (= 新規作成 + 編集 動線)
-  recurringListCreateNewLabel: '+ New',
+  recurringListCreateNewLabel: 'New',
   recurringCreateScreenTitle: 'New recurring schedule',
   recurringEditScreenTitle: 'Edit recurring schedule',
   recurringCreateSaveLabel: 'Create',

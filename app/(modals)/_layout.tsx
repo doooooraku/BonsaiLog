@@ -24,8 +24,15 @@ export default function ModalsLayout() {
   const { t } = useTranslation();
 
   // Sess16 PR-A1: mode URL param で nav title を切替 (log → 作業を記録 / schedule → 予定を追加)
+  // Sess84 follow-up: mode='recurring' case 追加 (= Sess82 PR-D #1013 で追加された定期予定新規動線)、
+  // 既存 i18n key recurringCreateScreenTitle (= ja「新規定期予定」) 流用、 副次発見 #2 解消。
   const workTitleFor = (mode: unknown): string => {
-    const key: TranslationKey = mode === 'schedule' ? 'addScheduleTitle' : 'workPickerTitle';
+    const key: TranslationKey =
+      mode === 'recurring'
+        ? 'recurringCreateScreenTitle'
+        : mode === 'schedule'
+          ? 'addScheduleTitle'
+          : 'workPickerTitle';
     return t(key);
   };
 
