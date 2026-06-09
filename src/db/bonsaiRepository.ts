@@ -216,6 +216,62 @@ export async function getAllActiveBonsaiWithSpecies(
   return results;
 }
 
+/**
+ * 指定 custom species ID を使う 盆栽 を 樹種付きで取得 (Sess91 PR-3、 /custom-species inline 展開用)。
+ *
+ * - bonsai.custom_species_id FK 検索 (= ON DELETE SET NULL 由来、 v14 schema)
+ * - active のみ (archived_at IS NULL)、 updated_at DESC
+ * - master species (b.speciesId) は基本 null (= 設計上 custom と排他)、 念のため getSpeciesById 経由
+ *
+ * 注: tags の `getAllActiveBonsaiWithSpecies(lang, { tagIds })` Sess9 PR-10 と思想同型、
+ *     管理画面 row toggle ▶/▼ → 関連盆栽 inline 表示 pattern を 3 画面共通化 (R-76 SoT)。
+ */
+export async function getAllActiveBonsaiByCustomSpeciesId(
+  customSpeciesId: string,
+  locale: string,
+): Promise<BonsaiWithSpecies[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<Record<string, unknown>>(
+    'SELECT * FROM bonsai WHERE archived_at IS NULL AND custom_species_id = ? ORDER BY updated_at DESC;',
+    [customSpeciesId],
+  );
+  const bonsai = snakeToCamelRows<Bonsai>(rows);
+  const results: BonsaiWithSpecies[] = [];
+  for (const b of bonsai) {
+    const species = b.speciesId ? await getSpeciesById(b.speciesId, locale) : null;
+    results.push({ ...b, species });
+  }
+  return results;
+}
+
+/**
+ * 指定 style 名 (raw text) を使う 盆栽 を 樹種付きで取得 (Sess91 PR-3、 /custom-styles inline 展開用)。
+ *
+ * - bonsai.style raw text 完全一致検索 (= ADR-0026 raw text 設計、 案 c atomic NULL cascade)
+ * - active のみ、 updated_at DESC
+ * - master style (BONSAI_STYLES enum) でも custom style 名でも 同じ raw text 一致で動作
+ *
+ * 注: master 樹形 5 種は本関数で取得可能だが、 /custom-styles 画面では master を一覧に含めない
+ *     (= 既存設計通り)、 呼出側は custom 樹形のみ pass する。
+ */
+export async function getAllActiveBonsaiByStyleName(
+  styleName: string,
+  locale: string,
+): Promise<BonsaiWithSpecies[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<Record<string, unknown>>(
+    'SELECT * FROM bonsai WHERE archived_at IS NULL AND style = ? ORDER BY updated_at DESC;',
+    [styleName],
+  );
+  const bonsai = snakeToCamelRows<Bonsai>(rows);
+  const results: BonsaiWithSpecies[] = [];
+  for (const b of bonsai) {
+    const species = b.speciesId ? await getSpeciesById(b.speciesId, locale) : null;
+    results.push({ ...b, species });
+  }
+  return results;
+}
+
 // ---------------------------------------------------------------------------
 // 更新
 // ---------------------------------------------------------------------------
