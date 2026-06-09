@@ -386,3 +386,32 @@ pnpm dev
 - (a) Claude Code の EnterWorktree tool に PostCreate hook で `worktree-init.sh` 自動実行 (今は手動)
 - (b) `.claude/hooks/check-worktree-init.mjs` で worktree 内 `pnpm dev` 直前に `.env` / `node_modules` 存在チェック (= 罠の事前検出)
 - 本 PR scope では (a)(b) 共に保留、 manual run + R-64 で運用
+
+---
+
+## 11. Node version の正確な指定 (Sess82 PR-E R-61 適用)
+
+### 目的
+
+Sess81 (2026-06-09) で Claude が ローカル開発で Node 20 を使用、 `.nvmrc=22` 不一致で `pnpm test` が SQLite native module で 113 tests 誤検知 fail。 構造再発防止のため `pnpm verify:node` を `pnpm verify` 冒頭に配線。
+
+### 仕組み
+
+```bash
+pnpm verify:node           # .nvmrc と node --version 一致 verify、 mismatch なら exit 1
+pnpm verify                # 冒頭で verify:node を実行
+```
+
+`scripts/dev/check-node-version.mjs` が `.nvmrc` (= `22`) と `process.version` (= 現 node) を比較、 メジャー version 一致なら OK (= patch 違いは許容)。
+
+### 開発者の選択肢 (= mismatch 時の対処)
+
+1. **nvm (推奨)**: `nvm install 22 && nvm use 22`、 `~/.nvmrc` か `~/.bashrc` で `cd` 時に自動切替設定
+2. **corepack** (= Node 同梱、 別途インストール不要): `corepack pnpm install` で起動
+3. **PATH 直接指定** (= Claude / WSL2 pattern): `PATH=/usr/bin:/bin:$HOME/.nvm/versions/node/v22.22.2/bin:$PATH pnpm verify`
+4. **direnv** (= 業界標準、 未導入): `.envrc` で `use node` 指定、 `cd` 時に自動切替
+
+### Sess81 教訓
+
+- `~/.claude/rules/wsl2-environment.md` (= user global) が Sess1-2 (2026-04) の Node 20 LTS 時代の指示のまま、 `.nvmrc=22` 更新時に同期されていなかった
+- Sess82 PR-E で本 chapter + `pnpm verify:node` 配線 + `wsl2-environment.md` 動的読み込み pattern で構造解決
