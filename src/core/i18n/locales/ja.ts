@@ -1017,6 +1017,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   recurringEditSaveFailedToast: '保存に失敗しました',
   recurringFormBonsaiLabel: '対象の盆栽',
   recurringFormEventTypeLabel: '作業種別',
+  bulkPickerSheetSubLogSingle: '{name} に作業を記録',
+  bulkPickerSheetSubScheduleSingle: '{name} に予定を追加',
+  bulkPickerAutoSelectedHint: '自動選択',
 };
 
 export default ja;

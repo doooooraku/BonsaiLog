@@ -1018,6 +1018,9 @@ const baseEn = {
   recurringEditSaveFailedToast: 'Failed to save',
   recurringFormBonsaiLabel: 'Bonsai',
   recurringFormEventTypeLabel: 'Work type',
+  bulkPickerSheetSubLogSingle: 'Log care for {name}',
+  bulkPickerSheetSubScheduleSingle: 'Add a schedule for {name}',
+  bulkPickerAutoSelectedHint: 'Auto-selected',
 };
 
 export type TranslationKey = keyof typeof baseEn;
