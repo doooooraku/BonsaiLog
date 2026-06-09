@@ -20,6 +20,7 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { CheckIcon } from '@/src/components/icons';
 import { useToastStore } from '@/src/components/Toast';
 // Sess80 PR-6.5 ADR-0056: schedule mode 1 タップ動線完全復活、 Sess79 PR-6 退化を 部分 revert。
 // toLocalDateKey は Sess67 PR #942 で core/datetime に SoT 移動済、 ESLint boundaries 違反なし。
@@ -52,7 +53,21 @@ export default function BulkWorkPickerScreen() {
   // Sess80 PR-6.5 ADR-0056: 1 タップ動線復活で 重複 tap 防止 state 必要 (Sess79 PR-6 で 一旦削除)
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const subKey: TranslationKey = mode === 'log' ? 'bulkPickerSheetSubLog' : 'bulkPickerSheetSub';
+  // Sess83 ADR-0025 §7 Notes Amended (R-68 起票): 1 件 case の表現契約 = 「同じ」 文言の
+  // compositional 違和感 (1 件 case で「同じ」 は文法成立せず) + chip 視覚曖昧化を解消するため、
+  // count=1 時は専用 i18n key (...Single) + 盆栽名直接埋込 + CheckIcon + 「自動選択」 hint。
+  // 2 件以上は既存挙動完全維持 (デグレなし)、 mode=recurring も schedule key 共有で同時解消。
+  const isSingle = selectedBonsais.length === 1;
+  const subKey: TranslationKey = isSingle
+    ? mode === 'log'
+      ? 'bulkPickerSheetSubLogSingle'
+      : 'bulkPickerSheetSubScheduleSingle'
+    : mode === 'log'
+      ? 'bulkPickerSheetSubLog'
+      : 'bulkPickerSheetSub';
+  const subText = isSingle
+    ? t(subKey).replace('{name}', selectedBonsais[0]?.name ?? '')
+    : t(subKey).replace('{count}', String(selectedBonsais.length));
 
   // Sess16 PR-B1: cell tap で即遷移 (複数作業対応削除、 user 真意「単一作業のみ」)。
   const handleSelect = React.useCallback(
@@ -108,9 +123,7 @@ export default function BulkWorkPickerScreen() {
       testID="e2e_bulk_work_picker_screen"
     >
       <View style={styles.header}>
-        <ThemedText style={[styles.sub, { color: c.text }]}>
-          {t(subKey).replace('{count}', String(selectedBonsais.length))}
-        </ThemedText>
+        <ThemedText style={[styles.sub, { color: c.text }]}>{subText}</ThemedText>
       </View>
       <View style={[styles.chipsRow, { borderBottomColor: c.border }]}>
         {selectedBonsais.map((b) => (
@@ -118,12 +131,23 @@ export default function BulkWorkPickerScreen() {
             key={b.id}
             style={[styles.chip, { backgroundColor: c.surface, borderColor: c.border }]}
           >
+            {isSingle ? <CheckIcon size={14} color={c.tint} /> : null}
             <ThemedText style={[styles.chipText, { color: c.text }]} numberOfLines={1}>
               {b.name}
             </ThemedText>
           </View>
         ))}
       </View>
+      {isSingle ? (
+        <View style={styles.autoSelectedHintRow} testID="e2e_bulk_work_picker_auto_selected_hint">
+          <ThemedText
+            style={[styles.autoSelectedHintText, { color: c.textSecondary }]}
+            accessibilityRole="text"
+          >
+            {t('bulkPickerAutoSelectedHint')}
+          </ThemedText>
+        </View>
+      ) : null}
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.grid}>
           {BULK_WORK_TYPES.map((type) => (
@@ -162,6 +186,10 @@ const styles = StyleSheet.create({
   chip: {
     // Sess18 PR-11: design_system §4 (spacing 8/12) + §5 (borderRadius 16) 整合。
     // BulkLogConfirm の chip と完全 1:1 統一 (両画面で同じデータの 2 つ画面表示の整合)。
+    // Sess83 ADR-0025 §7 Notes Amended: 1 件 case で CheckIcon + 盆栽名 を 横並びにするため
+    // flexDirection: 'row' + gap: 4 を追加 (2 件以上 case でも layout 不変、 icon 不在で gap 無効)。
+    flexDirection: 'row',
+    gap: 4,
     paddingVertical: 4,
     paddingHorizontal: 12, // 旧 10 → 12 (spacing token 整合)
     borderRadius: 16, // 旧 18 → 16 (design_system §5 カード用途)
@@ -172,6 +200,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chipText: { fontSize: 12, fontWeight: '500', flexShrink: 1 },
+  // Sess83 ADR-0025 §7 Notes Amended: 1 件 case 専用の「自動選択」 hint row。
+  // chipsRow 下、 body grid 上に配置 (= chip と grid の間に 1 行 cue を挟む)。
+  autoSelectedHintRow: {
+    paddingHorizontal: 16,
+    paddingTop: 6,
+    paddingBottom: 4,
+    alignItems: 'center',
+  },
+  autoSelectedHintText: { fontSize: 12 },
   body: { padding: 16, paddingBottom: 16, gap: 16 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   cell: {
