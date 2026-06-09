@@ -29,7 +29,6 @@ import {
   TEXT_SECONDARY,
 } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
-import { getDb } from '@/src/db/db';
 import { isPresetTagName } from '@/src/db/seedTagPresets';
 import {
   canCreateNewTag,
@@ -179,30 +178,9 @@ export default function TagEditScreen() {
     }
   };
 
-  const handleDelete = () => {
-    if (!isEditMode || tagId == null) return;
-    // Sess9 PR-8: 使用中タグ削除は影響範囲明示 (Linear / Notion パターン)
-    const body =
-      usageCount > 0
-        ? t('tagDeleteImpactBody')
-            .replace('{name}', initialName)
-            .replace('{count}', String(usageCount))
-        : t('tagsDeleteConfirmBody').replace('{name}', initialName);
-    Alert.alert(t('tagsDeleteConfirmTitle'), body, [
-      { text: t('cancel'), style: 'cancel' },
-      {
-        text: t('delete'),
-        style: 'destructive',
-        onPress: () => {
-          void (async () => {
-            const db = await getDb();
-            await db.runAsync('DELETE FROM tags WHERE id = ?', [tagId]);
-            router.back();
-          })();
-        },
-      },
-    ]);
-  };
+  // Sess91 PR-2: 旧 handleDelete (Alert.alert + 直 SQL `db.runAsync('DELETE FROM tags...')`)
+  // を完全削除。 削除動線は /tags 一覧 kebab → RowActionMenu → ConfirmDialog → deleteTag()
+  // (= tagRepository.ts に新規 extract) の統一動線に一本化 (ADR-0036 D7 整合)。
 
   const canSubmit = input.trim().length > 0 && !busy;
   const submitLabel = isEditMode ? t('tagEditUpdateCta') : t('tagEditAddCta');
@@ -251,18 +229,9 @@ export default function TagEditScreen() {
           <ThemedText style={styles.primaryBtnText}>{submitLabel}</ThemedText>
         </Pressable>
 
-        {isEditMode && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('tagEditDeleteCta')}
-            testID="e2e_tag_edit_delete"
-            style={styles.deleteBtn}
-            onPress={handleDelete}
-          >
-            <ThemedText style={styles.deleteBtnText}>{t('tagEditDeleteCta')}</ThemedText>
-          </Pressable>
-        )}
-
+        {/* Sess91 PR-2: 旧 isEditMode 時 delete button (= t('tagEditDeleteCta')) を完全削除。
+             削除動線は /tags 一覧 kebab → RowActionMenu → ConfirmDialog → deleteTag() 経由に
+             一本化 (ADR-0036 D7 整合、 /custom-* 同型)。 */}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('cancel')}
@@ -317,13 +286,8 @@ const styles = StyleSheet.create({
   },
   primaryBtnDisabled: { backgroundColor: DISABLED_BG },
   primaryBtnText: { color: ON_BRAND, fontSize: 17, fontWeight: '600', letterSpacing: 0.5 },
-  deleteBtn: {
-    marginTop: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  deleteBtnText: { color: '#B33B3B', fontSize: 15, fontWeight: '500' },
+  // Sess91 PR-2: 旧 deleteBtn / deleteBtnText style は handleDelete + delete button 物理削除に
+  // 伴い dead、 entry 撤去 (= hex literal '#B33B3B' lint warning 1 件も同時解消)。
   cancelBtn: {
     marginTop: 8,
     paddingVertical: 12,

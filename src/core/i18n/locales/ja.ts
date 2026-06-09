@@ -664,7 +664,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tagEditNameLabel: 'タグ名',
   tagEditAddCta: '追加',
   tagEditUpdateCta: '変更',
-  tagEditDeleteCta: 'このタグを削除',
   settingsTagsCountValue: '{count} 件',
   lookBackCardTagsTitle: 'タグを管理',
   lookBackCardTagsDesc: 'タグの追加・名前変更 / 各タグの使用数を確認',

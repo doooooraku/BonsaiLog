@@ -23,7 +23,9 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { ChevronRightIcon } from '@/src/components/icons';
+import { ConfirmDialog } from '@/src/components/ConfirmDialog';
+import { ChevronRightIcon, MoreVerticalIcon } from '@/src/components/icons';
+import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
 import { useToastStore } from '@/src/components/Toast';
 import {
   elapsedDaysFromIsoUtc,
@@ -37,7 +39,7 @@ import { TEXT_MUTED, TEXT_PRIMARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { isPresetTagName } from '@/src/db/seedTagPresets';
-import { getTagsWithStats, type TagWithStats } from '@/src/db/tagRepository';
+import { deleteTag, getTagsWithStats, type TagWithStats } from '@/src/db/tagRepository';
 import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCard';
 import { buildBonsaiCardData } from '@/src/features/bonsai/cardDataBuilder';
 // Sess91 PR-1: 3 画面共通 styles SoT (= /tags、 /custom-species、 /custom-styles)。
@@ -65,6 +67,11 @@ export default function TagsManagerScreen() {
   const [expandAll, setExpandAll] = React.useState(false);
   const [expandedBonsai, setExpandedBonsai] = React.useState<BonsaiCardData[]>([]);
   const [loadingBonsai, setLoadingBonsai] = React.useState(false);
+  // Sess91 PR-2: kebab → RowActionMenu + ConfirmDialog (ADR-0036 D7 整合、 /custom-* 同型)。
+  // /tag-edit 内 delete button は本 PR で完全削除、 削除動線を本一覧 kebab に一本化。
+  const [kebabTarget, setKebabTarget] = React.useState<TagWithStats | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<TagWithStats | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   const reload = React.useCallback(async () => {
     const rows = await getTagsWithStats();
@@ -78,8 +85,59 @@ export default function TagsManagerScreen() {
       setExpandedTagId(null);
       setExpandAll(false);
       setExpandedBonsai([]);
+      setKebabTarget(null);
     }, [reload]),
   );
+
+  // Sess91 PR-2: kebab → 削除 ConfirmDialog 動線 (/custom-* 同型 pattern)。
+  const handleDeleteRequest = (tag: TagWithStats) => {
+    setDeleteTarget(tag);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget || isDeleting) return;
+    setIsDeleting(true);
+    try {
+      await deleteTag(deleteTarget.id);
+      setDeleteTarget(null);
+      await reload();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    if (isDeleting) return;
+    setDeleteTarget(null);
+  };
+
+  const kebabItems: readonly RowActionMenuItem[] = kebabTarget
+    ? [
+        {
+          key: 'edit',
+          label: t('rowActionMenuEdit'),
+          onPress: () => openEdit(kebabTarget),
+          testID: `e2e_tags_kebab_edit_${kebabTarget.id}`,
+        },
+        {
+          key: 'delete',
+          label: t('rowActionMenuDelete'),
+          destructive: true,
+          onPress: () => handleDeleteRequest(kebabTarget),
+          testID: `e2e_tags_kebab_delete_${kebabTarget.id}`,
+        },
+      ]
+    : [];
+
+  // Sess91 PR-2: 削除 ConfirmDialog 文言 (= /tag-edit handleDelete 旧 Alert.alert 文言を再利用)。
+  const deleteDialogTitle = deleteTarget ? t('tagsDeleteConfirmTitle') : '';
+  const deleteDialogBody = deleteTarget
+    ? deleteTarget.usageCount > 0
+      ? t('tagDeleteImpactBody')
+          .replace('{name}', deleteTarget.name)
+          .replace('{count}', String(deleteTarget.usageCount))
+      : t('tagsDeleteConfirmBody').replace('{name}', deleteTarget.name)
+    : '';
 
   const openAdd = () => {
     router.push('/tag-edit' as Href);
@@ -251,6 +309,20 @@ export default function TagsManagerScreen() {
                     {buildStatsLabel(tg)}
                   </ThemedText>
                 </Pressable>
+                {/* Sess91 PR-2: kebab (⋮) → RowActionMenu (= 編集 / 削除 2 択、 ADR-0036 D7 整合)。
+                     master tag は rename/削除不可なので kebab 非表示 (= 既存 Sess74 PR-2 ロック整合)。 */}
+                {!isMaster && (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('rowActionMenuEdit') + ' / ' + t('rowActionMenuDelete')}
+                    style={styles.kebabButton}
+                    hitSlop={8}
+                    onPress={() => setKebabTarget(tg)}
+                    testID={`e2e_tags_kebab_${tg.id}`}
+                  >
+                    <MoreVerticalIcon size={20} color={c.textSecondary} />
+                  </Pressable>
+                )}
               </View>
 
               {isExpanded && (
@@ -291,6 +363,28 @@ export default function TagsManagerScreen() {
           );
         })}
       </ScrollView>
+
+      {/* Sess91 PR-2: kebab → RowActionMenu (= 編集 / 削除 2 択、 ADR-0036 D7 整合)。 */}
+      <RowActionMenu
+        visible={kebabTarget !== null}
+        items={kebabItems}
+        onDismiss={() => setKebabTarget(null)}
+        testID="e2e_tags_kebab_menu"
+      />
+
+      {/* Sess91 PR-2: 削除 ConfirmDialog (= /tag-edit handleDelete 旧 Alert.alert 置換、
+           /custom-* 同型 pattern)。 */}
+      <ConfirmDialog
+        visible={deleteTarget !== null}
+        title={deleteDialogTitle}
+        description={deleteDialogBody}
+        confirmLabel={t('delete')}
+        cancelLabel={t('cancel')}
+        destructive
+        onConfirm={() => void handleDeleteConfirm()}
+        onCancel={handleDeleteCancel}
+        testID="e2e_tags_delete_dialog"
+      />
     </ThemedView>
   );
 }

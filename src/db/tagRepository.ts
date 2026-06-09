@@ -212,6 +212,27 @@ export async function canCreateNewTag(rawName: string, isPro: boolean): Promise<
 }
 
 /**
+ * タグを物理削除 (Sess91 PR-2 で新規 extract、 R-72 master/custom CRUD pattern SoT 整合)。
+ *
+ * - bonsai_tags M:N 中間 row を先に削除 (= schema v9 で ON DELETE CASCADE が無い場合の safety)
+ * - tags row を削除
+ * - 30 日ゴミ箱対象外 (タグは event/photo と違い restore 動線なし、 Sess9 設計判断)
+ *
+ * 旧実装 = app/tag-edit.tsx handleDelete 内の `db.runAsync('DELETE FROM tags WHERE id = ?', [tagId])`
+ * 直接 SQL。 本 PR で repository 関数に extract、 /tags 一覧 kebab → ConfirmDialog → 本関数 経由の
+ * 統一動線に統合 (ADR-0036 D7 整合)。
+ *
+ * 業界事例: タグ系 SaaS (Linear / Notion / Bear) は タグ削除 = bonsai_tags cascade + 一覧戻り pattern。
+ *
+ * @param tagId 削除するタグの ID
+ */
+export async function deleteTag(tagId: string): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM bonsai_tags WHERE tag_id = ?', [tagId]);
+  await db.runAsync('DELETE FROM tags WHERE id = ?', [tagId]);
+}
+
+/**
  * 指定タグが attach されている盆栽の件数を返す (Sess9 PR-8、 rename/削除影響範囲警告用)。
  *
  * 業界事例: Linear Label delete confirmation pattern。
