@@ -33,6 +33,7 @@ import { ThemedView } from '@/components/themed-view';
 import {
   ChevronRightIcon,
   DownloadIcon,
+  RepeatIcon,
   SearchIcon,
   TagIcon,
   WireIcon,
@@ -42,7 +43,7 @@ import { useColors } from '@/src/core/theme/useColors';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 
 type CardDef = {
-  key: 'wiring' | 'search' | 'tags' | 'export';
+  key: 'wiring' | 'search' | 'tags' | 'recurring' | 'export';
   title: string;
   desc: string;
   Icon: typeof WireIcon;
@@ -84,6 +85,16 @@ export default function LookBackHubScreen() {
       desc: t('lookBackCardTagsDesc'),
       Icon: TagIcon,
       onPress: () => router.push('/tags' as Href),
+    },
+    // Sess81 PR-7.5 (ADR-0035 D9 部分 revert、 ADR-0056 D R-67): 「🔁 定期予定を管理」 5 カード目。
+    // Sess23 D9 真因 (= 「カレンダー card 重複動線」) に抵触しない (= 定期予定管理は tab で
+    // 賄えない新画面、 重複動線にならない)。 タブ名「ふりかえり」 keep (Sess80-Sess81 Q1=B 確定)。
+    {
+      key: 'recurring',
+      title: t('recurringHubCardTitle'),
+      desc: t('recurringHubCardDesc'),
+      Icon: RepeatIcon,
+      onPress: () => router.push('/recurring-rules' as Href),
     },
     // Sess49 追補3: エクスポート動線 (設定からのみ → 発見性向上)。Pro 限定のため PRO バッジ。
     {

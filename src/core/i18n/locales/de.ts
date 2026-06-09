@@ -981,5 +981,20 @@ const de: Partial<Record<TranslationKey, string>> = {
   recurringRuleEditScopeFollowing: 'This and following events',
   recurringRuleEditScopeAll: 'All events',
   recurringEventBadgeLabel: 'Recurring event',
+  // Sess81 PR-7.5: LookBackHub 5th card + RecurrenceListScreen
+  recurringHubCardTitle: '🔁 Manage recurring schedules',
+  recurringHubCardDesc: 'Manage rules like weekly Monday watering',
+  recurringListScreenTitle: 'Recurring schedules',
+  recurringListEmptyTitle: 'No recurring schedules yet',
+  recurringListEmptyDesc: 'Create one from the Plan tab "🔁 Repeat" toggle',
+  recurringListItemNextOccurrence: 'Next: {date}',
+  recurringListItemEndDate: 'until {date}',
+  recurringListItemEndDateNever: 'No end date',
+  recurringListItemDeletedBonsai: '(deleted bonsai)',
+  recurringListDeleteConfirmTitle: 'Delete this recurring schedule?',
+  recurringListDeleteConfirmDesc:
+    'All future events will be deleted (30 days until permanent deletion)',
+  recurringListProBadgeOverLimit: 'Over Free limit',
+  recurringRruleHumanCustom: 'Custom',
 };
 export default de;

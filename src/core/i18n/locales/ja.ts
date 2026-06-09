@@ -992,6 +992,20 @@ const ja: Partial<Record<TranslationKey, string>> = {
   recurringRuleEditScopeFollowing: 'これ以降すべて',
   recurringRuleEditScopeAll: 'すべて',
   recurringEventBadgeLabel: '定期予定',
+  // Sess81 PR-7.5: LookBackHub 5 card 目 + RecurrenceListScreen 用
+  recurringHubCardTitle: '🔁 定期予定を管理',
+  recurringHubCardDesc: '毎週月曜の水やり等のルールを管理',
+  recurringListScreenTitle: '定期予定の管理',
+  recurringListEmptyTitle: '定期予定はまだありません',
+  recurringListEmptyDesc: '予定タブから「🔁 繰り返し」 で 作成できます',
+  recurringListItemNextOccurrence: '次回: {date}',
+  recurringListItemEndDate: '〜 {date}',
+  recurringListItemEndDateNever: '終了日なし',
+  recurringListItemDeletedBonsai: '(削除済の盆栽)',
+  recurringListDeleteConfirmTitle: 'この定期予定を削除しますか?',
+  recurringListDeleteConfirmDesc: '今後の予定もすべて削除されます (30 日後に完全削除)',
+  recurringListProBadgeOverLimit: 'Free 上限超過',
+  recurringRruleHumanCustom: 'カスタム',
 };
 
 export default ja;
