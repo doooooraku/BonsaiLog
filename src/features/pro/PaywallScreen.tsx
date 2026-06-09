@@ -40,6 +40,8 @@ import {
 import { useProStore } from '@/src/stores/proStore';
 
 // F-13 Phase 2c-2 (Issue #20, ADR-0009 AC8): RC エラーコードを UI 文言キーにマッピング
+// Sess81: offeringsEmpty を追加 (= RC Offerings null or Package not found のとき
+// 「ストア準備中」 と前向きに伝える、 `purchaseFailed` 万能エラー回避)。
 const PURCHASE_ERROR_MESSAGE_KEY: Record<
   Exclude<PurchaseErrorKind, 'cancelled'>,
   TranslationKey
@@ -49,6 +51,7 @@ const PURCHASE_ERROR_MESSAGE_KEY: Record<
   alreadyPurchased: 'purchaseErrorAlreadyPurchased',
   storeProblem: 'purchaseErrorStoreProblem',
   notAllowed: 'purchaseErrorNotAllowed',
+  offeringsEmpty: 'purchaseErrorOfferingsEmpty',
   unknown: 'purchaseFailed',
 };
 
@@ -142,7 +145,10 @@ export default function PaywallScreen() {
 
   const priceLabel = (plan: PlanType) => {
     if (loadingPrices) return t('priceLoading');
-    return priceDetails?.[plan]?.priceString ?? t('priceUnavailable');
+    // Sess81: priceDetails 自体が null = `getOfferings()` 失敗 (RC Dashboard 未設定 or
+    // 24h プロパゲーション中)。 全 plan で同じ「ストア準備中」 文言に切替えてテスター混乱回避。
+    if (!priceDetails) return t('priceUnavailableStorePreparing');
+    return priceDetails[plan]?.priceString ?? t('priceUnavailable');
   };
 
   const proStateLabel = isPro
