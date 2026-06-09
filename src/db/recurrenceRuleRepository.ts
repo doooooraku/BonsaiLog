@@ -186,6 +186,33 @@ export async function listActiveRecurrenceRules(): Promise<RecurrenceRuleRow[]> 
 }
 
 /**
+ * 指定 rule の 次回予定日 (= 最も近い未来の planned event の occurred_at_utc) を 取得。
+ *
+ * Sess82 PR-B で 追加 (= RecurrenceListScreen の表示要素再設計、 「次回 yyyy-mm-dd」 表示用)。
+ * 既存の 8 週分 eager 展開済 events を 参照するだけで O(log N)、 expandRRule 再実行不要。
+ *
+ * - 未来 1 件以上: MIN(occurred_at_utc) を 返す
+ * - 全て過去 / 全て exdate / rule 削除済: null を 返す
+ *
+ * @param ruleId 対象 rule ID
+ * @param nowUtcIso 「今」 の ISO 文字列 (= 通常 `nowUtc()`、 test mock 容易化のため引数化)
+ * @returns 次回予定日 occurred_at_utc (ISO 8601 UTC) or null
+ */
+export async function getNextOccurrence(ruleId: string, nowUtcIso: string): Promise<string | null> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ next_at: string | null }>(
+    `SELECT MIN(occurred_at_utc) AS next_at
+     FROM events
+     WHERE recurrence_rule_id = ?
+       AND status = 'planned'
+       AND occurred_at_utc >= ?
+       AND deleted_at IS NULL;`,
+    [ruleId, nowUtcIso],
+  );
+  return row?.next_at ?? null;
+}
+
+/**
  * 新規 rule 作成可否 (Pro 境界判定、 ADR-0056 D7 + Grandfathered 戦略整合)。
  *
  * - Pro user: 常に true
@@ -280,6 +307,78 @@ export async function expandFutureEventsForAllActiveRules(): Promise<number> {
     }
   }
   return insertedCount;
+}
+
+/**
+ * 指定 ID の rule を 取得 (= 編集画面の初期値ロード用、 Sess82 PR-D 追加)。
+ *
+ * - rule 存在 + deleted_at IS NULL: RecurrenceRuleRow を返す
+ * - rule 存在しない or 削除済: null を返す (= caller で router.back() + Toast 用)
+ *
+ * @param id ULID
+ * @returns RecurrenceRuleRow or null
+ */
+export async function getRecurrenceRuleById(id: string): Promise<RecurrenceRuleRow | null> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{
+    id: string;
+    bonsai_id: string;
+    event_type: string;
+    rrule: string;
+    start_at_utc: string;
+    end_at_utc: string | null;
+    exdates: string;
+    tz_iana: string;
+    deleted_at: string | null;
+    created_at: string;
+    updated_at: string;
+  }>(
+    `SELECT id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates,
+            tz_iana, deleted_at, created_at, updated_at
+     FROM recurrence_rules
+     WHERE id = ? AND deleted_at IS NULL;`,
+    [id],
+  );
+  if (!row) return null;
+  return {
+    id: row.id,
+    bonsaiId: row.bonsai_id,
+    eventType: row.event_type,
+    rrule: row.rrule,
+    startAtUtc: row.start_at_utc,
+    endAtUtc: row.end_at_utc,
+    exdates: JSON.parse(row.exdates) as string[],
+    tzIana: row.tz_iana,
+    deletedAt: row.deleted_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+/**
+ * Rule 編集 (= 削除 + 新規ラッパー、 Sess82 PR-D + plan §C Option A)。
+ *
+ * 設計: 既存 softDeleteRecurrenceRule + createRecurrenceRule を 100% 流用。
+ * - 旧 rule soft-delete (= cascade で 未来 planned events も soft-delete)
+ * - 新 rule create (= 8 週 buffer 自動展開)
+ * - 過去 logged events は recurrence_rule_id を 旧 rule id のまま保持 (= audit trail 連続性)
+ *
+ * トレードオフ:
+ * - rule id 変更 = Sentry tag 連続性なし (= 現状 Sentry tag 未配線、 影響なし)
+ * - 2 phase で部分失敗 (= softDelete 完了 + create 失敗) → softDelete 済 rule が 30 日ゴミ箱に残り
+ *   user は 同等 rule を 再作成可能 (= 復旧 path あり)、 Toast「保存に失敗しました」 で 即対応
+ * - v1.x で updateRecurrenceRule 純正実装に置き換え可能 (= 後方互換 wrapper)
+ *
+ * @param oldRuleId 編集対象 rule ID
+ * @param newInput 編集後の入力値 (= 全列、 部分編集なし)
+ * @returns 新規作成された RecurrenceRuleRow
+ */
+export async function replaceRecurrenceRule(
+  oldRuleId: string,
+  newInput: CreateRecurrenceRuleInput,
+): Promise<RecurrenceRuleRow> {
+  await softDeleteRecurrenceRule(oldRuleId);
+  return await createRecurrenceRule(newInput);
 }
 
 /**

@@ -18,14 +18,16 @@
  *        src/features/recurrence/useRecurrenceRules.ts (hook)
  *        src/db/recurrenceRuleRepository.ts (listActiveRecurrenceRules / softDeleteRecurrenceRule)
  */
-import { Stack } from 'expo-router';
+import { Stack, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { BottomCtaBar } from '@/src/components/common/BottomCtaBar';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
+import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { useColors } from '@/src/core/theme/useColors';
@@ -35,6 +37,7 @@ import {
   type RecurrenceRuleRow,
 } from '@/src/db/recurrenceRuleRepository';
 import type { EventType } from '@/src/db/schema';
+import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
 import { useRecurrenceRules } from '@/src/features/recurrence/useRecurrenceRules';
 
 /**
@@ -54,9 +57,29 @@ function rruleToHumanLabel(rrule: string): TranslationKey {
 export default function RecurrenceListScreen() {
   const { t } = useTranslation();
   const c = useColors();
-  const { rules, bonsaiMap, loading, reload } = useRecurrenceRules();
+  const router = useRouter();
+  const { rules, bonsaiMap, nextOccurrenceMap, loading, reload } = useRecurrenceRules();
+  // Sess82 PR-D: 「+ 新規追加」 BottomCtaBar = useBulkActionFlow('recurring') 経由で 盆栽 picker → BulkWorkPicker → /recurring-rules/new
+  const { startBulkAction } = useBulkActionFlow('recurring');
+  const handleCreateNew = useCallback((): void => {
+    const allBonsais = Array.from(bonsaiMap.values()).map((b) => ({
+      id: b.id,
+      name: b.name,
+    }));
+    startBulkAction(allBonsais);
+  }, [bonsaiMap, startBulkAction]);
   const [deleteTarget, setDeleteTarget] = useState<RecurrenceRuleRow | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  // Sess82 PR-C: kebab → RowActionMenu (= 編集 + 削除 2 択、 ADR-0036 D7 整合)
+  const [kebabTarget, setKebabTarget] = useState<RecurrenceRuleRow | null>(null);
+
+  const handleKebabPress = useCallback((rule: RecurrenceRuleRow): void => {
+    setKebabTarget(rule);
+  }, []);
+
+  const handleKebabDismiss = useCallback((): void => {
+    setKebabTarget(null);
+  }, []);
 
   const handleDeleteRequest = useCallback((rule: RecurrenceRuleRow): void => {
     setDeleteTarget(rule);
@@ -78,6 +101,28 @@ export default function RecurrenceListScreen() {
     if (isDeleting) return;
     setDeleteTarget(null);
   }, [isDeleting]);
+
+  // Sess82 PR-C: kebab menu items 動的構築 (= CalendarTabScreen 既使用 pattern 踏襲、 ADR-0036 D7)
+  // 編集 onPress 配線先 = Sess82 PR-D で /recurring-rules/edit/[ruleId] route 新規実装
+  const kebabItems: readonly RowActionMenuItem[] = kebabTarget
+    ? [
+        {
+          key: 'edit',
+          label: t('rowActionMenuEdit'),
+          onPress: () => {
+            router.push(`/recurring-rules/edit/${kebabTarget.id}` as Href);
+          },
+          testID: `e2e_recurrence_kebab_edit_${kebabTarget.id}`,
+        },
+        {
+          key: 'delete',
+          label: t('rowActionMenuDelete'),
+          destructive: true,
+          onPress: () => handleDeleteRequest(kebabTarget),
+          testID: `e2e_recurrence_kebab_delete_${kebabTarget.id}`,
+        },
+      ]
+    : [];
 
   const isOverFreeLimit = rules.length > FREE_RECURRENCE_RULE_LIMIT;
 
@@ -107,9 +152,11 @@ export default function RecurrenceListScreen() {
             const bonsaiLabel = bonsai?.name ?? t('recurringListItemDeletedBonsai');
             const eventLabel = t(`eventType_${item.eventType}` as TranslationKey);
             const humanRruleKey = rruleToHumanLabel(item.rrule);
-            const endLabel = item.endAtUtc
-              ? t('recurringListItemEndDate').replace('{date}', item.endAtUtc.slice(0, 10))
-              : t('recurringListItemEndDateNever');
+            // Sess82 PR-B: 終了日表示削除 → 次回予定日表示 (= ADR-0056 D4-1、 4 ペルソナ最大公約数)
+            const nextOccurrence = nextOccurrenceMap.get(item.id) ?? null;
+            const nextLabel = nextOccurrence
+              ? t('recurringListItemNextOccurrence').replace('{date}', nextOccurrence.slice(0, 10))
+              : t('recurringListItemNextOccurrenceNone');
             return (
               <View
                 style={[styles.card, { backgroundColor: c.surface, borderColor: c.borderStrong }]}
@@ -129,16 +176,16 @@ export default function RecurrenceListScreen() {
                   <ThemedText style={[styles.eventLabel, { color: c.textSecondary }]}>
                     {eventLabel} · {t(humanRruleKey)}
                   </ThemedText>
-                  <ThemedText style={[styles.endLabel, { color: c.textMuted }]}>
-                    {endLabel}
+                  <ThemedText style={[styles.nextLabel, { color: c.textMuted }]}>
+                    {nextLabel}
                   </ThemedText>
                 </View>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={t('delete')}
+                  accessibilityLabel={t('rowActionMenuEdit') + ' / ' + t('rowActionMenuDelete')}
                   style={styles.kebabButton}
                   hitSlop={8}
-                  onPress={() => handleDeleteRequest(item)}
+                  onPress={() => handleKebabPress(item)}
                   testID={`e2e_recurrence_rule_kebab_${item.id}`}
                 >
                   <MoreVerticalIcon size={20} color={c.textSecondary} />
@@ -163,6 +210,21 @@ export default function RecurrenceListScreen() {
           }
         />
       )}
+
+      {/* Sess82 PR-D: BottomCtaBar 「+ 新規追加」 = useBulkActionFlow('recurring') 経由 */}
+      <BottomCtaBar
+        label={t('recurringListCreateNewLabel')}
+        onPress={handleCreateNew}
+        testID="e2e_recurrence_list_create_new"
+      />
+
+      {/* Sess82 PR-C: kebab → RowActionMenu (= 編集 + 削除 2 択、 ADR-0036 D7 整合) */}
+      <RowActionMenu
+        visible={kebabTarget !== null}
+        items={kebabItems}
+        onDismiss={handleKebabDismiss}
+        testID="e2e_recurrence_kebab_menu"
+      />
 
       <ConfirmDialog
         visible={deleteTarget !== null}
@@ -212,7 +274,8 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   bonsaiName: { fontSize: 15, fontWeight: '600' },
   eventLabel: { fontSize: 13 },
-  endLabel: { fontSize: 12 },
+  // Sess82 PR-B: endLabel → nextLabel (= 「次回 yyyy-mm-dd」 表示、 ADR-0056 D4-1)
+  nextLabel: { fontSize: 12 },
   kebabButton: {
     width: 32,
     height: 32,

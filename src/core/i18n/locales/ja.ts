@@ -997,19 +997,30 @@ const ja: Partial<Record<TranslationKey, string>> = {
   recurringRuleEditScopeAll: 'すべて',
   recurringEventBadgeLabel: '定期予定',
   // Sess81 PR-7.5: LookBackHub 5 card 目 + RecurrenceListScreen 用
-  recurringHubCardTitle: '🔁 定期予定を管理',
-  recurringHubCardDesc: '毎週月曜の水やり等のルールを管理',
+  // Sess82 PR-A: 絵文字 🔁 削除 (左 RepeatIcon と重複) + desc 汎用化 (頻度/作業限定しない)
+  recurringHubCardTitle: '定期予定を管理',
+  recurringHubCardDesc: '繰り返し作成される予定のルールを確認',
   recurringListScreenTitle: '定期予定の管理',
   recurringListEmptyTitle: '定期予定はまだありません',
   recurringListEmptyDesc: '予定タブから「🔁 繰り返し」 で 作成できます',
   recurringListItemNextOccurrence: '次回: {date}',
-  recurringListItemEndDate: '〜 {date}',
-  recurringListItemEndDateNever: '終了日なし',
+  recurringListItemNextOccurrenceNone: '次回未定',
   recurringListItemDeletedBonsai: '(削除済の盆栽)',
   recurringListDeleteConfirmTitle: 'この定期予定を削除しますか?',
   recurringListDeleteConfirmDesc: '今後の予定もすべて削除されます (30 日後に完全削除)',
   recurringListProBadgeOverLimit: 'Free 上限超過',
   recurringRruleHumanCustom: 'カスタム',
+  // Sess82 PR-D: RecurrenceFormScreen + BottomCtaBar (= 新規作成 + 編集 動線)
+  recurringListCreateNewLabel: '+ 新規追加',
+  recurringCreateScreenTitle: '新規定期予定',
+  recurringEditScreenTitle: '定期予定を編集',
+  recurringCreateSaveLabel: '作成',
+  recurringEditSaveLabel: '保存',
+  recurringEditRuleNotFoundToast: 'この定期予定は削除されました',
+  recurringEditSavedToast: '変更を保存しました',
+  recurringEditSaveFailedToast: '保存に失敗しました',
+  recurringFormBonsaiLabel: '対象の盆栽',
+  recurringFormEventTypeLabel: '作業種別',
 };
 
 export default ja;

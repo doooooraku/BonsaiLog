@@ -978,19 +978,29 @@ const th: Partial<Record<TranslationKey, string>> = {
   recurringRuleEditScopeAll: 'All events',
   recurringEventBadgeLabel: 'Recurring event',
   // Sess81 PR-7.5: LookBackHub 5th card + RecurrenceListScreen
-  recurringHubCardTitle: '🔁 Manage recurring schedules',
-  recurringHubCardDesc: 'Manage rules like weekly Monday watering',
+  recurringHubCardTitle: 'Manage recurring schedules',
+  recurringHubCardDesc: 'Review the rules that create repeating events',
   recurringListScreenTitle: 'Recurring schedules',
   recurringListEmptyTitle: 'No recurring schedules yet',
   recurringListEmptyDesc: 'Create one from the Plan tab "🔁 Repeat" toggle',
   recurringListItemNextOccurrence: 'Next: {date}',
-  recurringListItemEndDate: 'until {date}',
-  recurringListItemEndDateNever: 'No end date',
+  recurringListItemNextOccurrenceNone: 'No upcoming events',
   recurringListItemDeletedBonsai: '(deleted bonsai)',
   recurringListDeleteConfirmTitle: 'Delete this recurring schedule?',
   recurringListDeleteConfirmDesc:
     'All future events will be deleted (30 days until permanent deletion)',
   recurringListProBadgeOverLimit: 'Over Free limit',
   recurringRruleHumanCustom: 'Custom',
+  // Sess82 PR-D: RecurrenceFormScreen + BottomCtaBar (= 新規作成 + 編集 動線)
+  recurringListCreateNewLabel: '+ New',
+  recurringCreateScreenTitle: 'New recurring schedule',
+  recurringEditScreenTitle: 'Edit recurring schedule',
+  recurringCreateSaveLabel: 'Create',
+  recurringEditSaveLabel: 'Save',
+  recurringEditRuleNotFoundToast: 'This recurring schedule has been deleted',
+  recurringEditSavedToast: 'Changes saved',
+  recurringEditSaveFailedToast: 'Failed to save',
+  recurringFormBonsaiLabel: 'Bonsai',
+  recurringFormEventTypeLabel: 'Work type',
 };
 export default th;
