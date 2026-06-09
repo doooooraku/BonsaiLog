@@ -90,7 +90,7 @@
 
 ---
 
-## 専門ルール R-13 〜 R-63（詳細は `recurrence-prevention/specialized.md`）
+## 専門ルール R-13 〜 R-68（詳細は `recurrence-prevention/specialized.md`）
 
 | ID | テーマ | 1 行サマリ |
 |----|--------|-----------|
@@ -135,6 +135,9 @@
 | **R-64** | 新 worktree 作成後は `worktree-init.sh` 実行で `.env` + `node_modules` symlink (Sess75 PR-A 起票) | 新 `git worktree add` 直後に `bash scripts/dev/worktree-init.sh` を必ず実行。 `.env` (Expo `app.config.ts` の APP_NAME 等で必須) と `node_modules` (`pnpm install` 5-10 分節約) を親 repo から symlink。 Sess73 + Sess75 で 2 回再発 (`Missing required env var: APP_NAME` で Metro 起動 fail) → CLAUDE.md §9 「2 回再発で hook 化検討、 3 回目で必須」 該当。 Future Work: EnterWorktree PostCreate hook 自動実行 / `pnpm dev` 直前の存在 check hook。 詳細: `recurrence-prevention/specialized.md` / `docs/how-to/development/dev-workflow.md` §10 |
 | **R-63** | 子画面 push 遷移を許す form 画面は scroll 復元 hook 必須 (Sess72 ADR-0040 D5 Amendment 起票) | form 画面 (`FormScreenHeader` + `<ScrollView>`) で `router.push` する flow がある画面は、 戻り時の scroll 位置保持を `src/core/hooks/useScrollPreservation.ts` (Sess72 PR-1 #969) で**明示**する。 真因: `useFocusEffect` 内 setState で子要素 layout 変動 → ScrollView の contentOffset が暗黙的に 0 リセットされる (RN ScrollView 仕様)。 Sess72 テスター苦情「タグ追加画面から基本情報画面に戻ると必ず画面の先頭に戻ってしまう」 由来。 検出: `scripts/check-form-screen-scroll.mjs` 拡張で「FormScreenHeader + ScrollView を使う画面で `useScrollPreservation` 未 import なら **warn**」 (warn 起動 → 違反 0 確認後 error 昇格、 Sess68 と同じ階段)。 除外: 子画面 push が無い form 画面 (`router.replace` のみ等) は `// scroll-preservation: no-child-push (<理由>)` 注釈で明示。 適用先 (Sess72 PR-2/3/4): `BonsaiCreateScreen` / `app/(tabs)/bonsai/[id]/index.tsx` / `app/export/index.tsx`。 詳細: `recurrence-prevention/specialized.md` / `docs/adr/ADR-0040` Notes Amended D5 / `useScrollPreservation` JSDoc |
 | **R-65** | CRUD 機能を扱う ADR は Create/Read/Update/Delete の 4 動詞を Acceptance に明示する (Sess77 ADR-0055 起票) | data 操作 (C/R/U/D) を扱う ADR (新機能 or 既存機能拡張) は、 **`## CRUD Coverage` section** を必須記載。 各 operation について「対応 / 未対応 / 将来対応」 と 動線 / 制約 を表で明示。 由来: ADR-0008 (event data model) で **U (Update)** が DB 層のみ実装され UI 動線が 1 年放置 → Sess76 alpha rollout 前テスター苦情で顕在化、 「機能の追加」 議論偏重で「機能の完備性」 評価仕組み欠落が根本原因。 検出: `scripts/docs-lint.mjs` の `checkAdrCrudCoverage()` で ADR-0050 以降を走査、 title に CRUD 動詞 (create/edit/update/delete) を含むのに `## CRUD Coverage` heading 不在なら warn (false positive 防止で warn のみ)。 非 CRUD 系 (UI 統一 / 文書 / build) はスキップ可。 詳細: `recurrence-prevention/specialized.md` / `docs/adr/ADR-0055-event-edit.md` / `docs/adr/adr_template.md` |
+| **R-66** | RRULE 展開時の TZ 罠防止 (Sess78 ADR-0056 起票) | 定期予定 (recurrence) で RRULE → 個別 events 展開する際、 UTC date 文字列 (`.toISOString().slice(0,10)`) を local date key として直接使用しない。 必ず `toLocalDateKey(..., getTzOffsetMin())` (`src/core/datetime/localDateKey.ts` SoT) 経由で TZ-safe 変換。 Sess67 PR #942 で JST 深夜 (0:00-8:59) に前日保存 bug 修復後の同型再発防止。 詳細: `recurrence-prevention/specialized.md` |
+| **R-67** | status を持つ entity の機能設計時、 各 status の操作意味を matrix で明示 (Sess78 ADR-0056 起票、 Sess81 で 2 重 matrix pattern 拡張) | ADR 起票時、 `events.status = 'planned' \| 'logged' \| 'cancelled'` 等の status 列を持つ entity に対する 操作 (C/R/U/D) を **各 status での意味 matrix** で明示。 「個別だけ評価」 = 1 status だけ想定で設計し他 status が漏れる pattern が ADR-0036 (R-44 削除側) + ADR-0055 (編集側) で 2 回発覚 → 構造化。 Sess81 拡張: rule + instance 2 層 entity (= ADR-0056 recurrence_rules + events) で **2 重 matrix pattern** 必須化、 cascade 連動更新を明文化。 詳細: `recurrence-prevention/specialized.md` |
+| **R-68** | 件数分岐 hook の UI 表現契約 SoT 化 (Sess83 ADR-0025 起票) | `useBulkActionFlow` / 同型 hook で 0/1/N 件等の件数分岐で動線が変わる場合、 各分岐の **UI 表現 (chip / header 文言 / icon / hint / a11y)** を **同じ ADR の Decision §** で SoT 化必須。 ADR が動線のみ確定し UI 表現を別 PR で確定する **設計協調漏れ** を構造防止。 Sess83 user 実機検証で「BulkWorkPicker 1 件 case 文言『1 件の盆栽に**同じ**作業を記録』 + chip 視覚曖昧」 が user 不安を生む構造問題発覚 → ADR-0025 §7 + Sess80 PR-6.5 (#1002) + Sess82 PR-D (#1013) の 3 PR で同 hook 共有しながら 各 case の UI 表現を 統一しなかった真因。 R-62 (Layout Contract SoT) + R-67 (status 別意味分化) の系譜 meta-rule。 検出 (= follow-up): `scripts/check-i18n-plural-cohabit.mjs` で `{count}` placeholder と 複数前提語 (「同じ」「both」 等) の共存を静的検出。 詳細: `recurrence-prevention/specialized.md` |
 
 ---
 
@@ -154,7 +157,7 @@
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
-- `.claude/recurrence-prevention/specialized.md` — R-13 〜 R-63 詳細記述
+- `.claude/recurrence-prevention/specialized.md` — R-13 〜 R-68 詳細記述
 - `.claude/hooks/` — 構造的防止 Hook 群（R-16/R-18/R-19/R-20 自動化）
 - `.claude/settings.json` — Hook 登録
 - `docs/reference/tasks/lessons/` — 技術 lesson（領域別フォルダ、`lessons/db.md` 等）
