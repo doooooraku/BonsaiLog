@@ -9,11 +9,13 @@ import { Stack } from 'expo-router';
 import React from 'react';
 
 import { useTranslation } from '@/src/core/i18n/i18n';
+// Sess90 PR-A: nested Stack でも font geometry を明示 spread (= root → nested は cascade しない)。
+import { screenTitleStack } from '@/src/core/theme/typography';
 
 export default function PlanStackLayout() {
   const { t } = useTranslation();
   return (
-    <Stack>
+    <Stack screenOptions={{ headerTitleStyle: screenTitleStack }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
         name="wiring"
@@ -21,7 +23,8 @@ export default function PlanStackLayout() {
           title: t('stackWireListTitle'),
           headerShown: true,
           headerTitleAlign: 'center',
-          headerTitleStyle: { fontFamily: 'NotoSerifJP_500Medium', fontSize: 20 },
+          // Sess90 PR-A: 旧 fontSize:20 hardcode は削除、 Stack screenOptions の screenTitleStack
+          // token (= 18pt) に統一 (ADR-0053 Sess90 Amendment、 R-75)。 経緯コメント無き第三の値。
         }}
       />
     </Stack>

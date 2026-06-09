@@ -216,3 +216,105 @@ export default function MyScreen() {
 - Sess74 PR #978 実機検証 REPORT (E2 発端)
 - Sess73 BottomCtaBar verify 時 en+ru transit 観察 (同型既知)
 - React Navigation 公式 docs: useNavigation().setOptions()
+
+---
+
+## Amendment (2026-06-10 / Sess90 PR-A / 画面ヘッダー font 統一 + 3 screen 配線漏れ fix)
+
+### 背景
+
+Sess89 までで Stack header を SoT 統一する Decision (= Sess66 PR5) は確立済だったが、 **font geometry の SoT が不在** だった:
+
+| 場所                                          | 設定                                                             |
+| --------------------------------------------- | ---------------------------------------------------------------- |
+| `src/features/bonsai/SearchHeader.tsx` (タブ) | `NotoSerifJP_500Medium 22pt` hardcoded                           |
+| `app/_layout.tsx` root screenOptions          | `color` のみ、 `fontFamily` 未指定 → RN default Roboto 17pt      |
+| `app/settings/_layout.tsx`                    | `fontFamily: 'NotoSerifJP_500Medium'` hardcode (重複)            |
+| `app/(tabs)/plan/_layout.tsx` wiring screen   | `fontSize: 20, fontFamily: 'NotoSerifJP_500Medium'` (= 第三の値) |
+
+→ タブ画面 (= serif 22pt) と Stack 画面 (= sans 17pt) で font が完全不整合、 さらに `(tabs)/plan/wiring` のみ 20pt の第三の値で三重不整合。
+
+加えて 3 screen の **Stack.Screen title 配線漏れ** (= bug):
+
+- `app/custom-species.tsx` (= raw「custom-species」表示)
+- `app/custom-styles.tsx` (= raw「custom-styles」表示)
+- `app/tags.tsx` (= raw「tags」表示)
+
+3 file とも body 内に `<ThemedText type="title">{t('...ManagerTitle')}</ThemedText>` で描画していたが、 React Navigation の Stack header 側には title option 未配置 → default で route path 表示。
+
+### Amendment Decision
+
+#### (1) screen header font geometry を design token SoT 化
+
+`src/core/theme/typography.ts` に 2 token を新設、 全 hardcode を撤廃:
+
+```ts
+export const screenTitleTab: TextStyle = {
+  fontFamily: 'NotoSerifJP_500Medium',
+  fontSize: 22,
+  lineHeight: 32,
+  letterSpacing: 0.9,
+};
+export const screenTitleStack: TextStyle = {
+  fontFamily: 'NotoSerifJP_500Medium',
+  fontSize: 18, // RN default 17 → 18 (NotoSerifJP の x-height 補正)
+  lineHeight: 24,
+  letterSpacing: 0.5,
+};
+```
+
+- **font family 統一**: タブ画面と Stack 画面で同じ `NotoSerifJP_500Medium` (= ブランド統一)
+- **size のみで階層表現**: タブ root = 22pt / Stack 子画面 = 18pt (= iOS HIG Large Title / Material 3 Top App Bar 業界整合)
+- **color と layout は token 外**: caller で `c.text` / `flex:1` を spread (= theme / layout 分離)
+
+#### (2) nested Stack screenOptions でも明示 spread が必要
+
+Expo Router の root `<Stack screenOptions>` は **nested Stack に cascade しない** (= 各 nested Stack は独立インスタンス)。 そのため:
+
+```tsx
+// app/<nested>/_layout.tsx
+import { screenTitleStack } from '@/src/core/theme/typography';
+<Stack screenOptions={{ headerTitleStyle: screenTitleStack }}>;
+```
+
+を全 nested Stack で明示する必要がある。 本 Amendment 適用範囲:
+
+| file                                   | 修正内容                                                               |
+| -------------------------------------- | ---------------------------------------------------------------------- |
+| `app/_layout.tsx` (root)               | `headerTitleStyle: { color, ...screenTitleStack }`                     |
+| `app/settings/_layout.tsx`             | 重複 hardcode 削除 → `...screenTitleStack` 参照                        |
+| `app/(modals)/_layout.tsx`             | `headerTitleStyle: screenTitleStack` 追加                              |
+| `app/(tabs)/plan/_layout.tsx`          | 20pt hardcode 削除 + `headerTitleStyle: screenTitleStack`              |
+| `app/(tabs)/bonsai/_layout.tsx`        | `headerTitleStyle: screenTitleStack` 追加                              |
+| `src/features/bonsai/SearchHeader.tsx` | hardcode 削除、 `<ThemedText style={[screenTitleTab, ...]}>` で spread |
+
+#### (3) 3 screen Stack.Screen title 配線漏れ修正
+
+`app/{custom-species,custom-styles,tags}.tsx` に Sess74 PR-3 同型の 2 段 pattern を適用:
+
+```tsx
+import { Stack, useNavigation } from 'expo-router';
+const { t, lang } = useTranslation();
+const navigation = useNavigation();
+React.useEffect(() => {
+  navigation.setOptions({ title: t('<ManagerTitle key>') });
+}, [navigation, t, lang]);
+// body 先頭 (初回 mount 用 declarative):
+<Stack.Screen options={{ title: t('<ManagerTitle key>') }} />;
+// 旧 <ThemedText type="title"> 行は削除 (= Stack header と duplicate)、 desc 行は keep。
+```
+
+### R-74 / R-75 (新) recurrence-prevention 起票
+
+`.claude/recurrence-prevention/specialized.md` に 2 件追加 (本 PR で起票):
+
+- **R-74**: Stack screen で title 表示する場合は `<Stack.Screen options={{title:t('...')}}/>` と `useEffect(setOptions, [navigation, t, lang])` を **両方使用必須**。 i18n を使う screen で片方だけだと初回 mount or 言語切替時に title 反映漏れ発生。
+- **R-75**: screen header の font geometry hardcode 禁止、 `screenTitleTab` / `screenTitleStack` token 参照必須。 nested Stack でも明示 spread が必要 (= root cascade されない)。
+
+(= 後続 session 課題として `scripts/dev/check-screen-header-typography.mjs` grep lint 起票候補も別途検討)
+
+### 関連
+
+- Sess89 PR-4 #1033 (ADR-0049 / ADR-0026 §Notes Amended、 4 領域 cascade pattern matrix)
+- iOS HIG Large Title / Material 3 Top App Bar (= size 階層表現業界整合)
+- design_system.md §Screen header typography contract (本 PR 新規追加)

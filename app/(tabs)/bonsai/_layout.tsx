@@ -2,6 +2,8 @@ import { Stack } from 'expo-router';
 import React from 'react';
 
 import { useTranslation } from '@/src/core/i18n/i18n';
+// Sess90 PR-A: bonsai detail screen の Stack header font 統一 (ADR-0053 Sess90 Amendment、 R-75)。
+import { screenTitleStack } from '@/src/core/theme/typography';
 
 /**
  * Bonsai タブ内 Stack ナビゲーション (ADR-0020 Phase 2 改修、 Sess20 PR-H1 i18n 化)。
@@ -16,7 +18,7 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 export default function BonsaiStackLayout() {
   const { t } = useTranslation();
   return (
-    <Stack>
+    <Stack screenOptions={{ headerTitleStyle: screenTitleStack }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
         name="[id]/index"

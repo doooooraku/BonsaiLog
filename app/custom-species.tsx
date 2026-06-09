@@ -17,7 +17,7 @@
  * 注: master 5 種 (= SPECIES_SEED) は本画面に含めない (= 編集/削除不可、 picker でのみ表示)。
  *     master の存在は user に自明なので、 本画面では custom のみフォーカス。
  */
-import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { Stack, useFocusEffect, useNavigation, useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -37,13 +37,20 @@ import {
 } from '@/src/db/bonsaiSpeciesCustomRepository';
 
 export default function CustomSpeciesManagerScreen() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const router = useRouter();
+  const navigation = useNavigation();
   const c = useColors();
   const [items, setItems] = React.useState<CustomSpeciesWithStats[]>([]);
   const [kebabTarget, setKebabTarget] = React.useState<CustomSpeciesWithStats | null>(null);
   const [deleteTarget, setDeleteTarget] = React.useState<CustomSpeciesWithStats | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
+
+  // Sess90 PR-A (ADR-0053 Sess90 Amendment、 R-74): 言語切替直後の Stack header transient
+  // re-render 漏れ対策 (settings/index.tsx Sess74 PR-3 同型 pattern)。
+  React.useEffect(() => {
+    navigation.setOptions({ title: t('customSpeciesManagerTitle') });
+  }, [navigation, t, lang]);
 
   const reload = React.useCallback(async () => {
     const rows = await getCustomSpeciesWithStats();
@@ -136,10 +143,11 @@ export default function CustomSpeciesManagerScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_custom_species_manager"
     >
+      {/* Sess90 PR-A: Stack header title 配線 (= 旧 raw route 名「custom-species」 表示 bug fix)。 */}
+      <Stack.Screen options={{ title: t('customSpeciesManagerTitle') }} />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <ThemedText type="title" style={styles.title}>
-          {t('customSpeciesManagerTitle')}
-        </ThemedText>
+        {/* Sess90 PR-A: body 内 large title (= ThemedText type="title") は Stack header と重複するため削除、
+            desc 行のみ keep (= 画面の意図説明として残す)。 */}
         <ThemedText style={[styles.desc, { color: c.textSecondary }]}>
           {t('customSpeciesManagerDesc')}
         </ThemedText>
@@ -225,7 +233,7 @@ export default function CustomSpeciesManagerScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { padding: 16, gap: 12 },
-  title: { marginBottom: 4 },
+  // Sess90 PR-A: title style は body title 削除に伴い dead、 entry 撤去 (旧 marginBottom 4)。
   desc: { fontSize: 13, marginBottom: 12, lineHeight: 18 },
   addBtn: {
     paddingVertical: 14,

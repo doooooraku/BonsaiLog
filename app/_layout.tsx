@@ -24,6 +24,8 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 import { useSettingsBootstrap } from '@/src/stores/useSettingsBootstrap';
 import { buildNavigationTheme } from '@/src/core/theme/buildNavigationTheme';
 import { resolveEffectiveScheme } from '@/src/core/theme/themeResolver';
+// Sess90 PR-A: Stack header font geometry SoT 化 (ADR-0053 Sess90 Amendment、 R-75)。
+import { screenTitleStack } from '@/src/core/theme/typography';
 import { isOnboardingFinished } from '@/src/features/onboarding/onboardingFlow';
 import { ensureNotificationChannels } from '@/src/features/notification/scheduler';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
@@ -136,10 +138,12 @@ export default function RootLayout() {
       <ThemeProvider value={navigationTheme}>
         <Stack
           screenOptions={{
-            // Phase B-1b: Stack header を Colors 経由 (washi 背景 + 墨テキスト + brand tint)
+            // Phase B-1b: Stack header を Colors 経由 (washi 背景 + 墨テキスト + brand tint)。
+            // Sess90 PR-A: font geometry (= NotoSerifJP 18pt) を screenTitleStack token 経由で SoT 化
+            // (ADR-0053 Sess90 Amendment、 R-75)。 全 Stack screen に root cascade で自動適用される。
             headerStyle: { backgroundColor: headerColors.surface },
             headerTintColor: headerColors.text,
-            headerTitleStyle: { color: headerColors.text },
+            headerTitleStyle: { color: headerColors.text, ...screenTitleStack },
             contentStyle: { backgroundColor: headerColors.background },
           }}
         >
