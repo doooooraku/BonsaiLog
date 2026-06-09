@@ -194,11 +194,32 @@ export type PurchaseErrorKind =
   | 'alreadyPurchased' // PRODUCT_ALREADY_PURCHASED_ERROR (AC8-2)
   | 'storeProblem' // STORE_PROBLEM_ERROR (AC8-3)
   | 'notAllowed' // PURCHASE_NOT_ALLOWED_ERROR (AC8-4)
+  | 'offeringsEmpty' // Sess81: BILLING_OFFERINGS_EMPTY / BILLING_PACKAGE_NOT_FOUND (ストア準備中)
   | 'unknown';
+
+/**
+ * Sess81: アプリ起因の billing エラーを表す専用 Error class。
+ *
+ * RC SDK 由来のエラー (= 数値 code) と区別して、 アプリ側で「offerings が空」
+ * 「package が見つからない」 等の構造的エラーを伝える。 文字列 code は
+ * mapPurchaseErrorCode で `offeringsEmpty` UI 文言キーに変換される。
+ */
+export class BillingError extends Error {
+  readonly code: string;
+  constructor(opts: { code: string; message?: string }) {
+    super(opts.message ?? opts.code);
+    this.code = opts.code;
+    this.name = 'BillingError';
+  }
+}
 
 export function mapPurchaseErrorCode(code: unknown): PurchaseErrorKind {
   if (typeof code !== 'string' && typeof code !== 'number') return 'unknown';
   const c = String(code);
+  // Sess81: BillingError 由来 (= 文字列 code) を最優先で判定
+  if (c === 'BILLING_OFFERINGS_EMPTY' || c === 'BILLING_PACKAGE_NOT_FOUND') {
+    return 'offeringsEmpty';
+  }
   switch (c) {
     case '1':
       return 'cancelled';
@@ -277,12 +298,24 @@ export const proService = {
   async purchase(plan: PlanType): Promise<ProState> {
     await ensureConfigured();
     const offering = await getCurrentOffering();
+    // Sess81: offering null = RC Dashboard / Play Console 設定漏れ or 24h プロパゲーション中。
+    // BillingError で UI 側を「ストア準備中」 文言に分岐 (= mapPurchaseErrorCode 経由)。
+    if (!offering) {
+      throw new BillingError({
+        code: 'BILLING_OFFERINGS_EMPTY',
+        message: IAP_DEBUG
+          ? `Offering is empty. plan=${plan} (RC Dashboard or Play Console may be misconfigured)`
+          : 'Offering is empty.',
+      });
+    }
     const pkg = findPackage(offering, plan);
     if (!pkg) {
-      const currentId = offering?.identifier ?? 'null';
-      throw new Error(
-        IAP_DEBUG ? `Package not found. plan=${plan} current=${currentId}` : 'Package not found.',
-      );
+      throw new BillingError({
+        code: 'BILLING_PACKAGE_NOT_FOUND',
+        message: IAP_DEBUG
+          ? `Package not found. plan=${plan} current=${offering.identifier}`
+          : 'Package not found.',
+      });
     }
 
     const { customerInfo } = await Purchases.purchasePackage(pkg);

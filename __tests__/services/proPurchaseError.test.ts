@@ -92,6 +92,22 @@ describe('mapPurchaseErrorCode (AC8 RC エラー分類)', () => {
     });
   });
 
+  // Sess81: BillingError (= アプリ起因の文字列 code) を offeringsEmpty に分類。
+  // RC Dashboard / Play Console 設定漏れ or 24h プロパゲーション中の判定。
+  describe('Sess81 PR: BillingError (offerings 空) → offeringsEmpty', () => {
+    test("'BILLING_OFFERINGS_EMPTY' → offeringsEmpty", () => {
+      expect(mapPurchaseErrorCode('BILLING_OFFERINGS_EMPTY')).toBe('offeringsEmpty');
+    });
+
+    test("'BILLING_PACKAGE_NOT_FOUND' → offeringsEmpty", () => {
+      expect(mapPurchaseErrorCode('BILLING_PACKAGE_NOT_FOUND')).toBe('offeringsEmpty');
+    });
+
+    test('未知の BILLING_* code → unknown (= 明示判定外は fallback)', () => {
+      expect(mapPurchaseErrorCode('BILLING_UNKNOWN')).toBe('unknown');
+    });
+  });
+
   describe('未分類エラー → unknown', () => {
     test("'0' (UNKNOWN_ERROR) → unknown", () => {
       expect(mapPurchaseErrorCode('0')).toBe('unknown');
@@ -133,9 +149,25 @@ describe('mapPurchaseErrorCode (AC8 RC エラー分類)', () => {
     });
   });
 
-  describe('全 7 種類が網羅されている (型 narrowing 確認)', () => {
-    test('返り値の集合は { cancelled, pending, network, alreadyPurchased, storeProblem, notAllowed, unknown } のみ', () => {
-      const samples = ['0', '1', '2', '3', '4', '5', '6', '10', '20', '35', '99', undefined, null];
+  describe('全 8 種類が網羅されている (型 narrowing 確認、 Sess81 で offeringsEmpty 追加)', () => {
+    test('返り値の集合は { cancelled, pending, network, alreadyPurchased, storeProblem, notAllowed, offeringsEmpty, unknown } のみ', () => {
+      const samples = [
+        '0',
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+        '10',
+        '20',
+        '35',
+        '99',
+        'BILLING_OFFERINGS_EMPTY',
+        'BILLING_PACKAGE_NOT_FOUND',
+        undefined,
+        null,
+      ];
       const results = new Set(samples.map((s) => mapPurchaseErrorCode(s)));
       const allowed = new Set([
         'cancelled',
@@ -144,6 +176,7 @@ describe('mapPurchaseErrorCode (AC8 RC エラー分類)', () => {
         'alreadyPurchased',
         'storeProblem',
         'notAllowed',
+        'offeringsEmpty',
         'unknown',
       ]);
       for (const r of results) {
