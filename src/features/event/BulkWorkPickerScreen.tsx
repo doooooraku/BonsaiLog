@@ -20,13 +20,17 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-// Sess79 PR-6 ADR-0056: schedule mode の bulkScheduleEvents 直接呼出 + 関連 import 群は BulkLogConfirm に移行済。
-// useToastStore / getTzOffsetMin / nowUtc / bulkScheduleEvents / maybePromptNotificationOptIn /
-// triggerSummaryReschedule / toLocalDateKey は BulkLog 側で使用。
+import { useToastStore } from '@/src/components/Toast';
+// Sess80 PR-6.5 ADR-0056: schedule mode 1 タップ動線完全復活、 Sess79 PR-6 退化を 部分 revert。
+// toLocalDateKey は Sess67 PR #942 で core/datetime に SoT 移動済、 ESLint boundaries 違反なし。
+import { getTzOffsetMin, nowUtc, toLocalDateKey } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 // Sess68 PR #C: 全 forbidden token を inline c.* 化。
 import { useColors } from '@/src/core/theme/useColors';
+import { bulkScheduleEvents } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
+import { maybePromptNotificationOptIn } from '@/src/features/notification/optInPrompt';
+import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
@@ -43,9 +47,8 @@ export default function BulkWorkPickerScreen() {
 
   const selectedBonsais = usePickerStore((s) => s.bulkContext?.selectedBonsais ?? []);
 
-  // Sess79 PR-6 ADR-0056: schedule mode が BulkLog 経由 push 統一化で 重複 tap 防止 state 不要に
-  // (= push 直後の navigation 中に再 tap は React Navigation で 二重 push 抑制される)。
-  const isSubmitting = false;
+  // Sess80 PR-6.5 ADR-0056: 1 タップ動線復活で 重複 tap 防止 state 必要 (Sess79 PR-6 で 一旦削除)
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const subKey: TranslationKey = mode === 'log' ? 'bulkPickerSheetSubLog' : 'bulkPickerSheetSub';
 
@@ -55,15 +58,35 @@ export default function BulkWorkPickerScreen() {
       if (isSubmitting) return;
       const bonsaiIds = selectedBonsais.map((b) => b.id);
 
-      // Sess79 PR-6 ADR-0056: schedule mode も log mode と同じく BulkLogConfirm 経由に統一。
-      // 旧 1 タップ動線 (bulkScheduleEvents 直接) は 退化、 引き換えに recurring (定期予定) 対応 +
-      // RecurrencePicker UI 提供。 v1.0.2 で 「1 タップ schedule 復活 + 🔁 toggle 追加」 検討候補。
-      // bonsaiIds は handleSelect 関数 args の参照のみ。 schedule/log 統一 push で BulkLog 側で 処理。
-      void bonsaiIds; // unused 警告回避 (= 既存 schedule mode 内で使われていた)
+      // Sess80 PR-6.5 ADR-0056: schedule mode 1 タップ動線完全復活 (Sess79 PR-6 退化を 部分 revert)。
+      // recurring (定期予定) は Sess80 PR-7.5 で 新規追加する「もっと」 タブの 管理ハブ経由で 入力、
+      // 本画面の schedule mode は 単発予定の 即書込 専用化 (= 業務プロ user の 1 タップ動線完全維持)。
+      if (mode === 'schedule') {
+        setIsSubmitting(true);
+        // Sess36 PR-7 (ADR-0042 関連 fix): TZ 安全な local 「今日」 (toLocalDateKey)、
+        // 旧 `nowUtc().slice(0, 10)` は UTC 日付で JST 早朝に前日 default 化する bug 回避。
+        const dateStr = scheduleDate || toLocalDateKey(nowUtc() as string, getTzOffsetMin());
+        const occurredAtUtc = `${dateStr}T00:00:00.000Z`;
+        try {
+          await bulkScheduleEvents({ bonsaiIds, type, occurredAtUtc });
+          useToastStore.getState().show(t('bulkScheduleDoneToast').replace('{count}', '1'));
+          // ADR-0014 Amended: 初回予定登録時の通知 soft-ask 判定 (通知 OFF かつ未提示なら生涯 1 回表示)。
+          maybePromptNotificationOptIn();
+        } catch (error) {
+          console.warn('[bulk-schedule] failed:', error);
+        }
+        // Sess12 PR-I: 通知 reschedule (planned events 変化 → 当日まとめ通知再予約)
+        void triggerSummaryReschedule(t);
+        // Sess12 PR-G 改善 I: router.replace で予定タブに直接遷移
+        router.replace('/(tabs)/plan' as Href);
+        return;
+      }
+
+      // log mode: BulkLogConfirm に push (note + 日付 + 写真 入力画面)。
       const dateParam = scheduleDate ? `&date=${encodeURIComponent(scheduleDate)}` : '';
-      router.push(`/bulk-log-confirm?type=${type}&mode=${mode}${dateParam}` as Href);
+      router.push(`/bulk-log-confirm?type=${type}${dateParam}` as Href);
     },
-    [isSubmitting, mode, scheduleDate],
+    [isSubmitting, mode, scheduleDate, selectedBonsais, t],
   );
 
   return (
