@@ -969,10 +969,47 @@ ADR 起票時、 該当機能が `status` 列を 持つ entity (例: `events.sta
 - 「個別だけ評価」 = 1 status だけ想定で 設計し、 他 status が 漏れる パターン が ADR-0036 (R-44 削除側) + ADR-0055 (編集側) で 2 回 発覚 → 構造問題認定
 - CLAUDE.md §9「2 回再発で hook 化検討、 3 回目で必須」 該当 → 本 R で 構造化
 
+### Sess81 拡張: 2 重 matrix pattern (= entity が rule + instance の 2 層の場合)
+
+ADR-0056 (定期予定 recurring schedule) で **events entity** (recurring 由来 instance) と **recurrence_rules entity** (rule 自体) の 2 entity が 連動更新する設計が登場 → R-67 を **2 重 matrix** で適用。
+
+#### 2 重 matrix pattern の適用判定
+
+以下 全てに 該当する場合、 **2 重 matrix 必須**:
+
+1. 1 entity が 別 entity の 「instance 展開元」 になる (例: rule → events、 template → instances)
+2. instance entity が 独自の status 列を持つ (例: events.status)
+3. rule entity の操作 (= U/D) が instance entity に cascade 影響する (= 連動更新あり)
+
+#### 2 重 matrix template
+
+**Instance entity の matrix** (= 通常の R-67 matrix、 status 別):
+
+| 操作 \ status | status_A | status_B | status_C | 備考 |
+|---|---|---|---|---|
+| C (Create) | ... | ... | ... | |
+| R (Read) | ... | ... | ... | |
+| U (Update) | ... | ... | ... | |
+| D (Delete) | ... | ... | ... | |
+
+**Rule entity の matrix** (= status 列なし、 操作だけ列挙):
+
+| 操作 | 動作 | 動線 / 実装 |
+|---|---|---|
+| C (Create) | ... | ... |
+| R (Read) | ... | ... |
+| U (Update) | ... | rule の U が instance に cascade する場合は **scope 暗黙適用** を明記 |
+| D (Delete) | ... | rule の D が instance に cascade する場合は **soft-delete 連鎖** を明記 |
+
+#### 適用実例
+
+- **ADR-0056 §CRUD Coverage** (2026-06-09 Sess81 で 追記、 events 12 cell + recurrence_rules 4 cell)
+- 将来候補: tag presets (= master tag の rule、 ADR-0049 ②) 拡張時 / wiring_scheduled template 拡張時
+
 ### 関連
 
 - ADR-0055 §Notes Amended Sess77 Follow-up (本 R の問題提起元)
-- ADR-0056 (本 R 同時起票、 D6 3 択 dialog で 適用)
+- ADR-0056 (本 R 同時起票、 D6 3 択 dialog で 適用、 Sess81 で **2 重 matrix pattern 拡張**)
 - R-65 (CRUD カバレッジ、 本 R の 補完規約: R-65 = C/R/U/D 完備性 / R-67 = status × 操作 意味分化)
 - ADR-0036 (破壊的操作 D7 kebab pattern + R-44 削除側 matrix)
 
