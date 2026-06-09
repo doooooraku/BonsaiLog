@@ -53,7 +53,7 @@ export default function BulkWorkPickerScreen() {
   // Sess80 PR-6.5 ADR-0056: 1 タップ動線復活で 重複 tap 防止 state 必要 (Sess79 PR-6 で 一旦削除)
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // Sess83 ADR-0025 §7 Notes Amended (R-68 起票): 1 件 case の表現契約 = 「同じ」 文言の
+  // Sess83 ADR-0025 §7 Notes Amended (R-71 起票): 1 件 case の表現契約 = 「同じ」 文言の
   // compositional 違和感 (1 件 case で「同じ」 は文法成立せず) + chip 視覚曖昧化を解消するため、
   // count=1 時は専用 i18n key (...Single) + 盆栽名直接埋込 + CheckIcon + 「自動選択」 hint。
   // 2 件以上は既存挙動完全維持 (デグレなし)、 mode=recurring も schedule key 共有で同時解消。

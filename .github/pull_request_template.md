@@ -24,6 +24,18 @@ PR Template
 
 ---
 
+## 0.5. 開発前提チェック（Sess82 PR-G 追加、 REQUIRED）
+
+> Sess81 振り返り由来。 PR push 前に以下を確認 (= 全 ✓ で CI fail 3 回事故の構造防止)。
+
+- [ ] **`node --version` が `.nvmrc` と一致** (= 現在 v22)。 不一致なら `pnpm verify:node` で確認
+- [ ] **`pnpm verify` 全部 green** (= 部分実行ではなく全 chain)。 ローカルで pass しなければ CI も fail する
+- [ ] **base が main から rebase / merge 済** (= behind 5+ commit なら main merge 推奨)
+- [ ] **pre-commit hook 配線済** (= `pnpm verify:hooks` で `core.hooksPath = .githooks` 確認)。 PR-F 適用後の repo では `pnpm install` で自動配線
+- [ ] **format / lint / type-check / test がそれぞれ独立して pass** (= まとめてではなく個別確認)
+
+---
+
 ## 1. 関連リンク（REQUIRED）
 
 - Issue: #

@@ -372,6 +372,10 @@ const id: Partial<Record<TranslationKey, string>> = {
   purchaseErrorStoreProblem: 'There was a problem with the store. Please try again later.',
   purchaseErrorNotAllowed:
     'Purchases are not allowed on this device. Please check your device settings.',
+  // Sess81 PR: empty offerings / store still propagating (24h after store changes).
+  purchaseErrorOfferingsEmpty:
+    'Store is still being prepared. Please reopen the screen in a few minutes.',
+  priceUnavailableStorePreparing: 'Store is being prepared. Please try again in a few minutes.',
   purchasePending:
     'Your purchase is pending approval. We will activate Pro automatically once approved.',
   settingsRestoreTitle: 'Pulihkan dari cadangan',

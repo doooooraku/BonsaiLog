@@ -432,5 +432,5 @@ Sess83 user 実機検証 (SH-M25) で「BottomCtaBar『+ 作業を記録』 tap 
 
 #### 関連
 
-- R-68 (本 Notes 由来、 件数分岐 hook の UI 表現契約 SoT 化)
+- R-71 (本 Notes 由来、 件数分岐 hook の UI 表現契約 SoT 化)
 - ADR-0033 D1 (i18n SoT) / ADR-0049 ⑦ (Pro Paywall) / ADR-0056 (recurring 同型適用) / Sess80 PR-6.5 (#1002、 1 タップ動線命綱)

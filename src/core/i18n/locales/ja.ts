@@ -502,6 +502,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   purchaseErrorAlreadyPurchased: 'すでに購入済みです。「購入を復元」から復元してください。',
   purchaseErrorStoreProblem: 'ストアで問題が発生しました。しばらく経ってから再度お試しください。',
   purchaseErrorNotAllowed: 'この端末では購入が許可されていません。端末の設定をご確認ください。',
+  // Sess81 PR: ストア準備中 (商品反映には数時間〜24時間かかることがある)
+  purchaseErrorOfferingsEmpty:
+    'ストアの準備が完了していません。数分後にこの画面を開き直してください。',
+  priceUnavailableStorePreparing: 'ストアを準備しています。数分後にもう一度お試しください。',
   purchasePending: 'お支払い承認待ちです。承認され次第、自動的に Pro を有効化します。',
   settingsRestoreTitle: 'ご購入履歴を復元',
   settingsRestoreDesc: '別の端末で購入済みの方はこちらから復元できます。',

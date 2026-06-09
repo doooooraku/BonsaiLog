@@ -42,6 +42,8 @@ const ANDROID_KEYS = [
   'ADMOB_ANDROID_BANNER_ID',
 ];
 const ADMOB_PATTERN = /^ca-app-pub-\d{16}[~/]\d{10}$/;
+// Sess81 R-68: RC API キー接頭辞 (iOS と Android の取り違え事故防止)
+const RC_KEY_PREFIX_PATTERN = /^goog_/;
 
 const envSnapshot = { ...process.env };
 for (const key of ANDROID_KEYS) {
@@ -54,6 +56,13 @@ for (const key of ANDROID_KEYS) {
       `.env: ${key}`,
       false,
       `形式不正 (期待: ca-app-pub-XXX~YYY): ${v.slice(0, 20)}...`,
+    );
+  } else if (key === 'REVENUECAT_ANDROID_API_KEY' && !RC_KEY_PREFIX_PATTERN.test(v)) {
+    add(
+      `A-${key}`,
+      `.env: ${key}`,
+      false,
+      `Sess81 R-68: 接頭辞不正 (期待: goog_xxxxx、 実際: "${v.slice(0, 6)}...") — iOS キーと取り違えていませんか?`,
     );
   } else {
     add(`A-${key}`, `.env: ${key}`, true, `${v.length} chars`);
@@ -362,12 +371,92 @@ function checkWorkflow() {
   );
 }
 
+// === G グループ: 外部サービス連携 smoke test (Sess81 R-68) ===
+//
+// 「アプリ側 jest / Maestro mock は green だが、 外部サービス (RC / Google Play)
+//   の状態が壊れていてリリース後に動かない」 という Sess81 IAP 事故の構造防止。
+//
+// 本グループは **本物の RevenueCat REST API** を呼ぶため、 ネットワーク必須。
+// ローカル開発時は skip (= --ci 時のみ実行)、 失敗時は CI で release を中断。
+async function checkRcOfferings() {
+  const apiKey = process.env.REVENUECAT_ANDROID_API_KEY;
+  if (!apiKey || apiKey === 'placeholder') {
+    add('G-RC-OFFERINGS', 'RC offerings smoke (Android)', false, 'API キー未設定 — skip', false);
+    return;
+  }
+  // anonymous user で /offerings 呼出 = アプリの SDK と同じ動作を CI から再現
+  const userId = 'preflight-smoke-test-' + Date.now();
+  const url = `https://api.revenuecat.com/v1/subscribers/${userId}/offerings`;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'X-Platform': 'android',
+      },
+    });
+    if (!res.ok) {
+      add(
+        'G-RC-OFFERINGS',
+        'RC offerings smoke (Android)',
+        false,
+        `RC API HTTP ${res.status} — API キー or RC Dashboard 設定を確認`,
+        false,
+      );
+      return;
+    }
+    const data = await res.json();
+    const currentId = data.current_offering_id;
+    const offerings = data.offerings ?? [];
+    const current = offerings.find((o) => o.identifier === currentId);
+    if (!current) {
+      add(
+        'G-RC-OFFERINGS',
+        'RC offerings smoke (Android)',
+        false,
+        `current offering not found (current_id=${currentId}, offerings count=${offerings.length}) — RC Dashboard で Offering を current にしてください`,
+        false,
+      );
+      return;
+    }
+    const packages = current.packages ?? [];
+    const types = new Set(packages.map((p) => p.identifier));
+    const expected = ['$rc_monthly', '$rc_annual', '$rc_lifetime'];
+    const missing = expected.filter((p) => !types.has(p));
+    if (missing.length > 0) {
+      add(
+        'G-RC-OFFERINGS',
+        'RC offerings smoke (Android)',
+        false,
+        `Package 欠落: ${missing.join(', ')} (got ${packages.length} packages) — RC Dashboard で Offering "${currentId}" の Package 紐付けを確認`,
+        false,
+      );
+      return;
+    }
+    add(
+      'G-RC-OFFERINGS',
+      'RC offerings smoke (Android)',
+      true,
+      `current="${currentId}", packages=${packages.length} (monthly/annual/lifetime 完備)`,
+    );
+  } catch (e) {
+    add(
+      'G-RC-OFFERINGS',
+      'RC offerings smoke (Android)',
+      false,
+      `fetch エラー: ${e.message}`,
+      false,
+    );
+  }
+}
+
 // === Main ===
 async function main() {
   await checkPlayConsole();
   if (isCI) {
     await checkGitHubSecrets();
     checkWorkflow();
+    // Sess81 R-68: 外部サービス連携 smoke test (RC offerings 取得試行)
+    await checkRcOfferings();
   }
 
   console.log('🌱 BonsaiLog Android Release Preflight v1.0');

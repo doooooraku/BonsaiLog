@@ -75,6 +75,48 @@ if (missing.length > 0) {
 console.log('\x1b[32m✓ Pre-build env check passed (local .env)\x1b[0m');
 
 // ---------------------------------------------------------------------------
+// Layer 1.7: RevenueCat API key 接頭辞 verify (Sess81 R-68)
+// ---------------------------------------------------------------------------
+// 取り違え事故防止: Android 用キーは `goog_` 始まり、 iOS 用キーは `appl_` 始まり。
+// 公開ドキュメント: https://www.revenuecat.com/docs/welcome/authentication#api-key-prefixes
+// 違反例 (= Sess81 R-68 由来): iOS と Android のキーを取り違えて埋め込むと、
+// 起動時の Purchases.configure() は成功するが、 getOfferings() が常に null を返す
+// → Paywall「利用不可」 + 「Package not found」 エラー、 jest / Maestro mock では検出不可。
+// ESLint rule `expo/no-dynamic-env-var` を満たすため、 process.env への
+// アクセスは明示 key 名で行う (= dynamic access 禁止)。 CI workflow が iOS キー
+// に `placeholder` を入れる場合をスキップ (= build-android-play.yml L55)。
+const RC_KEY_CHECKS = [
+  {
+    key: 'REVENUECAT_ANDROID_API_KEY',
+    value: process.env.REVENUECAT_ANDROID_API_KEY,
+    expectedPrefix: 'goog_',
+  },
+  {
+    key: 'REVENUECAT_IOS_API_KEY',
+    value: process.env.REVENUECAT_IOS_API_KEY,
+    expectedPrefix: 'appl_',
+  },
+];
+const prefixViolations = [];
+for (const { key, value, expectedPrefix } of RC_KEY_CHECKS) {
+  if (!keysToCheck.includes(key)) continue;
+  if (value === 'placeholder') continue;
+  if (value && !value.startsWith(expectedPrefix)) {
+    prefixViolations.push({ key, expected: expectedPrefix, actualPrefix: value.slice(0, 6) });
+  }
+}
+if (prefixViolations.length > 0) {
+  console.error('\n\x1b[31m✗ RevenueCat API key prefix mismatch (Sess81 R-68):\x1b[0m\n');
+  for (const v of prefixViolations) {
+    console.error(`   - ${v.key}: expected "${v.expected}*", got "${v.actualPrefix}..."`);
+  }
+  console.error('\n  iOS / Android キーを取り違えていませんか?');
+  console.error('  公開ドキュメント: https://www.revenuecat.com/docs/welcome/authentication\n');
+  process.exit(1);
+}
+console.log('\x1b[32m✓ RevenueCat API key prefix check passed\x1b[0m');
+
+// ---------------------------------------------------------------------------
 // Layer 1.5: Existing AndroidManifest.xml AdMob APPLICATION_ID validation
 // ---------------------------------------------------------------------------
 // 過去の prebuild で空文字列 / プレースホルダーが埋め込まれた AndroidManifest.xml が
