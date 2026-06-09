@@ -142,6 +142,50 @@ export async function countActiveRecurrenceRules(): Promise<number> {
 }
 
 /**
+ * 現在 active な (deleted_at IS NULL) 全 ルールを 作成順 (新しい順) で 取得。
+ *
+ * Sess81 PR-7.5 で 追加。 LookBackHub「🔁 定期予定を管理」 card → RecurrenceListScreen で
+ * active rules 一覧表示に 使用。
+ *
+ * @returns RecurrenceRuleRow[] (deleted_at IS NULL、 ORDER BY created_at DESC)
+ */
+export async function listActiveRecurrenceRules(): Promise<RecurrenceRuleRow[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<{
+    id: string;
+    bonsai_id: string;
+    event_type: string;
+    rrule: string;
+    start_at_utc: string;
+    end_at_utc: string | null;
+    exdates: string;
+    tz_iana: string;
+    deleted_at: string | null;
+    created_at: string;
+    updated_at: string;
+  }>(
+    `SELECT id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates,
+            tz_iana, deleted_at, created_at, updated_at
+     FROM recurrence_rules
+     WHERE deleted_at IS NULL
+     ORDER BY created_at DESC;`,
+  );
+  return rows.map((r) => ({
+    id: r.id,
+    bonsaiId: r.bonsai_id,
+    eventType: r.event_type,
+    rrule: r.rrule,
+    startAtUtc: r.start_at_utc,
+    endAtUtc: r.end_at_utc,
+    exdates: JSON.parse(r.exdates) as string[],
+    tzIana: r.tz_iana,
+    deletedAt: r.deleted_at,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  }));
+}
+
+/**
  * 新規 rule 作成可否 (Pro 境界判定、 ADR-0056 D7 + Grandfathered 戦略整合)。
  *
  * - Pro user: 常に true
