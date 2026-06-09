@@ -49,7 +49,9 @@ for (let i = 0; i < args.length; i++) {
     prs.push(a);
   } else {
     console.error(`✗ Unknown arg: ${a}`);
-    console.error('  使い方: node scripts/dev/wait-pr-ci.mjs <PR1> <PR2> ... [--interval N] [--timeout N] [--check NAME]');
+    console.error(
+      '  使い方: node scripts/dev/wait-pr-ci.mjs <PR1> <PR2> ... [--interval N] [--timeout N] [--check NAME]',
+    );
     process.exit(1);
   }
 }
