@@ -12,7 +12,7 @@
  *   - RecurrencePicker (= 既存 component、 enabled 強制 true、 hideToggle/hideEndDate)
  *   - 保存:
  *     - 編集 = replaceRecurrenceRule (= softDelete + create wrapper、 単数)
- *     - 新規 = bulkCreateRecurrenceRules (= N 件 transaction 一括作成、 Sess89 PR-C R-72)
+ *     - 新規 = bulkCreateRecurrenceRules (= N 件 transaction 一括作成、 Sess89 PR-C R-73)
  *
  * Sess89 PR-C (案 X = 案 X N 件 loop):
  *   - 複数盆栽 → 同じ予定を一括作成 (= 5 鉢に毎週月曜の水やり等の use case)
