@@ -1025,6 +1025,11 @@ const baseEn = {
   bulkPickerSheetSubLogSingle: 'Log care for {name}',
   bulkPickerSheetSubScheduleSingle: 'Add a schedule for {name}',
   bulkPickerAutoSelectedHint: 'Auto-selected',
+  // Sess89 Phase 1: カスタム樹種・樹形 管理 hub card (ADR-0049 ⑥ Grandfathered 緩 削除 OK の構造実装)
+  lookBackCardSpeciesTitle: 'Manage species',
+  lookBackCardSpeciesDesc: 'Add / rename / delete custom species · See usage counts',
+  lookBackCardStylesTitle: 'Manage styles',
+  lookBackCardStylesDesc: 'Add / rename / delete custom styles · See usage counts',
 };
 
 export type TranslationKey = keyof typeof baseEn;

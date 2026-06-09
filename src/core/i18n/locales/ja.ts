@@ -1024,6 +1024,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bulkPickerSheetSubLogSingle: '{name} に作業を記録',
   bulkPickerSheetSubScheduleSingle: '{name} に予定を追加',
   bulkPickerAutoSelectedHint: '自動選択',
+  // Sess89 Phase 1: カスタム樹種・樹形 管理 hub card (ADR-0049 ⑥ Grandfathered 緩 削除 OK の構造実装)
+  lookBackCardSpeciesTitle: '樹種を管理',
+  lookBackCardSpeciesDesc: 'カスタム樹種の追加・名前変更・削除 / 各樹種の使用数を確認',
+  lookBackCardStylesTitle: '樹形を管理',
+  lookBackCardStylesDesc: 'カスタム樹形の追加・名前変更・削除 / 各樹形の使用数を確認',
 };
 
 export default ja;
