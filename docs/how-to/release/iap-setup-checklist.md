@@ -57,8 +57,11 @@
 > ⚠️ **修復は API 不可**: Google Android Publisher API は「既存 region の削除」 を拒否する (= 既存購読者保護)。 Play Console UI 経由でのみ修正可能。
 
 - [ ] Subscriptions > `bonsailog_pro` > monthly basePlan > **Edit** > **Pricing & availability** > **Country/region availability** > **Select all regions** > Save
-- [ ] Subscriptions > `bonsailog_pro` > annual basePlan > 同上
-- [ ] In-app products > `bonsailog_pro_lifetime` > **Pricing & availability** > **Country/region availability** > **Select all regions** > Save
+- [ ] **Sess81 user 詰まり教訓**: territory ON 直後は「価格を設定してください」 エラーで保存不可。 **画面右上「Set prices」 → USD 価格入力 (= monthly $3.99 / annual $29.99 / lifetime $69.99) → 「他の通貨に自動的に換算」 ON → Apply** → 全 173 国の価格が自動入力されてから「変更を保存」
+- [ ] Subscriptions > `bonsailog_pro` > annual basePlan > 同上 (= USD $29.99)
+- [ ] In-app products > `bonsailog_pro_lifetime` > **Pricing & availability** > **Country/region availability** > **Select all regions** > Save (= USD $69.99)
+
+> 💡 **Sess82 PR-D 適用後の新規アプリ**: `python3 scripts/store-automation/google_create_products.py --commit` 1 発で全 175 国 territory が明示登録される (= MN-only 罠ゼロ化)。 本 Step 8 手動操作は **Sess81 以前の既存アプリ修復時のみ** 必要。
 
 ### Step 9: Play Console - **License Testing 登録**
 
