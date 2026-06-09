@@ -102,7 +102,7 @@
       }
     },
     "regionPrices": {
-      "_note": "USD 基準。Google は地域別に明示指定。最低限 US を設定し、他は autoConvert/otherRegions に委ねる。",
+      "_note": "Sess82 PR-D R-68 適用済: google_create_products.py で TERRITORIES_175 を明示展開、 全 175 国に regionalConfigs/regionalPricingAndAvailabilityConfigs entry を作成 (newSubscriberAvailability=True / availability=AVAILABLE)、 価格は otherRegionsConfig.usdPrice 経由で Google 自動換算。 Sess47-48 で MN-only になった territory 罠を構造防止。",
       "US": { "currency": "USD" }
     }
   }
