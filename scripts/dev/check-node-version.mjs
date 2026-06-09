@@ -47,7 +47,9 @@ const current = process.version.replace(/^v/, '');
 const currentMajor = current.split('.')[0];
 const expectedMajor = expected.replace(/^v/, '').split('.')[0];
 
-const matched = skipMajorOnly ? currentMajor === expectedMajor : current === expected || currentMajor === expectedMajor;
+const matched = skipMajorOnly
+  ? currentMajor === expectedMajor
+  : current === expected || currentMajor === expectedMajor;
 
 if (matched) {
   log(`\x1b[32m✓ Node version OK: .nvmrc=${expected}, current=${current}\x1b[0m`);
@@ -63,7 +65,9 @@ err('');
 err('  対処 (= 開発者の選択肢):');
 err(`    1. nvm install ${expected} && nvm use ${expected}`);
 err(`    2. corepack を使う場合: corepack pnpm install`);
-err(`    3. PATH に v${expectedMajor} を prepend: PATH=$HOME/.nvm/versions/node/v${expectedMajor}.X.X/bin:$PATH`);
+err(
+  `    3. PATH に v${expectedMajor} を prepend: PATH=$HOME/.nvm/versions/node/v${expectedMajor}.X.X/bin:$PATH`,
+);
 err('');
 err('  詳細: docs/how-to/development/dev-workflow.md §Node version');
 err('  Sess81 教訓: Node 20 で jest を走らせると SQLite native module で 113 tests 誤検知 fail。');
