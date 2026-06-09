@@ -993,8 +993,9 @@ const baseEn = {
   recurringRuleEditScopeAll: 'All events',
   recurringEventBadgeLabel: 'Recurring event',
   // Sess81 PR-7.5: LookBackHub 5th card + RecurrenceListScreen
-  recurringHubCardTitle: '🔁 Manage recurring schedules',
-  recurringHubCardDesc: 'Manage rules like weekly Monday watering',
+  // Sess82 PR-A: Remove emoji 🔁 (duplicate with left RepeatIcon) + desc generalization
+  recurringHubCardTitle: 'Manage recurring schedules',
+  recurringHubCardDesc: 'Review the rules that create repeating events',
   recurringListScreenTitle: 'Recurring schedules',
   recurringListEmptyTitle: 'No recurring schedules yet',
   recurringListEmptyDesc: 'Create one from the Plan tab "🔁 Repeat" toggle',

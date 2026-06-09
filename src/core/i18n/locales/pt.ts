@@ -982,8 +982,8 @@ const pt: Partial<Record<TranslationKey, string>> = {
   recurringRuleEditScopeAll: 'All events',
   recurringEventBadgeLabel: 'Recurring event',
   // Sess81 PR-7.5: LookBackHub 5th card + RecurrenceListScreen
-  recurringHubCardTitle: '🔁 Manage recurring schedules',
-  recurringHubCardDesc: 'Manage rules like weekly Monday watering',
+  recurringHubCardTitle: 'Manage recurring schedules',
+  recurringHubCardDesc: 'Review the rules that create repeating events',
   recurringListScreenTitle: 'Recurring schedules',
   recurringListEmptyTitle: 'No recurring schedules yet',
   recurringListEmptyDesc: 'Create one from the Plan tab "🔁 Repeat" toggle',
