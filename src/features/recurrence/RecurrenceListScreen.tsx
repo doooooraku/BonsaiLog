@@ -30,6 +30,7 @@ import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
 import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
+import { parseCustomRruleDays } from '@/src/core/recurrence/rrule';
 import { useColors } from '@/src/core/theme/useColors';
 import {
   FREE_RECURRENCE_RULE_LIMIT,
@@ -41,16 +42,27 @@ import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
 import { useRecurrenceRules } from '@/src/features/recurrence/useRecurrenceRules';
 
 /**
- * RRULE 文字列 → 人間可読 label に変換 (= 6 preset の逆引き)。
- * 未マッチは「カスタム」 として表示 (v1.2 で 詳細表示候補)。
+ * RRULE 文字列 → 人間可読 label に変換 (= preset 静的逆引き、 Sess89 PR-B 拡張)。
+ *
+ * Sess78 当初 = 6 preset、 Sess89 PR-B で 7 preset + custom (FREQ=DAILY;INTERVAL=N) に拡張。
+ * 既存 rule の旧 RRULE (= weeklyMonday=FREQ=WEEKLY;BYDAY=MO / biweekly=FREQ=WEEKLY;INTERVAL=2)
+ * は migration せず維持、 表示連続性のため 旧 key も逆引き対応を保持。
+ *
+ * 未マッチは「カスタム」 fallback (= caller で parseCustomRruleDays で N 抽出して
+ * 「{n} 日ごと」 と置換表示する pattern を併用、 RecurrenceListScreen renderItem 参照)。
  */
 function rruleToHumanLabel(rrule: string): TranslationKey {
-  // 6 preset の逆引き (ADR-0056 D4 + recurringPicker preset 整合)
+  // 7 preset の逆引き (= Sess89 PR-B 拡張)
   if (rrule === 'FREQ=DAILY') return 'recurringPresetDaily';
-  if (rrule === 'FREQ=WEEKLY;BYDAY=MO') return 'recurringPresetWeeklyMonday';
   if (rrule === 'FREQ=WEEKLY') return 'recurringPresetWeekly';
-  if (rrule === 'FREQ=WEEKLY;INTERVAL=2') return 'recurringPresetBiweekly';
   if (rrule === 'FREQ=MONTHLY') return 'recurringPresetMonthly';
+  if (rrule === 'FREQ=MONTHLY;INTERVAL=3') return 'recurringPresetEvery3Months';
+  if (rrule === 'FREQ=MONTHLY;INTERVAL=6') return 'recurringPresetEvery6Months';
+  if (rrule === 'FREQ=YEARLY') return 'recurringPresetYearly';
+  // 旧 preset 維持 (= 既存 rule 表示連続性、 PRESET_ORDER から外れているが key 残存)
+  if (rrule === 'FREQ=WEEKLY;BYDAY=MO') return 'recurringPresetWeeklyMonday';
+  if (rrule === 'FREQ=WEEKLY;INTERVAL=2') return 'recurringPresetBiweekly';
+  // FREQ=DAILY;INTERVAL=N (= custom) は caller で parseCustomRruleDays + 置換、 ここでは fallback
   return 'recurringRruleHumanCustom';
 }
 
@@ -152,6 +164,12 @@ export default function RecurrenceListScreen() {
             const bonsaiLabel = bonsai?.name ?? t('recurringListItemDeletedBonsai');
             const eventLabel = t(`eventType_${item.eventType}` as TranslationKey);
             const humanRruleKey = rruleToHumanLabel(item.rrule);
+            // Sess89 PR-B: custom RRULE (= FREQ=DAILY;INTERVAL=N) は N を抽出して「{n} 日ごと」 表示
+            const customDays = parseCustomRruleDays(item.rrule);
+            const rruleLabel =
+              customDays !== null
+                ? t('recurringPresetCustomEveryNDays').replace('{n}', String(customDays))
+                : t(humanRruleKey);
             // Sess82 PR-B: 終了日表示削除 → 次回予定日表示 (= ADR-0056 D4-1、 4 ペルソナ最大公約数)
             const nextOccurrence = nextOccurrenceMap.get(item.id) ?? null;
             const nextLabel = nextOccurrence
@@ -174,7 +192,7 @@ export default function RecurrenceListScreen() {
                     </ThemedText>
                   </View>
                   <ThemedText style={[styles.eventLabel, { color: c.textSecondary }]}>
-                    {eventLabel} · {t(humanRruleKey)}
+                    {eventLabel} · {rruleLabel}
                   </ThemedText>
                   <ThemedText style={[styles.nextLabel, { color: c.textMuted }]}>
                     {nextLabel}

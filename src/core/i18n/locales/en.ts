@@ -987,7 +987,12 @@ const baseEn = {
   recurringPresetWeekly: 'Weekly',
   recurringPresetBiweekly: 'Biweekly',
   recurringPresetMonthly: 'Monthly',
-  recurringPresetCustom: 'Every 3 months',
+  recurringPresetCustom: 'Custom',
+  // Sess89 PR-B (ADR-0056 D4 Amendment): 7 preset + custom (industry-aligned + bonsai long-cycle)
+  recurringPresetEvery3Months: 'Every 3 months',
+  recurringPresetEvery6Months: 'Every 6 months',
+  recurringPresetYearly: 'Yearly',
+  recurringPresetCustomEveryNDays: 'Every {n} days',
   recurringEndDateOneYear: 'In 1 year (recommended)',
   recurringEndDateSpecific: 'Specific date',
   recurringEndDateNever: 'Never',

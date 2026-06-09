@@ -25,7 +25,7 @@ describe('expandRRule (純関数、 RFC 5545 RRULE → YYYY-MM-DD[] 展開)', ()
 
     test('毎週月曜 (FREQ=WEEKLY;BYDAY=MO) + 開始月曜 → 8 週で 8 件', () => {
       const dates = expandRRule(
-        RECURRENCE_PRESETS.weeklyMonday,
+        'FREQ=WEEKLY;BYDAY=MO',
         '2026-06-15T00:00:00.000Z', // 月曜
         '2026-08-09T23:59:59.000Z',
         [],
@@ -51,7 +51,7 @@ describe('expandRRule (純関数、 RFC 5545 RRULE → YYYY-MM-DD[] 展開)', ()
 
     test('隔週 (FREQ=WEEKLY;INTERVAL=2) → 8 週で 4 件', () => {
       const dates = expandRRule(
-        RECURRENCE_PRESETS.biweekly,
+        'FREQ=WEEKLY;INTERVAL=2',
         '2026-06-15T00:00:00.000Z',
         '2026-08-09T23:59:59.000Z',
         [],
@@ -205,7 +205,7 @@ describe('expandRRule (純関数、 RFC 5545 RRULE → YYYY-MM-DD[] 展開)', ()
 
     test('終了日まで 1 年 (毎週月曜 365 日) → 52 件前後', () => {
       const dates = expandRRule(
-        RECURRENCE_PRESETS.weeklyMonday,
+        'FREQ=WEEKLY;BYDAY=MO',
         '2026-06-15T00:00:00.000Z',
         '2027-06-14T23:59:59.000Z',
         [],
@@ -282,7 +282,7 @@ describe('expandRRule (純関数、 RFC 5545 RRULE → YYYY-MM-DD[] 展開)', ()
   describe('結果の性質 (重複なし / ソート済)', () => {
     test('重複なし', () => {
       const dates = expandRRule(
-        RECURRENCE_PRESETS.weeklyMonday,
+        'FREQ=WEEKLY;BYDAY=MO',
         '2026-06-15T00:00:00.000Z',
         '2027-06-15T23:59:59.000Z',
         [],
@@ -294,7 +294,7 @@ describe('expandRRule (純関数、 RFC 5545 RRULE → YYYY-MM-DD[] 展開)', ()
 
     test('昇順ソート済', () => {
       const dates = expandRRule(
-        RECURRENCE_PRESETS.weeklyMonday,
+        'FREQ=WEEKLY;BYDAY=MO',
         '2026-06-15T00:00:00.000Z',
         '2026-12-31T23:59:59.000Z',
         [],
@@ -323,15 +323,17 @@ describe('isValidRRule (RRULE 文字列 validation)', () => {
   });
 });
 
-describe('RECURRENCE_PRESETS (6 preset 定義整合)', () => {
-  test('6 種類すべて定義されている (ADR-0056 D4)', () => {
-    expect(Object.keys(RECURRENCE_PRESETS)).toHaveLength(6);
+describe('RECURRENCE_PRESETS (Sess89 PR-B: 7 preset + custom 定義整合)', () => {
+  test('7 種類 + custom すべて定義されている (ADR-0056 D4 Amendment)', () => {
+    expect(Object.keys(RECURRENCE_PRESETS)).toHaveLength(7);
     expect(RECURRENCE_PRESETS.daily).toBe('FREQ=DAILY');
-    expect(RECURRENCE_PRESETS.weeklyMonday).toBe('FREQ=WEEKLY;BYDAY=MO');
     expect(RECURRENCE_PRESETS.weekly).toBe('FREQ=WEEKLY');
-    expect(RECURRENCE_PRESETS.biweekly).toBe('FREQ=WEEKLY;INTERVAL=2');
     expect(RECURRENCE_PRESETS.monthly).toBe('FREQ=MONTHLY');
     expect(RECURRENCE_PRESETS.every3Months).toBe('FREQ=MONTHLY;INTERVAL=3');
+    expect(RECURRENCE_PRESETS.every6Months).toBe('FREQ=MONTHLY;INTERVAL=6');
+    expect(RECURRENCE_PRESETS.yearly).toBe('FREQ=YEARLY');
+    // custom は静的 default = FREQ=DAILY;INTERVAL=7、 実際は buildCustomRrule で動的生成
+    expect(RECURRENCE_PRESETS.custom).toBe('FREQ=DAILY;INTERVAL=7');
   });
 
   test('全 preset が isValidRRule で 有効', () => {

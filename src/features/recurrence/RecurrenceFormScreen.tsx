@@ -34,7 +34,12 @@ import {
 import { nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-import { RECURRENCE_PRESETS, type RecurrencePresetKey } from '@/src/core/recurrence/rrule';
+import {
+  buildCustomRrule,
+  parseCustomRruleDays,
+  RECURRENCE_PRESETS,
+  type RecurrencePresetKey,
+} from '@/src/core/recurrence/rrule';
 import { useColors } from '@/src/core/theme/useColors';
 import { getBonsaiById } from '@/src/db/bonsaiRepository';
 import {
@@ -53,12 +58,25 @@ type RouteParams = {
   eventType?: string; // create mode (= 対象 event_type、 caller 必須)
 };
 
-/** RRULE 文字列 → preset key 逆引き (= 編集時の初期値ロード用、 RECURRENCE_PRESETS は string map) */
-function rruleToPreset(rrule: string): RecurrencePresetKey {
+/**
+ * RRULE 文字列 → {preset, customDays} 逆引き (= 編集時の初期値ロード用、 Sess89 PR-B 拡張)。
+ *
+ * 1. 静的 preset map で 完全一致 search (= daily / weekly / monthly / every3Months /
+ *    every6Months / yearly)、 ただし `custom` は除外 (= 動的生成のため逆引きは別 path)
+ * 2. FREQ=DAILY;INTERVAL=N pattern match (= custom)、 N を customDays に
+ * 3. fallback (= 旧 weeklyMonday / biweekly RRULE などは「カスタム」 として扱う、 N=7 default)
+ */
+function rruleToPreset(rrule: string): { preset: RecurrencePresetKey; customDays: number | null } {
+  // 1. 静的 preset map で 完全一致 search (custom は除外)
   for (const [key, val] of Object.entries(RECURRENCE_PRESETS)) {
-    if (val === rrule) return key as RecurrencePresetKey;
+    if (key === 'custom') continue;
+    if (val === rrule) return { preset: key as RecurrencePresetKey, customDays: null };
   }
-  return 'weeklyMonday'; // fallback (= 未マッチ、 v1.x で カスタム RRULE 編集対応)
+  // 2. custom pattern match (= FREQ=DAILY;INTERVAL=N)
+  const days = parseCustomRruleDays(rrule);
+  if (days !== null) return { preset: 'custom', customDays: days };
+  // 3. fallback (= 旧 weeklyMonday=FREQ=WEEKLY;BYDAY=MO / biweekly=FREQ=WEEKLY;INTERVAL=2 など)
+  return { preset: 'custom', customDays: 7 };
 }
 
 export default function RecurrenceFormScreen() {
@@ -93,9 +111,12 @@ export default function RecurrenceFormScreen() {
           if (cancelled) return;
           setBonsai(loadedBonsai);
           setEventType(rule.eventType);
+          // Sess89 PR-B: rruleToPreset は {preset, customDays} を返す型に変更
+          const { preset: loadedPreset, customDays: loadedCustomDays } = rruleToPreset(rule.rrule);
           setRecurrence({
             enabled: true,
-            preset: rruleToPreset(rule.rrule),
+            preset: loadedPreset,
+            customDays: loadedCustomDays,
             endType: rule.endAtUtc ? 'specific' : 'never',
             endDate: rule.endAtUtc ? rule.endAtUtc.slice(0, 10) : null,
           });
@@ -122,7 +143,11 @@ export default function RecurrenceFormScreen() {
     if (!bonsai || !eventType || saving) return;
     setSaving(true);
     try {
-      const rrule = RECURRENCE_PRESETS[recurrence.preset];
+      // Sess89 PR-B: custom 選択時は buildCustomRrule(customDays) で動的 RRULE 生成、 他 preset は静的 map
+      const rrule =
+        recurrence.preset === 'custom'
+          ? buildCustomRrule(recurrence.customDays ?? 7)
+          : RECURRENCE_PRESETS[recurrence.preset];
       const startAtUtc = nowUtc() as string;
       const endAtUtc =
         recurrence.endType === 'never'
