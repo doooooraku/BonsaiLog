@@ -320,11 +320,18 @@ async function migrate(db: SQLite.SQLiteDatabase) {
   // - hasColumn ガード + CREATE TABLE IF NOT EXISTS で 冪等 (二度目以降の起動 safe)
   // ---------------------------------------------------------------------------
   if (version < 16) {
-    await db.execAsync(schemaV16);
+    // Sess81 hotfix: schemaV16 内の `CREATE INDEX idx_events_recurrence ON events(recurrence_rule_id)`
+    // が ALTER TABLE ADD COLUMN より先に実行され "no such column: recurrence_rule_id" で
+    // migration 全体が rollback されていた (= 実機 + CI 全 PR で user_version=15 のまま)。
+    // Sess78 PR-2 #995 で混入。 Sess79〜Sess81 で 7 PR 跨いで放置 → 実機検証中に発覚。
+    //
+    // 修正: ALTER TABLE で 列追加 → schemaV16 (= CREATE TABLE + 全 INDEX) の順に分離実行。
+    // CREATE INDEX IF NOT EXISTS は冪等なので、 列追加後の実行で 安全に作成可能。
     if (!(await hasColumn(db, 'events', 'recurrence_rule_id'))) {
       // REFERENCES 句なし版 (Sess14 罠回避、 v15 PR-P pattern 踏襲)
       await db.execAsync('ALTER TABLE events ADD COLUMN recurrence_rule_id TEXT;');
     }
+    await db.execAsync(schemaV16);
     version = 16;
   }
 
