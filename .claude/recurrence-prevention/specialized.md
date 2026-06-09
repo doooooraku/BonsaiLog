@@ -1468,3 +1468,50 @@ import { screenTitleStack } from '@/src/core/theme/typography';
 - 由来 ADR: ADR-0053 Sess90 Amendment (= 本 R 75 と同 PR で確定)
 - 由来 PR: Sess90 PR-A (本 R 起票)
 - meta-rule: R-55 (= 関連項目網羅調査、 1 箇所修正で他 N 箇所漏れ防止)
+
+---
+
+## R-76 master/custom 領域 管理画面 UI 統一 SoT meta-rule (Sess91 PR-4 起票)
+
+### ルール
+
+`/tags` / `/custom-species` / `/custom-styles` (= 将来「カスタム肥料」「カスタム道具」 等 追加領域) で表現される 「**機能領域の master/custom 管理画面**」 は、以下 5 軸の SoT (= Single Source of Truth) を必ず守る:
+
+| 軸 | SoT | 必須要素 |
+|----|-----|----------|
+| (a) styles | `src/features/manager-screen/managerScreenStyles.ts` | container / scroll / desc / addBtn / addBtnText / empty / rowWithToggle / rowWithoutToggle / rowMain / rowMainTextWrap / rowStats / rowStatsUnused / kebabButton / toggleArea / chevronWrap / masterBadge / expandedArea / moreLink |
+| (b) row layout | 横並び (= name LEFT + stats RIGHT space-between) + 左 toggle ▶/▼ (= rowWithToggle) | flexShrink で長文 name overflow 対策、 numberOfLines={1} ellipsizeMode="tail" |
+| (c) 操作 | row 主部 tap → 編集画面 push、 右 kebab (⋮) → RowActionMenu (編集 + 削除 2 択) → ConfirmDialog | ADR-0036 D7 整合、 master row は kebab 非表示 (= 編集/削除ロック整合) |
+| (d) inline 展開 | 左 toggle ▶/▼ → 関連盆栽 BonsaiCard inline 展開 (= PEEK_LIMIT=3 + 「もっと見る (残り N 件)」 link) | Free 全開放、 retrieval 関数は repository に extract (= R-72 整合) |
+| (e) addBtn | JSX 側で `+ ` prefix を挿入 (i18n 値からは prefix 撤去) | アラビア RTL 安全 + 統一性、 i18n key 値は domain verb のみ (= 「樹種を追加」「Add species」) |
+
+### Why
+
+`/tags` (Sess9 PR-10、 2026 年初頭) と `/custom-species` `/custom-styles` (Sess89、 2026-06-09) を別 session で独立実装した結果、 row 構造 (= 横並び vs 縦並び)、 toggle 有無、 kebab 有無、 ChevronRight vestigial 残存、 addBtn の prefix 戦略 etc. で **見た目バラバラ + 操作迷い** が発生。 user 報告「タグを管理 をほぼ全て転用したつもりでしたが全然なっていません」 (Sess91)。
+
+5 Whys 真因 = 「機能領域の管理画面 UI 共通 SoT が存在せず、 各実装者 (= Claude Code) が 2 つの先行画面 (= `/tags` と `RecurrenceListScreen`) の劣化合成を生んだ」。 R-72 (= CRUD repository 層 SoT、 Sess89 PR-4 起票) を起票した直後だが、 UI 層は別物として漏れた = CLAUDE.md §9 「3 回再発で hook 化必須」 該当 (= 3 領域目で気付くべき共通化機会の見逃し)。
+
+### How to apply
+
+新規「カスタム X」 領域 (例: カスタム肥料 / カスタム道具) を追加する際:
+
+1. `.claude/templates/manager-screen-template.tsx` を copy して `app/custom-<x>.tsx` 作成
+2. `managerScreenStyles` を import (= 新規 StyleSheet 作成しない)、 共通 styles SoT 参照
+3. `<RowActionMenu>` + `<ConfirmDialog>` 経由の編集/削除動線必須 (= ADR-0036 D7)
+4. retrieval 関数を `bonsaiRepository.ts` に extract (= `getAllActiveBonsaiByCustom<X>Id(<x>Id, locale)` 等)、 R-72 SoT 整合
+5. addBtn label は JSX 側で `+ ` prefix、 i18n 値は domain verb のみ
+6. `scripts/dev/check-manager-screen-symmetry.mjs` 走査対象に追加して構造同型 lint
+7. ふりかえりタブ Hub card (`app/(tabs)/look-back/index.tsx`) に新 card 追加
+
+### 検出
+
+- **配線済 (Sess91 PR-4)**: `scripts/dev/check-manager-screen-symmetry.mjs` で `app/tags.tsx` / `app/custom-species.tsx` / `app/custom-styles.tsx` の 3 画面間で 必須 element 数 (= `managerScreenStyles.rowWithToggle` / `RowActionMenu` / `ConfirmDialog` / `toggleArea` / `kebabButton` / `expandedArea` 出現回数) を grep + Compare、 不整合あれば exit 1 warning。 ESLint AST rule 化は 3 回再発 (= 本 PR が 1 回目の構造防御、 SoT 違反観察後の昇格を Sess92+ で検討)。
+- 新規 PR で `app/<管理画面>.tsx` を追加した時、 reviewer は本 R-76 の (a)〜(e) 5 軸チェックリストで confirm
+
+### 関連
+
+- 由来 ADR: ADR-0036 §Notes Amended Sess91 PR-4 (= 本 R 76 で SoT 明記)
+- 由来 PR: Sess91 PR-1 / PR-2 / PR-3 / PR-4 (= 4 PR シリーズで 5 軸全部実装、 本 R 起票)
+- 連携 R: R-72 (= CRUD repository 層 SoT、 本 R 76 と論理 set)
+- meta-rule: R-55 (= 関連項目網羅調査、 1 領域改修で 3 画面同時改修必須)
+- 設計原典: `~/.claude/plans/elegant-kindling-finch.md` (Sess91 議論 plan 6 名チーム + 4 ペルソナ + 5 Whys)

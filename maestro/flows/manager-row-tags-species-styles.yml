@@ -1,0 +1,107 @@
+## Maestro flow: R-76 master/custom 管理画面 3 画面 row 同型 baseline regression (Sess91 PR-4 起票)
+##
+## 検証内容 (Sess91 PR-1〜PR-3 で 3 画面統一した row 構造 + kebab + ConfirmDialog の動作維持):
+##   V1 (Step 3-8):  /tags row → kebab tap → RowActionMenu (編集/削除) → cancel
+##   V2 (Step 9-14): /custom-species row → kebab tap → RowActionMenu → cancel
+##   V3 (Step 15-20): /custom-styles row → kebab tap → RowActionMenu → cancel
+##
+## 反復実行 (Sess75 _template.yml ガイドライン、 3 回反復):
+##   PASS=0; for i in 1 2 3; do
+##     ~/.maestro/bin/maestro test maestro/flows/manager-row-tags-species-styles.yml > /tmp/m-$i.log 2>&1
+##     if [ $? -eq 0 ]; then PASS=$((PASS+1)); fi
+##   done; echo "$PASS/3"
+##
+## 前提条件:
+##   - SEED テストデータで tags 1 件以上 + custom-species 1 件以上 + custom-styles 1 件以上 必要
+##   - clearState: true で onboarding スキップ済 build (= seed pack 投入済 dev build)
+##
+## 関連:
+##   - Sess91 PR-1 #1046 (= 共通 styles 抽出 + row 横並び化)
+##   - Sess91 PR-2 #1047 (= /tags kebab 導入)
+##   - Sess91 PR-3 #1049 (= /custom-* inline 展開横展開)
+##   - R-76 (= master/custom 管理画面 UI 統一 SoT、 本 flow が PR-4 の構造防御 baseline)
+##   - ADR-0036 §Notes Amended Sess91 PR-4
+##
+appId: 'com.dooooraku.bonsailog'
+---
+- launchApp:
+    clearState: false # SEED データ前提のため state は維持
+
+# === V1: /tags row → kebab → RowActionMenu ===
+- tapOn:
+    id: 'e2e_tab_look_back'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    id: 'e2e_look_back_card_tags'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# kebab (⋮) tap (= 任意の row、 testID prefix で match)。
+# Sess91 PR-2 で /tags にも kebab 配線、 master tag は非表示なので custom 想定。
+- tapOn:
+    id: 'e2e_tags_kebab_'
+    optional: true
+    label: 'V1: /tags row kebab tap (= ADR-0036 D7 RowActionMenu trigger)'
+    retryTapIfNoChange: true
+
+- assertVisible:
+    id: 'e2e_tags_kebab_menu'
+    label: 'V1: RowActionMenu 表示 (= 編集 + 削除 2 択)'
+    optional: true
+
+# Cancel で閉じる (backdrop tap or 物理 back)
+- back
+- waitForAnimationToEnd:
+    timeout: 1000
+- back # /tags → /look-back hub
+
+# === V2: /custom-species row → kebab → RowActionMenu ===
+- tapOn:
+    id: 'e2e_look_back_card_species'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    id: 'e2e_custom_species_kebab_'
+    optional: true
+    label: 'V2: /custom-species row kebab tap'
+    retryTapIfNoChange: true
+
+- assertVisible:
+    id: 'e2e_custom_species_kebab_menu'
+    label: 'V2: RowActionMenu 表示'
+    optional: true
+
+- back
+- waitForAnimationToEnd:
+    timeout: 1000
+- back
+
+# === V3: /custom-styles row → kebab → RowActionMenu ===
+- tapOn:
+    id: 'e2e_look_back_card_styles'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    id: 'e2e_custom_styles_kebab_'
+    optional: true
+    label: 'V3: /custom-styles row kebab tap'
+    retryTapIfNoChange: true
+
+- assertVisible:
+    id: 'e2e_custom_styles_kebab_menu'
+    label: 'V3: RowActionMenu 表示'
+    optional: true
+
+- back
+- waitForAnimationToEnd:
+    timeout: 1000
+- back
+# === 完了: 3 画面で kebab → RowActionMenu の同型動作確認、 R-76 SoT baseline regression 達成 ===

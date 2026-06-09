@@ -327,3 +327,37 @@ Sess23 PR-3-1 (#724) で「PlanScreen 個別 EventRow long-press → `Alert.aler
 - D7 RowActionMenu は今回不使用 (user 決定: 長押し → 確認窓直行、 メニュー非経由)。
 
 **関連**: ADR-0025 Sess44 Notes Amended / Sess44 PR-1
+
+---
+
+### 2026-06-09 Sess91 — D7 RowActionMenu 適用範囲を master/custom 領域 管理画面 全 3 画面に拡張 + UI 共通 SoT 明文化 (Notes Amended)
+
+**改訂内容**:
+
+- D7 RowActionMenu pattern を **`/tags` / `/custom-species` / `/custom-styles` (= master/custom 領域 管理画面) の 3 画面で必須** と明文化。 Sess9 PR-10 (= /tags inline 展開) と Sess89 PR-2/PR-3 (= /custom-\* 新規) が別 session 独立実装で見た目バラバラ + 操作迷いを生んだ Sess91 user 報告「タグを管理 をほぼ全て転用したつもりでしたが全然なっていません」 を構造解決。
+- 機能領域の master/custom 管理画面の **UI 共通 SoT を 5 軸で固定**:
+  - **(a) styles SoT**: `src/features/manager-screen/managerScreenStyles.ts` 新規 (Sess91 PR-1) = 3 画面で StyleSheet を共有、 ローカル StyleSheet 作成禁止
+  - **(b) row layout**: 横並び (= name LEFT + stats RIGHT space-between) + 左 toggle ▶/▼ ヒット領域 44×44 (= rowWithToggle pattern)、 長文 name は flexShrink + numberOfLines={1} ellipsizeMode="tail"
+  - **(c) 操作 UX**: row 主部 tap → 編集画面 push、 右 kebab (⋮) → RowActionMenu (編集 + 削除 2 択) → ConfirmDialog → repository delete 関数 経由。 master row は kebab 非表示 (= 編集/削除ロック整合)
+  - **(d) inline 展開**: 左 toggle ▶/▼ → 関連盆栽 BonsaiCard inline 展開 (= PEEK_LIMIT=3 + 「もっと見る (残り N 件)」 link)、 retrieval 関数は `bonsaiRepository.ts` に extract (= R-72 整合)、 Free 全開放
+  - **(e) addBtn label**: JSX 側で `+ ` prefix を挿入 (i18n 値からは prefix 撤去) = アラビア RTL 安全 + 統一性、 i18n key 値は domain verb のみ (例: 「樹種を追加」「Add species」)
+- 4 PR シリーズで実装完了:
+  - Sess91 PR-1 #1046 = 共通 styles 抽出 + row 横並び化 + vestigial chev 削除 + i18n + prefix 整合 (19 言語)
+  - Sess91 PR-2 #1047 = /tags に kebab 導入 + RowActionMenu + ConfirmDialog 配線 + /tag-edit delete 完全削除 + `deleteTag()` repository extract
+  - Sess91 PR-3 #1049 = /custom-species + /custom-styles に inline 展開を /tags Sess9 PR-10 同型で横展開 + 新規 retrieval 関数 2 件 (`getAllActiveBonsaiByCustomSpeciesId` / `getAllActiveBonsaiByStyleName`)
+  - Sess91 PR-4 (本 PR) = R-76 起票 + ADR-0036 §Notes Amended (本項) + `scripts/dev/check-manager-screen-symmetry.mjs` 構造防御 lint + `maestro/flows/manager-row-tags-species-styles.yml` baseline regression + `.claude/templates/manager-screen-template.tsx` 雛形
+- 構造防御 (= 将来「カスタム肥料」 等 4 領域目 で同型再発を防止):
+  - **R-76 起票** (`.claude/recurrence-prevention/specialized.md`) = 5 軸 SoT meta-rule、 R-72 (CRUD 層) と論理 set
+  - **symmetry lint 配線済** (`scripts/dev/check-manager-screen-symmetry.mjs`) = 3 画面で 6 必須 element の出現回数を grep 比較、 不整合 warning。 Sess91 PR-4 時点 baseline = 全 element 出現回数 1 で 3 画面同型
+  - **template 整備** (`.claude/templates/manager-screen-template.tsx`) = 将来追加領域の copy 雛形
+
+**4 ペルソナ評価** (Sess91 議論で確認):
+
+| 改善                  | 高橋 62 (シニア Pro) | Marcus 35 (米国 IT) | 業務プロ 100 鉢    | ライト 1-2 本 | 総合 |
+| --------------------- | -------------------- | ------------------- | ------------------ | ------------- | ---- |
+| 3 画面 row 横並び統一 | ◎ 操作迷い解消       | ◎ DRY               | ◎ 100 鉢 高速 scan | ◎ シンプル    | ◎    |
+| /tags kebab 導入      | ◎ 削除動線 1 タップ  | ◎ ADR-0036 D7 整合  | ◎ 100 件管理       | ○ 学習要      | ◎    |
+| inline 展開横展開     | ◎ 「何の盆栽?」 確認 | ◎ Free 価値増       | ◎ 業務管理         | ○ 既存習慣外  | ◎    |
+| R-76 構造防御         | —                    | ◎ Solid             | —                  | —             | ◎    |
+
+**関連**: R-76 (本 PR で起票、 master/custom 管理画面 UI 統一 SoT)、 R-72 (= CRUD repository 層 SoT、 Sess89 PR-4 起票、 本 PR と論理 set)、 `~/.claude/plans/elegant-kindling-finch.md` (Sess91 議論 plan、 6 名チーム + 4 ペルソナ + 5 Whys)、 Sess91 PR-1 #1046 / PR-2 #1047 / PR-3 #1049 / PR-4 (本 PR)
