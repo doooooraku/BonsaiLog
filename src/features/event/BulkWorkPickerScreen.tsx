@@ -99,14 +99,17 @@ export default function BulkWorkPickerScreen() {
         return;
       }
 
-      // Sess82 PR-D: recurring mode = 定期予定 新規作成画面に push (= 1 番目 bonsai を 採用、 multi-select 非対応 v1.0.1)
+      // Sess82 PR-D + Sess89 PR-C: recurring mode = 定期予定 新規作成画面に push。
+      // Sess89 PR-C「対象の盆栽 複数件対応」 (= 案 X N 件 loop bulkCreateRecurrenceRules):
+      // - bonsai 情報は usePickerStore.bulkContext 経由 (= 既に setBulkContext 済、 全件 store 保持)
+      // - URL param には eventType のみ載せて過大化回避
+      // - RecurrenceFormScreen で usePickerStore.bulkContext.selectedBonsais を参照、 全件 Chip 表示
       if (mode === 'recurring') {
-        const firstBonsaiId = bonsaiIds[0];
-        if (!firstBonsaiId) {
+        if (bonsaiIds.length === 0) {
           router.back();
           return;
         }
-        router.replace(`/recurring-rules/new?bonsaiId=${firstBonsaiId}&eventType=${type}` as Href);
+        router.replace(`/recurring-rules/new?eventType=${type}` as Href);
         return;
       }
 

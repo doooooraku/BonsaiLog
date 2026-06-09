@@ -1011,6 +1011,8 @@ const ru: Partial<Record<TranslationKey, string>> = {
   recurringEditSavedToast: 'Changes saved',
   recurringEditSaveFailedToast: 'Failed to save',
   recurringFormBonsaiLabel: 'Bonsai',
+  recurringFormBonsaisHeader: 'Add the same schedule to {count} bonsai',
+  recurringFormBonsaisHeaderSingle: 'Add a schedule for {name}',
   recurringFormEventTypeLabel: 'Work type',
   bulkPickerSheetSubLogSingle: 'Log care for {name}',
   bulkPickerSheetSubScheduleSingle: 'Add a schedule for {name}',

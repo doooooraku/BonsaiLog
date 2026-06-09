@@ -130,6 +130,114 @@ export async function createRecurrenceRule(
 }
 
 /**
+ * 複数の盆栽に同じ定期予定を一括作成 (= Sess89 PR-C、 R-72 起票)。
+ *
+ * 各 input ごとに createRecurrenceRule と同じ logic (= recurrence_rules INSERT +
+ * 8 週分 events 事前展開) を実行、 全件をひとつの transaction で wrap。
+ * 途中で失敗した場合は **全件 rollback** で原子性保証 (= データ不整合防止)。
+ *
+ * 設計判断:
+ * - 既存 createRecurrenceRule の内部 logic を inline で展開 (= 入れ子 transaction 回避)
+ * - 既存 bulkScheduleEvents / bulkLogEvents pattern と同型 (= db.withTransactionAsync)
+ * - R-72: 「caller で複数件 INSERT する時は必ず本 bulk ラッパー経由で原子性保証」
+ *
+ * @param inputs - 作成する rule 入力配列、 各要素が createRecurrenceRule の input と同型
+ * @returns 作成された全 rule 配列 (= 順序は inputs 順)
+ * @throws inputs[i] の INSERT が 1 件でも失敗すると全件 rollback して再 throw
+ */
+export async function bulkCreateRecurrenceRules(
+  inputs: readonly CreateRecurrenceRuleInput[],
+): Promise<RecurrenceRuleRow[]> {
+  if (inputs.length === 0) return [];
+
+  const db = await getDb();
+  const now = nowUtc() as string;
+  const tzIana = getTzIana() as string;
+  const tzOffsetMin = getTzOffsetMin() as number;
+  const exdates: string[] = [];
+  const results: RecurrenceRuleRow[] = [];
+
+  await db.withTransactionAsync(async () => {
+    for (const input of inputs) {
+      const id = ulid();
+
+      await db.runAsync(
+        `INSERT INTO recurrence_rules
+           (id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+        [
+          id,
+          input.bonsaiId,
+          input.eventType,
+          input.rrule,
+          input.startAtUtc,
+          input.endAtUtc,
+          JSON.stringify(exdates),
+          tzIana,
+          now,
+          now,
+        ],
+      );
+
+      // 8 週分先まで events 事前展開 (= createRecurrenceRule と同 logic、 default 永遠 rule の安全策)
+      const eightWeeksLaterMs = 8 * 7 * 24 * 60 * 60 * 1000;
+      const expandUntilMs = Math.min(
+        input.endAtUtc ? new Date(input.endAtUtc).getTime() : Number.POSITIVE_INFINITY,
+        new Date(input.startAtUtc).getTime() + eightWeeksLaterMs,
+      );
+      const expandUntilIso = new Date(expandUntilMs).toISOString();
+
+      const dateKeys = expandRRule(
+        input.rrule,
+        input.startAtUtc,
+        expandUntilIso,
+        exdates,
+        tzOffsetMin,
+        RECURRENCE_MAX_EVENTS_PER_RULE,
+      );
+
+      for (const dateKey of dateKeys) {
+        const eventId = ulid();
+        const occurredAtUtc = `${dateKey}T00:00:00.000Z`;
+        await db.runAsync(
+          `INSERT INTO events
+             (id, bonsai_id, type, status, occurred_at_utc, tz_offset_min, tz_iana,
+              recurrence_rule_id, created_at, updated_at)
+           VALUES (?, ?, ?, 'planned', ?, ?, ?, ?, ?, ?);`,
+          [
+            eventId,
+            input.bonsaiId,
+            input.eventType,
+            occurredAtUtc,
+            tzOffsetMin,
+            tzIana,
+            id,
+            now,
+            now,
+          ],
+        );
+      }
+
+      results.push({
+        id,
+        bonsaiId: input.bonsaiId,
+        eventType: input.eventType,
+        rrule: input.rrule,
+        startAtUtc: input.startAtUtc,
+        endAtUtc: input.endAtUtc,
+        exdates,
+        tzIana,
+        deletedAt: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+  });
+
+  return results;
+}
+
+/**
  * 現在 active な (deleted_at IS NULL) ルール件数を返す。
  * Pro 境界判定 (ADR-0049 ⑦ + ADR-0056 D7) で使用。
  */

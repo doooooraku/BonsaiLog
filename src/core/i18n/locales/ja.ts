@@ -1025,6 +1025,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   recurringEditSavedToast: '変更を保存しました',
   recurringEditSaveFailedToast: '保存に失敗しました',
   recurringFormBonsaiLabel: '対象の盆栽',
+  // Sess89 PR-C (ADR-0025 §7 Amendment): 件数別 header (= R-71 件数別 UX 表現契約)
+  recurringFormBonsaisHeader: '{count} 件の盆栽に同じ予定を追加',
+  recurringFormBonsaisHeaderSingle: '{name} に予定を追加',
   recurringFormEventTypeLabel: '作業種別',
   bulkPickerSheetSubLogSingle: '{name} に作業を記録',
   bulkPickerSheetSubScheduleSingle: '{name} に予定を追加',
