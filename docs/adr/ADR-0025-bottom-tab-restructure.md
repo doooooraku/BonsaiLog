@@ -413,3 +413,24 @@ ADR-0035 D6 + D9 (Phase ε) で本 ADR の 2 § を改訂:
 - 本 ADR §① / §③ (一括選択廃止) / §④ は **引き続き有効**。
 
 **関連**: ADR-0036 D1 (ConfirmDialog 統一) / Sess44 PR-1 (Home 長押しアーカイブ + 詳細画面 Alert→ConfirmDialog 統一)
+
+---
+
+### 2026-06-09 Sess83 — §Decision §7 「1 件 case 表現契約」 追記 (Notes Amended)
+
+#### 経緯
+
+Sess83 user 実機検証 (SH-M25) で「BottomCtaBar『+ 作業を記録』 tap → 盆栽選択画面が出ず TestBonsai 自動選択」 が bug と疑われた (= スクショ 15848_0.jpg / 15849_0.jpg)。 動線は §Decision §7 (= 1 件のみ 自動選択 + 直接 BulkWorkPickerSheet 起動) + Sess80 PR-6.5 (#1002、 業務プロ 100 鉢 1 タップ動線完全復活) 通り意図的仕様だが、 i18n 文言「{count}件の盆栽に**同じ**作業を記録」 が 1 件 case で違和感を生み、 chip 視覚 (outline + 背景色のみ) が選択前後 区別不能で user 不安を生む構造問題が発覚。 真因は ADR (動線) / i18n (文言) / UI (chip) が別 PR で確定された **設計協調漏れ** = R-62 (Layout Contract SoT) / R-67 (status 別意味分化) と同型構造の漏れ。
+
+#### 表現契約 (= 1 件 case 専用、 BulkWorkPickerScreen)
+
+- **header 文言**: `bulkPickerSheetSubLogSingle` / `bulkPickerSheetSubScheduleSingle` で「{name} に作業を記録 / 予定を追加」 (= 「同じ」 は 1 件で文法成立しないため除外、 盆栽名を文言に直接埋込)
+- **chip 視覚**: `CheckIcon size=14 color=c.tint` を chip 左に追加 (= `src/features/bonsai/BonsaiSelectableCard.tsx:81-85` pattern 踏襲)
+- **hint 文言**: chip 下 1 行「自動選択」 (= `bulkPickerAutoSelectedHint`、 fontSize 12 c.textSecondary、 testID `e2e_bulk_work_picker_auto_selected_hint`)
+- **適用 mode**: log / schedule / recurring 3 mode 全部 (= `useBulkActionFlow` 共通 hook 経由 全動線)
+- **2 件以上 case**: 既存挙動 完全維持 (= デグレなし、 chip ✓ なし + hint なし + 既存 `bulkPickerSheetSub` / `bulkPickerSheetSubLog` 文言継続)
+
+#### 関連
+
+- R-68 (本 Notes 由来、 件数分岐 hook の UI 表現契約 SoT 化)
+- ADR-0033 D1 (i18n SoT) / ADR-0049 ⑦ (Pro Paywall) / ADR-0056 (recurring 同型適用) / Sess80 PR-6.5 (#1002、 1 タップ動線命綱)
