@@ -35,6 +35,16 @@
 
 > **Note**: Claude Code currently only loads subagents from `~/.claude/agents/` (user scope), not from `<repo>/.claude/agents/`. Master copies are kept under `.claude/agents/` for reference; copy them with `cp -n .claude/agents/*.md ~/.claude/agents/` if you need to (re)install. Verified 2026-04-11.
 
+**Plan agent の critical claim は実装前に 1 次資料で Read 確認 (Sess90 PR-A 教訓)**:
+
+Plan agent / cross-check agent からの出力で **framework specific な挙動主張** (= 「root → nested で cascade される」「type X は Y を受け入れる」「API Z は idempotent」 等) は agent の学習データに依存するため陳腐化リスクあり。 実装前に以下を Read で 1 次確認:
+
+- **cascade / inherit 主張** → 該当 framework の docs or 既存 nested 実装 file (例: Expo Router なら `app/<group>/_layout.tsx` の screenOptions 設定状況を grep)
+- **型制限 主張** → `@types/<lib>` or `node_modules/<lib>/types/` の type definition (例: `headerTitleStyle` の型は `node_modules/@react-navigation/native-stack/lib/typescript/...`)
+- **API 挙動 主張** → SDK changelog or 既存呼び出し file での実装パターン (例: 「Expo deep link は (tabs) group route を受け入れる?」 → 既存 (modals) route の呼び出し方を grep)
+
+確認漏れの代表例: Sess90 PR-A で Plan agent が「Expo Router root `<Stack screenOptions>` は nested に cascade」 と出力 → 実装中に nested で font 未適用発覚 → 4 nested layout 追加修正 (+10 分の手戻り)。 1 次資料 Read で 1 分の事前確認すれば回避可能だった。
+
 ### 3. Self-Improvement Loop
 
 - Record corrections in `docs/reference/tasks/lessons.md`
