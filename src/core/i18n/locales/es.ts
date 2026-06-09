@@ -1011,5 +1011,8 @@ const es: Partial<Record<TranslationKey, string>> = {
   recurringEditSaveFailedToast: 'Failed to save',
   recurringFormBonsaiLabel: 'Bonsai',
   recurringFormEventTypeLabel: 'Work type',
+  bulkPickerSheetSubLogSingle: 'Log care for {name}',
+  bulkPickerSheetSubScheduleSingle: 'Add a schedule for {name}',
+  bulkPickerAutoSelectedHint: 'Auto-selected',
 };
 export default es;
