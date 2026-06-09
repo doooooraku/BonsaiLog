@@ -35,6 +35,7 @@ export {
   NotebookIcon,
   PencilNavIcon,
   PlusIcon,
+  RepeatIcon,
   SearchIcon,
   TagIcon,
 } from './NavIcons';

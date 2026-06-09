@@ -12,7 +12,7 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { MoreVerticalIcon } from '@/src/components/icons';
+import { MoreVerticalIcon, RepeatIcon } from '@/src/components/icons';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 // Sess66 PR6c.1: theme-dependent token を inline c.* に (dark cascade)。
 // Sess70 PR-C1: BUTTON_SECONDARY_BG/TEXT + hex '#F5EEDD' を scheme-aware
@@ -148,12 +148,10 @@ export function EventRowDetailed({
     };
   }, [ev.id]);
 
-  const { eventLabel, dateLabel, wiringDuration, scheduledUnwireLabel } = getEventRowDisplay(
-    ev,
-    eventsForBonsai,
-    lang,
-    t,
-  );
+  const { eventLabel, dateLabel, wiringDuration, scheduledUnwireLabel, isRecurring } =
+    getEventRowDisplay(ev, eventsForBonsai, lang, t);
+  // Sess81 PR-7 (ADR-0056 D5): recurring 由来 event の accessibilityLabel に「定期予定」 prefix。
+  const recurringPrefix = isRecurring ? `${t('recurringEventBadgeLabel')}, ` : '';
 
   const chips = buildHistoryChips(ev);
   const hasChips = chips.length > 0;
@@ -176,8 +174,8 @@ export function EventRowDetailed({
       accessibilityRole="button"
       accessibilityLabel={
         showBonsaiName && bonsaiName
-          ? `${bonsaiName}, ${t(`eventType_${ev.type}` as TranslationKey)}`
-          : t(`eventType_${ev.type}` as TranslationKey)
+          ? `${recurringPrefix}${bonsaiName}, ${t(`eventType_${ev.type}` as TranslationKey)}`
+          : `${recurringPrefix}${t(`eventType_${ev.type}` as TranslationKey)}`
       }
       onPress={onPress ? () => onPress(ev) : undefined}
       onLongPress={onLongPress ? () => onLongPress(ev) : undefined}
@@ -186,14 +184,32 @@ export function EventRowDetailed({
       <View style={styles.detailedHeader}>
         <View style={styles.detailedHeaderTitleArea}>
           {showBonsaiName && bonsaiName ? (
-            <ThemedText style={[styles.detailedTitle, { color: c.text }]} numberOfLines={1}>
-              {bonsaiName}
-            </ThemedText>
+            <View style={styles.titleWithRecurring}>
+              <ThemedText style={[styles.detailedTitle, { color: c.text }]} numberOfLines={1}>
+                {bonsaiName}
+              </ThemedText>
+              {isRecurring && (
+                <RepeatIcon
+                  size={14}
+                  color={c.textSecondary}
+                  testID={`e2e_event_row_recurring_icon_${ev.id}`}
+                />
+              )}
+            </View>
           ) : (
             <>
-              <ThemedText style={[styles.detailedTitle, { color: c.text }]}>
-                {eventLabel}
-              </ThemedText>
+              <View style={styles.titleWithRecurring}>
+                <ThemedText style={[styles.detailedTitle, { color: c.text }]}>
+                  {eventLabel}
+                </ThemedText>
+                {isRecurring && (
+                  <RepeatIcon
+                    size={14}
+                    color={c.textSecondary}
+                    testID={`e2e_event_row_recurring_icon_${ev.id}`}
+                  />
+                )}
+              </View>
               <ThemedText style={[styles.detailedSubtitle, { color: c.textSecondary }]}>
                 {dateLabel}
               </ThemedText>
@@ -331,6 +347,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   detailedHeaderTitleArea: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 8 },
+  // Sess81 PR-7: detailedTitle/盆栽名 + 🔁 RepeatIcon を inline で並べる (Apple Reminders 整合)。
+  titleWithRecurring: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
   // Sess37 PR-1 C5: detailedTitle 16 維持 (盆栽名等)、 detailedSubtitle 12→13 (副情報強調)
   // Sess66 PR6c.1: color は inline c.* (dark cascade)。
   detailedTitle: { fontSize: 16, fontWeight: '600' },

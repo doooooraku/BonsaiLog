@@ -70,6 +70,33 @@ export function CalendarIcon({ size = 28, color = TEXT_PRIMARY }: IconProps) {
 }
 
 /**
+ * 繰り返し (Lucide `repeat` 互換、 ADR-0056 D5 = recurring 由来 event 視覚マーカー)。
+ *
+ * Sess81 PR-7 で 追加。 EventRowCompact + EventRowDetailed で 作業名 inline に小型 (14px) 表示。
+ * 絵文字 (🔁) ではなく SVG 採用理由 = Hermes 環境で Android 9 / iOS 17 で 絵文字レンダリング差出る (PR-7 設計)。
+ * default size 14px = EventIcon (20px) より小さく、 視覚 noise 最小化 (Apple Reminders 整合)。
+ */
+export function RepeatIcon({
+  size = 14,
+  color = TEXT_PRIMARY,
+  testID,
+}: IconProps & { testID?: string }) {
+  // testID は exactOptionalPropertyTypes 配下では undefined 渡し不可、 ある時のみ props 展開
+  const svgProps = testID !== undefined ? { testID } : {};
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...svgProps}>
+      <Path
+        d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+/**
  * ノート (記録タブ TabBar アイコン)。 28px。
  *
  * ADR-0042 D2 で追加: 記録タブ icon を mockup HI.Droplet (= EventIcons.tsx の watering 用
