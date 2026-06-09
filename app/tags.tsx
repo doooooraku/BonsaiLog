@@ -19,7 +19,7 @@
  */
 import { Stack, useFocusEffect, useNavigation, useRouter, type Href } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -33,13 +33,16 @@ import {
 } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess66 PR6a: theme-dependent token を inline c.* に。 TEXT_PRIMARY/TEXT_MUTED は JSX inline で利用継続。
-import { BRAND_GREEN, ON_BRAND, TEXT_MUTED, TEXT_PRIMARY } from '@/src/core/theme/colors';
+import { TEXT_MUTED, TEXT_PRIMARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { isPresetTagName } from '@/src/db/seedTagPresets';
 import { getTagsWithStats, type TagWithStats } from '@/src/db/tagRepository';
 import { BonsaiCard, type BonsaiCardData } from '@/src/features/bonsai/BonsaiCard';
 import { buildBonsaiCardData } from '@/src/features/bonsai/cardDataBuilder';
+// Sess91 PR-1: 3 画面共通 styles SoT (= /tags、 /custom-species、 /custom-styles)。
+// R-76 起票 + ADR-0036 §Notes Amended Sess91 PR-4 で正典化。
+import { managerScreenStyles as styles } from '@/src/features/manager-screen/managerScreenStyles';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 
 /** Sess9 PR-10: peek 段階で表示する盆栽カード上限 (これを超えると「もっと見る」 link 表示)。 */
@@ -185,7 +188,12 @@ export default function TagsManagerScreen() {
           const isMaster = isPresetTagName(tg.nameNormalized);
           return (
             <React.Fragment key={tg.id}>
-              <View style={[styles.row, { backgroundColor: c.surface, borderColor: c.border }]}>
+              <View
+                style={[
+                  styles.rowWithToggle,
+                  { backgroundColor: c.surface, borderColor: c.border },
+                ]}
+              >
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={isExpanded ? t('tagsToggleCollapse') : t('tagsToggleExpand')}
@@ -287,72 +295,6 @@ export default function TagsManagerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scroll: { padding: 16, gap: 12 },
-  // Sess90 PR-A: title style は body title 削除に伴い dead、 entry 撤去 (旧 marginBottom 4)。
-  // Sess66 PR6a: color は inline c.* (dark cascade)。
-  desc: { fontSize: 13, marginBottom: 12, lineHeight: 18 },
-  addBtn: {
-    paddingVertical: 14,
-    minHeight: 56,
-    borderRadius: 14,
-    backgroundColor: BRAND_GREEN,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  addBtnText: { color: ON_BRAND, fontSize: 17, fontWeight: '600', letterSpacing: 0.5 },
-  empty: { textAlign: 'center', paddingVertical: 24 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 4,
-    paddingRight: 14,
-    minHeight: 56,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  // Sess9 PR-10: 左端 ▶/▼ toggle area (44 px ヒット領域、 シニア UX 確保)
-  toggleArea: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  toggleAreaDisabled: { opacity: 0.3 },
-  chevronWrap: { width: 18, height: 18, alignItems: 'center', justifyContent: 'center' },
-  rowMain: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    minHeight: 48,
-  },
-  // Sess74 PR-2: name + master badge を横並びにする wrapper。
-  rowMainTextWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flexShrink: 1,
-  },
-  // Sess74 PR-2: master badge (灰 outline、 SpeciesPickerScreen customBadge から色反転)。
-  masterBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  masterBadgeText: {
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  rowStats: { fontSize: 12 },
-  rowStatsUnused: { fontStyle: 'italic' },
-  // Sess9 PR-10: 展開エリア (BonsaiCard inline 表示)
-  expandedArea: { gap: 8, paddingLeft: 16, paddingTop: 4 },
-  expandedLoading: { textAlign: 'center', paddingVertical: 16 },
-  moreLink: { paddingVertical: 12, alignItems: 'center' },
-  moreLinkText: { color: BRAND_GREEN, fontSize: 14, fontWeight: '500' },
-});
+// Sess91 PR-1: 旧 local StyleSheet は managerScreenStyles に SoT 集約 (R-76 起票、
+// ADR-0036 §Notes Amended Sess91 PR-4)。 /tags 専用 styles (toggleArea / masterBadge /
+// expandedArea 等) も managerScreenStyles 側で 3 画面共通候補として export。
