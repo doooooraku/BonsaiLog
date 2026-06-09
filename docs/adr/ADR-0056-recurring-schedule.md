@@ -335,6 +335,34 @@ UI 文言は中立表現のみ:
 | U (Update) | 対応 (PR-5)        | ⋮ menu → 3 択 ConfirmDialog (this/following/all)、 ADR-0055 status 別意味分化 pattern 拡張 (planned = 種別/RRULE/exdates 編集 / logged = 個別編集) |
 | D (Delete) | 対応 (PR-5)        | ⋮ menu → 3 択 ConfirmDialog → soft-delete (30 日ゴミ箱、 ADR-0008 §決定 12 流用)、 通知 cascade cancel (ADR-0014 invalidator)                      |
 
+### R-67 Status Matrix (2 重 matrix、 Sess81 で追記)
+
+R-67 (status entity 操作意味 matrix) を 早期適用、 設計漏れ防止のため **events entity** (recurrence_rule_id 非 null の event) と **recurrence_rules entity** の 2 重 matrix で 明示。
+
+#### events entity (recurrence_rule_id !== null、 12 cell)
+
+| 操作 \ status  | planned (= 未来分、 8 週展開済)                                                                                                                | logged (= 過去 logged 済、 完了タップ後)                                                                          | cancelled (= 該当 dateKey が rule.exdates に追加済)      |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| **C (Create)** | rule.exdates から該当日 remove + event 再生成 (通常 user 操作なし、 内部 logic のみ)                                                           | (通常なし、 logged は recurring 由来でも 通常 record flow 経由)                                                   | (通常なし)                                               |
+| **R (Read)**   | 予定タブ listing で 🔁 アイコン (PR-7 で追加)                                                                                                  | 記録タブ listing で 🔁 アイコン (PR-7 で追加)                                                                     | 非表示 (= 通常 listing から除外、 30 日ゴミ箱内で参照可) |
+| **U (Update)** | scope 3 択 dialog → rule + events 連動 (this = exdate 追加 + detached event、 following = rule 分裂、 all = rule 自体 update + cascade)        | logged event の payload 編集 (= 既存 ADR-0055 pattern、 rule への影響なし、 recurrence_rule_id を NULL に detach) | (通常なし、 復元は user 30 日以内に restore)             |
+| **D (Delete)** | scope 3 択 dialog → rule.exdates 追加 + event soft-delete (this) / following events 一括 soft-delete (following) / 全 events soft-delete (all) | scope 3 択 dialog (logged は cascade 影響なしだが UX で 3 択提示、 削除のみ scope 適用)                           | (= 物理削除、 ADR-0008 §決定 12 = 30 日後 purgeOldTrash) |
+
+#### recurrence_rules entity (4 cell)
+
+| 操作           | 動作                                                                       | 動線 / 実装                                                                                                                                      |
+| -------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **C (Create)** | rule 1 件作成 + 8 週分 events 即時展開                                     | (1) BulkLogConfirmScreen schedule mode → RecurrencePicker ON → 保存 (Sess79 PR-6 配線済) / (2) PR-7.5 RecurrenceListScreen FAB「+ 新規定期予定」 |
+| **R (Read)**   | active rules 一覧 (deleted_at IS NULL)                                     | PR-7.5 RecurrenceListScreen で sort by created_at DESC 表示、 各 rule = 「{event_type} / {RRULE 文字列 i18n 化} / 次回 {nextDateKey}」           |
+| **U (Update)** | rule 自体の RRULE / exdates / end_at_utc を変更 + 全 events cascade 再生成 | PR-7.5 行 tap → 編集画面 + scope 'all' 暗黙適用 (= rule 一覧からの編集は「すべて」 のみ、 「この 1 件」「これ以降」 は events entity 経由)       |
+| **D (Delete)** | softDeleteRecurrenceRule + 未来 planned events cascade soft-delete         | PR-7.5 行 kebab → 削除確認 ConfirmDialog → softDeleteRecurrenceRule (= rule.deleted_at 設定 + 未来 planned events も同時 soft-delete)            |
+
+**設計判断**:
+
+- recurrence_rules entity の U/D は「rule 全体」 のみ (scope 不要)、 個別 event scope は events entity 経由
+- recurrence_rules entity の R 動線は PR-7.5 で **「ふりかえり」 hub 5 card 目** から到達 (= ADR-0035 D9 部分 revert 経由、 タブ rename なし)
+- recurrence_rules.deleted_at は 30 日ゴミ箱 (= ADR-0008 §決定 12 整合)、 ただし復元 UI は v1.x 候補
+
 ---
 
 ## Rollout / Rollback（出し方/戻し方）
@@ -459,3 +487,28 @@ UI 文言は中立表現のみ:
 - **Sess14 罠回避** (PR-2): ALTER TABLE は REFERENCES 句なし版 + hasColumn ガード = v15 修復 pattern (Sess14 PR-P) と 完全同型 で 既存 data 保護
 - **rrule@^2.8 npm lib** = 2.5 KB、 25 年保守 jakubroztocil、 RFC 5545 完全準拠、 React Native (Hermes) 互換 = 自前実装より lib 採用が正解
 - **jest moduleNameMapper hardcoded** (PR-3 ローカル test): worktree 内 新規 dir (= src/core/recurrence/) を main worktree path base で 解決失敗、 既存 dir では PASS。 v1.0.1 follow-up で main worktree base から test 実行 or jest config 修正検討
+
+#### Sess79〜Sess81 v1.0.1 follow-up 進捗 (2026-06-08〜2026-06-09)
+
+**Sess79〜Sess80 完成** (= ADR-0056 v1.0.1 配線層 一部完成):
+
+- PR-6 #999 (Sess79): BulkLogConfirmScreen schedule mode に RecurrencePicker 配線 + handleSave で createRecurrenceRule 呼出 (= 副作用で BulkWorkPicker 1 タップ動線退化、 PR-6.5 で 部分 revert)
+- PR-6b #1000 / PR-6c #1001 (Sess79): node_modules symlink 事故 hotfix + .gitignore 構造防止
+- PR-6.5 #1002 (Sess80): BulkWorkPicker 1 タップ schedule 動線完全復活 (`if (false && mode === 'schedule')` → `if (mode === 'schedule')`)
+
+**Sess81 着手 scope** (= 議論 Q1=B + Q2=A + Q3=Yes + Q4=B 確定):
+
+- **Phase A** (Sess81 Day 1): ADR-0035 D9 Notes Amended (5 card 復活) + ADR-0056 §CRUD Coverage R-67 matrix 追記 + specialized.md R-67 詳細確定 ← **本 commit**
+- **Phase B** (Sess81 Day 1): PR-7 EventRow 🔁 アイコン (Compact + Detailed、 Lucide RepeatIcon) + PR-9 PaywallScreen + PlanSection 7 行化 (= recurring_rule 行追加、 worktree 2 並列)
+- **Phase C** (Sess81 Day 2): PR-7.5 LookBackHub 5 card 化 + RecurrenceListScreen 新規 + useRecurrenceRules hook + listActiveRecurrenceRules 追加 + i18n 18 keys × 19 言語 = 342 文字列
+
+**Sess82-83 持ち越し** (= ADR-0056 v1.0.1 完成 + release):
+
+- PR-8 連動編集 3 択 ConfirmDialog (= recurrenceRuleRepository.updateRecurrenceRule scope 実装 + RecurrenceScopeDialog 新規 + invalidator cascade)
+- PR-10 Maestro 4 flow + 実機 SH-M25 R-25 評価
+- release versionCode 13 (= user 手動 Play Console versionCode 12 Draft 削除 → cloud build + Alpha track submit)
+
+**ふりかえり タブ rename 議論結果** (Sess80-Sess81):
+
+- Sess80 段階 = Claude/Sess80 commit message では「ふりかえり」 → 「もっと」 rename 想定
+- Sess81 議論 (Q1) で user 真意確認 → **B 案採用 = 「ふりかえり」 keep + 5 card 化のみ** = ADR-0025 整合維持、 ADR Amendment は ADR-0035 D9 のみに縮小

@@ -4,11 +4,7 @@
  * 80 case 想定で 基本 + 境界 + exdate + 終了日 + 異常系 を 網羅。
  * 実 DB は 触らない (= 純関数 test、 Node 20 でも 動く)。
  */
-import {
-  expandRRule,
-  isValidRRule,
-  RECURRENCE_PRESETS,
-} from '@/src/core/recurrence/rrule';
+import { expandRRule, isValidRRule, RECURRENCE_PRESETS } from '@/src/core/recurrence/rrule';
 
 const JST_OFFSET = 540; // +09:00
 

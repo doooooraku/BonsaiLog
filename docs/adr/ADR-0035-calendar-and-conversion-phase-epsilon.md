@@ -428,3 +428,51 @@ ADR-0036 (破壊的操作 UX 統一 pattern) を本日起票、 ADR-0035 D3「Pl
 → 全項目 ◎、 R-10 クリア
 
 **関連**: ADR-0038 D1/D2 (本 Notes Amended の親 ADR) / Sess29 PR-2 (RecordTabScreen 実装) / R-47 (議論プロセス欠陥起源)
+
+---
+
+### 2026-06-09 Sess81 PR-7.5 — D9 部分 revert Notes Amended (5 card 復活、 ADR-0056 連動)
+
+**改訂内容**:
+
+- **D9「ふりかえり card 完全削除 (5→4 card)」 を 部分 revert** (Sess23 確定 → Sess81 で 5 card 復活、 ただし追加 card は「カレンダー」 ではなく「🔁 定期予定を管理」)
+- ふりかえりタブ名 = **「ふりかえり」 keep** (= ADR-0025 + Sess80 議論 Q1=B 確定、 タブ rename は行わない)
+- 5 card 順 (Sess81 PR-7.5 後): wiring (針金がけ) / search (盆栽検索) / tags (タグ管理) / **recurring (🔁 定期予定を管理) ← NEW** / export (CSV/PDF Pro 限定)
+
+**Sess23 D9 真因の再評価 (= 5 card 復活が D9 と矛盾しない理由)**:
+
+- Sess23 D9 真因 = **「カレンダー card は 重複動線」** (= タブバー記録 tap で 同等のカレンダー画面に遷移可能 → hub 経由は二重動線)
+- D9 真因 ≠ 「5 card そのものを否定」 (= card 数の上限を 4 と確定したわけではない)
+- **「🔁 定期予定を管理」 card は タブで賄えない新画面** (= RecurrenceListScreen) を 開く動線 → **重複動線にならない** = D9 真因 に抵触しない
+- ADR-0056 D6 (連動編集 3 択 dialog) で 個別 rule 編集動線あり、 さらに「rule 一覧」 を見せる画面が hub なしでは到達不能 → hub 5 card 目が 必要
+
+**ふりかえり hub の新 cards 配列** (`app/(tabs)/look-back/index.tsx`):
+
+| #     | key           | title                 | desc                                 | route                         | pro       |
+| ----- | ------------- | --------------------- | ------------------------------------ | ----------------------------- | --------- |
+| 1     | wiring        | 針金がけ一覧          | 期日順 / バランス順                  | `/(tabs)/plan/wiring`         | false     |
+| 2     | search        | 盆栽を検索            | 名前 / 樹種 / メモ全文検索           | `/(tabs)/look-back/search`    | false     |
+| 3     | tags          | タグを管理            | 自作 + マスタ                        | `/tags`                       | false     |
+| **4** | **recurring** | **🔁 定期予定を管理** | **毎週月曜の水やり等の rule を管理** | **`/recurring-rules` (新規)** | **false** |
+| 5     | export        | エクスポート          | CSV / PDF                            | `/export`                     | true      |
+
+**route 追加**: `app/recurring-rules/index.tsx` (新規)、 内部で `RecurrenceListScreen` を mount
+
+**4 ペルソナ評価 (本 Notes Amended、 Sess81 議論より)**:
+
+| 項目                         | 高橋 62           | Marcus 35  | 業務プロ         | ライト         | 総合                |
+| ---------------------------- | ----------------- | ---------- | ---------------- | -------------- | ------------------- |
+| D9 部分 revert (5 card 復活) | ◯ scroll 不要なら | ◎ 業界標準 | ◎ rule 一覧 必須 | ◯ シンプル維持 | **◎ (全員 ◯ 以上)** |
+
+→ 全員 ◯ 以上、 R-10 クリア。 ライト ペルソナ「ふりかえり 4 card のままがシンプル」 △ 懸念は **「使わない user は card tap しないだけ」** で吸収 (= 動線を増やすだけ、 UX 負荷ゼロ)
+
+**実装スコープ (Sess81 PR-7.5)**:
+
+- `app/(tabs)/look-back/index.tsx` の cards 配列に `'recurring'` entry 追加 (5 番目、 export の前に挿入)
+- `app/recurring-rules/index.tsx` 新規 (route entry)
+- `src/features/recurrence/RecurrenceListScreen.tsx` 新規 (active rules list + 行 tap 編集 + FAB「+ 新規定期予定」 + Pro 件数 badge)
+- `src/features/recurrence/useRecurrenceRules.ts` 新規 (load + refresh hook)
+- `src/db/recurrenceRuleRepository.ts` に `listActiveRecurrenceRules()` 追加
+- i18n 18 keys × 19 言語 = 342 文字列追加 (ja+en proper、 17 言語 fallback = ADR-0033 D1 整合)
+
+**関連**: ADR-0056 (recurring schedule、 本 Notes Amended の親 ADR) / Sess80 議論 (Q1=B 「ふりかえり」 keep + 5 card 化 確定) / R-63 (scroll preservation、 5 card 目 tap → 編集画面 push → 戻る で hub scroll 位置保持)
