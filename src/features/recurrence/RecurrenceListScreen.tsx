@@ -18,7 +18,7 @@
  *        src/features/recurrence/useRecurrenceRules.ts (hook)
  *        src/db/recurrenceRuleRepository.ts (listActiveRecurrenceRules / softDeleteRecurrenceRule)
  */
-import { Stack } from 'expo-router';
+import { Stack, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
@@ -26,6 +26,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
+import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { useColors } from '@/src/core/theme/useColors';
@@ -54,9 +55,20 @@ function rruleToHumanLabel(rrule: string): TranslationKey {
 export default function RecurrenceListScreen() {
   const { t } = useTranslation();
   const c = useColors();
+  const router = useRouter();
   const { rules, bonsaiMap, nextOccurrenceMap, loading, reload } = useRecurrenceRules();
   const [deleteTarget, setDeleteTarget] = useState<RecurrenceRuleRow | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  // Sess82 PR-C: kebab → RowActionMenu (= 編集 + 削除 2 択、 ADR-0036 D7 整合)
+  const [kebabTarget, setKebabTarget] = useState<RecurrenceRuleRow | null>(null);
+
+  const handleKebabPress = useCallback((rule: RecurrenceRuleRow): void => {
+    setKebabTarget(rule);
+  }, []);
+
+  const handleKebabDismiss = useCallback((): void => {
+    setKebabTarget(null);
+  }, []);
 
   const handleDeleteRequest = useCallback((rule: RecurrenceRuleRow): void => {
     setDeleteTarget(rule);
@@ -78,6 +90,28 @@ export default function RecurrenceListScreen() {
     if (isDeleting) return;
     setDeleteTarget(null);
   }, [isDeleting]);
+
+  // Sess82 PR-C: kebab menu items 動的構築 (= CalendarTabScreen 既使用 pattern 踏襲、 ADR-0036 D7)
+  // 編集 onPress 配線先 = Sess82 PR-D で /recurring-rules/edit/[ruleId] route 新規実装
+  const kebabItems: readonly RowActionMenuItem[] = kebabTarget
+    ? [
+        {
+          key: 'edit',
+          label: t('rowActionMenuEdit'),
+          onPress: () => {
+            router.push(`/recurring-rules/edit/${kebabTarget.id}` as Href);
+          },
+          testID: `e2e_recurrence_kebab_edit_${kebabTarget.id}`,
+        },
+        {
+          key: 'delete',
+          label: t('rowActionMenuDelete'),
+          destructive: true,
+          onPress: () => handleDeleteRequest(kebabTarget),
+          testID: `e2e_recurrence_kebab_delete_${kebabTarget.id}`,
+        },
+      ]
+    : [];
 
   const isOverFreeLimit = rules.length > FREE_RECURRENCE_RULE_LIMIT;
 
@@ -137,10 +171,10 @@ export default function RecurrenceListScreen() {
                 </View>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={t('delete')}
+                  accessibilityLabel={t('rowActionMenuEdit') + ' / ' + t('rowActionMenuDelete')}
                   style={styles.kebabButton}
                   hitSlop={8}
-                  onPress={() => handleDeleteRequest(item)}
+                  onPress={() => handleKebabPress(item)}
                   testID={`e2e_recurrence_rule_kebab_${item.id}`}
                 >
                   <MoreVerticalIcon size={20} color={c.textSecondary} />
@@ -165,6 +199,14 @@ export default function RecurrenceListScreen() {
           }
         />
       )}
+
+      {/* Sess82 PR-C: kebab → RowActionMenu (= 編集 + 削除 2 択、 ADR-0036 D7 整合) */}
+      <RowActionMenu
+        visible={kebabTarget !== null}
+        items={kebabItems}
+        onDismiss={handleKebabDismiss}
+        testID="e2e_recurrence_kebab_menu"
+      />
 
       <ConfirmDialog
         visible={deleteTarget !== null}
