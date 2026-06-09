@@ -31,6 +31,15 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-agent-isolation.mjs\""
           }
         ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-doc-reads.mjs\""
+          }
+        ]
       }
     ],
     "Stop": [
@@ -96,6 +105,16 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start-design-reminder.mjs\""
+          }
+        ]
+      }
+    ],
+    "InstructionsLoaded": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-doc-reads.mjs\""
           }
         ]
       }
