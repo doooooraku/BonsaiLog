@@ -1,0 +1,188 @@
+## Maestro E2E: BulkWorkPicker 1 件 case fixture (Sess85 起票、 PR #1019 R-71 改修 regression 防止)
+##
+## 目的:
+##   PR #1019 (= Sess83 BulkWorkPicker 1 件 case 表現改善) で 追加した
+##   - chip CheckIcon ✓
+##   - 「自動選択」 hint (testID: e2e_bulk_work_picker_auto_selected_hint)
+##   - header 文言「{name} に作業を記録」
+##   の regression を 構造防止する。
+##
+##   既存 flow (= g3a-bulk-log / plan-tab-fab 等) は 全部 seedTestData 経由 (= 5+ 件 bonsai)
+##   で 2 件以上 path 中心、 1 件 case (= useBulkActionFlow が 自動選択 skip + 直接 push) の
+##   chip ✓ + hint 表示は 検証されていない。 本 flow が初の 1 件 case fixture。
+##
+## 動線:
+##   1. clearState で 0 件 state 開始
+##   2. Dev Client + Onboarding skip
+##   3. 盆栽 tab 空状態 CTA (e2e_home_empty_cta) tap → BonsaiCreate modal
+##   4. name input「TestBonsai」 (= Maestro Android Unicode 制約で ASCII) + submit
+##   5. 盆栽 1 件 state 確立 (= 「TestBonsai」 visible)
+##   6. 記録 tab tap → 記録 screen
+##   7. BottomCtaBar action (e2e_record_bottom_cta_action) tap
+##   8. useBulkActionFlow が 1 件で 自動選択 + 直接 /bulk-work-picker?mode=log push
+##   9. BulkWorkPicker 表示 + ★ assertVisible e2e_bulk_work_picker_auto_selected_hint ★
+##
+## R-30 (= 外部 lib stability PoC) 整合: Maestro 2/2 = 100% 厳格基準で 実機実行確認 (= Sess86+)
+##
+## scope 外 (= follow-up):
+##   - plan / recurring mode 同型 flow (= mode=schedule / mode=recurring)
+##   - Stack header title「新規定期予定」 assertion (= PR #1020 改修確認)
+##
+## 関連:
+##   - PR #1019 (Sess83): BulkWorkPicker 1 件 case 表現改善、 R-71 起票
+##   - PR #1020 (Sess84): RecurrenceList CTA + recurring Stack header 改修
+##   - ADR-0024 (Phase G3a): bulk-work-picker formSheet → modal
+##   - ADR-0025 §7: 1 件 skip 動線 (= 4 ペルソナ全員 ◎)
+##   - Sess80 PR-6.5 (#1002): 業務プロ 100 鉢 1 タップ動線命綱
+
+appId: 'com.dooooraku.bonsailog'
+name: 'BulkWorkPicker 1 件 case fixture (R-71 regression 防止)'
+tags:
+  - ui-diff
+  - regression
+---
+- launchApp:
+    clearState: true
+
+# Dev Client + Continue dismiss (template 標準)
+- runFlow:
+    when:
+      visible:
+        text: 'http://localhost:8081'
+    commands:
+      - tapOn:
+          text: 'http://localhost:8081'
+          retryTapIfNoChange: true
+      - waitForAnimationToEnd
+      - pressKey: 'Back'
+      - waitForAnimationToEnd
+
+# Onboarding Welcome
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 60000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# Language ja
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# Tutorial skip (= 5 step、 各 optional)
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut2'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut3'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut4'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+
+# 盆栽タブ 空状態 = e2e_home_empty_cta tap → /bonsai-new modal
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_home_empty_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# BonsaiCreate form 表示確認
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_create_screen'
+    timeout: 10000
+
+# 名前入力 (= ASCII only、 Maestro Android Unicode 制約回避)
+- tapOn:
+    id: 'e2e_bonsai_create_name'
+    retryTapIfNoChange: true
+- inputText: 'TestBonsai'
+- hideKeyboard
+- waitForAnimationToEnd
+
+# Submit button scroll + tap (= keyboard dismiss 後の submit 可視化)
+- scrollUntilVisible:
+    element:
+      id: 'e2e_bonsai_create_submit'
+    direction: DOWN
+    timeout: 10000
+    visibilityPercentage: 30
+- tapOn:
+    id: 'e2e_bonsai_create_submit'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# 盆栽 1 件 state 確立確認 (= 「TestBonsai」 が盆栽 list に表示)
+- extendedWaitUntil:
+    visible:
+      text: 'TestBonsai'
+    timeout: 15000
+
+# 記録 tab tap
+- tapOn:
+    id: 'e2e_tab_record'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# 記録 screen 到達確認 (= mode=log)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_record_screen'
+    timeout: 15000
+
+# 記録 BottomCtaBar (= 「+ 作業を記録」) tap
+- tapOn:
+    id: 'e2e_record_bottom_cta_action'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# BulkWorkPicker screen 表示確認
+# useBulkActionFlow.startBulkAction で 1 件 = 自動選択 + 直接 push '/bulk-work-picker?mode=log'
+# = BonsaiMultiSelect modal skip 動線 (ADR-0025 §Decision §7、 4 ペルソナ全員 ◎)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_work_picker_screen'
+    timeout: 10000
+
+# ★★★ PR #1019 R-71 改修 regression 防止 主目的 assertion ★★★
+#
+# 1 件 case 専用の「自動選択」 hint が visible であること確認:
+# - chip 下 1 行 (= autoSelectedHintRow style)
+# - i18n key bulkPickerAutoSelectedHint (ja「自動選択」 / en「Auto-selected」)
+# - 2 件以上 case では isSingle=false で render されない (= デグレなし保証)
+#
+# 本 assertion が fail = R-71 改修 (= 件数分岐 hook UI 表現契約 SoT) 退化
+- assertVisible:
+    id: 'e2e_bulk_work_picker_auto_selected_hint'
