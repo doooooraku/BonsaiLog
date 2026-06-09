@@ -90,9 +90,11 @@
 **最頻原因 (Sess81 で判明)**: Play Console 側の **availability.territories が一部の国** に限定されている (= 上記 Step 8 の罠)。
 
 **確認方法 (RC MCP)**:
+
 ```
 mcp__revenuecat__get-product-store-state(project_id, product_id)
 ```
+
 レスポンスの `common.availability.territories` を確認。 175 国未満なら異常。
 
 **修復**: Step 8 の「Select all regions」 を user が Play Console UI から実行。 24h 待つ。
