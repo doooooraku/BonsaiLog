@@ -1050,6 +1050,27 @@ const ja: Partial<Record<TranslationKey, string>> = {
   customSpeciesDeleteConfirmTitle: '「{name}」 を削除しますか?',
   customSpeciesDeleteConfirmBody: '使用中の盆栽はありません。',
   customSpeciesDeleteImpactBody: '{count} 件の盆栽の樹種設定が解除されます。',
+  // Sess89 Phase 3: カスタム樹形 管理画面 + 編集画面 + 案 c atomic NULL cascade (= 「幻」 問題対応)
+  customStylesManagerTitle: '樹形を管理',
+  customStylesManagerDesc: 'カスタム樹形の追加・名前変更・削除を行います。',
+  customStylesAddCta: '+ 樹形を追加',
+  customStylesEmpty: 'カスタム樹形はまだありません',
+  customStylesUsageCountFormat: '{count} 件',
+  customStylesLastUsedNever: '未使用',
+  customStylesLastUsedToday: '今日使用',
+  customStylesLastUsedFormat: '{relative}に使用',
+  customStylesEditTitleAdd: '樹形を追加',
+  customStylesEditTitleEdit: '樹形を編集',
+  customStylesEditNameLabel: '樹形名',
+  customStylesAddPlaceholder: '例: 半懸崖',
+  customStylesEditAddCta: '追加',
+  customStylesEditUpdateCta: '更新',
+  customStylesEditDeleteCta: 'この樹形を削除',
+  customStylesRenameDuplicateBody: '同じ名前の樹形が既にあります',
+  customStylesAddFailedBody: '保存に失敗しました',
+  customStylesDeleteConfirmTitle: '「{name}」 を削除しますか?',
+  customStylesDeleteConfirmBody: '使用中の盆栽はありません。',
+  customStylesDeleteImpactBody: '{count} 件の盆栽の樹形設定が解除されます。',
 };
 
 export default ja;
