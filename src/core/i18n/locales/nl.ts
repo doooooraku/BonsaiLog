@@ -987,8 +987,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   recurringListEmptyTitle: 'No recurring schedules yet',
   recurringListEmptyDesc: 'Create one from the Plan tab "🔁 Repeat" toggle',
   recurringListItemNextOccurrence: 'Next: {date}',
-  recurringListItemEndDate: 'until {date}',
-  recurringListItemEndDateNever: 'No end date',
+  recurringListItemNextOccurrenceNone: 'No upcoming events',
   recurringListItemDeletedBonsai: '(deleted bonsai)',
   recurringListDeleteConfirmTitle: 'Delete this recurring schedule?',
   recurringListDeleteConfirmDesc:

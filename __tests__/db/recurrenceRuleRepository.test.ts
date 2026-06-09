@@ -122,4 +122,45 @@ describe('recurrenceRuleRepository ソースコード静的解析 (eventReposito
     expect(src).toMatch(/status\s*=\s*'planned'/);
     expect(src).toMatch(/occurred_at_utc\s*>=/);
   });
+
+  // ============================================================
+  // Sess82 PR-B: getNextOccurrence (= 静的解析、 実 DB は characterization test 担当)
+  // ============================================================
+  describe('Sess82 PR-B: getNextOccurrence (= 次回予定日 取得)', () => {
+    const repoSrc: string = require('fs').readFileSync(
+      require('path').resolve(__dirname, '../../src/db/recurrenceRuleRepository.ts'),
+      'utf8',
+    );
+
+    test('1. getNextOccurrence 関数 export 確認', () => {
+      expect(repoSrc).toMatch(/export\s+async\s+function\s+getNextOccurrence/);
+    });
+
+    test('2. 引数 signature = (ruleId, nowUtcIso): Promise<string | null>', () => {
+      expect(repoSrc).toMatch(
+        /getNextOccurrence\(\s*ruleId:\s*string,\s*nowUtcIso:\s*string,?\s*\):\s*Promise<string\s*\|\s*null>/,
+      );
+    });
+
+    test('3. SELECT MIN(occurred_at_utc) AS next_at で 最も近い未来取得', () => {
+      expect(repoSrc).toMatch(/SELECT\s+MIN\(occurred_at_utc\)\s+AS\s+next_at/);
+    });
+
+    test("4. WHERE recurrence_rule_id = ? AND status = 'planned' AND occurred_at_utc >= ? AND deleted_at IS NULL", () => {
+      expect(repoSrc).toMatch(/WHERE\s+recurrence_rule_id\s*=\s*\?/);
+      expect(repoSrc).toMatch(/AND\s+status\s*=\s*'planned'/);
+      expect(repoSrc).toMatch(/AND\s+occurred_at_utc\s*>=\s*\?/);
+      expect(repoSrc).toMatch(/AND\s+deleted_at\s+IS\s+NULL/);
+    });
+
+    test('5. row.next_at が null/undefined なら null fallback (= null 安全)', () => {
+      expect(repoSrc).toMatch(/row\?\.next_at\s*\?\?\s*null/);
+    });
+
+    test('6. プレースホルダ ? を使用 (= SQL injection 防止)', () => {
+      // SELECT は INSERT/UPDATE と違い regex で SQL injection 検出が 難しいが、
+      // ステートメント単位で ${ を 含まない 確認
+      expect(repoSrc).not.toMatch(/SELECT\s+MIN\(occurred_at_utc\)[^;]*\$\{/s);
+    });
+  });
 });
