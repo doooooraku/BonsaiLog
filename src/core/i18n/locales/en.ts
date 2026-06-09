@@ -1051,6 +1051,27 @@ const baseEn = {
   customSpeciesDeleteConfirmTitle: 'Delete "{name}"?',
   customSpeciesDeleteConfirmBody: 'No bonsai uses this species.',
   customSpeciesDeleteImpactBody: '{count} bonsai will have their species cleared.',
+  // Sess89 Phase 3: カスタム樹形 管理画面 + 編集画面 + 案 c atomic NULL cascade (= 「幻」 問題対応)
+  customStylesManagerTitle: 'Manage styles',
+  customStylesManagerDesc: 'Add, rename, and delete custom styles.',
+  customStylesAddCta: '+ Add style',
+  customStylesEmpty: 'No custom styles yet',
+  customStylesUsageCountFormat: '{count} bonsai',
+  customStylesLastUsedNever: 'unused',
+  customStylesLastUsedToday: 'used today',
+  customStylesLastUsedFormat: 'used {relative}',
+  customStylesEditTitleAdd: 'Add style',
+  customStylesEditTitleEdit: 'Edit style',
+  customStylesEditNameLabel: 'Style name',
+  customStylesAddPlaceholder: 'e.g. Cascade',
+  customStylesEditAddCta: 'Add',
+  customStylesEditUpdateCta: 'Update',
+  customStylesEditDeleteCta: 'Delete this style',
+  customStylesRenameDuplicateBody: 'A style with the same name already exists.',
+  customStylesAddFailedBody: 'Failed to save style.',
+  customStylesDeleteConfirmTitle: 'Delete "{name}"?',
+  customStylesDeleteConfirmBody: 'No bonsai uses this style.',
+  customStylesDeleteImpactBody: '{count} bonsai will have their style cleared.',
 };
 
 export type TranslationKey = keyof typeof baseEn;

@@ -93,9 +93,115 @@ export async function createOrFindCustomStyle(rawName: string): Promise<BonsaiSt
 }
 
 /**
- * カスタム樹形を削除 (id 指定)。
+ * Sess89 Phase 3 (案 c): カスタム樹形を物理削除 + atomic cascade で bonsai.style を NULL 書換え。
+ *
+ * 背景: bonsai.style は raw text 保存 (= enum 値 or custom name)、 FK ではないため
+ * カスタム樹形を削除しても bonsai.style に 「幻の樹形名」 が残る (= Sess89 議論で発覚)。
+ *
+ * 対策 (案 c、 user 承認済): deleteCustomStyle 関数内で
+ *   1. SELECT name FROM bonsai_styles_custom WHERE id = ?
+ *   2. DELETE FROM bonsai_styles_custom WHERE id = ?
+ *   3. UPDATE bonsai SET style = NULL WHERE style = ?  ← atomic NULL 書換え
+ * を 1 transaction で実行、 orphan 参照を構造的に排除。
+ *
+ * Related: ADR-0026 §Notes Amended Sess89 (= 樹形 raw text 設計と atomic cascade 明文化、 Phase 4 追加予定)
  */
 export async function deleteCustomStyle(id: string): Promise<void> {
   const db = await getDb();
+  // Sess89 Phase 3: name を先に取得 (= cascade UPDATE 用)
+  const target = await db.getFirstAsync<{ name: string }>(
+    'SELECT name FROM bonsai_styles_custom WHERE id = ?;',
+    [id],
+  );
+  if (!target) return; // 既に削除済 (= 冪等性)
   await db.runAsync('DELETE FROM bonsai_styles_custom WHERE id = ?;', [id]);
+  await db.runAsync('UPDATE bonsai SET style = NULL WHERE style = ?;', [target.name]);
+}
+
+/**
+ * Sess89 Phase 3 (ADR-0049 ⑥ Grandfathered 緩 削除/編集 OK の構造実装): rename custom style。
+ *
+ * - 入力名 trim 後 empty → 'empty'
+ * - 自身以外の重複 (UNIQUE 制約衝突回避) → 'duplicate'
+ * - それ以外 → name 変更 + bonsai.style raw text の cascade UPDATE → 'ok'
+ *
+ * ⚠️ 樹形は raw text 保存のため、 名前変更時に bonsai 側も連動 UPDATE 必須 (= 樹種と異なる点)。
+ */
+export type RenameCustomStyleResult = 'ok' | 'empty' | 'duplicate';
+
+export async function renameCustomStyle(
+  id: string,
+  newRawName: string,
+): Promise<RenameCustomStyleResult> {
+  const name = newRawName.trim();
+  if (name.length === 0) return 'empty';
+  const db = await getDb();
+  const existing = await db.getFirstAsync<{ id: string }>(
+    'SELECT id FROM bonsai_styles_custom WHERE name = ? AND id != ?;',
+    [name, id],
+  );
+  if (existing) return 'duplicate';
+  // Sess89 Phase 3: 旧 name を取得 → cascade UPDATE 用
+  const target = await db.getFirstAsync<{ name: string }>(
+    'SELECT name FROM bonsai_styles_custom WHERE id = ?;',
+    [id],
+  );
+  if (!target) return 'empty'; // 存在しない id (= defensive)
+  // 同名への rename は no-op で 'ok' を返す
+  if (target.name === name) return 'ok';
+  await db.runAsync('UPDATE bonsai_styles_custom SET name = ? WHERE id = ?;', [name, id]);
+  // ⚠️ raw text cascade: bonsai.style が旧 name の row を新 name に更新
+  await db.runAsync('UPDATE bonsai SET style = ? WHERE style = ?;', [name, target.name]);
+  return 'ok';
+}
+
+/**
+ * Sess89 Phase 3: カスタム樹形の使用件数 (= bonsai.style raw text 完全一致 + 非アーカイブ件数)。
+ *
+ * - 削除前の影響範囲警告 (= Linear pattern「N 件の盆栽の樹形設定が解除されます」) 用途
+ * - bonsai.style は enum 値 (= master) or custom name の raw text が入る
+ * - LIKE は使わない (= 部分一致を避けるため完全一致のみ)
+ */
+export async function countBonsaiByCustomStyle(name: string): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM bonsai WHERE style = ? AND archived_at IS NULL;',
+    [name],
+  );
+  return row?.count ?? 0;
+}
+
+/**
+ * Sess89 Phase 3: カスタム樹形一覧 + 使用統計 (= 管理画面 row 表示用)。
+ *
+ * 各カスタム樹形について:
+ * - usageCount: bonsai.style = name の件数 (archived_at IS NULL のみ)
+ * - lastUsedAt: 該当 bonsai の最新 updated_at、 未使用なら null
+ *
+ * tagRepository.getTagsWithStats / getCustomSpeciesWithStats と同 pattern、
+ * ただし bonsai.style は FK ではなく raw text 比較なので JOIN ON 条件が name 一致。
+ */
+export type CustomStyleWithStats = BonsaiStyleCustom & {
+  usageCount: number;
+  lastUsedAt: string | null;
+};
+
+export async function getCustomStylesWithStats(): Promise<CustomStyleWithStats[]> {
+  const db = await getDb();
+  const rawRows = await db.getAllAsync<Record<string, unknown>>(
+    `SELECT cs.id, cs.name, cs.created_at,
+            COUNT(b.id) AS usageCount,
+            MAX(b.updated_at) AS lastUsedAt
+     FROM bonsai_styles_custom cs
+     LEFT JOIN bonsai b ON b.style = cs.name AND b.archived_at IS NULL
+     GROUP BY cs.id, cs.name, cs.created_at
+     ORDER BY cs.created_at ASC;`,
+  );
+  return rawRows.map((row) => ({
+    id: row.id as string,
+    name: row.name as string,
+    createdAt: row.created_at as string,
+    usageCount: (row.usageCount as number) ?? 0,
+    lastUsedAt: (row.lastUsedAt as string | null) ?? null,
+  }));
 }

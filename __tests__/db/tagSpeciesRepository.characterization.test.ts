@@ -266,4 +266,45 @@ describe('bonsaiStylesCustomRepository', () => {
     expect((await customStyle.getAllCustomStyles()).length).toBe(0);
     await expect(customStyle.createOrFindCustomStyle('')).rejects.toThrow();
   });
+
+  // Sess89 Phase 3: rename + delete cascade NULL + countBonsai + WithStats の新規 CRUD 関数群 (案 c)
+  test('renameCustomStyle: 正常系 / 空文字 / 重複 / no-op', async () => {
+    const { customStyle } = repos();
+    const a = await customStyle.createOrFindCustomStyle('樹形 A');
+    const b = await customStyle.createOrFindCustomStyle('樹形 B');
+
+    expect(await customStyle.renameCustomStyle(a.id, '樹形 A 改')).toBe('ok');
+    expect(await customStyle.renameCustomStyle(a.id, '')).toBe('empty');
+    expect(await customStyle.renameCustomStyle(a.id, '   ')).toBe('empty');
+    expect(await customStyle.renameCustomStyle(a.id, '樹形 B')).toBe('duplicate');
+    // 自分自身の名前 (= no-op) は 'ok'
+    expect(await customStyle.renameCustomStyle(b.id, '樹形 B')).toBe('ok');
+  });
+
+  test('deleteCustomStyle: 物理削除 (= atomic NULL cascade for bonsai.style raw text)', async () => {
+    const { customStyle } = repos();
+    const a = await customStyle.createOrFindCustomStyle('削除テスト樹形');
+    expect((await customStyle.getAllCustomStyles()).length).toBe(1);
+    await customStyle.deleteCustomStyle(a.id);
+    expect((await customStyle.getAllCustomStyles()).length).toBe(0);
+    // 冪等性: 二度目の delete は no-op で throw しない
+    await customStyle.deleteCustomStyle(a.id);
+  });
+
+  test('countBonsaiByCustomStyle: 紐づく盆栽件数を返す (raw text 完全一致)', async () => {
+    const { customStyle } = repos();
+    const a = await customStyle.createOrFindCustomStyle('紐づけテスト');
+    // 盆栽未紐づけ時点で 0
+    expect(await customStyle.countBonsaiByCustomStyle(a.name)).toBe(0);
+  });
+
+  test('getCustomStylesWithStats: 全件 + 使用統計 (= usageCount + lastUsedAt)', async () => {
+    const { customStyle } = repos();
+    await customStyle.createOrFindCustomStyle('統計樹形 A');
+    await customStyle.createOrFindCustomStyle('統計樹形 B');
+    const stats = await customStyle.getCustomStylesWithStats();
+    expect(stats.length).toBe(2);
+    expect(stats.every((s) => s.usageCount === 0)).toBe(true);
+    expect(stats.every((s) => s.lastUsedAt === null)).toBe(true);
+  });
 });
