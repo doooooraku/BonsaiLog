@@ -318,3 +318,56 @@ React.useEffect(() => {
 - Sess89 PR-4 #1033 (ADR-0049 / ADR-0026 §Notes Amended、 4 領域 cascade pattern matrix)
 - iOS HIG Large Title / Material 3 Top App Bar (= size 階層表現業界整合)
 - design_system.md §Screen header typography contract (本 PR 新規追加)
+
+---
+
+## Amendment (2026-06-10 / Sess90 PR-B / 全 header 背景色を washi (c.background) に統一)
+
+### 背景
+
+Sess90 PR-A 取り込み後、 user 報告: 「画面タイトル (タブ大見出し) の背景色が白色とそうでない、 の 2 つがある」「背景色も統一すべき」。
+
+調査で判明:
+
+| header                | 旧 background token | 旧 実色 (light) |
+| --------------------- | ------------------- | --------------- |
+| タブ画面 SearchHeader | `c.background`      | `#F7F3E8` washi |
+| Stack 画面 (root)     | `c.surface`         | `#FFFFFF` 純白  |
+| Stack 画面 (settings) | `c.surface`         | `#FFFFFF` 純白  |
+
+タブ画面 = washi 和紙、 Stack 画面 = 純白 で **意図的に 2 種類使い分け** (= Material 3 elevation 発想、 Stack header を 1 段上の elevated surface 扱い)。 しかし BonsaiLog の design 哲学 (= 和紙が背景の柱、 `c.surface` 純白は card / dialog 等の浮き要素専用) と齟齬。
+
+### Amendment Decision
+
+**全 header (= タブ画面 + Stack 画面) の背景を `c.background` token に統一** する。
+
+#### 採用理由
+
+1. **業界整合**: Apple HIG は navigation bar = content と同色がデフォルト、 Material 3 Top App Bar も surface = content 同色 default
+2. **BonsaiLog 和紙哲学**: `c.background` = washi 和紙 (light) / 宵墨 (dark) が design 系の柱、 `c.surface` (= 純白 / 重ねの紙) は card / dialog 等の浮き要素専用
+3. **scheme-aware 自動切替**: `c.background` token は light `#F7F3E8` / dark `#16140F` を自動切替 (= ADR-0052 Dark Theme Cascade 整合)
+4. **境界線は `c.border` 1px**: header と content が同色になっても 1px の border で視覚的に分離維持
+
+### 適用範囲 (Sess90 PR-B = 5 file)
+
+| file                            | 変更前 background         | 変更後                    |
+| ------------------------------- | ------------------------- | ------------------------- |
+| `app/_layout.tsx` (root)        | `headerColors.surface`    | `headerColors.background` |
+| `app/settings/_layout.tsx`      | `c.surface`               | `c.background`            |
+| `app/(modals)/_layout.tsx`      | 未指定 (RN default white) | `c.background` 明示       |
+| `app/(tabs)/plan/_layout.tsx`   | 同上                      | `c.background` 明示       |
+| `app/(tabs)/bonsai/_layout.tsx` | 同上                      | `c.background` 明示       |
+
+加えて、 nested layout で `c.background` を使うため `useColors()` を取得、 `headerTintColor` / `headerTitleStyle.color` も `c.text` で明示 (= dark mode で back arrow + title 色が壊れないことを保証)。
+
+### 不採用とした代替案
+
+- **Alt B**: 全 header を `c.surface` (= 白) に統一 → タブ画面の柔らかい washi の良さを失う、 BonsaiLog 和紙哲学からずれる
+- **Alt C**: 現状維持 (= Stack header = elevated 意図) → user 報告で「統一性なし」 と認識される、 業界整合性 / 哲学整合性ともに不利
+
+### 関連
+
+- Sess90 PR-A (本 ADR Amendment 直前、 font 統一 + 3 screen 配線 fix)
+- ADR-0052 Dark Theme Cascade Pattern (= scheme-aware token の SoT)
+- Apple HIG / Material 3 navigation bar default 同色 pattern
+- BonsaiLog design_system.md §2 (= 和紙 / 墨 / 苔 の三色 design 哲学)

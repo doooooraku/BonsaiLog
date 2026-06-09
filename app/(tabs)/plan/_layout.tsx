@@ -11,11 +11,22 @@ import React from 'react';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess90 PR-A: nested Stack でも font geometry を明示 spread (= root → nested は cascade しない)。
 import { screenTitleStack } from '@/src/core/theme/typography';
+// Sess90 PR-B: header 背景を c.background (= washi/宵墨 scheme-aware) で SoT 統一。
+import { useColors } from '@/src/core/theme/useColors';
 
 export default function PlanStackLayout() {
   const { t } = useTranslation();
+  const c = useColors();
   return (
-    <Stack screenOptions={{ headerTitleStyle: screenTitleStack }}>
+    <Stack
+      screenOptions={{
+        // Sess90 PR-A: font geometry SoT (R-75)。
+        // Sess90 PR-B: header 背景 + tint も明示 (= nested は cascade されない)。
+        headerStyle: { backgroundColor: c.background },
+        headerTintColor: c.text,
+        headerTitleStyle: { color: c.text, ...screenTitleStack },
+      }}
+    >
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
         name="wiring"

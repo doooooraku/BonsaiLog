@@ -213,7 +213,31 @@ DM Sans / Space Grotesk / system-ui（iOS/Androidデフォルト）
 | caption   | 13pt | 19pt (1.5) | キャプション               |
 | micro     | 11pt | 16pt (1.5) | 広告ラベル等、これ以下禁止 |
 
-### 3-4. Screen header typography contract (Sess90 PR-A、 ADR-0053 Sess90 Amendment)
+### 3-4. Screen header background contract (Sess90 PR-B、 ADR-0053 Sess90 PR-B Amendment)
+
+画面ヘッダー (= タブ画面の自前 SearchHeader / Stack 画面の React Navigation native header) の **背景色は `c.background` で統一** (= 旧 Stack 画面の `c.surface` 純白を撤廃)。
+
+**理由**:
+
+- BonsaiLog 和紙哲学整合 (= `c.background` = washi / 宵墨 が design の柱、 `c.surface` = 純白 / 重ねの紙 は card / dialog 等の浮き要素専用)
+- Apple HIG / Material 3 navigation bar default 整合 (= content と同色、 elevation あり時のみ薄っすら変える)
+- scheme-aware 自動切替: light `#F7F3E8` (washi) / dark `#16140F` (宵墨)
+- header と content が同色になっても `c.border` 1px の下線で境界線維持
+
+**設定箇所 (= 6 file SoT)**:
+
+| file                                   | header 設定                                                   |
+| -------------------------------------- | ------------------------------------------------------------- |
+| `src/features/bonsai/SearchHeader.tsx` | `backgroundColor: c.background` (= タブ画面、 自前 component) |
+| `app/_layout.tsx` (root)               | `headerStyle.backgroundColor: headerColors.background`        |
+| `app/settings/_layout.tsx`             | `headerStyle.backgroundColor: c.background`                   |
+| `app/(modals)/_layout.tsx`             | 同上                                                          |
+| `app/(tabs)/plan/_layout.tsx`          | 同上                                                          |
+| `app/(tabs)/bonsai/_layout.tsx`        | 同上                                                          |
+
+注: nested Stack でも root から cascade されないため、 各 nested `_layout.tsx` で `useColors()` 取得 + `c.background` 明示 spread が必要。
+
+### 3-5. Screen header typography contract (Sess90 PR-A、 ADR-0053 Sess90 Amendment)
 
 画面ヘッダー (= タブ画面の自前 SearchHeader / Stack 画面の React Navigation native header) は **`src/core/theme/typography.ts` の 2 token を SoT** として参照し、 個別 file での hardcode は禁止 (R-75)。
 

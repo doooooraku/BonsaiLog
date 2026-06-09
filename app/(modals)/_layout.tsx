@@ -21,9 +21,12 @@ import React from 'react';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 // Sess90 PR-A: modals 各 screen の Stack header font も統一 (ADR-0053 Sess90 Amendment、 R-75)。
 import { screenTitleStack } from '@/src/core/theme/typography';
+// Sess90 PR-B: header 背景を c.background (= washi/宵墨 scheme-aware) で SoT 統一。
+import { useColors } from '@/src/core/theme/useColors';
 
 export default function ModalsLayout() {
   const { t } = useTranslation();
+  const c = useColors();
 
   // Sess16 PR-A1: mode URL param で nav title を切替 (log → 作業を記録 / schedule → 予定を追加)
   // Sess84 follow-up: mode='recurring' case 追加 (= Sess82 PR-D #1013 で追加された定期予定新規動線)、
@@ -39,7 +42,15 @@ export default function ModalsLayout() {
   };
 
   return (
-    <Stack screenOptions={{ presentation: 'modal', headerTitleStyle: screenTitleStack }}>
+    <Stack
+      screenOptions={{
+        presentation: 'modal',
+        // Sess90 PR-B: header 背景 + tint を root 同等で明示 (nested は cascade されない、 R-75)。
+        headerStyle: { backgroundColor: c.background },
+        headerTintColor: c.text,
+        headerTitleStyle: { color: c.text, ...screenTitleStack },
+      }}
+    >
       <Stack.Screen name="species-picker" options={{ title: t('stackSpeciesPickerTitle') }} />
       <Stack.Screen name="style-picker" options={{ title: t('stackStylePickerTitle') }} />
       <Stack.Screen

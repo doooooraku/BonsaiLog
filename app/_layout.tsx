@@ -141,7 +141,11 @@ export default function RootLayout() {
             // Phase B-1b: Stack header を Colors 経由 (washi 背景 + 墨テキスト + brand tint)。
             // Sess90 PR-A: font geometry (= NotoSerifJP 18pt) を screenTitleStack token 経由で SoT 化
             // (ADR-0053 Sess90 Amendment、 R-75)。 全 Stack screen に root cascade で自動適用される。
-            headerStyle: { backgroundColor: headerColors.surface },
+            // Sess90 PR-B: header 背景を c.surface (= 白/重ねの紙) → c.background (= washi/宵墨) に統一。
+            // タブ画面 SearchHeader (= c.background) と同じ token を使うことで「タブ画面 と Stack 画面
+            // で背景色が違う」 不整合解消 (ADR-0053 Sess90 PR-B Amendment、 user 報告起点)。
+            // scheme-aware: light=#F7F3E8 washi / dark=#16140F 宵墨 自動切替。
+            headerStyle: { backgroundColor: headerColors.background },
             headerTintColor: headerColors.text,
             headerTitleStyle: { color: headerColors.text, ...screenTitleStack },
             contentStyle: { backgroundColor: headerColors.background },

@@ -22,7 +22,9 @@ export default function SettingsStackLayout() {
     <Stack
       screenOptions={{
         // Sess66 PR5: NotoSerifJP + dark cascade 対応 (root Stack と同 pattern)。
-        headerStyle: { backgroundColor: c.surface },
+        // Sess90 PR-B: header 背景を c.surface → c.background に統一 (= タブ画面 SearchHeader と同色、
+        // ADR-0053 Sess90 PR-B Amendment)。 scheme-aware: light=washi / dark=宵墨 自動切替。
+        headerStyle: { backgroundColor: c.background },
         headerTintColor: c.text,
         headerTitleStyle: { color: c.text, ...screenTitleStack },
         contentStyle: { backgroundColor: c.background },
