@@ -186,6 +186,33 @@ export async function listActiveRecurrenceRules(): Promise<RecurrenceRuleRow[]> 
 }
 
 /**
+ * 指定 rule の 次回予定日 (= 最も近い未来の planned event の occurred_at_utc) を 取得。
+ *
+ * Sess82 PR-B で 追加 (= RecurrenceListScreen の表示要素再設計、 「次回 yyyy-mm-dd」 表示用)。
+ * 既存の 8 週分 eager 展開済 events を 参照するだけで O(log N)、 expandRRule 再実行不要。
+ *
+ * - 未来 1 件以上: MIN(occurred_at_utc) を 返す
+ * - 全て過去 / 全て exdate / rule 削除済: null を 返す
+ *
+ * @param ruleId 対象 rule ID
+ * @param nowUtcIso 「今」 の ISO 文字列 (= 通常 `nowUtc()`、 test mock 容易化のため引数化)
+ * @returns 次回予定日 occurred_at_utc (ISO 8601 UTC) or null
+ */
+export async function getNextOccurrence(ruleId: string, nowUtcIso: string): Promise<string | null> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ next_at: string | null }>(
+    `SELECT MIN(occurred_at_utc) AS next_at
+     FROM events
+     WHERE recurrence_rule_id = ?
+       AND status = 'planned'
+       AND occurred_at_utc >= ?
+       AND deleted_at IS NULL;`,
+    [ruleId, nowUtcIso],
+  );
+  return row?.next_at ?? null;
+}
+
+/**
  * 新規 rule 作成可否 (Pro 境界判定、 ADR-0056 D7 + Grandfathered 戦略整合)。
  *
  * - Pro user: 常に true

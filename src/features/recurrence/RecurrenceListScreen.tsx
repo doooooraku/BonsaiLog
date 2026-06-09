@@ -54,7 +54,7 @@ function rruleToHumanLabel(rrule: string): TranslationKey {
 export default function RecurrenceListScreen() {
   const { t } = useTranslation();
   const c = useColors();
-  const { rules, bonsaiMap, loading, reload } = useRecurrenceRules();
+  const { rules, bonsaiMap, nextOccurrenceMap, loading, reload } = useRecurrenceRules();
   const [deleteTarget, setDeleteTarget] = useState<RecurrenceRuleRow | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -107,9 +107,11 @@ export default function RecurrenceListScreen() {
             const bonsaiLabel = bonsai?.name ?? t('recurringListItemDeletedBonsai');
             const eventLabel = t(`eventType_${item.eventType}` as TranslationKey);
             const humanRruleKey = rruleToHumanLabel(item.rrule);
-            const endLabel = item.endAtUtc
-              ? t('recurringListItemEndDate').replace('{date}', item.endAtUtc.slice(0, 10))
-              : t('recurringListItemEndDateNever');
+            // Sess82 PR-B: 終了日表示削除 → 次回予定日表示 (= ADR-0056 D4-1、 4 ペルソナ最大公約数)
+            const nextOccurrence = nextOccurrenceMap.get(item.id) ?? null;
+            const nextLabel = nextOccurrence
+              ? t('recurringListItemNextOccurrence').replace('{date}', nextOccurrence.slice(0, 10))
+              : t('recurringListItemNextOccurrenceNone');
             return (
               <View
                 style={[styles.card, { backgroundColor: c.surface, borderColor: c.borderStrong }]}
@@ -129,8 +131,8 @@ export default function RecurrenceListScreen() {
                   <ThemedText style={[styles.eventLabel, { color: c.textSecondary }]}>
                     {eventLabel} · {t(humanRruleKey)}
                   </ThemedText>
-                  <ThemedText style={[styles.endLabel, { color: c.textMuted }]}>
-                    {endLabel}
+                  <ThemedText style={[styles.nextLabel, { color: c.textMuted }]}>
+                    {nextLabel}
                   </ThemedText>
                 </View>
                 <Pressable
@@ -212,7 +214,8 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   bonsaiName: { fontSize: 15, fontWeight: '600' },
   eventLabel: { fontSize: 13 },
-  endLabel: { fontSize: 12 },
+  // Sess82 PR-B: endLabel → nextLabel (= 「次回 yyyy-mm-dd」 表示、 ADR-0056 D4-1)
+  nextLabel: { fontSize: 12 },
   kebabButton: {
     width: 32,
     height: 32,
