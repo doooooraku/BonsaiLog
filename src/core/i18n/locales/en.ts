@@ -1030,6 +1030,27 @@ const baseEn = {
   lookBackCardSpeciesDesc: 'Add / rename / delete custom species · See usage counts',
   lookBackCardStylesTitle: 'Manage styles',
   lookBackCardStylesDesc: 'Add / rename / delete custom styles · See usage counts',
+  // Sess89 Phase 2: カスタム樹種 管理画面 + 編集画面 (= タグ管理 pattern 同型 + Recurring kebab pattern)
+  customSpeciesManagerTitle: 'Manage species',
+  customSpeciesManagerDesc: 'Add, rename, and delete custom species.',
+  customSpeciesAddCta: '+ Add species',
+  customSpeciesEmpty: 'No custom species yet',
+  customSpeciesUsageCountFormat: '{count} bonsai',
+  customSpeciesLastUsedNever: 'unused',
+  customSpeciesLastUsedToday: 'used today',
+  customSpeciesLastUsedFormat: 'used {relative}',
+  customSpeciesEditTitleAdd: 'Add species',
+  customSpeciesEditTitleEdit: 'Edit species',
+  customSpeciesEditNameLabel: 'Species name',
+  customSpeciesAddPlaceholder: 'e.g. Sakura',
+  customSpeciesEditAddCta: 'Add',
+  customSpeciesEditUpdateCta: 'Update',
+  customSpeciesEditDeleteCta: 'Delete this species',
+  customSpeciesRenameDuplicateBody: 'A species with the same name already exists.',
+  customSpeciesAddFailedBody: 'Failed to save species.',
+  customSpeciesDeleteConfirmTitle: 'Delete "{name}"?',
+  customSpeciesDeleteConfirmBody: 'No bonsai uses this species.',
+  customSpeciesDeleteImpactBody: '{count} bonsai will have their species cleared.',
 };
 
 export type TranslationKey = keyof typeof baseEn;

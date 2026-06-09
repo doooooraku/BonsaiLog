@@ -33,6 +33,7 @@ import { ThemedView } from '@/components/themed-view';
 import {
   ChevronRightIcon,
   DownloadIcon,
+  LeafIcon,
   RepeatIcon,
   SearchIcon,
   TagIcon,
@@ -43,7 +44,7 @@ import { useColors } from '@/src/core/theme/useColors';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 
 type CardDef = {
-  key: 'wiring' | 'search' | 'tags' | 'recurring' | 'export';
+  key: 'wiring' | 'search' | 'tags' | 'species' | 'recurring' | 'export';
   title: string;
   desc: string;
   Icon: typeof WireIcon;
@@ -95,6 +96,15 @@ export default function LookBackHubScreen() {
       desc: t('recurringHubCardDesc'),
       Icon: RepeatIcon,
       onPress: () => router.push('/recurring-rules' as Href),
+    },
+    // Sess89 Phase 2 (ADR-0049 ⑥ Grandfathered 緩 削除/編集 OK の構造実装): カスタム樹種を管理 6 カード目。
+    // タグ管理 (Sess9 PR-6) と同型、 custom 樹種の add/rename/delete (= master 5 種は不変、 picker でのみ表示)。
+    {
+      key: 'species',
+      title: t('lookBackCardSpeciesTitle'),
+      desc: t('lookBackCardSpeciesDesc'),
+      Icon: LeafIcon,
+      onPress: () => router.push('/custom-species' as Href),
     },
     // Sess49 追補3: エクスポート動線 (設定からのみ → 発見性向上)。Pro 限定のため PRO バッジ。
     {

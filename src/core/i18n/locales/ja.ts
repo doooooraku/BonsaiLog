@@ -1029,6 +1029,27 @@ const ja: Partial<Record<TranslationKey, string>> = {
   lookBackCardSpeciesDesc: 'カスタム樹種の追加・名前変更・削除 / 各樹種の使用数を確認',
   lookBackCardStylesTitle: '樹形を管理',
   lookBackCardStylesDesc: 'カスタム樹形の追加・名前変更・削除 / 各樹形の使用数を確認',
+  // Sess89 Phase 2: カスタム樹種 管理画面 + 編集画面 (= タグ管理 pattern 同型 + Recurring kebab pattern)
+  customSpeciesManagerTitle: '樹種を管理',
+  customSpeciesManagerDesc: 'カスタム樹種の追加・名前変更・削除を行います。',
+  customSpeciesAddCta: '+ 樹種を追加',
+  customSpeciesEmpty: 'カスタム樹種はまだありません',
+  customSpeciesUsageCountFormat: '{count} 件',
+  customSpeciesLastUsedNever: '未使用',
+  customSpeciesLastUsedToday: '今日使用',
+  customSpeciesLastUsedFormat: '{relative}に使用',
+  customSpeciesEditTitleAdd: '樹種を追加',
+  customSpeciesEditTitleEdit: '樹種を編集',
+  customSpeciesEditNameLabel: '樹種名',
+  customSpeciesAddPlaceholder: '例: 桜',
+  customSpeciesEditAddCta: '追加',
+  customSpeciesEditUpdateCta: '更新',
+  customSpeciesEditDeleteCta: 'この樹種を削除',
+  customSpeciesRenameDuplicateBody: '同じ名前の樹種が既にあります',
+  customSpeciesAddFailedBody: '保存に失敗しました',
+  customSpeciesDeleteConfirmTitle: '「{name}」 を削除しますか?',
+  customSpeciesDeleteConfirmBody: '使用中の盆栽はありません。',
+  customSpeciesDeleteImpactBody: '{count} 件の盆栽の樹種設定が解除されます。',
 };
 
 export default ja;

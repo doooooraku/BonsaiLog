@@ -206,6 +206,48 @@ describe('bonsaiSpeciesCustomRepository', () => {
     expect(await customSpecies.getCustomSpeciesById(a.id)).not.toBeNull();
     await expect(customSpecies.createOrFindCustomSpecies('  ')).rejects.toThrow();
   });
+
+  // Sess89 Phase 2: rename + delete + countBonsai + WithStats の新規 CRUD 関数群
+  test('renameCustomSpecies: 正常系 / 空文字 / 重複', async () => {
+    const { customSpecies } = repos();
+    const a = await customSpecies.createOrFindCustomSpecies('盆栽 A');
+    const b = await customSpecies.createOrFindCustomSpecies('盆栽 B');
+
+    expect(await customSpecies.renameCustomSpecies(a.id, '盆栽 A 改')).toBe('ok');
+    expect(await customSpecies.renameCustomSpecies(a.id, '')).toBe('empty');
+    expect(await customSpecies.renameCustomSpecies(a.id, '   ')).toBe('empty');
+    // a を b の名前に rename しようとすると duplicate (= UNIQUE 制約)
+    expect(await customSpecies.renameCustomSpecies(a.id, '盆栽 B')).toBe('duplicate');
+    // 自分自身の名前への rename は ok (no-op)
+    expect(await customSpecies.renameCustomSpecies(b.id, '盆栽 B')).toBe('ok');
+  });
+
+  test('deleteCustomSpecies: 物理削除 + ON DELETE SET NULL', async () => {
+    const { customSpecies } = repos();
+    const a = await customSpecies.createOrFindCustomSpecies('削除テスト');
+    expect(await customSpecies.countAllCustomSpecies()).toBe(1);
+    await customSpecies.deleteCustomSpecies(a.id);
+    expect(await customSpecies.countAllCustomSpecies()).toBe(0);
+    expect(await customSpecies.getCustomSpeciesById(a.id)).toBeNull();
+  });
+
+  test('countBonsaiByCustomSpecies: 紐づく盆栽件数を返す (archived_at IS NULL のみ)', async () => {
+    const { customSpecies } = repos();
+    const sp = await customSpecies.createOrFindCustomSpecies('紐づけテスト');
+    // 盆栽未紐づけ時点で 0
+    expect(await customSpecies.countBonsaiByCustomSpecies(sp.id)).toBe(0);
+  });
+
+  test('getCustomSpeciesWithStats: 全件 + 使用統計 (= usageCount + lastUsedAt) を返す', async () => {
+    const { customSpecies } = repos();
+    await customSpecies.createOrFindCustomSpecies('統計 A');
+    await customSpecies.createOrFindCustomSpecies('統計 B');
+    const stats = await customSpecies.getCustomSpeciesWithStats();
+    expect(stats.length).toBe(2);
+    // 盆栽未紐づけなので全て usageCount=0
+    expect(stats.every((s) => s.usageCount === 0)).toBe(true);
+    expect(stats.every((s) => s.lastUsedAt === null)).toBe(true);
+  });
 });
 
 // ===========================================================================
