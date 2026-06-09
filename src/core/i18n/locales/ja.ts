@@ -987,7 +987,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   recurringPresetWeekly: '毎週',
   recurringPresetBiweekly: '隔週',
   recurringPresetMonthly: '毎月',
-  recurringPresetCustom: '3 ヶ月ごと',
+  recurringPresetCustom: 'カスタム',
+  // Sess89 PR-B (ADR-0056 D4 Amendment): 7 preset + custom (= 業界整合 + 盆栽特有「長周期」)
+  recurringPresetEvery3Months: '3 ヶ月ごと',
+  recurringPresetEvery6Months: '半年ごと',
+  recurringPresetYearly: '毎年',
+  recurringPresetCustomEveryNDays: '{n} 日ごと',
   recurringEndDateOneYear: '1 年後 (おすすめ)',
   recurringEndDateSpecific: '日付を指定',
   recurringEndDateNever: 'なし',

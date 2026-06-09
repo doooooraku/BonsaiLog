@@ -88,18 +88,37 @@ CREATE INDEX idx_events_recurrence
 - **上限ガード**: 1 rule あたり最大 1000 件 (= 約 20 年 weekly) で hard limit、 性能保護
 - **TZ 対応**: 起動時 + TZ 変更検知時に `getTzIana()` で 現地時刻再計算 (ADR-0014 §15-17 pattern 流用)
 
-### D4. UI: RecurrencePicker (Apple Reminders 風 6 preset + 終了日 3 択)
+### D4. UI: RecurrencePicker (Apple Reminders 風 preset + 終了日)
 
-予定追加画面 (`BulkLogConfirmScreen` schedule mode) に **「🔁 繰り返し」 toggle** (default OFF) 追加。 ON で 下記 picker 出現。
+予定追加画面 (`BulkLogConfirmScreen` schedule mode) に **「繰り返し」 toggle** (default OFF) 追加。 ON で 下記 picker 出現。
 
-**6 preset**:
+#### Sess89 PR-B Amendment (2026-06-09): 7 preset + custom 再構成
+
+業界整合 (Apple/Google/Todoist/Things 3) + 盆栽特有「長周期」 需要 (= 半年/毎年の植替え/施肥) + ユーザー任意「N 日ごと」 で 6 preset → **7 preset + custom** に拡張。
+
+**7 preset + custom (Sess89 PR-B 確定版)**:
 
 1. 毎日 (`FREQ=DAILY`)
-2. 毎週月曜 (`FREQ=WEEKLY;BYDAY=MO`)
-3. 毎週 (= 開始曜日基準、 `FREQ=WEEKLY`)
-4. 隔週 (`FREQ=WEEKLY;INTERVAL=2`)
-5. 毎月 (`FREQ=MONTHLY`)
-6. N ヶ月ごと (Custom、 v1.2 拡張候補、 v1.0 では disabled or 「3 ヶ月ごと/6 ヶ月ごと」 の preset 2 つ)
+2. 毎週 (= 開始曜日基準、 `FREQ=WEEKLY`)
+3. 毎月 (`FREQ=MONTHLY`)
+4. 3 ヶ月ごと (`FREQ=MONTHLY;INTERVAL=3`)
+5. 半年ごと (`FREQ=MONTHLY;INTERVAL=6`)
+6. 毎年 (`FREQ=YEARLY`)
+7. カスタム (= N 日ごと、 `FREQ=DAILY;INTERVAL=N`、 N=1-365、 `buildCustomRrule(n)` helper で動的生成)
+
+**削除した preset (Sess78 当初仕様)**:
+
+- 毎週月曜 (`FREQ=WEEKLY;BYDAY=MO`) — 曜日固定で他曜日 user 排除、 RFC 5545 整合性低
+- 隔週 (`FREQ=WEEKLY;INTERVAL=2`) — 業界 preset 不在、 使用頻度低
+
+**互換性 (= 既存 rule 保護)**:
+
+- migration せず維持: 既存 rule の旧 RRULE (= weeklyMonday / biweekly) は そのまま保存され、 `rruleToHumanLabel` 内に旧 key の逆引きを保持して表示連続性確保
+- `recurringPresetWeeklyMonday` / `recurringPresetBiweekly` i18n keys も 削除せず維持
+
+**旧 D4 (Sess78 PR-4 #997 当初) — 6 preset**:
+
+1. 毎日 / 2. 毎週月曜 / 3. 毎週 / 4. 隔週 / 5. 毎月 / 6. N ヶ月ごと (Custom、 「3 ヶ月ごと」 名で実装)
 
 **終了日 3 択** (Sess82 PR-A 改訂、 default = なし、 業界整合 + user 要望反映):
 

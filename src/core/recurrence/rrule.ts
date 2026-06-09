@@ -74,16 +74,60 @@ export function isValidRRule(rrule: string, startAtUtc: string): boolean {
 }
 
 /**
- * 6 preset の RRULE 文字列 (ADR-0056 D4)。
+ * 7 preset + custom の RRULE 文字列 (ADR-0056 D4 Sess89 PR-B Amendment)。
  * UI の RecurrencePicker から 直接参照。
+ *
+ * 改訂経緯:
+ * - Sess78 当初 = 6 preset (= daily / weeklyMonday / weekly / biweekly / monthly / every3Months)
+ * - Sess89 PR-B = 業界整合 (Apple/Google/Todoist/Things 3) + 盆栽特有「長周期」 (= 半年/毎年)
+ *   需要 + ユーザー任意「N 日ごと」 で 7 preset + custom に再構成。
+ *   - 追加: every6Months / yearly / custom (= 動的生成 helper buildCustomRrule)
+ *   - 削除: weeklyMonday (= 曜日固定で他曜日 user 排除) / biweekly (= 業界 preset 不在、 低頻度)
+ *   - 注: 既存 rule の RRULE (= 旧 weeklyMonday/biweekly) は migration せず維持、
+ *         rruleToHumanLabel で「カスタム」 fallback 表示
+ *
+ * `custom` key は **静的 default = FREQ=DAILY;INTERVAL=7**。 実際の保存値は caller で
+ * `buildCustomRrule(n)` 経由で動的生成、 user 入力値で上書き。
  */
 export const RECURRENCE_PRESETS = {
   daily: 'FREQ=DAILY',
-  weeklyMonday: 'FREQ=WEEKLY;BYDAY=MO',
   weekly: 'FREQ=WEEKLY',
-  biweekly: 'FREQ=WEEKLY;INTERVAL=2',
   monthly: 'FREQ=MONTHLY',
   every3Months: 'FREQ=MONTHLY;INTERVAL=3',
+  every6Months: 'FREQ=MONTHLY;INTERVAL=6',
+  yearly: 'FREQ=YEARLY',
+  custom: 'FREQ=DAILY;INTERVAL=7',
 } as const;
 
 export type RecurrencePresetKey = keyof typeof RECURRENCE_PRESETS;
+
+/**
+ * カスタム周期の RRULE 動的生成 (= Sess89 PR-B、 ADR-0056 D4 Amendment)。
+ *
+ * 「N 日ごとに繰り返す」 を表す RFC 5545 RRULE (= `FREQ=DAILY;INTERVAL=N`) を返す。
+ * caller (= RecurrencePicker / RecurrenceFormScreen) で user 入力値を本 helper 経由で
+ * 生成し、 保存時に `RECURRENCE_PRESETS.custom` を上書き。
+ *
+ * @param days - 繰り返し間隔 (日数)、 1-365 範囲。 範囲外 / 非整数は 7 で fallback。
+ * @returns RFC 5545 RRULE 文字列 (= 例: `FREQ=DAILY;INTERVAL=10`)
+ */
+export function buildCustomRrule(days: number): string {
+  const safeDays = Number.isInteger(days) && days >= 1 && days <= 365 ? days : 7;
+  return `FREQ=DAILY;INTERVAL=${safeDays}`;
+}
+
+/**
+ * カスタム周期の RRULE から N 日数を逆算 (= 編集時の初期値ロード用、 Sess89 PR-B)。
+ *
+ * `FREQ=DAILY;INTERVAL=N` pattern match で N を返す。 match 失敗時は null。
+ * `FREQ=DAILY` (= INTERVAL なし、 daily preset と同義) は null を返す (= preset で十分)。
+ *
+ * @param rrule - RFC 5545 RRULE 文字列
+ * @returns N (= 日数、 1-365 範囲)、 match 失敗時 null
+ */
+export function parseCustomRruleDays(rrule: string): number | null {
+  const m = /^FREQ=DAILY;INTERVAL=(\d+)$/.exec(rrule);
+  if (!m) return null;
+  const n = Number(m[1]);
+  return Number.isInteger(n) && n >= 1 && n <= 365 ? n : null;
+}
