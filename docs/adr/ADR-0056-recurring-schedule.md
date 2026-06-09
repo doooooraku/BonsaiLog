@@ -101,11 +101,32 @@ CREATE INDEX idx_events_recurrence
 5. 毎月 (`FREQ=MONTHLY`)
 6. N ヶ月ごと (Custom、 v1.2 拡張候補、 v1.0 では disabled or 「3 ヶ月ごと/6 ヶ月ごと」 の preset 2 つ)
 
-**終了日 3 択** (default = 1 年後、 ユーザー代表「終了なしは怖い」):
+**終了日 3 択** (Sess82 PR-A 改訂、 default = なし、 業界整合 + user 要望反映):
 
-1. 1 年後 (default、 `nowUtc + 365日`)
-2. 日付を指定
-3. なし (永遠、 hard limit 1000 件で打ち止め)
+1. **なし (default、 永遠)** = endAtUtc null、 8 週 buffer 自動延長 + hard limit 1000 件 (約 20 年 weekly) で 性能保護
+2. 1 年後 (= `nowUtc + 365日`)
+3. 日付を指定
+
+旧仕様 (Sess78 PR-4 #997 で実装): default = 1 年後、 「終了なしは怖い」 のペルソナ意見で 1 年 default 採用。 Sess82 で revisit:
+
+- **業界調査結果**: Apple Reminders / Google Calendar / Things 3 / Todoist / Outlook 全 5 件で default = なし (= 永続)
+- **user 要望** (Sess82 実機検証時): 「ユーザーにとっては、永続的に登録される想定」 = default なし化が真意
+- **データ運用負荷**: 8 週 buffer 自動延長 + 1000 件 hard cap で 約 20 年分の events 上限、 SQLite 容量影響なし (= 100 rule × 1000 件 = 10 万 events、 約 10 MB)
+
+### D4-1. list 画面での終了日表示 (Sess82 PR-B 新設)
+
+`RecurrenceListScreen` (Sess81 PR-7.5 新設) では **終了日を表示しない**:
+
+- 業界調査 (5 件全製品) で list 画面に終了日を出すアプリは 0 件
+- user 要望整合 (「いつまで定期予定として登録されるよ。当いのは不要」)
+- 編集画面 (Sess82 PR-D 新設 RecurrenceEditScreen) では RecurrencePicker 経由で 確認 + 編集可
+
+### D4-2. 「終了日なし」 = 永続化の運用 (Sess82 PR-A 明文化)
+
+- `endAtUtc = null` で 保存 (= createRecurrenceRule の default、 PR-D で BulkLogConfirmScreen caller 同期)
+- `expandFutureEventsForAllActiveRules` (= 起動毎 8 週分先展開、 既存 logic) で 永続化を実現
+- `RECURRENCE_MAX_EVENTS_PER_RULE = 1000` hard cap (= 約 20 年 weekly) で 性能保護
+- 1000 件到達警告 UI は v1.x 検討 (= 99% の user は 20 年使わない、 R-10 抵触なし)
 
 ### D5. UI: EventRow に 🔁 アイコン (WCAG 1.4.1 整合)
 

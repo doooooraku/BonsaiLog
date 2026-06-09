@@ -993,8 +993,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   recurringRuleEditScopeAll: 'すべて',
   recurringEventBadgeLabel: '定期予定',
   // Sess81 PR-7.5: LookBackHub 5 card 目 + RecurrenceListScreen 用
-  recurringHubCardTitle: '🔁 定期予定を管理',
-  recurringHubCardDesc: '毎週月曜の水やり等のルールを管理',
+  // Sess82 PR-A: 絵文字 🔁 削除 (左 RepeatIcon と重複) + desc 汎用化 (頻度/作業限定しない)
+  recurringHubCardTitle: '定期予定を管理',
+  recurringHubCardDesc: '繰り返し作成される予定のルールを確認',
   recurringListScreenTitle: '定期予定の管理',
   recurringListEmptyTitle: '定期予定はまだありません',
   recurringListEmptyDesc: '予定タブから「🔁 繰り返し」 で 作成できます',
