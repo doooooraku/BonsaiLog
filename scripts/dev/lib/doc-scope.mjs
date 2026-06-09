@@ -25,6 +25,10 @@ export function isInScope(p) {
   if (typeof p !== 'string' || !p) return false;
   // deny exception: 自分自身の出力 (= self-recursion 防止)
   if (p.startsWith(`${REPO}/.claude/metrics/`)) return false;
+  // deny exception: 過去 worktree 内の duplicate を除外 (= PR1.5 hotfix、 Sess90 baseline 分析発見)
+  // 過去 worktree から Read された file path は transcript JSONL に残り、 worktree exit + remove 後も
+  // 集計に duplicate として計上される (例: .claude/worktrees/sess73-pr1-bottomctabar/docs/adr/ADR-0054.md)
+  if (p.startsWith(`${REPO}/.claude/worktrees/`)) return false;
   // allow rules (順次 OR)
   if (p === `${REPO}/CLAUDE.md`) return true;
   if (p === `${REPO}/AGENTS.md`) return true;
