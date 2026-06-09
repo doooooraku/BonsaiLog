@@ -945,10 +945,14 @@ const baseEn = {
   paywallFeatureCustomSpecies: 'Custom species & styles',
   paywallFeatureCustomSpeciesFreeValue: 'Up to 3',
   paywallFeatureCustomSpeciesProValue: 'Unlimited',
+  paywallFeatureRecurringRule: 'Recurring schedules',
+  paywallFeatureRecurringRuleFreeValue: 'Up to 3',
+  paywallFeatureRecurringRuleProValue: 'Unlimited',
   settingsBenefitPhoto: 'Bonsai photos: 3 → Unlimited',
   settingsBenefitTag: 'Tags: 3 → Unlimited',
   settingsBenefitWorkLogPhoto: 'Work log photos: 3 → Unlimited',
   settingsBenefitCustomSpecies: 'Custom species & styles: 3 → Unlimited',
+  settingsBenefitRecurring: 'Recurring schedules: 3 → Unlimited',
   paywallFeatureLimitCounter: '{used}/{limit}',
 
   // --- Sess60 PR1: タグ/カスタム 上限到達 Alert 専用 i18n (Sess59 で photo* を流用していた箇所を分離) ---

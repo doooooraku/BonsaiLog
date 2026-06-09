@@ -1,13 +1,14 @@
 /**
- * PaywallScreen FeatureRow 整合 test (ADR-0049 Sess59 PR2)。
+ * PaywallScreen FeatureRow 整合 test (ADR-0049 Sess59 PR2 + Sess81 PR-9 で 7 行化)。
  *
- * Sess58 確定 Pro 機能 6 項目との完全一致を確認:
+ * Sess58 + Sess81 確定 Pro 機能 7 項目との完全一致を確認:
  * - ① paywallFeaturePhoto (基本情報写真)
  * - ② paywallFeatureTag (タグ)
  * - ③ paywallFeatureWorkLogPhoto (作業記録写真)
  * - ④ paywallFeatureCsv (CSV/PDF、 既存)
  * - ⑤ paywallFeatureNoAds (広告非表示、 既存)
  * - ⑥ paywallFeatureCustomSpecies (カスタム樹種樹形)
+ * - ⑦ paywallFeatureRecurringRule (定期予定、 Sess81 PR-9 で追加、 ADR-0056 D7)
  *
  * 削除確認 (Sess58 で「全 Free」 確定):
  * - paywallFeatureBonsaiCount / paywallFeatureHistory / paywallFeatureBackup / paywallFeatureTheme
@@ -19,14 +20,15 @@ import { resolve } from 'node:path';
 
 const SRC = readFileSync(resolve(__dirname, '../../../src/features/pro/PaywallScreen.tsx'), 'utf8');
 
-describe('PaywallScreen FeatureRow (ADR-0049 Sess59 PR2 6 項目整合)', () => {
-  test('1. FeatureRow 6 行が ADR-0049 ①〜⑥ に整合', () => {
+describe('PaywallScreen FeatureRow (ADR-0049 Sess59 PR2 + Sess81 PR-9 で 7 項目整合)', () => {
+  test('1. FeatureRow 7 行が ADR-0049 ①〜⑦ に整合', () => {
     expect(SRC).toContain("t('paywallFeaturePhoto')"); // ①
     expect(SRC).toContain("t('paywallFeatureTag')"); // ②
     expect(SRC).toContain("t('paywallFeatureWorkLogPhoto')"); // ③
     expect(SRC).toContain("t('paywallFeatureCsv')"); // ④ (既存)
     expect(SRC).toContain("t('paywallFeatureNoAds')"); // ⑤ (既存)
     expect(SRC).toContain("t('paywallFeatureCustomSpecies')"); // ⑥
+    expect(SRC).toContain("t('paywallFeatureRecurringRule')"); // ⑦ (Sess81 PR-9)
   });
 
   test('2. 各 FeatureRow の Free/Pro 値 i18n key も参照されている (Sess60 PR2 で CSV も i18n 化、 literal "—" "◎" 排除)', () => {
@@ -41,6 +43,9 @@ describe('PaywallScreen FeatureRow (ADR-0049 Sess59 PR2 6 項目整合)', () => 
     // Sess60 PR2: CSV/PDF も literal "—" "◎" 排除して i18n 化
     expect(SRC).toContain("t('paywallFeatureCsvFreeValue')");
     expect(SRC).toContain("t('paywallFeatureCsvProValue')");
+    // Sess81 PR-9: ⑦ 定期予定の Free/Pro 値 i18n key
+    expect(SRC).toContain("t('paywallFeatureRecurringRuleFreeValue')");
+    expect(SRC).toContain("t('paywallFeatureRecurringRuleProValue')");
     // 値表記統一: literal "—" "◎" がもう code 上にない
     expect(SRC).not.toContain('free="—"');
     expect(SRC).not.toContain('pro="◎"');

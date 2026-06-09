@@ -76,6 +76,13 @@ const PRO_FEATURE_ROWS: FeatureRowKey[] = [
     free: 'paywallFeatureCustomSpeciesFreeValue',
     pro: 'paywallFeatureCustomSpeciesProValue',
   },
+  // ⑦ 定期予定 (Sess81 PR-9、 ADR-0056 D7 + ADR-0049 Sess78 Amendment)
+  // Free 3 件 / Pro 無制限、 タグ ②・カスタム樹種 ⑥ と同型 (FREE_RECURRENCE_RULE_LIMIT = 3)
+  {
+    label: 'paywallFeatureRecurringRule',
+    free: 'paywallFeatureRecurringRuleFreeValue',
+    pro: 'paywallFeatureRecurringRuleProValue',
+  },
 ];
 
 function formatRenewalDate(iso: string | null, lang: string): string | null {
