@@ -11,6 +11,14 @@
  *
  * Pro 境界 (ADR-0049 ⑦ / ADR-0056 D7) は caller (BulkLogConfirmScreen) で 制御、
  * 本 component は表示と値変更のみ責務。
+ *
+ * Sess89 PR-A (定期予定 UI 改善 8 件):
+ * - 🔁 emoji 削除 (= line 117 から) → デザイン整合 (= 既存 EventIcon/Lucide 系 線画統一)
+ * - FREQ=... デバッグ表示削除 (= 旧 line 157-159 sectionLabel) → 完全な UI バグ修正
+ * - hideToggle prop 追加 → RecurrenceFormScreen では rule entity 本質的に enabled=true 固定
+ *   なので toggle UI 非表示 (= UI 矛盾解消)。 BulkLog では未指定 = 従来通り。
+ * - hideEndDate prop 追加 → RecurrenceFormScreen では「永続化が標準」 (= user 真意 +
+ *   業界整合) で終了日を user に選ばせない (= 内部固定 endAtUtc=null)。 BulkLog では従来通り。
  */
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -19,7 +27,7 @@ import { ThemedText } from '@/components/themed-text';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { useColors } from '@/src/core/theme/useColors';
-import { RECURRENCE_PRESETS, type RecurrencePresetKey } from '@/src/core/recurrence/rrule';
+import { type RecurrencePresetKey } from '@/src/core/recurrence/rrule';
 
 export type RecurrenceEndType = 'oneYear' | 'specific' | 'never';
 
@@ -45,6 +53,19 @@ type Props = {
   onChange: (next: RecurrenceValue) => void;
   /** disabled 時は visual に grayout + tap 無効化 (Pro 境界 Paywall trigger は caller 責務) */
   disabled?: boolean;
+  /**
+   * Sess89 PR-A: 「繰り返し ON/OFF」 toggle UI を非表示にする (= 設定部分は常時展開)。
+   * RecurrenceFormScreen (= 定期予定 新規/編集) では rule entity の本質的に enabled=true 固定
+   * なので toggle UI に選択意味なし、 UI 矛盾解消のため caller で `hideToggle` 渡す。
+   * BulkLogConfirmScreen (= 単発予定 + 繰り返し) では未指定 (= 従来通り表示)。
+   */
+  hideToggle?: boolean;
+  /**
+   * Sess89 PR-A: 「終了日」 選択 UI を非表示にする (= 内部 endAtUtc=null 固定)。
+   * 定期予定は永続化が標準 (= user 真意 + 業界整合 ADR-0056 D4-1)、 user に選ばせない設計。
+   * RecurrenceFormScreen では caller で `hideEndDate` 渡す。 BulkLog では未指定 (= 従来通り)。
+   */
+  hideEndDate?: boolean;
 };
 
 const PRESET_ORDER: readonly { key: RecurrencePresetKey; labelKey: TranslationKey }[] = [
@@ -62,7 +83,13 @@ const END_TYPE_ORDER: readonly { key: RecurrenceEndType; labelKey: TranslationKe
   { key: 'never', labelKey: 'recurringEndDateNever' },
 ];
 
-export function RecurrencePicker({ value, onChange, disabled = false }: Props) {
+export function RecurrencePicker({
+  value,
+  onChange,
+  disabled = false,
+  hideToggle = false,
+  hideEndDate = false,
+}: Props) {
   const { t } = useTranslation();
   const c = useColors();
 
@@ -95,33 +122,38 @@ export function RecurrencePicker({ value, onChange, disabled = false }: Props) {
     [value, onChange, disabled],
   );
 
+  // Sess89 PR-A: hideToggle 時は toggle 部分非表示、 設定部分常時展開
+  const showExpanded = hideToggle || value.enabled;
+
   return (
     <View style={styles.container}>
-      <Pressable
-        onPress={handleToggle}
-        style={({ pressed }) => [
-          styles.toggleRow,
-          {
-            backgroundColor: value.enabled ? c.tintSubtle : c.surface,
-            borderColor: value.enabled ? c.tint : c.border,
-            opacity: pressed ? 0.7 : 1,
-          },
-        ]}
-        accessibilityRole="switch"
-        accessibilityState={{ checked: value.enabled, disabled }}
-        accessibilityLabel={t('recurringPickerToggle')}
-        disabled={disabled}
-        testID="e2e_recurrence_picker_toggle"
-      >
-        <ThemedText style={[styles.toggleLabel, { color: c.text }]}>
-          {`🔁 ${t('recurringPickerToggle')}`}
-        </ThemedText>
-        <ThemedText style={[styles.toggleState, { color: value.enabled ? c.tint : c.textMuted }]}>
-          {value.enabled ? 'ON' : 'OFF'}
-        </ThemedText>
-      </Pressable>
+      {!hideToggle ? (
+        <Pressable
+          onPress={handleToggle}
+          style={({ pressed }) => [
+            styles.toggleRow,
+            {
+              backgroundColor: value.enabled ? c.tintSubtle : c.surface,
+              borderColor: value.enabled ? c.tint : c.border,
+              opacity: pressed ? 0.7 : 1,
+            },
+          ]}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: value.enabled, disabled }}
+          accessibilityLabel={t('recurringPickerToggle')}
+          disabled={disabled}
+          testID="e2e_recurrence_picker_toggle"
+        >
+          <ThemedText style={[styles.toggleLabel, { color: c.text }]}>
+            {t('recurringPickerToggle')}
+          </ThemedText>
+          <ThemedText style={[styles.toggleState, { color: value.enabled ? c.tint : c.textMuted }]}>
+            {value.enabled ? 'ON' : 'OFF'}
+          </ThemedText>
+        </Pressable>
+      ) : null}
 
-      {value.enabled ? (
+      {showExpanded ? (
         <View style={styles.expandedContent}>
           <ThemedText style={[styles.sectionLabel, { color: c.text }]}>
             {t('recurringPickerToggle')}
@@ -154,45 +186,47 @@ export function RecurrencePicker({ value, onChange, disabled = false }: Props) {
             })}
           </View>
 
-          <ThemedText style={[styles.sectionLabel, { color: c.text }]}>
-            {RECURRENCE_PRESETS[value.preset]}
-          </ThemedText>
+          {!hideEndDate ? (
+            <>
+              <View style={styles.endTypeGroup}>
+                {END_TYPE_ORDER.map((endType) => {
+                  const isSelected = value.endType === endType.key;
+                  return (
+                    <Pressable
+                      key={endType.key}
+                      onPress={() => handleEndTypeSelect(endType.key)}
+                      style={({ pressed }) => [
+                        styles.presetChip,
+                        {
+                          backgroundColor: isSelected ? c.tintSubtle : c.surface,
+                          borderColor: isSelected ? c.tint : c.border,
+                          opacity: pressed ? 0.7 : 1,
+                        },
+                      ]}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: isSelected, disabled }}
+                      disabled={disabled}
+                      testID={`e2e_recurrence_picker_endtype_${endType.key}`}
+                    >
+                      <ThemedText
+                        style={[styles.presetLabel, { color: isSelected ? c.tint : c.text }]}
+                      >
+                        {t(endType.labelKey)}
+                      </ThemedText>
+                    </Pressable>
+                  );
+                })}
+              </View>
 
-          <View style={styles.endTypeGroup}>
-            {END_TYPE_ORDER.map((endType) => {
-              const isSelected = value.endType === endType.key;
-              return (
-                <Pressable
-                  key={endType.key}
-                  onPress={() => handleEndTypeSelect(endType.key)}
-                  style={({ pressed }) => [
-                    styles.presetChip,
-                    {
-                      backgroundColor: isSelected ? c.tintSubtle : c.surface,
-                      borderColor: isSelected ? c.tint : c.border,
-                      opacity: pressed ? 0.7 : 1,
-                    },
-                  ]}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: isSelected, disabled }}
-                  disabled={disabled}
-                  testID={`e2e_recurrence_picker_endtype_${endType.key}`}
-                >
-                  <ThemedText style={[styles.presetLabel, { color: isSelected ? c.tint : c.text }]}>
-                    {t(endType.labelKey)}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          {value.endType === 'specific' ? (
-            <LabeledDateRow
-              label={t('recurringEndDateSpecific')}
-              value={value.endDate ?? ''}
-              onChangeText={handleEndDateChange}
-              testID="e2e_recurrence_picker_enddate"
-            />
+              {value.endType === 'specific' ? (
+                <LabeledDateRow
+                  label={t('recurringEndDateSpecific')}
+                  value={value.endDate ?? ''}
+                  onChangeText={handleEndDateChange}
+                  testID="e2e_recurrence_picker_enddate"
+                />
+              ) : null}
+            </>
           ) : null}
         </View>
       ) : null}

@@ -198,7 +198,10 @@ export default function RecurrenceFormScreen() {
         </View>
 
         <View style={styles.pickerWrap}>
-          <RecurrencePicker value={recurrence} onChange={setRecurrence} />
+          {/* Sess89 PR-A: hideToggle = rule entity は本質的に enabled=true 固定で toggle UI 不要 (= UI 矛盾解消)、
+              hideEndDate = 定期予定は永続化が標準 (= ADR-0056 D4-1 + user 真意「永続的に登録される想定」)、
+              user に終了日選ばせず内部 endAtUtc=null 固定。 */}
+          <RecurrencePicker value={recurrence} onChange={setRecurrence} hideToggle hideEndDate />
         </View>
       </ScrollView>
 
@@ -207,6 +210,10 @@ export default function RecurrenceFormScreen() {
         onPress={() => void handleSave()}
         disabled={saving || !bonsai || !eventType}
         testID="e2e_recurrence_form_save"
+        /* Sess89 PR-A: 「+作成」 → 「保存する」 (= i18n + アイコン重複解消)。 PlusIcon 抑止で
+           「保存」 と「+」 の意味重複を回避。 BottomCtaBar.tsx:98 で icon prop が null/undefined
+           時の挙動を React.ReactNode 型で許容 (= 既存 fallback ロジック確認済)。 */
+        icon={<View />}
       />
     </ThemedView>
   );
