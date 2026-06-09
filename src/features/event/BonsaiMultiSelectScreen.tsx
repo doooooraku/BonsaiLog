@@ -39,8 +39,12 @@ export default function BonsaiMultiSelectScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
   const c = useColors();
-  const params = useLocalSearchParams<{ mode?: 'schedule' | 'log'; date?: string }>();
-  const mode: 'schedule' | 'log' = params.mode === 'log' ? 'log' : 'schedule';
+  // Sess86 副次発見修正: 'recurring' 受入 (= ADR-0056 v1.0.1 recurring multi 非対応で
+  // BulkWorkPicker 側で 1 件目 採用 logic、 本画面は mode を そのまま transfer)。
+  // 旧: 'recurring' を 'schedule' に fallback で Stack header「予定を追加」 表示 = 仕様逸脱。
+  const params = useLocalSearchParams<{ mode?: 'schedule' | 'log' | 'recurring'; date?: string }>();
+  const mode: 'schedule' | 'log' | 'recurring' =
+    params.mode === 'log' ? 'log' : params.mode === 'recurring' ? 'recurring' : 'schedule';
   const scheduleDate = params.date ?? '';
 
   const [items, setItems] = useState<CardData[]>([]);
@@ -99,10 +103,10 @@ export default function BonsaiMultiSelectScreen() {
     router.push(`/bulk-work-picker?mode=${mode}${dateParam}` as Href);
   }, [items, selectedIds, mode, scheduleDate, router]);
 
-  const ctaLabel = useMemo(
-    () => (mode === 'schedule' ? t('bulkSchedule') : t('bulkLog')),
-    [mode, t],
-  );
+  // Sess86 副次発見修正: recurring も log/schedule と同じ「次へ」 CTA (= 既存 bulkSchedule
+  // i18n key 流用、 ja/en 共に「次へ」 / 「Next」、 i18n 追加なし)。 BulkWorkPicker 側で 1 件目
+  // 採用 logic、 本画面は次画面遷移までの中継のため CTA 文言は機能差なし。
+  const ctaLabel = useMemo(() => (mode === 'log' ? t('bulkLog') : t('bulkSchedule')), [mode, t]);
 
   const ctaDisabled = selectedIds.size === 0;
 
