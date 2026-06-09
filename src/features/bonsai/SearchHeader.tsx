@@ -25,6 +25,8 @@ import { BackIcon, CogIcon, SearchIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess68 PR #C: BORDER_DEFAULT / TEXT_PRIMARY は inline c.* で既に上書き済、 StyleSheet 内 token 削除のみ。
 import { useColors } from '@/src/core/theme/useColors';
+// Sess90 PR-A: 画面ヘッダー font geometry SoT 化 (ADR-0053 Sess90 Amendment、 R-75)。
+import { screenTitleTab } from '@/src/core/theme/typography';
 
 type Props = {
   title: string;
@@ -96,7 +98,7 @@ export function SearchHeader({
         </Pressable>
       )}
       <ThemedText
-        style={[styles.title, { color: c.text }]}
+        style={[screenTitleTab, styles.title, { color: c.text }]}
         numberOfLines={1}
         testID={`e2e_${testIdSuffix}_title`}
       >
@@ -143,11 +145,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: 1,
   },
+  // Sess90 PR-A: font geometry は screenTitleTab token に SoT 化 (ADR-0053 Sess90 Amendment)。
+  // ここは layout プロパティ (= flex:1) のみ保持し、 component に spread。
   title: {
-    fontFamily: 'NotoSerifJP_500Medium',
-    fontSize: 22,
-    lineHeight: 32,
-    letterSpacing: 0.9,
     flex: 1,
   },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 4 },

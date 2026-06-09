@@ -9,6 +9,12 @@ import { Stack } from 'expo-router';
 import React from 'react';
 
 import { useColors } from '@/src/core/theme/useColors';
+// Sess90 PR-A: font geometry SoT 化 (ADR-0053 Sess90 Amendment、 R-75)。
+// 旧 hardcode `fontFamily: 'NotoSerifJP_500Medium'` は screenTitleStack token に置換、
+// root と同一値で SoT 一元化。 root screenOptions は settings sub-tree には cascade しない
+// (= root が name="settings" screen 自体に headerShown:false 付与しているため) ので、
+// settings nested layout でも明示的に token spread が必要。
+import { screenTitleStack } from '@/src/core/theme/typography';
 
 export default function SettingsStackLayout() {
   const c = useColors();
@@ -18,7 +24,7 @@ export default function SettingsStackLayout() {
         // Sess66 PR5: NotoSerifJP + dark cascade 対応 (root Stack と同 pattern)。
         headerStyle: { backgroundColor: c.surface },
         headerTintColor: c.text,
-        headerTitleStyle: { color: c.text, fontFamily: 'NotoSerifJP_500Medium' },
+        headerTitleStyle: { color: c.text, ...screenTitleStack },
         contentStyle: { backgroundColor: c.background },
       }}
     />

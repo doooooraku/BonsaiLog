@@ -1,8 +1,8 @@
-# 再発防止プロトコル — 専門ルール (R-13 〜 R-73)
+# 再発防止プロトコル — 専門ルール (R-13 〜 R-75)
 
 > 本ファイルは `.claude/recurrence-prevention.md` (親) の詳細部分。
-> 親ファイル = R-1 〜 R-12 全文 + R-13 〜 R-73 索引 + 運用ルール。
-> 本ファイル = R-13 〜 R-73 詳細記述。
+> 親ファイル = R-1 〜 R-12 全文 + R-13 〜 R-75 索引 + 運用ルール。
+> 本ファイル = R-13 〜 R-75 詳細記述。
 > 親ファイルの「専門ルール 索引」 から各 R-N に飛ぶ運用。
 
 ---
@@ -1357,3 +1357,114 @@ caller が `recurrence_rules` / `events` / `bonsai` 等の DB エンティティ
 - 由来 ADR: ADR-0056 D2 (= recurrence_rules schema、 単数 bonsai_id NOT NULL)
 - 由来 PR: Sess89 PR-C (本 R 起票)
 - meta-rule: R-25 (= 機械判定で達成確認) / R-70 (= 中間 log で silent failure 防止)
+
+---
+
+## R-74 Stack screen の title 配線は `<Stack.Screen options>` + `useEffect(setOptions)` 両方必須 (Sess90 PR-A 起票)
+
+### ルール
+
+`app/<screen>.tsx` で React Navigation の Stack header に title を表示する場合、 以下 2 つを **両方** 実装する:
+
+1. **`<Stack.Screen options={{title: t('...')}} />`** (= 初回 mount 用 declarative、 body 先頭に配置)
+2. **`useEffect(() => navigation.setOptions({title: t('...')}), [navigation, t, lang])`** (= 言語切替時の動的更新)
+
+片方だけだと、 **初回 mount に title 出ない** (= setOptions だけ) or **言語切替で title が古い言語のまま残る** (= options だけ) のいずれかの bug が発生する。
+
+### Why
+
+- `<Stack.Screen options={{...}} />` だけだと React Navigation が options を初回 mount 時に static snapshot として記録し、 i18n の `t()` が言語切替で別文字列を返しても再評価されない (= transient bug、 Sess74 PR-3 / E2 発端)
+- `useEffect setOptions` だけだと、 初回 mount 時に effect 実行前に header が描画され、 一瞬 raw route 名 (= 「custom-species」 等) が ちらつく
+- 2 段 pattern で両方の罠を相互補完
+
+### How to apply
+
+1. `import { Stack, useNavigation } from 'expo-router';`
+2. `const { t, lang } = useTranslation();` (= `lang` を必ず取得)
+3. `const navigation = useNavigation();`
+4. `React.useEffect(() => { navigation.setOptions({ title: t('<key>') }); }, [navigation, t, lang]);`
+5. JSX の body 先頭に `<Stack.Screen options={{ title: t('<key>') }} />`
+6. body 内の `<ThemedText type="title">{t('<key>')}</ThemedText>` (= 旧 large title) は **削除** (Stack header と duplicate)、 desc 行 (= 画面意図説明) は keep
+
+### 適用例 (Sess90 PR-A で実装)
+
+- `app/custom-species.tsx` (= 旧 raw「custom-species」表示 bug fix)
+- `app/custom-styles.tsx` (= 旧 raw「custom-styles」表示 bug fix)
+- `app/tags.tsx` (= 旧 raw「tags」表示 bug fix)
+- 正典 reference: `app/settings/index.tsx` (Sess74 PR-3 = E2 Amendment)
+
+### 検出
+
+- 新規 PR で `app/<screen>.tsx` を追加した時、 reviewer は `Stack.Screen` と `setOptions` の両方を grep
+- 既知の漏れ候補: `app/onboarding/welcome.tsx` (= `headerShown:false` で代替済、 適用外)
+- 後続 session 課題: `scripts/dev/check-stack-screen-title.mjs` で grep lint 起票候補 (= `app/*.tsx` で `useTranslation` 使用かつ `Stack.Screen options` か `setOptions` 片方欠落を warn)
+
+### 関連
+
+- 同型 pattern (= 半分): R-?? `<Stack.Screen options>` 単独 (= Sess66 PR5 SoT 確立、 ADR-0053 本文)
+- 完全 pattern 確立: ADR-0053 Sess74 PR-3 Amendment (E2 動的 title 更新) + Sess90 PR-A Amendment (本 R 起票で 3 screen 配線漏れ修復)
+- meta-rule: R-25 (= 機械判定で達成確認) / R-55 (= 関連項目網羅調査)
+- 由来 PR: Sess90 PR-A (本 R 起票)
+
+---
+
+## R-75 screen header の font geometry hardcode 禁止、 token 参照必須 (Sess90 PR-A 起票)
+
+### ルール
+
+画面ヘッダー (= タブ画面の自前 SearchHeader / Stack 画面の React Navigation native header) の **`fontFamily / fontSize / lineHeight / letterSpacing` を file 内に hardcode することを禁止**。 必ず `src/core/theme/typography.ts` の以下 2 token を spread して使用する:
+
+- `screenTitleTab` (= タブ画面 22pt NotoSerifJP_500Medium)
+- `screenTitleStack` (= Stack 画面 18pt NotoSerifJP_500Medium)
+
+### Why
+
+- Sess90 PR-A 時点で 4 箇所に font 設定が分散していて (= SearchHeader.tsx 22pt / app/_layout.tsx 未指定 / settings/_layout.tsx 重複 hardcode / (tabs)/plan/_layout.tsx 20pt の 第三の値)、 ユーザー報告「タブ画面と Stack 画面で統一性がない」 が顕在化
+- font 変更を一律適用する時、 file 横断 grep を漏れなくする保証がない (= 「3 箇所修正したが 1 箇所だけ古い値が残る」 罠)
+- token SoT 化で「change one place, takes effect everywhere」 保証
+
+### How to apply
+
+#### タブ画面 (= 自前 component)
+
+```tsx
+import { screenTitleTab } from '@/src/core/theme/typography';
+<ThemedText style={[screenTitleTab, { color: c.text }, /* layout props */]}>
+```
+
+#### Stack 画面 (= root `app/_layout.tsx` および nested `_layout.tsx`)
+
+```tsx
+import { screenTitleStack } from '@/src/core/theme/typography';
+<Stack screenOptions={{
+  headerTitleStyle: { color: c.text, ...screenTitleStack },
+  // ...
+}}>
+```
+
+#### 重要: Expo Router の nested Stack は root から cascade されない
+
+`app/_layout.tsx` の root `<Stack screenOptions>` は **nested Stack に cascade しない** (= 各 nested Stack は独立インスタンス)。 そのため `app/settings/_layout.tsx` / `app/(modals)/_layout.tsx` / `app/(tabs)/plan/_layout.tsx` / `app/(tabs)/bonsai/_layout.tsx` でも **明示的に `screenTitleStack` を spread が必要**。
+
+### 適用例 (Sess90 PR-A で実装)
+
+- `src/features/bonsai/SearchHeader.tsx` (= 旧 hardcoded 22pt 削除 → `screenTitleTab` 参照)
+- `app/_layout.tsx` (= root global screenOptions に `...screenTitleStack` 追加)
+- `app/settings/_layout.tsx` (= 重複 hardcode 削除 → `...screenTitleStack` 参照)
+- `app/(modals)/_layout.tsx` (= 新規 `headerTitleStyle: screenTitleStack` 追加)
+- `app/(tabs)/plan/_layout.tsx` (= 20pt hardcode 削除 → `headerTitleStyle: screenTitleStack`)
+- `app/(tabs)/bonsai/_layout.tsx` (= 新規 `headerTitleStyle: screenTitleStack` 追加)
+
+### 検出
+
+- 新規 PR の review 時、 `app/**` 配下で `fontFamily: 'NotoSerifJP_500Medium'` / `fontSize: 17` / `fontSize: 18` / `fontSize: 22` の hardcode を grep
+- 後続 session 課題: `scripts/dev/check-screen-header-typography.mjs` で grep lint 起票候補 (= ADR-0029 D1 の `check-form-typography.mjs` 同型)
+- ESLint AST rule 化は 3 回再発 (= 本 PR で 1 回目) で検討 (CLAUDE.md §9 記憶の昇華ルール)
+
+### 関連
+
+- 同型 SoT pattern: ADR-0029 D1 form atom typography token (= `formLabel` / `formCounter` 等)、 Sess17 で warning lint 配線済
+- design_system.md §3-4 Screen header typography contract (= 本 R 75 で参照される token spec)
+- 由来 ADR: ADR-0053 Sess90 Amendment (= 本 R 75 と同 PR で確定)
+- 由来 PR: Sess90 PR-A (本 R 起票)
+- meta-rule: R-55 (= 関連項目網羅調査、 1 箇所修正で他 N 箇所漏れ防止)

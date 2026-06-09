@@ -213,6 +213,38 @@ DM Sans / Space Grotesk / system-ui（iOS/Androidデフォルト）
 | caption   | 13pt | 19pt (1.5) | キャプション               |
 | micro     | 11pt | 16pt (1.5) | 広告ラベル等、これ以下禁止 |
 
+### 3-4. Screen header typography contract (Sess90 PR-A、 ADR-0053 Sess90 Amendment)
+
+画面ヘッダー (= タブ画面の自前 SearchHeader / Stack 画面の React Navigation native header) は **`src/core/theme/typography.ts` の 2 token を SoT** として参照し、 個別 file での hardcode は禁止 (R-75)。
+
+| token              | fontFamily              | fontSize | lineHeight | letterSpacing | 用途                                             |
+| ------------------ | ----------------------- | -------- | ---------- | ------------- | ------------------------------------------------ |
+| `screenTitleTab`   | `NotoSerifJP_500Medium` | 22       | 32         | 0.9           | タブ画面 大タイトル (SearchHeader、 4 タブ root) |
+| `screenTitleStack` | `NotoSerifJP_500Medium` | 18       | 24         | 0.5           | Stack 画面 ヘッダー (React Navigation native)    |
+
+**設計方針**:
+
+- font family は両者とも `NotoSerifJP_500Medium` で **ブランド統一**
+- size のみで階層表現 (= タブ root = 22pt / Stack 子画面 = 18pt)、 iOS HIG Large Title / Material 3 Top App Bar の業界整合
+- color (= `c.text`) と layout (= `flex: 1`) は token 外、 caller spread で theme / layout 分離維持
+
+**注意**: Expo Router の root `<Stack screenOptions>` は **nested Stack に cascade しない**。 各 nested `_layout.tsx` (= settings / (modals) / (tabs)/plan / (tabs)/bonsai) でも `headerTitleStyle: screenTitleStack` を **明示 spread が必要**。
+
+**Stack header title 配線必須 pattern (R-74)**:
+
+```tsx
+import { Stack, useNavigation } from 'expo-router';
+const { t, lang } = useTranslation();
+const navigation = useNavigation();
+React.useEffect(() => {
+  navigation.setOptions({ title: t('<key>') });
+}, [navigation, t, lang]);
+// body 先頭:
+<Stack.Screen options={{ title: t('<key>') }} />;
+```
+
+i18n を使う Stack screen で片方 (= `<Stack.Screen>` だけ or `setOptions` だけ) のみだと、 初回 mount / 言語切替の片方で title 反映漏れが発生 (Sess74 PR-3 / Sess90 PR-A 同型既知)。
+
 ## 4. 余白スケール（spacing）
 
 基準: 8px baseline。4・8・12・16・24・32・48 のみ使用。他の値禁止。

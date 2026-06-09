@@ -168,3 +168,44 @@ export const eventRowMemoSectionLabel: TextStyle = {
   fontWeight: '600',
   color: TEXT_MUTED,
 };
+
+// ============================================================================
+// Screen header typography tokens (Sess90 PR-A、 ADR-0053 Sess90 Amendment)
+//
+// 画面ヘッダー (= タブ画面 自前 SearchHeader / Stack 画面 React Navigation native header)
+// の font geometry SoT。 NotoSerifJP_500Medium でブランド統一、 size のみで階層表現。
+// color (= c.text) は caller spread 上書きで theme-aware に保つ。 flex 等の layout
+// プロパティは含めず、 font geometry 4 プロパティのみで構成する (= 用途横断流用性確保)。
+//
+// 関連: docs/reference/design_system.md §Screen header typography contract
+// 参照箇所: src/features/bonsai/SearchHeader.tsx (Tab) / app/_layout.tsx (Stack global)
+//
+// 自動検出 (= 後続 session 課題): scripts/dev/check-screen-header-typography.mjs
+//   — header の hardcoded fontFamily / fontSize 検出 (R-75 = font geometry hardcode 禁止)。
+// ============================================================================
+
+/**
+ * タブ画面 大タイトル (SearchHeader、 4 タブの大見出し)。
+ * fontFamily NotoSerifJP_500Medium / fontSize 22 / lineHeight 32 / letterSpacing 0.9。
+ */
+export const screenTitleTab: TextStyle = {
+  fontFamily: 'NotoSerifJP_500Medium',
+  fontSize: 22,
+  lineHeight: 32,
+  letterSpacing: 0.9,
+};
+
+/**
+ * Stack 画面 ヘッダー (React Navigation native Stack header)。
+ * fontFamily NotoSerifJP_500Medium / fontSize 18。
+ * RN default 17pt より +1pt は NotoSerifJP の x-height が Roboto より小さく、
+ * 同 pt では視覚的に小さく見えるための補正 (Plan agent cross-check 同意)。
+ *
+ * 注: `headerTitleStyle` は React Navigation で `Pick<TextStyle, 'fontFamily'|'fontSize'|'fontWeight'> & { color? }`
+ *     という制限された型のみ受け入れる (= `lineHeight` / `letterSpacing` 等は native header API が
+ *     サポートしないため除外)。 そのため screenTitleStack は 2 プロパティのみで構成。
+ */
+export const screenTitleStack: Pick<TextStyle, 'fontFamily' | 'fontSize'> = {
+  fontFamily: 'NotoSerifJP_500Medium',
+  fontSize: 18,
+};

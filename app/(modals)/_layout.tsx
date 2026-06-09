@@ -19,6 +19,8 @@ import { Stack } from 'expo-router';
 import React from 'react';
 
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
+// Sess90 PR-A: modals 各 screen の Stack header font も統一 (ADR-0053 Sess90 Amendment、 R-75)。
+import { screenTitleStack } from '@/src/core/theme/typography';
 
 export default function ModalsLayout() {
   const { t } = useTranslation();
@@ -37,7 +39,7 @@ export default function ModalsLayout() {
   };
 
   return (
-    <Stack screenOptions={{ presentation: 'modal' }}>
+    <Stack screenOptions={{ presentation: 'modal', headerTitleStyle: screenTitleStack }}>
       <Stack.Screen name="species-picker" options={{ title: t('stackSpeciesPickerTitle') }} />
       <Stack.Screen name="style-picker" options={{ title: t('stackStylePickerTitle') }} />
       <Stack.Screen
