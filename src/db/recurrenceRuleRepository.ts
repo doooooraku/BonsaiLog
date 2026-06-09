@@ -130,7 +130,7 @@ export async function createRecurrenceRule(
 }
 
 /**
- * 複数の盆栽に同じ定期予定を一括作成 (= Sess89 PR-C、 R-72 起票)。
+ * 複数の盆栽に同じ定期予定を一括作成 (= Sess89 PR-C、 R-73 起票 (= 旧 R-72 は PR #1033 と衝突で R-73 hotfix))。
  *
  * 各 input ごとに createRecurrenceRule と同じ logic (= recurrence_rules INSERT +
  * 8 週分 events 事前展開) を実行、 全件をひとつの transaction で wrap。
@@ -139,7 +139,7 @@ export async function createRecurrenceRule(
  * 設計判断:
  * - 既存 createRecurrenceRule の内部 logic を inline で展開 (= 入れ子 transaction 回避)
  * - 既存 bulkScheduleEvents / bulkLogEvents pattern と同型 (= db.withTransactionAsync)
- * - R-72: 「caller で複数件 INSERT する時は必ず本 bulk ラッパー経由で原子性保証」
+ * - R-73: 「caller で複数件 INSERT する時は必ず本 bulk ラッパー経由で原子性保証」
  *
  * @param inputs - 作成する rule 入力配列、 各要素が createRecurrenceRule の input と同型
  * @returns 作成された全 rule 配列 (= 順序は inputs 順)
