@@ -238,3 +238,19 @@ CIが落ちたステップだけを、まずローカルで叩く：
 
 - WSL2 で `pkill` / `kill` が **exit 144** を返しても実害なしのことが多い (継続可)。adb daemon が stuck したら Windows 側を `taskkill /F /IM adb.exe` で殺してから `adb start-server` (詳細: `docs/reference/tasks/lessons/wsl2-mobile.md`)。
 - adb 系コマンドは **foreground 直列** で実行する (background 並列は daemon ロックの原因)。
+
+## 10. 実機検証・SS 撮影時のテーマ固定 (Sess95 PR-5 〜)
+
+> **背景**: 2026-06-10 (Sess95 PR-5) で `themeMode` の初期値を `'light'` → `'system'` (OS 追従、テスター要望 + 業界標準) に変更した。OS がダークの端末では **新規 install / clearState 後の初回起動がダークになる**。実機検証や SS 撮影 (mockup 比較・store 用) はライト前提の手順が多いため、以下を必ず実施する。
+
+### 手順 (検証セッション開始時に 1 回)
+
+1. アプリ起動 → 設定タブ → 「テーマ」 row (`e2e_theme_mode_row`) → **「ライト」を明示選択**
+   - zustand persist で永続化されるため、以後の再起動・reload でもライト固定が維持される
+2. ダークモード検証 (R-60 の dark SS 等) をする時だけ「ダーク」へ切替え、**終了時にライトへ戻す**
+3. テーマ起因の表示差を疑う bug 報告を検証する時は、まず現在の実効テーマを SS で記録してから切替える
+
+### 注意
+
+- 既存 install は persist 済みの themeMode が維持される (= この default 変更の影響は新規 install のみ)
+- Maestro flow は testID 駆動でテーマ非依存のため対応不要 (色 assert を追加する場合のみ本節を参照)
