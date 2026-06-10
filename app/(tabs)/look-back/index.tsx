@@ -32,11 +32,11 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {
   ChevronRightIcon,
-  CompassIcon,
   DownloadIcon,
-  LeafIcon,
   RepeatIcon,
   SearchIcon,
+  SproutIcon,
+  StyleIcon,
   TagIcon,
   WireIcon,
 } from '@/src/components/icons';
@@ -104,7 +104,7 @@ export default function LookBackHubScreen() {
       key: 'species',
       title: t('lookBackCardSpeciesTitle'),
       desc: t('lookBackCardSpeciesDesc'),
-      Icon: LeafIcon,
+      Icon: SproutIcon,
       onPress: () => router.push('/custom-species' as Href),
     },
     // Sess89 Phase 3 (ADR-0049 ⑥): カスタム樹形を管理 7 カード目 (= 樹種と同型 + 案 c atomic NULL cascade)。
@@ -113,7 +113,7 @@ export default function LookBackHubScreen() {
       key: 'styles',
       title: t('lookBackCardStylesTitle'),
       desc: t('lookBackCardStylesDesc'),
-      Icon: CompassIcon,
+      Icon: StyleIcon,
       onPress: () => router.push('/custom-styles' as Href),
     },
     // Sess49 追補3: エクスポート動線 (設定からのみ → 発見性向上)。Pro 限定のため PRO バッジ。

@@ -22,6 +22,7 @@ export {
 } from './EventIcons';
 export {
   BackIcon,
+  BonsaiIcon,
   CalendarIcon,
   CameraIcon,
   CheckIcon,
@@ -37,5 +38,7 @@ export {
   PlusIcon,
   RepeatIcon,
   SearchIcon,
+  SproutIcon,
+  StyleIcon,
   TagIcon,
 } from './NavIcons';
