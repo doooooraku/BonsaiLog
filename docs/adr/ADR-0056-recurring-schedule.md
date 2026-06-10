@@ -600,3 +600,43 @@ BonsaiChipList component (= chip 領域だけ) を抽出して「流用統一」
 user 「関数化して同じ問題を 1 つに集約したら管理が楽とか? メリットが多いとか?」 は **構造的に正解** = Sess91 R-76 (機能領域 SoT) → Sess92 PR-3 chip SoT → Sess92 PR-3 follow-up layout SoT、 という 3 段階の cross-feature SoT 進化系譜。 「SoT 化 1 段で安心せず、 もう 1 段上の pattern を見直すべき」 を 構造で示した提案。
 
 **学び 2**: SoT 抽出は **下位 (chip 領域) → 上位 (layout 構造) の 2 段階以上で 完成する**。 下位だけ抽出して 上位を放置すると、 「同じ責務 pattern が 2 画面に重複」 という 上位 SoT 不在問題が 残る。 R-77 (= cross-feature 共通 UI SoT 化基準) に「下位 + 上位 の階層 SoT 化判定」 を含める。
+
+#### Sess93 議論 + PR-1〜PR-6 (= モックアップ統合改修、 2026-06-10)
+
+**起点**: user 提示「ふりかえり → 定期予定を管理 → タップ → 新規定期予定」 画面の SS (15862/15863) と Claude Design モックアップ (145040/114/144) の 差分実装依頼。 6 名チーム + 4 ペルソナ + 5 Whys + R-77/R-78 起票 で 7 ターンの議論で 全確定。
+
+**user 判断 (= 議論で確定した 19 件)**:
+
+1. **モック準拠 4 機能採用**: ① 「毎週」 時の曜日 picker (= BYDAY 配列、 業界整合 Apple Reminders)、 ② 開始日 picker (= 過去日エラー)、 ③ memo row (= 200 文字 + 複数行)、 ④ プレビュー card (= 「{頻度}・{作業} を {N}本に / 次回: ...」)
+2. **通知 card 案 C 採用**: モック「予定日に通知する」 toggle + 時刻 = ADR-0014「当日まとめ通知 1 系統のみ」 と矛盾、 toggle 削除 + 時刻表示・編集のみ + 説明文「個別通知ではない、 まとめ通知時刻」 で 誤解防止 (= R-77 ドメイン適合性チェック適用)。
+3. **編集動線縮小**: ルール編集動線は 「ふりかえり → 定期予定を管理」 経由のみ keep、 カレンダー / 盆栽詳細 timeline タブからの ルール編集動線は追加せず シンプル維持。
+4. **編集モード「全項目編集可」**: RRULE / byday / startDate / endType / endDate / memo / 通知時刻 は 編集可、 bonsai + event_type は readonly (= UI 動線見直し scope の follow-up)。
+5. **編集前 ConfirmDialog 必須**: replaceRecurrenceRule = softDelete + create = 既存予定削除 + 再生成 を user に事前通知 (= R-78 破壊的データ操作の事前通知必須 起票元)。
+6. **memo cascade pattern**: 編集時 ふりかえり経由でメモ追加 → 既存 planned events に cascade copy、 logged 済 events には cascade しない (= 過去の事実保護、 ADR-0011 哲学整合)。
+7. **予定 Card 詳細版化**: カレンダー画面 予定 section も EventRowDetailed mode に統一 (= モック整合「作業記録と同じ Card」)、 status='planned' 時 写真 strip 強制非表示 (= 予定にはまだ写真なし、 空エリア違和感解消)。
+8. **「曜日」 全選択 → 自動「毎日」 切替**: 全 7 曜日 tap で preset='daily' に内部切替 + Toast 「『毎日』 として登録します」 で UI 整合性保証。
+9. **memo 制限**: 200 文字 + 複数行、 既存 EventRow Card「もっと見る」 truncate 流用 (= 自動)。
+
+**PR シリーズ 6 件 (= main HEAD c7d7ab4 までに 全 merge)**:
+
+- PR-1 #1058 = データ層改修 (= schemaV17 recurrence_rules.memo 列追加 + cascade logic、 createRecurrenceRule/bulkCreate/replace で planned events.note へ cascade、 hasColumn ガード + Sess14 罠回避)
+- PR-2 #1059 = RRULE 計算層改修 (= buildWeeklyByDayRrule / parseWeeklyByDay helpers + 20 件 test 追加、 BYDAY 配列 ↔ RRULE 文字列変換、 rrule@^2.8 lib の完全 BYDAY サポート活用)
+- PR-3 #1060 = RecurrencePicker UI 改修 (= 7 preset 枠囲み card 化 + WeekdaySelector 新規抽出 + 曜日 picker + カスタム ステッパー − N + + 開始日 picker 過去日エラー + 全選択自動切替 Toast、 i18n 14 keys × 19 locales = 266 文字列)
+- PR-4 #1061 = RecurrenceFormScreen 統合 (= 新規 3 component NotificationCard/MemoInputRow/RulePreviewCard + 編集 ConfirmDialog + 編集モード全項目 prefill 拡張 + i18n 13 keys × 19 = 247 文字列)
+- PR-6 #1062 = カレンダー予定 Card 詳細版化 (= CalendarEventGroupList の予定 section に displayMode="detailed" + EventRowDetailed status='planned' 時 写真 strip 強制非表示)
+
+**Sess93 v1.0.4 持ち越し (= follow-up scope)**:
+
+- **PR-5 deferred**: 単発予定 memo は 既存 LabeledTextInput note field (2000 文字 max) で 既にサポート、 kebab メニュー名は 既に「編集」 (= rowActionMenuEdit)、 work-picker → BulkLogConfirmScreen 通過設計 = 種別 tap で 確認画面に遷移する 構造 refactor は scope 大のため follow-up。
+- **PR-7 deferred**: 盆栽詳細 → 作業予定タブ (BonsaiTimelineTab) の 独自 timeline UI (= 縦線 + 緑円) → EventRow 詳細版 Card 統一は ADR-0020 改訂を伴う scope のため follow-up。 主動線 (カレンダー) で user 体験 80% カバー済。
+- 編集モード bonsai / event_type 編集化 = UI 動線見直し (= chip tap で BonsaiMultiSelect 再起動 / 作業種別 row tap で work-picker 再起動)。
+- Maestro flow 新規 = recurring-memo-byday / recurring-edit-confirm 等 2 flow 追加。
+- 実機 SH-M25 R-25 評価 (= 構造系 4 + 動線系 4) + 実機 SS で UI / dark mode 視認性 確認。
+- versionCode 14 release (= cloud build + Play Console Alpha track submit)。
+
+**学び**:
+
+1. **モック (Design) と ADR 矛盾検出が R-16 で機能**: モック「予定日に通知する toggle」 が ADR-0014 と矛盾 → 議論で 案 C (= toggle 削除) に修正、 R-77 業界標準ドメイン適合性チェック起票で 構造化。
+2. **R-78 破壊的操作通知**: 既存実装 (= replaceRecurrenceRule wrapper) に内在する「黙って削除 + 再生成」 を ConfirmDialog で user に明示、 既存 Pattern を 構造的に防御。
+3. **議論 → PR scope 整理**: 当初 8 PR plan を 議論精緻化 (= user 「kebab メニューは 3 つ keep」 確定、 ルール編集動線縮小) で PR-5/PR-7 を follow-up に縮小、 6 PR で コア機能完成。
+4. **モック画像の「切り出し位置」 解釈**: モック 3 枚 (145040/114/144) には 盆栽 chip + 作業種別 row が 写っていなかったが、 user 確認で「下半分のみ切り取り、 現状 keep で OK (= PR #1057 BonsaiChipList SoT で 既に統一済)」 と判明 = SS 範囲 だけ で 結論する 危険を 回避。
