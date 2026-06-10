@@ -208,3 +208,33 @@ CIが落ちたステップだけを、まずローカルで叩く：
 - [ ] `pnpm test` OK
 - [ ] 必要なら `pnpm test:e2e` OK
 - [ ] 受け入れ条件が満たされた（PR本文に証拠を書く）
+
+---
+
+## 9. 実機 adb 操作の制約（Claude Code 主導の実機検証）
+
+> Claude Code が adb で実機 (Dev Build) を直接操作して検証するときの既知の制約。
+> Doc-Truth Audit P2 (2026-06) で「全セッション通算 687 回 `adb shell input` が使われているのに常設手順が無い」と判明し、memory の知見を本節へ昇格 (出典: bonsailog-adb-verify-constraints / maestro-android-limits)。
+> 前提スクリプト: `scripts/dev/reload-app.sh` (Metro 反映) / `scripts/dev/take-ss.sh` (SS 撮影、CRLF 罠回避)。
+
+### 9-1. テキスト入力 (`adb shell input text`)
+
+- **日本語 (非 ASCII) は入力不可**: `input text "黒松"` → NullPointerException。日本語検証は (1) 検索履歴タップ (2) タグ chip (3) `seedTestDataEn()` で英語 seed 投入 + ASCII 入力、で代替する。
+- **連続 input は onChangeText を取りこぼす**: 一括投入すると native field だけ進み React state が更新されない (検索が走らない偽バグに見える)。**1 文字ずつ `input text` + 0.5〜0.7s sleep** で確実に発火させる。
+- **日本語 IME (あ) モードは小文字ローマ字を「かな」に合成する**: `"morning"` → `"もrに"` に化ける。確実なのは Gboard を **ABC (英字) モードに切替**してから入力。大文字始まり ("Pine") は合成回避される応急策あり。
+
+### 9-2. キー操作
+
+- **BACK (`keyevent 4`) は画面自体を閉じる** (キーボードだけ閉じない)。入力後に押さない。
+- tap 座標は SS 目視でなく **`uiautomator dump` で取得** する (BottomCtaBar と TabBar の境界 ±50px で誤 tap 事故例あり)。
+
+### 9-3. Maestro の既知制約 (該当 flow は skip 判断可)
+
+1. **inputText 日本語非対応** (UnicodeNotSupportedError) — adb input text 経由のため
+2. **Pressable/TextView 階層 tap 問題** — text 指定 tap は最内 TextView に当たり親 Pressable が発火しない → **testID (`id: 'e2e_xxx'`) 直接指定を最優先**
+3. **BottomSheet snap 直後の描画ラグ** — `extendedWaitUntil` timeout を見込む
+
+### 9-4. プロセス再起動の罠
+
+- WSL2 で `pkill` / `kill` が **exit 144** を返しても実害なしのことが多い (継続可)。adb daemon が stuck したら Windows 側を `taskkill /F /IM adb.exe` で殺してから `adb start-server` (詳細: `docs/reference/tasks/lessons/wsl2-mobile.md`)。
+- adb 系コマンドは **foreground 直列** で実行する (background 並列は daemon ロックの原因)。
