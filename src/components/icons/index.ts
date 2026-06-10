@@ -22,11 +22,13 @@ export {
 } from './EventIcons';
 export {
   BackIcon,
+  BellIcon,
   BonsaiIcon,
   CalendarIcon,
   CameraIcon,
   CheckIcon,
   ChevronRightIcon,
+  ClockIcon,
   CloseIcon,
   CogIcon,
   DownloadIcon,
