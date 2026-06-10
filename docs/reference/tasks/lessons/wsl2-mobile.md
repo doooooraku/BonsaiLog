@@ -24,6 +24,8 @@
 
 `scripts/ui-diff/preflight.mjs` の `checkAdb()` で `tr -d '\r'` 後に awk 相当の正規表現マッチ。失敗時は明確なエラー + hint 出力。
 
+> 姉妹知見 (本ファイル行数上限のため `lessons/runtime.md` 収載): adb daemon の background 並列ロック / exit 144 / taskkill 復旧。実機 adb 操作の入力制約は `docs/how-to/testing/testing.md` §9。
+
 ---
 
 ## 2. Maestro 2.0 系の構文変更

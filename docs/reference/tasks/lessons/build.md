@@ -63,3 +63,32 @@
   3. 必須チェックキーはプラットフォーム別に分離する（iOS ビルドに Android API キーは不要）
   4. **ビルドキー検証は「手元の .env」ではなく「EAS 環境変数」を直接見る**（`eas env:list` を使う）
   5. リリースワークフローは build & ship に絞り、品質チェックは PR ワークフロー（`ci.yml`）に集約する
+
+### app.config.ts の env fallback は `??` でなく `||`
+
+- **何が起きたか**: dotenv は .env の空値を `''` として設定するため `??` では fallback せず、空文字 AdMob app ID が native 層 (MobileAdsInitProvider) で即死クラッシュ。Metro では見えず `adb logcat -b crash` のみで確認可能。
+- **ルール**: 空値があり得る env の fallback は `||` を使う。native 層クラッシュ診断は `adb logcat -b crash`。
+- **出典**: memory `admob-optional-crash` から昇格 (Doc-Truth Audit P2、2026-06-10)。
+
+### pnpm v10 は postinstall をデフォルトでブロックする
+
+- **何が起きたか**: eas-cli local build が一時 dir で新規 install する際、`@shopify/react-native-skia` の postinstall がスキップされ `libskia.a not found` で APK build 失敗。
+- **ルール**: native binary を postinstall で DL する依存は `package.json` の `pnpm.onlyBuiltDependencies` に明示登録する。
+- **出典**: memory `pnpm-v10-postinstall` から昇格 (P2、2026-06-10)。
+
+### NDK 27 + Debug + LTO は gold linker bug で fail → lld 強制
+
+- **何が起きたか**: NDK 27 は LLVMgold.so を同梱せず、CMake 3.22.1 が gold を強制する既知バグ (android/ndk#1444) で Dev Build が 1 ヶ月失敗していた。
+- **ルール**: `plugins/withCmakeArgs.js` が `-fuse-ld=lld` + `-fno-lto` を build.gradle に inject 済み。NDK/CMake 更新時はこの plugin の要否を再評価する。
+- **出典**: memory `ndk27-cmake-args-plugin` から昇格 (P2、2026-06-10)。
+
+### EAS local build 初回の 3 点セット
+
+- **ルール**: 新アプリ初回 build では ① `.easignore` (無いと .gitignore が使われ .env が除外され required() で死ぬ) ② `plugins/withAsyncStorageRepo.js` (async-storage v3 KMP の maven path) ③ `postbuild-verify.mjs` も `SKIP_KEYS=1` 対応、を確認 (テンプレにバックポート済)。
+- **出典**: memory `eas-build-fixes` から昇格 (P2、2026-06-10)。
+
+### WSL2 で Android build すると PC ごとハングする → `.wslconfig` 上限必須
+
+- **何が起きたか**: Gradle + NDK + Metro 合計 15-20GB が WSL2 デフォルト (メモリ無制限) で Windows 側 RAM を食い尽くしシステム全体停止 (Sess65)。
+- **ルール**: `C:\Users\<user>\.wslconfig` に `memory=20GB` (32GB host 想定) 等の上限を設定してから local build する。cloud build (ADR-0050) が第一選択。
+- **出典**: memory `wsl2-android-build-config` から昇格 (P2、2026-06-10)。
