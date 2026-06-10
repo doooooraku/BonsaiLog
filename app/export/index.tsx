@@ -113,7 +113,8 @@ export default function ExportHubScreen() {
   // Sess72 PR-4 (ADR-0040 D5 予定 / R-63 予定): 個別盆栽 PDF (export/pdf) への push 戻りで
   // Hub の scroll 位置が 0 リセットされる挙動を hook で解消。
   const scrollRef = React.useRef<ScrollView>(null);
-  const { onScroll, scrollEventThrottle } = useScrollPreservation(scrollRef);
+  // Sess95 PR-2: onContentSizeChange 追加 (戻り後の非同期 layout 変動 race 対応、 hook JSDoc 参照)。
+  const { onScroll, onContentSizeChange, scrollEventThrottle } = useScrollPreservation(scrollRef);
 
   const handlePick = (k: string) => {
     if (!isPro) {
@@ -158,6 +159,7 @@ export default function ExportHubScreen() {
       <ScrollView
         ref={scrollRef}
         onScroll={onScroll}
+        onContentSizeChange={onContentSizeChange}
         scrollEventThrottle={scrollEventThrottle}
         contentContainerStyle={styles.scroll}
       >

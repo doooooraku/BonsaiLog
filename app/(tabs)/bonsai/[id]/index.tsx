@@ -61,7 +61,8 @@ export default function BonsaiDetailScreen() {
   // Sess72 PR-3 (ADR-0040 D5 予定 / R-63 予定): 子画面 push (tag-edit / work-picker) から戻った
   // 時の scroll 位置保持。 基本情報タブの tag 追加 + 作業履歴/予定タブの予定/記録追加 等、 詳細
   // 画面の各タブから子画面 push する全 flow で先頭リセット問題を解消。
-  const { onScroll, scrollEventThrottle } = useScrollPreservation(scrollRef);
+  // Sess95 PR-2: onContentSizeChange 追加 (戻り後の非同期 layout 変動 race 対応、 hook JSDoc 参照)。
+  const { onScroll, onContentSizeChange, scrollEventThrottle } = useScrollPreservation(scrollRef);
   // 改善① measureLayout 基準: ScrollView 直下の content wrapper View ref。
   // Fabric では measureLayout の relativeTo に数値ハンドル不可・ホスト View の ref が必要なため、
   // 全 content を包む collapsable=false の View を基準にして対象行の content 内 Y を実測する。
@@ -258,6 +259,7 @@ export default function BonsaiDetailScreen() {
         <ScrollView
           ref={scrollRef}
           onScroll={onScroll}
+          onContentSizeChange={onContentSizeChange}
           scrollEventThrottle={scrollEventThrottle}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
