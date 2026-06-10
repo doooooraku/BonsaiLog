@@ -13,10 +13,9 @@
 | ------------------------------ | ------------------------------------------------------ |
 | `privacy-policy.template.html` | プライバシーポリシーのテンプレート（HTML、雛形保管用） |
 | `terms-of-use.template.html`   | 利用規約 (EULA) のテンプレート（HTML、雛形保管用）     |
-| `privacy-policy.html`          | **公開用 (日本語)** — GitHub Pages で配信中            |
-| `privacy-policy.en.html`       | **公開用 (English)** — GitHub Pages で配信中           |
-| `terms-of-use.html`            | **公開用 (日本語)** — GitHub Pages で配信中            |
-| `terms-of-use.en.html`         | **公開用 (English)** — GitHub Pages で配信中           |
+
+> 公開用 HTML は本ディレクトリではなく `docs/privacy/` / `docs/terms/` に置く（下記「ソースファイル」表参照）。
+> 旧 `privacy-policy.html` 等 4 件は 2026-05-25 に統合・削除済み。
 
 ## 公開先 (GitHub Pages、2026-05-25 更新)
 
@@ -86,8 +85,8 @@ privacy-policy.html に以下を明記:
 公開後にアクセス確認:
 
 ```bash
-curl -I https://doooooraku.github.io/bonsailog/legal/privacy-policy.html
-curl -I https://doooooraku.github.io/bonsailog/legal/terms-of-use.html
+curl -I https://doooooraku.github.io/BonsaiLog/privacy/
+curl -I https://doooooraku.github.io/BonsaiLog/terms/
 ```
 
 ### 5. アプリと Store に URL を設定
