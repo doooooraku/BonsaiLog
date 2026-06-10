@@ -18,7 +18,7 @@ import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { PotIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess66 PR6a: BG_SURFACE / BORDER_DEFAULT / TEXT_PRIMARY / TEXT_SECONDARY を inline c.* に。
-import { BRAND_GREEN, DANGER, ON_BRAND } from '@/src/core/theme/colors';
+import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
   getAllArchivedBonsai,
@@ -154,11 +154,13 @@ export default function ArchivedBonsaiScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('bonsaiDeleteForever')}
-            style={[styles.actionBtn, styles.deleteBtn]}
+            style={[styles.actionBtn, styles.deleteBtn, { borderColor: c.dangerColor }]}
             onPress={() => setPending({ id: item.id, action: 'delete' })}
             testID={`e2e_archived_delete_${item.id}`}
           >
-            <ThemedText style={styles.deleteText}>{t('bonsaiDeleteForever')}</ThemedText>
+            <ThemedText style={[styles.deleteText, { color: c.dangerColor }]}>
+              {t('bonsaiDeleteForever')}
+            </ThemedText>
           </Pressable>
         </View>
       </View>
@@ -230,8 +232,8 @@ const styles = StyleSheet.create({
   },
   restoreBtn: { backgroundColor: BRAND_GREEN },
   restoreText: { color: ON_BRAND, fontWeight: '600' },
-  deleteBtn: { borderWidth: 1, borderColor: DANGER, backgroundColor: 'transparent' },
-  deleteText: { color: DANGER, fontWeight: '600' },
+  deleteBtn: { borderWidth: 1, backgroundColor: 'transparent' }, // borderColor は inline c.dangerColor
+  deleteText: { fontWeight: '600' }, // color は inline c.dangerColor
   emptyContent: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, padding: 32 },
   emptyTitle: { fontSize: 16, textAlign: 'center' },
 });

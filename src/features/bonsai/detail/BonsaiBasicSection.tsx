@@ -7,8 +7,8 @@ import {
   type BonsaiBasicFormState,
 } from '@/src/features/bonsai/BonsaiBasicForm';
 import { useTranslation } from '@/src/core/i18n/i18n';
-// Sess74 PR-2 (R-55): BRAND_GREEN を scheme-aware (c.tint) へ移行。 DANGER は theme-invariant で保持。
-import { DANGER } from '@/src/core/theme/colors';
+// Sess95 PR-1: DANGER static (#8B2E2E) は dark 背景で contrast 1.9:1 とほぼ視認不能
+// (テスター報告「アーカイブが見えにくい」 真因) → inline c.dangerColor へ移行。
 import { useColors } from '@/src/core/theme/useColors';
 
 /**
@@ -46,11 +46,13 @@ export function BonsaiBasicSection({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('bonsaiArchive')}
-        style={styles.basicArchiveButton}
+        style={[styles.basicArchiveButton, { borderColor: c.dangerColor }]}
         onPress={onArchive}
         testID="e2e_detail_basic_archive_button"
       >
-        <ThemedText style={styles.basicArchiveButtonText}>{t('bonsaiArchive')}</ThemedText>
+        <ThemedText style={[styles.basicArchiveButtonText, { color: c.dangerColor }]}>
+          {t('bonsaiArchive')}
+        </ThemedText>
       </Pressable>
       <Pressable
         accessibilityRole="button"
@@ -93,14 +95,14 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: DANGER,
+    // borderColor は inline c.dangerColor (Sess95 PR-1 dark cascade)
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 24,
   },
   basicArchiveButtonText: {
-    color: DANGER,
+    // color は inline c.dangerColor (Sess95 PR-1 dark cascade)
     fontSize: 17,
     fontWeight: '500',
     letterSpacing: 0.5,

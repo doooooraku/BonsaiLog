@@ -15,8 +15,7 @@ import React from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-// Sess66 PR6b: badge 白文字は theme-invariant ゆえ ON_BRAND (旧 BG_PRIMARY = bug)。
-import { DANGER, ON_BRAND } from '@/src/core/theme/colors';
+// Sess95 PR-1: badge は inline c.dangerColor / c.onTint (dark cascade)。
 import {
   formCounter,
   formCounterOver,
@@ -84,8 +83,10 @@ export function LabeledNumberInput({
         <View style={styles.labelRow}>
           <ThemedText type="defaultSemiBold">{label}</ThemedText>
           {required && (
-            <View style={styles.requiredBadge}>
-              <ThemedText style={styles.requiredText}>{requiredText}</ThemedText>
+            <View style={[styles.requiredBadge, { backgroundColor: c.dangerColor }]}>
+              <ThemedText style={[styles.requiredText, { color: c.onTint }]}>
+                {requiredText}
+              </ThemedText>
             </View>
           )}
           {optional && !required && (
@@ -128,12 +129,11 @@ const styles = StyleSheet.create({
   field: { gap: 6 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   requiredBadge: {
-    backgroundColor: DANGER,
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { ...formRequired, color: ON_BRAND },
+  requiredText: { ...formRequired },
   optionalText: formOptional,
   counter: formCounter,
   counterOver: formCounterOver,

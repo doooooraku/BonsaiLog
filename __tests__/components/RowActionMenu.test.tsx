@@ -37,9 +37,11 @@ describe('RowActionMenu (ADR-0036 D7)', () => {
     expect(SRC).toMatch(/accessibilityRole="menuitem"/);
   });
 
-  test('6. destructive=true で DANGER 赤文字適用', () => {
-    expect(SRC).toMatch(/itemTextDestructive.*color:\s*DANGER/s);
-    expect(SRC).toMatch(/item\.destructive\s*&&\s*styles\.itemTextDestructive/);
+  test('6. destructive=true で c.dangerColor 赤文字適用 (Sess95 PR-1 dark cascade)', () => {
+    // static DANGER は dark 背景で contrast 1.9:1 のため inline c.dangerColor へ移行済。
+    expect(SRC).toMatch(/color:\s*item\.destructive\s*\?\s*c\.dangerColor\s*:\s*c\.text/);
+    // static DANGER 参照が復活していないこと (回帰防止)
+    expect(SRC).not.toMatch(/import\s*{[^}]*\bDANGER\b[^}]*}\s*from/);
   });
 
   test('7. item tap で onDismiss → onPress 順 (自動 dismiss)', () => {
