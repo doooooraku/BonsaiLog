@@ -133,6 +133,9 @@ export default function RecurrenceFormScreen() {
             enabled: true,
             preset: loadedPreset,
             customDays: loadedCustomDays,
+            // Sess93 PR-3: byday + startDate は PR-4 で 編集モード prefill (= rule から逆算)
+            byday: [],
+            startDate: rule.startAtUtc.slice(0, 10),
             endType: rule.endAtUtc ? 'specific' : 'never',
             endDate: rule.endAtUtc ? rule.endAtUtc.slice(0, 10) : null,
           });
