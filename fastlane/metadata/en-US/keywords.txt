@@ -1,1 +1,1 @@
-keyword1,keyword2,keyword3
+tree,watering,pruning,repotting,wiring,fertilizer,juniper,ficus,maple,garden,plant,log
