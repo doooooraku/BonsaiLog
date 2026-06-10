@@ -1093,6 +1093,22 @@ const ja: Partial<Record<TranslationKey, string>> = {
   recurringWeeklyByDayLabel: 'くり返す曜日',
   recurringCustomDaysApart: '日ごとに繰り返す',
   recurringWeeklyAllDaysToDailyToast: '『毎日』 として登録します',
+  // Sess93 PR-4: RecurrenceFormScreen 統合 (NotificationCard + MemoInputRow + RulePreviewCard + 編集 ConfirmDialog)
+  memoFieldLabel: 'メモ',
+  memoFieldOptional: '(任意)',
+  memoFieldPlaceholder: '例: 固形肥料を置き肥 / 薄めの液肥',
+  notificationCardSectionLabel: '通知',
+  notificationCardSummaryLabel: 'まとめ通知',
+  notificationCardTimeLabel: '時刻',
+  notificationCardHint:
+    'これはまとめ通知の時刻です。 個別の予定ごとには通知されません。 通知を全部止めたい場合は 設定 → 通知 で 行えます。',
+  rulePreviewCardTitle: 'このルールで作られる予定',
+  rulePreviewCardNextLabel: '次回',
+  recurringEditConfirmTitle: 'ルールを更新しますか?',
+  recurringEditConfirmBody:
+    '既存の予定 (未実施分) は 一旦削除され、 新しいルールで 作り直されます。',
+  recurringEditConfirmConfirm: '更新する',
+  recurringFormSummaryFormat: '{rrule}・{eventType} を {count} 本に',
 };
 
 export default ja;

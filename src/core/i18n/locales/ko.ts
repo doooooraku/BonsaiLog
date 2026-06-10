@@ -1076,5 +1076,21 @@ const ko: Partial<Record<TranslationKey, string>> = {
   recurringWeeklyByDayLabel: 'Repeat on',
   recurringCustomDaysApart: 'days apart',
   recurringWeeklyAllDaysToDailyToast: 'Saved as "Daily"',
+  // Sess93 PR-4: RecurrenceFormScreen 統合 (NotificationCard + MemoInputRow + RulePreviewCard + 編集 ConfirmDialog)
+  memoFieldLabel: 'Memo',
+  memoFieldOptional: '(optional)',
+  memoFieldPlaceholder: 'e.g. Solid fertilizer, top dressing',
+  notificationCardSectionLabel: 'Notification',
+  notificationCardSummaryLabel: 'Summary notification',
+  notificationCardTimeLabel: 'Time',
+  notificationCardHint:
+    'This is the summary notification time. Individual schedules are not notified. To disable all notifications, go to Settings → Notifications.',
+  rulePreviewCardTitle: 'Schedules this rule will create',
+  rulePreviewCardNextLabel: 'Next',
+  recurringEditConfirmTitle: 'Update rule?',
+  recurringEditConfirmBody:
+    'Existing schedules (unfinished) will be deleted and recreated from the new rule.',
+  recurringEditConfirmConfirm: 'Update',
+  recurringFormSummaryFormat: '{rrule} · {eventType} for {count}',
 };
 export default ko;
