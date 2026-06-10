@@ -11,6 +11,9 @@
  *   3. 禁則語チェック (商標名・誇大表現)
  *   4. keywords 形式チェック (カンマ後スペース禁止、name/subtitle との重複検出)
  *   5. URL 形式チェック (privacy_url, support_url)
+ *   6. placeholder 検知 ({{VAR}} 未展開 / TODO / scaffold ダミー文言)
+ *      — Doc-Truth Audit 2026-06 バッチ②a 🔴 由来: placeholder のまま main に入ると
+ *        push-app-store-metadata.yml が ASC へ自動 upload する事故経路を構造的に塞ぐ
  *
  * Usage:
  *   node scripts/validate-metadata.mjs              # 全ロケール検証
@@ -54,6 +57,27 @@ const FORBIDDEN_PATTERNS = [
     pattern: /\b(best|fastest|most popular)\b/i,
     message: 'Superlative claim — Guideline 2.3.7 risk',
   },
+];
+
+const PLACEHOLDER_PATTERNS = [
+  { pattern: /\{\{[^}]+\}\}/, message: 'Unexpanded template variable ({{...}})' },
+  { pattern: /\bTODO\b/i, message: 'TODO marker' },
+  { pattern: /(keyword|キーワード)1,/, message: 'Scaffold dummy keywords' },
+  { pattern: /(Feature|機能) [A-C]\b/, message: 'Scaffold dummy feature list' },
+  { pattern: /\(max \d+ chars(, optional)?\)/, message: 'Scaffold instruction text (en)' },
+  { pattern: /（\d+文字以内(、任意)?）/, message: 'Scaffold instruction text (ja)' },
+];
+
+const PLACEHOLDER_CHECK_FILES = [
+  'name.txt',
+  'subtitle.txt',
+  'description.txt',
+  'keywords.txt',
+  'promotional_text.txt',
+  'release_notes.txt',
+  'privacy_url.txt',
+  'support_url.txt',
+  'marketing_url.txt',
 ];
 
 const SKIP_DIRS = new Set(['review_information']);
@@ -144,6 +168,14 @@ function validate(locale) {
     const url = readText(join(dir, file));
     if (url && url.length > 0 && !url.startsWith('http')) {
       error(locale, file, `Invalid URL: "${url}"`);
+    }
+  }
+
+  for (const file of PLACEHOLDER_CHECK_FILES) {
+    const text = readText(join(dir, file));
+    if (!text) continue;
+    for (const { pattern, message } of PLACEHOLDER_PATTERNS) {
+      if (pattern.test(text)) error(locale, file, message);
     }
   }
 }

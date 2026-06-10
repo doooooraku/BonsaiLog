@@ -1,1 +1,1 @@
-https://doooooraku.github.io/{{APP_SLUG}}/support
+https://doooooraku.github.io/BonsaiLog/
