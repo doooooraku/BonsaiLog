@@ -4,6 +4,37 @@
 
 ---
 
+## [2026-06-10] Sess95 Doc-Truth Audit P0〜P2 + 修正スプリント (9 PR)
+
+2h20m で 監査基盤 (台帳 415 件) + 判定 20 件 + 9 PR (#1064-1075 の監査由来分) + ログ採掘 (134 transcript / 956MB)。重大発見 = repo PUBLIC + Pages 全公開 (→ ADR-0057 で容認明文化) / fastlane placeholder → ASC 自動 push 事故経路 (→ #1064 gate で構造封鎖)。
+
+### Keep
+
+- **検出と修正の分離**: 監査セッションは読み取り専用 + 1 件ごと台帳更新 → user 承認 → 修正スプリント。判定には必ず code path:line 根拠
+- **gate を実文化より先に配線** (#1064 → #1068): 「直すより先に事故経路を塞ぐ」順序
+- **生ログ非読込の script 採掘** + redaction 既定 + 手法限界の明示
+- **並行セッション対策**: local main に触らず `git checkout -b X origin/main` 直 branch
+- **memory→docs 昇格は .bak + 参照 1 行化**をセットで (二重管理防止、13 件適用)
+
+### Problem
+
+- **台帳列挙漏れ 76 件** (S1 を .md/.html filter にしたため store-listing/\*.txt が漏れ、バッチ②a で発覚) — 根本原因 = 網羅性を主張する成果物に網羅性の機械検算が無かった (R-25 同型の機械出力過信)
+- 手戻り 3 件 (~15 分): sed 区切り `#` ×「PR #1064」衝突 / template-check が自分の comment 例示 `{{VAR}}` を検知 / lessons 行数上限を 250 と誤認 (実物 200、plan 時の 1 次資料確認漏れ = R-20 同型)
+- 訂正採掘 regex の S/N 比低 (198 hit 中有効 ~10)
+
+### Try (次回以降)
+
+- 列挙系 script は「全数 − 除外 = 採用」の**検算行を必ず出力**、不一致は file 名列挙
+- lint の例示文言は当該 lint の allowlist 内の語 (`{{PLACEHOLDER}}` 等) を使う
+- 採掘 regex は小サンプルで校正してから本走 (2 段方式)
+- 行数上限・lint 仕様は plan 段階で script 実物を Read
+
+### 教訓
+
+- **網羅を謳う成果物には網羅の検算を仕込む** — 「機械列挙だから正しい」は R-25 の親戚
+
+---
+
 ## [2026-06-10] Sess90 画面ヘッダー font/背景 統一 + 検出 lint 配線 (3 PR)
 
 ### Keep
