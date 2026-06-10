@@ -10,6 +10,7 @@
  *   5. ルール doc の行数上限 (recurrence-prevention.md ≤ 250 / lessons ≤ 200)
  *   6. Superseded ADR の後継リンク整合 (ADR-0046 廃止ポリシー、warning のみ)
  *   7. ADR-0050 以降の CRUD Coverage section 整合 (R-65、 title に CRUD 動詞を含む ADR は section 必須、 warning のみ)
+ *   8. recurrence-prevention.md 親索引 × specialized.md 見出しの parity (索引行欠落の機械検出)
  *
  * 終了コード: 0 = OK, 1 = エラー検出 (warning は exit 0)
  */
@@ -197,12 +198,36 @@ function checkAdrCrudCoverage() {
   }
 }
 
+// Check 8: recurrence-prevention.md 親索引 と specialized.md 見出しの parity (Doc-Truth Audit バッチ③)
+// specialized.md に `## R-NN` 見出しがあるのに親索引へ `**R-NN**` 行が無い欠落を機械検出する。
+// 同型欠落が 2 回発生 (R-76〜78 = PR #1070 / R-39〜41,45〜51,73 = PR #1094 検出) したための仕組み化。
+// 逆方向 (親に行があるが specialized に見出しなし) は詳細が lessons/*.md にあるルールが正当に存在するため対象外。
+function checkRecurrenceParity() {
+  const parentFile = join(ROOT, '.claude/recurrence-prevention.md');
+  const specFile = join(ROOT, '.claude/recurrence-prevention/specialized.md');
+  if (!existsSync(parentFile) || !existsSync(specFile)) return;
+  const parent = readFileSync(parentFile, 'utf8');
+  const spec = readFileSync(specFile, 'utf8');
+  const parentRows = new Set([...parent.matchAll(/\*\*R-(\d{2,3})\*\*/g)].map((m) => Number(m[1])));
+  const specHeadings = [...spec.matchAll(/^#{2,4}\s*R-(\d{2,3})[.\s]/gm)].map((m) => Number(m[1]));
+  const missing = [...new Set(specHeadings)]
+    .filter((n) => n >= 13 && !parentRows.has(n))
+    .sort((a, b) => a - b);
+  if (missing.length > 0) {
+    errors.push(
+      `[R 索引 parity] specialized.md に見出しがあるのに親索引 (.claude/recurrence-prevention.md) に行が無い: ${missing.map((n) => `R-${n}`).join(', ')}\n` +
+        `  → 親索引の表へ 1 行追加してください (R-76〜78 / R-39 系で 2 回再発した欠落の機械検出)。`,
+    );
+  }
+}
+
 // 実行
 checkCodexReferences();
 checkAdrSequence();
 checkStrikethrough();
 checkLessonsIndex();
 checkRuleDocsLineLimit();
+checkRecurrenceParity();
 checkSupersededLinks();
 checkAdrCrudCoverage();
 
