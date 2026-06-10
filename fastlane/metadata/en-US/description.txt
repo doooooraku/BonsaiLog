@@ -1,11 +1,25 @@
-{{APP_NAME}} description (max 4000 chars).
+Every tree's care, recorded for a lifetime.
 
-Key features:
-- Feature A
-- Feature B
-- Feature C
+BonsaiLog is a bonsai journal that lets you log watering, pruning, repotting and more with one tap, and keeps each tree's history on your device. No AI diagnosis, no recommendations — it records your judgment, in your words.
 
-What sets us apart:
-- Local-first (no servers)
-- Privacy-respecting
+KEY FEATURES
+- Tree cards: photos, care history and notes for each tree, in a timeline
+- One-tap logging: 14 work types including watering, pruning, wiring, repotting and fertilizing
+- Schedules and calendar: recurring plans (water every Monday, for example) and a monthly view
+- "X days since last watering" at a glance
+- CSV / PDF export for exhibition records and backups (Pro)
+
+WHY BONSAILOG
+- Local-first: all records and photos stay on your device. No account, no cloud upload
+- Move Data: transfer everything when you switch phones
 - Available in 19 languages
+- Lifetime option: monthly and yearly subscriptions, or a one-time purchase
+
+GREAT FOR YOU IF
+- You inherited trees and refuse to lose them on your watch
+- You juggle watering and repotting timing across many pots
+- You run a nursery or classroom and need per-tree records
+- You want records without uploading photos to someone else's cloud
+
+PRIVACY
+All data is stored locally on your device and is never sent to our servers (ads on the Free plan and store billing are the only external services). See the privacy policy in the app for details.
