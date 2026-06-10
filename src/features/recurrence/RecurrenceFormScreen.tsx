@@ -27,7 +27,7 @@
  */
 import { Stack, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -49,7 +49,7 @@ import {
 } from '@/src/core/recurrence/rrule';
 import { useColors } from '@/src/core/theme/useColors';
 import { getBonsaiById } from '@/src/db/bonsaiRepository';
-import { BonsaiChipList } from '@/src/features/bonsai/BonsaiChipList';
+import { BonsaiChipPickerLayout } from '@/src/features/bonsai/BonsaiChipPickerLayout';
 import {
   bulkCreateRecurrenceRules,
   countActiveRecurrenceRules,
@@ -262,19 +262,19 @@ export default function RecurrenceFormScreen() {
           title: mode === 'edit' ? t('recurringEditScreenTitle') : t('recurringCreateScreenTitle'),
         }}
       />
-      <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Sess92 PR-3: BonsaiChipList SoT (= 旧独自 chipsHeader card を BulkWorkPicker と統一)。
-            create mode のみ showAutoSelectedHint=true (= 単数件で 自動選択 cue 表示)、
-            edit mode は user 能動的に編集に来たため showAutoSelectedHint=false。 */}
-        <BonsaiChipList
-          bonsais={bonsais}
-          headerText={headerText}
-          isSingle={isSingle}
-          showAutoSelectedHint={mode === 'create'}
-          chipTestIdPrefix="e2e_recurrence_form_chip"
-          autoSelectedHintTestId="e2e_recurrence_form_auto_selected_hint"
-        />
-
+      {/* Sess92 PR-3 follow-up: BonsaiChipPickerLayout SoT (= ScrollView wrap + BonsaiChipList + body 統合)。
+          BulkWorkPicker と同 layout 構造で 画面 pattern を byte-level 統一。 bottomPadding=96 で
+          BottomCtaBar 分の余白を確保 (= 旧 scroll style paddingBottom 96 と同等)。
+          create mode のみ showAutoSelectedHint=true、 edit mode は user 能動的に編集に来たため false。 */}
+      <BonsaiChipPickerLayout
+        bonsais={bonsais}
+        headerText={headerText}
+        isSingle={isSingle}
+        showAutoSelectedHint={mode === 'create'}
+        chipTestIdPrefix="e2e_recurrence_form_chip"
+        autoSelectedHintTestId="e2e_recurrence_form_auto_selected_hint"
+        bottomPadding={96}
+      >
         {/* 作業種別 (= readonly) */}
         <View style={[styles.summaryRow, { backgroundColor: c.surface, borderColor: c.border }]}>
           <ThemedText style={[styles.summaryLabel, { color: c.textSecondary }]}>
@@ -285,11 +285,9 @@ export default function RecurrenceFormScreen() {
           </ThemedText>
         </View>
 
-        <View style={styles.pickerWrap}>
-          {/* Sess89 PR-A: hideToggle (= rule entity 本質 enabled=true) / hideEndDate (= 永続化標準) */}
-          <RecurrencePicker value={recurrence} onChange={setRecurrence} hideToggle hideEndDate />
-        </View>
-      </ScrollView>
+        {/* Sess89 PR-A: hideToggle (= rule entity 本質 enabled=true) / hideEndDate (= 永続化標準) */}
+        <RecurrencePicker value={recurrence} onChange={setRecurrence} hideToggle hideEndDate />
+      </BonsaiChipPickerLayout>
 
       <BottomCtaBar
         label={mode === 'edit' ? t('recurringEditSaveLabel') : t('recurringCreateSaveLabel')}
@@ -305,8 +303,8 @@ export default function RecurrenceFormScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scroll: { padding: 16, paddingBottom: 96, gap: 12 },
-  // Sess92 PR-3: chipsHeader / chipsHeaderText / chipsRow / chip / chipText は BonsaiChipList に SoT 移管。
+  // Sess92 PR-3 follow-up: scroll / chipsHeader / chipsHeaderText / chipsRow / chip / chipText /
+  // pickerWrap (= section spacing) は BonsaiChipPickerLayout に SoT 移管 (= ScrollView wrap + body padding + gap)。
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -323,5 +321,4 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     textAlign: 'right',
   },
-  pickerWrap: { marginTop: 8 },
 });

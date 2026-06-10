@@ -579,3 +579,24 @@ RecurrenceFormScreen の edit mode (= 既存 rule 編集) は user 能動的に 
 - `docs/reference/ui-component-sot-criteria.md` (= SoT 抽出判定 flow chart 明文化)
 
 **学び**: 「SoT 化を comment で約束しても strucutral には保証されない」 = comment に「スタイル流用」 と書いても 実装で独自書き起こしすれば 劣化合成。 import / 共有 component への hard 依存だけが SoT を保証する (= Sess91 R-76 同型の cross-feature 拡張)。
+
+#### Sess92 PR-3 follow-up: BonsaiChipPickerLayout SoT 化 (= layout 2 段目構造防御、 2026-06-10)
+
+**user 追加指摘**: BonsaiChipList 抽出直後、 user 「画面上部の chips が 数十件あると作業選択画面が埋もれちゃう、 全体画面としてスクロールできるように」 (Image 確認、 BulkWorkPicker recurring mode 4 件 chip 時点で grid が 画面下端まで届いている観察)。
+
+**真因 (= 私の SoT 設計に抜け)**:
+
+BonsaiChipList component (= chip 領域だけ) を抽出して「流用統一」 と書きながら、 **画面構造 (= ScrollView wrap + padding + 区切り線 + body) 自体は SoT 化していなかった**。 chip + body の組合せ pattern 自体が 2 画面で重複し、 BulkWorkPicker は chip 領域固定 + grid のみ ScrollView (= chip 多寡で grid 圧迫)、 RecurrenceFormScreen は全体 ScrollView wrap で 構造が乖離。 layout の SoT 不在で 同じ「chip + body」 pattern が 別個実装、 chip 領域 SoT 化だけでは 構造防御が片肺。
+
+**対策 (Sess92 PR-3 follow-up)**:
+
+- `src/features/bonsai/BonsaiChipPickerLayout.tsx` 新規 = ScrollView wrap + BonsaiChipList + body を統合した上位 SoT component
+- prop: BonsaiChipList の全 prop + `bottomPadding?: number` (default 16、 CTA 付き画面は 96) + `children: ReactNode`
+- `src/features/event/BulkWorkPickerScreen.tsx` を BonsaiChipPickerLayout に置換 (= 旧 ScrollView + 直書き body padding を SoT 内側に移譲)
+- `src/features/recurrence/RecurrenceFormScreen.tsx` を BonsaiChipPickerLayout に置換 (= 旧 scroll style padding 16/96/gap 12 を SoT に統一、 bottomPadding={96} 指定)
+
+**user 質問の構造評価**:
+
+user 「関数化して同じ問題を 1 つに集約したら管理が楽とか? メリットが多いとか?」 は **構造的に正解** = Sess91 R-76 (機能領域 SoT) → Sess92 PR-3 chip SoT → Sess92 PR-3 follow-up layout SoT、 という 3 段階の cross-feature SoT 進化系譜。 「SoT 化 1 段で安心せず、 もう 1 段上の pattern を見直すべき」 を 構造で示した提案。
+
+**学び 2**: SoT 抽出は **下位 (chip 領域) → 上位 (layout 構造) の 2 段階以上で 完成する**。 下位だけ抽出して 上位を放置すると、 「同じ責務 pattern が 2 画面に重複」 という 上位 SoT 不在問題が 残る。 R-77 (= cross-feature 共通 UI SoT 化基準) に「下位 + 上位 の階層 SoT 化判定」 を含める。

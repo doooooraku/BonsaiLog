@@ -17,11 +17,11 @@
  */
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useToastStore } from '@/src/components/Toast';
-import { BonsaiChipList } from '@/src/features/bonsai/BonsaiChipList';
+import { BonsaiChipPickerLayout } from '@/src/features/bonsai/BonsaiChipPickerLayout';
 // Sess80 PR-6.5 ADR-0056: schedule mode 1 タップ動線完全復活、 Sess79 PR-6 退化を 部分 revert。
 // toLocalDateKey は Sess67 PR #942 で core/datetime に SoT 移動済、 ESLint boundaries 違反なし。
 import { getTzOffsetMin, nowUtc, toLocalDateKey } from '@/src/core/datetime';
@@ -131,15 +131,16 @@ export default function BulkWorkPickerScreen() {
       style={[styles.container, { backgroundColor: c.background }]}
       testID="e2e_bulk_work_picker_screen"
     >
-      {/* Sess92 PR-3: BonsaiChipList SoT 抽出 (= 旧 inline header + chipsRow + autoSelectedHintRow を統合)。 */}
-      <BonsaiChipList
+      {/* Sess92 PR-3 follow-up: BonsaiChipPickerLayout SoT 化 (= ScrollView wrap + BonsaiChipList + body
+          統合)。 旧 View 直下に BonsaiChipList + grid 別個実装 → 全画面共通 layout に統一、 chip 数十件で
+          grid 圧迫の構造問題を解消 (= user 苦情「全体画面としてスクロール」 由来)。 */}
+      <BonsaiChipPickerLayout
         bonsais={selectedBonsais}
         headerText={subText}
         isSingle={isSingle}
         showAutoSelectedHint
         autoSelectedHintTestId="e2e_bulk_work_picker_auto_selected_hint"
-      />
-      <ScrollView contentContainerStyle={styles.body}>
+      >
         <View style={styles.grid}>
           {BULK_WORK_TYPES.map((type) => (
             <Pressable
@@ -157,16 +158,15 @@ export default function BulkWorkPickerScreen() {
             </Pressable>
           ))}
         </View>
-      </ScrollView>
+      </BonsaiChipPickerLayout>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  // Sess92 PR-3: header / sub / chipsRow / chip / chipText / autoSelectedHintRow / autoSelectedHintText
-  // は BonsaiChipList に SoT 移管 (= cross-feature 統一)。
-  body: { padding: 16, paddingBottom: 16, gap: 16 },
+  // Sess92 PR-3 follow-up: header / sub / chipsRow / chip / chipText / autoSelectedHintRow /
+  // autoSelectedHintText / body (= ScrollView + body padding) は BonsaiChipPickerLayout に SoT 移管。
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   cell: {
     width: '31.5%',
