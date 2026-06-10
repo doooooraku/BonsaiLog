@@ -1515,3 +1515,69 @@ import { screenTitleStack } from '@/src/core/theme/typography';
 - 連携 R: R-72 (= CRUD repository 層 SoT、 本 R 76 と論理 set)
 - meta-rule: R-55 (= 関連項目網羅調査、 1 領域改修で 3 画面同時改修必須)
 - 設計原典: `~/.claude/plans/elegant-kindling-finch.md` (Sess91 議論 plan 6 名チーム + 4 ペルソナ + 5 Whys)
+
+## R-77 業界標準採用時のドメイン適合性チェックリスト (Sess93 議論起票)
+
+業界標準 (= Apple/Google/Microsoft 等) の UX パターンを採用するとき、 自アプリの domain で同じ前提が成立するかを評価せず採用すると、 過去に user 苦情で 廃止した機能を 復活させてしまう。 Sess89 で 個別予定通知を全廃した直後、 Sess93 で「予定日に通知する」 トグル (= モックアップ案) を 採用しそうになり、 議論で 検出 (= 案 C トグル削除に修正)。
+
+### 適用ルール
+
+- 業界標準 UX (= モック由来、 競合 app 観察由来、 ペルソナ要望由来) を採用する設計判断には、 以下 3 質問の **明示回答を ADR / 議論記録に残す** こと。
+  1. **業界が解決している問題 = 自アプリで発生しているか?** 業界が大量データ・高頻度操作・複雑タスクで 必要としている機能を、 自アプリの小規模 domain で 採用すると 過剰機能で UX 劣化。
+  2. **業界が前提とする使用頻度 = 自アプリで同じか?** Apple Reminders は 数百件/日 のタスクを前提、 BonsaiLog 盆栽手入れは 数件/日。 通知頻度 / 入力頻度 / 表示密度 を 業界基準で採用すると 自アプリ user は うるさい / 過密 と感じる。
+  3. **業界が許容する副作用 = 自アプリ user は許容するか?** 業界 user 層 (= プロ / IT リテラシー高) が 慣れている UI complexity を、 自アプリ user 層 (= 趣味、 シニア、 ライト) に そのまま適用すると 学習コスト高 → 離脱。
+
+### 違反 pattern (= 自動検出 候補)
+
+- ADR に 「業界標準」「Apple ライク」「Google 整合」 という根拠だけで 採用された 設計判断
+- 過去 ADR の Notes Amended で「廃止」 「削除」 と記録された機能を 業界標準根拠で 復活させる PR
+- 「モック が こう なって いる」 だけで 設計判断する 議論 (= R-16 「Design は下書き、 ADR が正」 と重複だが 業界標準特化版)
+
+### 検証方法
+
+- ADR template の Decision Drivers 欄に 「業界標準を採用する場合は R-77 3 質問への回答必須」 を追記
+- 議論モードで モック準拠 / 業界整合 を 採用根拠とする発言があれば、 議論記録に R-77 3 質問への回答を追加
+
+### 関連
+
+- 由来 議論: Sess93 通知 card 案 C 採用 (= NotificationCard 案 A toggle ありを 案 C toggle なしに 議論で修正)
+- 由来 ADR: ADR-0014 Sess93 Notes Amended / ADR-0056 Sess93 Notes Amended
+- 連携 R: R-16 (= Design は下書き、 ADR が正)、 R-20 (= 「念のため」 再議論時の ADR Read 必須)
+- meta-rule: ADR-0011「気遣い型」 哲学 (= 自アプリ domain 特有の核心)
+
+## R-78 破壊的データ操作は user に事前通知必須 (Sess93 議論起票)
+
+内部 logic で 「削除 + 再生成」 「上書き」 「cascade 連鎖更新」 等の **データ書換** を行う操作は、 user の認識ズレを起こす可能性が ある。 認識ズレ = user が「単純更新」 と思って 編集ボタンを押したが、 実際は 既存データが 一旦削除されて 再生成される → 過去に作った スケジュールが 消えた と感じる。
+
+Sess93 RecurrenceFormScreen 編集モード = `replaceRecurrenceRule` (= softDelete + create wrapper) で 既存 planned events を 一旦 soft-delete + 新 RRULE で 再生成。 user は「ルール 1 件を 編集した」 つもりだが、 内部では 8 件の events が 削除 + 8 件 新規 = audit trail 不連続。 これを ConfirmDialog で 事前通知する 設計を 議論で確定。
+
+### 適用ルール
+
+- 「softDelete + create wrapper」「全更新 + cascade」「物理削除 + 再生成」 系の operation を 実装する画面は、 保存ボタン押下時に **ConfirmDialog で 事前通知** すること。
+- ConfirmDialog の文言は:
+  - 何が起きるか (= 例: 「既存予定は削除され、 新ルールで作り直されます」)
+  - 影響範囲 (= 例: 「未実施分のみ」 「過去の記録は変わりません」)
+  - キャンセル可能 (= 「キャンセル」 button 必須)
+
+### i18n key 命名規約
+
+- title key: `{domain}EditConfirmTitle` (= 例: `recurringEditConfirmTitle`)
+- body key: `{domain}EditConfirmBody`
+- confirm label: `{domain}EditConfirmConfirm` (= cancel は `t('cancel')` 共通流用)
+
+### 違反 pattern (= 自動検出 候補)
+
+- `softDelete + create` wrapper を 直接 onPress で 呼出 (= ConfirmDialog なし)
+- `await replaceXxx` / `await bulkUpdateXxx` を 単独 button press で 実行 (= 事前通知なし)
+
+### 検証方法
+
+- `.claude/recurrence-prevention/specialized.md` R-78 を Sess93+ 全 PR で 適用、 違反検出は コードレビューで 都度指摘
+- 「替えて再作成」 「全更新」 等の 文言を i18n key に 持つ画面の onPress 動線で ConfirmDialog 配線を grep 検証
+
+### 関連
+
+- 由来 議論: Sess93 RecurrenceFormScreen 編集モード ConfirmDialog 採用 (= 検討漏れ ii)
+- 由来 PR: Sess93 PR-4 (= 編集時 ConfirmDialog 配線済)
+- 連携 R: R-67 (= status を持つ entity の操作意味 matrix)、 R-71 (= 件数別 UX 表現契約)
+- meta-rule: WCAG 3.3.4 Error Prevention (= 法的・金融・データ削除 系 操作は user 確認必須)
