@@ -104,7 +104,7 @@ W-05 で予想した影響範囲と、実際の変更が一致しているか:
 
 AC と一緒に docs が更新されているか:
 
-- [ ] `docs/reference/lessons.md` に学びがあれば追記
+- [ ] `docs/reference/tasks/lessons.md` に学びがあれば追記
 - [ ] 新機能なら `functional_spec.md` 更新
 - [ ] 外部 SDK 追加なら `constraints.md` 更新
 - [ ] 意思決定あれば新 ADR
