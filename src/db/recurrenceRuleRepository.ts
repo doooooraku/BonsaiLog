@@ -35,6 +35,8 @@ export type CreateRecurrenceRuleInput = {
   rrule: string; // RFC 5545 RRULE 文字列 (例: "FREQ=WEEKLY;BYDAY=MO")
   startAtUtc: string; // ISO UTC
   endAtUtc: string | null; // null = 永遠 (= caller default +365 日 推奨)
+  /** Sess93 PR-1: ユーザー任意 memo (200 文字 + 複数行、 UI 側で enforce、 null = memo なし)。 */
+  memo?: string | null;
 };
 
 export type RecurrenceRuleRow = {
@@ -46,6 +48,8 @@ export type RecurrenceRuleRow = {
   endAtUtc: string | null;
   exdates: string[];
   tzIana: string;
+  /** Sess93 PR-1: ユーザー任意 memo (= recurrence_rules.memo 列、 null = memo なし)。 */
+  memo: string | null;
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -66,11 +70,13 @@ export async function createRecurrenceRule(
   const tzIana = getTzIana() as string;
   const tzOffsetMin = getTzOffsetMin() as number;
   const exdates: string[] = [];
+  // Sess93 PR-1: memo cascade — 空文字列は null 正規化 (= UI の TextInput 空欄を NULL 統一)
+  const memo = input.memo && input.memo.length > 0 ? input.memo : null;
 
   await db.runAsync(
     `INSERT INTO recurrence_rules
-       (id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+       (id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana, memo, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     [
       id,
       input.bonsaiId,
@@ -80,6 +86,7 @@ export async function createRecurrenceRule(
       input.endAtUtc,
       JSON.stringify(exdates),
       tzIana,
+      memo,
       now,
       now,
     ],
@@ -108,9 +115,20 @@ export async function createRecurrenceRule(
     await db.runAsync(
       `INSERT INTO events
          (id, bonsai_id, type, status, occurred_at_utc, tz_offset_min, tz_iana,
-          recurrence_rule_id, created_at, updated_at)
-       VALUES (?, ?, ?, 'planned', ?, ?, ?, ?, ?, ?);`,
-      [eventId, input.bonsaiId, input.eventType, occurredAtUtc, tzOffsetMin, tzIana, id, now, now],
+          recurrence_rule_id, note, created_at, updated_at)
+       VALUES (?, ?, ?, 'planned', ?, ?, ?, ?, ?, ?, ?);`,
+      [
+        eventId,
+        input.bonsaiId,
+        input.eventType,
+        occurredAtUtc,
+        tzOffsetMin,
+        tzIana,
+        id,
+        memo,
+        now,
+        now,
+      ],
     );
   }
 
@@ -123,6 +141,7 @@ export async function createRecurrenceRule(
     endAtUtc: input.endAtUtc,
     exdates,
     tzIana,
+    memo,
     deletedAt: null,
     createdAt: now,
     updatedAt: now,
@@ -160,11 +179,13 @@ export async function bulkCreateRecurrenceRules(
   await db.withTransactionAsync(async () => {
     for (const input of inputs) {
       const id = ulid();
+      // Sess93 PR-1: memo cascade — 空文字列は null 正規化
+      const memo = input.memo && input.memo.length > 0 ? input.memo : null;
 
       await db.runAsync(
         `INSERT INTO recurrence_rules
-           (id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+           (id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana, memo, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
         [
           id,
           input.bonsaiId,
@@ -174,6 +195,7 @@ export async function bulkCreateRecurrenceRules(
           input.endAtUtc,
           JSON.stringify(exdates),
           tzIana,
+          memo,
           now,
           now,
         ],
@@ -202,8 +224,8 @@ export async function bulkCreateRecurrenceRules(
         await db.runAsync(
           `INSERT INTO events
              (id, bonsai_id, type, status, occurred_at_utc, tz_offset_min, tz_iana,
-              recurrence_rule_id, created_at, updated_at)
-           VALUES (?, ?, ?, 'planned', ?, ?, ?, ?, ?, ?);`,
+              recurrence_rule_id, note, created_at, updated_at)
+           VALUES (?, ?, ?, 'planned', ?, ?, ?, ?, ?, ?, ?);`,
           [
             eventId,
             input.bonsaiId,
@@ -212,6 +234,7 @@ export async function bulkCreateRecurrenceRules(
             tzOffsetMin,
             tzIana,
             id,
+            memo,
             now,
             now,
           ],
@@ -227,6 +250,7 @@ export async function bulkCreateRecurrenceRules(
         endAtUtc: input.endAtUtc,
         exdates,
         tzIana,
+        memo,
         deletedAt: null,
         createdAt: now,
         updatedAt: now,
@@ -268,12 +292,13 @@ export async function listActiveRecurrenceRules(): Promise<RecurrenceRuleRow[]> 
     end_at_utc: string | null;
     exdates: string;
     tz_iana: string;
+    memo: string | null;
     deleted_at: string | null;
     created_at: string;
     updated_at: string;
   }>(
     `SELECT id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates,
-            tz_iana, deleted_at, created_at, updated_at
+            tz_iana, memo, deleted_at, created_at, updated_at
      FROM recurrence_rules
      WHERE deleted_at IS NULL
      ORDER BY created_at DESC;`,
@@ -287,6 +312,7 @@ export async function listActiveRecurrenceRules(): Promise<RecurrenceRuleRow[]> 
     endAtUtc: r.end_at_utc,
     exdates: JSON.parse(r.exdates) as string[],
     tzIana: r.tz_iana,
+    memo: r.memo,
     deletedAt: r.deleted_at,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
@@ -352,8 +378,9 @@ export async function expandFutureEventsForAllActiveRules(): Promise<number> {
     end_at_utc: string | null;
     exdates: string;
     tz_iana: string;
+    memo: string | null;
   }>(
-    'SELECT id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana FROM recurrence_rules WHERE deleted_at IS NULL;',
+    'SELECT id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana, memo FROM recurrence_rules WHERE deleted_at IS NULL;',
   );
 
   const now = nowUtc() as string;
@@ -394,11 +421,12 @@ export async function expandFutureEventsForAllActiveRules(): Promise<number> {
       if (existingKeys.has(dateKey)) continue;
       const eventId = ulid();
       const occurredAtUtc = `${dateKey}T00:00:00.000Z`;
+      // Sess93 PR-1: 起動時バッチで 新規展開した planned event にも rule.memo を cascade
       await db.runAsync(
         `INSERT INTO events
            (id, bonsai_id, type, status, occurred_at_utc, tz_offset_min, tz_iana,
-            recurrence_rule_id, created_at, updated_at)
-         VALUES (?, ?, ?, 'planned', ?, ?, ?, ?, ?, ?);`,
+            recurrence_rule_id, note, created_at, updated_at)
+         VALUES (?, ?, ?, 'planned', ?, ?, ?, ?, ?, ?, ?);`,
         [
           eventId,
           rule.bonsai_id,
@@ -407,6 +435,7 @@ export async function expandFutureEventsForAllActiveRules(): Promise<number> {
           tzOffsetMin,
           rule.tz_iana,
           rule.id,
+          rule.memo,
           now,
           now,
         ],
@@ -437,12 +466,13 @@ export async function getRecurrenceRuleById(id: string): Promise<RecurrenceRuleR
     end_at_utc: string | null;
     exdates: string;
     tz_iana: string;
+    memo: string | null;
     deleted_at: string | null;
     created_at: string;
     updated_at: string;
   }>(
     `SELECT id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates,
-            tz_iana, deleted_at, created_at, updated_at
+            tz_iana, memo, deleted_at, created_at, updated_at
      FROM recurrence_rules
      WHERE id = ? AND deleted_at IS NULL;`,
     [id],
@@ -457,6 +487,7 @@ export async function getRecurrenceRuleById(id: string): Promise<RecurrenceRuleR
     endAtUtc: row.end_at_utc,
     exdates: JSON.parse(row.exdates) as string[],
     tzIana: row.tz_iana,
+    memo: row.memo,
     deletedAt: row.deleted_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
