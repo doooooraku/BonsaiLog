@@ -27,6 +27,22 @@ appId: 'com.dooooraku.bonsailog'
 - launchApp:
     clearState: false # SEED データ前提のため state は維持
 
+# Sess91 検証 想定外発見 #2 fix: Dev Build (= Expo Dev Client) 起動 sequence の標準 step。
+# clearState: false なので app state は維持されるが、 Dev Client launcher 経由起動の場合だけ
+# 'http://localhost:8081' tap が必要 (= optional)。 Continue dialog の Back キー dismiss は
+# **削除** (= app 既起動時 Back は app exit してしまう不具合 Sess91 PR-X 発見)。
+# 代わりに extendedWaitUntil で 起点 testID (= e2e_tab_look_back) 出現を 20s 待機。
+# 参照: maestro/flows/_template.yml (= R-31 標準 boilerplate、 本 flow で改良)
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_tab_look_back'
+    timeout: 30000
+
 # === V1: /tags row → kebab → RowActionMenu ===
 - tapOn:
     id: 'e2e_tab_look_back'
