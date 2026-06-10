@@ -50,6 +50,7 @@ import { addPhotoFromUri, removePhotoById } from '@/src/features/photos/photoOrc
 import type { EventType } from '@/src/db/schema';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
+import { maybeRequestReview } from '@/src/features/review/maybeRequestReview';
 import { useProGuard } from '@/src/features/pro/useProGuard';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import { useSettingsStore } from '@/src/stores/settingsStore';
@@ -370,6 +371,9 @@ export default function WorkLogConfirmScreen() {
         } else {
           useToastStore.getState().show(t('workLogDoneToast'));
         }
+        // ADR-0006 Sess98 Amendment D1: 記録保存成功 = ハッピーモーメント。 fire-and-forget で
+        // レビュー依頼判定 (マイルストーン + cooldown gate は reviewPolicy、 遷移をブロックしない)。
+        void maybeRequestReview();
         // Sess30 PR-2 (ADR-0038 D1 整合): 保存後の遷移先を **記録 tab** に変更。
         // WorkLogConfirmScreen は status='logged' を保存 (新規記録 or 予定→記録変換)
         // → record tab に遷移が user 直感整合 (旧 `/(tabs)/plan` は Sess23 ADR-0035 D6 由来、 D6 撤回で修正)。

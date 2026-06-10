@@ -32,6 +32,7 @@ import { triggerSummaryReschedule } from '@/src/features/notification/triggerRes
 import { NotificationOptInHost } from '@/src/features/notification/NotificationOptInHost';
 import { initializeAds } from '@/src/services/adService';
 import { useOnboardingStore } from '@/src/stores/onboardingStore';
+import { bootstrapReviewFirstLaunch } from '@/src/stores/reviewStore';
 import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
@@ -103,6 +104,12 @@ export default function RootLayout() {
 
   // Sess15 PR-KK: 起動時に lang から鉢サイズ default 単位を設定 (ADR-0026 案 α)。
   useSettingsBootstrap();
+
+  // ADR-0006 Sess98 Amendment D4: レビュー依頼の 3 日保護の起点 (初回起動時刻) を刻む。
+  // hydration 完了後に書く必要があるため bootstrap 関数側で onFinishHydration を待つ。
+  useEffect(() => {
+    bootstrapReviewFirstLaunch();
+  }, []);
 
   useEffect(() => {
     if (!proInitialized) return;

@@ -213,6 +213,18 @@ export async function getAllActivePlannedAndLoggedEvents(): Promise<Event[]> {
 }
 
 /**
+ * 累計 logged events 数 (ゴミ箱除く)。
+ * ADR-0006 Sess98 Amendment D2: レビュー依頼のマイルストーン判定 (reviewService) 用。
+ */
+export async function countLoggedEvents(): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ count: number }>(
+    "SELECT COUNT(*) AS count FROM events WHERE status = 'logged' AND deleted_at IS NULL;",
+  );
+  return row?.count ?? 0;
+}
+
+/**
  * ゴミ箱 (deleted_at NOT NULL) を deleted_at 降順で取得。
  */
 export async function getTrashedEvents(bonsaiId?: string): Promise<Event[]> {
