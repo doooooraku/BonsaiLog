@@ -80,7 +80,12 @@ export function RepeatIcon({
   size = 14,
   color = TEXT_PRIMARY,
   testID,
-}: IconProps & { testID?: string }) {
+  strokeWidth = 2,
+}: IconProps & { testID?: string; strokeWidth?: number }) {
+  // Sess92 PR-2: strokeWidth prop 追加 (= CloseIcon pattern 同型)。 default 2 keep で 14px
+  // inline (EventRowCompact / EventRowDetailed) は従来通り、 hub 22px call site で 1.5 を
+  // override 指定し他の hub icon (1.5/24) と統一感確保。
+  //
   // testID は exactOptionalPropertyTypes 配下では undefined 渡し不可、 ある時のみ props 展開
   const svgProps = testID !== undefined ? { testID } : {};
   return (
@@ -88,7 +93,7 @@ export function RepeatIcon({
       <Path
         d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"
         stroke={color}
-        strokeWidth="2"
+        strokeWidth={String(strokeWidth)}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -131,10 +136,13 @@ export function NotebookIcon({ size = 28, color = TEXT_PRIMARY }: IconProps) {
  * アイコンも CompassNavIcon (コンパス) から PencilNavIcon (鉛筆) に差し替え。
  */
 export function PencilNavIcon({ size = 28, color = TEXT_PRIMARY }: IconProps) {
+  // Sess92 PR-2: 消しゴム separator 線 (= 内部 M14 6l4 4 path) を 削除して 視覚密度低減。
+  // user 指摘「鉛筆マークが他のタブより濃く見える」 = closed path (鉛筆ボディ) + 内部 separator
+  // 線で 2 line 重複 (= 他 TabBar icon = 1 closed shape) のため。 separator 削除で 28px 描画時
+  // BonsaiIcon / CalendarIcon / NotebookIcon と stroke 同等の見た目に。
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path d="M4 20h4l10-10-4-4L4 16v4z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
-      <Path d="M14 6l4 4" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
     </Svg>
   );
 }
@@ -150,12 +158,13 @@ export function PlusIcon({ size = 28, color = BG_PRIMARY }: IconProps) {
 
 /** 書き出し (Download / Export、トレイ + 下向き矢印)。ふりかえり Hub エクスポート card 用。 */
 export function DownloadIcon({ size = 24, color = TEXT_PRIMARY }: IconProps) {
+  // Sess92 PR-2: strokeWidth 1.75→1.5 (= hub icon stroke 統一)
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
         d="M12 3v11m0 0l-4-4m4 4l4-4M5 18v1a2 2 0 002 2h10a2 2 0 002-2v-1"
         stroke={color}
-        strokeWidth="1.75"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -165,12 +174,13 @@ export function DownloadIcon({ size = 24, color = TEXT_PRIMARY }: IconProps) {
 
 /** 戻る (Back シェブロン)。Header Back ボタン 20px。 */
 export function BackIcon({ size = 20, color = TEXT_PRIMARY }: IconProps) {
+  // Sess92 PR-2: strokeWidth 1.75→1.5 (= app 全 icon stroke 統一)
   return (
     <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
       <Path
         d="M12.5 4L6.5 10l6 6"
         stroke={color}
-        strokeWidth="1.75"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -178,11 +188,15 @@ export function BackIcon({ size = 20, color = TEXT_PRIMARY }: IconProps) {
   );
 }
 
-/** 閉じる (Close ×)。 Sess15 PR-II: strokeWidth prop で太め化対応 (clear button 灰 circle 内で使用)。 */
+/**
+ * 閉じる (Close ×)。 Sess15 PR-II: strokeWidth prop で太め化対応 (clear button 灰 circle 内で使用)。
+ *
+ * Sess92 PR-2: default strokeWidth 1.75→1.5 (= app 全 icon stroke 統一)、 既存 prop 渡しで太め化可能。
+ */
 export function CloseIcon({
   size = 24,
   color = TEXT_PRIMARY,
-  strokeWidth = 1.75,
+  strokeWidth = 1.5,
 }: IconProps & { strokeWidth?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -244,12 +258,13 @@ export function MoreVerticalIcon({ size = 22, color = TEXT_PRIMARY }: IconProps)
  * 3 カード Hub の各カード末尾に表示、押すと sub-route に遷移する目印。
  */
 export function ChevronRightIcon({ size = 20, color = TEXT_PRIMARY }: IconProps) {
+  // Sess92 PR-2: strokeWidth 1.75→1.5 (= app 全 icon stroke 統一)
   return (
     <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
       <Path
         d="M7.5 4l6 6-6 6"
         stroke={color}
-        strokeWidth="1.75"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -362,21 +377,24 @@ export function SproutIcon({ size = 22, color = TEXT_PRIMARY }: IconProps) {
  * とも差別化 (= 樹形 illustration の特殊性表現)。
  */
 export function StyleIcon({ size = 22, color = TEXT_PRIMARY }: IconProps) {
+  // Sess92 PR-2: path 改修 = 葉冠拡大 + S 字幹強調 + 鉢 small 追加 (= user SS 案 A 近づけ)。
+  // 旧 path = 楕円 balloon-like で 「樹形」 認識弱、 新 path = ふんわり葉冠 + 細曲幹 + 簡素鉢
+  // で 22px でも盆栽 silhouette 明瞭。 BonsaiIcon (= 雲葉冠 + 直線幹 + 台形鉢) と差別化:
+  // StyleIcon は「樹形バリエーション」 のシルエットで 葉冠より幹の表現を強調。
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* 葉冠 = 大型円 (cx=12 cy=6 r=4.5) で 「樹冠」 を確実に表現 (= balloon感 排除) */}
+      <Circle cx="12" cy="6" r="4.5" stroke={color} strokeWidth="1.5" fill="none" />
+      {/* 細曲幹 = Q 曲線 (= cubic より curve 明瞭、 10.5→18 で左右に振れる) */}
       <Path
-        d="M12 21c0-2 2.5-3.5 2-6.5s-3.5-3.5-3-6S13 5 11 4"
+        d="M12 10.5 Q 8 13 12 15.5 Q 16 17 12 18"
         stroke={color}
         strokeWidth="1.5"
         strokeLinecap="round"
+        fill="none"
       />
-      <Path
-        d="M7 3.5c0-1.4 1.6-2.3 3.5-2.3s3.5 0.9 3.5 2.3-1.6 2.3-3.5 2.3S7 4.9 7 3.5z"
-        stroke={color}
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <Path d="M8 21h8" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      {/* 鉢 = 中型台形 (= 視認性確保、 文人木でも鉢は確実描画) */}
+      <Path d="M7 18h10l-1 3.5h-8z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
     </Svg>
   );
 }

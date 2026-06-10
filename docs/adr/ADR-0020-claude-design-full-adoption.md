@@ -924,3 +924,40 @@ ADR-0042 D5「TabBar 記録タブ icon 差替」 と同 pattern、 ADR-0042 D4 l
 - `app/(tabs)/look-back/index.tsx` (hub 樹種 / 樹形 card icon 差替)
 - 温存 = `LeafIcon` (NavIcons.tsx 内 keep、 `welcome.tsx` 別ローカル定義あり) / `CompassIcon` (`EventIcons.tsx` 内 keep、 `position_change` event 継続使用)
 - ADR-0042 D4 lint (= `scripts/check-icon-duplication.mjs`) は新規 3 icon 名重複なしで pass
+
+### Notes Amended (2026-06-10、 Sess92 Part 2): app 全 icon stroke 統一 + StyleIcon path 改修
+
+Sess92 Part 1 (= 上記) で 3 icon 新規追加後の 実機検証で user 指摘 「各マークの線の太さが若干違うように感じる、 タブのマーク + 他の全てのマーク も同様」 を受け、 app 全 icon の stroke を **1.5 / viewBox 24 標準** に統一 + StyleIcon path を 案 A (= ふんわり葉冠 + S字幹 + 鉢 small) で 改修。
+
+#### 改訂内容
+
+| Icon                              | 旧                                                               | 新                                                               | 影響                                                                                   |
+| --------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `WireIcon` (EventIcons.tsx)       | viewBox 16, strokeWidth 1.4                                      | **viewBox 24, strokeWidth 1.5** (path 1.5x rescale)              | hub 22px + wiring 24px、 stroke 実効 1.93→1.38 に細く                                  |
+| `RepeatIcon` (NavIcons.tsx)       | strokeWidth 2 固定                                               | **strokeWidth prop 追加 (= CloseIcon pattern、 default 2 keep)** | EventRow inline 14px は default 2 keep、 hub call site で `strokeWidth={1.5}` override |
+| `DownloadIcon` (NavIcons.tsx)     | strokeWidth 1.75                                                 | **1.5**                                                          | hub stroke 統一                                                                        |
+| `BackIcon` (NavIcons.tsx)         | strokeWidth 1.75                                                 | **1.5**                                                          | Header back stroke 統一                                                                |
+| `CloseIcon` (NavIcons.tsx)        | default strokeWidth 1.75                                         | **1.5**                                                          | Modal close stroke 統一、 既存 prop 渡しで太め化可能                                   |
+| `ChevronRightIcon` (NavIcons.tsx) | strokeWidth 1.75                                                 | **1.5**                                                          | List 末尾 chevron stroke 統一                                                          |
+| `StyleIcon` (NavIcons.tsx)        | 楕円葉冠 small + S字幹 (= balloon-like)                          | **大型円葉冠 (cx=12 cy=6 r=4.5) + S字幹 + 中型台形鉢**           | 22px で「樹+鉢」 シルエット明瞭化                                                      |
+| `PencilNavIcon` (NavIcons.tsx)    | 鉛筆 closed path + 内部 separator 線 (= 2 path 重複で視覚密度高) | **separator 線 削除、 closed path のみ**                         | TabBar 28px で 他 4 タブ (BonsaiIcon / CalendarIcon / NotebookIcon) と視覚バランス揃え |
+
+#### 除外 (= 意図的に維持)
+
+- **EventIcons 11 種類 (`DropletIcon` / `ScissorsIcon` / `FertilizerIcon` / `SprayIcon` / `CompassIcon` / `LeafAidIcon` / `PotIconSmall` / `EventIcon` 等)**: viewBox 16 で 14-18px inline 表示専用、 stroke 1.2-1.4 で 小サイズ最適化済 (= EventRow inline 視認性最大化)
+- **`PlusIcon` / `CheckIcon`**: FAB 白 on 緑、 stroke 2 で 視認性確保 (= 意図的)
+- **`MoreVerticalIcon`**: fill (stroke なし)、 dot 3 個表現で 影響なし
+- **`NotebookIcon` 内側ページ線 (1.25)**: 外枠 1.5 と階層差で帳簿の sub-detail 表現、 意図的維持
+
+#### 真因 (5 Whys 抜粋)
+
+- Sess92 Part 1 で 3 icon 新規追加時に 既存 icon との stroke 整合 audit を実施せず → 「自分の icon は 1.5 標準だから OK」 と部分最適に閉じた
+- app 全 icon の stroke standard が 文書化されていない → 「1.5 / 24 が hub 標準」 を design_system.md に明記すべき (= 別 Issue 候補)
+- icon 追加時の 「既存 icon との stroke 整合確認」 が PR テンプレ §7.5.5 (= TabBar icon 変更時チェックリスト) に類似項目なし → R-78 候補 (= icon 追加時 stroke audit) 起票候補
+
+#### 関連
+
+- `src/components/icons/EventIcons.tsx` (WireIcon viewBox + stroke + path rescale)
+- `src/components/icons/NavIcons.tsx` (RepeatIcon prop 化 + 4 icon stroke 1.5 統一 + StyleIcon path 改修)
+- `app/(tabs)/look-back/index.tsx` (RepeatIcon strokeWidth={1.5} 配線)
+- ADR-0042 D4 lint は icon name 重複検出のみ、 stroke 統一は別 audit (= 本 PR で手動完遂、 R-78 候補)
