@@ -49,6 +49,13 @@ export type UseBonsaiSearch = {
   lang: string;
   t: (key: TranslationKey) => string;
   runSearchWith: (raw: string) => Promise<void>;
+  /**
+   * 検索履歴への保存 (Sess95 PR-4)。 ユーザーの「確定 action」 (Enter 確定 /
+   * 結果 row tap / 履歴 row tap) でのみ呼ぶ。 debounce 検索のたびに保存すると
+   * 中間入力 (「ぼん」「ぼんさ」「ぼんさい」) が全部履歴に残るため (テスター報告)、
+   * 検索実行 (runSearchWith) からは分離している。
+   */
+  commitHistory: (raw?: string) => void;
 };
 
 export function useBonsaiSearch(): UseBonsaiSearch {
@@ -154,9 +161,8 @@ export function useBonsaiSearch(): UseBonsaiSearch {
         // 作業履歴はテキスト検索のみ (タグからは作業を出さない)
         setEventResults(hasText ? textEvents.slice(0, 50) : []);
         setSearched(true);
-        if (hasText) {
-          useSearchHistoryStore.getState().push(trimmed);
-        }
+        // Sess95 PR-4: 履歴 push はここでは行わない (debounce 検索のたびに中間入力が
+        // 履歴に残るため)。 保存は commitHistory (確定 action 時のみ) に分離。
       } catch {
         // 検索失敗は無視
       }
@@ -185,6 +191,17 @@ export function useBonsaiSearch(): UseBonsaiSearch {
     [],
   );
 
+  // Sess95 PR-4: 履歴保存はユーザーの確定 action (Enter / 結果 tap / 履歴 tap) でのみ。
+  const commitHistory = useCallback(
+    (raw?: string) => {
+      const trimmed = (raw ?? query).trim();
+      if (trimmed.length >= minChars) {
+        useSearchHistoryStore.getState().push(trimmed);
+      }
+    },
+    [query, minChars],
+  );
+
   return {
     query,
     setQuery,
@@ -200,5 +217,6 @@ export function useBonsaiSearch(): UseBonsaiSearch {
     lang,
     t,
     runSearchWith,
+    commitHistory,
   };
 }

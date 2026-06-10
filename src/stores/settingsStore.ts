@@ -64,10 +64,14 @@ type SettingsState = {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      // default を 'light' に変更 (2026-05-13): Maestro 検証 + 動作確認を light で統一。
-      // 既存 install (zustand persist で themeMode 永続化済) は維持、新規 install / clearState 後は light スタート。
-      // ユーザーは設定タブで auto / light / dark に切替可能。
-      themeMode: 'light',
+      // default を 'system' に変更 (2026-06-10 Sess95 PR-5、 テスター要望「システム設定に
+      // 従ってほしい」): OS のライト/ダーク設定に自動追従 (業界標準)。 既存 install は
+      // zustand persist の永続化済 themeMode を維持 (= 影響は新規 install / clearState 後のみ)。
+      // ユーザーは設定タブで system / light / dark に切替可能。
+      // 注意: 実機検証 / SS 撮影はライト前提のため、 検証開始時に設定 → テーマ → ライト固定
+      // (docs/how-to/testing/testing.md §10)。 旧 default 'light' は 2026-05-13 に
+      // Maestro 検証統一のため採用していた経緯あり。
+      themeMode: 'system',
       setThemeMode: (mode) => set({ themeMode: mode }),
       // ADR-0014 Amended: 通知は当日まとめ 1 系統に集約、デフォルト OFF (起動時 OS 許可暴発防止)
       notificationDailySummaryEnabled: false,

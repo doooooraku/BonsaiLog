@@ -147,7 +147,8 @@
   2. `maestro/flows/_template.yml` をコピーして start (`cp maestro/flows/_template.yml maestro/flows/<new>.yml`)
   3. 標準 step 順序を維持 (launchApp → pressKey:Back → extendedWaitUntil → 固有手順)
   4. `tapOn: text: '...'` 禁止 (testID 経由のみ、TabBar 「設定」 text tap で Developer Menu 誤起動回避)
-- **根拠**: 2026-05-12 セッションで testID 確認を後回しにし、6 段階の試行錯誤で 1 時間ロス (R-9 violation)。`text: '設定'` tap で Expo Dev Client Developer Menu が誤起動した事例あり。
+  5. **(Sess96 強化、 旧 Issue #528-T5 / #1078 由来)** grep で testID の存在が確認できない経路 (= 新規画面 / 動的生成 UI / RN Alert picker 等) は、 **実機で該当画面まで手動操作 + `adb shell uiautomator dump` で testID の実在を確認**してから flow を書く (= 静的 grep は「コードに書いてある」 までしか保証しない、 runtime で render されるかは dump が正)
+- **根拠**: 2026-05-12 セッションで testID 確認を後回しにし、6 段階の試行錯誤で 1 時間ロス (R-9 violation)。`text: '設定'` tap で Expo Dev Client Developer Menu が誤起動した事例あり。項目 5 は 2026-05-15 retro P5 (onboarding-notification 経路調査未済で testID 不在 fail) 由来、 Sess89+ の実機検証では uiautomator dump が座標確定の標準手段として定着済 (lessons/testing.md §9)。
 - **自動化**: `.claude/hooks/check-maestro-flow-creation.mjs` で PreToolUse Write at `maestro/flows/*.yml` を hook、禁止パターン (text tap / 誤 appId) 検出で exit 2 block。`scripts/lint-maestro.mjs` で CI 強制 (pnpm verify:maestro-lint)。
 
 ### R-32. commit 直前の git diff --cached 目視 + 議論修正項目の inclusion verify

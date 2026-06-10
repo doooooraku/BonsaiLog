@@ -66,6 +66,18 @@ PR Template
 -
 - ***
 
+## 3.5. 副次発見（= ついでに見つけた別問題 / REQUIRED）
+
+> **背景 (Sess83-86 retro / Issue #1025)**: 1 件の検証中に別問題を発見 → 連鎖して PR 4 件に膨張、
+> sprint 終了判断が不明確化した。副次発見を PR 単位で記録し、次セッション復元時に即把握 +
+> R-55（関連項目網羅調査）と連動させる。
+
+- [ ] 本 PR の作業中に見つけた **スコープ外の別問題** を以下に列挙した（なければ「なし」と記載）:
+  - なし
+- [ ] 列挙した各問題の処置を明記した（本 PR に含めた / Issue #N 起票 / 起票不要の理由）
+
+---
+
 ## 4. 受け入れ条件（Acceptance Criteria / RECOMMENDED）
 
 <!-- “合格/不合格が判定できる条件” を短く。理想はテスト（Jest/Maestro）で表現する -->
@@ -346,6 +358,18 @@ PR Template
 - [ ] 意思決定が増えた/変わった → docs/adr/ADR-XXXX.md を追加 or 更新（リンク：）
 - [ ] テスト観点が変わる → テスト（Jest/Maestro）を追加/更新（リンク or 該当ファイル：）
 - [ ] どれも不要（理由：外部仕様/運用/テスト観点に影響なし、内部リファクタのみ）
+
+### 8.5. ADR 追加 / 改訂時の整合確認（REQUIRED if ADR 変更を含む、Issue #1078-T4 / Sess96 由来）
+
+> **背景**: ADR-0014 が Issue #24 の前提を上書きしたのに Issue が 1 ヶ月超 open のまま残った
+> (Sess96 棚卸しで発覚)。ADR-0024 改訂時には functional_spec §6.2/§7.2 が乖離した。
+> ADR は docs だけでなく **open Issue / spec / lessons** にも波及する — 横断検算をここで行う。
+
+- [ ] **functional_spec / basic_spec の関連セクション**を grep し、矛盾する記述を同 PR で修正 or follow-up Issue 起票（該当セクション：　　　　）
+- [ ] **open Issue を grep** (`gh issue list --search "<キーワード>"`) し、前提が変わる Issue を更新 or クローズ（該当 Issue：　　　　）
+- [ ] **関連 lessons / recurrence-prevention** に矛盾する記述がないか確認
+- [ ] 旧 ADR を上書きする場合、旧 ADR に Notes Amended / Superseded を追記
+- [ ] 適用対象外: 本 PR は ADR 変更を含まない
 
 ---
 
