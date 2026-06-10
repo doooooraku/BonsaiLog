@@ -14,6 +14,12 @@
  *   6. placeholder 検知 ({{PLACEHOLDER}} 未展開 / TODO / scaffold ダミー文言)
  *      — Doc-Truth Audit 2026-06 バッチ②a 🔴 由来: placeholder のまま main に入ると
  *        push-app-store-metadata.yml が ASC へ自動 upload する事故経路を構造的に塞ぐ
+ *   7. root-level 検査 (copyright.txt placeholder + review_information/ 復活ガード)
+ *      — Doc-Truth Audit 2026-06 バッチ②b 由来: copyright.txt はロケール loop の対象外で
+ *        check 6 をすり抜けていた (deliver は非ローカライズ metadata として upload する)。
+ *        review_information/ は実値が個人情報 (氏名・メール・電話) になるため
+ *        PUBLIC repo (ADR-0057) には置かない運用。iOS 配信準備時に ASC UI で手入力
+ *        (fastlane/metadata/README.md 参照)。folder が復活したら error で止める
  *
  * Usage:
  *   node scripts/validate-metadata.mjs              # 全ロケール検証
@@ -81,6 +87,12 @@ const PLACEHOLDER_CHECK_FILES = [
 ];
 
 const SKIP_DIRS = new Set(['review_information']);
+
+const ROOT_PLACEHOLDER_PATTERNS = [
+  { pattern: /\bYYYY\b/, message: 'Placeholder year "YYYY"' },
+  { pattern: /\bYour Name\b/i, message: 'Placeholder "Your Name"' },
+  ...PLACEHOLDER_PATTERNS,
+];
 
 const { values } = parseArgs({
   options: { locale: { type: 'string', default: '' } },
@@ -194,6 +206,25 @@ const locales = values.locale
       .filter((d) => d.isDirectory() && !SKIP_DIRS.has(d.name))
       .map((d) => d.name);
 
+function validateRoot() {
+  const copyright = readText(join(METADATA_DIR, 'copyright.txt'));
+  if (copyright) {
+    for (const { pattern, message } of ROOT_PLACEHOLDER_PATTERNS) {
+      if (pattern.test(copyright)) error('(root)', 'copyright.txt', message);
+    }
+  }
+  if (existsSync(join(METADATA_DIR, 'review_information'))) {
+    error(
+      '(root)',
+      'review_information/',
+      'Must not be committed: deliver uploads it to ASC, and real values are personal info ' +
+        '(public repo, ADR-0057). Enter App Review contact info directly in ASC UI ' +
+        '(see fastlane/metadata/README.md)',
+    );
+  }
+}
+
+validateRoot();
 for (const locale of locales) validate(locale);
 
 console.log(`\n${errors} error(s), ${warnings} warning(s) across ${locales.length} locale(s)`);

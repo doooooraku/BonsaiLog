@@ -55,7 +55,7 @@ These files are NOT locale-specific — they apply globally:
 | ----------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | `primary_category.txt`              | Primary App Store category        | `BUSINESS`, `UTILITIES`, `PRODUCTIVITY`, `LIFESTYLE`, `ENTERTAINMENT`, `EDUCATION`, `HEALTH_AND_FITNESS` |
 | `secondary_category.txt`            | Secondary category (optional)     | Same as above                                                                                            |
-| `copyright.txt`                     | Copyright holder                  | `2025 Your Name`                                                                                         |
+| `copyright.txt`                     | Copyright holder                  | `2026 doooooraku`                                                                                        |
 | `primary_first_sub_category.txt`    | Primary sub-category 1 (optional) | Usually empty                                                                                            |
 | `primary_second_sub_category.txt`   | Primary sub-category 2 (optional) | Usually empty                                                                                            |
 | `secondary_first_sub_category.txt`  | Secondary sub-category 1          | Usually empty                                                                                            |
@@ -63,19 +63,23 @@ These files are NOT locale-specific — they apply globally:
 
 Full category list: [App Store Categories](https://developer.apple.com/app-store/categories/)
 
-## Review Information
+## Review Information — DO NOT commit (enter in ASC UI)
 
-Files in `review_information/` provide App Store review team with contact and demo access:
+App Review contact info (name / email / phone / demo account) is **intentionally NOT
+managed in this repo** (Doc-Truth Audit 2026-06 batch ②b decision):
 
-| File                | Description              | Notes                                |
-| ------------------- | ------------------------ | ------------------------------------ |
-| `demo_user.txt`     | Demo account username    | Required if app needs login          |
-| `demo_password.txt` | Demo account password    | Required if app needs login          |
-| `email_address.txt` | Contact email for review | Apple may contact during review      |
-| `first_name.txt`    | Contact first name       |                                      |
-| `last_name.txt`     | Contact last name        |                                      |
-| `phone_number.txt`  | Contact phone (E.164)    | Example: `+1-555-0100`               |
-| `notes.txt`         | Notes for reviewer       | Special instructions, test data, etc |
+- This repo is public (ADR-0057), so real contact values would expose personal info
+- `deliver` uploads everything under `fastlane/metadata/` and has no option to skip
+  `review_information/` selectively — placeholder values would be pushed to ASC as-is
+- Review contact info rarely changes, so automation has little value
+
+**Operation**: enter the values once, by hand, in App Store Connect
+(App → App Review Information) when preparing the iOS release.
+The app needs no login, so no demo account is required — note "No login required"
+in the reviewer notes field.
+
+`scripts/validate-metadata.mjs` (check 7) fails CI if `review_information/` reappears
+or `copyright.txt` still contains placeholder text.
 
 ## Validation
 
