@@ -21,7 +21,7 @@
  *
  * Theme-invariant tokens (allowed everywhere、 Sess70 PR-D で大幅縮小):
  *   - ON_BRAND (#FFFFFF, brand 上の白文字、 light 専用) / ACCENT_GOLD (Pro バッジ専用)
- *   - DANGER / SUCCESS / OVERLIMIT (status 色は意図的に固定)
+ *   - SUCCESS / OVERLIMIT (status 色は意図的に固定)
  *   - HEATMAP_COLORS (F-04 専用 4 色、 ADR-0013 固定)
  *
  * Sess70 PR-D で FORBIDDEN に昇格 (brand-static 撤回、 ADR-0015/0052 Sess69 PR-A Amendment 整合):
@@ -59,6 +59,10 @@ const FORBIDDEN_TOKENS = new Set([
   'BUTTON_SECONDARY_BG',
   'BUTTON_SECONDARY_TEXT',
   'DISABLED_BG',
+  // Sess95 PR-6 追加: DANGER (light #8B2E2E) は dark 背景で contrast 1.9:1 とほぼ視認不能。
+  // Sess95 PR-1 で全 StyleSheet 使用箇所を inline c.dangerColor (dark #CE7A72) へ移行済、
+  // 本 rule で再発を構造防止 (dark cascade 6 回目の再発 = テスター報告「アーカイブが見えにくい」 由来)。
+  'DANGER',
 ]);
 
 const COLOR_PROPS = new Set([
