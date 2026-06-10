@@ -157,7 +157,10 @@ export function EventRowDetailed({
   const hasChips = chips.length > 0;
   const hasWiringInfo = wiringDuration != null || scheduledUnwireLabel != null;
   const hasMemo = !!ev.note;
-  const hasPhoto = repPhoto != null;
+  // Sess93 PR-6: status='planned' = まだ作業実施前 = 写真も payload もない、 強制的に非表示
+  // (= モック整合「予定 Card 写真エリア非表示」 案 b、 user 確定)
+  const isPlanned = ev.status === 'planned';
+  const hasPhoto = repPhoto != null && !isPlanned;
   return (
     <Pressable
       style={[

@@ -243,6 +243,9 @@ export function CalendarEventGroupList({
                                 actionButtonTestID={`e2e_${testIdPrefix}_event_record_button_${e.id}`}
                                 showBonsaiName
                                 indent
+                                /* Sess93 PR-6: 予定 section も 詳細版 Card に統一 (= モック整合、 user 要望「作業記録と同じ Card」)。
+                                   EventRowDetailed は status='planned' 時に 写真 strip を自動非表示 (= 予定にはまだ写真ない)。 */
+                                displayMode="detailed"
                               />
                             </View>
                           );
