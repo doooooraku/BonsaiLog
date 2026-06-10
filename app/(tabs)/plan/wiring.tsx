@@ -301,7 +301,8 @@ function scheduleText(
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  listContent: { padding: 16, gap: 8, paddingBottom: 96 },
+  // Sess95 PR-3: 旧 FAB 用 96 → 24 (FAB は Sess72 ADR-0054 で廃止済、 過剰余白の整理)
+  listContent: { padding: 16, gap: 8, paddingBottom: 24 },
   emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 32 },
   // Sess66 PR6a: bg/border は inline c.* (dark cascade)。
   card: {

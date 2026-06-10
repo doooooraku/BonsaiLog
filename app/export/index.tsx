@@ -20,6 +20,7 @@
 import { useRouter, type Href } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -106,6 +107,8 @@ export default function ExportHubScreen() {
   const { t, lang } = useTranslation();
   const router = useRouter();
   const c = useColors();
+  // Sess95 PR-3: hardcode paddingBottom 40 → insets.bottom + 24 (edge-to-edge ナビバー対応)。
+  const insets = useSafeAreaInsets();
   const isPro = useProStore((s) => s.isPro);
   const goToPaywall = useGoToPaywall();
   const [sheetType, setSheetType] = useState<ExportTypeKey | null>(null);
@@ -161,7 +164,7 @@ export default function ExportHubScreen() {
         onScroll={onScroll}
         onContentSizeChange={onContentSizeChange}
         scrollEventThrottle={scrollEventThrottle}
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 24 }]}
       >
         <View style={styles.hero}>
           <ThemedText style={[styles.heroTitle, { color: c.text }]}>
@@ -213,7 +216,7 @@ export default function ExportHubScreen() {
 const styles = StyleSheet.create({
   // Sess66 PR6a.1: bg/border/text color は inline c.* (dark cascade)。
   container: { flex: 1 },
-  scroll: { padding: 16, paddingBottom: 40 },
+  scroll: { padding: 16 }, // paddingBottom は inline insets.bottom + 24 (Sess95 PR-3)
   hero: { marginBottom: 20 },
   heroTitle: {
     fontFamily: 'NotoSerifJP_500Medium',

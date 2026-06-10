@@ -14,6 +14,7 @@
 import { Stack, useNavigation } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -28,6 +29,8 @@ export default function BackupScreen() {
   const { t, lang } = useTranslation();
   const navigation = useNavigation();
   const c = useColors();
+  // Sess95 PR-3: edge-to-edge でシステムナビバーに最下部 section が隠れる対策 (settings と同型)。
+  const insets = useSafeAreaInsets();
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
   const busy = exporting || importing;
@@ -120,7 +123,7 @@ export default function BackupScreen() {
   return (
     <ThemedView style={styles.container} testID="e2e_backup_screen">
       <Stack.Screen options={{ title: t('backupTitle') }} />
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 16 }]}>
         {/* --- バックアップを作成 --- */}
         <View style={styles.section}>
           <ThemedText type="title" style={styles.title}>
@@ -190,7 +193,7 @@ export default function BackupScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scroll: { padding: 16, gap: 16 },
+  scroll: { padding: 16, gap: 16 }, // paddingBottom は inline insets.bottom + 16 (Sess95 PR-3)
   section: { gap: 12 },
   title: { marginBottom: 4 },
   body: { lineHeight: 22 },
