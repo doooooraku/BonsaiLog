@@ -7,7 +7,7 @@
 ## 0. この文書の使い方（超重要）
 
 この文書は「コードの交通ルール」です。  
-開発の流れ（Issue→ブランチ→PR→CI→マージ）は `docs/how-to/whole_workflow.md` を見てください。
+開発の流れ（Issue→ブランチ→PR→CI→マージ）は `docs/how-to/workflow/whole_workflow.md` を見てください。
 
 ### 0.1 いつ読む？
 
@@ -115,7 +115,7 @@
 - 直値 (`#xxx`) を JSX に増やさない → `useColors()` hook 経由で参照
 - ESLint `no-direct-hex-in-jsx` ルールで構造防止
 - 詳細は `docs/reference/design_system.md` §6 を参照
-- 同じUIが2回出たら共通化候補（`src/ui` へ）
+- 同じUIが2回出たら共通化候補（`src/components` へ）
 
 ---
 

@@ -25,7 +25,7 @@
 
 ---
 
-# `docs/how-to/whole_workflow.md`（提案：全文）
+# `docs/how-to/workflow/whole_workflow.md`（提案：全文）
 
 > ※ あなたの「工程カード（トリガー/INPUT/OUTPUT/完了条件/担当…）」形式で書きます
 > ※ “正を見る場所”を固定（package.json / CI / 公式Docs）して、写経を減らします

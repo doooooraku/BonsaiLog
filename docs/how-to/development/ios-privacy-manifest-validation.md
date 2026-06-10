@@ -64,7 +64,7 @@ grep -A 3 "PrivacyInfo" ios/BonsaiLog.xcodeproj/project.pbxproj | head
 
 ---
 
-## 3. ローカルビルド（`pnpm build:ios:local` 相当、Mac のみ）
+## 3. ローカルビルド（`pnpm build:ios:local` 相当、Mac のみ — ※script 未整備、iOS 配信準備時に追加予定）
 
 ### 3-1. ローカル iOS ビルド実行
 

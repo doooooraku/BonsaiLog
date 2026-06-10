@@ -23,7 +23,7 @@ EAS Build の 2 つのビルドプロファイルの違いと使い分け。
 ```bash
 # ローカル Dev Build
 pnpm build:android:dev:local
-pnpm build:ios:dev:local
+pnpm build:ios:dev:local   # ※未整備 — iOS build script は iOS 配信準備時に追加予定 (現状 Android 先行)
 
 # EAS クラウド Dev Build
 eas build --profile development --platform android
