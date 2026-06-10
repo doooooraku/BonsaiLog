@@ -28,11 +28,12 @@ ruleTester.run('no-color-token-in-stylesheet', rule, {
         });
       `,
     },
-    // ✅ Theme-invariant token (ON_BRAND) は OK
+    // ✅ Theme-invariant token (ON_BRAND / SUCCESS) は OK
+    // (DANGER は Sess95 PR-6 で FORBIDDEN に昇格 — invalid 側のケース参照)
     {
       code: `
         const styles = StyleSheet.create({
-          badge: { color: ON_BRAND, backgroundColor: DANGER },
+          badge: { color: ON_BRAND, backgroundColor: SUCCESS },
         });
       `,
     },
@@ -86,6 +87,18 @@ ruleTester.run('no-color-token-in-stylesheet', rule, {
         });
       `,
       errors: [{ messageId: 'forbidden', data: { name: 'BG_PRIMARY', prop: 'backgroundColor' } }],
+    },
+    // ❌ DANGER (Sess95 PR-6 で FORBIDDEN 昇格: dark 背景で 1.9:1、 c.dangerColor 必須)
+    {
+      code: `
+        const styles = StyleSheet.create({
+          archiveButton: { borderColor: DANGER, color: DANGER },
+        });
+      `,
+      errors: [
+        { messageId: 'forbidden', data: { name: 'DANGER', prop: 'borderColor' } },
+        { messageId: 'forbidden', data: { name: 'DANGER', prop: 'color' } },
+      ],
     },
     // ❌ TEXT_PRIMARY in color
     {

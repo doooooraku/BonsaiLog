@@ -55,6 +55,30 @@ jobs:
           REVENUECAT_IOS_API_KEY=placeholder
           DOTENV
 
+      # Sess95 PR-6 (R-68 同型の段階ゲート): AdMob banner ID がリリース段階と整合するか検証。
+      # closed-testing 中はテスターの本番広告クリック = AdMob ポリシー違反 (アカウント停止リスク)
+      # のため Google デモ ID (接頭辞 3940256099942544) 必須。 production 昇格時は repo variable
+      # RELEASE_STAGE=production を設定するとデモ ID を fail にする (= 戻し忘れ収益ゼロ事故防止)。
+      - name: AdMob banner ID stage gate
+        env:
+          BANNER_ID: ${{ secrets.ADMOB_ANDROID_BANNER_ID }}
+          RELEASE_STAGE: ${{ vars.RELEASE_STAGE }}
+        run: |
+          STAGE="${RELEASE_STAGE:-closed-testing}"
+          case "$BANNER_ID" in
+            *3940256099942544*) IS_DEMO=1 ;;
+            *) IS_DEMO=0 ;;
+          esac
+          if [ "$STAGE" = "production" ] && [ "$IS_DEMO" = "1" ]; then
+            echo "::error::RELEASE_STAGE=production なのに AdMob banner ID がデモ ID です (収益ゼロ事故)。本番 ID に戻してください。"
+            exit 1
+          fi
+          if [ "$STAGE" != "production" ] && [ "$IS_DEMO" = "0" ]; then
+            echo "::error::closed-testing 中は AdMob デモ banner ID 必須です (テスターの本番広告クリック = ポリシー違反リスク)。gh secret set ADMOB_ANDROID_BANNER_ID でデモ ID に変更してください。"
+            exit 1
+          fi
+          echo "OK: stage=$STAGE / demo_id=$IS_DEMO (整合)"
+
       - name: Setup Google Service Account
         run: |
           mkdir -p secrets
