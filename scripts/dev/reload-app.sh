@@ -78,6 +78,29 @@ else
   echo "[reload-app] SKIP_BUILD_CHECK=1, skipping native impact check."
 fi
 
+# Step 0.7: local main vs origin/main 同期確認 (Sess91 実機検証 想定外発見 #1 由来)
+# 真因: Metro が local main から bundle 提供するため、 git pull 漏れで origin/main の merge 済 PR
+# (= Sess91 PR-3 #1049 / PR-4 #1050) が dev build に反映されない罠が 1 回再発。
+# 対策: git fetch origin main + count 比較で「local main is N commits behind」 を WARN 表示。
+# SKIP_MAIN_BEHIND_CHECK=1 で skip 可 (= offline 開発 / CI 等)。
+if [ "${SKIP_MAIN_BEHIND_CHECK:-0}" != "1" ]; then
+  cd "${PROJECT_ROOT}"
+  if git fetch origin main --quiet 2>/dev/null; then
+    BEHIND_COUNT="$(git rev-list --count main..origin/main 2>/dev/null || echo 0)"
+    if [ "${BEHIND_COUNT}" -gt 0 ]; then
+      echo "[reload-app] ⚠️  local main is ${BEHIND_COUNT} commit(s) behind origin/main"
+      echo "[reload-app]    Metro は local main から bundle を提供するため、 origin/main の merge 済 PR が"
+      echo "[reload-app]    dev build に反映されない可能性あり (= Sess91 想定外発見 #1)。"
+      echo "[reload-app]    対処: git pull origin main && pnpm dev -- --reset-cache"
+      echo "[reload-app]    skip: SKIP_MAIN_BEHIND_CHECK=1 bash scripts/dev/reload-app.sh"
+    else
+      echo "[reload-app] ✅ local main is up-to-date with origin/main"
+    fi
+  else
+    echo "[reload-app] ℹ️  git fetch failed (offline?)、 main behind check skipped"
+  fi
+fi
+
 # Step 0.5: APK debuggable check (Sess77 Follow-up T3)
 # Release/Preview build (debuggable=false) が installed されていると、 アプリは Metro bundle ではなく
 # **embedded bundle** (APK 内蔵 JS) を 使用するため、 最新コードが 反映されない (= 10 分以上ロス事例 Sess77)。
