@@ -25,6 +25,7 @@ argument-hint: '[--skip-cloud / --skip-smoke]'
 - `eas.json` submit.production.android が `track=alpha / releaseStatus=draft / changesNotSentForReview=true` (Sess61 PR1 で完了)
 - (smoke test 用) `~/.local/share/bundletool-all.jar` + `~/.android/debug.keystore` が配置済 (Sess62 PR1 で確立)
 - (smoke test 用) Android 実機が USB 接続 + USB デバッグ許可済
+- **本番 (production track) 昇格時**: 先に `docs/how-to/release/production-promotion-checklist.md` を実行 (= AdMob banner ID 本番戻し + `RELEASE_STAGE=production`、 Sess95 PR-6 段階ゲート対応)。 closed-testing 中は不要
 
 ## 9 Phase (Sess62 PR2 改修後)
 
