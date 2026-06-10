@@ -1109,6 +1109,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
     '既存の予定 (未実施分) は 一旦削除され、 新しいルールで 作り直されます。',
   recurringEditConfirmConfirm: '更新する',
   recurringFormSummaryFormat: '{rrule}・{eventType} を {count} 本に',
+  settingsRateAppTitle: 'アプリを評価する',
 };
 
 export default ja;
