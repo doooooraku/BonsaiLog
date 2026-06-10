@@ -20,6 +20,7 @@
 | [`lessons/notification.md`](./lessons/notification.md)           | 通知 F-16 (未配線デッドコード検出 / 許可取得 soft-ask タイミング / 単一トグル起動時副作用)                                          | 通知・権限実装時             |
 | [`lessons/refactor.md`](./lessons/refactor.md)                   | 大規模リファクタ Phase 3-7 の学び (knip ignore の両刃 / pnpm verify 完全実行 / app.config plugin / git rm+add 罠 / K7 慎重判断)     | 次回大規模リファクタ時       |
 | [`lessons/retro.md`](./lessons/retro.md)                         | sprint / milestone 単位 retro 結果集約 (= KPT + ボトルネック + 教訓 5)、 最新 = 2026-06-09 Sess83-86 4 PR sprint                    | sprint 完了時 / 次 app 起点  |
+| [`lessons/git.md`](./lessons/git.md)                             | 並行 PR の rebase theirs anchor 消失 / stash --staged new file 罠 (Doc-Truth Audit P2 で memory から昇格)                           | 並行 PR / rebase 作業時      |
 
 ## 運用ルール
 

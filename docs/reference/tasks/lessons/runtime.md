@@ -75,3 +75,27 @@
 - **根本原因**: 単純な `! grep -q pending` は (1) `gh` の非ゼロ exit、(2) 出力空 (checks 未起動)、(3) 全 pass の 3 つを区別できない。
 - **ルール**: 2 段判定にする → `until [ -n "$(gh pr checks <PR> 2>/dev/null | grep -E '^verify\s')" ] && ! gh pr checks <PR> 2>/dev/null | grep -q "pending"; do sleep 25; done`。verify 行が現れるまでは "未起動" として待ち、verify が見えてから pending 消失を判定する。
 - **一次情報**: 本セッションで PR #141 / #142 監視時に発生 (2026-05-03)
+
+### expo-sqlite の raw SQL `SELECT *` は snake_case で返る
+
+- **何が起きたか**: `db.getFirstAsync<T>` の row が column 名そのまま (snake_case) で返り、TypeScript 型 (camelCase) と乖離。`row.relativePath` が `undefined` → 実機で「56年前」異常表示等 (PR #378/#380)。
+- **ルール**: 新規 raw SQL は `snakeToCamelRow / snakeToCamelRows` (`src/db/rowMapper.ts`) で必ず吸収する。
+- **出典**: memory `sqlite-snake-case-rowmapper` から昇格 (Doc-Truth Audit P2、2026-06-10)。
+
+### RN Fabric の measureLayout は数値ハンドル不可・host ref 必須
+
+- **何が起きたか**: `node.measureLayout(relativeTo, ...)` の第 1 引数に `findNodeHandle()` 等の数値ハンドルを渡すと実機で `must be called with a ref to a native component` エラー (PR #836)。`pnpm verify` は緑 = **机上では検出不可、実機のみ顕在化**。
+- **ルール**: relativeTo には **ホストコンポーネントの ref (HostInstance)** を渡す。ScrollView 内容は `<View ref={...} collapsable={false}>` で包む。
+- **出典**: memory `rn-fabric-measurelayout-gotcha` から昇格 (P2、2026-06-10)。
+
+### 7 列グリッドは `width:'14%'+flexWrap` 禁止 (土曜列が折り返す)
+
+- **何が起きたか**: カレンダーで `flexWrap + width:'14%' × 7 + gap` が合計 100% を超え、7 列目 (土曜) が折り返して空欄化 (PR #318、user 指摘で発覚)。
+- **ルール**: 7 列等分は週行コンテナ (`flexDirection:'row' + gap`) + 各セル `flex:1`。`%` 幅は gap を吸収できないため等分グリッドでは使わない。
+- **出典**: memory `calendar-grid-saturday-overflow` から昇格 (P2、2026-06-10)。
+
+### WSL2 の adb daemon は background 並列実行でロックする
+
+- **何が起きたか**: `adb devices` 等を `run_in_background` で並列起動 → Windows 側 daemon がロック、全 adb が timeout 124、`adb kill-server` も hang (2026-05-09)。また WSL2 の `pkill`/`kill` は **exit 144 (128+SIGTERM)** を返すが実害なしのことが多い (P2 ログ集計で 35 回、全て続行可だった)。
+- **ルール**: ① adb 系は **foreground 直列** で実行 ② stuck したら `timeout 10 /mnt/c/Windows/System32/taskkill.exe /F /IM adb.exe` → `adb start-server` → 実機で USB デバッグ再許可 ③ exit 144 は失敗と即断しない。
+- **出典**: memory `adb-daemon-parallel-hang` から昇格 (P2、2026-06-10)。`wsl2-mobile.md` §1 (CRLF) の姉妹知見。
