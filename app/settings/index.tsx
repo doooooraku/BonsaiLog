@@ -14,6 +14,7 @@
 import { Stack, useNavigation, useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -45,6 +46,8 @@ export default function SettingsScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const c = useColors();
+  // Sess95 PR-3: edge-to-edge でシステムナビバーに最下部 row が隠れる (テスター SS 報告) 対策。
+  const insets = useSafeAreaInsets();
   const isPro = useProStore((s) => s.isPro);
 
   const handleAdPrivacyOptionsPress = React.useCallback(async () => {
@@ -132,7 +135,10 @@ export default function SettingsScreen() {
           自前 (Sess65 PR1) は撤去、 OS native の戻るボタン + headerTintColor (c.text) を採用。
           OS HIG / Material Design 準拠で a11y / RTL / swipe-back ジェスチャを native 享受。 */}
       <Stack.Screen options={{ title: t('tabSettings') }} />
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 16 }]}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* === mockup v1.0 SettingsScreen 8 セクション順序 (Issue #330): アカウント→表示→通知→
             アーカイブ→書き出し→バックアップ→その他法令→バージョン。実機固有 (検索/ヘルプ/DEV) は末尾。 */}
 
@@ -346,7 +352,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   // backgroundColor / borderBottomColor は useColors の c.background / c.border で動的指定 (Sess66 PR6a)。
   container: { flex: 1 },
-  scroll: { padding: 16, gap: 16 },
+  scroll: { padding: 16, gap: 16 }, // paddingBottom は inline insets.bottom + 16 (Sess95 PR-3)
   entry: {
     padding: 16,
     borderBottomWidth: 1,
