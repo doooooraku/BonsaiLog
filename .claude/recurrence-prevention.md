@@ -90,7 +90,7 @@
 
 ---
 
-## 専門ルール R-13 〜 R-75（詳細は `recurrence-prevention/specialized.md`）
+## 専門ルール R-13 〜 R-79（詳細は `recurrence-prevention/specialized.md`）
 
 | ID | テーマ | 1 行サマリ |
 |----|--------|-----------|
@@ -144,6 +144,10 @@
 | **R-72** | master/custom CRUD pattern SoT (Sess89 ADR-0049 ⑥ 構造実装由来) | **master/custom 二層構造** で構成される領域 (= 樹種・樹形・タグ・定期予定 の 4 領域) は、 全領域で **CRUD 関数群が揃って実装** されていることを保証 (= Create / Rename / Delete / Count / canCreate / countBonsai / WithStats の 7 関数 set)。 「追加だけ実装、 編集/削除 UI 無し」 の構造実装漏れ (= ADR §Decision「削除 OK」 と書きながら 4 ヶ月削除関数なし、 Sess89 テスター苦情起点) を構造防止。 R-65 (= ADR 単独 CRUD カバレッジ) + R-67 (= status × 操作意味分化) と並列の meta-rule。 由来: Sess89 (= 2026-06-09) テスター苦情「樹種カスタムの編集、 削除機能は Pro? または今後の予定?」 を 4 PR で構造修復 (= #1028/1030/1031/本 PR)。 真因 = ADR § Decision と §Acceptance テスト記述の不整合 (= 削除動線 test 含まれず、 領域横断整合性検証なし)。 削除時 cascade matrix (= ADR-0026 §Notes Amended Sess89 で確立): FK (樹種) → ON DELETE SET NULL / raw text (樹形) → atomic UPDATE NULL (案 c) / M:N (タグ) + FK (定期予定) → softDelete。 検出 (= follow-up): `scripts/dev/check-custom-crud.mjs` で 4 領域 grep + 関数 set 揃い warn (= 未起票、 Sess90+ 候補)。 詳細: `recurrence-prevention/specialized.md` |
 | **R-74** | Stack screen title 配線は `<Stack.Screen options>` + `useEffect(setOptions)` 両方必須 (Sess90 PR-A 起票、 PR-C 検出 lint 配線) | `app/<screen>.tsx` で React Navigation の Stack header に title を表示する場合、 **2 段 pattern を両方** 実装する (= `<Stack.Screen options={{title: t('...')}}/>` + `useEffect(() => navigation.setOptions({title: t('...')}), [navigation, t, lang])`)。 片方だけだと **初回 mount 漏れ** or **言語切替時 title 古いまま残存** の bug 発生。 由来: Sess90 PR-A で 3 screen (= `/custom-species` `/custom-styles` `/tags`) の Stack.Screen options 配線漏れで raw route 名表示 bug 発覚。 正典 reference = `app/settings/index.tsx` (Sess74 PR-3 = ADR-0053 E2 Amendment) で確立済の 2 段 pattern を全 manager screen に適用。 検出: `scripts/dev/check-stack-screen-title.mjs` で `useTranslation` 使用かつ `Stack.Screen options` / `setOptions` 片方欠落を warn (= Sess90 PR-C で起票、 `pnpm verify:stack-screen-title`)。 詳細: `recurrence-prevention/specialized.md` |
 | **R-75** | screen header の font geometry hardcode 禁止、 token 参照必須 (Sess90 PR-A 起票、 PR-C 検出 lint 配線) | 画面ヘッダー (= タブ画面の自前 SearchHeader / Stack 画面の React Navigation native header) の **`fontFamily / fontSize / lineHeight / letterSpacing` hardcode 禁止**、 `src/core/theme/typography.ts` の `screenTitleTab` (= 22pt NotoSerifJP) / `screenTitleStack` (= 18pt NotoSerifJP) token spread 必須。 加えて header 背景は `c.background` (= washi/宵墨 scheme-aware) 統一 (ADR-0053 Sess90 PR-B Amendment)。 **Expo Router の root `<Stack screenOptions>` は nested Stack に cascade しない**、 settings / (modals) / (tabs)/plan / (tabs)/bonsai 等の nested `_layout.tsx` でも明示 spread が必要。 由来: Sess90 PR-A 時点で 4 箇所に font 設定分散 → user 報告「タブ画面と Stack 画面で統一性がない」 が顕在化、 token SoT 化で「change one place, takes effect everywhere」 保証。 同型 SoT pattern = ADR-0029 D1 form atom typography token (= Sess17 `formLabel` / `formCounter` warning lint 配線済)。 検出: `scripts/dev/check-screen-header-typography.mjs` で font hardcode + header 背景 c.surface drift を grep warn (= Sess90 PR-C で起票、 `pnpm verify:screen-header-typography`)。 詳細: `recurrence-prevention/specialized.md` |
+| **R-76** | master/custom 領域 管理画面 UI 統一 SoT meta-rule (Sess91 PR-4 起票) | `/tags` / `/custom-species` / `/custom-styles` (+ 将来のカスタム X 領域) の管理画面は 5 軸 SoT 必須: (a) styles = `src/features/manager-screen/managerScreenStyles.ts` (b) row layout = 横並び + 左 toggle (c) 操作 = row tap 編集 + kebab → RowActionMenu → ConfirmDialog (ADR-0036 D7) (d) inline 展開 = PEEK_LIMIT=3 + もっと見る (e) addBtn = JSX 側 `+ ` prefix。 由来: Sess91 user 報告「タグ管理をほぼ全て転用したつもりが全然なっていません」、 5 Whys 真因 = UI 共通 SoT 不在で劣化合成。 検出: `scripts/dev/check-manager-screen-symmetry.mjs` (`pnpm verify:manager-screen-symmetry`)。 新規領域は `.claude/templates/manager-screen-template.tsx` から作成。 詳細: `recurrence-prevention/specialized.md` |
+| **R-77** | 業界標準採用時のドメイン適合性チェックリスト (Sess93 議論起票) | 業界標準 UX (= Apple/Google ライク、 モック由来、 競合観察由来) を採用する設計判断には 3 質問の明示回答を ADR / 議論記録に残す: ①業界が解決している問題は自アプリでも発生しているか ②業界が前提とする使用頻度は同じか ③業界が許容する副作用を自アプリ user 層は許容するか。 由来: Sess89 で全廃した個別予定通知を Sess93 で業界標準根拠で復活させかけた (議論で検出、 案 C に修正)。 連携: R-16 (Design は下書き、 ADR が正) の業界標準特化版。 詳細: `recurrence-prevention/specialized.md` |
+| **R-78** | 破壊的データ操作は user に事前通知必須 (Sess93 議論起票) | 「softDelete + create wrapper」「上書き」「cascade 連鎖更新」 等の内部データ書換 operation は、 保存ボタン押下時に **ConfirmDialog で事前通知** 必須 (= 何が起きるか + 影響範囲 + キャンセル可能)。 i18n key 規約: `{domain}EditConfirmTitle/Body/Confirm`。 由来: Sess93 `replaceRecurrenceRule` (= softDelete + create) で user 認識「ルール 1 件編集」 vs 内部「8 events 削除 + 再生成」 の認識ズレを議論で検出。 連携: R-67 (status entity 操作意味 matrix)、 WCAG 3.3.4。 詳細: `recurrence-prevention/specialized.md` |
+| **R-79** | コンテキスト残量を理由とした次セッション先送り禁止 (Doc-Truth Audit P2 起票) | Claude がタスクを「次セッションで対応」と先送りする判断を、 **コンテキスト残量を理由に単独で行わない**。 目安として **消費 85% までは本セッション内で継続**。 85% 超 / scope 分割 / user 指定の停止条件で先送りする場合は、 先送り内容を明示して user 承認を取り、 再開用の状態 (memory / Engram / 状態ファイル) を保存してから停止。 由来: Doc-Truth Audit P2 (2026-06-10) セッションログ採掘で同種 user 訂正 2 回検出 (2026-05-13「85% くらいまでは本セッションで」 / 2026-05-15「次セッション継続ではなく本セッションで」)、 CLAUDE.md §9 (2 回再発でルール化) に基づく。 詳細: `recurrence-prevention/specialized.md` |
 
 ---
 
@@ -163,7 +167,7 @@
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
-- `.claude/recurrence-prevention/specialized.md` — R-13 〜 R-75 詳細記述
+- `.claude/recurrence-prevention/specialized.md` — R-13 〜 R-79 詳細記述
 - `.claude/hooks/` — 構造的防止 Hook 群（R-16/R-18/R-19/R-20 自動化）
 - `.claude/settings.json` — Hook 登録
 - `docs/reference/tasks/lessons/` — 技術 lesson（領域別フォルダ、`lessons/db.md` 等）
