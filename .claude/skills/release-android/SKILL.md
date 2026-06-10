@@ -211,6 +211,10 @@ git tag v0.0.1 && git push --tags    # tag push で workflow 自動起動 (cloud
 ## 制約
 
 - 本 Skill は **Android のみ**。 iOS は別 Skill (`/release-ios` 未実装、 Future Work)。
-- Closed testing (Alpha track) 専用。 Production rollout は手動 (Console 操作)。
-- 12 testers/14 days ルールは本 Skill 対象外 (Play Console 側のテスター招待)。
+- Closed testing (Alpha track) 専用。 **Production rollout は必ず Play Console UI で実行**:
+  - 直リンク: `https://play.google.com/console/u/0/developers/<dev_id>/app/<app_id>/tracks/production`
+  - Console UI 操作: Release > Production > **Promote release from Closed testing** > Roll out percentage 選択 > Submit
+  - **Sess81 R-68**: rollout 後 24h はストア商品の territory プロパゲーションが入りうる → テスター 12 人に「価格表示は数時間後に反映」 と明示
+- **14 days / 12 testers opted-in ルール** (2026 Google Play 新規則): Closed testing rollout 後 14 日連続で 12 人以上の opted-in tester が必要。 **本 Skill の Submit Draft 完了直後に、 user に「Console UI で Roll out ボタンを押してください」 を明示提示** (= 機械化漏れの 1 ステップ、 Sess81 で R-61 機械判定原則違反として認識)。
+- **Sess81 R-68 適用**: IAP / AdMob / Sentry 等の外部サービス連携機能は preflight smoke test (`pnpm preflight:android:ci`) が green でない限り本 Skill は release を中断する (= G グループ RC offerings 取得試行 = `scripts/preflight-android-release.mjs` 参照)。 ローカル開発時は自動 skip。
 - smoke test に実機が必要 (USB 接続 + 認可)、 実機なしなら Phase 5 スキップ。

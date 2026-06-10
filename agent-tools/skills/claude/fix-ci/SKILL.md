@@ -5,7 +5,7 @@ user-invocable: true
 argument-hint: '[失敗したゲート名 (任意)]'
 ---
 
-# /fix-ci — CI 失敗リカバリ（Codex 担当, W-08a）
+# /fix-ci — CI 失敗リカバリ（W-08a）
 
 `pnpm verify` が **2 回失敗した後** に呼ばれる慎重モード。1 回目の失敗は `/implement` が自動リトライで対応するが、それでも直らなければこの Skill に切り替える。
 

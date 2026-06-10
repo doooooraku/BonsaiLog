@@ -1,13 +1,13 @@
 ---
 name: plan
-description: W-01〜W-05 execution — turn a problem into a ready-to-implement Issue with AC, ADR, and Context for Codex.
+description: W-01〜W-05 execution — turn a problem into a ready-to-implement Issue with AC, ADR, and Context.
 user-invocable: true
 argument-hint: '[#Issue番号 or 課題の説明]'
 ---
 
 # /plan — 実装前準備（W-01〜W-05）
 
-議論で方針が決まった後、または明確な課題があるときに、**Codex が実装に着手できる状態まで** Issue を準備する Skill。
+議論で方針が決まった後、または明確な課題があるときに、**/implement で実装に着手できる状態まで** Issue を準備する Skill。
 
 ## このスキルが呼ばれる条件
 
@@ -15,11 +15,11 @@ argument-hint: '[#Issue番号 or 課題の説明]'
 - 「Issue を起票して」
 - 「仕様を固めて」
 - 「AC を定義して」
-- 「Codex に引き渡せる状態にして」
+- 「実装に引き渡せる状態にして」
 
 ## やってはいけないこと
 
-- **コードを書かない**（実装は W-06 で Codex が担当）
+- **コードを書かない**（実装は W-06 の /implement が担当）
 - **W-06 以降に先走らない**
 - **AC なしで Issue をクローズ扱いにしない**
 
@@ -100,7 +100,7 @@ git switch -c <type>/<issue-number>-<short-title>
 
 ### W-05: 仕様の結論を固める
 
-この Skill の **最重要ステップ**。Codex が迷わず実装できるレベルまで固める。
+この Skill の **最重要ステップ**。実装担当セッションが迷わず実装できるレベルまで固める。
 
 #### 5-1. 既存仕様との整合性チェック
 
@@ -153,12 +153,12 @@ git switch -c <type>/<issue-number>-<short-title>
 
 該当するものに対して「どう変わるか」を 1 行で書く。
 
-### W-05.5: Codex への引き継ぎ
+### W-05.5: 実装への自己引き継ぎ (Context note)
 
 Issue 本文に以下のセクションを **必ず追加** する:
 
 ```markdown
-## Context for Codex
+## Context
 
 ### Acceptance Criteria (must pass)
 
@@ -252,13 +252,13 @@ Risk: High/Medium/Low
 
 ...
 
-### W-05.5 Codex 引き継ぎ
+### W-05.5 実装引き継ぎ
 
-Issue 本文に `## Context for Codex` セクションを追加済み
+Issue 本文に `## Context` セクションを追加済み
 
 ### 次のアクション
 
-- [ ] Codex に `/implement #<Issue番号>` を指示する
+- [ ] `/implement #<Issue番号>` で実装を開始する
 - または: 追加で議論が必要なら `/discuss` に戻る
 ```
 
@@ -266,15 +266,15 @@ Issue 本文に `## Context for Codex` セクションを追加済み
 
 ## 終わり方
 
-- `## Context for Codex` セクションが Issue 本文に存在する
+- `## Context` セクションが Issue 本文に存在する
 - AC がチェックボックス形式で書かれている
 - 優先度ラベルが付いている
 - ブランチが push されている
 
-→ これが揃ったら Codex に `/implement #<Issue番号>` を渡す準備完了。
+→ これが揃ったら `/implement #<Issue番号>` で実装開始の準備完了。
 
 ## 関連 Skill
 
 - `/discuss` — 議論が必要なら先にこちらを実行
-- `/implement` (Codex) — このあとの W-06〜W-10
-- `/review-pr` — Codex の PR を受け取った後
+- `/implement` — このあとの W-06〜W-10
+- `/review-pr` — 実装 PR を受け取った後
