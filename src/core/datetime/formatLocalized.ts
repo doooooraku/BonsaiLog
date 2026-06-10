@@ -76,10 +76,18 @@ const LANG_TO_LOCALE: Record<Lang, Locale> = {
  *
  * @param dateKey - YYYY-MM-DD 形式の文字列。 空 / parse 失敗 = 空文字 fallback。
  * @param lang - app i18n lang (= 19 言語)。
- * @returns 言語別 format 文字列。 例: ja「2026年6月10日（火）」 / en「Jun 10, 2026 (Tue)」
+ * @returns 言語別 format 文字列。 例: ja「2026年6月10日（水）」 / en「June 10, 2026 (Tue)」
  *
- * ja 特例 (Sess94 PR-B モック仕上げ): 全角括弧「（）」 で囲む (= ClaudeDesign モック整合、 日本語慣習)。
+ * ja 特例 (Sess94 PR-C 修正、 PR-B 初版起点): 全角括弧「（）」 で囲む (= ClaudeDesign モック整合、 日本語慣習)。
  * 他 18 言語は半角括弧。
+ *
+ * format pattern「PPP」 採用根拠 (= Sess94 PR-C 1 次資料 verify 後の修正):
+ *   - 実機 SS で「2026/06/10（水）」 と表示され想定の「2026年6月10日（水）」 と乖離
+ *   - 1 次資料 (= `node_modules/date-fns/locale/ja/_lib/formatLong.js`) 確認:
+ *     - `medium` (= P/PP): "y/MM/dd" → 「2026/06/10」
+ *     - `long`   (= PPP):  "y年M月d日" → 「2026年6月10日」 ← 目的の format
+ *   - 他言語 enUS は `PPP` = "MMMM d, y" (= 「June 10, 2026」) で やや長め
+ *     だが、 開始日 row (= 単独表示) は long 形式が読みやすい (= モック整合)。
  */
 export function formatLocalizedDateWithWeekday(dateKey: string, lang: Lang): string {
   if (!dateKey) return '';
@@ -87,7 +95,7 @@ export function formatLocalizedDateWithWeekday(dateKey: string, lang: Lang): str
     const date = parseISO(dateKey);
     if (Number.isNaN(date.getTime())) return dateKey;
     const locale = LANG_TO_LOCALE[lang] ?? enUS;
-    const datePart = dateFnsFormat(date, 'PP', { locale });
+    const datePart = dateFnsFormat(date, 'PPP', { locale });
     const weekdayPart = dateFnsFormat(date, 'EEE', { locale });
     if (lang === 'ja') {
       return `${datePart}（${weekdayPart}）`;
