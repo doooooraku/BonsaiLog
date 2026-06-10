@@ -49,6 +49,7 @@ import {
 } from '@/src/core/recurrence/rrule';
 import { useColors } from '@/src/core/theme/useColors';
 import { getBonsaiById } from '@/src/db/bonsaiRepository';
+import { BonsaiChipList } from '@/src/features/bonsai/BonsaiChipList';
 import {
   bulkCreateRecurrenceRules,
   countActiveRecurrenceRules,
@@ -262,23 +263,17 @@ export default function RecurrenceFormScreen() {
         }}
       />
       <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Sess89 PR-C: 上部 Chip 横並び (= BulkWorkPicker 15851 スタイル流用、 readonly) */}
-        <View style={[styles.chipsHeader, { backgroundColor: c.surface, borderColor: c.border }]}>
-          <ThemedText style={[styles.chipsHeaderText, { color: c.text }]}>{headerText}</ThemedText>
-          <View style={styles.chipsRow}>
-            {bonsais.map((b) => (
-              <View
-                key={b.id}
-                style={[styles.chip, { backgroundColor: c.background, borderColor: c.border }]}
-                testID={`e2e_recurrence_form_chip_${b.id}`}
-              >
-                <ThemedText style={[styles.chipText, { color: c.text }]} numberOfLines={1}>
-                  {b.name}
-                </ThemedText>
-              </View>
-            ))}
-          </View>
-        </View>
+        {/* Sess92 PR-3: BonsaiChipList SoT (= 旧独自 chipsHeader card を BulkWorkPicker と統一)。
+            create mode のみ showAutoSelectedHint=true (= 単数件で 自動選択 cue 表示)、
+            edit mode は user 能動的に編集に来たため showAutoSelectedHint=false。 */}
+        <BonsaiChipList
+          bonsais={bonsais}
+          headerText={headerText}
+          isSingle={isSingle}
+          showAutoSelectedHint={mode === 'create'}
+          chipTestIdPrefix="e2e_recurrence_form_chip"
+          autoSelectedHintTestId="e2e_recurrence_form_auto_selected_hint"
+        />
 
         {/* 作業種別 (= readonly) */}
         <View style={[styles.summaryRow, { backgroundColor: c.surface, borderColor: c.border }]}>
@@ -311,35 +306,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   scroll: { padding: 16, paddingBottom: 96, gap: 12 },
-  // Sess89 PR-C: 上部 Chip 横並び header (= BulkWorkPicker 15851 スタイル流用)
-  chipsHeader: {
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 10,
-  },
-  chipsHeaderText: {
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  chipsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    justifyContent: 'center',
-  },
-  chip: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    borderWidth: 1,
-    maxWidth: 200,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
+  // Sess92 PR-3: chipsHeader / chipsHeaderText / chipsRow / chip / chipText は BonsaiChipList に SoT 移管。
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
