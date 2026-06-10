@@ -881,8 +881,9 @@ export async function findPlannedEventByCondition(
  * 部分削除 = データ整合崩れ防止。
  *
  * wiring cascade (ADR-0036 D8): unwiring「event」 は独立 record 不在 (wiring payload 内
- * scheduled_unwire_at で予定日のみ保持)、 通知 cancel は呼出側で `cancelForEvents(eventIds, t)`
- * を sequential 実行で SUMMARY 再計算 → wiring 削除に伴う unwiring scheduled 通知も自動除外 = cascade 完了。
+ * scheduled_unwire_at で予定日のみ保持、 SUMMARY 集計対象は status='planned' events のみ =
+ * scheduled_unwire_at 自体は通知に乗らない)。 通知 cancel は呼出側で `cancelForEvents(eventIds, t)`
+ * を sequential 実行で SUMMARY 再計算 → 削除 events が集計から自動除外 = cascade 完了。
  *
  * @returns deletedCount = 削除成功件数 (input.length と必ず一致、 不一致は throw)
  * @throws Error 該当 ID 不在 / 既削除済 で UPDATE getChanges === 0 の場合、 transaction rollback
