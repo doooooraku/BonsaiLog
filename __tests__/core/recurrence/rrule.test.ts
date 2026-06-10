@@ -4,7 +4,13 @@
  * 80 case 想定で 基本 + 境界 + exdate + 終了日 + 異常系 を 網羅。
  * 実 DB は 触らない (= 純関数 test、 Node 20 でも 動く)。
  */
-import { expandRRule, isValidRRule, RECURRENCE_PRESETS } from '@/src/core/recurrence/rrule';
+import {
+  buildWeeklyByDayRrule,
+  expandRRule,
+  isValidRRule,
+  parseWeeklyByDay,
+  RECURRENCE_PRESETS,
+} from '@/src/core/recurrence/rrule';
 
 const JST_OFFSET = 540; // +09:00
 
@@ -341,5 +347,129 @@ describe('RECURRENCE_PRESETS (Sess89 PR-B: 7 preset + custom 定義整合)', () 
     for (const rrule of Object.values(RECURRENCE_PRESETS)) {
       expect(isValidRRule(rrule, start)).toBe(true);
     }
+  });
+});
+
+describe('Sess93 PR-2: BYDAY helpers (buildWeeklyByDayRrule / parseWeeklyByDay)', () => {
+  describe('buildWeeklyByDayRrule', () => {
+    test('単数曜日 [1] (月) → FREQ=WEEKLY;BYDAY=MO', () => {
+      expect(buildWeeklyByDayRrule([1])).toBe('FREQ=WEEKLY;BYDAY=MO');
+    });
+
+    test('複数曜日 [1, 3, 5] (月水金) → FREQ=WEEKLY;BYDAY=MO,WE,FR', () => {
+      expect(buildWeeklyByDayRrule([1, 3, 5])).toBe('FREQ=WEEKLY;BYDAY=MO,WE,FR');
+    });
+
+    test('未ソート [5, 1, 3] → ソート済 BYDAY=MO,WE,FR', () => {
+      expect(buildWeeklyByDayRrule([5, 1, 3])).toBe('FREQ=WEEKLY;BYDAY=MO,WE,FR');
+    });
+
+    test('重複 [1, 1, 3] → dedupe BYDAY=MO,WE', () => {
+      expect(buildWeeklyByDayRrule([1, 1, 3])).toBe('FREQ=WEEKLY;BYDAY=MO,WE');
+    });
+
+    test('全曜日 [0, 1, 2, 3, 4, 5, 6] → BYDAY=SU,MO,TU,WE,TH,FR,SA', () => {
+      expect(buildWeeklyByDayRrule([0, 1, 2, 3, 4, 5, 6])).toBe(
+        'FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA',
+      );
+    });
+
+    test('空配列 → FREQ=WEEKLY (= 曜日指定なし fallback)', () => {
+      expect(buildWeeklyByDayRrule([])).toBe('FREQ=WEEKLY');
+    });
+
+    test('範囲外 [-1, 7, 10] → 全除外 → FREQ=WEEKLY', () => {
+      expect(buildWeeklyByDayRrule([-1, 7, 10])).toBe('FREQ=WEEKLY');
+    });
+
+    test('範囲外混在 [-1, 2, 7] → 有効 [2] のみ → BYDAY=TU', () => {
+      expect(buildWeeklyByDayRrule([-1, 2, 7])).toBe('FREQ=WEEKLY;BYDAY=TU');
+    });
+  });
+
+  describe('parseWeeklyByDay', () => {
+    test('FREQ=WEEKLY;BYDAY=MO → [1]', () => {
+      expect(parseWeeklyByDay('FREQ=WEEKLY;BYDAY=MO')).toEqual([1]);
+    });
+
+    test('FREQ=WEEKLY;BYDAY=MO,WE,FR → [1, 3, 5]', () => {
+      expect(parseWeeklyByDay('FREQ=WEEKLY;BYDAY=MO,WE,FR')).toEqual([1, 3, 5]);
+    });
+
+    test('FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA → [0, 1, 2, 3, 4, 5, 6]', () => {
+      expect(parseWeeklyByDay('FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA')).toEqual([
+        0, 1, 2, 3, 4, 5, 6,
+      ]);
+    });
+
+    test('FREQ=WEEKLY (= BYDAY なし) → [] (空配列、 「何も選択していない」 状態)', () => {
+      expect(parseWeeklyByDay('FREQ=WEEKLY')).toEqual([]);
+    });
+
+    test('FREQ=DAILY (= 別 preset) → null', () => {
+      expect(parseWeeklyByDay('FREQ=DAILY')).toBeNull();
+    });
+
+    test('FREQ=MONTHLY → null', () => {
+      expect(parseWeeklyByDay('FREQ=MONTHLY')).toBeNull();
+    });
+
+    test('FREQ=DAILY;INTERVAL=7 (= custom) → null', () => {
+      expect(parseWeeklyByDay('FREQ=DAILY;INTERVAL=7')).toBeNull();
+    });
+
+    test('FREQ=WEEKLY;INTERVAL=2 (= 隔週 旧仕様) → null', () => {
+      expect(parseWeeklyByDay('FREQ=WEEKLY;INTERVAL=2')).toBeNull();
+    });
+
+    test('FREQ=WEEKLY;BYDAY=MO,WE (重複なし) → [1, 3]', () => {
+      expect(parseWeeklyByDay('FREQ=WEEKLY;BYDAY=MO,WE')).toEqual([1, 3]);
+    });
+
+    test('FREQ=WEEKLY;BYDAY=FR,MO,WE (未ソート) → [1, 3, 5] (ソート済)', () => {
+      expect(parseWeeklyByDay('FREQ=WEEKLY;BYDAY=FR,MO,WE')).toEqual([1, 3, 5]);
+    });
+  });
+
+  describe('build → parse 往復整合', () => {
+    test.each([[[]], [[1]], [[1, 3, 5]], [[0, 6]], [[0, 1, 2, 3, 4, 5, 6]]])(
+      '%j → build → parse → 同じ',
+      (input) => {
+        const rrule = buildWeeklyByDayRrule(input);
+        const parsed = parseWeeklyByDay(rrule);
+        expect(parsed).toEqual([...input].sort((a, b) => a - b));
+      },
+    );
+  });
+
+  describe('生成された RRULE が expandRRule で正しく展開される', () => {
+    test('月水金 (= [1, 3, 5]) で 1 週間展開 → 3 件', () => {
+      const rrule = buildWeeklyByDayRrule([1, 3, 5]);
+      const dates = expandRRule(
+        rrule,
+        '2026-06-15T00:00:00.000Z', // 月曜
+        '2026-06-21T23:59:59.000Z', // 日曜
+        [],
+        JST_OFFSET,
+      );
+      expect(dates).toEqual(['2026-06-15', '2026-06-17', '2026-06-19']);
+    });
+
+    test('全曜日 (= 0-6) で 1 週間展開 → 7 件 (毎日と同じ結果)', () => {
+      const rrule = buildWeeklyByDayRrule([0, 1, 2, 3, 4, 5, 6]);
+      const dates = expandRRule(
+        rrule,
+        '2026-06-15T00:00:00.000Z',
+        '2026-06-21T23:59:59.000Z',
+        [],
+        JST_OFFSET,
+      );
+      expect(dates).toHaveLength(7);
+    });
+
+    test('isValidRRule で build 結果が有効と判定される', () => {
+      expect(isValidRRule(buildWeeklyByDayRrule([1, 3, 5]), '2026-06-15T00:00:00.000Z')).toBe(true);
+      expect(isValidRRule(buildWeeklyByDayRrule([]), '2026-06-15T00:00:00.000Z')).toBe(true);
+    });
   });
 });

@@ -131,3 +131,54 @@ export function parseCustomRruleDays(rrule: string): number | null {
   const n = Number(m[1]);
   return Number.isInteger(n) && n >= 1 && n <= 365 ? n : null;
 }
+
+/**
+ * 曜日番号 (= JavaScript Date.getDay() 互換、 0=Sun, 1=Mon, ..., 6=Sat) と
+ * RFC 5545 BYDAY 表記 (= SU, MO, TU, WE, TH, FR, SA) の対応 (Sess93 PR-2)。
+ *
+ * UI (= RecurrencePicker の曜日 picker) で 0-6 整数 配列を扱い、 RRULE 保存時に本 helper で 変換。
+ */
+const WEEKDAY_BYDAY_CODES = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const;
+
+/**
+ * 「毎週 + 任意曜日複数」 の RRULE 文字列を生成 (Sess93 PR-2、 ADR-0056 Sess93 Amendment)。
+ *
+ * 曜日番号 (= 0-6、 0=Sun 〜 6=Sat) 配列を BYDAY=SU,MO,... に変換し、 `FREQ=WEEKLY;BYDAY=...` を返す。
+ * 配列が空 / 無効値のみの場合は `FREQ=WEEKLY` (= 曜日指定なし、 開始日基準) を fallback で返す。
+ *
+ * 重複入力は dedupe + ソート、 範囲外 (= <0 or >6) は除外。
+ *
+ * @param weekdays - 曜日番号配列 (= 例: [1, 3, 5] = 月水金)
+ * @returns RFC 5545 RRULE 文字列 (= 例: `FREQ=WEEKLY;BYDAY=MO,WE,FR`)
+ */
+export function buildWeeklyByDayRrule(weekdays: readonly number[]): string {
+  const unique = Array.from(
+    new Set(weekdays.filter((n) => Number.isInteger(n) && n >= 0 && n <= 6)),
+  ).sort((a, b) => a - b);
+  if (unique.length === 0) return 'FREQ=WEEKLY';
+  const codes = unique.map((n) => WEEKDAY_BYDAY_CODES[n]).join(',');
+  return `FREQ=WEEKLY;BYDAY=${codes}`;
+}
+
+/**
+ * 「毎週 + 任意曜日複数」 の RRULE から曜日番号配列を 逆算 (= 編集時の初期値ロード用、 Sess93 PR-2)。
+ *
+ * `FREQ=WEEKLY;BYDAY=SU,MO,...` pattern match で 曜日番号配列 (= 0-6) を返す。
+ * - `FREQ=WEEKLY` (= BYDAY なし、 開始日基準): 空配列 [] を返す (= picker UI で「何も選択していない」 状態)
+ * - その他 (= FREQ=DAILY 等): null を返す (= 別 preset 扱い)
+ *
+ * @param rrule - RFC 5545 RRULE 文字列
+ * @returns 曜日番号配列 (= 0-6 ソート済)、 weekly preset 以外なら null
+ */
+export function parseWeeklyByDay(rrule: string): number[] | null {
+  if (rrule === 'FREQ=WEEKLY') return [];
+  const m = /^FREQ=WEEKLY;BYDAY=([A-Z,]+)$/.exec(rrule);
+  if (!m) return null;
+  const codes = m[1]!.split(',');
+  const days: number[] = [];
+  for (const code of codes) {
+    const idx = WEEKDAY_BYDAY_CODES.indexOf(code as (typeof WEEKDAY_BYDAY_CODES)[number]);
+    if (idx >= 0) days.push(idx);
+  }
+  return Array.from(new Set(days)).sort((a, b) => a - b);
+}
