@@ -18,7 +18,10 @@
 import React from 'react';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-import { ACCENT_BARK, BRAND_GREEN, DANGER, SUCCESS, TEXT_SECONDARY } from '@/src/core/theme/colors';
+// Sess95 PR-1: DANGER は dark 背景で contrast 1.9:1 → SprayIcon / LeafAidIcon は
+// useColors() の c.dangerColor で scheme-aware 化 (light は同値 #8B2E2E で不変)。
+import { ACCENT_BARK, BRAND_GREEN, SUCCESS, TEXT_SECONDARY } from '@/src/core/theme/colors';
+import { useColors } from '@/src/core/theme/useColors';
 import type { EventType } from '@/src/db/schema';
 import { assertNever } from '@/src/lib/assertNever';
 
@@ -113,7 +116,9 @@ export function FertilizerIcon({ size = 16, color = SUCCESS }: IconProps) {
   );
 }
 
-export function SprayIcon({ size = 16, color = DANGER }: IconProps) {
+export function SprayIcon({ size = 16, color: colorProp }: IconProps) {
+  const c = useColors();
+  const color = colorProp ?? c.dangerColor;
   return (
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
       {/* 噴霧器: 容器 + ノズル + 飛沫 */}
@@ -150,6 +155,7 @@ export function CompassIcon({ size = 16, color = TEXT_SECONDARY }: IconProps) {
  * - 絆創膏 path 45° 回転 (DANGER + fill opacity 0.15) + 縫い目 Circle 2 個
  */
 export function LeafAidIcon({ size = 16 }: IconProps) {
+  const c = useColors();
   return (
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
       {/* 葉 (左下→右上の楕円) */}
@@ -164,15 +170,15 @@ export function LeafAidIcon({ size = 16 }: IconProps) {
       {/* 絆創膏本体 (45° 回転、 葉中央に重ね) */}
       <Path
         d="M6 9 L10 7 L10.7 8.2 L6.7 10.2 Z"
-        stroke={DANGER}
+        stroke={c.dangerColor}
         strokeWidth="1.3"
         strokeLinejoin="round"
-        fill={DANGER}
+        fill={c.dangerColor}
         fillOpacity="0.15"
       />
       {/* 絆創膏の縫い目ドット 2 個 */}
-      <Circle cx="7" cy="9.2" r="0.3" fill={DANGER} />
-      <Circle cx="9.6" cy="7.8" r="0.3" fill={DANGER} />
+      <Circle cx="7" cy="9.2" r="0.3" fill={c.dangerColor} />
+      <Circle cx="9.6" cy="7.8" r="0.3" fill={c.dangerColor} />
     </Svg>
   );
 }

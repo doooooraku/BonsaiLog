@@ -30,8 +30,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 // Sess66 PR3: BG_PRIMARY / BORDER_DEFAULT / BRAND_GREEN を StyleSheet から撤去し inline c.* 化
 // (dark mode で BORDER_DEFAULT cream border + BRAND_GREEN #1F3A2E 選択 bg が dark 上で
-//  浮く / 沈む問題を解消)。 ON_BRAND (白) + DANGER (赤) は theme-invariant ゆえ static 維持。
-import { DANGER, ON_BRAND } from '@/src/core/theme/colors';
+//  浮く / 沈む問題を解消)。 badge は Sess95 PR-1 で inline c.dangerColor / c.onTint 化。
 import {
   formOptional,
   formRequired,
@@ -86,8 +85,10 @@ export function LabeledSegmented({
         <View style={styles.labelRow}>
           <ThemedText type="defaultSemiBold">{label}</ThemedText>
           {required && (
-            <View style={styles.requiredBadge}>
-              <ThemedText style={styles.requiredText}>{requiredText}</ThemedText>
+            <View style={[styles.requiredBadge, { backgroundColor: c.dangerColor }]}>
+              <ThemedText style={[styles.requiredText, { color: c.onTint }]}>
+                {requiredText}
+              </ThemedText>
             </View>
           )}
           {optional && !required && (
@@ -131,13 +132,12 @@ const styles = StyleSheet.create({
   field: { gap: 8, marginBottom: 18 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   requiredBadge: {
-    backgroundColor: DANGER,
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 8,
   },
-  // Sess66 PR3: badge 内白文字は theme-invariant ゆえ ON_BRAND 維持 (旧 BG_PRIMARY = bug)。
-  requiredText: { ...formRequired, color: ON_BRAND },
+  // Sess95 PR-1: badge は inline c.dangerColor 背景 + c.onTint 文字 (dark cascade、 dark で明赤×墨文字)。
+  requiredText: { ...formRequired },
   optionalText: formOptional,
   segmented: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   // Sess66 PR3: borderColor / backgroundColor は inline で c.border / c.tint 動的指定。

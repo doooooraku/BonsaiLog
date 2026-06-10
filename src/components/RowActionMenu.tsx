@@ -21,7 +21,7 @@ import { Modal, Pressable, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useColors } from '@/src/core/theme/useColors';
 // Sess66 PR6b: BG_SURFACE / BORDER_DEFAULT / TEXT_PRIMARY を inline c.* に (dark cascade)。
-import { DANGER } from '@/src/core/theme/colors';
+// Sess95 PR-1: destructive 赤文字も static DANGER → inline c.dangerColor (dark 視認性)。
 
 export type RowActionMenuItem = {
   /** unique key (React list rendering 用) */
@@ -83,11 +83,7 @@ export function RowActionMenu({ visible, items, onDismiss, testID }: RowActionMe
               testID={item.testID}
             >
               <ThemedText
-                style={[
-                  styles.itemText,
-                  { color: c.text },
-                  item.destructive && styles.itemTextDestructive,
-                ]}
+                style={[styles.itemText, { color: item.destructive ? c.dangerColor : c.text }]}
               >
                 {item.label}
               </ThemedText>
@@ -121,5 +117,4 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   itemText: { fontSize: 16, fontWeight: '500' },
-  itemTextDestructive: { color: DANGER },
 });

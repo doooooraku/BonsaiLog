@@ -15,6 +15,7 @@
  * - src/db/schema.ts EVENT_TYPES (14 種別 SoT)
  * - docs/adr/ADR-0041-event-row-display-mode.md §Phase θ 改訂 D10
  */
+import { render } from '@testing-library/react-native';
 import React from 'react';
 
 import { EventIcon, LeafAidIcon } from '@/src/components/icons';
@@ -41,9 +42,11 @@ describe('EventIcon — 14 種別 exhaustive 走査 (ADR-0041 Phase θ D10)', ()
     expect(typeof LeafAidIcon).toBe('function');
   });
 
-  test('LeafAidIcon が React element を生成する', () => {
-    const element = LeafAidIcon({ size: 16 });
-    expect(React.isValidElement(element)).toBe(true);
+  test('LeafAidIcon が render できる (Sess95 PR-1: useColors hook 使用のため render 経由)', () => {
+    // Sess95 PR-1 で LeafAidIcon は useColors() を使う component になったため、
+    // 直接関数呼び (hook 違反) ではなく render で検証 (runtime error 検出も兼ねる)。
+    const { toJSON } = render(<LeafAidIcon size={16} />);
+    expect(toJSON()).not.toBeNull();
   });
 
   test('EventIcon(leaf_first_aid) は LeafAidIcon を返す (silent bug fix 検証)', () => {

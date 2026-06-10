@@ -21,13 +21,7 @@ import { nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess66 PR6a: theme-dependent token (BG_*/TEXT_PRIMARY/BORDER_*) は inline c.* 経由。
 // TEXT_MUTED / TEXT_SECONDARY は JSX inline / function return で利用継続。
-import {
-  ACCENT_GOLD,
-  BRAND_GREEN,
-  DANGER,
-  TEXT_MUTED,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { ACCENT_GOLD, BRAND_GREEN, TEXT_MUTED, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
 import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
@@ -222,7 +216,7 @@ export default function WiringListScreen() {
                 style={[
                   styles.card,
                   { backgroundColor: c.surface, borderColor: c.border },
-                  row.kind === 'overdue' && styles.cardWarn,
+                  row.kind === 'overdue' && { borderColor: c.dangerColor },
                 ]}
                 onPress={() => router.push(`/(tabs)/bonsai/${row.event.bonsaiId}` as Href)}
                 testID={`e2e_wiring_row_${row.event.id}`}
@@ -249,11 +243,15 @@ export default function WiringListScreen() {
                       {row.bonsai?.name ?? ''}
                     </ThemedText>
                     {row.kind === 'overdue' && (
-                      <ThemedText style={styles.warnBadge}>{t('wiringOverdueBadge')}</ThemedText>
+                      <ThemedText style={[styles.warnBadge, { color: c.dangerColor }]}>
+                        {t('wiringOverdueBadge')}
+                      </ThemedText>
                     )}
                   </View>
                   {chips.length > 0 && <HistoryChipRow chips={chips} />}
-                  <ThemedText style={[styles.cardSchedule, { color: scheduleColor(row) }]}>
+                  <ThemedText
+                    style={[styles.cardSchedule, { color: scheduleColor(row, c.dangerColor) }]}
+                  >
                     {scheduleText(row, t)}
                   </ThemedText>
                 </View>
@@ -281,8 +279,8 @@ export default function WiringListScreen() {
   );
 }
 
-function scheduleColor(row: WiringRow): string {
-  if (row.kind === 'overdue') return DANGER;
+function scheduleColor(row: WiringRow, dangerColor: string): string {
+  if (row.kind === 'overdue') return dangerColor;
   if (row.kind === 'within_warning') return ACCENT_GOLD;
   return TEXT_SECONDARY;
 }
@@ -313,7 +311,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     minHeight: 96,
   },
-  cardWarn: { borderColor: DANGER },
   // Issue #326: mockup v1.0 64×64 thumbnail (radius 8、cover photo)
   thumb: { width: 64, height: 64, borderRadius: 8 },
   thumbPlaceholder: {
@@ -342,7 +339,6 @@ const styles = StyleSheet.create({
   warnBadge: {
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
-    color: DANGER,
     paddingHorizontal: 6,
     paddingVertical: 2,
     backgroundColor: 'rgba(139,46,46,0.1)',
