@@ -251,6 +251,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           'LEGAL_TERMS_URL',
           'https://doooooraku.github.io/BonsaiLog/terms/',
         ),
+        // ADR-0006 Sess98 Amendment D7: 設定画面「アプリを評価する」の Play Store 直リンク用。
+        // android.package と同値 (runtime で applicationId を引く expo-application の
+        // native module 追加を避け、 既存 env を extra 経由で渡す)。
+        ANDROID_PACKAGE,
         supportsRTL,
         forcesRTL,
       },

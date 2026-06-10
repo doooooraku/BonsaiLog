@@ -1094,5 +1094,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
     'Existing schedules (unfinished) will be deleted and recreated from the new rule.',
   recurringEditConfirmConfirm: 'Update',
   recurringFormSummaryFormat: '{rrule} · {eventType} for {count}',
+  settingsRateAppTitle: 'Rate this app',
 };
 export default tr;

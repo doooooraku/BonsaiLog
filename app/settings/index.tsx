@@ -13,7 +13,7 @@
  */
 import { Stack, useNavigation, useRouter, type Href } from 'expo-router';
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -29,6 +29,7 @@ import { DevSettingsSection } from '@/src/dev/DevSettingsSection';
 // Sess66 PR5 (ADR-0053): SearchHeader showBack 撤去、 Expo Stack native header に統一。
 // import { SearchHeader } from '@/src/features/bonsai/SearchHeader';  // 削除
 import { LegalLinksRow } from '@/src/features/legal/LegalLinksRow';
+import { openStoreListing } from '@/src/features/review/openStoreListing';
 import { NotificationSettingsSection } from '@/src/features/settings/NotificationSettingsSection';
 import { PlanSection } from '@/src/features/settings/PlanSection';
 import { SettingsSection } from '@/src/features/settings/SettingsSection';
@@ -62,6 +63,13 @@ export default function SettingsScreen() {
     } catch {
       Alert.alert(t('error'), t('settingsAdPrivacyOptionsFailedBody'));
     }
+  }, [t]);
+
+  // ADR-0006 Sess98 Amendment D7: Play Store 直リンク (In-App Review API の CTA 呼び出しは
+  // 公式禁止のため使わない)。 失敗時は LegalLinksRow と同 pattern で Alert。
+  const handleRateAppPress = React.useCallback(async () => {
+    const ok = await openStoreListing();
+    if (!ok) Alert.alert(t('error'));
   }, [t]);
 
   // Issue #457 Phase 5: アーカイブ済み盆栽 + タグ 件数を表示時に取得。失敗時は 0 のまま。
@@ -276,6 +284,22 @@ export default function SettingsScreen() {
             >
               <View style={styles.rowInner}>
                 <ThemedText type="defaultSemiBold">{t('settingsAdPrivacyOptionsTitle')}</ThemedText>
+                <ThemedText style={styles.chevron}>›</ThemedText>
+              </View>
+            </Pressable>
+          )}
+          {/* ADR-0006 Sess98 Amendment D7: アプリを評価する (Play Store 直リンク、 Android のみ)。
+              iOS 配信時は App Store URL 分岐を openStoreListing に追加して解放する。 */}
+          {Platform.OS === 'android' && (
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={t('settingsRateAppTitle')}
+              testID="e2e_open_store_listing"
+              style={[styles.entry, { borderBottomColor: c.border }]}
+              onPress={handleRateAppPress}
+            >
+              <View style={styles.rowInner}>
+                <ThemedText type="defaultSemiBold">{t('settingsRateAppTitle')}</ThemedText>
                 <ThemedText style={styles.chevron}>›</ThemedText>
               </View>
             </Pressable>
