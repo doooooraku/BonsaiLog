@@ -285,6 +285,19 @@ await db.execAsync(`
 | タイムライン軸             | `Intl.DateTimeFormat('medium')` | ja: 「4月23日」 / en: "Apr 23"               |
 | CSV エクスポート           | ISO 8601 UTC                    | 全言語同一 `2026-04-23T10:30:00Z`            |
 
+### §5.14 レビュー依頼（In-App Review、ADR-0006 Sess98 Amendment）
+
+OS 標準のレビューダイアログ（`expo-store-review`）を、満足度が高いと推測できる瞬間にだけ呼ぶ。頻度の上限管理は OS 側（Google Play time-bound quota / iOS 年 3 回・端末）に任せ、アプリは自前の回数 cap を持たない。
+
+- **トリガー（D1）**: 作業記録の保存成功直後のみ（単体 = WorkLogConfirmScreen 新規/変換、一括 = BulkLogConfirmScreen log mode）。編集保存・予定作成・削除では呼ばない
+- **マイルストーン（D2）**: 累計 logged events（ゴミ箱除く）が 10 / 30 / 75 / 150 / 300 件に到達したとき、各マイルストーンにつき 1 回だけ試行
+- **逓増 cooldown（D3）**: 前回試行から 30 → 60 → 90 日（3 回目以降 90 日固定）経過するまで出さない
+- **初回起動保護（D4）**: 初回起動から 3 日未満は出さない
+- **試行の定義（D5）**: ダイアログが実際に表示されたかは検知不可（Google Play 仕様）のため、「`requestReview()` を呼んだ = 試行」として記録
+- 判定は純粋関数 `src/features/review/reviewPolicy.ts`、永続化は `src/stores/reviewStore.ts`（AsyncStorage キー `bonsailog-review`）、呼び出しは `src/features/review/maybeRequestReview.ts` の `maybeRequestReview()`（fire-and-forget、保存・遷移をブロックしない）
+- **検証注意**: ダイアログは Play Store からインストールされたビルドのみ表示（Dev Build / ローカル APK は無反応、Maestro E2E 不可）。境界値は Jest（`__tests__/features/review/reviewPolicy.test.ts`）で担保
+- 禁止事項: 事前アンケート（review gating）、対価付与、「評価する」ボタンから In-App Review API を呼ぶこと（設定画面の導線は Play Store 直リンクを使う）
+
 ---
 
 ## §6. F-01 盆栽の登録・管理

@@ -61,6 +61,7 @@ import { addPhotoFromUri } from '@/src/features/photos/photoOrchestrator';
 import { useProGuard } from '@/src/features/pro/useProGuard';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
+import { maybeRequestReview } from '@/src/features/review/maybeRequestReview';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import {
   RecurrencePicker,
@@ -339,6 +340,9 @@ export default function BulkLogConfirmScreen() {
           .getState()
           .show(t('bulkLogDoneToast').replace('{count}', String(bonsaiIds.length)));
       }
+      // ADR-0006 Sess98 Amendment D1: 一括記録の保存成功もハッピーモーメント (log mode のみ、
+      // schedule mode は上で早期 return 済)。 try 内 = 保存成功時のみ発火、 遷移をブロックしない。
+      void maybeRequestReview();
     } catch (error) {
       console.warn('[bulk-log] failed:', error);
     }

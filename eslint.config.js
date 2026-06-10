@@ -15,6 +15,9 @@ module.exports = defineConfig([
       'scripts/debug/**',
       'scripts/ui-diff/**',
       'docs/mockups/**', // OpenDesign 生成物 (凍結保管、BonsaiLog 規則の対象外)
+      // worktree 並列運用 (CLAUDE.md) の残骸 worktree を親 repo の lint が走査して
+      // ローカルのみ数千 error になる (CI には存在しないため緑 = 乖離)。 Sess98 PR-2 副次発見。
+      '.claude/worktrees/**',
     ],
   },
   // jest.setup.js は CJS + jest globals 環境。 flat config では eslint-env directive が
