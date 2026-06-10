@@ -6,6 +6,11 @@
  *   - 採用: toggle 削除、 時刻のみ表示 + 編集可、 説明文で「個別通知ではなく まとめ通知」 と明示
  *   - 通知全停止は 設定画面の 通知設定で行う (= 説明文で 案内)
  *
+ * Sess94 PR-A 改修 (= ClaudeDesign モック寄せ、 機能 keep):
+ *   - BellIcon + ClockIcon を row 左に inline 追加 (= モック「🔔/🕐 アイコン」 整合)
+ *   - 機能 (= まとめ通知 1 系統、 ADR-0014) は完全 keep、 toggle 図形 + 「予定日に通知する」 文言は採用しない
+ *     (= 機能と矛盾する見せ方 = user 誤認リスク)
+ *
  * 用途:
  *   - RecurrenceFormScreen (= 定期予定 入力画面で 通知時刻を 直接編集可能)
  *
@@ -19,6 +24,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { BellIcon, ClockIcon } from '@/src/components/icons';
 import { nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { useColors } from '@/src/core/theme/useColors';
@@ -61,9 +67,12 @@ export function NotificationCard({ disabled = false }: { disabled?: boolean }) {
         testID="e2e_notification_card"
       >
         <View style={styles.row}>
-          <ThemedText style={[styles.rowLabel, { color: c.text }]}>
-            {t('notificationCardSummaryLabel')}
-          </ThemedText>
+          <View style={styles.rowLabelWrap}>
+            <BellIcon size={18} color={c.text} />
+            <ThemedText style={[styles.rowLabel, { color: c.text }]}>
+              {t('notificationCardSummaryLabel')}
+            </ThemedText>
+          </View>
         </View>
         <View style={[styles.divider, { backgroundColor: c.border }]} />
         <Pressable
@@ -74,9 +83,12 @@ export function NotificationCard({ disabled = false }: { disabled?: boolean }) {
           accessibilityLabel={`${t('notificationCardTimeLabel')}: ${notifTime}`}
           testID="e2e_notification_card_time_row"
         >
-          <ThemedText style={[styles.rowLabel, { color: c.text }]}>
-            {t('notificationCardTimeLabel')}
-          </ThemedText>
+          <View style={styles.rowLabelWrap}>
+            <ClockIcon size={18} color={c.text} />
+            <ThemedText style={[styles.rowLabel, { color: c.text }]}>
+              {t('notificationCardTimeLabel')}
+            </ThemedText>
+          </View>
           <View style={styles.rowValueWrap}>
             <ThemedText style={[styles.rowValue, { color: c.tint }]}>{notifTime}</ThemedText>
             <ThemedText style={[styles.chevron, { color: c.textSecondary }]}>›</ThemedText>
@@ -122,6 +134,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   rowPressable: {},
+  // Sess94 PR-A: icon + label の inline 並び (= ClaudeDesign モック整合、 機能 keep)
+  rowLabelWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexShrink: 1,
+  },
   rowLabel: {
     fontSize: 14,
     fontWeight: '500',
