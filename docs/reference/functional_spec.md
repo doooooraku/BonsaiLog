@@ -700,19 +700,20 @@ const handleSave = async (input: CreateEventInput) => {
 
 ---
 
-## §12. F-07 針金がけ記録・外し時期通知
+## §12. F-07 針金がけ記録・外し予定日のアプリ内表示
 
 ### §12.1 目的
 
-針金がけ作業を記録した際に、ユーザーが**任意で「外す予定日時」を指定**できる。指定日時に通知を発火し、加えて装着期間経過の事実通知も対応する。Marcus 型ペルソナの「針金食い込みで永久傷」実害（🩹6）への回答。
+針金がけ作業を記録した際に、ユーザーが**任意で「外す予定日」を指定**できる。外し予定日と装着期間は**針金がけ一覧のアプリ内事実表示**で可視化する（個別通知は発火しない、ADR-0014 / ADR-0036 D8）。Marcus 型ペルソナの「針金食い込みで永久傷」実害（🩹6）への回答。
 
-> 「外しましょう」等の推奨/命令文言は禁止（事実通知のみ）。
+> 「外しましょう」等の推奨/命令文言は禁止（事実表示のみ）。
+> 外し予定を通知に乗せたい場合は、予定追加フローで unwiring の planned event を手動登録すれば F-16 当日まとめ通知に集約される（回避路、Sess96 棚卸しで明文化）。
 
 ### §12.2 画面 / 入口
 
-- 盆栽詳細 → 作業記録 → wiring 選択
-- 盆栽詳細 → 未外しの針金一覧
-- 設定 → 全盆栽横断「未外しの針金」リスト
+- 作業記録フロー → 種別 wiring 選択 → 「外す予定日」入力（任意、`WorkLogTypeFormFields`）
+- 「もっと」タブ管理ハブ → 「針金がけ一覧」 (`app/(tabs)/plan/wiring.tsx`)
+- Bulk 記録では「外す予定日」UI 非表示（§9 参照、全 N 本同一日付の強制が user 体感とずれるため）
 
 ### §12.3 期待動作
 
@@ -721,116 +722,99 @@ const handleSave = async (input: CreateEventInput) => {
 ```mermaid
 stateDiagram-v2
   [*] --> InputForm: 針金がけ記録開始
-  InputForm --> SetUnwireDate: 「外す予定日時」入力（任意）
+  InputForm --> SetUnwireDate: 「外す予定日」入力（任意）
   SetUnwireDate --> Save: 保存
-  InputForm --> Save: 「外す予定日時」未入力でも保存可
-  Save --> Active: events INSERT 完了
-  Active --> NotificationScheduled: 外す予定日時が指定されていれば通知スケジュール
-  Active --> WeeklyFactNotice: 装着期間 6 週経過時に事実通知（任意機能）
-  Active --> Unwired: 針金外し記録 (unwiring event)
+  InputForm --> Save: 「外す予定日」未入力でも保存可
+  Save --> Active: events INSERT 完了（scheduled_unwire_at は wiring payload 内に保持）
+  Active --> InAppDisplay: 針金がけ一覧で装着期間 + 外し予定日を事実表示
+  Active --> Unwired: 「外す」→ 針金外し記録 (unwiring event、status='logged')
   Unwired --> [*]
 ```
 
-#### §12.3.2 針金 event のペイロード
+#### §12.3.2 針金 event のペイロード（`src/db/eventPayloadValidator.ts` が SoT）
 
 ```typescript
-interface WiringPayload {
-  wire_size_mm: number; // 0.5, 1, 1.5, 2, 2.5, 3, 4
-  body_part: 'trunk' | 'branch_primary' | 'branch_secondary' | 'apex' | 'other';
-  photo_ids: string[]; // 写真 ID
-  scheduled_unwire_at: string | null; // ISO UTC、ユーザー指定の外し予定日時
-  linked_unwiring_event_id: string | null; // 外し記録が付いたら埋める
-}
+const WiringPayload = v.object({
+  wire_size_mm: v.optional(v.number()), // 1, 1.5, 2, 2.5, 3 (WIRE_GAUGES 5 段階)
+  body_part: v.optional(v.string()), // 'all' | 'miki' | 'eda' (WIRE_PARTS)
+  scheduled_unwire_at: v.optional(v.string()), // ISO 8601 UTC、ユーザー指定の外し予定日
+});
+
+const UnwiringPayload = v.object({
+  body_part: v.optional(v.string()),
+});
 ```
 
-#### §12.3.3 外し時期の扱い（ADR-0014 で個別通知 → F-02 統合 + アプリ内表示に変更）
+- 写真は `photos` テーブルで event_id 紐付け（ADR-0022）、payload に photo_ids は持たない
+- wiring ↔ unwiring のリンク用 field は持たない（§12.3.4 の時系列導出で判定）
 
-**ユーザー指定外し日時**: F-02 status='planned' に統合 (ADR-0014 F1)
+#### §12.3.3 外し予定日の扱い（ADR-0014 + ADR-0036 D8）
 
-```typescript
-// ユーザーが「外す予定日時」を 2026-06-15 と指定した場合
-if (payload.scheduled_unwire_at) {
-  // F-02 events に status='planned' で登録 (種別 'unwiring')
-  // 個別通知は発火させず、F-16 当日まとめ通知に集約される
-  await db.insert(events).values({
-    id: ulid(),
-    bonsai_id: bonsaiId,
-    type: 'unwiring',
-    status: 'planned',
-    occurred_at_utc: new Date(payload.scheduled_unwire_at).toISOString(),
-    tz_offset_min: getTzOffsetMin(),
-    tz_iana: getTzIana(),
-    payload_json: JSON.stringify({ linked_wiring_event_id: wiringEventId }),
-  });
-  // F-16 invalidator パターンで当日まとめ通知を再生成
-  await invalidateBonsaiNotifications(bonsaiId);
-}
-```
+**ユーザー指定外し予定日**: wiring payload 内 `scheduled_unwire_at` にのみ保持する。
+unwiring の planned event は**自動生成しない**（ADR-0036 D8: unwiring event は独立 record 不在。
+wiring planned 削除時の cascade は SUMMARY 通知再計算で完結する設計）。個別通知も発火しない。
 
-**装着期間経過の表示**: 通知ではなくアプリ内事実表示 (ADR-0014 で確定)
+**装着期間 + 外し予定日の表示**: 針金がけ一覧 (`app/(tabs)/plan/wiring.tsx` + `src/features/wiring/wiringDuration.ts`) でアプリ内事実表示。
 
-- 盆栽詳細画面 → 針金一覧セクション
-- 各針金 event に対して以下を表示:
-  - 6 週未経過: 「装着期間: X 週 Y 日 (あと N 週)」
-  - 6 週経過済: 「装着期間: X 週 Y 日 (経過済)」
-  - 外し記録あり: 「装着期間: X 週 (完了)」
+- 状態 3 区分（`scheduled_unwire_at` 指定時はそこから、未指定時は既定 6 週 = 42 日から判定）:
+  - `within_safe`: 外し予定まで余裕あり（灰）
+  - `within_warning`: 外し予定まで 14 日以下（橙）
+  - `overdue`: 外し予定超過、または未指定で 6 週超（赤、要確認バッジ）
+- 各行: 盆栽写真サムネ 64×64 + 装着期間（経過週数）+ 「外す」ボタン
 - 通知発火なし: ユーザーが自発的にアプリを開いて確認
 
-**禁止文言（旧仕様で記載されていた通知文言は削除、ADR-0014 整合）**:
+**禁止文言（ADR-0014 整合）**:
 
 - ❌ 「針金を外しましょう」「外してください」「作業してください」（推奨/命令、禁止）
 - ✅ 「装着期間: 6 週 3 日 (経過済)」（事実、アプリ内表示）
 
-#### §12.3.4 外し記録の紐付け
+#### §12.3.4 外し記録と装着中判定
 
 ```mermaid
 sequenceDiagram
   participant UI
   participant DB
-  UI->>UI: 未外しの針金一覧で wiring event を選択
-  UI->>UI: 「外し記録」タップ
-  UI->>DB: INSERT events (type='unwiring', payload.linked_wiring_event_id=wId)
-  UI->>DB: UPDATE events SET payload.linked_unwiring_event_id=? WHERE id=wId
+  UI->>UI: 針金がけ一覧で「外す」タップ
+  UI->>UI: /work-log-confirm?type=unwiring へ遷移（body_part 引き継ぎ）
+  UI->>DB: INSERT events (type='unwiring', status='logged')
   DB-->>UI: 完了
-  UI->>UI: 通知 identifier キャンセル
+  UI->>UI: 一覧再計算で該当行が消える
 ```
+
+- **装着中判定はリンク field ではなく時系列導出**: 盆栽ごとに「最新 wiring event が最新 unwiring event より後」なら装着中として一覧に表示（`wiring.tsx`）
 
 ### §12.4 境界値テーブル
 
-| 項目                           | 境界   | 期待動作                                   |
-| ------------------------------ | ------ | ------------------------------------------ |
-| wire_size_mm = 0.5             | 最細   | OK                                         |
-| wire_size_mm = 4               | 最太   | OK                                         |
-| wire_size_mm = 0               | 無効   | バリデーション NG                          |
-| body_part = 不明値             | 無効   | enum にマップ、不一致は NG                 |
-| scheduled_unwire_at = 過去日時 | 無効   | バリデーション NG                          |
-| scheduled_unwire_at = null     | 任意   | 通知スケジュールなし、装着期間経過のみ通知 |
-| 装着期間 6 週経過              | 境界   | 事実通知（任意機能、Settings で OFF 可能） |
-| 外し前に針金 event 削除        | 整合性 | CASCADE 削除、関連通知キャンセル           |
+| 項目                         | 境界   | 期待動作                                                      |
+| ---------------------------- | ------ | ------------------------------------------------------------- |
+| wire_size_mm = 1             | 最細   | OK（WIRE_GAUGES '1mm'）                                       |
+| wire_size_mm = 3             | 最太   | OK（WIRE_GAUGES '3mm'）                                       |
+| body_part = 不明値           | 任意   | optional string（UI は WIRE_PARTS 3 値のみ生成）              |
+| scheduled_unwire_at = null   | 任意   | 一覧は既定 6 週 (42 日) しきい値で overdue 判定               |
+| 外し予定まで 14 日以下       | 境界   | within_warning（橙）表示                                      |
+| 外し予定超過 / 未指定 6 週超 | 境界   | overdue（赤、要確認バッジ）表示                               |
+| 外し前に wiring event 削除   | 整合性 | softDelete + SUMMARY 通知再計算で cascade 完結（ADR-0036 D8） |
 
 ### §12.5 エラーフロー
 
-| エラー                         | 表示             | 対応                           |
-| ------------------------------ | ---------------- | ------------------------------ |
-| 通知スケジュール失敗           | ログのみ         | DB 正、起動時に再試行          |
-| 外し記録の紐付け先が存在しない | インラインエラー | 適切な wiring event を選び直す |
-| scheduled_unwire_at が過去     | インラインエラー | 修正                           |
+| エラー                     | 表示     | 対応                           |
+| -------------------------- | -------- | ------------------------------ |
+| payload バリデーション失敗 | 保存不可 | `eventPayloadValidator` で検証 |
 
-### §12.6 受け入れ条件（ADR-0014 反映）
+### §12.6 受け入れ条件（ADR-0014 + ADR-0036 D8 反映）
 
-- [ ] 針金記録時に「外す予定日時」入力欄が表示される（任意入力）
-- [ ] 「外す予定日時」入力時に F-02 status='planned' (種別 'unwiring') として登録
-- [ ] 該当日の F-16 当日まとめ通知に「N 件の作業予定があります」として集約される
-- [ ] 装着期間 6 週経過時に **通知発火しない** (ADR-0014 で削除)
-- [ ] 盆栽詳細 → 針金一覧で「装着期間: X 週 Y 日 (経過済 / あと N 週 / 完了)」がアプリ内表示
-- [ ] 「外しましょう」「作業してください」等の禁止語が UI / 通知文言に含まれない（CI で `pnpm i18n:forbidden` で検出）
-- [ ] 外し記録 (unwiring event) で該当針金レコードが完了状態、F-02 planned event もキャンセル
-- [ ] 針金 event 削除で CASCADE、関連 F-02 planned event 削除、F-16 通知再生成
+- [x] 針金記録時に「外す予定日」入力欄が表示される（任意入力、Bulk では非表示）
+- [x] `scheduled_unwire_at` は wiring payload 内にのみ保持（planned event 自動生成なし）
+- [x] 装着期間経過時に **通知発火しない**（ADR-0014 で削除、アプリ内表示で代替）
+- [x] 針金がけ一覧で装着期間 + 状態 3 区分（safe / warning / overdue）がアプリ内表示
+- [x] 「外しましょう」「作業してください」等の禁止語が UI 文言に含まれない（CI で `pnpm i18n:forbidden` で検出）
+- [x] 「外す」ボタン → unwiring event (status='logged') 記録で一覧から該当行が消える
+- [x] wiring event 削除は softDelete + SUMMARY 通知再計算で cascade 完結
 
 ### §12.7 対応テスト
 
-- Jest: `__tests__/features/wiring/record.test.ts`, `scheduledPlanned.test.ts`, `weeksElapsedDisplay.test.ts`, `forbiddenWords.test.ts`
-- Maestro: `maestro/flows/wiring_with_schedule.yml`（針金記録 → F-02 planned 確認 → 当日 F-16 通知に集約 → 外し記録）
+- Jest: `__tests__/features/wiring/wiringDuration.test.ts`（装着期間 + 状態判定）, `__tests__/db/eventPayloadValidator.test.ts`（payload 境界）
+- Maestro: `maestro/flows/characterization/char-wiring-list.yml`（一覧到達 + 表示確認）
 
 ---
 

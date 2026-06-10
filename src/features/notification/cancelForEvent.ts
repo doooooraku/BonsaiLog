@@ -80,9 +80,10 @@ export async function cancelForDateKey(_dateKey: string, t: TFunc): Promise<void
  * 内部実装: 全 SUMMARY を 1 回 reschedule (冪等のため N 件分 sequential 不要、 1 回呼出で全 dateKey
  * の SUMMARY が削除済 events を除外して再集計される)。
  *
- * wiring cascade (ADR-0036 D8): wiring planned 削除 → wiring payload 内 scheduled_unwire_at の
- * unwiring scheduled 通知も SUMMARY 再計算で自動 cancel (unwiring event は独立 record 不在のため、
- * 個別 cancel API 不要)。
+ * wiring cascade (ADR-0036 D8): unwiring event は独立 record 不在 (wiring payload 内
+ * scheduled_unwire_at で予定日のみ保持)。 SUMMARY は status='planned' events のみ集計するため
+ * scheduled_unwire_at 自体は通知対象外、 wiring planned 削除は SUMMARY 再計算で自動的に
+ * 集計から除外され cascade 完了 = 個別 cancel API 不要 (Sess96 doc-truth 修正)。
  *
  * @param _eventIds 削除した event ID 配列 (将来 dateKey 単位最適化 hook 用、 当面は未使用)
  */
