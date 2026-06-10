@@ -1063,5 +1063,20 @@ const tr: Partial<Record<TranslationKey, string>> = {
   customStylesDeleteConfirmTitle: 'Delete "{name}"?',
   customStylesDeleteConfirmBody: 'No bonsai uses this style.',
   customStylesDeleteImpactBody: '{count} bonsai will have their style cleared.',
+  // Sess93 PR-3: WeekdaySelector + RecurrencePicker 拡張 (ADR-0056 Sess93 Amendment)
+  weekdaySunShort: 'Sun',
+  weekdayMonShort: 'Mon',
+  weekdayTueShort: 'Tue',
+  weekdayWedShort: 'Wed',
+  weekdayThuShort: 'Thu',
+  weekdayFriShort: 'Fri',
+  weekdaySatShort: 'Sat',
+  recurringStartDateLabel: 'Start date',
+  recurringInitialDateLabel: 'First occurrence',
+  recurringStartDateHint: 'The first scheduled date — repeats from here.',
+  recurringStartDatePastError: 'Past dates are not allowed',
+  recurringWeeklyByDayLabel: 'Repeat on',
+  recurringCustomDaysApart: 'days apart',
+  recurringWeeklyAllDaysToDailyToast: 'Saved as "Daily"',
 };
 export default tr;

@@ -1078,6 +1078,21 @@ const ja: Partial<Record<TranslationKey, string>> = {
   customStylesDeleteConfirmTitle: '「{name}」 を削除しますか?',
   customStylesDeleteConfirmBody: '使用中の盆栽はありません。',
   customStylesDeleteImpactBody: '{count} 件の盆栽の樹形設定が解除されます。',
+  // Sess93 PR-3: WeekdaySelector + RecurrencePicker 拡張 (ADR-0056 Sess93 Amendment)
+  weekdaySunShort: '日',
+  weekdayMonShort: '月',
+  weekdayTueShort: '火',
+  weekdayWedShort: '水',
+  weekdayThuShort: '木',
+  weekdayFriShort: '金',
+  weekdaySatShort: '土',
+  recurringStartDateLabel: '開始日',
+  recurringInitialDateLabel: '初回の予定日',
+  recurringStartDateHint: 'この日が最初の予定になり、 ここから繰り返します。',
+  recurringStartDatePastError: '過去の日付は選択できません',
+  recurringWeeklyByDayLabel: 'くり返す曜日',
+  recurringCustomDaysApart: '日ごとに繰り返す',
+  recurringWeeklyAllDaysToDailyToast: '『毎日』 として登録します',
 };
 
 export default ja;
