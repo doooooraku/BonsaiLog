@@ -103,9 +103,12 @@ export function HighlightQuery({ text, query }: { text: string; query: string })
 export function BonsaiResultRow({
   result,
   highlightQuery,
+  onOpen,
 }: {
   result: BonsaiResult;
   highlightQuery: string;
+  /** 行 tap で詳細を開く直前に呼ぶ (Sess95 PR-4: 検索履歴の確定 action 保存用)。 */
+  onOpen?: () => void;
 }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -124,7 +127,10 @@ export function BonsaiResultRow({
       accessibilityRole="button"
       accessibilityLabel={b.name}
       style={[styles.bonsaiRow, { borderBottomColor: c.border }]}
-      onPress={() => router.push(`/(tabs)/bonsai/${b.id}` as Href)}
+      onPress={() => {
+        onOpen?.();
+        router.push(`/(tabs)/bonsai/${b.id}` as Href);
+      }}
     >
       <View style={styles.thumbWrap}>
         {coverUri != null ? (
@@ -152,9 +158,12 @@ export function BonsaiResultRow({
 export function EventResultRow({
   event: e,
   highlightQuery,
+  onOpen,
 }: {
   event: EventWithSnippet;
   highlightQuery: string;
+  /** 行 tap で詳細を開く直前に呼ぶ (Sess95 PR-4: 検索履歴の確定 action 保存用)。 */
+  onOpen?: () => void;
 }) {
   const { t, lang } = useTranslation();
   const router = useRouter();
@@ -169,9 +178,10 @@ export function EventResultRow({
       accessibilityRole="button"
       accessibilityLabel={e.note ?? typeLabel}
       style={[styles.eventRow, { borderBottomColor: c.border }]}
-      onPress={() =>
-        router.push(`/(tabs)/bonsai/${e.bonsaiId}?tab=history&focusEventId=${e.id}` as Href)
-      }
+      onPress={() => {
+        onOpen?.();
+        router.push(`/(tabs)/bonsai/${e.bonsaiId}?tab=history&focusEventId=${e.id}` as Href);
+      }}
     >
       <View style={[styles.eventIconBox, { backgroundColor: c.surface, borderColor: c.border }]}>
         <EventIcon type={e.type as EventType} size={18} />

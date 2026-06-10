@@ -42,9 +42,14 @@ export default function LookBackSearchScreen() {
     minChars,
     t,
     runSearchWith,
+    commitHistory,
   } = useBonsaiSearch();
 
-  const runSearch = () => void runSearchWith(query);
+  // Sess95 PR-4: Enter 確定 = 履歴保存 (確定 action)。 入力中の debounce 検索では保存しない。
+  const runSearch = () => {
+    commitHistory();
+    void runSearchWith(query);
+  };
   const hasTag = selectedTagId != null;
   const showMinCharsHint = !hasTag && !searched;
   const highlightQuery = query.trim();
@@ -151,6 +156,7 @@ export default function LookBackSearchScreen() {
                       style={styles.historyTextWrap}
                       onPress={() => {
                         setQuery(q);
+                        commitHistory(q); // 再検索 = 履歴先頭へ移動 (重複排除は store 側)
                         void runSearchWith(q);
                       }}
                     >
@@ -189,7 +195,12 @@ export default function LookBackSearchScreen() {
               {bonsaiResults.length}
             </ThemedText>
             {bonsaiResults.map((r) => (
-              <BonsaiResultRow key={r.bonsai.id} result={r} highlightQuery={highlightQuery} />
+              <BonsaiResultRow
+                key={r.bonsai.id}
+                result={r}
+                highlightQuery={highlightQuery}
+                onOpen={() => commitHistory()}
+              />
             ))}
           </View>
         )}
@@ -203,7 +214,12 @@ export default function LookBackSearchScreen() {
               {eventResults.length}
             </ThemedText>
             {eventResults.map((e) => (
-              <EventResultRow key={e.id} event={e} highlightQuery={highlightQuery} />
+              <EventResultRow
+                key={e.id}
+                event={e}
+                highlightQuery={highlightQuery}
+                onOpen={() => commitHistory()}
+              />
             ))}
           </View>
         )}
