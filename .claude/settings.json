@@ -1,5 +1,29 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(pnpm verify)",
+      "Bash(pnpm verify:*)",
+      "Bash(pnpm test)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm type-check)",
+      "Bash(pnpm docs:lint)",
+      "Bash(pnpm i18n:check)",
+      "Bash(pnpm metadata:check)",
+      "Bash(corepack pnpm verify)",
+      "Bash(corepack pnpm verify:*)",
+      "Bash(corepack pnpm test)",
+      "Bash(corepack pnpm lint)",
+      "Bash(corepack pnpm type-check)",
+      "Bash(corepack pnpm docs:lint)",
+      "Bash(corepack pnpm i18n:check)",
+      "Bash(corepack pnpm metadata:check)",
+      "Bash(node scripts/dev/wait-pr-ci.mjs *)",
+      "Bash(node scripts/dev/next-r-number.mjs *)",
+      "Bash(node scripts/validate-metadata.mjs *)",
+      "Bash(adb devices)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
