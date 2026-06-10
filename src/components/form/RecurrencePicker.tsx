@@ -34,6 +34,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { InlineDateRow } from '@/src/components/form/InlineDateRow';
 import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { WeekdaySelector } from '@/src/components/form/WeekdaySelector';
 import { useToastStore } from '@/src/components/Toast';
@@ -356,13 +357,14 @@ export function RecurrencePicker({
             ) : null}
           </View>
 
-          {/* Sess93 PR-3: 開始日 picker (= モック「初回の予定日」、 過去日エラー inline 表示) */}
+          {/* Sess93 PR-3: 開始日 picker (= モック「初回の予定日」、 過去日エラー inline 表示)
+              Sess94 PR-B: LabeledDateRow → InlineDateRow (= 横並び 1 行 + 📅 icon + 文化整合日付) */}
           {!hideStartDate ? (
             <>
               <ThemedText style={[styles.sectionLabel, { color: c.text }]}>
                 {t('recurringStartDateLabel')}
               </ThemedText>
-              <LabeledDateRow
+              <InlineDateRow
                 label={t('recurringInitialDateLabel')}
                 value={value.startDate}
                 onChangeText={handleStartDateChange}
@@ -471,6 +473,8 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
   },
+  // Sess94 PR-B: 4-3-1 → 3-3-1 grid 配置 (= ClaudeDesign モック整合)。
+  //   flexBasis 30% で 3 個 (90%) 入る → 4 個目で wrap → 6 個 (= 2 行) + custom (3 行目 1 個中央)。
   presetGroup: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -488,6 +492,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 8,
     borderWidth: 1,
+    flexBasis: '30%',
+    alignItems: 'center',
   },
   presetLabel: {
     fontSize: 14,

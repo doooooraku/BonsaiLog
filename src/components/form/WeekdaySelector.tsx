@@ -107,10 +107,11 @@ const styles = StyleSheet.create({
     gap: 6,
     justifyContent: 'space-between',
   },
+  // Sess94 PR-B: tap target を広めに (= ClaudeDesign モック整合、 paddingVertical 8 → 12)。
   button: {
     flex: 1,
     minWidth: 36,
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',

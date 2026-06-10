@@ -46,6 +46,7 @@ import {
 import { RulePreviewCard } from '@/src/components/form/RulePreviewCard';
 import { useToastStore } from '@/src/components/Toast';
 import { getTzOffsetMin, nowUtc, toLocalDateKey } from '@/src/core/datetime';
+import { formatLocalizedDateWithWeekday } from '@/src/core/datetime/formatLocalized';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
@@ -69,6 +70,7 @@ import {
 import { BonsaiChipPickerLayout } from '@/src/features/bonsai/BonsaiChipPickerLayout';
 import { useProStore } from '@/src/stores/proStore';
 import { usePickerStore, type BulkBonsaiRef } from '@/src/stores/pickerStore';
+import { useSettingsStore } from '@/src/stores/settingsStore';
 
 type Mode = 'create' | 'edit';
 
@@ -151,9 +153,11 @@ function buildPreviewSummary(
 }
 
 export default function RecurrenceFormScreen() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const c = useColors();
   const router = useRouter();
+  // Sess94 PR-B: 通知時刻 SoT (= settingsStore.notificationDailySummaryTime) を read で「次回」 行に反映
+  const notifTime = useSettingsStore((s) => s.notificationDailySummaryTime);
   const params = useLocalSearchParams<RouteParams>();
   const mode: Mode = params.ruleId ? 'edit' : 'create';
 
@@ -344,6 +348,13 @@ export default function RecurrenceFormScreen() {
   const previewSummary = buildPreviewSummary(recurrence, eventType, bonsais.length, t);
   const startDateInvalid = isStartDateInPast(recurrence);
   const saveDisabled = saving || bonsais.length === 0 || !eventType || startDateInvalid;
+  // Sess94 PR-B: 「次回」 行用文字列 (= 開始日 + 通知時刻、 例「2026年6月10日 (火) 7:00」)。
+  // 設計判断: 「次回 = 開始日」 = 新規モード = 最初の予定日、 編集モード = 削除 + 再生成 後の最初の予定日、
+  // どちらも startDate base で正確。 expandRRule 呼出 不要 = O(1) 級。
+  const nextOccurrenceLabel =
+    recurrence.startDate && eventType
+      ? `${formatLocalizedDateWithWeekday(recurrence.startDate, lang)} ${notifTime}`
+      : null;
 
   return (
     <ThemedView
@@ -388,8 +399,9 @@ export default function RecurrenceFormScreen() {
           testID="e2e_recurrence_form_memo"
         />
 
-        {/* Sess93 PR-4: RulePreviewCard (= 「このルールで作られる予定」 確認 card) */}
-        <RulePreviewCard summary={previewSummary} />
+        {/* Sess93 PR-4: RulePreviewCard (= 「このルールで作られる予定」 確認 card)
+            Sess94 PR-B: 「次回」 行 配線 (= 開始日 + 通知時刻、 文化整合日付) */}
+        <RulePreviewCard summary={previewSummary} nextOccurrence={nextOccurrenceLabel} />
       </BonsaiChipPickerLayout>
 
       <BottomCtaBar
