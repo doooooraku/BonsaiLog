@@ -36,6 +36,7 @@ import {
   schemaV12,
   schemaV13,
   schemaV16,
+  schemaV17,
 } from './schema';
 import { SPECIES_SEED, SPECIES_SEED_IDS } from './seedSpecies';
 
@@ -333,6 +334,21 @@ async function migrate(db: SQLite.SQLiteDatabase) {
     }
     await db.execAsync(schemaV16);
     version = 16;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v17 (Sess93 PR-1、 ADR-0056 Sess93 Amendment): recurrence_rules.memo
+  // カラム追加。 定期予定にユーザー任意 memo を保存、 rule 展開時 events.note へ cascade。
+  //
+  // - 単純な TEXT NULL 列追加 (= Sess14 罠なし、 REFERENCES 句なし)
+  // - hasColumn ガードで 二重実行回避
+  // - 既存 row は memo NULL (= 後方互換)
+  // ---------------------------------------------------------------------------
+  if (version < 17) {
+    if (!(await hasColumn(db, 'recurrence_rules', 'memo'))) {
+      await db.execAsync(schemaV17);
+    }
+    version = 17;
   }
 
   // Always set version UNCONDITIONALLY (not inside an if-block).

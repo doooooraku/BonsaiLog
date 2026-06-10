@@ -31,11 +31,12 @@
  * - v14: bonsai_species_custom テーブル + bonsai.custom_species_id (Sess13 PR-H、 カスタム樹種 β table)
  * - v15: v14 修復 (Sess14 PR-P、 既存 DB で v14 が部分失敗していたユーザー向け idempotent re-run)
  * - v16: recurrence_rules テーブル新規 + events.recurrence_rule_id 列追加 (Sess78 PR-2、 ADR-0056 定期予定機能、 ALTER TABLE は REFERENCES 句なし版で Sess14 罠回避)
+ * - v17: recurrence_rules.memo カラム追加 (Sess93 PR-1、 ADR-0056 Sess93 Amendment、 定期予定にメモを保存、 rule 展開時 events.note に cascade)
  */
 import { sqliteTable, text, integer, primaryKey, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
-export const SCHEMA_VERSION = 16;
+export const SCHEMA_VERSION = 17;
 
 // ---------------------------------------------------------------------------
 // Drizzle ORM table definitions (TypeScript 型推論 + query builder 用)
@@ -633,6 +634,19 @@ CREATE INDEX IF NOT EXISTS idx_events_recurrence
 `;
 
 /**
+ * Migration v17 (Sess93 PR-1、 ADR-0056 Sess93 Amendment): recurrence_rules.memo カラム追加。
+ *
+ * - 定期予定 rule にユーザー任意 memo を保存 (= 200 文字 + 複数行、 UI 側で enforce)
+ * - rule 展開時 (createRecurrenceRule / bulkCreate / replace) に events.note へ cascade copy
+ * - logged events への cascade はしない (= 過去の事実保護、 ADR-0011 整合)
+ * - **Sess14 罠回避**: ALTER TABLE は REFERENCES 句なし版 (= 単純な TEXT NULL 列追加で罠なし)
+ * - hasColumn ガードで 二重実行回避 (db.ts 側で 配線)
+ */
+export const schemaV17 = `
+ALTER TABLE recurrence_rules ADD COLUMN memo TEXT;
+`;
+
+/**
  * Drizzle table 定義 (recurrence_rules)、 Sess78 PR-2 ADR-0056 D2。
  */
 export const recurrenceRules = sqliteTable(
@@ -648,6 +662,7 @@ export const recurrenceRules = sqliteTable(
     endAtUtc: text('end_at_utc'), // null = 永遠、 default = +365 日 (UI 側 fallback)
     exdates: text('exdates').notNull().default('[]'), // JSON array of YYYY-MM-DD
     tzIana: text('tz_iana').notNull(), // ADR-0008 TZ 3 層防御整合
+    memo: text('memo'), // Sess93 PR-1: ADR-0056 Amendment、 定期予定にユーザー任意 memo、 rule 展開時 events.note へ cascade
     deletedAt: text('deleted_at'), // 30 日ゴミ箱
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),

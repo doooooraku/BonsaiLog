@@ -163,4 +163,41 @@ describe('recurrenceRuleRepository ソースコード静的解析 (eventReposito
       expect(repoSrc).not.toMatch(/SELECT\s+MIN\(occurred_at_utc\)[^;]*\$\{/s);
     });
   });
+
+  // ============================================================
+  // Sess93 PR-1: memo cascade (= 静的解析、 実 DB は CRUD test 担当)
+  // ============================================================
+  describe('Sess93 PR-1: recurrence_rules.memo 列 + cascade to events.note', () => {
+    const repoSrc: string = require('fs').readFileSync(
+      require('path').resolve(__dirname, '../../src/db/recurrenceRuleRepository.ts'),
+      'utf8',
+    );
+
+    test('1. CreateRecurrenceRuleInput に memo フィールドが含まれる (optional)', () => {
+      expect(repoSrc).toMatch(/memo\?:\s*string\s*\|\s*null/);
+    });
+
+    test('2. RecurrenceRuleRow に memo フィールドが含まれる', () => {
+      // RecurrenceRuleRow 型定義内で memo: string | null
+      expect(repoSrc).toMatch(/memo:\s*string\s*\|\s*null/);
+    });
+
+    test('3. INSERT INTO recurrence_rules に memo 列が含まれる', () => {
+      expect(repoSrc).toMatch(/INSERT\s+INTO\s+recurrence_rules[^;]*memo[^;]*\)\s*VALUES/s);
+    });
+
+    test('4. INSERT INTO events に note 列が含まれる (= rule.memo cascade)', () => {
+      expect(repoSrc).toMatch(/INSERT\s+INTO\s+events[^;]*recurrence_rule_id,\s*note/s);
+    });
+
+    test('5. SELECT recurrence_rules で memo 列が取得される', () => {
+      expect(repoSrc).toMatch(/SELECT[^;]*\bmemo\b[^;]*FROM\s+recurrence_rules/s);
+    });
+
+    test('6. 空文字列の memo は null 正規化 (= UI 空欄を NULL 統一)', () => {
+      expect(repoSrc).toMatch(
+        /input\.memo\s*&&\s*input\.memo\.length\s*>\s*0\s*\?\s*input\.memo\s*:\s*null/,
+      );
+    });
+  });
 });
