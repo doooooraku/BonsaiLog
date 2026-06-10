@@ -27,7 +27,7 @@
  */
 import { Stack, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -49,6 +49,7 @@ import {
 } from '@/src/core/recurrence/rrule';
 import { useColors } from '@/src/core/theme/useColors';
 import { getBonsaiById } from '@/src/db/bonsaiRepository';
+import { BonsaiChipPickerLayout } from '@/src/features/bonsai/BonsaiChipPickerLayout';
 import {
   bulkCreateRecurrenceRules,
   countActiveRecurrenceRules,
@@ -261,25 +262,19 @@ export default function RecurrenceFormScreen() {
           title: mode === 'edit' ? t('recurringEditScreenTitle') : t('recurringCreateScreenTitle'),
         }}
       />
-      <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Sess89 PR-C: 上部 Chip 横並び (= BulkWorkPicker 15851 スタイル流用、 readonly) */}
-        <View style={[styles.chipsHeader, { backgroundColor: c.surface, borderColor: c.border }]}>
-          <ThemedText style={[styles.chipsHeaderText, { color: c.text }]}>{headerText}</ThemedText>
-          <View style={styles.chipsRow}>
-            {bonsais.map((b) => (
-              <View
-                key={b.id}
-                style={[styles.chip, { backgroundColor: c.background, borderColor: c.border }]}
-                testID={`e2e_recurrence_form_chip_${b.id}`}
-              >
-                <ThemedText style={[styles.chipText, { color: c.text }]} numberOfLines={1}>
-                  {b.name}
-                </ThemedText>
-              </View>
-            ))}
-          </View>
-        </View>
-
+      {/* Sess92 PR-3 follow-up: BonsaiChipPickerLayout SoT (= ScrollView wrap + BonsaiChipList + body 統合)。
+          BulkWorkPicker と同 layout 構造で 画面 pattern を byte-level 統一。 bottomPadding=96 で
+          BottomCtaBar 分の余白を確保 (= 旧 scroll style paddingBottom 96 と同等)。
+          create mode のみ showAutoSelectedHint=true、 edit mode は user 能動的に編集に来たため false。 */}
+      <BonsaiChipPickerLayout
+        bonsais={bonsais}
+        headerText={headerText}
+        isSingle={isSingle}
+        showAutoSelectedHint={mode === 'create'}
+        chipTestIdPrefix="e2e_recurrence_form_chip"
+        autoSelectedHintTestId="e2e_recurrence_form_auto_selected_hint"
+        bottomPadding={96}
+      >
         {/* 作業種別 (= readonly) */}
         <View style={[styles.summaryRow, { backgroundColor: c.surface, borderColor: c.border }]}>
           <ThemedText style={[styles.summaryLabel, { color: c.textSecondary }]}>
@@ -290,11 +285,9 @@ export default function RecurrenceFormScreen() {
           </ThemedText>
         </View>
 
-        <View style={styles.pickerWrap}>
-          {/* Sess89 PR-A: hideToggle (= rule entity 本質 enabled=true) / hideEndDate (= 永続化標準) */}
-          <RecurrencePicker value={recurrence} onChange={setRecurrence} hideToggle hideEndDate />
-        </View>
-      </ScrollView>
+        {/* Sess89 PR-A: hideToggle (= rule entity 本質 enabled=true) / hideEndDate (= 永続化標準) */}
+        <RecurrencePicker value={recurrence} onChange={setRecurrence} hideToggle hideEndDate />
+      </BonsaiChipPickerLayout>
 
       <BottomCtaBar
         label={mode === 'edit' ? t('recurringEditSaveLabel') : t('recurringCreateSaveLabel')}
@@ -310,36 +303,8 @@ export default function RecurrenceFormScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scroll: { padding: 16, paddingBottom: 96, gap: 12 },
-  // Sess89 PR-C: 上部 Chip 横並び header (= BulkWorkPicker 15851 スタイル流用)
-  chipsHeader: {
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 10,
-  },
-  chipsHeaderText: {
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  chipsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    justifyContent: 'center',
-  },
-  chip: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    borderWidth: 1,
-    maxWidth: 200,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
+  // Sess92 PR-3 follow-up: scroll / chipsHeader / chipsHeaderText / chipsRow / chip / chipText /
+  // pickerWrap (= section spacing) は BonsaiChipPickerLayout に SoT 移管 (= ScrollView wrap + body padding + gap)。
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -356,5 +321,4 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     textAlign: 'right',
   },
-  pickerWrap: { marginTop: 8 },
 });
