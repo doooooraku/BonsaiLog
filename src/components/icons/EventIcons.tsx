@@ -53,12 +53,15 @@ export function ScissorsIcon({ size = 16, color = ACCENT_BARK }: IconProps) {
 }
 
 export function WireIcon({ size = 16, color = ACCENT_BARK }: IconProps) {
+  // Sess92 PR-2: viewBox 16→24 + strokeWidth 1.4→1.5 にリスケール (path 座標 1.5x)
+  // hub icon stroke 統一 (= SearchIcon / TagIcon / SproutIcon と同じ 1.5/24 標準) のため。
+  // 既存 16px usage (EventRow) でも viewBox 24 で同様に描画される。
   return (
-    <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
-        d="M2 8c2 0 2-4 4-4s2 8 4 8 2-4 4-4"
+        d="M3 12c3 0 3-6 6-6s3 12 6 12 3-6 6-6"
         stroke={color}
-        strokeWidth="1.4"
+        strokeWidth="1.5"
         strokeLinecap="round"
         fill="none"
       />

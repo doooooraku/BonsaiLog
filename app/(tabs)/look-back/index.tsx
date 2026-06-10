@@ -154,7 +154,13 @@ export default function LookBackHubScreen() {
             <View
               style={[styles.iconBox, { backgroundColor: c.background, borderColor: c.border }]}
             >
-              <card.Icon size={22} color={c.tint} />
+              {/* Sess92 PR-2: RepeatIcon は default strokeWidth 2 (= EventRow inline 14px 用)、
+                  hub 22px では他 icon (1.5) と統一感確保のため 1.5 override */}
+              {card.key === 'recurring' ? (
+                <RepeatIcon size={22} color={c.tint} strokeWidth={1.5} />
+              ) : (
+                <card.Icon size={22} color={c.tint} />
+              )}
             </View>
             <View style={styles.cardBody}>
               <View style={styles.titleRow}>
