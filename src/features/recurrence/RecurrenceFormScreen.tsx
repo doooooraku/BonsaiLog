@@ -1,5 +1,5 @@
 /**
- * RecurrenceFormScreen = 定期予定ルール 新規作成/編集 共通画面 (Sess82 PR-D 起票、 Sess89 PR-C 複数件対応)。
+ * RecurrenceFormScreen = 定期予定ルール 新規作成/編集 共通画面 (Sess82 PR-D 起票、 Sess89 PR-C 複数件対応、 Sess93 PR-4 モックアップ統合)。
  *
  * 動線:
  *   - 新規: ふりかえり → 定期予定を管理 → BottomCtaBar「+ 新規追加」 →
@@ -7,49 +7,57 @@
  *   - 編集: ふりかえり → 定期予定を管理 → kebab → 編集 → 本画面 (mode='edit'、 ruleId param)
  *
  * 責務:
- *   - 編集モードで getRecurrenceRuleById で初期値 load (= 単数 bonsai)、 null なら router.back() + Toast
+ *   - 編集モードで getRecurrenceRuleById で初期値 load (= 単数 bonsai + memo + byday + startDate)
  *   - 新規モードで usePickerStore.bulkContext.selectedBonsais から **複数件** bonsai 取得
  *   - RecurrencePicker (= 既存 component、 enabled 強制 true、 hideToggle/hideEndDate)
+ *   - MemoInputRow (= Sess93 PR-4 新規、 200 文字 + 複数行)
+ *   - NotificationCard (= Sess93 PR-4 新規、 まとめ通知時刻 直接編集)
+ *   - RulePreviewCard (= Sess93 PR-4 新規、 「このルールで作られる予定」 確認 card)
  *   - 保存:
- *     - 編集 = replaceRecurrenceRule (= softDelete + create wrapper、 単数)
- *     - 新規 = bulkCreateRecurrenceRules (= N 件 transaction 一括作成、 Sess89 PR-C R-73)
+ *     - 編集 = 事前 ConfirmDialog (= 既存予定削除 + 再生成 通知) → replaceRecurrenceRule
+ *     - 新規 = bulkCreateRecurrenceRules (= N 件 transaction 一括作成)
  *
- * Sess89 PR-C (案 X = 案 X N 件 loop):
- *   - 複数盆栽 → 同じ予定を一括作成 (= 5 鉢に毎週月曜の水やり等の use case)
- *   - 上部 Chip 横並び (= BulkWorkPicker 15851 スタイル流用、 readonly)
- *   - header「{count} 件の盆栽に同じ予定を追加」 / 単数「{name} に予定を追加」 (= R-71 件数別契約)
- *   - Pro 境界: 現在 active + 新規 N 件 > FREE_RECURRENCE_RULE_LIMIT (=3) で Paywall (= 案 P1)
- *   - 編集モードは単数のまま (= 既存仕様維持、 v1.x で多盆栽編集対応)
+ * Sess93 PR-4 改修:
+ *   - byday → buildWeeklyByDayRrule で RRULE 生成 (= preset='weekly' + byday 非空時)
+ *   - startDate → startAtUtc (= user 指定の任意日、 過去日 = 保存ブロック)
+ *   - memo → recurrence_rules.memo (= PR-1 で 列追加 + cascade)
+ *   - 編集 ConfirmDialog (= R-79 「破壊的データ操作は user に事前通知必須」 整合)
  *
  * 参照: docs/adr/ADR-0056-recurring-schedule.md / docs/adr/ADR-0025-bulk-action.md §7 (Sess89 PR-C Amendment)
  *        src/db/recurrenceRuleRepository.ts (= bulkCreateRecurrenceRules / replaceRecurrenceRule)
- *        src/components/form/RecurrencePicker.tsx (Sess78 PR-4、 controlled component)
+ *        src/components/form/RecurrencePicker.tsx (Sess78 PR-4、 Sess93 PR-3 拡張)
  */
 import { Stack, useLocalSearchParams, useRouter, type Href } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomCtaBar } from '@/src/components/common/BottomCtaBar';
-import { useToastStore } from '@/src/components/Toast';
+import { ConfirmDialog } from '@/src/components/ConfirmDialog';
+import { MemoInputRow } from '@/src/components/form/MemoInputRow';
+import { NotificationCard } from '@/src/components/form/NotificationCard';
 import {
   DEFAULT_RECURRENCE_VALUE,
+  isStartDateInPast,
   RecurrencePicker,
   type RecurrenceValue,
 } from '@/src/components/form/RecurrencePicker';
-import { nowUtc } from '@/src/core/datetime';
+import { RulePreviewCard } from '@/src/components/form/RulePreviewCard';
+import { useToastStore } from '@/src/components/Toast';
+import { getTzOffsetMin, nowUtc, toLocalDateKey } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
   buildCustomRrule,
+  buildWeeklyByDayRrule,
   parseCustomRruleDays,
+  parseWeeklyByDay,
   RECURRENCE_PRESETS,
   type RecurrencePresetKey,
 } from '@/src/core/recurrence/rrule';
 import { useColors } from '@/src/core/theme/useColors';
 import { getBonsaiById } from '@/src/db/bonsaiRepository';
-import { BonsaiChipPickerLayout } from '@/src/features/bonsai/BonsaiChipPickerLayout';
 import {
   bulkCreateRecurrenceRules,
   countActiveRecurrenceRules,
@@ -58,6 +66,7 @@ import {
   replaceRecurrenceRule,
   type CreateRecurrenceRuleInput,
 } from '@/src/db/recurrenceRuleRepository';
+import { BonsaiChipPickerLayout } from '@/src/features/bonsai/BonsaiChipPickerLayout';
 import { useProStore } from '@/src/stores/proStore';
 import { usePickerStore, type BulkBonsaiRef } from '@/src/stores/pickerStore';
 
@@ -69,20 +78,76 @@ type RouteParams = {
 };
 
 /**
- * RRULE 文字列 → {preset, customDays} 逆引き (= 編集時の初期値ロード用、 Sess89 PR-B 拡張)。
+ * RRULE 文字列 → {preset, customDays, byday} 逆引き (= 編集時の初期値ロード用、 Sess93 PR-4 拡張)。
  *
- * 1. 静的 preset map で 完全一致 search (custom 除外)
- * 2. FREQ=DAILY;INTERVAL=N pattern match (= custom)
- * 3. fallback (= 旧 weeklyMonday / biweekly は「カスタム」 N=7 default)
+ * 1. weekly BYDAY pattern match (= FREQ=WEEKLY;BYDAY=...) を 最優先 (= byday 配列復元)
+ * 2. 静的 preset map で 完全一致 search (custom 除外)
+ * 3. FREQ=DAILY;INTERVAL=N pattern match (= custom)
+ * 4. fallback (= 旧 weeklyMonday / biweekly は「カスタム」 N=7 default)
  */
-function rruleToPreset(rrule: string): { preset: RecurrencePresetKey; customDays: number | null } {
+function rruleToPreset(rrule: string): {
+  preset: RecurrencePresetKey;
+  customDays: number | null;
+  byday: number[];
+} {
+  // Sess93 PR-4: FREQ=WEEKLY;BYDAY=... を 最優先 parse
+  const byday = parseWeeklyByDay(rrule);
+  if (byday !== null) {
+    return { preset: 'weekly', customDays: null, byday };
+  }
   for (const [key, val] of Object.entries(RECURRENCE_PRESETS)) {
     if (key === 'custom') continue;
-    if (val === rrule) return { preset: key as RecurrencePresetKey, customDays: null };
+    if (val === rrule) return { preset: key as RecurrencePresetKey, customDays: null, byday: [] };
   }
   const days = parseCustomRruleDays(rrule);
-  if (days !== null) return { preset: 'custom', customDays: days };
-  return { preset: 'custom', customDays: 7 };
+  if (days !== null) return { preset: 'custom', customDays: days, byday: [] };
+  return { preset: 'custom', customDays: 7, byday: [] };
+}
+
+/**
+ * Sess93 PR-4: preset + customDays + byday から 保存用 RRULE 文字列を 生成。
+ */
+function buildRruleFromValue(value: RecurrenceValue): string {
+  if (value.preset === 'custom') {
+    return buildCustomRrule(value.customDays ?? 7);
+  }
+  if (value.preset === 'weekly') {
+    // byday 非空 → BYDAY 付与、 空 → FREQ=WEEKLY (開始日基準)
+    return buildWeeklyByDayRrule(value.byday);
+  }
+  return RECURRENCE_PRESETS[value.preset];
+}
+
+/**
+ * Sess93 PR-4: プレビュー summary 文字列 を 生成 (= 「{頻度}・{作業} を {N}本に」)。
+ */
+function buildPreviewSummary(
+  value: RecurrenceValue,
+  eventType: string | null,
+  count: number,
+  t: (key: TranslationKey) => string,
+): string {
+  if (!eventType || count === 0) return '';
+  const presetKey =
+    `recurringPreset${value.preset.charAt(0).toUpperCase()}${value.preset.slice(1)}` as TranslationKey;
+  let presetLabel = '';
+  try {
+    presetLabel = t(presetKey);
+  } catch {
+    presetLabel = value.preset;
+  }
+  // custom 時は「N 日ごと」 形式に整形
+  if (value.preset === 'custom') {
+    presetLabel = t('recurringPresetCustomEveryNDays').replace(
+      '{n}',
+      String(value.customDays ?? 7),
+    );
+  }
+  const eventLabel = t(`eventType_${eventType}` as TranslationKey);
+  return t('recurringFormSummaryFormat')
+    .replace('{rrule}', presetLabel)
+    .replace('{eventType}', eventLabel)
+    .replace('{count}', String(count));
 }
 
 export default function RecurrenceFormScreen() {
@@ -92,26 +157,29 @@ export default function RecurrenceFormScreen() {
   const params = useLocalSearchParams<RouteParams>();
   const mode: Mode = params.ruleId ? 'edit' : 'create';
 
-  // Sess89 PR-C: 編集モードは単数 (= 既存仕様維持)、 新規モードは複数 (= store から取得)
   const [bonsais, setBonsais] = useState<readonly BulkBonsaiRef[]>([]);
   const [eventType, setEventType] = useState<string | null>(null);
+  // Sess93 PR-3: startDate default = 今日のローカル日付 (= 過去日エラー回避)
+  const todayKey = useMemo(() => toLocalDateKey(nowUtc(), getTzOffsetMin()), []);
   const [recurrence, setRecurrence] = useState<RecurrenceValue>({
     ...DEFAULT_RECURRENCE_VALUE,
-    enabled: true, // RecurrenceFormScreen では 強制 enabled (= rule entity の本質)
+    enabled: true,
+    startDate: todayKey,
   });
+  // Sess93 PR-4: memo state (= rule.memo、 user 任意 200 文字)
+  const [memo, setMemo] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  // Sess89 PR-C: Pro 境界判定用 active 件数 (= countActiveRecurrenceRules で取得)
+  // Sess93 PR-4: 編集モード ConfirmDialog 表示 state (= R-79 破壊的データ操作の事前通知)
+  const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [activeRuleCount, setActiveRuleCount] = useState(0);
 
   const isPro = useProStore((s) => s.isPro);
 
-  // 編集モード = 既存 rule load (単数) / 新規モード = store から複数件取得
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       try {
-        // active 件数を Pro 境界判定用に取得
         const count = await countActiveRecurrenceRules();
         if (!cancelled) setActiveRuleCount(count);
 
@@ -128,22 +196,24 @@ export default function RecurrenceFormScreen() {
             setBonsais([{ id: loadedBonsai.id, name: loadedBonsai.name }]);
           }
           setEventType(rule.eventType);
-          const { preset: loadedPreset, customDays: loadedCustomDays } = rruleToPreset(rule.rrule);
+          const {
+            preset: loadedPreset,
+            customDays: loadedCustomDays,
+            byday: loadedByday,
+          } = rruleToPreset(rule.rrule);
           setRecurrence({
             enabled: true,
             preset: loadedPreset,
             customDays: loadedCustomDays,
-            // Sess93 PR-3: byday + startDate は PR-4 で 編集モード prefill (= rule から逆算)
-            byday: [],
+            byday: loadedByday,
             startDate: rule.startAtUtc.slice(0, 10),
             endType: rule.endAtUtc ? 'specific' : 'never',
             endDate: rule.endAtUtc ? rule.endAtUtc.slice(0, 10) : null,
           });
+          setMemo(rule.memo ?? '');
         } else if (mode === 'create' && params.eventType) {
-          // Sess89 PR-C: usePickerStore.bulkContext.selectedBonsais から複数件取得
           const selectedBonsais = usePickerStore.getState().bulkContext?.selectedBonsais ?? [];
           if (selectedBonsais.length === 0) {
-            // store 空 = 直接遷移 or stale state、 戻る
             router.back();
             return;
           }
@@ -151,7 +221,6 @@ export default function RecurrenceFormScreen() {
           setBonsais(selectedBonsais);
           setEventType(params.eventType);
         } else {
-          // 不正 param、 戻る
           router.back();
           return;
         }
@@ -164,10 +233,10 @@ export default function RecurrenceFormScreen() {
     };
   }, [mode, params.ruleId, params.eventType, router, t]);
 
-  const handleSave = useCallback(async (): Promise<void> => {
+  // Sess93 PR-4: 保存実行 (= 編集モード ConfirmDialog 経由 / 新規モード 直接)
+  const performSave = useCallback(async (): Promise<void> => {
     if (bonsais.length === 0 || !eventType || saving) return;
 
-    // Sess89 PR-C: Pro 境界判定 (= 案 P1 = 超過時 Paywall 即表示、 ADR-0049 ⑦)
     if (!isPro && activeRuleCount + bonsais.length > FREE_RECURRENCE_RULE_LIMIT) {
       router.push('/pro?source=recurring_rule' as Href);
       return;
@@ -175,12 +244,11 @@ export default function RecurrenceFormScreen() {
 
     setSaving(true);
     try {
-      // Sess89 PR-B: custom 選択時は buildCustomRrule(customDays) で動的 RRULE 生成、 他 preset は静的 map
-      const rrule =
-        recurrence.preset === 'custom'
-          ? buildCustomRrule(recurrence.customDays ?? 7)
-          : RECURRENCE_PRESETS[recurrence.preset];
-      const startAtUtc = nowUtc() as string;
+      const rrule = buildRruleFromValue(recurrence);
+      // Sess93 PR-3/PR-4: startAtUtc は user 指定の開始日 (= 過去日 不可、 既に UI でガード済)
+      const startAtUtc = recurrence.startDate
+        ? `${recurrence.startDate}T00:00:00.000Z`
+        : (nowUtc() as string);
       const endAtUtc =
         recurrence.endType === 'never'
           ? null
@@ -189,24 +257,24 @@ export default function RecurrenceFormScreen() {
             : null;
 
       if (mode === 'edit' && params.ruleId && bonsais[0]) {
-        // 編集モード = 単数 (= 既存仕様維持)
         const input: CreateRecurrenceRuleInput = {
           bonsaiId: bonsais[0].id,
           eventType,
           rrule,
           startAtUtc,
           endAtUtc,
+          memo: memo || null,
         };
         await replaceRecurrenceRule(params.ruleId, input);
         useToastStore.getState().show(t('recurringEditSavedToast'));
       } else {
-        // Sess89 PR-C: 新規モード = bulkCreateRecurrenceRules で N 件 transaction 一括作成
         const inputs: CreateRecurrenceRuleInput[] = bonsais.map((b) => ({
           bonsaiId: b.id,
           eventType,
           rrule,
           startAtUtc,
           endAtUtc,
+          memo: memo || null,
         }));
         await bulkCreateRecurrenceRules(inputs);
         useToastStore
@@ -231,7 +299,26 @@ export default function RecurrenceFormScreen() {
     t,
     isPro,
     activeRuleCount,
+    memo,
   ]);
+
+  // Sess93 PR-4: 保存ボタン ハンドラ — 編集モード は ConfirmDialog を 挟む、 新規モードは 直接 performSave
+  const handleSaveTap = useCallback(() => {
+    if (mode === 'edit') {
+      setShowEditConfirm(true);
+      return;
+    }
+    void performSave();
+  }, [mode, performSave]);
+
+  const handleEditConfirm = useCallback(() => {
+    setShowEditConfirm(false);
+    void performSave();
+  }, [performSave]);
+
+  const handleEditCancel = useCallback(() => {
+    setShowEditConfirm(false);
+  }, []);
 
   if (loading) {
     return (
@@ -249,11 +336,14 @@ export default function RecurrenceFormScreen() {
     );
   }
 
-  // Sess89 PR-C: 件数別 header 文言 (= R-71 件数別 UX 表現契約)
   const isSingle = bonsais.length === 1;
   const headerText = isSingle
     ? t('recurringFormBonsaisHeaderSingle').replace('{name}', bonsais[0]?.name ?? '')
     : t('recurringFormBonsaisHeader').replace('{count}', String(bonsais.length));
+
+  const previewSummary = buildPreviewSummary(recurrence, eventType, bonsais.length, t);
+  const startDateInvalid = isStartDateInPast(recurrence);
+  const saveDisabled = saving || bonsais.length === 0 || !eventType || startDateInvalid;
 
   return (
     <ThemedView
@@ -265,10 +355,6 @@ export default function RecurrenceFormScreen() {
           title: mode === 'edit' ? t('recurringEditScreenTitle') : t('recurringCreateScreenTitle'),
         }}
       />
-      {/* Sess92 PR-3 follow-up: BonsaiChipPickerLayout SoT (= ScrollView wrap + BonsaiChipList + body 統合)。
-          BulkWorkPicker と同 layout 構造で 画面 pattern を byte-level 統一。 bottomPadding=96 で
-          BottomCtaBar 分の余白を確保 (= 旧 scroll style paddingBottom 96 と同等)。
-          create mode のみ showAutoSelectedHint=true、 edit mode は user 能動的に編集に来たため false。 */}
       <BonsaiChipPickerLayout
         bonsais={bonsais}
         headerText={headerText}
@@ -288,16 +374,42 @@ export default function RecurrenceFormScreen() {
           </ThemedText>
         </View>
 
-        {/* Sess89 PR-A: hideToggle (= rule entity 本質 enabled=true) / hideEndDate (= 永続化標準) */}
+        {/* Sess93 PR-4: 開始日 picker を 表示 (= hideStartDate 解除)、 hideToggle/hideEndDate keep */}
         <RecurrencePicker value={recurrence} onChange={setRecurrence} hideToggle hideEndDate />
+
+        {/* Sess93 PR-4: NotificationCard (= まとめ通知時刻 直接編集、 案 C) */}
+        <NotificationCard disabled={saving} />
+
+        {/* Sess93 PR-4: MemoInputRow (= 200 文字 + 複数行) */}
+        <MemoInputRow
+          value={memo}
+          onChangeText={setMemo}
+          disabled={saving}
+          testID="e2e_recurrence_form_memo"
+        />
+
+        {/* Sess93 PR-4: RulePreviewCard (= 「このルールで作られる予定」 確認 card) */}
+        <RulePreviewCard summary={previewSummary} />
       </BonsaiChipPickerLayout>
 
       <BottomCtaBar
         label={mode === 'edit' ? t('recurringEditSaveLabel') : t('recurringCreateSaveLabel')}
-        onPress={() => void handleSave()}
-        disabled={saving || bonsais.length === 0 || !eventType}
+        onPress={handleSaveTap}
+        disabled={saveDisabled}
         testID="e2e_recurrence_form_save"
         icon={<View />}
+      />
+
+      {/* Sess93 PR-4: 編集モード保存前 ConfirmDialog (= R-79、 既存予定削除 + 再生成 通知) */}
+      <ConfirmDialog
+        visible={showEditConfirm}
+        title={t('recurringEditConfirmTitle')}
+        description={t('recurringEditConfirmBody')}
+        confirmLabel={t('recurringEditConfirmConfirm')}
+        cancelLabel={t('cancel')}
+        onConfirm={handleEditConfirm}
+        onCancel={handleEditCancel}
+        testID="e2e_recurrence_edit_confirm"
       />
     </ThemedView>
   );
@@ -306,8 +418,6 @@ export default function RecurrenceFormScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  // Sess92 PR-3 follow-up: scroll / chipsHeader / chipsHeaderText / chipsRow / chip / chipText /
-  // pickerWrap (= section spacing) は BonsaiChipPickerLayout に SoT 移管 (= ScrollView wrap + body padding + gap)。
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
