@@ -580,3 +580,4 @@
 - **検査の限界 (正直な記録)**: ✅34 件は「参照 path 全実在」の機械判定であり、本文の意味的鮮度 (古い設計判断の記述等) は深読みしていない。sess 系は歴史記録として許容
 - **重要発見: 一度も commit されていない「合意成果物」6 件** — check-i18n-key-references.mjs (No.360) / check-expo-sdk-strict.mjs (No.363) / check-custom-crud.mjs + reset-adb.sh (No.365、Sess89 構造防御) / ui-component-sot-criteria.md + detect-duplicate-styles.mjs (No.372、Sess92 PR-3) — memory は存在前提で記述。**user 判断: 今から実装するか、memory に「未実装」注記するか**
 - 軽微: No.325 = script 改名追従漏れ (lint-maestro → maestro-flow-lint.mjs)
+- **user 判断 + 処置 (2026-06-11)**: 6 件中 5 件 = 当時から「候補 / Future Work」であり約束倒れではないと確認、memory 注記で close (No.360 = verify:i18n が代替済 / No.363 = preflight A-EXPO-SDK が代替済 / No.365 reset-adb = lessons/wsl2-mobile.md 昇格済 / No.372 = Sess92 予約 R-77 が Sess93 に番号消費され構想消滅、再浮上時に起票)。No.365 check-custom-crud.mjs のみ代替なし → **Issue #1098 起票** (実装は第 5 master/custom 領域追加時)。No.325 改名追従も memory 修正済。修正スプリント = PR #1096 (skills 配線) + #1097 (指示書 drift + 索引 12 行 + docs-lint check 8) 全 merge
