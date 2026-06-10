@@ -36,7 +36,9 @@ export default function BonsaiCreateScreen() {
   // 位置保持。 useFocusEffect 内 setSelectedTagIds + setRecentTags 2 連で TagSection layout が
   // 「empty 縦」 → 「wrap row 横」 に変化し ScrollView contentOffset が 0 リセットされる挙動を
   // 構造的に解消 (テスター苦情「タグ追加から戻ると先頭に戻る」 への hook 化対応)。
-  const { onScroll, scrollEventThrottle } = useScrollPreservation(scrollRef);
+  // Sess95 PR-2: onContentSizeChange 追加 = 戻り後の非同期 layout 変動 (getRecentTags 等)
+  // に復元が追い越される race の構造解 (hook JSDoc 参照)。
+  const { onScroll, onContentSizeChange, scrollEventThrottle } = useScrollPreservation(scrollRef);
   const handleMemoFocus = React.useCallback(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
   }, []);
@@ -61,6 +63,7 @@ export default function BonsaiCreateScreen() {
         <ScrollView
           ref={scrollRef}
           onScroll={onScroll}
+          onContentSizeChange={onContentSizeChange}
           scrollEventThrottle={scrollEventThrottle}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
