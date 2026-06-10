@@ -19,9 +19,9 @@ import { CloseIcon } from '@/src/components/icons';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { toLocalDateKey } from '@/src/core/datetime/localDateKey';
 import { getTzOffsetMin } from '@/src/core/datetime/tz';
-// Sess66 PR6b: BG_PRIMARY → ON_BRAND (badge 白文字 theme-invariant)、 TEXT_MUTED は inline c.textMuted。
+// Sess95 PR-1: badge は inline c.dangerColor / c.onTint。 ON_BRAND は CloseIcon (tint 上) 用に維持。
 // Sess68 統合時に Sess67 TZ fix の toLocalDateKey + getTzOffsetMin import を保持。
-import { DANGER, ON_BRAND } from '@/src/core/theme/colors';
+import { ON_BRAND } from '@/src/core/theme/colors';
 import { formOptional, formRequired } from '@/src/core/theme/typography';
 import { useColors } from '@/src/core/theme/useColors';
 
@@ -66,8 +66,10 @@ export function LabeledDateRow({
       <View style={styles.labelRow}>
         <ThemedText type="defaultSemiBold">{label}</ThemedText>
         {required && (
-          <View style={styles.requiredBadge}>
-            <ThemedText style={styles.requiredText}>{requiredText}</ThemedText>
+          <View style={[styles.requiredBadge, { backgroundColor: c.dangerColor }]}>
+            <ThemedText style={[styles.requiredText, { color: c.onTint }]}>
+              {requiredText}
+            </ThemedText>
           </View>
         )}
         {optional && optionalText && (
@@ -123,14 +125,13 @@ export function LabeledDateRow({
 const styles = StyleSheet.create({
   field: { gap: 6 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  // Sess14 PR-R: hardcoded color → DANGER / ON_BRAND 既存 theme constant 経由統合 (Sess66 PR6b 更新)。
+  // Sess95 PR-1: badge は inline c.dangerColor / c.onTint (dark cascade)。
   requiredBadge: {
-    backgroundColor: DANGER,
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 8,
   },
-  requiredText: { ...formRequired, color: ON_BRAND },
+  requiredText: { ...formRequired },
   optionalText: formOptional,
   rowWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   row: {

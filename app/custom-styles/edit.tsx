@@ -21,7 +21,7 @@ import { ThemedView } from '@/components/themed-view';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import { BRAND_GREEN, DANGER, DISABLED_BG, ON_BRAND } from '@/src/core/theme/colors';
+import { BRAND_GREEN, DISABLED_BG, ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import {
   canCreateNewCustomStyle,
@@ -209,7 +209,7 @@ export default function CustomStylesEditScreen() {
             style={styles.deleteBtn}
             onPress={handleDeleteRequest}
           >
-            <ThemedText style={[styles.deleteBtnText, { color: DANGER }]}>
+            <ThemedText style={[styles.deleteBtnText, { color: c.dangerColor }]}>
               {t('customStylesEditDeleteCta')}
             </ThemedText>
           </Pressable>
