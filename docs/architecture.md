@@ -127,6 +127,26 @@ god component(巨大ファイル)は**一度に壊さず**、旧 API を wrapper
 
 ---
 
+## 7. よく触る hub file 早見表
+
+> Doc-Truth Audit P2 (2026-06) のセッションログ集計で「ほぼ毎セッション再 Read される」と判明した file の対応表。探し直しを防ぐための地図 (数値は載せない — 陳腐化防止)。
+
+| 何をするとき                 | file                                                                        |
+| ---------------------------- | --------------------------------------------------------------------------- |
+| 盆栽詳細画面                 | `app/(tabs)/bonsai/[id]/index.tsx`                                          |
+| 盆栽一覧 (ホーム) + AdBanner | `app/(tabs)/bonsai/index.tsx`                                               |
+| 盆栽 登録/編集フォーム       | `src/features/bonsai/BonsaiBasicForm.tsx` / `BonsaiCreateScreen.tsx`        |
+| 作業記録の確定 (単体 / 一括) | `src/features/event/WorkLogConfirmScreen.tsx` / `BulkLogConfirmScreen.tsx`  |
+| 作業種別の定義 (14 種 SoT)   | `src/db/schema.ts` (`EVENT_TYPES`)                                          |
+| i18n 文言                    | `src/core/i18n/locales/ja.ts` / `en.ts` (他 17 言語は英語 fallback)         |
+| アプリ起動・全画面共通処理   | `app/_layout.tsx` (ads init / onboarding redirect / 通知 reschedule)        |
+| 設定画面                     | `app/settings/index.tsx` (Stack title 2 段 pattern の正典 = R-74)           |
+| カレンダー                   | `src/features/calendar/CalendarTabScreen.tsx` + `app/(tabs)/plan/index.tsx` |
+| イベント行表示               | `src/features/event/EventRow.tsx` (表示モード = ADR-0041)                   |
+| dev seed データ              | `src/dev/seedTestData.ts`                                                   |
+
+---
+
 ## 関連
 
 - `docs/refactor/master-plan.md` — リファクタ全体計画(Phase 3-7)
