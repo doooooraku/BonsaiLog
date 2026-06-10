@@ -70,7 +70,7 @@ OK: stage=production / demo_id=0 (整合)
 ### Step 4: 周辺整合
 
 - [ ] テスター向け配布 (alpha track) を継続する場合の注意: production 設定後は alpha 向けビルドも本番広告になるため、 テスターに「広告をクリックしないで」 を再周知する (もしくは alpha 配布を停止)
-- [ ] `docs/reference/tasks/state.md` 等の進行管理に昇格完了を記録
+- [ ] 進行管理 (Engram session summary + 監査台帳 `docs/audit/` + `docs/reference/tasks/lessons.md`) に昇格完了を記録
 
 ---
 

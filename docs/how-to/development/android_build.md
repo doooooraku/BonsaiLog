@@ -1,5 +1,7 @@
 # Android\_ビルド手順（Debug運用 / Release提出）
 
+> ℹ️ **release は cloud-first (2026-06-11 注記)**: テスター/本番向け release ビルド + Play 提出は **GitHub Actions が正式ルート**です (Sess62 PR2、`/release-android` Skill 参照)。本 doc はローカル開発ビルド (Dev Build / 検証用 APK) 用。なお本文の ExpoGo 記述は旧運用で、現在は **Dev Build (Expo Dev Client)** を使用 (`dev_vs_preview_builds.md` 参照)。
+
 最終更新: 2026-01-19（JST）
 
 ## 2. Debug（開発用）: ExpoGoを活用しエミュレータでデバッグ

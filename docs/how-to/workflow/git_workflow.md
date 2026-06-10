@@ -171,7 +171,7 @@ git switch -c feat/123-add-admob-skeleton
 
 ### 4.5 ローカルテスト（CIと同じ順にする）
 
-詳細は `docs/how-to/testing.md` を参照。
+詳細は `docs/how-to/testing/testing.md` を参照。
 最低限はこの順番：
 
 ```bash
