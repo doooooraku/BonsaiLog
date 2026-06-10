@@ -87,7 +87,7 @@ On any new session, Claude Code should:
 1. Read `AGENTS.md` (root) for core project rules
 2. Read `.claude/CLAUDE.md` (this file) for Claude Code extensions
 3. Read `docs/reference/tasks/lessons.md` (索引) — 必要な領域のみ `lessons/<domain>.md` を Read
-4. **Read `.claude/recurrence-prevention.md` for behavioral rules (R-1〜R-57: 汎用 R-1〜R-12 + 専門 R-13〜R-57 索引)** — 必読、行動 lesson。 専門ルール詳細は `.claude/recurrence-prevention/specialized.md` を参照。 **3 回再発で hook / ESLint / CI に昇華必須** (CLAUDE.md §9 / 記憶の昇華ルール)、`scripts/docs-lint.mjs` で 250 行上限を自動検出
+4. **Read `.claude/recurrence-prevention.md` for behavioral rules (汎用 R-1〜R-12 + 専門 R-13 以降の索引、最新番号は同ファイルが正)** — 必読、行動 lesson。 専門ルール詳細は `.claude/recurrence-prevention/specialized.md` を参照。 **3 回再発で hook / ESLint / CI に昇華必須** (CLAUDE.md §9 / 記憶の昇華ルール)、`scripts/docs-lint.mjs` で 250 行上限 + 親索引×specialized 見出し parity を自動検出
 5. **Read `docs/reference/personas.md` if exists** — 議論時にペルソナ評価で使用
 6. If Plan mode: read `docs/reference/constraints.md` + relevant ADRs
 
