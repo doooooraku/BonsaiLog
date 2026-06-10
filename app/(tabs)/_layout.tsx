@@ -16,7 +16,7 @@ import { Tabs, useRouter, type Href } from 'expo-router';
 import React, { useCallback } from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { CalendarIcon, LeafIcon, NotebookIcon, PencilNavIcon } from '@/src/components/icons';
+import { BonsaiIcon, CalendarIcon, NotebookIcon, PencilNavIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { useColors } from '@/src/core/theme/useColors';
 
@@ -57,7 +57,7 @@ export default function TabLayout() {
         name="bonsai"
         options={{
           title: t('tabBonsai'),
-          tabBarIcon: ({ color }) => <LeafIcon size={28} color={color} />,
+          tabBarIcon: ({ color }) => <BonsaiIcon size={28} color={color} />,
           tabBarButtonTestID: 'e2e_tab_bonsai',
         }}
       />

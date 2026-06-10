@@ -292,3 +292,91 @@ export function CheckIcon({ size = 18, color = BG_PRIMARY }: IconProps) {
     </Svg>
   );
 }
+
+/**
+ * 盆栽 silhouette (鉢 + 樹冠 + 幹)。 TabBar 盆栽タブ 28px。
+ *
+ * Sess92 (2026-06-10): TabBar 盆栽タブ icon を `LeafIcon` (汎用 葉) から差替。
+ * 真因 = LeafIcon が hub「樹種を管理」 card icon と 2 重使用、 user 認知混乱
+ * (Sess89 Phase 2/3 で 既存 icon 流用判断、 4 ペルソナ全員 ✕)。 BonsaiIcon は
+ * 「盆栽そのもの」 (= 鉢 + 樹) を直接表現、 「樹種」 (= SproutIcon 双葉) と差別化。
+ *
+ * 形状: 葉冠 (cloud-like 雲形、 Heroicons outline 流派整合) + 中央幹 + 鉢 (台形)。
+ * `LeafIcon` / `CalendarIcon` / `NotebookIcon` / `PencilNavIcon` と統一の strokeWidth=1.5。
+ */
+export function BonsaiIcon({ size = 28, color = TEXT_PRIMARY }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M8 9a3 3 0 0 1 2.6-2.97 3.5 3.5 0 0 1 6.8 0A3 3 0 0 1 16 12H8a3 3 0 0 1 0-3z"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <Path d="M12 12v6" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      <Path d="M6 18h12l-1.5 3h-9z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+/**
+ * 新芽 (双葉 sprout)。 ふりかえり hub「樹種を管理」 card 22px。
+ *
+ * Sess92 (2026-06-10): hub「樹種を管理」 card icon を `LeafIcon` (= TabBar 盆栽タブと 2 重使用)
+ * から差替。 「樹種」 (= 種類・品種) を象徴する 「新芽」 で意味整合 ◎。
+ *
+ * SVG path は Lucide `sprout` 公式 (https://lucide.dev/icons/sprout) を流用、
+ * strokeWidth は NavIcons 規約 (= 1.5) に合わせて 2 → 1.5 に調整。
+ */
+export function SproutIcon({ size = 22, color = TEXT_PRIMARY }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path d="M5 21h14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+/**
+ * 樹形 illustration (文人木 風 = 細曲幹 + 上部小葉冠)。 ふりかえり hub「樹形を管理」 card 22px。
+ *
+ * Sess92 (2026-06-10): hub「樹形を管理」 card icon を `CompassIcon` (= position_change
+ * event icon と 2 重使用、 方位磁石 ≠ 樹形で意味無関係) から差替。 「樹形」 (= 仕立て形状)
+ * を象徴する 「文人木 (bunjingi)」 風 illustration で意味整合 ◎。
+ *
+ * 形状: 細く曲がった幹 (S 字 cubic) + 上部に小さくふんわり葉冠 (楕円) + 鉢最小化
+ * (= 文人木の鉢小・地表線で代用)。 `SproutIcon` (双葉) と差別化、 BonsaiIcon (盆栽 silhouette)
+ * とも差別化 (= 樹形 illustration の特殊性表現)。
+ */
+export function StyleIcon({ size = 22, color = TEXT_PRIMARY }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 21c0-2 2.5-3.5 2-6.5s-3.5-3.5-3-6S13 5 11 4"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <Path
+        d="M7 3.5c0-1.4 1.6-2.3 3.5-2.3s3.5 0.9 3.5 2.3-1.6 2.3-3.5 2.3S7 4.9 7 3.5z"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <Path d="M8 21h8" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+    </Svg>
+  );
+}
