@@ -46,7 +46,7 @@ import {
 import { RulePreviewCard } from '@/src/components/form/RulePreviewCard';
 import { useToastStore } from '@/src/components/Toast';
 import { getTzOffsetMin, nowUtc, toLocalDateKey } from '@/src/core/datetime';
-import { formatLocalizedDateWithWeekday } from '@/src/core/datetime/formatLocalized';
+import { formatLocalizedShortDateWithWeekday } from '@/src/core/datetime/formatLocalized';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
@@ -348,12 +348,13 @@ export default function RecurrenceFormScreen() {
   const previewSummary = buildPreviewSummary(recurrence, eventType, bonsais.length, t);
   const startDateInvalid = isStartDateInPast(recurrence);
   const saveDisabled = saving || bonsais.length === 0 || !eventType || startDateInvalid;
-  // Sess94 PR-B: 「次回」 行用文字列 (= 開始日 + 通知時刻、 例「2026年6月10日 (火) 7:00」)。
+  // Sess94 PR-B: 「次回」 行用文字列 (= 開始日 + 通知時刻、 例 ja「6月10日（火）7:00」 / en「Jun 10 (Tue) 7:00」)。
   // 設計判断: 「次回 = 開始日」 = 新規モード = 最初の予定日、 編集モード = 削除 + 再生成 後の最初の予定日、
   // どちらも startDate base で正確。 expandRRule 呼出 不要 = O(1) 級。
+  // モック整合: 短日付 (年なし) + ja 全角括弧 で RulePreviewCard 次回行を ClaudeDesign 完全一致。
   const nextOccurrenceLabel =
     recurrence.startDate && eventType
-      ? `${formatLocalizedDateWithWeekday(recurrence.startDate, lang)} ${notifTime}`
+      ? `${formatLocalizedShortDateWithWeekday(recurrence.startDate, lang)} ${notifTime}`
       : null;
 
   return (
