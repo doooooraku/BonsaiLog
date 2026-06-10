@@ -1,7 +1,7 @@
 # F-13 Phase 0 — App Store / Google Play / RevenueCat 登録手順
 
 > **対象**: F-13 課金 (#20) の Phase 0 子 Issue #57 で必要な人間タスク手順書。  
-> **目的**: Sandbox PoC ([./f13-rc-10x-poc.md](./f13-rc-10x-poc.md)) を実施するための前提条件 (Product / Entitlement / API キー) を整える。  
+> **目的**: Sandbox PoC (Sandbox PoC (= ADR-0009 §Phase 0 で完了済、 当時の検証手順は git history 参照)) を実施するための前提条件 (Product / Entitlement / API キー) を整える。  
 > **要件**: ADR-0009 §Decision の Product ID 命名 / Entitlement / Offering / API キー注入ルールに従う。
 
 ---
@@ -209,7 +209,7 @@ REVENUECAT_IOS_API_KEY=
 - [ ] iOS / Android API Key 取得済
 - [ ] `.env` ローカル / EAS environment (production / preview / development) / `.env.example` の 3 箇所 API キー枠が最新
 - [ ] iOS Sandbox tester / Android License Tester アカウント作成済
-- [ ] PoC ([./f13-rc-10x-poc.md](./f13-rc-10x-poc.md)) §2 シナリオ全て実施可能な状態
+- [ ] PoC (Sandbox PoC (= ADR-0009 §Phase 0 で完了済、 当時の検証手順は git history 参照)) §2 シナリオ全て実施可能な状態
 
 ---
 
@@ -219,7 +219,7 @@ REVENUECAT_IOS_API_KEY=
 - Phase 0 子 Issue: [#57](https://github.com/doooooraku/BonsaiLog/issues/57)
 - ADR-0009 §Decision §1-19 (3 プラン構成 / Entitlement / Offering / Product ID 命名 / API キー注入 / DPA)
 - ADR-0017 (App Store / Google Play 提出時の Privacy URL 必須)
-- PoC 検証手順: [./f13-rc-10x-poc.md](./f13-rc-10x-poc.md)
+- PoC 検証手順: Sandbox PoC (= ADR-0009 §Phase 0 で完了済、 当時の検証手順は git history 参照)
 - Repolog `lessons.md` L427-437 (RC API キー 3 箇所更新ルール、踏襲必須)
 - RevenueCat Dashboard: https://app.revenuecat.com
 - App Store Connect: https://appstoreconnect.apple.com
