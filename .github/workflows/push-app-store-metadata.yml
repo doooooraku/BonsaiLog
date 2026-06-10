@@ -54,7 +54,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      # Doc-Truth Audit 2026-06 バッチ②a 🔴 対応: placeholder ({{VAR}} / TODO / scaffold
+      # Doc-Truth Audit 2026-06 バッチ②a 🔴 対応: placeholder ({{PLACEHOLDER}} / TODO / scaffold
       # ダミー文言) が残ったまま ASC へ upload される事故を、secrets 不要の fail-fast で塞ぐ。
       # validate-metadata.mjs check #6 が exit 1 を返す限り precheck / push に到達しない。
       - name: Validate metadata (placeholder / format gate)

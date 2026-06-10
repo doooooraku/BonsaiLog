@@ -11,7 +11,7 @@
  *   3. 禁則語チェック (商標名・誇大表現)
  *   4. keywords 形式チェック (カンマ後スペース禁止、name/subtitle との重複検出)
  *   5. URL 形式チェック (privacy_url, support_url)
- *   6. placeholder 検知 ({{VAR}} 未展開 / TODO / scaffold ダミー文言)
+ *   6. placeholder 検知 ({{PLACEHOLDER}} 未展開 / TODO / scaffold ダミー文言)
  *      — Doc-Truth Audit 2026-06 バッチ②a 🔴 由来: placeholder のまま main に入ると
  *        push-app-store-metadata.yml が ASC へ自動 upload する事故経路を構造的に塞ぐ
  *
