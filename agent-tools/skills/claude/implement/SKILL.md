@@ -89,16 +89,11 @@ E2E が必要なら Maestro flow を追加:
 pnpm verify
 ```
 
-内部で実行される 6 ゲート:
+内部ゲートの**構成・順序は `package.json` の `verify` script が正** (CI と同一 chain、個別ゲートをここに列挙しない = 固定値多重コピー drift 防止)。
 
-1. `pnpm lint` — ESLint
-2. `pnpm type-check` — `tsc --noEmit`
-3. `pnpm format:check` — Prettier
-4. `pnpm test` — Jest
-5. `pnpm i18n:check` — i18n キー整合性
-6. `pnpm config:check` — Expo config 検証
+**`pnpm verify` が exit code 0 になるまで実装を続ける** (R-22: 末尾 tail/pipe で exit code を潰さない)。
 
-**全 6 ゲートが緑になるまで実装を続ける**。
+**E2E / 実機確認の要否判定**: `docs/how-to/workflow/whole_workflow.md` §1.5 検証 tiering 表 (T1〜T8) が正。変更種別 (git diff のファイルパス) で判定し、省略する層は PR 本文 §6 に理由を記載する。
 
 ### W-08a: CI 失敗時のリカバリ
 

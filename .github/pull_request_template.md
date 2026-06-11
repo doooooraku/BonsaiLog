@@ -80,9 +80,13 @@ docs/how-to/workflow/pr-template-appendix.md — 該当する PR では該当節
 
 ## 6. 動作確認（How to test / REQUIRED）
 
+> 各層の要否は `docs/how-to/workflow/whole_workflow.md` §1.5 検証 tiering 表（T1〜T8）が正。
+> 省略する層は該当欄に理由を記載（宣言なしの省略は禁止）。
+
 ### 6-1. 自動テスト
 
 - [ ] `pnpm verify`（結果：✅ / ❌）+ CI 全 ✅
+- [ ] E2E (Maestro): [ ] 実行（結果：） / [ ] 省略（tiering 表 T\_\_ 該当、理由：）
 - 実行できない場合の理由：
 
 ### 6-2. 手動確認（バグ修正は Before / After の再現手順を含める）
