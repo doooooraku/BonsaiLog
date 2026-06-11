@@ -19,7 +19,7 @@
 ### `@shopify/react-native-skia` ビルドで `Could not find libskia.a`
 
 - **何が起きたか**: ローカル Gradle ビルド (`pnpm build:android:apk:local` / `./gradlew assembleDebug`) が `:shopify_react-native-skia:configureCMakeDebug[arm64-v8a] FAILED` で停止、CMake が `node_modules/@shopify/react-native-skia/libs/android/arm64-v8a` に `libskia.a` を見つけられないと報告。
-- **根本原因**: `@shopify/react-native-skia` は `scripts/install-libs.js` で `react-native-skia-android` パッケージから libs を `libs/android/` にコピーする postinstall を持つが、pnpm の `onlyBuiltDependencies` 制限で初回 install 時に実行されないことがある。Skia は CMake 段で初めて libs 不在に気付くため、エラーが Gradle 内部のメッセージに埋もれて `unknown error` になる。
+- **根本原因**: `@shopify/react-native-skia` は package 同梱の `scripts/install-libs.js` (node_modules 内) で `react-native-skia-android` パッケージから libs を `libs/android/` にコピーする postinstall を持つが、pnpm の `onlyBuiltDependencies` 制限で初回 install 時に実行されないことがある。Skia は CMake 段で初めて libs 不在に気付くため、エラーが Gradle 内部のメッセージに埋もれて `unknown error` になる。
 - **ルール**:
   1. `@shopify/react-native-skia` を新規追加 / 更新した直後は `node node_modules/@shopify/react-native-skia/scripts/install-libs.js` を 1 度実行して `libs/android/` に `arm64-v8a` 等が並ぶことを確認する。
   2. `pnpm install` 時に postinstall がスキップされる場合は `package.json` の `pnpm.onlyBuiltDependencies` に `@shopify/react-native-skia` を追加するか、`postinstall` script で明示的に `node node_modules/@shopify/react-native-skia/scripts/install-libs.js` を呼ぶ。
