@@ -29,20 +29,12 @@ jobs:
         run: cp .env.example .env
       - name: Audit dependencies
         run: pnpm audit --audit-level=high || true
-      - name: Lint (verify:lint)
-        run: pnpm verify:lint
-      - name: Type check (verify:type-check)
-        run: pnpm verify:type-check
-      - name: Format check (verify:format)
-        run: pnpm verify:format
-      - name: Tests (verify:test)
-        run: pnpm verify:test
-      - name: i18n check (verify:i18n)
-        run: pnpm verify:i18n
-      - name: Config check (verify:config)
-        run: pnpm verify:config
-      - name: Doc routing check (verify:doc-routing)
-        run: pnpm verify:doc-routing
+      # ローカルと同一の全 check chain を 1 step で実行する (Issue #1139)。
+      # 個別 step の手動列挙は「chain に check を足したのに ci.yml 追記を忘れる」
+      # 列挙 drift の温床だったため廃止 — 正本は package.json の "verify" 1 箇所 (P-14 防御 0)。
+      # 失敗 step の特定は log の ELIFECYCLE 直前の script 名で可能。
+      - name: Full verify chain (pnpm verify = package.json が正)
+        run: pnpm verify
 
   docs-cleanliness:
     runs-on: ubuntu-latest
