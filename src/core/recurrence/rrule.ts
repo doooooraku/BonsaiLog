@@ -60,6 +60,45 @@ export function expandRRule(
 }
 
 /**
+ * 初回 occurrence 探索の default 窓 (= 終了日未指定時)。
+ * 全 preset は dtstart アンカー型 (= 初回 = 開始日) のため理論上 1 日で足りるが、
+ * 非アンカー型 (= FREQ=WEEKLY;BYDAY=...) の最大 7 日 + exdates で初回が複数回飛ぶ
+ * ケース (= yearly + 例外日) も拾えるよう 2 年 (= 731 日) を取る。 limit=1 で
+ * 探索は初回合致で打ち切られるため窓の広さは性能に影響しない (= between 生成は
+ * 窓内全件だが最大でも daily 731 件、 ms オーダー)。
+ */
+const FIRST_OCCURRENCE_WINDOW_MS = 731 * 24 * 60 * 60 * 1000;
+
+/**
+ * 「次回 (= 初回合致日)」 計算の SoT 関数 (Sess101 #1157)。
+ *
+ * 保存時の events 事前展開 (recurrenceRuleRepository) と**同一経路** (= expandRRule =
+ * rrulestr + toLocalDateKey) で初回 occurrence を計算する。 UI の「次回」 表示は必ず
+ * 本関数を経由すること — startDate 直表示は禁止 (= 旧 Sess94 PR-B 実装の偽表示 bug):
+ * rrule lib は意図的 RFC 5545 非準拠で、 dtstart が rule に合致しない場合 occurrence に
+ * 含めない (例: 開始 2026-06-11 木 + FREQ=WEEKLY;BYDAY=MO → 初回 = 2026-06-15 月)。
+ *
+ * @param rrule - RFC 5545 RRULE 文字列 (DTSTART は含めない)
+ * @param startAtUtc - 開始 ISO UTC 日時 (DTSTART として使用)
+ * @param endAtUtc - 終了 ISO UTC 日時、 null = 終了日なし (default 窓で探索)
+ * @param exdates - 例外日 YYYY-MM-DD 配列
+ * @param tzOffsetMin - TZ オフセット分
+ * @returns 初回合致日の YYYY-MM-DD、 窓内 (= 終了日まで) に合致なしなら null
+ */
+export function computeFirstOccurrenceDateKey(
+  rrule: string,
+  startAtUtc: string,
+  endAtUtc: string | null,
+  exdates: readonly string[],
+  tzOffsetMin: number,
+): string | null {
+  const windowEndUtc =
+    endAtUtc ?? new Date(new Date(startAtUtc).getTime() + FIRST_OCCURRENCE_WINDOW_MS).toISOString();
+  const dates = expandRRule(rrule, startAtUtc, windowEndUtc, exdates, tzOffsetMin, 1);
+  return dates[0] ?? null;
+}
+
+/**
  * RRULE 文字列の妥当性チェック (parse できれば true、 例外時 false)。
  * UI で「保存前 validation」 等に使用想定。
  */
