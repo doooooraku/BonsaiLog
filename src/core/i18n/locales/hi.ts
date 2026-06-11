@@ -460,6 +460,8 @@ const hi: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'आज का कार्य',
   planSelectedListLabel: '{date} का कार्य',
   planSelectedEmptyTitle: 'इस दिन के लिए कोई कार्य निर्धारित नहीं है',
+  guideRecordCtaBody: 'शुरुआत के लिए आज की एक देखभाल यहीं दर्ज करें।',
+  guidePlanCtaBody: 'तारीख़ चुनें और इस बटन से कार्य जोड़ें।',
   planSelectedEmptyBody:
     'तारीख़ चुनें और कार्य जोड़ने के लिए नीचे "{cta}" पर टैप करें। कार्य वाले दिनों पर कैलेंडर में ○ दिखता है।',
   planSelectedEmptyRecurringLink: 'दोहराए जाने वाले कार्यों के लिए आवर्ती शेड्यूल बनाएं',

@@ -461,6 +461,8 @@ const ru: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Сегодняшняя работа',
   planSelectedListLabel: 'Работа на {date}',
   planSelectedEmptyTitle: 'На этот день нет задач',
+  guideRecordCtaBody: 'Начните с одной сегодняшней записи об уходе — прямо здесь.',
+  guidePlanCtaBody: 'Выберите дату и добавьте задачу этой кнопкой.',
   planSelectedEmptyBody:
     'Выберите дату и нажмите «{cta}» внизу, чтобы добавить задачу. Дни с задачами отмечаются ○ в календаре.',
   planSelectedEmptyRecurringLink: 'Повторяющиеся задачи можно создать как повторяющееся расписание',

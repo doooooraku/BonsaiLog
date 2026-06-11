@@ -461,6 +461,8 @@ const pt: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Trabalho de hoje',
   planSelectedListLabel: 'Trabalho de {date}',
   planSelectedEmptyTitle: 'Sem tarefas planeadas neste dia',
+  guideRecordCtaBody: 'Comece por registar um cuidado de hoje, mesmo aqui.',
+  guidePlanCtaBody: 'Escolha uma data e adicione uma tarefa com este botão.',
   planSelectedEmptyBody:
     'Escolha uma data e toque em "{cta}" abaixo para adicionar uma tarefa. Os dias com tarefas mostram um ○ no calendário.',
   planSelectedEmptyRecurringLink: 'Para tarefas repetidas, crie um agendamento recorrente',

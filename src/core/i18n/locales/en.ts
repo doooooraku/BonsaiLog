@@ -444,6 +444,8 @@ const baseEn = {
   planSelectedListTodayLabel: "Today's work",
   planSelectedListLabel: 'Work on {date}',
   planSelectedEmptyTitle: 'No plans on this day',
+  guideRecordCtaBody: 'Start by logging one care task for today, right here.',
+  guidePlanCtaBody: 'Pick a date and add a plan with this button.',
   planSelectedEmptyBody:
     'Pick a date and tap "{cta}" below to add a plan. Days with plans get a ○ on the calendar.',
   planSelectedEmptyRecurringLink: 'For repeating plans, create a recurring schedule',

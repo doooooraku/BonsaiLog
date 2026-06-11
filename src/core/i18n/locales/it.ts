@@ -461,6 +461,8 @@ const it: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Lavoro di oggi',
   planSelectedListLabel: 'Lavoro del {date}',
   planSelectedEmptyTitle: 'Nessuna attività pianificata per questo giorno',
+  guideRecordCtaBody: 'Inizia registrando una cura di oggi, proprio qui.',
+  guidePlanCtaBody: 'Scegli una data e aggiungi una attività con questo pulsante.',
   planSelectedEmptyBody:
     'Scegli una data e tocca "{cta}" qui sotto per aggiungere una attività. I giorni con attività mostrano un ○ sul calendario.',
   planSelectedEmptyRecurringLink:

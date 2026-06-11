@@ -448,6 +448,8 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: '今天的作業',
   planSelectedListLabel: '{date} 的作業',
   planSelectedEmptyTitle: '這一天沒有安排任務',
+  guideRecordCtaBody: '先從今天的一項養護開始，在這裡留下記錄吧。',
+  guidePlanCtaBody: '選擇日期，用這個按鈕新增任務。',
   planSelectedEmptyBody: '選擇日期，點按下方「{cta}」即可新增任務。有任務的日期會在日曆上顯示 ○。',
   planSelectedEmptyRecurringLink: '需要重複的任務，可以建立定期安排',
   recordSelectedEmptyTitle: '這一天沒有記錄',

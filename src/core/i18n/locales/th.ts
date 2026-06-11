@@ -458,6 +458,8 @@ const th: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'งานวันนี้',
   planSelectedListLabel: 'งานวันที่ {date}',
   planSelectedEmptyTitle: 'ไม่มีงานที่กำหนดไว้ในวันนี้',
+  guideRecordCtaBody: 'เริ่มจากบันทึกการดูแลของวันนี้สักหนึ่งรายการได้ที่นี่',
+  guidePlanCtaBody: 'เลือกวันที่แล้วเพิ่มงานด้วยปุ่มนี้',
   planSelectedEmptyBody:
     'เลือกวันที่แล้วแตะ "{cta}" ด้านล่างเพื่อเพิ่มงาน วันที่มีงานจะแสดง ○ บนปฏิทิน',
   planSelectedEmptyRecurringLink: 'งานที่ทำซ้ำเป็นประจำ สร้างได้จากกำหนดการประจำ',
