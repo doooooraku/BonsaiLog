@@ -83,6 +83,7 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
         />
 
         <CalendarEventGroupList
+          mode={mode}
           testIdPrefix={testIdPrefix}
           bonsaiDetailTab={bonsaiDetailTab}
           selectedDateKey={data.selectedDateKey}
