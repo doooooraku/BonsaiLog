@@ -108,4 +108,30 @@ describe('buildManifestFromDb (functional core)', () => {
     expect(manifest.events.length).toBe(1);
     expect(manifest.events[0]?.deletedAt).not.toBeNull();
   });
+
+  test('recurrence_rules と events の rule 連結を manifest に含む (Sess99 #1121)', async () => {
+    const { backup, bonsai } = mods();
+    const recurrence =
+      require('@/src/db/recurrenceRuleRepository') as typeof import('@/src/db/recurrenceRuleRepository');
+    const b = await bonsai.createBonsai({ name: 'B' });
+    const rule = await recurrence.createRecurrenceRule({
+      bonsaiId: b.id,
+      eventType: 'watering',
+      rrule: 'FREQ=DAILY',
+      startAtUtc: '2026-06-01T00:00:00.000Z',
+      endAtUtc: '2026-06-03T23:59:59.000Z',
+      memo: '毎日の水やり',
+    });
+
+    const { manifest } = await backup.buildManifestFromDb();
+    // rule 本体が serialize される (memo / rrule / exdates 含む全列)
+    expect(manifest.recurrenceRules?.length).toBe(1);
+    expect(manifest.recurrenceRules?.[0]?.id).toBe(rule.id);
+    expect(manifest.recurrenceRules?.[0]?.rrule).toBe('FREQ=DAILY');
+    expect(manifest.recurrenceRules?.[0]?.memo).toBe('毎日の水やり');
+    // rule 作成時に事前展開された planned events が rule 連結付きで serialize される
+    // (連結が欠落すると復元後の起動時バッチが予定を二重生成する)
+    expect(manifest.events.length).toBeGreaterThan(0);
+    expect(manifest.events.every((e) => e.recurrenceRuleId === rule.id)).toBe(true);
+  });
 });

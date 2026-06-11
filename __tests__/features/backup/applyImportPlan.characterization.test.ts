@@ -15,6 +15,7 @@ import type {
   BackupEvent,
   BackupNamed,
   BackupPhoto,
+  BackupRecurrenceRule,
   BackupTag,
 } from '@/src/features/backup/backupTypes';
 
@@ -102,6 +103,28 @@ function makeTag(id: string, name: string): BackupTag {
   return { id, name, nameNormalized: name.toLowerCase(), createdAt: TS };
 }
 
+function makeRule(
+  id: string,
+  bonsaiId: string,
+  over: Partial<BackupRecurrenceRule> = {},
+): BackupRecurrenceRule {
+  return {
+    id,
+    bonsaiId,
+    eventType: 'watering',
+    rrule: 'FREQ=WEEKLY;BYDAY=MO',
+    startAtUtc: TS,
+    endAtUtc: null,
+    exdates: '[]',
+    tzIana: 'Asia/Tokyo',
+    memo: null,
+    deletedAt: null,
+    createdAt: TS,
+    updatedAt: TS,
+    ...over,
+  };
+}
+
 /** manifest 由来の入力から insert プランを作る (既存 ID 集合を渡すと skip 判定される)。 */
 function buildPlan(
   planner: PlannerModule,
@@ -113,9 +136,11 @@ function buildPlan(
     bonsaiTags?: { bonsaiId: string; tagId: string; createdAt: string }[];
     customSpecies?: BackupNamed[];
     customStyles?: BackupNamed[];
+    recurrenceRules?: BackupRecurrenceRule[];
   },
   existing: { bonsai?: Set<string>; events?: Set<string>; photos?: Set<string> } = {},
 ) {
+  const recurrenceRules: BackupRecurrenceRule[] = input.recurrenceRules ?? [];
   return planner.buildAppendImportPlan({
     bonsai: input.bonsai ?? [],
     events: input.events ?? [],
@@ -124,6 +149,7 @@ function buildPlan(
     bonsaiTags: input.bonsaiTags ?? [],
     customSpecies: input.customSpecies ?? [],
     customStyles: input.customStyles ?? [],
+    recurrenceRules,
     existingBonsaiIds: existing.bonsai ?? new Set<string>(),
     existingEventIds: existing.events ?? new Set<string>(),
     existingPhotoIds: existing.photos ?? new Set<string>(),
@@ -231,6 +257,43 @@ describe('applyImportPlan (import functional core)', () => {
     expect(plan2.bonsaiToInsert.length).toBe(0);
     await apply.applyImportPlan(db, plan2, makeFakeCopy().fn);
     expect(await count('bonsai')).toBe(1);
+  });
+
+  test('recurrence_rules を bonsai の後に INSERT し events の rule 連結を保持 (Sess99 #1121)', async () => {
+    const { apply, planner } = mods();
+    const b = makeBonsai('b1');
+    const rule = makeRule('r1', 'b1', { memo: '毎週月曜の水やり' });
+    // rule 由来の planned event (recurrenceRuleId 連結あり) + 旧 ZIP 相当の連結なし event
+    const linked = makeEvent('e1', 'b1', { status: 'planned', recurrenceRuleId: 'r1' });
+    const legacy = makeEvent('e2', 'b1');
+    const plan = buildPlan(planner, {
+      bonsai: [b],
+      events: [linked, legacy],
+      recurrenceRules: [rule],
+    });
+
+    await apply.applyImportPlan(db, plan, makeFakeCopy().fn);
+
+    expect(await count('recurrence_rules')).toBe(1);
+    const ruleRow = await db.getFirstAsync<{ rrule: string; memo: string; exdates: string }>(
+      'SELECT rrule, memo, exdates FROM recurrence_rules WHERE id = ?;',
+      ['r1'],
+    );
+    expect(ruleRow?.rrule).toBe('FREQ=WEEKLY;BYDAY=MO');
+    expect(ruleRow?.memo).toBe('毎週月曜の水やり');
+    expect(ruleRow?.exdates).toBe('[]');
+
+    // events.recurrence_rule_id 連結が保持される (欠落すると起動時バッチが予定を二重生成)
+    const linkedRow = await db.getFirstAsync<{ recurrence_rule_id: string | null }>(
+      'SELECT recurrence_rule_id FROM events WHERE id = ?;',
+      ['e1'],
+    );
+    expect(linkedRow?.recurrence_rule_id).toBe('r1');
+    const legacyRow = await db.getFirstAsync<{ recurrence_rule_id: string | null }>(
+      'SELECT recurrence_rule_id FROM events WHERE id = ?;',
+      ['e2'],
+    );
+    expect(legacyRow?.recurrence_rule_id).toBeNull();
   });
 
   test('写真コピー失敗で全 INSERT がロールバック (致命的データ破損を防ぐ)', async () => {

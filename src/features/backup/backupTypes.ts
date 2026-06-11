@@ -40,6 +40,30 @@ export type BackupEvent = {
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  /**
+   * 定期予定由来 events の rule 連結 (Sess99 #1121 で追加、旧 ZIP には無い → undefined 許容)。
+   * 起動時バッチ (expandFutureEventsForAllActiveRules) の重複 insert 回避がこの連結に依存する
+   * ため、復元時に欠落すると予定が二重生成される。
+   */
+  recurrenceRuleId?: string | null;
+};
+
+/** recurrence_rules 1 行 (Sess99 #1121、schema v16/v17 全列)。 */
+export type BackupRecurrenceRule = {
+  id: string;
+  bonsaiId: string;
+  eventType: string;
+  rrule: string;
+  startAtUtc: string;
+  endAtUtc: string | null;
+  /** JSON 文字列 (DB 列そのまま、例: '[]')。 */
+  exdates: string;
+  tzIana: string;
+  /** v17 追加列 (旧 DB 由来 manifest では null)。 */
+  memo: string | null;
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type BackupPhoto = {
@@ -97,6 +121,8 @@ export type BackupManifest = {
   bonsaiTags?: BackupBonsaiTag[];
   customSpecies?: BackupNamed[];
   customStyles?: BackupNamed[];
+  /** Sess99 #1121 後付け: 定期予定ルール (旧 ZIP には存在しない → import 時 ?? [] で吸収)。 */
+  recurrenceRules?: BackupRecurrenceRule[];
   settings: BackupSettings;
 };
 

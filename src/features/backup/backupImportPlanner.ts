@@ -53,6 +53,12 @@ type NamedRecord = {
   name: string;
 };
 
+/** recurrence_rules: id + bonsai_id (FK 整合判定に必要な最小形、Sess99 #1121)。 */
+type RecurrenceRuleRecord = {
+  id: string;
+  bonsaiId: string;
+};
+
 /** bonsai_tags の複合主キーを Set 用キーに変換 (区切りに tag/bonsai id に出現しない `\t` を使用)。 */
 export function bonsaiTagKey(bonsaiId: string, tagId: string): string {
   return `${bonsaiId}\t${tagId}`;
@@ -66,6 +72,7 @@ export type AppendImportPlan<
   TBonsaiTag extends BonsaiTagRecord,
   TCustomSpecies extends NamedRecord,
   TCustomStyle extends NamedRecord,
+  TRecurrenceRule extends RecurrenceRuleRecord = RecurrenceRuleRecord,
 > = {
   bonsaiToInsert: TBonsai[];
   eventsToInsert: TEvent[];
@@ -74,6 +81,7 @@ export type AppendImportPlan<
   bonsaiTagsToInsert: TBonsaiTag[];
   customSpeciesToInsert: TCustomSpecies[];
   customStylesToInsert: TCustomStyle[];
+  recurrenceRulesToInsert: TRecurrenceRule[];
   skippedBonsai: number;
   skippedEvents: number;
   skippedPhotos: number;
@@ -81,9 +89,11 @@ export type AppendImportPlan<
   skippedBonsaiTags: number;
   skippedCustomSpecies: number;
   skippedCustomStyles: number;
-  /** bonsai_id が manifest にも DB にも無い photo / event。BackupError('invalid') で拒否対象。 */
+  skippedRecurrenceRules: number;
+  /** bonsai_id が manifest にも DB にも無い photo / event / rule。BackupError('invalid') で拒否対象。 */
   invalidPhotoRefs: TPhoto[];
   invalidEventRefs: TEvent[];
+  invalidRecurrenceRuleRefs: TRecurrenceRule[];
 };
 
 /**
@@ -106,6 +116,7 @@ export function buildAppendImportPlan<
   TBonsaiTag extends BonsaiTagRecord,
   TCustomSpecies extends NamedRecord,
   TCustomStyle extends NamedRecord,
+  TRecurrenceRule extends RecurrenceRuleRecord = RecurrenceRuleRecord,
 >({
   bonsai,
   events,
@@ -114,6 +125,7 @@ export function buildAppendImportPlan<
   bonsaiTags = [],
   customSpecies = [],
   customStyles = [],
+  recurrenceRules = [],
   existingBonsaiIds,
   existingEventIds,
   existingPhotoIds,
@@ -124,6 +136,7 @@ export function buildAppendImportPlan<
   existingCustomSpeciesNames = new Set<string>(),
   existingCustomStyleIds = new Set<string>(),
   existingCustomStyleNames = new Set<string>(),
+  existingRecurrenceRuleIds = new Set<string>(),
 }: {
   bonsai: TBonsai[];
   events: TEvent[];
@@ -132,6 +145,7 @@ export function buildAppendImportPlan<
   bonsaiTags?: TBonsaiTag[];
   customSpecies?: TCustomSpecies[];
   customStyles?: TCustomStyle[];
+  recurrenceRules?: TRecurrenceRule[];
   existingBonsaiIds: ReadonlySet<string>;
   existingEventIds: ReadonlySet<string>;
   existingPhotoIds: ReadonlySet<string>;
@@ -142,7 +156,17 @@ export function buildAppendImportPlan<
   existingCustomSpeciesNames?: ReadonlySet<string>;
   existingCustomStyleIds?: ReadonlySet<string>;
   existingCustomStyleNames?: ReadonlySet<string>;
-}): AppendImportPlan<TBonsai, TEvent, TPhoto, TTag, TBonsaiTag, TCustomSpecies, TCustomStyle> {
+  existingRecurrenceRuleIds?: ReadonlySet<string>;
+}): AppendImportPlan<
+  TBonsai,
+  TEvent,
+  TPhoto,
+  TTag,
+  TBonsaiTag,
+  TCustomSpecies,
+  TCustomStyle,
+  TRecurrenceRule
+> {
   const knownBonsaiIds = new Set(existingBonsaiIds);
   const knownEventIds = new Set(existingEventIds);
   const knownPhotoIds = new Set(existingPhotoIds);
@@ -153,6 +177,7 @@ export function buildAppendImportPlan<
   const knownCustomSpeciesNames = new Set(existingCustomSpeciesNames);
   const knownCustomStyleIds = new Set(existingCustomStyleIds);
   const knownCustomStyleNames = new Set(existingCustomStyleNames);
+  const knownRecurrenceRuleIds = new Set(existingRecurrenceRuleIds);
 
   const bonsaiToInsert: TBonsai[] = [];
   const eventsToInsert: TEvent[] = [];
@@ -161,8 +186,10 @@ export function buildAppendImportPlan<
   const bonsaiTagsToInsert: TBonsaiTag[] = [];
   const customSpeciesToInsert: TCustomSpecies[] = [];
   const customStylesToInsert: TCustomStyle[] = [];
+  const recurrenceRulesToInsert: TRecurrenceRule[] = [];
   const invalidEventRefs: TEvent[] = [];
   const invalidPhotoRefs: TPhoto[] = [];
+  const invalidRecurrenceRuleRefs: TRecurrenceRule[] = [];
 
   let skippedBonsai = 0;
   let skippedEvents = 0;
@@ -171,6 +198,7 @@ export function buildAppendImportPlan<
   let skippedBonsaiTags = 0;
   let skippedCustomSpecies = 0;
   let skippedCustomStyles = 0;
+  let skippedRecurrenceRules = 0;
 
   // カスタム樹種/樹形は id 既存 OR name 既存(UNIQUE)なら skip。
   for (const sp of customSpecies) {
@@ -228,6 +256,21 @@ export function buildAppendImportPlan<
     bonsaiTagsToInsert.push(link);
   }
 
+  // recurrence_rules は bonsai の「子」(FK ON DELETE CASCADE): events / photos と同じ整合判定。
+  // events より先に処理 (events.recurrence_rule_id の連結先がこの集合に揃う、Sess99 #1121)。
+  for (const rule of recurrenceRules) {
+    if (!knownBonsaiIds.has(rule.bonsaiId)) {
+      invalidRecurrenceRuleRefs.push(rule);
+      continue;
+    }
+    if (knownRecurrenceRuleIds.has(rule.id)) {
+      skippedRecurrenceRules += 1;
+      continue;
+    }
+    knownRecurrenceRuleIds.add(rule.id);
+    recurrenceRulesToInsert.push(rule);
+  }
+
   for (const event of events) {
     if (!knownBonsaiIds.has(event.bonsaiId)) {
       invalidEventRefs.push(event);
@@ -262,6 +305,7 @@ export function buildAppendImportPlan<
     bonsaiTagsToInsert,
     customSpeciesToInsert,
     customStylesToInsert,
+    recurrenceRulesToInsert,
     skippedBonsai,
     skippedEvents,
     skippedPhotos,
@@ -269,7 +313,9 @@ export function buildAppendImportPlan<
     skippedBonsaiTags,
     skippedCustomSpecies,
     skippedCustomStyles,
+    skippedRecurrenceRules,
     invalidEventRefs,
     invalidPhotoRefs,
+    invalidRecurrenceRuleRefs,
   };
 }

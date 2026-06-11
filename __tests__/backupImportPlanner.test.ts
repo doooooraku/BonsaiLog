@@ -206,5 +206,31 @@ describe('backupImportPlanner', () => {
     expect(plan.customStylesToInsert).toEqual([]);
     expect(plan.skippedCustomSpecies).toBe(0);
     expect(plan.skippedCustomStyles).toBe(0);
+    // Sess99 #1121: recurrenceRules 省略 (旧 ZIP) でも安全に空で復元
+    expect(plan.recurrenceRulesToInsert).toEqual([]);
+    expect(plan.skippedRecurrenceRules).toBe(0);
+    expect(plan.invalidRecurrenceRuleRefs).toEqual([]);
+  });
+
+  test('recurrenceRules: 新規 insert / 重複 skip / bonsai 参照切れ invalid (Sess99 #1121)', () => {
+    const plan = buildAppendImportPlan({
+      bonsai: [{ id: 'b1' }],
+      events: [],
+      photos: [],
+      recurrenceRules: [
+        { id: 'r1', bonsaiId: 'b1' }, // 新規 (manifest 内 bonsai 参照)
+        { id: 'r2', bonsaiId: 'b-existing' }, // 新規 (DB 既存 bonsai 参照)
+        { id: 'r-dup', bonsaiId: 'b1' }, // DB に既存 → skip
+        { id: 'r3', bonsaiId: 'b-missing' }, // 参照切れ → invalid
+      ],
+      existingBonsaiIds: new Set(['b-existing']),
+      existingEventIds: new Set<string>(),
+      existingPhotoIds: new Set<string>(),
+      existingRecurrenceRuleIds: new Set(['r-dup']),
+    });
+
+    expect(plan.recurrenceRulesToInsert.map((r) => r.id)).toEqual(['r1', 'r2']);
+    expect(plan.skippedRecurrenceRules).toBe(1);
+    expect(plan.invalidRecurrenceRuleRefs.map((r) => r.id)).toEqual(['r3']);
   });
 });
