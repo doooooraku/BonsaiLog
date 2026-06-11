@@ -16,7 +16,7 @@ pnpm dev
 | カテゴリ           | 内容                                                         |
 | ------------------ | ------------------------------------------------------------ |
 | **フレームワーク** | Expo 55, React Native 0.83.4, New Architecture               |
-| **UI**             | React Native 標準コンポーネント, React Navigation            |
+| **UI**             | React Native 標準コンポーネント, Expo Router                 |
 | **状態管理**       | Zustand + AsyncStorage (persist)                             |
 | **データ**         | expo-sqlite（マイグレーション対応）                          |
 | **多言語対応**     | 19 言語（expo-localization + 独自システム）                  |
@@ -45,15 +45,20 @@ pnpm dev
 ```
 app/              # Expo Router ページ（ファイルベースルーティング）
 src/
-  core/           # i18n、デバッグユーティリティ
-  db/             # SQLite データベース層
+  components/     # feature 非依存の再利用 UI（Form atom 等）
+  core/           # 横断基盤（i18n / theme / datetime / hooks / util）
+  db/             # SQLite データベース層（repository + schema）
+  dev/            # 開発専用（seed 等、__DEV__ 限定）
   features/       # 機能ごとの垂直スライス
-  services/       # ビジネスロジックサービス
+  lib/            # 型レベル helper（assertNever のみ）
+  services/       # 外部 SDK ラッパ（RevenueCat / AdMob / legal）
   stores/         # Zustand ステートストア
   types/          # TypeScript 型定義
 scripts/          # 開発・ビルドスクリプト
 plugins/          # Expo 設定プラグイン
-docs/             # ドキュメント（Diataxis 構成）
+docs/             # ドキュメント（構成は docs/README.md が正）
 __tests__/        # ユニットテスト
 maestro/          # E2E テストフロー
 ```
+
+> 層の責務と依存ルールの正は `docs/reference/architecture.md`（ADR-0048）。
