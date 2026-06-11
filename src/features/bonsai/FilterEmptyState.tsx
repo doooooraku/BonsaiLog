@@ -14,6 +14,7 @@ import { ThemedText } from '@/components/themed-text';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
+import { SERIF_FAMILY } from '@/src/core/theme/typography';
 
 type Props = {
   tagName: string;
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   title: {
-    fontFamily: 'NotoSerifJP_500Medium',
+    fontFamily: SERIF_FAMILY,
     fontSize: 20,
     lineHeight: 30,
     textAlign: 'center',

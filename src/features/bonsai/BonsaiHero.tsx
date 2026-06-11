@@ -20,6 +20,7 @@ import { PotIcon } from '@/src/components/icons';
 // Sess68 PR #C: BG_PRIMARY は inline c.background 化、 ON_BRAND は brand-static で保持。
 import { ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
+import { SERIF_FAMILY } from '@/src/core/theme/typography';
 
 type Props = {
   coverUri: string | null;
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
   infoOverlay: { position: 'absolute', left: 24, right: 24, bottom: 16 },
   // displayL 28/36 (Claude Design DetailHero NotoSerifJP 28pt、 老眼対応で大型維持)
   name: {
-    fontFamily: 'NotoSerifJP_500Medium',
+    fontFamily: SERIF_FAMILY,
     fontSize: 28,
     lineHeight: 36,
     letterSpacing: 0.5,

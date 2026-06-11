@@ -74,6 +74,7 @@ import { RECURRENCE_PRESETS } from '@/src/core/recurrence/rrule';
 import { SelectedBonsaiChip } from '@/src/features/bonsai/SelectedBonsaiChip';
 import { usePickerStore } from '@/src/stores/pickerStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
+import { SERIF_FAMILY } from '@/src/core/theme/typography';
 
 import {
   WorkLogTypeFormFields,
@@ -551,7 +552,7 @@ const styles = StyleSheet.create({
   // 内タイトルブロックに置換 → `titleBlock` に rename + paddingTop 拡張 (header 直下 spacing)。
   titleBlock: { paddingTop: 12, paddingBottom: 8, alignItems: 'center', gap: 4 },
   title: {
-    fontFamily: 'NotoSerifJP_500Medium',
+    fontFamily: SERIF_FAMILY,
     fontSize: 20,
     letterSpacing: 0.4,
     textAlign: 'center',

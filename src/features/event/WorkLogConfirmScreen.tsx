@@ -63,6 +63,7 @@ import {
   type WorkLogTypeFormState,
 } from './WorkLogTypeFormFields';
 import { payloadToFormState } from './payloadToFormState';
+import { SERIF_FAMILY } from '@/src/core/theme/typography';
 
 export default function WorkLogConfirmScreen() {
   const { t } = useTranslation();
@@ -552,7 +553,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 96 },
   header: { paddingTop: 8, paddingBottom: 16, alignItems: 'center', gap: 4 },
   title: {
-    fontFamily: 'NotoSerifJP_500Medium',
+    fontFamily: SERIF_FAMILY,
     fontSize: 20,
     letterSpacing: 0.4,
   },

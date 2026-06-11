@@ -25,6 +25,7 @@ import { BONSAI_STYLES, type EventType } from '@/src/db/schema';
 import { BonsaiPlaceholder } from '@/src/features/bonsai/BonsaiPlaceholder';
 
 import type { BonsaiResult } from './useBonsaiSearch';
+import { SERIF_FAMILY } from '@/src/core/theme/typography';
 
 /** snippet 一致部分の inline highlight ThemedText (useColors hook を使うため小 component 化、 Sess70 PR-C2)。 */
 function SnippetMatch({ children }: { children: React.ReactNode }) {
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
   },
   thumb: { width: 56, height: 56 },
   bonsaiTextCol: { flex: 1, minWidth: 0, gap: 2 },
-  bonsaiName: { fontFamily: 'NotoSerifJP_500Medium', fontSize: 17 },
+  bonsaiName: { fontFamily: SERIF_FAMILY, fontSize: 17 },
   speciesLine: { fontSize: 12 },
   // 作業履歴行
   eventRow: {

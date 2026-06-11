@@ -185,11 +185,18 @@ export const eventRowMemoSectionLabel: TextStyle = {
 // ============================================================================
 
 /**
+ * ブランド serif の fontFamily 名 SoT (Sess100 #1123 フォローアップ)。
+ * StyleSheet で serif を使う時は文字列直書きせず本定数を参照する
+ * (font 差し替えを 1 箇所変更で全画面に波及させるため)。
+ */
+export const SERIF_FAMILY = 'NotoSerifJP_500Medium';
+
+/**
  * タブ画面 大タイトル (SearchHeader、 4 タブの大見出し)。
  * fontFamily NotoSerifJP_500Medium / fontSize 22 / lineHeight 32 / letterSpacing 0.9。
  */
 export const screenTitleTab: TextStyle = {
-  fontFamily: 'NotoSerifJP_500Medium',
+  fontFamily: SERIF_FAMILY,
   fontSize: 22,
   lineHeight: 32,
   letterSpacing: 0.9,
@@ -206,7 +213,7 @@ export const screenTitleTab: TextStyle = {
  *     サポートしないため除外)。 そのため screenTitleStack は 2 プロパティのみで構成。
  */
 export const screenTitleStack: Pick<TextStyle, 'fontFamily' | 'fontSize'> = {
-  fontFamily: 'NotoSerifJP_500Medium',
+  fontFamily: SERIF_FAMILY,
   fontSize: 18,
 };
 
@@ -217,7 +224,7 @@ export const screenTitleStack: Pick<TextStyle, 'fontFamily' | 'fontSize'> = {
  * layout 系 (textAlign / margin) と geometry の現状維持 override は caller 側 spread で行う。
  */
 export const displayTitleSerif: TextStyle = {
-  fontFamily: 'NotoSerifJP_500Medium',
+  fontFamily: SERIF_FAMILY,
   fontSize: 24,
   lineHeight: 32,
   letterSpacing: 0.5,

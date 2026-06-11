@@ -17,6 +17,7 @@ import { type EventType } from '@/src/db/schema';
 import { CalendarDot } from '@/src/features/plan/CalendarDot';
 import { CalendarLegend } from '@/src/features/plan/CalendarLegend';
 import { computeDotsByDay } from '@/src/features/plan/dotsByDay';
+import { SERIF_FAMILY } from '@/src/core/theme/typography';
 
 function getMonthDays(year: number, month: number): number {
   return new Date(year, month + 1, 0).getDate();
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
   monthArrow: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
   monthArrowText: { fontSize: 24 },
   monthLabel: {
-    fontFamily: 'NotoSerifJP_500Medium',
+    fontFamily: SERIF_FAMILY,
     fontSize: 18,
     letterSpacing: 0.5,
   },
