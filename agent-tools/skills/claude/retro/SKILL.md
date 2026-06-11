@@ -131,9 +131,9 @@ gh pr list --state all --limit 100 --json number,title,state,createdAt,mergedAt
 5. [教訓] — 根拠: ...
 ```
 
-### Step 8: lessons.md への追記
+### Step 8: lessons への追記
 
-`docs/reference/tasks/lessons.md` に以下を追記:
+`docs/reference/tasks/lessons/retro.md` (retro 集約 file、最新が上) に以下を追記:
 
 ```markdown
 ## [YYYY-MM-DD] [振り返り対象]
@@ -154,6 +154,18 @@ gh pr list --state all --limit 100 --json number,title,state,createdAt,mergedAt
 
 - [1 行で本質]
 ```
+
+### Step 9: doc 同期チェック (doc-routing 照合、Doc-Truth Audit P4)
+
+セッションで触ったコード領域と `docs/reference/doc-routing.md` (Code→Docs ルーティング原本) を突き合わせる:
+
+1. 対象期間の変更ファイルを列挙: `git log --since="<期間開始>" --name-only --format= origin/main | sort -u`
+2. 変更ファイルを doc-routing 表の glob と照合し、該当行の「変更時に読むべき doc」ごとに **更新済み / 更新不要 (理由) / 更新漏れ** を判定する
+3. 更新漏れは同セッション内で追記 or Issue 起票 (放置しない)
+4. **表に無い領域を触っていたら**: doc-routing.md への行追加を提案する (mapping 自体の drift 対策。ただし同表の運用メモ「行を増やしすぎない」に従い、罠実績のある領域を優先)
+5. `pnpm metrics:doc-freshness` を実行し、flagged doc があれば freshness-ledger.md の再検証・更新をタスク化する
+
+> 30 日周期の棚卸では「利用頻度 (`pnpm metrics:doc-30day-zero`)」と「正確性 (`pnpm metrics:doc-freshness`)」の **両方** を実行する (cadence の正本は `docs/audit/freshness-ledger.md` ヘッダ)。
 
 ---
 
@@ -192,11 +204,18 @@ gh pr list --state all --limit 100 --json number,title,state,createdAt,mergedAt
 2. ...
    ...
 
+### doc 同期チェック (Step 9)
+
+- 触った領域 × doc-routing: [更新漏れ 0 / 対応内容]
+- 表に無い領域: [なし / 行追加の提案]
+- metrics:doc-freshness: [flagged 0 / 対応タスク]
+
 ### 今すぐやること
 
-- [ ] lessons.md に教訓を追記
+- [ ] lessons/retro.md に教訓を追記
 - [ ] ADR 化すべき決定があれば作成
 - [ ] 改善策を Issue 化（P0/P1 のみ）
+- [ ] doc 同期チェック (Step 9) の結果を記載（更新漏れ 0 を確認 or 対応済み）
 ```
 
 ---
