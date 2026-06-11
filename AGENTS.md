@@ -200,7 +200,7 @@ mockup 整合 / 画面比較 / ui-diff 系のタスクで必須:
 - **初心者向け全体像**: `docs/explanation/ui-diff-loop-for-beginners.md` (家リフォーム例え話 + 8 step + コマンド意味)
 - **手順書**: `docs/how-to/ui-diff/screen-integration-loop.md` (8 step ループ、 1 画面 20-30 分目標)
 - **multi-page 撮影**: `docs/how-to/ui-diff/multipage-capture-pattern.md` (mockup `-01.png`, `-02.png` 等の scrollable 画面用)
-- **prompt 雛形**: `docs/handoff/templates/screen-integration-prompt.md`
+- **prompt 雛形**: `docs/how-to/workflow/prompts/screen-integration-prompt.md`
 - **学び集約**: `docs/reference/tasks/lessons/auto-improve-loop.md` (Sess5 4 知見含む)
 
 `.claude/hooks/session-start-design-reminder.mjs` で user prompt に「mockup 整合」 等のキーワードがあれば自動リマインド (R-1 / R-25 / R-29 強制適用)。

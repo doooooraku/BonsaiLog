@@ -16,10 +16,10 @@
 - `/docs/explanation/product_strategy.md`
 - `/docs/reference/basic_spec.md`
 - `/docs/reference/functional_spec.md`
-- `/docs/reports/product-strategy-research-v1.md`
-- `/docs/reports/product-strategy-research-v2.md`
-- `/docs/reports/basic-spec-research.md`
-- `/docs/reports/functional-spec-research.md`
+- `/docs/archive/research-2026-04/product-strategy-research-v1.md`
+- `/docs/archive/research-2026-04/product-strategy-research-v2.md`
+- `/docs/archive/research-2026-04/basic-spec-research.md`
+- `/docs/archive/research-2026-04/functional-spec-research.md`
 
 ## やること（この順番で）
 

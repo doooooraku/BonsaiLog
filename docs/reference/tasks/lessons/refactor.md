@@ -1,7 +1,7 @@
 # refactor — リファクタ Phase 3-7 の学び
 
 > 想定読者: 次回大規模リファクタ・死コード一掃・依存撤去を担当する人
-> 関連: `docs/refactor/phase-{4,6,7}-report.md` / `master-plan.md` / ADR-0045 / ADR-0048 / ADR-0015 Amendment
+> 関連: `docs/archive/refactor-2026-05/phase-{4,6,7}-report.md` / `master-plan.md` / ADR-0045 / ADR-0048 / ADR-0015 Amendment
 
 ---
 

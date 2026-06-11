@@ -148,7 +148,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   // 効果: Dev Build (開発時) で歯車が最初から OFF、user 手作業不要。
   //       リリース版は dev-client 同梱しないため元から無関係。
   //       Maestro ui-diff 撮影は Preview Build (dev-client なし) を使用 (Sess2 PR-4)。
-  // 関連: ADR-0021 / docs/handoff/sess3-progress-2026-05-17.md / PR #535 (Sess2 で revert された Edit を本 PR で再修正)
+  // 関連: ADR-0021 / PR #535 (Sess2 で revert された Edit を本 PR で再修正; 経緯は Sess3 handoff = 2026-06 docs 再編で削除、git 履歴参照)
   //
   // Sess62 R-58 fix: APP_ENV='production' 時は plugin を skip。 過去 (Sess61 まで)
   // 無条件登録だったため production AAB に DevLauncherPackage が混入し dex bloat。

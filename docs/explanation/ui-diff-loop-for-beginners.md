@@ -274,7 +274,7 @@ user OK 後:
 - 私の確認は 3 回以内に
 ```
 
-→ `docs/handoff/templates/screen-integration-prompt.md` に詳細な雛形あり
+→ `docs/how-to/workflow/prompts/screen-integration-prompt.md` に詳細な雛形あり
 
 ### user の確認ポイント (3 回以内)
 
@@ -313,12 +313,12 @@ user OK 後:
 
 ### 関連 docs (技術者向け)
 
-| 場所                                                  | 内容                                          |
-| ----------------------------------------------------- | --------------------------------------------- |
-| `docs/how-to/ui-diff/screen-integration-loop.md`      | 8 step ループ標準手順書 (詳細)                |
-| `docs/how-to/ui-diff/multipage-capture-pattern.md`    | multi-page 撮影 (Bottom Sheet や長いリスト用) |
-| `docs/handoff/templates/screen-integration-prompt.md` | 次セッション prompt 雛形                      |
-| `docs/reference/tasks/lessons/auto-improve-loop.md`   | 過去の学び (Sess5 4 知見含む)                 |
+| 場所                                                        | 内容                                          |
+| ----------------------------------------------------------- | --------------------------------------------- |
+| `docs/how-to/ui-diff/screen-integration-loop.md`            | 8 step ループ標準手順書 (詳細)                |
+| `docs/how-to/ui-diff/multipage-capture-pattern.md`          | multi-page 撮影 (Bottom Sheet や長いリスト用) |
+| `docs/how-to/workflow/prompts/screen-integration-prompt.md` | 次セッション prompt 雛形                      |
+| `docs/reference/tasks/lessons/auto-improve-loop.md`         | 過去の学び (Sess5 4 知見含む)                 |
 
 ### 設計の背景 (なぜこの方法?)
 

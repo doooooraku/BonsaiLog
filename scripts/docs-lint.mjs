@@ -11,6 +11,7 @@
  *   6. Superseded ADR の後継リンク整合 (ADR-0046 廃止ポリシー、warning のみ)
  *   7. ADR-0050 以降の CRUD Coverage section 整合 (R-65、 title に CRUD 動詞を含む ADR は section 必須、 warning のみ)
  *   8. recurrence-prevention.md 親索引 × specialized.md 見出しの parity (索引行欠落の機械検出)
+ *   9. docs/ 直下の未分類ディレクトリ検出 (役割宣言なしの ad-hoc 増築防止、一覧の正は ALLOWED_DOC_DIRS)
  *
  * 終了コード: 0 = OK, 1 = エラー検出 (warning は exit 0)
  */
@@ -221,6 +222,39 @@ function checkRecurrenceParity() {
   }
 }
 
+// Check 9: docs/ 直下の未分類ディレクトリ検出 (2026-06 docs 再編)
+// docs/README.md §1 の役割宣言と対の機械検査。役割宣言なしの ad-hoc ディレクトリ増築
+// (refactor/ reports/ handoff/ が体系外で育った再発) を構造的に防ぐ。
+// 新設時は docs/README.md §1 に役割を書き、この allowlist へ追加する (一覧の正は本 allowlist)。
+const ALLOWED_DOC_DIRS = new Set([
+  'adr',
+  'archive',
+  'assets',
+  'audit',
+  'explanation',
+  'how-to',
+  'legal',
+  'mockups',
+  'privacy',
+  'reference',
+  'store-listing',
+  'terms',
+]);
+function checkDocDirAllowlist() {
+  const docsDir = join(ROOT, 'docs');
+  if (!existsSync(docsDir)) return;
+  for (const entry of readdirSync(docsDir)) {
+    const full = join(docsDir, entry);
+    if (!statSync(full).isDirectory()) continue;
+    if (entry.startsWith('.') || entry === 'node_modules') continue;
+    if (!ALLOWED_DOC_DIRS.has(entry)) {
+      errors.push(
+        `[docs 構成] docs/${entry}/ は未分類ディレクトリです → docs/README.md §1 に役割を宣言し、scripts/docs-lint.mjs の ALLOWED_DOC_DIRS へ追加してください`,
+      );
+    }
+  }
+}
+
 // 実行
 checkCodexReferences();
 checkAdrSequence();
@@ -230,6 +264,7 @@ checkRuleDocsLineLimit();
 checkRecurrenceParity();
 checkSupersededLinks();
 checkAdrCrudCoverage();
+checkDocDirAllowlist();
 
 // 結果出力
 if (errors.length > 0) {

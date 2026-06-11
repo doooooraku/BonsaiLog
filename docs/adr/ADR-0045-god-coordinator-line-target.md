@@ -3,7 +3,7 @@
 - Status: Accepted
 - Date: 2026-05-29
 - Deciders: @doooooraku
-- Related: `docs/refactor/master-plan.md` (Phase 4 god 分割、可読性 KPI「1 ファイル ≤400 行」) / `docs/refactor/phase-4-bonsai-detail.md` (A1 計画書、成功判定基準) / ADR-0020 (詳細画面 3 タブ構造) / ADR-0036 (破壊的操作 = 削除/アーカイブ) / ADR-0042 (FAB SoT = root) / PR Phase 4 A1-9〜A1-12.5 (本ブランチ `refactor/phase-4-bonsai-detail`) / 1 次情報: [ESLint max-lines](https://eslint.org/docs/latest/rules/max-lines) (default 300・推奨 100〜500) + [Sandi Metz Rules](https://thoughtbot.com/blog/sandi-metz-rules-for-developers) (「迷った時の目安、根拠あれば破ってよい」) + [React: Thinking in React](https://react.dev/learn/thinking-in-react) + [React: Custom Hooks](https://react.dev/learn/reusing-logic-with-custom-hooks) (行数でなく責務/関心分離) + [Martin Fowler: Strangler Fig](https://martinfowler.com/bliki/StranglerFigApplication.html) (成功指標 = テスト可能性・段階的価値、LOC 非対象)
+- Related: `docs/archive/refactor-2026-05/master-plan.md` (Phase 4 god 分割、可読性 KPI「1 ファイル ≤400 行」) / `docs/archive/refactor-2026-05/phase-4-bonsai-detail.md` (A1 計画書、成功判定基準) / ADR-0020 (詳細画面 3 タブ構造) / ADR-0036 (破壊的操作 = 削除/アーカイブ) / ADR-0042 (FAB SoT = root) / PR Phase 4 A1-9〜A1-12.5 (本ブランチ `refactor/phase-4-bonsai-detail`) / 1 次情報: [ESLint max-lines](https://eslint.org/docs/latest/rules/max-lines) (default 300・推奨 100〜500) + [Sandi Metz Rules](https://thoughtbot.com/blog/sandi-metz-rules-for-developers) (「迷った時の目安、根拠あれば破ってよい」) + [React: Thinking in React](https://react.dev/learn/thinking-in-react) + [React: Custom Hooks](https://react.dev/learn/reusing-logic-with-custom-hooks) (行数でなく責務/関心分離) + [Martin Fowler: Strangler Fig](https://martinfowler.com/bliki/StranglerFigApplication.html) (成功指標 = テスト可能性・段階的価値、LOC 非対象)
 
 ---
 
@@ -75,8 +75,8 @@
 
 ### Follow-ups（後でやる宿題）
 
-- [x] `docs/refactor/master-plan.md` 可読性 KPI を本基準へ更新（本 PR）
-- [x] `docs/refactor/phase-4-bonsai-detail.md` 成功判定基準を本基準へ更新（本 PR）
+- [x] `docs/archive/refactor-2026-05/master-plan.md` 可読性 KPI を本基準へ更新（本 PR）
+- [x] `docs/archive/refactor-2026-05/phase-4-bonsai-detail.md` 成功判定基準を本基準へ更新（本 PR）
 - [ ] (任意) ESLint `max-lines`（warn・上限 450）の実導入を別 issue で検討。導入時は他ファイルも警告が出るため段階導入。
 - [ ] Phase 4 完了後（master-plan 弱点 1）に coordinator 行数を再計測（3 か月 TODO）。
 
@@ -103,8 +103,8 @@
 
 ## Links（関連リンク：正へ寄せる）
 
-- master-plan: `docs/refactor/master-plan.md`（Phase 4 / 可読性 KPI）
-- 計画書: `docs/refactor/phase-4-bonsai-detail.md`
+- master-plan: `docs/archive/refactor-2026-05/master-plan.md`（Phase 4 / 可読性 KPI）
+- 計画書: `docs/archive/refactor-2026-05/phase-4-bonsai-detail.md`
 - PR: `refactor/phase-4-bonsai-detail`（A1-9〜A1-12.5）
 - 関連 ADR: ADR-0020 / ADR-0036 / ADR-0042
 - External docs: ESLint max-lines / Sandi Metz Rules / React Thinking in React・Custom Hooks / Fowler Strangler Fig（上記 Related 参照）

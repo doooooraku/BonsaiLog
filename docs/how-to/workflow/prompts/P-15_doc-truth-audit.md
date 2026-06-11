@@ -3,7 +3,7 @@
 - **渡す先**: Claude Code (BonsaiLog の再監査 / 次 app の初回監査どちらでも)
 - **タイミング**: ①30 日棚卸 (`pnpm metrics:doc-freshness`) の flagged が 10 件超 ②doc 資産が 100 件を超えた新 app ③「docs が信用できない」と感じた時
 - **目的**: BonsaiLog で 420 件 × 2 日で完走した監査手順 (P0 台帳 → P1 バッチ判定 → P2 ログ採掘) を再調査ゼロで再実行する
-- **背景**: 2026-06 監査の実績焼き込み。実例は同 repo `docs/audit/doc-truth-audit-2026-06/state.md` (台帳の現物)、総括は `docs/reference/tasks/lessons/retro.md` の [2026-06-10] / [2026-06-11] エントリ
+- **背景**: 2026-06 監査の実績焼き込み。実例は同 repo `docs/archive/doc-truth-audit-2026-06/state.md` (台帳の現物)、総括は `docs/reference/tasks/lessons/retro.md` の [2026-06-10] / [2026-06-11] エントリ
 - **運用実績 2〜3 周で `/doc-audit` Skill 化を判断** (それまでは本プロンプト運用 — P4 user 決定 2026-06-11)
 
 ---

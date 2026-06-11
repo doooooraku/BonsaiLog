@@ -26,8 +26,7 @@
 //
 // 関連:
 //   ADR-0021 Notes Amended (Sess4 PR-6)
-//   PR #535 (Sess2 PR-4、preview-local-apk 採用)
-//   docs/handoff/sess3-progress-2026-05-17.md
+//   PR #535 (Sess2 PR-4、preview-local-apk 採用; 経緯は Sess3 handoff = 2026-06 docs 再編で削除、git 履歴参照)
 const { withAppBuildGradle } = require('@expo/config-plugins');
 
 const CMAKE_ARGS_BLOCK = `
