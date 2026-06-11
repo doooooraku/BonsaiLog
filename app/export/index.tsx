@@ -29,6 +29,7 @@ import { useScrollPreservation } from '@/src/core/hooks/useScrollPreservation';
 import { ChevronRightIcon } from '@/src/components/icons';
 import { type TranslationKey, useTranslation } from '@/src/core/i18n/i18n';
 // Sess66 PR6a.1: theme-dependent token を inline c.* に (dark cascade)。
+import { screenTitleTab } from '@/src/core/theme/typography';
 import { useColors } from '@/src/core/theme/useColors';
 import { ExportFormatBadge, type ExportFmt } from '@/src/features/export/ExportFormatBadge';
 import { ExportOptionsSheet } from '@/src/features/export/ExportOptionsSheet';
@@ -218,10 +219,11 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { padding: 16 }, // paddingBottom は inline insets.bottom + 24 (Sess95 PR-3)
   hero: { marginBottom: 20 },
+  // Sess99 #1123: screenTitleTab token 化 (geometry 22/32 同一)。letterSpacing は
+  // 既存見た目の現状維持 override (旧実装は未指定 = 0、token は 0.9)。
   heroTitle: {
-    fontFamily: 'NotoSerifJP_500Medium',
-    fontSize: 22,
-    lineHeight: 32,
+    ...screenTitleTab,
+    letterSpacing: 0,
   },
   heroBody: {
     marginTop: 10,

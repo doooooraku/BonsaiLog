@@ -21,6 +21,7 @@ import Svg, { Path } from 'react-native-svg';
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { displayTitleSerif } from '@/src/core/theme/typography';
 import { useColors } from '@/src/core/theme/useColors';
 import { getNextOnboardingStep } from '@/src/features/onboarding/onboardingFlow';
 import {
@@ -198,12 +199,10 @@ const styles = StyleSheet.create({
   iconRow: { alignItems: 'center', marginBottom: 16 },
   iconText: { fontSize: 64, lineHeight: 72 },
   // displayM 24/32 (design_system.md §3-3、Claude Design Onboarding Wireframes 整合)
+  // Sess99 #1123: displayTitleSerif token 化 (geometry 完全一致、見た目不変)。
   title: {
-    fontFamily: 'NotoSerifJP_500Medium',
-    fontSize: 24,
-    lineHeight: 32,
+    ...displayTitleSerif,
     textAlign: 'center',
-    letterSpacing: 0.5,
   },
   body: { textAlign: 'center', fontSize: 16, lineHeight: 26 },
   actions: { padding: 24, gap: 12 },

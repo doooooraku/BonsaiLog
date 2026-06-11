@@ -209,3 +209,16 @@ export const screenTitleStack: Pick<TextStyle, 'fontFamily' | 'fontSize'> = {
   fontFamily: 'NotoSerifJP_500Medium',
   fontSize: 18,
 };
+
+/**
+ * 画面内 大見出し (displayM 24/32、 design_system.md §3-3)。
+ * Onboarding tut タイトル / 盆栽タブ empty state タイトル等、 screen header 以外の
+ * 「画面の主役見出し」 用。 Sess99 #1123 で直書き 3 箇所を token 集約 (見た目不変)。
+ * layout 系 (textAlign / margin) と geometry の現状維持 override は caller 側 spread で行う。
+ */
+export const displayTitleSerif: TextStyle = {
+  fontFamily: 'NotoSerifJP_500Medium',
+  fontSize: 24,
+  lineHeight: 32,
+  letterSpacing: 0.5,
+};

@@ -33,6 +33,7 @@ import { BottomCtaBar } from '@/src/components/common/BottomCtaBar';
 import { getTzOffsetMin, nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { ON_BRAND } from '@/src/core/theme/colors';
+import { displayTitleSerif } from '@/src/core/theme/typography';
 import { useColors } from '@/src/core/theme/useColors';
 import { archiveBonsai, getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getRecentTags, type TagRecord } from '@/src/db/tagRepository';
@@ -271,12 +272,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     gap: 16,
   },
+  // Sess99 #1123: displayTitleSerif token 化 (R-75 font geometry hardcode 禁止)。
+  // lineHeight 34 は既存見た目の現状維持 override (token は 32)。
   emptyTitle: {
-    fontFamily: 'NotoSerifJP_500Medium',
-    fontSize: 24,
+    ...displayTitleSerif,
     lineHeight: 34,
     textAlign: 'center',
-    letterSpacing: 0.5,
     marginTop: 16,
   },
   emptyBody: { fontSize: 16, lineHeight: 26, textAlign: 'center', maxWidth: 300 },
