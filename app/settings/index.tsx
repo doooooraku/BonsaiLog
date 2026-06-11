@@ -38,7 +38,6 @@ import {
   type AlertPickerOption,
 } from '@/src/features/settings/useAlertPickerRow';
 import { showAdPrivacyOptionsForm } from '@/src/services/adService';
-import { useOnboardingStore } from '@/src/stores/onboardingStore';
 import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
@@ -343,23 +342,18 @@ export default function SettingsScreen() {
           </Pressable>
         </SettingsSection>
 
-        {/* --- (実機固有) F-26 Phase H ヘルプ (Issue #26、ADR-0018): チュートリアル再表示 --- */}
+        {/* --- ヘルプ: 使い方 (#1179 / ADR-0058)。旧「チュートリアルを再表示」(ADR-0018 Phase H) は
+            実体が tut5 1 枚で説明文「5 つの機能チュートリアル」と乖離していたため行ごと構造置換。 --- */}
         <SettingsSection title={t('settingsHelpSection')}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('settingsTutorialReplayTitle')}
-            accessibilityHint={t('settingsTutorialReplayDesc')}
-            testID="e2e_open_tutorial_replay"
+            accessibilityLabel={t('howtoTitle')}
+            testID="e2e_open_howto"
             style={[styles.entry, { borderBottomColor: c.border }]}
-            onPress={() => {
-              // resetTutorial() で tut1-5 をリセット → /onboarding/tut/tut1 へ
-              useOnboardingStore.getState().resetTutorial();
-              useOnboardingStore.getState().setCompleted(false);
-              router.push('/onboarding/tut/tut1' as Href);
-            }}
+            onPress={() => router.push('/settings/how-to' as Href)}
           >
             <View style={styles.rowInner}>
-              <ThemedText type="defaultSemiBold">{t('settingsTutorialReplayTitle')}</ThemedText>
+              <ThemedText type="defaultSemiBold">{t('howtoTitle')}</ThemedText>
               <ThemedText style={styles.chevron}>›</ThemedText>
             </View>
           </Pressable>
