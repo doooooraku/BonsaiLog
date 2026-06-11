@@ -6,7 +6,8 @@
  *
  * 確認項目 (Issue #1177 AC):
  * 1. record mode + 0 件 → record 系キーのみ表示 (plan 系キーが出ない)
- * 2. plan mode + 0 件 → plan 系キー + 定期予定リンク表示、tap で /recurring-rules/new へ遷移
+ * 2. plan mode + 0 件 → plan 系キー + 定期予定リンク表示、tap で /recurring-rules (管理画面) へ遷移
+ *    (/recurring-rules/new は bonsaiId+eventType param が caller 必須のため直接遷移しない)
  * 3. record mode + 0 件 → 定期予定リンクは出ない
  * 4. 1 件以上 → 空状態 (タイトル/リンク) が出ない
  */
@@ -66,7 +67,7 @@ describe('CalendarEventGroupList 空状態 mode 分岐 (#1177)', () => {
     expect(queryByText('planSelectedEmptyBody')).toBeNull();
   });
 
-  test('AC2: plan mode + 0 件 → plan 系キー + 定期予定リンク、tap で /recurring-rules/new', () => {
+  test('AC2: plan mode + 0 件 → plan 系キー + 定期予定リンク、tap で /recurring-rules', () => {
     const { getByText, queryByText, getByTestId } = render(
       <CalendarEventGroupList {...baseProps('plan')} />,
     );
@@ -76,7 +77,7 @@ describe('CalendarEventGroupList 空状態 mode 分岐 (#1177)', () => {
     expect(queryByText('recordSelectedEmptyTitle')).toBeNull();
 
     fireEvent.press(getByTestId('e2e_plan_selected_empty_recurring_link'));
-    expect(mockPush).toHaveBeenCalledWith('/recurring-rules/new');
+    expect(mockPush).toHaveBeenCalledWith('/recurring-rules');
   });
 
   test('AC3: record mode では定期予定リンクが出ない', () => {

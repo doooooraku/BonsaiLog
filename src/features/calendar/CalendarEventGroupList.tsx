@@ -117,7 +117,9 @@ export function CalendarEventGroupList({
               accessibilityRole="link"
               accessibilityLabel={t('planSelectedEmptyRecurringLink')}
               hitSlop={8}
-              onPress={() => router.push('/recurring-rules/new' as Href)}
+              // /recurring-rules/new は bonsaiId+eventType param が caller 必須 (不正 param で
+              // router.back()) のため、param 不要の管理画面 (一覧 → 新規追加) に着地させる。
+              onPress={() => router.push('/recurring-rules' as Href)}
               testID="e2e_plan_selected_empty_recurring_link"
             >
               <ThemedText style={[styles.emptyLink, { color: c.tint }]}>
