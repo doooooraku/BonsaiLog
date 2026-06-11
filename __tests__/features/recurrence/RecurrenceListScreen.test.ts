@@ -75,9 +75,18 @@ describe('RecurrenceListScreen (Sess81 PR-7.5、 ADR-0056 + ADR-0035 D9 部分 r
 
   test('5. testID 命名規約 (= e2e_recurrence_*、 Maestro PR-10 互換)', () => {
     expect(SCREEN_SRC).toContain('e2e_recurrence_list_screen');
-    expect(SCREEN_SRC).toContain('e2e_recurrence_rule_${item.id}');
-    expect(SCREEN_SRC).toContain('e2e_recurrence_rule_kebab_${item.id}');
+    // Sess99 #1122 案 G2: 1 行 = 1 グループ、 testID は代表 rule (rep) の id で採番
+    expect(SCREEN_SRC).toContain('e2e_recurrence_rule_${rep.id}');
+    expect(SCREEN_SRC).toContain('e2e_recurrence_rule_kebab_${rep.id}');
     expect(SCREEN_SRC).toContain('e2e_recurrence_delete_dialog');
+  });
+
+  test('5b. Sess99 #1122 案 G2: グループ表示 + グループ置換を使用', () => {
+    expect(SCREEN_SRC).toContain('groups');
+    expect(HOOK_SRC).toContain('groupRecurrenceRules');
+    expect(REPO_SRC).toContain('ruleGroupKey');
+    expect(REPO_SRC).toContain('replaceRecurrenceRuleGroup');
+    expect(REPO_SRC).toContain('group_id');
   });
 
   test('6. empty state 実装 (= 「予定タブから 🔁 で 作成できます」 案内)', () => {

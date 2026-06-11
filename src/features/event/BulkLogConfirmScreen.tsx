@@ -54,7 +54,7 @@ import {
 import { FREE_PHOTO_LIMIT_PER_EVENT } from '@/src/db/photoRepository';
 import {
   countActiveRecurrenceRules,
-  createRecurrenceRule,
+  bulkCreateRecurrenceRules,
 } from '@/src/db/recurrenceRuleRepository';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { maybePromptNotificationOptIn } from '@/src/features/notification/optInPrompt';
@@ -239,16 +239,19 @@ export default function BulkLogConfirmScreen() {
               : recurrenceValue.endType === 'specific' && recurrenceValue.endDate
                 ? `${recurrenceValue.endDate}T23:59:59.000Z`
                 : null;
-          for (const bid of bonsaiIds) {
-            await createRecurrenceRule({
+          // Sess99 #1122: 旧 createRecurrenceRule loop → bulkCreateRecurrenceRules に置換。
+          // R-73 (複数件 INSERT は bulk ラッパーで原子性保証) 整合 + 1 回の操作 = 1 グループ
+          // (group_id 共有) として管理画面に 1 行表示される (案 G2)。
+          const created = await bulkCreateRecurrenceRules(
+            bonsaiIds.map((bid) => ({
               bonsaiId: bid,
               eventType: selectedType,
               rrule: RECURRENCE_PRESETS[recurrenceValue.preset],
               startAtUtc,
               endAtUtc: endAtUtcValue,
-            });
-            recurringCreatedCount += 1;
-          }
+            })),
+          );
+          recurringCreatedCount = created.length;
         } else {
           // 単発 schedule (= 既存 bulkScheduleEvents pattern 流用、 BulkWorkPicker 直接呼出から移行)
           // bulkScheduleEvents の occurredAtUtc は required、 default は startAtUtc (= 「今日」 fallback 含む)

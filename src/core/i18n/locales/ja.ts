@@ -1029,6 +1029,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   recurringFormBonsaisHeader: '{count} 件の盆栽に同じ予定を追加',
   recurringFormBonsaisHeaderSingle: '{name} に予定を追加',
   recurringFormEventTypeLabel: '作業種別',
+  recurringFormChangeBonsais: '対象の盆栽を変更',
+  recurringFormTapToChange: 'タップして変更',
   bulkPickerSheetSubLogSingle: '{name} に作業を記録',
   bulkPickerSheetSubScheduleSingle: '{name} に予定を追加',
   bulkPickerAutoSelectedHint: '自動選択',

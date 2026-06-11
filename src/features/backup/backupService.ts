@@ -214,6 +214,7 @@ export async function buildManifestFromDb(): Promise<{
     exdates: string;
     tz_iana: string;
     memo: string | null;
+    group_id: string | null;
     deleted_at: string | null;
     created_at: string;
     updated_at: string;
@@ -351,6 +352,8 @@ export async function buildManifestFromDb(): Promise<{
     exdates: row.exdates,
     tzIana: row.tz_iana,
     memo: row.memo,
+    // Sess99 #1122 案 G2: グループ印も保存 (復元後の一覧グループ表示の連続性)
+    groupId: row.group_id,
     deletedAt: row.deleted_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

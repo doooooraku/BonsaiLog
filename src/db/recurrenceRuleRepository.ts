@@ -37,6 +37,11 @@ export type CreateRecurrenceRuleInput = {
   endAtUtc: string | null; // null = 永遠 (= caller default +365 日 推奨)
   /** Sess93 PR-1: ユーザー任意 memo (200 文字 + 複数行、 UI 側で enforce、 null = memo なし)。 */
   memo?: string | null;
+  /**
+   * Sess99 #1122 案 G2: 定期予定グループの印。未指定時は createRecurrenceRule = rule 自身の id、
+   * bulkCreateRecurrenceRules = 呼出 1 回ごとに共有 ulid を自動採番。
+   */
+  groupId?: string | null;
 };
 
 export type RecurrenceRuleRow = {
@@ -50,10 +55,20 @@ export type RecurrenceRuleRow = {
   tzIana: string;
   /** Sess93 PR-1: ユーザー任意 memo (= recurrence_rules.memo 列、 null = memo なし)。 */
   memo: string | null;
+  /** Sess99 #1122 案 G2: グループ印 (NULL = 旧データ → UI 側で rule.id を key に 1 本グループ扱い)。 */
+  groupId: string | null;
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
+
+/**
+ * Sess99 #1122 案 G2: rule のグループ key (= group_id、 旧データは rule.id fallback)。
+ * 一覧のグループ化・編集対象の特定で共通使用する純関数。
+ */
+export function ruleGroupKey(rule: Pick<RecurrenceRuleRow, 'id' | 'groupId'>): string {
+  return rule.groupId ?? rule.id;
+}
 
 /**
  * 定期予定ルール作成 + 8 週分 events 事前展開。
@@ -72,11 +87,13 @@ export async function createRecurrenceRule(
   const exdates: string[] = [];
   // Sess93 PR-1: memo cascade — 空文字列は null 正規化 (= UI の TextInput 空欄を NULL 統一)
   const memo = input.memo && input.memo.length > 0 ? input.memo : null;
+  // Sess99 #1122 案 G2: 単発作成 = rule 自身の id をグループ印に (= 1 本グループ)
+  const groupId = input.groupId ?? id;
 
   await db.runAsync(
     `INSERT INTO recurrence_rules
-       (id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana, memo, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+       (id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana, memo, group_id, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     [
       id,
       input.bonsaiId,
@@ -87,6 +104,7 @@ export async function createRecurrenceRule(
       JSON.stringify(exdates),
       tzIana,
       memo,
+      groupId,
       now,
       now,
     ],
@@ -142,6 +160,7 @@ export async function createRecurrenceRule(
     exdates,
     tzIana,
     memo,
+    groupId,
     deletedAt: null,
     createdAt: now,
     updatedAt: now,
@@ -175,17 +194,20 @@ export async function bulkCreateRecurrenceRules(
   const tzOffsetMin = getTzOffsetMin() as number;
   const exdates: string[] = [];
   const results: RecurrenceRuleRow[] = [];
+  // Sess99 #1122 案 G2: 1 回の一括作成 = 1 つの「定期予定グループ」 (共有 ulid を採番)
+  const sharedGroupId = ulid();
 
   await db.withTransactionAsync(async () => {
     for (const input of inputs) {
       const id = ulid();
       // Sess93 PR-1: memo cascade — 空文字列は null 正規化
       const memo = input.memo && input.memo.length > 0 ? input.memo : null;
+      const groupId = input.groupId ?? sharedGroupId;
 
       await db.runAsync(
         `INSERT INTO recurrence_rules
-           (id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana, memo, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+           (id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates, tz_iana, memo, group_id, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
         [
           id,
           input.bonsaiId,
@@ -196,6 +218,7 @@ export async function bulkCreateRecurrenceRules(
           JSON.stringify(exdates),
           tzIana,
           memo,
+          groupId,
           now,
           now,
         ],
@@ -251,6 +274,7 @@ export async function bulkCreateRecurrenceRules(
         exdates,
         tzIana,
         memo,
+        groupId,
         deletedAt: null,
         createdAt: now,
         updatedAt: now,
@@ -283,27 +307,36 @@ export async function countActiveRecurrenceRules(): Promise<number> {
  */
 export async function listActiveRecurrenceRules(): Promise<RecurrenceRuleRow[]> {
   const db = await getDb();
-  const rows = await db.getAllAsync<{
-    id: string;
-    bonsai_id: string;
-    event_type: string;
-    rrule: string;
-    start_at_utc: string;
-    end_at_utc: string | null;
-    exdates: string;
-    tz_iana: string;
-    memo: string | null;
-    deleted_at: string | null;
-    created_at: string;
-    updated_at: string;
-  }>(
+  const rows = await db.getAllAsync<RecurrenceRuleDbRow>(
     `SELECT id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates,
-            tz_iana, memo, deleted_at, created_at, updated_at
+            tz_iana, memo, group_id, deleted_at, created_at, updated_at
      FROM recurrence_rules
      WHERE deleted_at IS NULL
      ORDER BY created_at DESC;`,
   );
-  return rows.map((r) => ({
+  return rows.map(mapRuleRow);
+}
+
+/** snake_case DB row (= SELECT 列共通形、 Sess99 #1122 で mapping を一元化)。 */
+type RecurrenceRuleDbRow = {
+  id: string;
+  bonsai_id: string;
+  event_type: string;
+  rrule: string;
+  start_at_utc: string;
+  end_at_utc: string | null;
+  exdates: string;
+  tz_iana: string;
+  memo: string | null;
+  group_id: string | null;
+  deleted_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** snake_case → RecurrenceRuleRow 変換 (= rowMapper、 重複 mapping の SoT 化)。 */
+function mapRuleRow(r: RecurrenceRuleDbRow): RecurrenceRuleRow {
+  return {
     id: r.id,
     bonsaiId: r.bonsai_id,
     eventType: r.event_type,
@@ -313,10 +346,28 @@ export async function listActiveRecurrenceRules(): Promise<RecurrenceRuleRow[]> 
     exdates: JSON.parse(r.exdates) as string[],
     tzIana: r.tz_iana,
     memo: r.memo,
+    groupId: r.group_id,
     deletedAt: r.deleted_at,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
-  }));
+  };
+}
+
+/**
+ * 同一グループ (group_id 一致、 旧データは id 一致) の active rules を取得 (Sess99 #1122 案 G2)。
+ * 編集画面でグループ全員の盆栽 chips を復元するために使用。
+ */
+export async function getActiveRulesByGroupKey(groupKey: string): Promise<RecurrenceRuleRow[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<RecurrenceRuleDbRow>(
+    `SELECT id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates,
+            tz_iana, memo, group_id, deleted_at, created_at, updated_at
+     FROM recurrence_rules
+     WHERE deleted_at IS NULL AND (group_id = ? OR (group_id IS NULL AND id = ?))
+     ORDER BY created_at ASC;`,
+    [groupKey, groupKey],
+  );
+  return rows.map(mapRuleRow);
 }
 
 /**
@@ -457,41 +508,15 @@ export async function expandFutureEventsForAllActiveRules(): Promise<number> {
  */
 export async function getRecurrenceRuleById(id: string): Promise<RecurrenceRuleRow | null> {
   const db = await getDb();
-  const row = await db.getFirstAsync<{
-    id: string;
-    bonsai_id: string;
-    event_type: string;
-    rrule: string;
-    start_at_utc: string;
-    end_at_utc: string | null;
-    exdates: string;
-    tz_iana: string;
-    memo: string | null;
-    deleted_at: string | null;
-    created_at: string;
-    updated_at: string;
-  }>(
+  const row = await db.getFirstAsync<RecurrenceRuleDbRow>(
     `SELECT id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates,
-            tz_iana, memo, deleted_at, created_at, updated_at
+            tz_iana, memo, group_id, deleted_at, created_at, updated_at
      FROM recurrence_rules
      WHERE id = ? AND deleted_at IS NULL;`,
     [id],
   );
   if (!row) return null;
-  return {
-    id: row.id,
-    bonsaiId: row.bonsai_id,
-    eventType: row.event_type,
-    rrule: row.rrule,
-    startAtUtc: row.start_at_utc,
-    endAtUtc: row.end_at_utc,
-    exdates: JSON.parse(row.exdates) as string[],
-    tzIana: row.tz_iana,
-    memo: row.memo,
-    deletedAt: row.deleted_at,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
+  return mapRuleRow(row);
 }
 
 /**
@@ -518,6 +543,26 @@ export async function replaceRecurrenceRule(
 ): Promise<RecurrenceRuleRow> {
   await softDeleteRecurrenceRule(oldRuleId);
   return await createRecurrenceRule(newInput);
+}
+
+/**
+ * グループ編集 (Sess99 #1122 案 G2): グループ全 rule を soft-delete し、編集後の盆栽セットで
+ * 一括作り直す (= replaceRecurrenceRule のグループ版、 group_id は維持)。
+ *
+ * - 旧メンバー全員 soft-delete (= cascade で未来 planned events も soft-delete)
+ * - 新メンバーを bulkCreateRecurrenceRules で原子的に一括作成 (R-73 整合)
+ * - groupId を inputs に stamp して同一グループ継続 (= 一覧での連続性)
+ * - 2 phase で部分失敗時は replaceRecurrenceRule と同じ復旧 path (30 日ゴミ箱 + Toast)
+ */
+export async function replaceRecurrenceRuleGroup(
+  oldRuleIds: readonly string[],
+  newInputs: readonly CreateRecurrenceRuleInput[],
+  groupId: string,
+): Promise<RecurrenceRuleRow[]> {
+  for (const oldId of oldRuleIds) {
+    await softDeleteRecurrenceRule(oldId);
+  }
+  return await bulkCreateRecurrenceRules(newInputs.map((input) => ({ ...input, groupId })));
 }
 
 /**

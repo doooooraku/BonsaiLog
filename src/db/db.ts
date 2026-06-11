@@ -37,6 +37,7 @@ import {
   schemaV13,
   schemaV16,
   schemaV17,
+  schemaV18,
 } from './schema';
 import { SPECIES_SEED, SPECIES_SEED_IDS } from './seedSpecies';
 
@@ -349,6 +350,21 @@ async function migrate(db: SQLite.SQLiteDatabase) {
       await db.execAsync(schemaV17);
     }
     version = 17;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration v18 (Sess99 #1122 案 G2): recurrence_rules.group_id カラム追加。
+  // 同時作成 rule 群を「定期予定グループ」として表示/編集する印 (見た目グループ化)。
+  //
+  // - 単純な TEXT NULL 列追加 (= Sess14 罠なし、 REFERENCES 句なし)
+  // - hasColumn ガードで 二重実行回避
+  // - 既存 row は group_id NULL (= UI 側で rule.id を key とする 1 本グループ fallback)
+  // ---------------------------------------------------------------------------
+  if (version < 18) {
+    if (!(await hasColumn(db, 'recurrence_rules', 'group_id'))) {
+      await db.execAsync(schemaV18);
+    }
+    version = 18;
   }
 
   // Always set version UNCONDITIONALLY (not inside an if-block).

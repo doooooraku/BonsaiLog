@@ -128,8 +128,8 @@ export async function applyImportPlan(
       await db.runAsync(
         `INSERT INTO recurrence_rules
            (id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates,
-            tz_iana, memo, deleted_at, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+            tz_iana, memo, group_id, deleted_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
         [
           rule.id,
           rule.bonsaiId,
@@ -140,6 +140,8 @@ export async function applyImportPlan(
           rule.exdates ?? '[]',
           rule.tzIana,
           rule.memo ?? null,
+          // Sess99 #1122: v18 グループ印 (旧 ZIP = undefined → null = 1 本グループ fallback)
+          rule.groupId ?? null,
           rule.deletedAt ?? null,
           rule.createdAt,
           rule.updatedAt,
