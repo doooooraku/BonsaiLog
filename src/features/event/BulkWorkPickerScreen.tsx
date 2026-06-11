@@ -35,11 +35,17 @@ const BULK_WORK_TYPES: readonly EventType[] = EVENT_TYPES;
 export default function BulkWorkPickerScreen() {
   const { t } = useTranslation();
   const c = useColors();
-  const params = useLocalSearchParams<{ mode?: 'schedule' | 'log' | 'recurring'; date?: string }>();
+  const params = useLocalSearchParams<{
+    mode?: 'schedule' | 'log' | 'recurring';
+    date?: string;
+    /** Sess99 #1127: 保存後の戻り先 ('dismiss' = modal 全閉じで起点画面へ、盆栽詳細動線用)。 */
+    returnTo?: string;
+  }>();
   // Sess82 PR-D: 'recurring' mode 追加 (= 定期予定 新規作成動線、 BulkWorkPicker → /recurring-rules/new)
   const mode: 'schedule' | 'log' | 'recurring' =
     params.mode === 'log' ? 'log' : params.mode === 'recurring' ? 'recurring' : 'schedule';
   const scheduleDate = params.date ?? '';
+  const returnTo = params.returnTo === 'dismiss' ? 'dismiss' : '';
 
   const selectedBonsais = usePickerStore((s) => s.bulkContext?.selectedBonsais ?? []);
 
@@ -70,7 +76,11 @@ export default function BulkWorkPickerScreen() {
       // 保存処理 (bulkScheduleEvents + toast + 通知 soft-ask + reschedule) は確認画面側に集約。
       if (mode === 'schedule') {
         const dateParam = scheduleDate ? `&date=${encodeURIComponent(scheduleDate)}` : '';
-        router.push(`/bulk-log-confirm?type=${type}&mode=schedule${dateParam}` as Href);
+        // Sess99 #1127: returnTo を確認画面へ forward (盆栽詳細動線では保存後に modal 全閉じ)。
+        const returnParam = returnTo ? `&returnTo=${returnTo}` : '';
+        router.push(
+          `/bulk-log-confirm?type=${type}&mode=schedule${dateParam}${returnParam}` as Href,
+        );
         return;
       }
 
@@ -98,7 +108,7 @@ export default function BulkWorkPickerScreen() {
       const dateParam = scheduleDate ? `&date=${encodeURIComponent(scheduleDate)}` : '';
       router.push(`/bulk-log-confirm?type=${type}${dateParam}` as Href);
     },
-    [mode, scheduleDate, selectedBonsais],
+    [mode, scheduleDate, selectedBonsais, returnTo],
   );
 
   return (

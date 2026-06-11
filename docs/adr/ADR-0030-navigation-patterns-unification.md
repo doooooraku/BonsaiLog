@@ -266,3 +266,18 @@ Sess19 実機検証 (ADR-0031 §Context) で Sess18 PR-1 の「戻る 1 step」 
 | **4** | form 保存後 → tab 遷移 | **直接 await + router.replace('/(tabs)/<tab>?...')** (Sess19 PR-4/5 で実装) |
 
 R-39 (`.claude/recurrence-prevention.md`) で stale closure pattern + store-callback の濫用を **構造的に防止** (ADR-0031 D5)。
+
+### Notes Amended (2026-06-11、Sess99 #1127): Case A 代表例 (WorkPicker schedule mode) の撤去
+
+**経緯**: user 判断 (案 A) で盆栽詳細の「+ 予定を登録」動線を予定タブと同じ BulkLogConfirmScreen 確認画面経由に統一。これに伴い本 ADR の Case A 代表例だった「WorkPicker schedule mode → setWorkPickerResult + caller DatePicker dialog」を撤去した。
+
+**変更**:
+
+1. `WorkPickerScreen` の schedule store-callback 分岐を削除 (残責務 = log mode Case C 直接 push + editingPlannedId 種別編集)。
+2. `pickerStore` の `workPickerResult` / `setWorkPickerResult` / `consumeWorkPickerResult` / `WorkPickerMode` を削除 (最後の利用者消滅で dead code 化)。
+3. `useScheduleEvent` hook (DatePicker dialog 即保存) + bonsai-detail の DateTimePicker JSX を削除。
+4. 盆栽詳細 timeline CTA → `setBulkContext([該当盆栽])` + `/bulk-work-picker?mode=schedule&returnTo=dismiss` push。保存後は `router.dismissAll()` で起点画面に復帰。
+
+**Case A の扱い**: Case A (picker → 即時 dialog) 自体は分類として残置するが、本撤去で**現役の Case A 実装は 0 件**。新規採用時は本 Amendment を踏まえ「確認画面経由で代替できないか」を先に検討すること。
+
+**関連**: Issue #1127 / ADR-0056 §Sess99 Amendment / PR #1128 (予定タブ側の確認画面化)

@@ -131,9 +131,12 @@ export default function BulkLogConfirmScreen() {
     fromPlannedIds?: string;
     date?: string;
     mode?: 'schedule' | 'log';
+    /** Sess99 #1127: 保存後の戻り先 ('dismiss' = modal 全閉じで起点画面へ、盆栽詳細動線用)。 */
+    returnTo?: string;
   }>();
   // Sess79 PR-6 ADR-0056: schedule mode (= 予定追加、 status='planned') と log mode (= 記録、 status='logged') の判別
   const isScheduleMode = params.mode === 'schedule';
+  const returnToDismiss = params.returnTo === 'dismiss';
   const selectedType = React.useMemo(() => parseType(params.type), [params.type]);
   const fromPlannedIds = React.useMemo<string[]>(
     () => (params.fromPlannedIds ? params.fromPlannedIds.split(',').filter(Boolean) : []),
@@ -264,6 +267,13 @@ export default function BulkLogConfirmScreen() {
         // ADR-0014 Amended: 初回予定登録時の通知 soft-ask 判定 (通知 OFF かつ未提示なら生涯 1 回表示)。
         // Sess99 #1119: BulkWorkPicker 直接保存 path の廃止に伴い本画面へ移植 (挙動維持)。
         maybePromptNotificationOptIn();
+        // Sess99 #1127 (案 A): 盆栽詳細起点 (returnTo=dismiss) は modal stack を全閉じして
+        // 起点の盆栽詳細に戻る (useFocusEffect reload で新予定が timeline に反映される)。
+        // 予定タブ起点 (default) は従来どおりカレンダーへ replace (選択日 restore 付き)。
+        if (returnToDismiss) {
+          router.dismissAll();
+          return;
+        }
         const dateKey = occurredAtDate || (occurredAtUtc?.slice(0, 10) ?? '');
         router.replace(`/(tabs)/plan?selectedDateKey=${dateKey}`);
         return;
