@@ -101,8 +101,19 @@ bash scripts/dev/take-ss.sh <name> <session-tag>   # dist/<tag>-verify-<ts>/SS-N
 ## Step 6: 記録
 
 - 結果を **PR コメント or セッション報告に SS パス付きで記載** (PR テンプレ §6-3 のチェックを更新)
+- **完了報告には「やさしい説明」を必ず含める** (PR テンプレ §2.5 と同義、Sess101 #1173)
 - 不一致を見つけたら: 修正 → Step 2 から再実行 (合格するまで「済」にしない)
 - 検証不能だった項目は「vc__ smoke に委譲」として明記 (黙って省略しない)
+
+---
+
+## つまずきと復旧 (Sess101 実走で実証した 3 件)
+
+| 症状 | 原因 | 復旧 |
+| --- | --- | --- |
+| adb コマンドが無応答 (timeout exit 124) | WSL2 adb daemon ロック (並行 adb / 残留 process、`adb-daemon-parallel-hang` 参照) | `/mnt/c/Windows/System32/taskkill.exe /F /IM adb.exe` → `adb start-server` → `adb devices` で再認可確認 |
+| reload-app.sh が build を要求するが flag の `native_files: (none)` | `dist/.native-dirty` の `unknown_files` にリポジトリ外 path (例: `~/.claude/settings.json` = harness 設定) が混入した誤検知 | flag の中身を **Read で確認**し、リポジトリ外 path のみなら `rm dist/.native-dirty` で続行 (構造修正 = Issue #1174) |
+| `input tap` が効かない / 別の要素に当たる | Read で見る SS 画像は実画面の縮小プレビューで、見た目の座標と実 px がずれる | 座標は **`adb shell uiautomator dump` の bounds が正** — `bounds="[x1,y1][x2,y2]"` の中心を tap する |
 
 ---
 

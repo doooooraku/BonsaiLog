@@ -126,6 +126,14 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
 > 根拠: Anthropic 公式 best practices「diff を 1 文で説明できるタスクなら plan を skip」。
 > 迷ったら `/plan` 側に倒す。
 
+### 1.5.4. オーナー依頼の入口（Sess101 #1173）
+
+テスター意見（W-00）だけでなく、**user（オーナー）からの修正依頼・頼みごとも本章の表で振り分ける**:
+
+1. 依頼を受領 → §1.5.3 で経路判定（仕様判断を含む → `/discuss` で設計 → user 承認 → `/plan` / 1 文で説明できる修正 → 直接 Issue 化）
+2. **計画（Issue + AC + 実装順）の承認が取れたら、確認なしで 実装 → PR → merge → 検証（§1.5.1 tiering）→ 完了報告まで自動進行してよい**（user 恒常指示 2026-06-11「計画承認 = 実行承認」。承認後に計画内容を変える場合のみ再確認）
+3. 完了報告（チャット）と PR 本文 §2.5 の両方に**「やさしい説明」**（専門用語なしの 2〜4 文）を必ず含める — DoD は「コードが merge された」ではなく「オーナーが理解した」まで
+
 ---
 
 ## 工程カード一覧（作成→リリースまで）
@@ -294,13 +302,14 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
 ### 工程 W-11：マージ（main に反映）
 
 - **トリガーキー**: W-10.5 で Approve
-- **作業内容**:
-  - `auto-merge` ラベル付き PR → Claude Code が自動マージ
-  - それ以外 → 人間承認を 30 秒待って、応答なしなら停止
+- **作業内容**（Sess101 #1173 実態化 — GitHub の auto-merge 機能は repo 設定で無効のため使えない・実測済）:
+  - `gh pr checks <N> --watch` で CI（verify / check-r30 / docs-cleanliness / template-check = branch protection 必須 check）の全 pass を見届ける
+  - Claude Code が `gh pr merge <N> --squash` でマージ（人間の追加承認は不要 = 計画承認時点で完了している。user 恒常指示 2026-06-11、§1.5.4 参照）
+  - マージ後: branch 削除（worktree 使用時は `git worktree remove` → `git branch -D`）。Issue は PR 本文の `Closes #N` で自動クローズ
 - **INPUT**: PR
 - **OUTPUT**: main 更新 + ブランチ削除 + Issue クローズ
 - **完了条件**: main の CI が成功
-- **担当**: **Claude Code + 人間承認**
+- **担当**: **Claude Code**（人間承認は W-05 計画承認に前倒し済）
 
 ### 工程W-11.5：仕様棚卸し（Spec → Issue への戻り）
 
