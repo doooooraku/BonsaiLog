@@ -527,9 +527,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   wiringUnwireInWeeks: 'Снять через {weeks} нед.',
   wiringUnwireOverdueWeeks: 'Просрочено на {weeks} нед.',
   // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs (English fallback) ---
-  detailTabTimeline: 'Timeline',
   detailTabHistory: 'History',
-  detailTabPhotos: 'Photos',
   // --- ADR-0020 v1.x-3: work log confirm sheet (English fallback) ---
   workLogTitle: 'Запись: {type}',
   workLogNote: 'Заметка',

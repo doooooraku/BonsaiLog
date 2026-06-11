@@ -526,9 +526,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   wiringUnwireInWeeks: '{weeks} hafta sonra söker',
   wiringUnwireOverdueWeeks: '{weeks} hafta gecikmiş',
   // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs (English fallback) ---
-  detailTabTimeline: 'Timeline',
   detailTabHistory: 'History',
-  detailTabPhotos: 'Photos',
   // --- ADR-0020 v1.x-3: work log confirm sheet (English fallback) ---
   workLogTitle: '{type} kaydet',
   workLogNote: 'Not',
