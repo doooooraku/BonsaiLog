@@ -1076,6 +1076,8 @@ const nl: Partial<Record<TranslationKey, string>> = {
   weekdayThuShort: 'Thu',
   weekdayFriShort: 'Fri',
   weekdaySatShort: 'Sat',
+  recurringWeeklyByDaysSummary: 'Weekly on {days}',
+  recurringWeeklyByDaysSeparator: ', ',
   recurringStartDateLabel: 'Start date',
   recurringInitialDateLabel: 'First occurrence',
   recurringStartDateHint: 'The first scheduled date — repeats from here.',

@@ -71,6 +71,7 @@ import {
   type CreateRecurrenceRuleInput,
 } from '@/src/db/recurrenceRuleRepository';
 import { BonsaiChipPickerLayout } from '@/src/features/bonsai/BonsaiChipPickerLayout';
+import { buildWeeklyByDayHumanLabel } from '@/src/features/recurrence/rruleHumanLabel';
 import { WorkTypeGrid } from '@/src/features/event/WorkTypeGrid';
 import type { EventType } from '@/src/db/schema';
 import { useProStore } from '@/src/stores/proStore';
@@ -149,6 +150,11 @@ function buildPreviewSummary(
       '{n}',
       String(value.customDays ?? 7),
     );
+  }
+  // Sess101 #1168: 毎週 + 曜日選択時は「毎週月・水・金曜」 等の曜日入りラベル (SoT 経由)。
+  // 曜日未選択 (= 開始日基準) は従来どおり「毎週」。
+  if (value.preset === 'weekly') {
+    presetLabel = buildWeeklyByDayHumanLabel(value.byday, t) ?? presetLabel;
   }
   const eventLabel = t(`eventType_${eventType}` as TranslationKey);
   return t('recurringFormSummaryFormat')

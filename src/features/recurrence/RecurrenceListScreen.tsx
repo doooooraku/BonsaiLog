@@ -32,7 +32,7 @@ import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActio
 import { formatLocalizedShortDateWithWeekday } from '@/src/core/datetime/formatLocalized';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
-import { parseCustomRruleDays } from '@/src/core/recurrence/rrule';
+import { parseCustomRruleDays, parseWeeklyByDay } from '@/src/core/recurrence/rrule';
 import { useColors } from '@/src/core/theme/useColors';
 import {
   FREE_RECURRENCE_GROUP_LIMIT,
@@ -40,6 +40,7 @@ import {
 } from '@/src/db/recurrenceRuleRepository';
 import type { EventType } from '@/src/db/schema';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
+import { buildWeeklyByDayHumanLabel } from '@/src/features/recurrence/rruleHumanLabel';
 import {
   useRecurrenceRules,
   type RecurrenceRuleGroup,
@@ -179,10 +180,16 @@ export default function RecurrenceListScreen() {
             const humanRruleKey = rruleToHumanLabel(rep.rrule);
             // Sess89 PR-B: custom RRULE (= FREQ=DAILY;INTERVAL=N) は N を抽出して「{n} 日ごと」 表示
             const customDays = parseCustomRruleDays(rep.rrule);
+            // Sess101 #1168: BYDAY 付き weekly は曜日入りラベル (SoT = buildWeeklyByDayHumanLabel)。
+            // 旧実装は BYDAY=MO (旧 preset) 以外が「カスタム」 誤表示になっていた。
+            const byday = parseWeeklyByDay(rep.rrule);
+            const bydayLabel =
+              byday !== null && byday.length > 0 ? buildWeeklyByDayHumanLabel(byday, t) : null;
             const rruleLabel =
-              customDays !== null
+              bydayLabel ??
+              (customDays !== null
                 ? t('recurringPresetCustomEveryNDays').replace('{n}', String(customDays))
-                : t(humanRruleKey);
+                : t(humanRruleKey));
             // Sess82 PR-B: 終了日表示削除 → 次回予定日表示。 グループでは member 最小 (= 最も近い未来)。
             const nexts = item.rules
               .map((r) => nextOccurrenceMap.get(r.id) ?? null)
