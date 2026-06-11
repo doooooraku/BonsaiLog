@@ -1,8 +1,8 @@
-# 再発防止プロトコル — 専門ルール (R-13 〜 R-79)
+# 再発防止プロトコル — 専門ルール (R-13 以降、最新番号は親索引が正)
 
 > 本ファイルは `.claude/recurrence-prevention.md` (親) の詳細部分。
-> 親ファイル = R-1 〜 R-12 全文 + R-13 〜 R-79 索引 + 運用ルール。
-> 本ファイル = R-13 〜 R-79 詳細記述。
+> 親ファイル = R-1 〜 R-12 全文 + R-13 以降の索引 + 運用ルール。
+> 本ファイル = R-13 以降の詳細記述。
 > 親ファイルの「専門ルール 索引」 から各 R-N に飛ぶ運用。
 
 ---
@@ -1636,3 +1636,21 @@ Sess72 (2026-06-07) でテスター苦情「タグ追加から戻ると先頭に
 
 - R-25 (機械判定のみで達成判定禁止) / R-36.5 (navigation 変更の実機検証義務) の系譜
 - 由来 PR: Sess95 PR-2 (#1079 = scroll 復元 race 構造修正、本 R の初適用)
+
+---
+
+## R-81 並行セッション時の worktree 分離強制 (Sess99 起票)
+
+同一 repo で複数の Claude Code セッションが並行する時、実装・branch 操作は **git worktree で分離** する。並行検知中、main checkout での `git checkout` / `git switch` / `git reset --hard` は hook が block する。
+
+### 適用ルール
+
+- 並行検知 = `.claude/hooks/parallel-session-guard.mjs` の heartbeat lock (`.claude/locks/sess-<session_id>`、mtime 45 分以内 = active、gitignored・24h 超は自動掃除)
+- 検知中: UserPromptSubmit で警告が自動注入され、PreToolUse(Bash) が branch 切替系 git コマンドを exit 2 で block
+- worktree 内での branch 操作は **`git -C <worktree絶対path> …`** か `git worktree` サブコマンド、またはコマンド文字列に worktree path を含めて実行する (block 対象外)
+- worktree 作成は `git worktree add .claude/worktrees/<name> <base>` → `bash scripts/dev/worktree-init.sh` (R-64)、merge 後は `git worktree remove` で即掃除
+- 誤検知時の bypass: `.claude/locks/` の他 lock 削除 or 環境変数 `CLAUDE_PARALLEL_GUARD=off`
+
+### Why (由来)
+
+Sess99 (2026-06-11) で並行セッションが main checkout の branch を切替え (reflog 13:43 で実証)、もう一方のセッションの作業中編集がディスク上で巻き戻る事故が実発生。成果は worktree 退避 + 再作成で復旧したが、「並行時は worktree」が R-64 + memory の運用頼みで機械強制が無かったのが根本原因。user 指示「徹底する構造・仕組みが欲しい」+ CLAUDE.md §9 (ルール違反 1 回でも自動化検討) に基づき hook 化。

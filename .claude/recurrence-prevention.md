@@ -90,7 +90,7 @@
 
 ---
 
-## 専門ルール R-13 〜 R-80（詳細は `recurrence-prevention/specialized.md`）
+## 専門ルール R-13 以降（最新番号は本索引が正、詳細は `recurrence-prevention/specialized.md`）
 
 | ID | テーマ | 1 行サマリ |
 |----|--------|-----------|
@@ -161,6 +161,7 @@
 | **R-78** | 破壊的データ操作は user に事前通知必須 (Sess93 議論起票) | 「softDelete + create wrapper」「上書き」「cascade 連鎖更新」 等の内部データ書換 operation は、 保存ボタン押下時に **ConfirmDialog で事前通知** 必須 (= 何が起きるか + 影響範囲 + キャンセル可能)。 i18n key 規約: `{domain}EditConfirmTitle/Body/Confirm`。 由来: Sess93 `replaceRecurrenceRule` (= softDelete + create) で user 認識「ルール 1 件編集」 vs 内部「8 events 削除 + 再生成」 の認識ズレを議論で検出。 連携: R-67 (status entity 操作意味 matrix)、 WCAG 3.3.4。 詳細: `recurrence-prevention/specialized.md` |
 | **R-79** | コンテキスト残量を理由とした次セッション先送り禁止 (Doc-Truth Audit P2 起票) | Claude がタスクを「次セッションで対応」と先送りする判断を、 **コンテキスト残量を理由に単独で行わない**。 目安として **消費 85% までは本セッション内で継続**。 85% 超 / scope 分割 / user 指定の停止条件で先送りする場合は、 先送り内容を明示して user 承認を取り、 再開用の状態 (memory / Engram / 状態ファイル) を保存してから停止。 由来: Doc-Truth Audit P2 (2026-06-10) セッションログ採掘で同種 user 訂正 2 回検出 (2026-05-13「85% くらいまでは本セッションで」 / 2026-05-15「次セッション継続ではなく本セッションで」)、 CLAUDE.md §9 (2 回再発でルール化) に基づく。 詳細: `recurrence-prevention/specialized.md` |
 | **R-80** | テスター報告起点の修正は報告手順の実機なぞり検証必須 (Sess95 起票) | テスター報告を起点とする bug 修正 PR は、 **報告された再現手順を実機でなぞった SS / 動画を PR 本文に添付** してから「修正完了」 と報告する。 由来: Sess72 scroll 復元 (= 「直した」 とリリースノート告知後にテスター再報告「維持されず TOP に戻る」、 完了判定が Jest + lint のみで実フロー実機再現を含まなかった)。 PR テンプレ §7.6.5 で強制。 詳細: `recurrence-prevention/specialized.md` |
+| **R-81** | 並行セッション時の worktree 分離強制 (Sess99 起票) | 同一 repo で複数セッションが並行する時、実装・branch 操作は **git worktree で分離** する (main checkout での checkout / switch / reset --hard は並行検知中 hook が block)。`.claude/hooks/parallel-session-guard.mjs` が heartbeat lock (`.claude/locks/`) で並行を検知し、UserPromptSubmit で警告注入 + PreToolUse(Bash) で block。worktree 内操作は `git -C <path>` で明示。由来: Sess99 (2026-06-11) 並行セッションが main checkout の branch を切替え、編集が巻き戻る事故が実発生 (reflog 実証)。R-64 の運用前提を機械強制化。詳細: `recurrence-prevention/specialized.md` |
 
 ---
 
