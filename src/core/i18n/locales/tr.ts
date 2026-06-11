@@ -969,7 +969,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: 'Sınırsız',
   paywallFeatureWorkLogPhoto: 'Kayıt fotoğrafları',
   paywallFeatureWorkLogPhotoFreeValue: 'En fazla 3',
-  paywallFeatureWorkLogPhotoProValue: 'Sınırsız',
+  paywallFeatureWorkLogPhotoProValue: 'En fazla 10',
   paywallFeatureCustomSpecies: 'Özel türler ve stiller',
   paywallFeatureCustomSpeciesFreeValue: 'En fazla 3',
   paywallFeatureCustomSpeciesProValue: 'Sınırsız',

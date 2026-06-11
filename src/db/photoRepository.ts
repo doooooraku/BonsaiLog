@@ -39,7 +39,7 @@ export const FREE_PHOTO_LIMIT_PER_BONSAI = 3;
 
 /**
  * 1 作業記録 (event) あたり写真上限 (ADR-0049 Sess59 PR3、 機能 ③ 作業記録写真)。
- * Free = 3 枚 / Pro = MAX_PHOTOS_PER_EVENT (10) まで (PhotoField.tsx 整合)。
+ * Free = 3 枚 / Pro = MAX_PHOTOS_PER_EVENT (10) まで (PhotoField.tsx 整合、 UI 表記も 10 枚 = ADR-0049 Sess101 Amendment)。
  * 表示は全 Free (GDPR Art.20 整合、 functional_spec §13 line 564-567)。
  */
 export const FREE_PHOTO_LIMIT_PER_EVENT = 3;

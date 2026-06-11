@@ -982,7 +982,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: '無制限',
   paywallFeatureWorkLogPhoto: '作業記録の写真',
   paywallFeatureWorkLogPhotoFreeValue: '3枚まで',
-  paywallFeatureWorkLogPhotoProValue: '無制限',
+  paywallFeatureWorkLogPhotoProValue: '10枚まで',
   paywallFeatureCustomSpecies: 'カスタム樹種・樹形',
   paywallFeatureCustomSpeciesFreeValue: '3件まで',
   paywallFeatureCustomSpeciesProValue: '無制限',

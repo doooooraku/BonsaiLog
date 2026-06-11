@@ -966,7 +966,7 @@ const th: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: 'ไม่จำกัด',
   paywallFeatureWorkLogPhoto: 'รูปบันทึกการทำงาน',
   paywallFeatureWorkLogPhotoFreeValue: 'สูงสุด 3',
-  paywallFeatureWorkLogPhotoProValue: 'ไม่จำกัด',
+  paywallFeatureWorkLogPhotoProValue: 'สูงสุด 10',
   paywallFeatureCustomSpecies: 'พันธุ์และทรงที่กำหนดเอง',
   paywallFeatureCustomSpeciesFreeValue: 'สูงสุด 3',
   paywallFeatureCustomSpeciesProValue: 'ไม่จำกัด',

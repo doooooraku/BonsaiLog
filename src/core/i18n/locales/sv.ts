@@ -969,7 +969,7 @@ const sv: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: 'Obegränsat',
   paywallFeatureWorkLogPhoto: 'Arbetsfoton',
   paywallFeatureWorkLogPhotoFreeValue: 'Upp till 3',
-  paywallFeatureWorkLogPhotoProValue: 'Obegränsat',
+  paywallFeatureWorkLogPhotoProValue: 'Upp till 10',
   paywallFeatureCustomSpecies: 'Egna arter & stilar',
   paywallFeatureCustomSpeciesFreeValue: 'Upp till 3',
   paywallFeatureCustomSpeciesProValue: 'Obegränsat',

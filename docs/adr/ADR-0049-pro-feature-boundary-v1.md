@@ -389,3 +389,16 @@ R1-R4 で実装計画を詰めた:
 - **IAP 説明文**: 「定期予定: Free 3 件 / Pro 無制限」 はグループ単位でも文言上正のため変更なし (= Play Console / App Store Connect 更新不要)。 Paywall / PlanSection の i18n 値「3件まで」 も同様に変更なし
 
 **関連**: ADR-0056 D7 (Sess101 改訂) / Issue #1159 / Sess101 /discuss (= カード予定中心化 #1158・次回 SoT #1157 と同議論)。
+
+### §Notes Amended Sess101 (2026-06-12) — ③ 作業記録写真の Pro 表示を「無制限」→「10 枚まで」へ (表示と実装の一致)
+
+**背景**: Sess101 docs 直接 Read 監査で、③ 作業記録写真の Paywall / PlanSection 表示が「無制限」である一方、実装は `MAX_PHOTOS_PER_EVENT = 10` (PhotoField.tsx、UI 安全上限) で頭打ちになる乖離を検出。Sess58 の基準 (表示残骸 = 景品表示法 / Apple Review 2.3.1 リスク) に照らし、user が **案 (a) = UI 文言を実装に一致させる** を決定。
+
+**決定**:
+
+- ③ Pro 値の表示 = **「10 枚まで」** (19 言語、各言語の Free 値「3 枚まで」系の表記スタイルをミラー)。i18n key `paywallFeatureWorkLogPhotoProValue` を 19 locale 一括更新 (`pnpm i18n:apply` + ja 手動)
+- 実装 (`MAX_PHOTOS_PER_EVENT = 10` / `FREE_PHOTO_LIMIT_PER_EVENT = 3`) は変更なし。上限拡張する場合は本 Amendment と i18n 値を同時更新すること
+- 本表の ③ Pro 列は「無制限」→「**10 枚まで** (安全上限)」 に読み替える。①②⑥⑦ の「無制限」は実装にも cap がないため従来通り
+- **IAP 説明文** (Play Console / App Store Connect) に「作業記録写真 無制限」の記載がある場合は次回ストア更新時に「10 枚まで」へ修正 (user 手動、Sess58 教訓踏襲)
+
+**関連**: PhotoField.tsx (`MAX_PHOTOS_PER_EVENT`) / photoRepository.ts (`FREE_PHOTO_LIMIT_PER_EVENT`) / Sess101 user 決定 (実機スクショ指摘起点)。

@@ -968,7 +968,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: 'Không giới hạn',
   paywallFeatureWorkLogPhoto: 'Ảnh nhật ký công việc',
   paywallFeatureWorkLogPhotoFreeValue: 'Tối đa 3',
-  paywallFeatureWorkLogPhotoProValue: 'Không giới hạn',
+  paywallFeatureWorkLogPhotoProValue: 'Tối đa 10',
   paywallFeatureCustomSpecies: 'Loài và kiểu tùy chỉnh',
   paywallFeatureCustomSpeciesFreeValue: 'Tối đa 3',
   paywallFeatureCustomSpeciesProValue: 'Không giới hạn',

@@ -966,7 +966,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: '무제한',
   paywallFeatureWorkLogPhoto: '작업 기록 사진',
   paywallFeatureWorkLogPhotoFreeValue: '최대 3장',
-  paywallFeatureWorkLogPhotoProValue: '무제한',
+  paywallFeatureWorkLogPhotoProValue: '최대 10장',
   paywallFeatureCustomSpecies: '사용자 정의 수종·수형',
   paywallFeatureCustomSpeciesFreeValue: '최대 3개',
   paywallFeatureCustomSpeciesProValue: '무제한',

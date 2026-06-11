@@ -1888,7 +1888,7 @@ export function formatRelativeDays(days: number, locale: string): string {
 
 月額・年額サブスク + Lifetime 買切で Pro 機能を解放する。Lifetime 所持時はサブスク表示を抑止する **Champion 方式** (Pocket Casts) を採用し、Pro→Free 戻り時の既存データ保持には **Notion 方式データ保護** を採用 (詳細は ADR-0009 参照)。
 
-> **Pro 機能境界 SoT**: [ADR-0049](../adr/ADR-0049-pro-feature-boundary-v1.md) (Sess58 確定 Pro 機能 6 項目、 Sess59 実装着手)。 課金基盤 (RevenueCat / 価格 / 復元 / Champion 方式) は本 §18 + ADR-0009 を、 機能境界 (写真 / タグ / 作業記録写真 / CSV/PDF / 広告非表示 / カスタム樹種樹形) は ADR-0049 を正とする。
+> **Pro 機能境界 SoT**: [ADR-0049](../adr/ADR-0049-pro-feature-boundary-v1.md) (Sess58 確定 6 項目 + Sess78 ⑦ 定期予定 + Sess101 グループ単位化、 Sess59 実装着手)。 課金基盤 (RevenueCat / 価格 / 復元 / Champion 方式) は本 §18 + ADR-0009 を、 機能境界 (写真 / タグ / 作業記録写真 / CSV/PDF / 広告非表示 / カスタム樹種樹形) は ADR-0049 を正とする。
 
 ### §18.2 画面 / 入口
 

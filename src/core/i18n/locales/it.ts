@@ -973,7 +973,7 @@ const it: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: 'Illimitato',
   paywallFeatureWorkLogPhoto: 'Foto del registro',
   paywallFeatureWorkLogPhotoFreeValue: 'Fino a 3',
-  paywallFeatureWorkLogPhotoProValue: 'Illimitato',
+  paywallFeatureWorkLogPhotoProValue: 'Fino a 10',
   paywallFeatureCustomSpecies: 'Specie e stili personalizzati',
   paywallFeatureCustomSpeciesFreeValue: 'Fino a 3',
   paywallFeatureCustomSpeciesProValue: 'Illimitato',

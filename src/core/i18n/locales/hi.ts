@@ -968,7 +968,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: 'असीमित',
   paywallFeatureWorkLogPhoto: 'कार्य लॉग तस्वीरें',
   paywallFeatureWorkLogPhotoFreeValue: '3 तक',
-  paywallFeatureWorkLogPhotoProValue: 'असीमित',
+  paywallFeatureWorkLogPhotoProValue: '10 तक',
   paywallFeatureCustomSpecies: 'कस्टम प्रजातियाँ और शैलियाँ',
   paywallFeatureCustomSpeciesFreeValue: '3 तक',
   paywallFeatureCustomSpeciesProValue: 'असीमित',

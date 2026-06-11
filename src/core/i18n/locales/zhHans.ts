@@ -953,7 +953,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: '无限制',
   paywallFeatureWorkLogPhoto: '工作记录照片',
   paywallFeatureWorkLogPhotoFreeValue: '最多3张',
-  paywallFeatureWorkLogPhotoProValue: '无限制',
+  paywallFeatureWorkLogPhotoProValue: '最多10张',
   paywallFeatureCustomSpecies: '自定义树种与树形',
   paywallFeatureCustomSpeciesFreeValue: '最多3项',
   paywallFeatureCustomSpeciesProValue: '无限制',

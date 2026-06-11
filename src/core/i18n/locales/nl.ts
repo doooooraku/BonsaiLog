@@ -970,7 +970,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: 'Onbeperkt',
   paywallFeatureWorkLogPhoto: 'Logfoto’s',
   paywallFeatureWorkLogPhotoFreeValue: 'Tot 3',
-  paywallFeatureWorkLogPhotoProValue: 'Onbeperkt',
+  paywallFeatureWorkLogPhotoProValue: 'Tot 10',
   paywallFeatureCustomSpecies: 'Eigen soorten & stijlen',
   paywallFeatureCustomSpeciesFreeValue: 'Tot 3',
   paywallFeatureCustomSpeciesProValue: 'Onbeperkt',
