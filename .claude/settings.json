@@ -64,6 +64,15 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-doc-reads.mjs\""
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/parallel-session-guard.mjs\""
+          }
+        ]
       }
     ],
     "Stop": [
@@ -118,6 +127,10 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-skill-edit-hint.mjs\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/parallel-session-guard.mjs\""
           }
         ]
       }

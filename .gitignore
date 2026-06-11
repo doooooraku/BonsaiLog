@@ -89,3 +89,4 @@ out/
 # Python bytecode cache (store-automation スクリプト)
 __pycache__/
 *.pyc
+.claude/locks/
