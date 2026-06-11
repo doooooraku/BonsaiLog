@@ -51,6 +51,14 @@ docs/how-to/workflow/pr-template-appendix.md — 該当する PR では該当節
 
 ---
 
+## 2.5. やさしい説明（Plain Summary / REQUIRED — Sess101 #1173）
+
+<!-- 専門用語を使わず、「何を」「なぜ」直した/作ったかを 2〜4 文で。
+     読者想定 = 開発に関わっていない人（オーナー / テスター / 将来の自分）。
+     チャットの完了報告は流れて消えるため、PR 本文が恒久保存先（user 決定 2026-06-11 = 両方に残す）。 -->
+
+---
+
 ## 3. 変更点（What / REQUIRED）
 
 -
@@ -179,6 +187,6 @@ docs/how-to/workflow/pr-template-appendix.md — 該当する PR では該当節
 
 > ゲート規則（ADR-0047）: 種別 `bug`/`constraints` の `critical`/`high` が 1 件でもあれば REQUEST_CHANGES。
 > 種別 `structure-UI` は機械ゲート対象外 → R-25 の Claude Read 構造系 5 項目評価（付録 §7.6）に回す。
-> ゲートは「マージ阻止の下限」であって承認根拠ではない（**最終マージは人間**）。
+> ゲートは「マージ阻止の下限」であって承認根拠ではない。
 
-**マージ方法**: [ ] `auto-merge` ラベル付きで自動 / [ ] 人間承認待ち
+**マージ方法**（W-11 が正 — Sess101 #1173 実態化）: [ ] CI 全 pass を確認後に `gh pr merge --squash`（計画承認 = 実行承認のため人間の追加承認は不要） / [ ] 人間の明示承認待ち（計画外の変更を含む場合のみ）
