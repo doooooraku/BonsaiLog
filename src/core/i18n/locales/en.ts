@@ -447,6 +447,10 @@ const baseEn = {
   guideRecordTabNudgeTitle: 'Your first bonsai is registered',
   guideRecordTabNudgeBody: 'Next, try logging a care task for today. Tap the "{tab}" tab below.',
   guideRecordCtaBody: 'Start by logging one care task for today, right here.',
+  guideFirstRecordToast:
+    'Your first record is saved. The day now shows a ● on the calendar, and you can revisit it in the list below.',
+  guideDetailTabsBody:
+    'Review past work in "{history}" and upcoming plans in "{plan}", tree by tree.',
   guidePlanCtaBody: 'Pick a date and add a plan with this button.',
   planSelectedEmptyBody:
     'Pick a date and tap "{cta}" below to add a plan. Days with plans get a ○ on the calendar.',

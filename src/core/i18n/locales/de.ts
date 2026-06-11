@@ -465,6 +465,10 @@ const de: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeBody:
     'Als Nächstes: halte eine heutige Pflege fest. Tippe unten auf den Tab „{tab}“.',
   guideRecordCtaBody: 'Beginne damit, eine heutige Pflege gleich hier festzuhalten.',
+  guideFirstRecordToast:
+    'Dein erster Eintrag ist gespeichert. Der Tag zeigt nun ein ● im Kalender, unten in der Liste findest du ihn wieder.',
+  guideDetailTabsBody:
+    'Vergangene Arbeiten findest du unter „{history}“, kommende Aufgaben unter „{plan}“ – Baum für Baum.',
   guidePlanCtaBody: 'Wähle ein Datum und füge mit diesem Button eine Aufgabe hinzu.',
   planSelectedEmptyBody:
     'Wähle ein Datum und tippe unten auf „{cta}“, um eine Aufgabe hinzuzufügen. Tage mit Aufgaben zeigen ein ○ im Kalender.',

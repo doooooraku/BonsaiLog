@@ -451,6 +451,9 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeTitle: '已登记你的第一盆盆景',
   guideRecordTabNudgeBody: '接下来，试着记录今天的养护吧。点按下方的“{tab}”标签页。',
   guideRecordCtaBody: '先从今天的一项养护开始，在这里留下记录吧。',
+  guideFirstRecordToast: '完成了第一条记录。日历上的这一天已显示 ●，可随时在下方列表中查看。',
+  guideDetailTabsBody:
+    '在“{history}”查看过去的作业，在“{plan}”查看接下来的任务，每棵树都有自己的记录。',
   guidePlanCtaBody: '选择日期，用这个按钮添加任务。',
   planSelectedEmptyBody: '选择日期，点按下方“{cta}”即可添加任务。有任务的日期会在日历上显示 ○。',
   planSelectedEmptyRecurringLink: '需要重复的任务，可以创建定期安排',

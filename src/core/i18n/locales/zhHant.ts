@@ -451,6 +451,9 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeTitle: '已登錄你的第一盆盆景',
   guideRecordTabNudgeBody: '接下來，試著記錄今天的養護吧。點按下方的「{tab}」分頁。',
   guideRecordCtaBody: '先從今天的一項養護開始，在這裡留下記錄吧。',
+  guideFirstRecordToast: '完成了第一筆記錄。日曆上的這一天已顯示 ●，可隨時在下方清單中查看。',
+  guideDetailTabsBody:
+    '在「{history}」查看過去的作業，在「{plan}」查看接下來的任務，每棵樹都有自己的記錄。',
   guidePlanCtaBody: '選擇日期，用這個按鈕新增任務。',
   planSelectedEmptyBody: '選擇日期，點按下方「{cta}」即可新增任務。有任務的日期會在日曆上顯示 ○。',
   planSelectedEmptyRecurringLink: '需要重複的任務，可以建立定期安排',

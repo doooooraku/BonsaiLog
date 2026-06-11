@@ -463,6 +463,10 @@ const hi: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeTitle: 'आपका पहला बोनसाई दर्ज हो गया',
   guideRecordTabNudgeBody: 'अब आज की एक देखभाल दर्ज करके देखें। नीचे "{tab}" टैब पर टैप करें।',
   guideRecordCtaBody: 'शुरुआत के लिए आज की एक देखभाल यहीं दर्ज करें।',
+  guideFirstRecordToast:
+    'आपकी पहली प्रविष्टि सहेज ली गई। कैलेंडर में उस दिन पर ● दिखता है, और नीचे की सूची में उसे कभी भी देख सकते हैं।',
+  guideDetailTabsBody:
+    'पिछला काम "{history}" में और आगे के कार्य "{plan}" में, हर पेड़ के हिसाब से देखें।',
   guidePlanCtaBody: 'तारीख़ चुनें और इस बटन से कार्य जोड़ें।',
   planSelectedEmptyBody:
     'तारीख़ चुनें और कार्य जोड़ने के लिए नीचे "{cta}" पर टैप करें। कार्य वाले दिनों पर कैलेंडर में ○ दिखता है।',

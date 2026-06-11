@@ -465,6 +465,10 @@ const fr: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeBody:
     "Ensuite, essayez de consigner un soin du jour. Touchez l'onglet « {tab} » ci-dessous.",
   guideRecordCtaBody: 'Commencez par consigner un soin du jour, juste ici.',
+  guideFirstRecordToast:
+    'Votre premier soin est consigné. Le jour porte désormais un ● sur le calendrier, à retrouver dans la liste en dessous.',
+  guideDetailTabsBody:
+    'Retrouvez les soins passés dans « {history} » et les tâches à venir dans « {plan} », arbre par arbre.',
   guidePlanCtaBody: 'Choisissez une date et ajoutez une tâche avec ce bouton.',
   planSelectedEmptyBody:
     'Choisissez une date et touchez « {cta} » ci-dessous pour ajouter une tâche. Les jours avec des tâches affichent un ○ sur le calendrier.',

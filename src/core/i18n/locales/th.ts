@@ -461,6 +461,10 @@ const th: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeTitle: 'ลงทะเบียนบอนไซต้นแรกของคุณแล้ว',
   guideRecordTabNudgeBody: 'ต่อไป ลองบันทึกการดูแลของวันนี้ แตะแท็บ "{tab}" ด้านล่าง',
   guideRecordCtaBody: 'เริ่มจากบันทึกการดูแลของวันนี้สักหนึ่งรายการได้ที่นี่',
+  guideFirstRecordToast:
+    'บันทึกแรกของคุณถูกเก็บแล้ว วันนั้นมี ● บนปฏิทิน และดูย้อนหลังได้จากรายการด้านล่าง',
+  guideDetailTabsBody:
+    'ดูงานที่ผ่านมาใน "{history}" และงานที่จะมาถึงใน "{plan}" แยกตามต้นไม้แต่ละต้น',
   guidePlanCtaBody: 'เลือกวันที่แล้วเพิ่มงานด้วยปุ่มนี้',
   planSelectedEmptyBody:
     'เลือกวันที่แล้วแตะ "{cta}" ด้านล่างเพื่อเพิ่มงาน วันที่มีงานจะแสดง ○ บนปฏิทิน',
