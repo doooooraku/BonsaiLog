@@ -38,6 +38,7 @@ import {
   type PurchaseErrorKind,
 } from '@/src/services/proService';
 import { useProStore } from '@/src/stores/proStore';
+import { SERIF_FAMILY } from '@/src/core/theme/typography';
 
 // F-13 Phase 2c-2 (Issue #20, ADR-0009 AC8): RC エラーコードを UI 文言キーにマッピング
 // Sess81: offeringsEmpty を追加 (= RC Offerings null or Package not found のとき
@@ -412,7 +413,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontFamily: 'NotoSerifJP_500Medium',
+    fontFamily: SERIF_FAMILY,
     fontSize: 20,
     letterSpacing: 0.4,
   },
@@ -425,7 +426,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   heroTitle: {
-    fontFamily: 'NotoSerifJP_500Medium',
+    fontFamily: SERIF_FAMILY,
     fontSize: 32,
     lineHeight: 42,
     letterSpacing: 0.5,

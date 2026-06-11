@@ -31,6 +31,7 @@ import { BackIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess66 PR6b: BORDER_DEFAULT / TEXT_PRIMARY を撤去、 全 inline c.* で動的指定 (既に JSX 側で対応済)。
 import { useColors } from '@/src/core/theme/useColors';
+import { SERIF_FAMILY } from '@/src/core/theme/typography';
 
 type Props = {
   /** タイトル (省略時は戻るボタンのみ表示、 P0 では未指定推奨) */
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontFamily: 'NotoSerifJP_500Medium',
+    fontFamily: SERIF_FAMILY,
     fontSize: 18,
     letterSpacing: 0.4,
     textAlign: 'center',

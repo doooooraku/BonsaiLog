@@ -32,6 +32,7 @@ import { ACCENT_BARK } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 
 import { BonsaiPlaceholder, hashSeed } from './BonsaiPlaceholder';
+import { SERIF_FAMILY } from '@/src/core/theme/typography';
 
 const HERO_HEIGHT = 220;
 // CARD_WIDTH = 画面幅 - 左右マージン 16 × 2 (mockup home-screens.jsx CARD_W = 393 - 32 整合)。
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
   },
   body: { paddingTop: 14, paddingBottom: 16, paddingHorizontal: 16, gap: 4 },
   title: {
-    fontFamily: 'NotoSerifJP_500Medium',
+    fontFamily: SERIF_FAMILY,
     fontSize: 18,
     lineHeight: 28,
     fontWeight: '600',
