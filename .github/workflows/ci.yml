@@ -41,6 +41,8 @@ jobs:
         run: pnpm verify:i18n
       - name: Config check (verify:config)
         run: pnpm verify:config
+      - name: Doc routing check (verify:doc-routing)
+        run: pnpm verify:doc-routing
 
   docs-cleanliness:
     runs-on: ubuntu-latest
