@@ -412,8 +412,28 @@ const ko: Partial<Record<TranslationKey, string>> = {
   onboardingTutNext: '다음',
   skipForLater: '나중에 하기',
   settingsHelpSection: '도움말',
-  settingsTutorialReplayTitle: '튜토리얼 다시 보기',
-  settingsTutorialReplayDesc: '온보딩 튜토리얼 다시 시청',
+  howtoTitle: 'How to use',
+  howtoOpenScreenCta: 'Open this screen',
+  howtoGuideResetLabel: 'Show on-screen guides again',
+  howtoGuideResetToast: 'On-screen guides will be shown once more',
+  howtoTopicRegisterBonsaiTitle: 'Register a bonsai',
+  howtoTopicRegisterBonsaiBody:
+    'Register your trees one by one to build your own ledger.\n\n1. Open the "{tab}" tab\n2. Tap "{cta}" at the bottom\n3. Name it and save (species and photos can be added later)\n4. The tree appears as a card in the list',
+  howtoTopicLogWorkTitle: 'Log your care work',
+  howtoTopicLogWorkBody:
+    'Keep a record of the days you watered, pruned, and more.\n\n1. Open the "{tab}" tab\n2. Tap "{cta}" at the bottom\n3. Pick the tree and the type of work, then save\n4. The day gets a ● on the calendar',
+  howtoTopicPlanCalendarTitle: 'Plans and the calendar',
+  howtoTopicPlanCalendarBody:
+    'On the calendar, ○ means a plan and ● means a record.\n\n1. Open the "{tab}" tab\n2. Pick a date and add a plan with "{cta}" at the bottom\n3. Tap a date to see its plans and records below',
+  howtoTopicRecurringTitle: 'Create recurring schedules',
+  howtoTopicRecurringBody:
+    'Create repeating plans, like weekly watering, in one go.\n\n1. Open "{hub}" in the "{tab}" tab\n2. Create one via "{add}"\n3. Choose a frequency (weekly, monthly, ...) and future plans are generated automatically',
+  howtoTopicNotificationsTitle: 'Set up notifications',
+  howtoTopicNotificationsBody:
+    'Get one daily summary on days that have plans.\n\n1. Turn on notifications in Settings and pick a time\n2. You will also be asked about notifications when you create your first plan',
+  howtoTopicBackupTitle: 'Backup and export',
+  howtoTopicBackupBody:
+    'Save and restore all records as a single file (handy when switching phones).\n\n1. Create or restore from "Backup" in Settings\n2. CSV / PDF export is under "Export" in Settings (Pro)',
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
   settingsArchiveSection: '보관함',
   settingsArchiveTitle: '보관된 분재',

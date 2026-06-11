@@ -557,8 +557,28 @@ const ja: Partial<Record<TranslationKey, string>> = {
   onboardingTutNext: '次へ',
   skipForLater: 'あとで',
   settingsHelpSection: 'ヘルプ',
-  settingsTutorialReplayTitle: 'チュートリアルを再表示',
-  settingsTutorialReplayDesc: '5 つの機能チュートリアルを最初から見直せます。',
+  howtoTitle: '使い方',
+  howtoOpenScreenCta: 'この画面を開く',
+  howtoGuideResetLabel: '画面のガイドをもう一度見る',
+  howtoGuideResetToast: '次から、画面のガイドをもう一度表示します',
+  howtoTopicRegisterBonsaiTitle: '盆栽を登録する',
+  howtoTopicRegisterBonsaiBody:
+    '盆栽を 1 本ずつ登録して、あなただけの台帳を作ります。\n\n1. 「{tab}」タブを開く\n2. 下の「{cta}」をタップ\n3. 名前を付けて保存 (樹種や写真はあとからでも追加できます)\n4. 一覧にカードが並びます',
+  howtoTopicLogWorkTitle: '作業を記録する',
+  howtoTopicLogWorkBody:
+    '水やりや剪定など、お手入れをした日を記録します。\n\n1. 「{tab}」タブを開く\n2. 下の「{cta}」をタップ\n3. 盆栽と作業の種類を選んで保存\n4. カレンダーのその日に ● が付きます',
+  howtoTopicPlanCalendarTitle: '予定とカレンダーの見方',
+  howtoTopicPlanCalendarBody:
+    'カレンダーの ○ は予定、● は記録のしるしです。\n\n1. 「{tab}」タブを開く\n2. 日付を選んで、下の「{cta}」から予定を登録\n3. 日付をタップすると、その日の予定と記録が下に表示されます',
+  howtoTopicRecurringTitle: '定期予定を作る',
+  howtoTopicRecurringBody:
+    '毎週の水やりなど、くり返す予定をまとめて作れます。\n\n1. 「{tab}」タブの「{hub}」を開く\n2. 「{add}」から作成\n3. 頻度 (毎週・毎月など) を選ぶと、先の予定まで自動で作られます',
+  howtoTopicNotificationsTitle: '通知を設定する',
+  howtoTopicNotificationsBody:
+    '予定のある日に、1 日 1 回まとめてお知らせできます。\n\n1. 設定画面の通知の項目を ON にして、時刻を選ぶ\n2. はじめて予定を作ったときにも、通知を受け取るかの案内が表示されます',
+  howtoTopicBackupTitle: 'バックアップと書き出し',
+  howtoTopicBackupBody:
+    '記録をひとつのファイルにまとめて保存・復元できます (機種変更のときにも使えます)。\n\n1. 設定画面の「バックアップ」から作成・復元\n2. CSV / PDF への書き出しは設定画面の「書き出し」から (Pro)',
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
   settingsArchiveSection: 'アーカイブ',
   settingsArchiveTitle: 'アーカイブ済み盆栽',
