@@ -1,4 +1,4 @@
-// scripts/ui-diff/generate-mockup-screenshots.ts
+// scripts/mockups/generate-mockup-screenshots.ts
 // T1-2 (Tier 1a) + Issue #366 (撮影方式改善): mockup v1.0 全画面のスクショ事前生成スクリプト。
 // MOCKUP_SCREENSHOTS で定義した 41 画面 (4 HTML × 全 PhoneShell) を chromium-headless で撮影し、
 // docs/mockups/v1.0/screenshots/<id>.png (static) または `<id>-01.png` `<id>-02.png` ... (scrollable) に保存。
@@ -6,7 +6,7 @@
 //
 // 使い方:
 //   PATH=/home/doooo/.local/bin:/home/doooo/.nvm/versions/node/v22.22.2/bin:/usr/bin:/bin \
-//     corepack pnpm exec tsx scripts/ui-diff/generate-mockup-screenshots.ts
+//     corepack pnpm exec tsx scripts/mockups/generate-mockup-screenshots.ts
 //
 // 前提:
 // - Playwright + chromium installed (`pnpm exec playwright install chromium`)
@@ -19,11 +19,15 @@
 
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { chromium, type Browser, type Locator } from 'playwright';
 
-import { DESIGN_ROOT } from './config.js';
 import { MOCKUP_SCREENSHOTS, type MockupScreenshot } from './mockup-screenshots-config.js';
+
+// mockup HTML の置き場 (旧 scripts/ui-diff/config.ts から inline 化、ADR-0059 退役時に移設)
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const DESIGN_ROOT = path.join(REPO_ROOT, 'docs/mockups/v1.0/wireframes');
 
 const SCREENSHOTS_DIR = path.join(DESIGN_ROOT, '..', 'screenshots');
 

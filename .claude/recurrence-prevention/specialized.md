@@ -88,7 +88,7 @@
 
 - **ルール**: ADR の Decision で具体的な技術仕様 (DB schema、SDK バージョン、tokenize オプション等) が書かれている場合、実装着手前 + Phase 完了前に該当ファイルを Read + grep で ADR と整合確認する。テストや CI 緑だけでは drift 検出できない。さらに **ImageMagick RMSE / CI / lint 等の機械的検証ツール合格だけで「達成 / 完遂」 と判定してはいけない。最終判定は Claude Read による目視評価 (構造系 4 項目: タブ構成 / セクション構成 / UI 種別 / スクロール範囲) が必須**。
 - **根拠**: 2026-05-03 セッションで `events_fts` の `tokenize="trigram"` (実コード) と ADR-0008 §4.3.4 の `tokenize='trigram remove_diacritics 1' detail=column` (仕様) の乖離を発見。2026-05-11 セッションで ImageMagick RMSE 22249 (5.4% 改善) のみで bonsai-detail 達成と判定したが、ユーザー指摘で構造的大差 (read-only vs 編集 form / list vs timeline) を見逃していたことが発覚 (Issue #439-#441 再起票、PR #442 で運用切替)。
-- **自動化**: `.claude/hooks/check-structure-eval-before-skiplist-update.mjs` で skip-list.json 編集時に構造系 4 項目キーワード未含有を block。PR テンプレ付録 `docs/how-to/workflow/pr-template-appendix.md` §7.6 で PR description に構造系 4 項目記載を必須化。
+- **自動化**: PR テンプレ付録 `docs/how-to/workflow/pr-template-appendix.md` §7.6 で PR description に構造系 5 項目記載を必須化 (旧 skip-list hook は ADR-0059 ui-diff 退役で削除)。
 
 ### R-26. 外部 Design 部分採用判定時のブランド統一感評価 + 画面マップ必須化
 

@@ -193,16 +193,17 @@ Bundled from official upstreams. These trigger automatically when the conversati
 
 **BonsaiLog override (BONSAI-OVERRIDE.md)**: upstream SKILL.md は無改変、BonsaiLog 固有文脈 (現状スタック / 既存 ADR / 過去 Sess 教訓) を別ファイル分離保持。`pnpm ai:sync` で upstream SKILL.md と同じ階層に自動コピーされ、両者一致で `ai:doctor` 緑のまま。upstream 更新時の手動 merge は不要。
 
-### 4.4 UI 整合タスク時の必読 docs (Sess5 PR-3 / PR-4 で整備、 1 画面 = 1 ループ運用)
+### 4.4 UI 整合タスク (mockup 寄せ) の標準 (ADR-0059、2026-06-12 改訂)
 
-mockup 整合 / 画面比較 / ui-diff 系のタスクで必須:
+mockup 整合 / 画面比較系のタスクは **写経駆動 (R-29 5 段階) + 実機 SS 目視 (/device-verify)** が標準:
 
-- **手順書**: `docs/how-to/ui-diff/screen-integration-loop.md` (8 step ループ、 1 画面 20-30 分目標)
-- **multi-page 撮影**: `docs/how-to/ui-diff/multipage-capture-pattern.md` (mockup `-01.png`, `-02.png` 等の scrollable 画面用)
-- **prompt 雛形**: `docs/how-to/workflow/prompts/screen-integration-prompt.md`
-- **学び集約**: `docs/reference/tasks/lessons/auto-improve-loop.md` (Sess5 4 知見含む)
+- **合格基準**: `docs/reference/integration-criteria.md` (レベル 2 = 見た目 80% 一致)
+- **検証**: `/device-verify` skill (`scripts/dev/take-ss.sh` で実機 SS → mockup スクショと並べて Read 目視)
+- **PR 記載**: PR テンプレ付録 §7.6 (構造系 5 項目)
+- **学び集約**: `docs/reference/tasks/lessons/auto-improve-loop.md`
+- 旧 ui-diff pipeline (Maestro 自動撮影ループ) は ADR-0059 で退役済み (復活条件も同 ADR)
 
-`.claude/hooks/session-start-design-reminder.mjs` で user prompt に「mockup 整合」 等のキーワードがあれば自動リマインド (R-1 / R-25 / R-29 強制適用)。
+`.claude/hooks/session-start-design-reminder.mjs` で user prompt に「mockup 整合」 等のキーワードがあれば自動リマインド (R-25 / R-29 強制適用)。
 
 ---
 

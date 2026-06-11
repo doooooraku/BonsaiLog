@@ -12,7 +12,7 @@
 > **凡例 (判定)**: ✅=一致 / ❌=乖離あり / 🟡=軽微・不急 / 🔴=要対応 (処置済は注記) / ⚪=判定保留 / 🔵=user 手動確認待ち / 修正済=監査内で修正完了 / 削除=repo から削除済 (path は当時のまま、復元は git 履歴)
 > **SoT 区分**: C=code-derived / D=decision(歴史文書) / P=process(手順書) / E=external(ストア・SaaS が正) / G=governance / M=memory
 
-## 台帳 (427 行 = 初期転記 420 + 補遺 7)
+## 台帳 (429 行 = 初期転記 420 + 補遺 9)
 
 | No  | path                                                                                                                     | 区分 | 判定                                                      | 最終検証日 |
 | --- | ------------------------------------------------------------------------------------------------------------------------ | ---- | --------------------------------------------------------- | ---------- |
@@ -82,7 +82,7 @@
 | 64  | `docs/handoff/sess1-progress-2026-05-17.md`                                                                              | D    | 削除 (2026-06 docs 再編)                                  | 2026-06-11 |
 | 65  | `docs/handoff/sess3-progress-2026-05-17.md`                                                                              | D    | 削除 (2026-06 docs 再編)                                  | 2026-06-11 |
 | 66  | `docs/handoff/sess8-pr2-phase2-prompt.md`                                                                                | D    | 削除 (2026-06 docs 再編)                                  | 2026-06-11 |
-| 67  | `docs/how-to/workflow/prompts/screen-integration-prompt.md`                                                              | P    | ✅                                                        | 2026-06-11 |
+| 67  | `docs/how-to/workflow/prompts/screen-integration-prompt.md`                                                              | P    | 削除 (Sess101 ADR-0059 ui-diff 退役)                      | 2026-06-11 |
 | 68  | `docs/how-to/development/admob_advertising_setup.md`                                                                     | P    | 🟡→**修正済 (本 PR)**                                     | 2026-06-11 |
 | 69  | `docs/how-to/development/android_build.md`                                                                               | P    | 🟡→**修正済 (本 PR)**                                     | 2026-06-11 |
 | 70  | `docs/how-to/development/coding_rules.md`                                                                                | P    | 🟡→**修正済 (本 PR)**                                     | 2026-06-11 |
@@ -99,19 +99,19 @@
 | 81  | `docs/how-to/quickstart.md`                                                                                              | P    | ✅                                                        | 2026-06-11 |
 | 82  | `docs/how-to/release/iap-setup-checklist.md`                                                                             | P    | ✅                                                        | 2026-06-11 |
 | 83  | `docs/how-to/testing/testing.md`                                                                                         | P    | ✅                                                        | 2026-06-11 |
-| 84  | `docs/how-to/ui-diff/auto-improve-loop-quickstart.md`                                                                    | P    | ✅                                                        | 2026-06-11 |
-| 85  | `docs/how-to/ui-diff/auto-improve-loop.md`                                                                               | P    | ✅                                                        | 2026-06-11 |
-| 86  | `docs/how-to/ui-diff/multipage-capture-pattern.md`                                                                       | P    | ✅                                                        | 2026-06-11 |
-| 87  | `docs/how-to/ui-diff/screen-integration-loop.md`                                                                         | P    | ✅                                                        | 2026-06-11 |
+| 84  | `docs/how-to/ui-diff/auto-improve-loop-quickstart.md`                                                                    | P    | 削除 (Sess101 ADR-0059 ui-diff 退役)                      | 2026-06-11 |
+| 85  | `docs/how-to/ui-diff/auto-improve-loop.md`                                                                               | P    | 削除 (Sess101 ADR-0059 ui-diff 退役)                      | 2026-06-11 |
+| 86  | `docs/how-to/ui-diff/multipage-capture-pattern.md`                                                                       | P    | 削除 (Sess101 ADR-0059 ui-diff 退役)                      | 2026-06-11 |
+| 87  | `docs/how-to/ui-diff/screen-integration-loop.md`                                                                         | P    | 削除 (Sess101 ADR-0059 ui-diff 退役)                      | 2026-06-11 |
 | 88  | `docs/how-to/workflow/git_workflow.md`                                                                                   | P    | 🟡→**修正済 (本 PR)**                                     | 2026-06-11 |
 | 89  | `docs/how-to/workflow/google_play_release.md`                                                                            | P    | ✅                                                        | 2026-06-11 |
 | 90  | `docs/how-to/workflow/ios_testflight_release.md`                                                                         | P    | ✅                                                        | 2026-06-11 |
 | 91  | `docs/how-to/workflow/prompts/P-00_ux-simulation.md`                                                                     | P    | ✅                                                        | 2026-06-11 |
 | 92  | `docs/how-to/workflow/prompts/P-01_project-init.md`                                                                      | P    | ✅                                                        | 2026-06-11 |
-| 93  | `docs/how-to/workflow/prompts/P-09_ui-diff-pipeline.md`                                                                  | P    | ✅                                                        | 2026-06-11 |
+| 93  | `docs/how-to/workflow/prompts/P-09_ui-diff-pipeline.md`                                                                  | P    | 削除 (Sess101 ADR-0059 ui-diff 退役)                      | 2026-06-11 |
 | 94  | `docs/how-to/workflow/prompts/P-10_open-design-resume.md`                                                                | P    | ✅                                                        | 2026-06-11 |
 | 95  | `docs/how-to/workflow/prompts/P-11_implement-from-mockups.md`                                                            | P    | 🟡→**修正済 (本 PR)**                                     | 2026-06-11 |
-| 96  | `docs/how-to/workflow/prompts/P-12_screen-implementation-cycle.md`                                                       | P    | 🟡→**修正済 (本 PR)**                                     | 2026-06-11 |
+| 96  | `docs/how-to/workflow/prompts/P-12_screen-implementation-cycle.md`                                                       | P    | 削除 (Sess101 ADR-0059 ui-diff 退役)                      | 2026-06-11 |
 | 97  | `docs/how-to/workflow/prompts/README.md`                                                                                 | P    | ✅                                                        | 2026-06-11 |
 | 98  | `docs/how-to/workflow/release_notes_template.md`                                                                         | P    | ✅                                                        | 2026-06-11 |
 | 99  | `docs/how-to/workflow/screenshot_generation.md`                                                                          | P    | ✅                                                        | 2026-06-11 |
@@ -189,7 +189,7 @@
 | 171 | `docs/reference/tasks/lessons/sess39-pr2-verification.md`                                                                | P    | ✅                                                        | 2026-06-11 |
 | 172 | `docs/reference/tasks/lessons/store.md`                                                                                  | P    | ✅                                                        | 2026-06-11 |
 | 173 | `docs/reference/tasks/lessons/wsl2-mobile.md`                                                                            | P    | 🟡→**修正済 (本 PR)**                                     | 2026-06-11 |
-| 174 | `docs/reference/ui-diff-flow-mapping.md`                                                                                 | C    | 🟡                                                        | 2026-06-11 |
+| 174 | `docs/archive/ui-diff-2026-05/ui-diff-flow-mapping.md`                                                                   | C    | archive へ移動 (Sess101 ADR-0059)                         | 2026-06-11 |
 | 175 | `docs/archive/research-2026-04/basic-spec-research.md`                                                                   | D    | ✅                                                        | 2026-06-11 |
 | 176 | `docs/archive/research-2026-04/functional-spec-research.md`                                                              | D    | ✅                                                        | 2026-06-11 |
 | 177 | `docs/archive/research-2026-04/product-strategy-research-v1.md`                                                          | D    | ✅                                                        | 2026-06-11 |
@@ -441,11 +441,14 @@
 | 423 | `docs/reference/doc-routing.md`                                                                                          | P    | ✅                                                        | 2026-06-11 |
 | 424 | `docs/audit/freshness-ledger.md`                                                                                         | P    | ✅                                                        | 2026-06-11 |
 | 425 | `docs/how-to/workflow/pr-template-appendix.md`                                                                           | P    | ✅                                                        | 2026-06-11 |
-| 426 | `.claude/rules/ui-diff-loop.md`                                                                                          | G    | ✅                                                        | 2026-06-11 |
+| 426 | `.claude/rules/ui-diff-loop.md`                                                                                          | G    | 削除 (Sess101 ADR-0059 ui-diff 退役)                      | 2026-06-11 |
 | 427 | `docs/how-to/workflow/prompts/P-15_doc-truth-audit.md`                                                                   | P    | ✅                                                        | 2026-06-11 |
+| 428 | `docs/adr/ADR-0058-contextual-guides.md`                                                                                 | D    | ✅                                                        | 2026-06-12 |
+| 429 | `docs/adr/ADR-0059-mockup-ui-reflection-standard.md`                                                                     | D    | ✅                                                        | 2026-06-12 |
 
 ## 転記検算 (2026-06-11 初期化時)
 
 - 転記行数: 420 (原台帳の番号付き行 全件、欠番 なし)
 - 原台帳完走時の機械集計: 判定済み 420 行・未処理 0 (内訳は原台帳「バッチ⑨⑩ + 残余 sweep 処理記録」参照)
-- 補遺 No.421-427 (2026-06-11 P3/P4): 監査完走後の新規 doc 7 件を更新ルール 2 で追加 (台帳 計 427 行)
+- 補遺 No.421-427 (2026-06-11 P3/P4): 監査完走後の新規 doc 7 件を更新ルール 2 で追加
+- 補遺 No.428-429 (2026-06-12 Sess101): ADR-0058 (guides 基盤) + ADR-0059 (mockup→UI 標準) を更新ルール 2 で追加 (台帳 計 429 行)

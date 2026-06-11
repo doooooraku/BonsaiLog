@@ -26,12 +26,12 @@ const reminder = [
   '- 念のため再検証時は既存 ADR を必ず先に Read (R-20)',
   '- 「全部推薦で OK」即時実行緊止、4 段階強制 (R-17)',
   '',
-  '## UI 整合タスク (mockup 整合 / 画面比較 / ui-diff) 開始時 (Sess5 PR-3 で整備)',
-  '- 手順書必読: `docs/how-to/ui-diff/screen-integration-loop.md` (8 step ループ)',
-  '- multi-page 撮影: `docs/how-to/ui-diff/multipage-capture-pattern.md`',
+  '## UI 整合タスク (mockup 寄せ) 開始時 (ADR-0059 標準)',
+  '- 標準フロー: 写経駆動 R-29 5 段階 + /device-verify (take-ss.sh 実機 SS → mockup スクショと並べて Read 目視)',
+  '- 合格基準: `docs/reference/integration-criteria.md` レベル 2 / PR 記載は PR テンプレ付録 §7.6',
   '- 学び集約: `docs/reference/tasks/lessons/auto-improve-loop.md`',
-  '- R-1 拡張: pairing-report 生成後は Claude 自身が Read / base64 grep で SS 反映検証 (「✅ 生成完了」 ログだけで user 報告 NG)',
-  '- R-25 構造系 4 項目 (タブ / セクション / UI 種別 / スクロール範囲) + R-29 写経駆動開発 5 段階 を Claude Read 主導で適用',
+  '- R-1 拡張: レポート / SS 生成後は Claude 自身が Read で反映検証 (「✅ 生成完了」 ログだけで user 報告 NG)',
+  '- R-25 構造系 4 項目 (タブ / セクション / UI 種別 / スクロール範囲) を Claude Read 主導で適用',
 ].join('\n');
 
 const output = {
