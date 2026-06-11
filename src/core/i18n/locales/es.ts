@@ -1017,6 +1017,8 @@ const es: Partial<Record<TranslationKey, string>> = {
   recurringFormBonsaisHeader: 'Add the same schedule to {count} bonsai',
   recurringFormBonsaisHeaderSingle: 'Add a schedule for {name}',
   recurringFormEventTypeLabel: 'Work type',
+  recurringFormChangeBonsais: 'Change target bonsai',
+  recurringFormTapToChange: 'Tap to change',
   bulkPickerSheetSubLogSingle: 'Log care for {name}',
   bulkPickerSheetSubScheduleSingle: 'Add a schedule for {name}',
   bulkPickerAutoSelectedHint: 'Auto-selected',

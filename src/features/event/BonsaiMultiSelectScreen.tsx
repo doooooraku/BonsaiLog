@@ -42,10 +42,19 @@ export default function BonsaiMultiSelectScreen() {
   // Sess86 副次発見修正: 'recurring' 受入 (= ADR-0056 v1.0.1 recurring multi 非対応で
   // BulkWorkPicker 側で 1 件目 採用 logic、 本画面は mode を そのまま transfer)。
   // 旧: 'recurring' を 'schedule' に fallback で Stack header「予定を追加」 表示 = 仕様逸脱。
-  const params = useLocalSearchParams<{ mode?: 'schedule' | 'log' | 'recurring'; date?: string }>();
+  const params = useLocalSearchParams<{
+    mode?: 'schedule' | 'log' | 'recurring';
+    date?: string;
+    /**
+     * Sess99 #1122 案 G2: 'back' = 確定時に次画面 push せず setBulkContext + router.back()。
+     * RecurrenceFormScreen 編集モードの「対象の盆栽を変更」 (= 選び直して呼出元に返す) 用。
+     */
+    returnTo?: string;
+  }>();
   const mode: 'schedule' | 'log' | 'recurring' =
     params.mode === 'log' ? 'log' : params.mode === 'recurring' ? 'recurring' : 'schedule';
   const scheduleDate = params.date ?? '';
+  const returnToBack = params.returnTo === 'back';
 
   const [items, setItems] = useState<CardData[]>([]);
   // Sess12 PR-D 改善 D: 戻り時の選択状態 restore (bulkContext.selectedBonsais から)
@@ -98,10 +107,16 @@ export default function BonsaiMultiSelectScreen() {
       .filter((it) => selectedIds.has(it.id))
       .map((it) => ({ id: it.id, name: it.name }));
     usePickerStore.getState().setBulkContext({ selectedBonsais });
+    // Sess99 #1122 案 G2: returnTo=back は呼出元 (RecurrenceFormScreen 編集) に選択結果を
+    // bulkContext 経由で返して戻るのみ (次画面 push しない)。
+    if (returnToBack) {
+      router.back();
+      return;
+    }
     const dateParam = scheduleDate ? `&date=${encodeURIComponent(scheduleDate)}` : '';
     // Sess12 PR-D 改善 D: replace → push (BulkWorkPicker ← で本画面に戻れる)
     router.push(`/bulk-work-picker?mode=${mode}${dateParam}` as Href);
-  }, [items, selectedIds, mode, scheduleDate, router]);
+  }, [items, selectedIds, mode, scheduleDate, router, returnToBack]);
 
   // Sess86 副次発見修正: recurring も log/schedule と同じ「次へ」 CTA (= 既存 bulkSchedule
   // i18n key 流用、 ja/en 共に「次へ」 / 「Next」、 i18n 追加なし)。 BulkWorkPicker 側で 1 件目

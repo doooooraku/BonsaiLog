@@ -61,6 +61,8 @@ export type BackupRecurrenceRule = {
   tzIana: string;
   /** v17 追加列 (旧 DB 由来 manifest では null)。 */
   memo: string | null;
+  /** v18 追加列 (Sess99 #1122 案 G2 グループ印)。 #1130 直後の ZIP には無い → undefined 許容。 */
+  groupId?: string | null;
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;

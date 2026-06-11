@@ -20,7 +20,7 @@
  */
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useToastStore } from '@/src/components/Toast';
@@ -28,9 +28,9 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess68 PR #C: 全 forbidden token を inline c.* 化。
 import { useColors } from '@/src/core/theme/useColors';
 import { updateEvent } from '@/src/db/eventRepository';
-import { EVENT_TYPES, type EventType } from '@/src/db/schema';
+import { type EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
-import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
+import { WorkTypeGrid } from '@/src/features/event/WorkTypeGrid';
 
 export default function WorkPickerScreen() {
   const { t } = useTranslation();
@@ -52,7 +52,6 @@ export default function WorkPickerScreen() {
   const editingPlannedId = params.editingPlannedId ?? null;
   const currentType = params.currentType ?? null;
 
-  const items = EVENT_TYPES;
   const handleSelect = async (type: EventType) => {
     if (editingPlannedId) {
       // Sess77 Follow-up: 編集モード = 既存 planned event の 種別差し替え。
@@ -86,30 +85,14 @@ export default function WorkPickerScreen() {
       <View style={styles.header}>
         <ThemedText style={[styles.subject, { color: c.text }]}>{bonsaiName}</ThemedText>
       </View>
-      <View style={styles.grid} testID="e2e_work_picker_grid">
-        {items.map((type) => {
-          // Sess77 Follow-up: 編集モードで 現在 type を 視覚的 highlighted
-          const isCurrent = editingPlannedId !== null && currentType === type;
-          return (
-            <Pressable
-              key={type}
-              accessibilityRole="button"
-              accessibilityLabel={t(`eventType_${type}` as Parameters<typeof t>[0])}
-              style={[
-                styles.cell,
-                { backgroundColor: c.surface, borderColor: c.border },
-                isCurrent && { borderColor: c.tint, borderWidth: 2 },
-              ]}
-              onPress={() => handleSelect(type)}
-              testID={`e2e_work_picker_${type}`}
-            >
-              <WorkTypeIcon type={type} size={32} color={isCurrent ? c.tint : c.text} />
-              <ThemedText style={[styles.label, { color: isCurrent ? c.tint : c.text }]}>
-                {t(`eventType_${type}` as Parameters<typeof t>[0])}
-              </ThemedText>
-            </Pressable>
-          );
-        })}
+      {/* Sess99 #1122: grid を WorkTypeGrid (SoT) に集約。 編集モードの現在 type highlighted は
+          selectedType prop で同挙動 (Sess77 Follow-up 維持)。 */}
+      <View testID="e2e_work_picker_grid">
+        <WorkTypeGrid
+          selectedType={editingPlannedId !== null ? (currentType as EventType | null) : null}
+          onSelect={(type) => void handleSelect(type)}
+          testIDPrefix="e2e_work_picker"
+        />
       </View>
     </View>
   );
@@ -119,16 +102,5 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 16, paddingTop: 16 },
   header: { paddingTop: 8, paddingBottom: 12, alignItems: 'center' },
   subject: { fontSize: 14 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  cell: {
-    width: '31.5%',
-    aspectRatio: 1,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: 8,
-  },
-  label: { fontSize: 13, textAlign: 'center' },
+  // grid / cell / label styles は WorkTypeGrid (Sess99 #1122 SoT) に移管。
 });

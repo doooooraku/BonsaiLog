@@ -27,9 +27,9 @@
  *        src/db/recurrenceRuleRepository.ts (= bulkCreateRecurrenceRules / replaceRecurrenceRule)
  *        src/components/form/RecurrencePicker.tsx (Sess78 PR-4、 Sess93 PR-3 拡張)
  */
-import { Stack, useLocalSearchParams, useRouter, type Href } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -63,11 +63,15 @@ import {
   bulkCreateRecurrenceRules,
   countActiveRecurrenceRules,
   FREE_RECURRENCE_RULE_LIMIT,
+  getActiveRulesByGroupKey,
   getRecurrenceRuleById,
-  replaceRecurrenceRule,
+  replaceRecurrenceRuleGroup,
+  ruleGroupKey,
   type CreateRecurrenceRuleInput,
 } from '@/src/db/recurrenceRuleRepository';
 import { BonsaiChipPickerLayout } from '@/src/features/bonsai/BonsaiChipPickerLayout';
+import { WorkTypeGrid } from '@/src/features/event/WorkTypeGrid';
+import type { EventType } from '@/src/db/schema';
 import { useProStore } from '@/src/stores/proStore';
 import { usePickerStore, type BulkBonsaiRef } from '@/src/stores/pickerStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
@@ -163,6 +167,14 @@ export default function RecurrenceFormScreen() {
 
   const [bonsais, setBonsais] = useState<readonly BulkBonsaiRef[]>([]);
   const [eventType, setEventType] = useState<string | null>(null);
+  // Sess99 #1122 案 G2: 編集モードのグループ情報 (= 同 group_id の rule 全員を置換対象にする)
+  const [memberRuleIds, setMemberRuleIds] = useState<string[]>([]);
+  const [groupKey, setGroupKey] = useState<string | null>(null);
+  // Sess99 #1122: 種別インライン変更 (編集モードのみ、 row tap で WorkTypeGrid を開閉)
+  const [typePickerOpen, setTypePickerOpen] = useState(false);
+  // Sess99 #1122: 「対象の盆栽を変更」 → BonsaiMultiSelect(returnTo=back) 復帰待ちフラグ。
+  // create モードの bulkContext 初期読込と干渉しないよう、自分が起動した時のみ focus で同期する。
+  const awaitingBonsaiReselect = useRef(false);
   // Sess93 PR-3: startDate default = 今日のローカル日付 (= 過去日エラー回避)
   const todayKey = useMemo(() => toLocalDateKey(nowUtc(), getTzOffsetMin()), []);
   const [recurrence, setRecurrence] = useState<RecurrenceValue>({
@@ -194,11 +206,18 @@ export default function RecurrenceFormScreen() {
             router.back();
             return;
           }
-          const loadedBonsai = await getBonsaiById(rule.bonsaiId);
-          if (cancelled) return;
-          if (loadedBonsai) {
-            setBonsais([{ id: loadedBonsai.id, name: loadedBonsai.name }]);
+          // Sess99 #1122 案 G2: グループ全員 (= 同 group_id、 旧データは 1 本) を編集対象に復元
+          const key = ruleGroupKey(rule);
+          const members = await getActiveRulesByGroupKey(key);
+          const memberBonsais: BulkBonsaiRef[] = [];
+          for (const member of members) {
+            const b = await getBonsaiById(member.bonsaiId);
+            if (b) memberBonsais.push({ id: b.id, name: b.name });
           }
+          if (cancelled) return;
+          setGroupKey(key);
+          setMemberRuleIds(members.map((m) => m.id));
+          setBonsais(memberBonsais);
           setEventType(rule.eventType);
           const {
             preset: loadedPreset,
@@ -237,11 +256,35 @@ export default function RecurrenceFormScreen() {
     };
   }, [mode, params.ruleId, params.eventType, router, t]);
 
+  // Sess99 #1122 案 G2: 「対象の盆栽を変更」 → BonsaiMultiSelect (returnTo=back) で選び直し、
+  // bulkContext 経由で受け取る (= 既存の選択 UI / restore 機構をそのまま流用)。
+  const handleChangeBonsais = useCallback(() => {
+    usePickerStore.getState().setBulkContext({ selectedBonsais: bonsais });
+    awaitingBonsaiReselect.current = true;
+    router.push('/bonsai-multi-select?mode=recurring&returnTo=back' as Href);
+  }, [bonsais, router]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!awaitingBonsaiReselect.current) return;
+      awaitingBonsaiReselect.current = false;
+      const ctx = usePickerStore.getState().bulkContext;
+      if (ctx && ctx.selectedBonsais.length > 0) {
+        setBonsais(ctx.selectedBonsais);
+      }
+    }, []),
+  );
+
   // Sess93 PR-4: 保存実行 (= 編集モード ConfirmDialog 経由 / 新規モード 直接)
   const performSave = useCallback(async (): Promise<void> => {
     if (bonsais.length === 0 || !eventType || saving) return;
 
-    if (!isPro && activeRuleCount + bonsais.length > FREE_RECURRENCE_RULE_LIMIT) {
+    // Sess99 #1122: 編集 = 置換 (旧メンバー分が減る) を考慮した置換後総数で Pro 境界判定
+    const prospectiveCount =
+      mode === 'edit'
+        ? activeRuleCount - memberRuleIds.length + bonsais.length
+        : activeRuleCount + bonsais.length;
+    if (!isPro && prospectiveCount > FREE_RECURRENCE_RULE_LIMIT) {
       router.push('/pro?source=recurring_rule' as Href);
       return;
     }
@@ -260,16 +303,17 @@ export default function RecurrenceFormScreen() {
             ? `${recurrence.endDate}T00:00:00.000Z`
             : null;
 
-      if (mode === 'edit' && params.ruleId && bonsais[0]) {
-        const input: CreateRecurrenceRuleInput = {
-          bonsaiId: bonsais[0].id,
+      if (mode === 'edit' && groupKey && memberRuleIds.length > 0) {
+        // Sess99 #1122 案 G2: グループ全員を置換 — 盆栽セットの増減 + 種別変更も全てここで反映。
+        const inputs: CreateRecurrenceRuleInput[] = bonsais.map((b) => ({
+          bonsaiId: b.id,
           eventType,
           rrule,
           startAtUtc,
           endAtUtc,
           memo: memo || null,
-        };
-        await replaceRecurrenceRule(params.ruleId, input);
+        }));
+        await replaceRecurrenceRuleGroup(memberRuleIds, inputs, groupKey);
         useToastStore.getState().show(t('recurringEditSavedToast'));
       } else {
         const inputs: CreateRecurrenceRuleInput[] = bonsais.map((b) => ({
@@ -296,7 +340,8 @@ export default function RecurrenceFormScreen() {
     bonsais,
     eventType,
     mode,
-    params.ruleId,
+    groupKey,
+    memberRuleIds,
     recurrence,
     router,
     saving,
@@ -376,15 +421,53 @@ export default function RecurrenceFormScreen() {
         autoSelectedHintTestId="e2e_recurrence_form_auto_selected_hint"
         bottomPadding={96}
       >
-        {/* 作業種別 (= readonly) */}
-        <View style={[styles.summaryRow, { backgroundColor: c.surface, borderColor: c.border }]}>
+        {/* Sess99 #1122 案 G2 (編集モードのみ): 「対象の盆栽を変更」 row —
+            BonsaiMultiSelect (returnTo=back) で増減・差し替え。 */}
+        {mode === 'edit' && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('recurringFormChangeBonsais')}
+            style={[styles.summaryRow, { backgroundColor: c.surface, borderColor: c.border }]}
+            onPress={handleChangeBonsais}
+            testID="e2e_recurrence_form_change_bonsais"
+          >
+            <ThemedText style={[styles.summaryLabel, { color: c.textSecondary }]}>
+              {t('recurringFormChangeBonsais')}
+            </ThemedText>
+            <ThemedText style={[styles.summaryValue, { color: c.tint }]}>
+              {t('recurringFormTapToChange')}
+            </ThemedText>
+          </Pressable>
+        )}
+
+        {/* 作業種別 — Sess99 #1122: 編集モードは tap で WorkTypeGrid を開閉して変更可能
+            (create モードは BulkWorkPicker で選択済のため従来どおり readonly)。 */}
+        <Pressable
+          accessibilityRole={mode === 'edit' ? 'button' : 'none'}
+          accessibilityLabel={t('recurringFormEventTypeLabel')}
+          disabled={mode !== 'edit'}
+          style={[styles.summaryRow, { backgroundColor: c.surface, borderColor: c.border }]}
+          onPress={() => setTypePickerOpen((open) => !open)}
+          testID="e2e_recurrence_form_event_type_row"
+        >
           <ThemedText style={[styles.summaryLabel, { color: c.textSecondary }]}>
             {t('recurringFormEventTypeLabel')}
           </ThemedText>
           <ThemedText style={[styles.summaryValue, { color: c.text }]}>
             {eventType ? t(`eventType_${eventType}` as TranslationKey) : '—'}
+            {mode === 'edit' ? (typePickerOpen ? ' ▲' : ' ▼') : ''}
           </ThemedText>
-        </View>
+        </Pressable>
+        {mode === 'edit' && typePickerOpen && (
+          <WorkTypeGrid
+            selectedType={(eventType as EventType | null) ?? null}
+            onSelect={(type) => {
+              setEventType(type);
+              setTypePickerOpen(false);
+            }}
+            testIDPrefix="e2e_recurrence_form_type"
+          />
+        )}
 
         {/* Sess93 PR-4: 開始日 picker を 表示 (= hideStartDate 解除)、 hideToggle/hideEndDate keep */}
         <RecurrencePicker value={recurrence} onChange={setRecurrence} hideToggle hideEndDate />

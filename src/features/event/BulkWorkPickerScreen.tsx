@@ -17,20 +17,15 @@
  */
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
 import { BonsaiChipPickerLayout } from '@/src/features/bonsai/BonsaiChipPickerLayout';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 // Sess68 PR #C: 全 forbidden token を inline c.* 化。
 import { useColors } from '@/src/core/theme/useColors';
-import { EVENT_TYPES, type EventType } from '@/src/db/schema';
-import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
+import { type EventType } from '@/src/db/schema';
+import { WorkTypeGrid } from '@/src/features/event/WorkTypeGrid';
 import { usePickerStore } from '@/src/stores/pickerStore';
-
-// Sess16 PR-J (T-5) + PR-Q: EVENT_TYPES 全 14 種別を直接使用 (filter なし)。
-// user 真意「どんな盆栽でも全種別表示」 シンプル化 (Sess16 PR-Q、 2026-05-20)。
-const BULK_WORK_TYPES: readonly EventType[] = EVENT_TYPES;
 
 export default function BulkWorkPickerScreen() {
   const { t } = useTranslation();
@@ -126,23 +121,8 @@ export default function BulkWorkPickerScreen() {
         showAutoSelectedHint
         autoSelectedHintTestId="e2e_bulk_work_picker_auto_selected_hint"
       >
-        <View style={styles.grid}>
-          {BULK_WORK_TYPES.map((type) => (
-            <Pressable
-              key={type}
-              accessibilityRole="button"
-              accessibilityLabel={t(`eventType_${type}` as TranslationKey)}
-              style={[styles.cell, { backgroundColor: c.surface, borderColor: c.border }]}
-              onPress={() => handleSelect(type)}
-              testID={`e2e_bulk_work_picker_${type}`}
-            >
-              <WorkTypeIcon type={type} size={32} color={c.text} />
-              <ThemedText style={[styles.label, { color: c.text }]}>
-                {t(`eventType_${type}` as TranslationKey)}
-              </ThemedText>
-            </Pressable>
-          ))}
-        </View>
+        {/* Sess99 #1122: grid を WorkTypeGrid (SoT) に集約 (WorkPickerScreen / RecurrenceFormScreen と共通)。 */}
+        <WorkTypeGrid onSelect={handleSelect} testIDPrefix="e2e_bulk_work_picker" />
       </BonsaiChipPickerLayout>
     </View>
   );
@@ -152,16 +132,5 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   // Sess92 PR-3 follow-up: header / sub / chipsRow / chip / chipText / autoSelectedHintRow /
   // autoSelectedHintText / body (= ScrollView + body padding) は BonsaiChipPickerLayout に SoT 移管。
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  cell: {
-    width: '31.5%',
-    aspectRatio: 1,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: 8,
-  },
-  label: { fontSize: 13, textAlign: 'center' },
+  // Sess99 #1122: grid / cell / label は WorkTypeGrid に SoT 移管。
 });

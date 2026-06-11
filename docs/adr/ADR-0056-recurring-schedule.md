@@ -659,3 +659,19 @@ user 「関数化して同じ問題を 1 つに集約したら管理が楽とか
 - 盆栽詳細「+ 予定を登録」の単体動線 (= /work-picker?mode=schedule → DatePicker dialog 即保存、 Case A store-callback) の確認画面統一は本 Amendment の scope 外 — 同動線は日付選択 step を既に持ち、統一には ADR-0030 §17 Case A 廃止判断を伴うため別 Issue で判断 (Issue #1127 参照、 §3.6 ゲートに従い起票)。
 
 **Sess99 追補 (同日)**: 上記 scope 外とした単体動線の統一は、user 判断 (案 A) により同 Sess99 内で実装済み (= Issue #1127 Closes、ADR-0030 Notes Amended 2026-06-11 参照)。これで予定作成の全入口が BulkLogConfirmScreen 確認画面に統一された。
+
+#### Sess99 Amendment 2 (= 定期予定の「見た目グループ化」 案 G2、 2026-06-11)
+
+**起点**: Issue #1122 (編集で盆栽/種別を変更可能に) の議論で、user が「タグのように 1 つの予定グループに複数の盆栽と 1 つの作業が含まれるイメージ」と指摘 → Sess89 PR-C の「1 rule = 1 盆栽 (N 件 loop)」は実装都合の選択で、管理画面でどう見えるべきかの user 視点議論が欠けていたことが判明。3 案 (G1 本格グループ化 = junction table / G2 見た目グループ化 = group_id 印 / G3 現状維持) を提示し、**user が案 G2 を選択**。
+
+**決定**:
+
+1. **schema v18**: `recurrence_rules.group_id TEXT` 追加 (NULL = 旧データ → `ruleGroupKey()` で rule.id を key とする 1 本グループ fallback)。内部データモデルは「1 rule = 1 盆栽」を維持 (= migration リスクとバックアップ作り直しを回避)。
+2. **作成**: `bulkCreateRecurrenceRules` が呼出 1 回ごとに共有 ulid を採番して全 rule に stamp。BulkLogConfirmScreen の recurring 分岐も旧 loop → bulk 関数に置換 (R-73 整合)。
+3. **一覧 (RecurrenceListScreen)**: グループ単位 1 行表示 — 盆栽名 join + ×N badge + 種別・頻度 + 次回 (= member 最小)。削除はグループ全員 soft-delete。
+4. **編集 (RecurrenceFormScreen)**: 代表 rule id で起動し `getActiveRulesByGroupKey` で全員復元。**対象の盆栽の増減** (= BonsaiMultiSelect returnTo=back で選び直し) と**作業種別の変更** (= WorkTypeGrid インライン開閉) が可能に。保存 = `replaceRecurrenceRuleGroup` (全員 soft-delete + 新セットで bulk 再作成、group_id 維持、既存 ConfirmDialog 経由 = R-78/R-79 整合)。
+5. **Pro 境界**: 数え方は現行どおり rule 本数 (= 盆栽×予定)。編集時は「置換後総数」(現在数 − 旧 member 数 + 新 member 数) で判定 (= 料金体系に影響を出さない)。
+6. **バックアップ**: BackupRecurrenceRule に groupId 追従 (optional = #1130 直後 ZIP 後方互換)。
+7. **SoT 抽出 (user 恒常指示)**: 作業種別 grid を `WorkTypeGrid` に集約 (WorkPickerScreen / BulkWorkPickerScreen / RecurrenceFormScreen の 3 箇所 WET 解消)。
+
+**関連**: Issue #1122 / Sess89 PR-C (旧 案 X) / R-73 / R-78

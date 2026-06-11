@@ -35,11 +35,13 @@ import { useColors } from '@/src/core/theme/useColors';
 import {
   FREE_RECURRENCE_RULE_LIMIT,
   softDeleteRecurrenceRule,
-  type RecurrenceRuleRow,
 } from '@/src/db/recurrenceRuleRepository';
 import type { EventType } from '@/src/db/schema';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
-import { useRecurrenceRules } from '@/src/features/recurrence/useRecurrenceRules';
+import {
+  useRecurrenceRules,
+  type RecurrenceRuleGroup,
+} from '@/src/features/recurrence/useRecurrenceRules';
 
 /**
  * RRULE 文字列 → 人間可読 label に変換 (= preset 静的逆引き、 Sess89 PR-B 拡張)。
@@ -70,7 +72,8 @@ export default function RecurrenceListScreen() {
   const { t } = useTranslation();
   const c = useColors();
   const router = useRouter();
-  const { rules, bonsaiMap, nextOccurrenceMap, loading, reload } = useRecurrenceRules();
+  // Sess99 #1122 案 G2: グループ単位 (= 同時作成 rule 群を 1 行) で表示・編集・削除する。
+  const { rules, groups, bonsaiMap, nextOccurrenceMap, loading, reload } = useRecurrenceRules();
   // Sess82 PR-D: 「+ 新規追加」 BottomCtaBar = useBulkActionFlow('recurring') 経由で 盆栽 picker → BulkWorkPicker → /recurring-rules/new
   const { startBulkAction } = useBulkActionFlow('recurring');
   const handleCreateNew = useCallback((): void => {
@@ -80,28 +83,31 @@ export default function RecurrenceListScreen() {
     }));
     startBulkAction(allBonsais);
   }, [bonsaiMap, startBulkAction]);
-  const [deleteTarget, setDeleteTarget] = useState<RecurrenceRuleRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<RecurrenceRuleGroup | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   // Sess82 PR-C: kebab → RowActionMenu (= 編集 + 削除 2 択、 ADR-0036 D7 整合)
-  const [kebabTarget, setKebabTarget] = useState<RecurrenceRuleRow | null>(null);
+  const [kebabTarget, setKebabTarget] = useState<RecurrenceRuleGroup | null>(null);
 
-  const handleKebabPress = useCallback((rule: RecurrenceRuleRow): void => {
-    setKebabTarget(rule);
+  const handleKebabPress = useCallback((group: RecurrenceRuleGroup): void => {
+    setKebabTarget(group);
   }, []);
 
   const handleKebabDismiss = useCallback((): void => {
     setKebabTarget(null);
   }, []);
 
-  const handleDeleteRequest = useCallback((rule: RecurrenceRuleRow): void => {
-    setDeleteTarget(rule);
+  const handleDeleteRequest = useCallback((group: RecurrenceRuleGroup): void => {
+    setDeleteTarget(group);
   }, []);
 
+  // Sess99 #1122 案 G2: グループ削除 = メンバー rule 全件 soft-delete (cascade で未来予定も削除)
   const handleDeleteConfirm = useCallback(async (): Promise<void> => {
     if (!deleteTarget || isDeleting) return;
     setIsDeleting(true);
     try {
-      await softDeleteRecurrenceRule(deleteTarget.id);
+      for (const rule of deleteTarget.rules) {
+        await softDeleteRecurrenceRule(rule.id);
+      }
       setDeleteTarget(null);
       await reload();
     } finally {
@@ -115,23 +121,23 @@ export default function RecurrenceListScreen() {
   }, [isDeleting]);
 
   // Sess82 PR-C: kebab menu items 動的構築 (= CalendarTabScreen 既使用 pattern 踏襲、 ADR-0036 D7)
-  // 編集 onPress 配線先 = Sess82 PR-D で /recurring-rules/edit/[ruleId] route 新規実装
+  // Sess99 #1122: 編集は代表 rule の id で起動 (RecurrenceFormScreen がグループ全員を復元)
   const kebabItems: readonly RowActionMenuItem[] = kebabTarget
     ? [
         {
           key: 'edit',
           label: t('rowActionMenuEdit'),
           onPress: () => {
-            router.push(`/recurring-rules/edit/${kebabTarget.id}` as Href);
+            router.push(`/recurring-rules/edit/${kebabTarget.representative.id}` as Href);
           },
-          testID: `e2e_recurrence_kebab_edit_${kebabTarget.id}`,
+          testID: `e2e_recurrence_kebab_edit_${kebabTarget.representative.id}`,
         },
         {
           key: 'delete',
           label: t('rowActionMenuDelete'),
           destructive: true,
           onPress: () => handleDeleteRequest(kebabTarget),
-          testID: `e2e_recurrence_kebab_delete_${kebabTarget.id}`,
+          testID: `e2e_recurrence_kebab_delete_${kebabTarget.representative.id}`,
         },
       ]
     : [];
@@ -156,40 +162,55 @@ export default function RecurrenceListScreen() {
         </View>
       ) : (
         <FlatList
-          data={rules}
-          keyExtractor={(item) => item.id}
+          data={groups}
+          keyExtractor={(item) => item.key}
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => {
-            const bonsai = bonsaiMap.get(item.bonsaiId);
-            const bonsaiLabel = bonsai?.name ?? t('recurringListItemDeletedBonsai');
-            const eventLabel = t(`eventType_${item.eventType}` as TranslationKey);
-            const humanRruleKey = rruleToHumanLabel(item.rrule);
+            // Sess99 #1122 案 G2: 1 行 = 1 グループ。 盆栽名は member 全員を「、」 join + ×N badge。
+            const rep = item.representative;
+            const bonsaiNames = item.rules.map(
+              (r) => bonsaiMap.get(r.bonsaiId)?.name ?? t('recurringListItemDeletedBonsai'),
+            );
+            const bonsaiLabel = bonsaiNames.join('、');
+            const eventLabel = t(`eventType_${rep.eventType}` as TranslationKey);
+            const humanRruleKey = rruleToHumanLabel(rep.rrule);
             // Sess89 PR-B: custom RRULE (= FREQ=DAILY;INTERVAL=N) は N を抽出して「{n} 日ごと」 表示
-            const customDays = parseCustomRruleDays(item.rrule);
+            const customDays = parseCustomRruleDays(rep.rrule);
             const rruleLabel =
               customDays !== null
                 ? t('recurringPresetCustomEveryNDays').replace('{n}', String(customDays))
                 : t(humanRruleKey);
-            // Sess82 PR-B: 終了日表示削除 → 次回予定日表示 (= ADR-0056 D4-1、 4 ペルソナ最大公約数)
-            const nextOccurrence = nextOccurrenceMap.get(item.id) ?? null;
+            // Sess82 PR-B: 終了日表示削除 → 次回予定日表示。 グループでは member 最小 (= 最も近い未来)。
+            const nexts = item.rules
+              .map((r) => nextOccurrenceMap.get(r.id) ?? null)
+              .filter((v): v is string => v !== null)
+              .sort();
+            const nextOccurrence = nexts[0] ?? null;
             const nextLabel = nextOccurrence
               ? t('recurringListItemNextOccurrence').replace('{date}', nextOccurrence.slice(0, 10))
               : t('recurringListItemNextOccurrenceNone');
             return (
               <View
                 style={[styles.card, { backgroundColor: c.surface, borderColor: c.borderStrong }]}
-                testID={`e2e_recurrence_rule_${item.id}`}
+                testID={`e2e_recurrence_rule_${rep.id}`}
               >
                 <View
                   style={[styles.iconBox, { backgroundColor: c.background, borderColor: c.border }]}
                 >
-                  <EventIcon type={item.eventType as EventType} size={22} />
+                  <EventIcon type={rep.eventType as EventType} size={22} />
                 </View>
                 <View style={styles.cardBody}>
                   <View style={styles.titleRow}>
                     <ThemedText style={[styles.bonsaiName, { color: c.text }]} numberOfLines={1}>
                       {bonsaiLabel}
                     </ThemedText>
+                    {item.rules.length > 1 && (
+                      <View style={[styles.countBadge, { backgroundColor: c.badgeBg }]}>
+                        <ThemedText style={[styles.countBadgeText, { color: c.tint }]}>
+                          ×{item.rules.length}
+                        </ThemedText>
+                      </View>
+                    )}
                   </View>
                   <ThemedText style={[styles.eventLabel, { color: c.textSecondary }]}>
                     {eventLabel} · {rruleLabel}
@@ -204,7 +225,7 @@ export default function RecurrenceListScreen() {
                   style={styles.kebabButton}
                   hitSlop={8}
                   onPress={() => handleKebabPress(item)}
-                  testID={`e2e_recurrence_rule_kebab_${item.id}`}
+                  testID={`e2e_recurrence_rule_kebab_${rep.id}`}
                 >
                   <MoreVerticalIcon size={20} color={c.textSecondary} />
                 </Pressable>
@@ -290,7 +311,18 @@ const styles = StyleSheet.create({
   },
   cardBody: { flex: 1, minWidth: 0, gap: 2 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  bonsaiName: { fontSize: 15, fontWeight: '600' },
+  bonsaiName: { fontSize: 15, fontWeight: '600', flexShrink: 1 },
+  // Sess99 #1122 案 G2: グループ member 数 badge (BADGE_SOFT token、 履歴タブ ×N と同型)
+  countBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  countBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.4,
+  },
   eventLabel: { fontSize: 13 },
   // Sess82 PR-B: endLabel → nextLabel (= 「次回 yyyy-mm-dd」 表示、 ADR-0056 D4-1)
   nextLabel: { fontSize: 12 },
