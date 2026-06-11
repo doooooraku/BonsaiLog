@@ -1,5 +1,5 @@
 /**
- * レビュー依頼 orchestrator (ADR-0006 Sess98 Amendment)。
+ * レビュー依頼 orchestrator (ADR-0006 Sess98 Amendment + 追補 2)。
  *
  * D1: 作業記録の保存成功直後 (WorkLogConfirmScreen 新規/変換 + BulkLogConfirmScreen log mode)
  * から fire-and-forget で呼ぶ。 保存・遷移をブロックせず、 失敗は warn のみ (副次機能)。
@@ -8,6 +8,7 @@
  * 検証注意: ダイアログは Play Store からインストールされたビルドのみ表示される
  * (Dev Build / ローカル APK は無反応、 Maestro E2E 不可)。 判定境界は reviewPolicy の Jest で担保。
  */
+import { Platform } from 'react-native';
 import * as StoreReview from 'expo-store-review';
 
 import { nowUtc } from '@/src/core/datetime';
@@ -21,21 +22,20 @@ export async function maybeRequestReview(): Promise<void> {
     // hydration 前は永続済みの試行履歴が見えない (初期値で誤発火しうる) ため評価しない
     if (!useReviewStore.persist.hasHydrated()) return;
     const totalLoggedCount = await countLoggedEvents();
-    const { firstLaunchAtUtc, requestCount, lastRequestAtUtc, lastMilestone } =
-      useReviewStore.getState();
-    const { request, milestone } = shouldRequestReview({
+    const { firstLaunchAtUtc, lastRequestAtUtc, countAtLastRequest } = useReviewStore.getState();
+    const should = shouldRequestReview({
       totalLoggedCount,
-      requestCount,
+      countAtLastRequest,
       lastRequestAtUtc,
       firstLaunchAtUtc,
-      lastMilestone,
       nowUtc: nowUtc() as string,
+      platform: Platform.OS,
     });
-    if (!request || milestone == null) return;
-    // Play Store 不在端末等では呼ばない。 マイルストーンは消費しない (次回保存で再評価)
+    if (!should) return;
+    // Play Store 不在端末等では呼ばない。 試行扱いにしない (次回保存で再評価)
     if (!(await StoreReview.isAvailableAsync())) return;
     // requestReview の前に記録 (D5: 呼び出した = 試行。 throw しても二重発火させない)
-    useReviewStore.getState().markRequested(milestone);
+    useReviewStore.getState().markRequested(totalLoggedCount);
     await StoreReview.requestReview();
   } catch (err) {
     console.warn('[review] maybeRequestReview failed', err);
