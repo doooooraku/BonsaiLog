@@ -6,6 +6,7 @@
  */
 import {
   buildWeeklyByDayRrule,
+  computeFirstOccurrenceDateKey,
   expandRRule,
   isValidRRule,
   parseWeeklyByDay,
@@ -471,5 +472,86 @@ describe('Sess93 PR-2: BYDAY helpers (buildWeeklyByDayRrule / parseWeeklyByDay)'
       expect(isValidRRule(buildWeeklyByDayRrule([1, 3, 5]), '2026-06-15T00:00:00.000Z')).toBe(true);
       expect(isValidRRule(buildWeeklyByDayRrule([]), '2026-06-15T00:00:00.000Z')).toBe(true);
     });
+  });
+});
+
+describe('computeFirstOccurrenceDateKey (Sess101 #1157、 「次回」 表示の SoT)', () => {
+  test('BYDAY 不一致: 開始 2026-06-11 (木) + 毎週月曜 → 初回 = 2026-06-15 (月)、 開始日は含まれない', () => {
+    expect(
+      computeFirstOccurrenceDateKey(
+        'FREQ=WEEKLY;BYDAY=MO',
+        '2026-06-11T00:00:00.000Z',
+        null,
+        [],
+        JST_OFFSET,
+      ),
+    ).toBe('2026-06-15');
+  });
+
+  test('BYDAY 一致: 開始 2026-06-15 (月) + 毎週月曜 → 初回 = 開始日', () => {
+    expect(
+      computeFirstOccurrenceDateKey(
+        'FREQ=WEEKLY;BYDAY=MO',
+        '2026-06-15T00:00:00.000Z',
+        null,
+        [],
+        JST_OFFSET,
+      ),
+    ).toBe('2026-06-15');
+  });
+
+  // 回帰: BYDAY なし preset は全て dtstart アンカー型 = 初回 = 開始日 (旧「次回 = 開始日」 が成立していた範囲)
+  test.each(Object.entries(RECURRENCE_PRESETS))(
+    'BYDAY なし preset %s → 初回 = 開始日',
+    (_key, rrule) => {
+      expect(
+        computeFirstOccurrenceDateKey(rrule, '2026-06-11T00:00:00.000Z', null, [], JST_OFFSET),
+      ).toBe('2026-06-11');
+    },
+  );
+
+  test('exdates が初回合致日に当たる場合は次の合致日を返す', () => {
+    expect(
+      computeFirstOccurrenceDateKey(
+        'FREQ=DAILY',
+        '2026-06-15T00:00:00.000Z',
+        null,
+        ['2026-06-15'],
+        JST_OFFSET,
+      ),
+    ).toBe('2026-06-16');
+  });
+
+  test('終了日 < 初回合致日 → null (= 窓内に 1 件も作られない rule)', () => {
+    // 開始 6/11 (木) + 毎週月曜 + 終了 6/13 (土) → 初回 6/15 は終了日の後
+    expect(
+      computeFirstOccurrenceDateKey(
+        'FREQ=WEEKLY;BYDAY=MO',
+        '2026-06-11T00:00:00.000Z',
+        '2026-06-13T23:59:59.000Z',
+        [],
+        JST_OFFSET,
+      ),
+    ).toBe(null);
+  });
+
+  test('終了日あり + 窓内に合致あり → 初回を返す', () => {
+    expect(
+      computeFirstOccurrenceDateKey(
+        'FREQ=WEEKLY;BYDAY=MO',
+        '2026-06-11T00:00:00.000Z',
+        '2026-06-30T23:59:59.000Z',
+        [],
+        JST_OFFSET,
+      ),
+    ).toBe('2026-06-15');
+  });
+
+  test('events 事前展開 (expandRRule) の先頭と恒等 (= 一覧画面の「次回」 と同値保証)', () => {
+    const rrule = 'FREQ=WEEKLY;BYDAY=MO';
+    const start = '2026-06-11T00:00:00.000Z';
+    const end = '2026-08-06T23:59:59.000Z';
+    const expanded = expandRRule(rrule, start, end, [], JST_OFFSET);
+    expect(computeFirstOccurrenceDateKey(rrule, start, end, [], JST_OFFSET)).toBe(expanded[0]);
   });
 });

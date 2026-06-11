@@ -52,6 +52,7 @@ import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import {
   buildCustomRrule,
   buildWeeklyByDayRrule,
+  computeFirstOccurrenceDateKey,
   parseCustomRruleDays,
   parseWeeklyByDay,
   RECURRENCE_PRESETS,
@@ -369,6 +370,28 @@ export default function RecurrenceFormScreen() {
     setShowEditConfirm(false);
   }, []);
 
+  // Sess101 #1157: 「次回」 行 = SoT 関数 computeFirstOccurrenceDateKey の実計算値。
+  // 旧 Sess94 PR-B の「次回 = 開始日」 直表示は Sess93 PR-2 BYDAY 対応以降、 開始日が
+  // rule に合致しない場合 (例: 開始 木曜 + 毎週月曜 → 実初回 = 次の月曜) に偽表示に
+  // なるため撤廃。 保存時の events 展開と同一経路なので一覧画面の「次回」 と恒等。
+  // exdates は新規 = なし / 編集 = 全削除 + 再生成 (replaceRecurrenceRuleGroup) で
+  // リセットされるため、 プレビューは常に [] が保存後の実態と一致する。
+  const firstOccurrenceDateKey = useMemo(() => {
+    if (!recurrence.startDate || !eventType) return null;
+    const startAtUtc = `${recurrence.startDate}T00:00:00.000Z`;
+    const endAtUtc =
+      recurrence.endType === 'specific' && recurrence.endDate
+        ? `${recurrence.endDate}T00:00:00.000Z`
+        : null;
+    return computeFirstOccurrenceDateKey(
+      buildRruleFromValue(recurrence),
+      startAtUtc,
+      endAtUtc,
+      [],
+      getTzOffsetMin(),
+    );
+  }, [recurrence, eventType]);
+
   if (loading) {
     return (
       <ThemedView style={[styles.container, { backgroundColor: c.background }]}>
@@ -393,14 +416,12 @@ export default function RecurrenceFormScreen() {
   const previewSummary = buildPreviewSummary(recurrence, eventType, bonsais.length, t);
   const startDateInvalid = isStartDateInPast(recurrence);
   const saveDisabled = saving || bonsais.length === 0 || !eventType || startDateInvalid;
-  // Sess94 PR-B: 「次回」 行用文字列 (= 開始日 + 通知時刻、 例 ja「6月10日（火）7:00」 / en「Jun 10 (Tue) 7:00」)。
-  // 設計判断: 「次回 = 開始日」 = 新規モード = 最初の予定日、 編集モード = 削除 + 再生成 後の最初の予定日、
-  // どちらも startDate base で正確。 expandRRule 呼出 不要 = O(1) 級。
+  // 「次回」 行用文字列 (= 初回合致日 + 通知時刻、 例 ja「6月15日（月）7:00」 / en「Jun 15 (Mon) 7:00」)。
+  // 日付は firstOccurrenceDateKey (= SoT 実計算、 上の useMemo) を表示 — 開始日直表示は禁止 (#1157)。
   // モック整合: 短日付 (年なし) + ja 全角括弧 で RulePreviewCard 次回行を ClaudeDesign 完全一致。
-  const nextOccurrenceLabel =
-    recurrence.startDate && eventType
-      ? `${formatLocalizedShortDateWithWeekday(recurrence.startDate, lang)} ${notifTime}`
-      : null;
+  const nextOccurrenceLabel = firstOccurrenceDateKey
+    ? `${formatLocalizedShortDateWithWeekday(firstOccurrenceDateKey, lang)} ${notifTime}`
+    : null;
 
   return (
     <ThemedView
