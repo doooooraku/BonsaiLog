@@ -457,7 +457,13 @@ const ko: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: '오늘의 작업',
   planSelectedListLabel: '{date}의 작업',
-  planSelectedEmpty: '이날 작업 없음',
+  planSelectedEmptyTitle: '이 날에는 예정된 작업이 없습니다',
+  planSelectedEmptyBody:
+    '날짜를 선택하고 아래 "{cta}" 버튼으로 작업을 추가할 수 있습니다. 작업이 있는 날은 달력에 ○ 표시가 나타납니다.',
+  planSelectedEmptyRecurringLink: '반복되는 작업은 반복 일정으로 만들 수 있습니다',
+  recordSelectedEmptyTitle: '이 날에는 기록이 없습니다',
+  recordSelectedEmptyBody:
+    '관리를 마친 후 아래 "{cta}" 버튼으로 기록을 남길 수 있습니다. 기록이 있는 날은 달력에 ● 표시가 나타납니다.',
   planEventPlanned: 'Planned',
   planGroupExpand: '펼치기',
   planGroupCollapse: '접기',

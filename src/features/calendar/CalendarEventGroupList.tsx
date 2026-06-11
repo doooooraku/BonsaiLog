@@ -22,9 +22,13 @@ import { type Bonsai, type Event, type EventType } from '@/src/db/schema';
 import { EventRow } from '@/src/features/event/EventRow';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 
+import type { CalendarTabMode } from './calendarTabTypes';
+
 type GroupedEvents = readonly (readonly [EventType, readonly Event[]])[];
 
 type CalendarEventGroupListProps = {
+  /** #1177: 空状態の文言を plan / record で分離するため mode を受ける (旧実装は両 mode 共用で記録タブに「予定はありません」が出ていた)。 */
+  mode: CalendarTabMode;
   testIdPrefix: string;
   bonsaiDetailTab: 'timeline' | 'history';
   selectedDateKey: string;
@@ -60,6 +64,7 @@ type CalendarEventGroupListProps = {
 };
 
 export function CalendarEventGroupList({
+  mode,
   testIdPrefix,
   bonsaiDetailTab,
   selectedDateKey,
@@ -94,9 +99,35 @@ export function CalendarEventGroupList({
               .replace('{count}', String(selectedDayEvents.length))}
       </ThemedText>
       {selectedDayEvents.length === 0 ? (
-        <ThemedText style={[styles.emptyText, { color: c.textSecondary }]}>
-          {t('planSelectedEmpty')}
-        </ThemedText>
+        // #1177: 空状態の道しるべ化 — mode 別文言 + {cta} に実ボタンラベル (planFabLabel /
+        // recordFabLabel) を注入し、BottomCtaBar の文言変更に自動追従させる (引用 drift 防止)。
+        // 静的 testID 一覧: testID="e2e_plan_selected_empty" / testID="e2e_record_selected_empty"
+        <View style={styles.emptyWrap} testID={`e2e_${testIdPrefix}_selected_empty`}>
+          <ThemedText style={[styles.emptyTitle, { color: c.text }]}>
+            {t(mode === 'plan' ? 'planSelectedEmptyTitle' : 'recordSelectedEmptyTitle')}
+          </ThemedText>
+          <ThemedText style={[styles.emptyText, { color: c.textSecondary }]}>
+            {t(mode === 'plan' ? 'planSelectedEmptyBody' : 'recordSelectedEmptyBody').replace(
+              '{cta}',
+              t(mode === 'plan' ? 'planFabLabel' : 'recordFabLabel'),
+            )}
+          </ThemedText>
+          {mode === 'plan' && (
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={t('planSelectedEmptyRecurringLink')}
+              hitSlop={8}
+              // /recurring-rules/new は bonsaiId+eventType param が caller 必須 (不正 param で
+              // router.back()) のため、param 不要の管理画面 (一覧 → 新規追加) に着地させる。
+              onPress={() => router.push('/recurring-rules' as Href)}
+              testID="e2e_plan_selected_empty_recurring_link"
+            >
+              <ThemedText style={[styles.emptyLink, { color: c.tint }]}>
+                {t('planSelectedEmptyRecurringLink')}
+              </ThemedText>
+            </Pressable>
+          )}
+        </View>
       ) : (
         <>
           {plannedGroupedEvents.length > 0 && (
@@ -391,7 +422,10 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 8,
   },
-  emptyText: { fontSize: 14, textAlign: 'center', paddingVertical: 24 },
+  emptyWrap: { alignItems: 'center', gap: 8, paddingVertical: 24 },
+  emptyTitle: { fontSize: 15, fontWeight: '500' },
+  emptyText: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  emptyLink: { fontSize: 14, fontWeight: '500', textAlign: 'center', paddingVertical: 8 },
   sectionHeader: {
     fontFamily: 'Inter_400Regular',
     fontSize: 12,

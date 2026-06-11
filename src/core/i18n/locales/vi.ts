@@ -458,7 +458,13 @@ const vi: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: 'Công việc hôm nay',
   planSelectedListLabel: 'Công việc ngày {date}',
-  planSelectedEmpty: 'Không có công việc hôm này',
+  planSelectedEmptyTitle: 'Không có công việc nào được lên lịch cho ngày này',
+  planSelectedEmptyBody:
+    'Chọn ngày rồi nhấn "{cta}" bên dưới để thêm công việc. Ngày có công việc sẽ hiển thị ○ trên lịch.',
+  planSelectedEmptyRecurringLink: 'Công việc lặp lại có thể tạo trong lịch định kỳ',
+  recordSelectedEmptyTitle: 'Không có ghi chép nào cho ngày này',
+  recordSelectedEmptyBody:
+    'Sau khi chăm sóc cây, nhấn "{cta}" bên dưới để lưu lại. Ngày có ghi chép sẽ hiển thị ● trên lịch.',
   planEventPlanned: 'Planned',
   planGroupExpand: 'Mở rộng',
   planGroupCollapse: 'Thu gọn',

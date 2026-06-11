@@ -460,7 +460,14 @@ const de: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: 'Heutige Arbeit',
   planSelectedListLabel: 'Arbeit am {date}',
-  planSelectedEmpty: 'Keine Arbeit an diesem Tag',
+  planSelectedEmptyTitle: 'Keine geplanten Aufgaben an diesem Tag',
+  planSelectedEmptyBody:
+    'Wähle ein Datum und tippe unten auf „{cta}“, um eine Aufgabe hinzuzufügen. Tage mit Aufgaben zeigen ein ○ im Kalender.',
+  planSelectedEmptyRecurringLink:
+    'Wiederkehrende Aufgaben lassen sich als wiederkehrender Zeitplan anlegen',
+  recordSelectedEmptyTitle: 'Keine Einträge an diesem Tag',
+  recordSelectedEmptyBody:
+    'Nach der Pflege tippe unten auf „{cta}“, um sie festzuhalten. Tage mit Einträgen zeigen ein ● im Kalender.',
   planEventPlanned: 'Planned',
   planGroupExpand: 'Erweitern',
   planGroupCollapse: 'Einklappen',

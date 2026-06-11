@@ -459,7 +459,13 @@ const id: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: 'Pekerjaan hari ini',
   planSelectedListLabel: 'Pekerjaan {date}',
-  planSelectedEmpty: 'Tidak ada pekerjaan hari ini',
+  planSelectedEmptyTitle: 'Tidak ada tugas terjadwal pada hari ini',
+  planSelectedEmptyBody:
+    'Pilih tanggal lalu ketuk "{cta}" di bawah untuk menambahkan tugas. Hari dengan tugas ditandai ○ di kalender.',
+  planSelectedEmptyRecurringLink: 'Untuk tugas berulang, buat jadwal berulang',
+  recordSelectedEmptyTitle: 'Tidak ada catatan pada hari ini',
+  recordSelectedEmptyBody:
+    'Setelah merawat pohon, ketuk "{cta}" di bawah untuk mencatatnya. Hari dengan catatan ditandai ● di kalender.',
   planEventPlanned: 'Planned',
   planGroupExpand: 'Buka',
   planGroupCollapse: 'Tutup',

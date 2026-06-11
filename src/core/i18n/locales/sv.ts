@@ -460,7 +460,13 @@ const sv: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: 'Dagens arbete',
   planSelectedListLabel: 'Arbete den {date}',
-  planSelectedEmpty: 'Inget arbete denna dag',
+  planSelectedEmptyTitle: 'Inga planerade uppgifter den här dagen',
+  planSelectedEmptyBody:
+    'Välj ett datum och tryck på "{cta}" nedan för att lägga till en uppgift. Dagar med uppgifter visar ○ i kalendern.',
+  planSelectedEmptyRecurringLink: 'Återkommande uppgifter skapas som ett återkommande schema',
+  recordSelectedEmptyTitle: 'Inga anteckningar den här dagen',
+  recordSelectedEmptyBody:
+    'Efter skötseln, tryck på "{cta}" nedan för att spara den. Dagar med anteckningar visar ● i kalendern.',
   planEventPlanned: 'Planned',
   planGroupExpand: 'Expandera',
   planGroupCollapse: 'Fäll ihop',

@@ -459,7 +459,13 @@ const hi: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: 'आज का कार्य',
   planSelectedListLabel: '{date} का कार्य',
-  planSelectedEmpty: 'इस दिन कोई कार्य नहीं',
+  planSelectedEmptyTitle: 'इस दिन के लिए कोई कार्य निर्धारित नहीं है',
+  planSelectedEmptyBody:
+    'तारीख़ चुनें और कार्य जोड़ने के लिए नीचे "{cta}" पर टैप करें। कार्य वाले दिनों पर कैलेंडर में ○ दिखता है।',
+  planSelectedEmptyRecurringLink: 'दोहराए जाने वाले कार्यों के लिए आवर्ती शेड्यूल बनाएं',
+  recordSelectedEmptyTitle: 'इस दिन की कोई प्रविष्टि नहीं है',
+  recordSelectedEmptyBody:
+    'देखभाल के बाद, रिकॉर्ड रखने के लिए नीचे "{cta}" पर टैप करें। रिकॉर्ड वाले दिनों पर कैलेंडर में ● दिखता है।',
   planEventPlanned: 'Planned',
   planGroupExpand: 'विस्तृत करें',
   planGroupCollapse: 'संक्षिप्त करें',

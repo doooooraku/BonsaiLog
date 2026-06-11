@@ -447,7 +447,12 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: '今天的作業',
   planSelectedListLabel: '{date} 的作業',
-  planSelectedEmpty: '當天沒有作業',
+  planSelectedEmptyTitle: '這一天沒有安排任務',
+  planSelectedEmptyBody: '選擇日期，點按下方「{cta}」即可新增任務。有任務的日期會在日曆上顯示 ○。',
+  planSelectedEmptyRecurringLink: '需要重複的任務，可以建立定期安排',
+  recordSelectedEmptyTitle: '這一天沒有記錄',
+  recordSelectedEmptyBody:
+    '完成養護後，點按下方「{cta}」即可留下記錄。有記錄的日期會在日曆上顯示 ●。',
   planEventPlanned: 'Planned',
   planGroupExpand: '展開',
   planGroupCollapse: '收合',
