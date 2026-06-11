@@ -200,9 +200,17 @@ export default function RecurrenceListScreen() {
                   <EventIcon type={rep.eventType as EventType} size={22} />
                 </View>
                 <View style={styles.cardBody}>
-                  <View style={styles.titleRow}>
-                    <ThemedText style={[styles.bonsaiName, { color: c.text }]} numberOfLines={1}>
-                      {bonsaiLabel}
+                  <ThemedText style={[styles.bonsaiName, { color: c.text }]} numberOfLines={1}>
+                    {bonsaiLabel}
+                  </ThemedText>
+                  <ThemedText style={[styles.eventLabel, { color: c.textSecondary }]}>
+                    {eventLabel} · {rruleLabel}
+                  </ThemedText>
+                  {/* Sess99 user 指摘: ×N badge は盆栽名の右 (上段) だと名前と被るため
+                      カード右下 (次回行の右端) に配置。 */}
+                  <View style={styles.bottomRow}>
+                    <ThemedText style={[styles.nextLabel, { color: c.textMuted }]}>
+                      {nextLabel}
                     </ThemedText>
                     {item.rules.length > 1 && (
                       <View style={[styles.countBadge, { backgroundColor: c.badgeBg }]}>
@@ -212,12 +220,6 @@ export default function RecurrenceListScreen() {
                       </View>
                     )}
                   </View>
-                  <ThemedText style={[styles.eventLabel, { color: c.textSecondary }]}>
-                    {eventLabel} · {rruleLabel}
-                  </ThemedText>
-                  <ThemedText style={[styles.nextLabel, { color: c.textMuted }]}>
-                    {nextLabel}
-                  </ThemedText>
                 </View>
                 <Pressable
                   accessibilityRole="button"
@@ -310,8 +312,14 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   cardBody: { flex: 1, minWidth: 0, gap: 2 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  bonsaiName: { fontSize: 15, fontWeight: '600', flexShrink: 1 },
+  bonsaiName: { fontSize: 15, fontWeight: '600' },
+  // Sess99 user 指摘: ×N badge は右下 (次回行の右端) — 盆栽名との被り回避
+  bottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
   // Sess99 #1122 案 G2: グループ member 数 badge (BADGE_SOFT token、 履歴タブ ×N と同型)
   countBadge: {
     paddingHorizontal: 6,
