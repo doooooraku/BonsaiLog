@@ -1,5 +1,4 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -23,7 +22,6 @@ import {
   type PendingPhotoDeletion,
 } from '@/src/features/bonsai/detail/usePhotoCrudWithUndo';
 import { useEventActions } from '@/src/features/bonsai/detail/useEventActions';
-import { useScheduleEvent } from '@/src/features/bonsai/detail/useScheduleEvent';
 import { useScrollToEvent } from '@/src/features/bonsai/detail/useScrollToEvent';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { useColors } from '@/src/core/theme/useColors';
@@ -88,32 +86,13 @@ export default function BonsaiDetailScreen() {
   // usePickerStore で代替)。
   // Sess16 PR-C: FORM_TYPES を全 14 種別に拡張、 全種別 form 経由化 (即書込 path 廃止)。
   //
-  // R5 (Phase 4 A1-10): 予定追加フロー (作業種別 picker → DateTimePicker → createEvent planned)。
-  // reload は下の useBonsaiDetailData から reloadRef 経由で注入 (consume useFocusEffect を
-  // reload effect より先に登録する順序保持のため、本フックを先に呼ぶ)。
-  const reloadRef = React.useRef<(() => Promise<void>) | null>(null);
-  const { showSchedulePicker, handleSchedulePickerSelect, handleScheduleDateSelect } =
-    useScheduleEvent({ id, t, reloadRef });
-
-  // Sess19 PR-6 (ADR-0031 D3): log mode consume + persistEventWithPayload を完全削除。
-  // WorkLogConfirm が直接 await + router.replace('/(tabs)/plan?selectedDateKey=...')
-  // でカレンダー画面に遷移するため、 bonsai-detail で consume する必要なし。
-  // schedule mode (Case A、 ADR-0030 §17 P2) は維持: WorkPicker からの DatePicker dialog 起動。
-  useFocusEffect(
-    React.useCallback(() => {
-      const workResult = usePickerStore.getState().consumeWorkPickerResult();
-      if (workResult && workResult.mode === 'schedule') {
-        handleSchedulePickerSelect(workResult.type);
-      }
-    }, [handleSchedulePickerSelect]),
-  );
+  // Sess99 #1127 (案 A / ADR-0030 §17 Notes Amended): 予定追加の Case A (store-callback +
+  // DatePicker dialog 即保存) を撤去し、予定タブと同じ BulkLogConfirmScreen 確認画面経由に統一。
+  // 旧 useScheduleEvent hook / consumeWorkPickerResult / DateTimePicker JSX は削除済み。
 
   // R2 (Phase 4 A1-4): bonsai + 写真 + イベント取得 + focus 毎 reload。
-  // R5 consume (上) の後・basicForm (下) の前に呼ぶことで useFocusEffect 登録順を保持。
   const { item, loading, photos, setPhotos, captions, setCaptions, events, reload } =
     useBonsaiDetailData({ id, lang, pendingDeletionRef });
-  // R5 (A1-10): handleScheduleDateSelect が参照する reload を ref に橋渡し (上の早期呼出のため)。
-  reloadRef.current = reload;
 
   // Claude Design `detail-screens.jsx` DetailHero 整合 (Phase B-2): cover photo を抽出
   // (early return より前で呼ぶ — react-hooks/rules-of-hooks)
@@ -342,15 +321,17 @@ export default function BonsaiDetailScreen() {
       )}
 
       {/* Sess72 ADR-0054 D1: FAB -> BottomCtaBar replacement on timeline tab.
-          Tap opens /work-picker?mode=schedule (formSheet). */}
+          Sess99 #1127 (案 A): 予定タブと同じ確認画面動線に統一 —
+          bulkContext にこの盆栽 1 本をセット → BulkWorkPicker (schedule mode) →
+          BulkLogConfirmScreen (日付 + 定期 picker)。保存後は returnTo=dismiss で本画面に戻る。 */}
       {activeTab === 'timeline' && (
         <BottomCtaBar
           onPress={() => {
             if (!item) return;
-            // Sess16 PR-Q: isPine URL param 撤廃 (松類限定 candle_cut 表示廃止、 全種別常時表示)
-            router.push(
-              `/work-picker?bonsaiName=${encodeURIComponent(item.name)}&mode=schedule` as Href,
-            );
+            usePickerStore
+              .getState()
+              .setBulkContext({ selectedBonsais: [{ id: item.id, name: item.name }] });
+            router.push('/bulk-work-picker?mode=schedule&returnTo=dismiss' as Href);
           }}
           label={t('addScheduleCta')}
           testID="e2e_timeline_bottom_cta"
@@ -362,22 +343,8 @@ export default function BonsaiDetailScreen() {
           Sess18 PR-1 (ADR-0030 D2): log mode は WorkPickerScreen で直接 router.push、
           schedule mode のみ handleSchedulePickerSelect で Case A (DatePicker dialog) を呼び出す。 */}
 
-      {/* Issue #298 Phase 2: 予定追加 日付 picker (action 選択後に表示) */}
-      {showSchedulePicker && (
-        <DateTimePicker
-          testID="e2e_schedule_date_picker"
-          value={new Date(Date.now() + 86_400_000)} // デフォルト 明日
-          mode="date"
-          minimumDate={new Date()}
-          onChange={(event, date) => {
-            if (event.type === 'set' && date) {
-              void handleScheduleDateSelect(date);
-            } else {
-              void handleScheduleDateSelect(null);
-            }
-          }}
-        />
-      )}
+      {/* Sess99 #1127: 旧 予定追加 日付 picker (DateTimePicker dialog) は撤去 —
+          確認画面 (BulkLogConfirmScreen schedule mode) で日付編集する動線に統一。 */}
 
       {/* Phase G2-G5 (ADR-0024 Accepted): 作業記録 / 樹種 / 樹形 picker は全 formSheet 化、
           BonsaiBasicFormPickerSheets (旧 @gorhom 空関数) は Phase G5 で削除済。 */}

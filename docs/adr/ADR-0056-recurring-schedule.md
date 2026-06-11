@@ -657,3 +657,5 @@ user 「関数化して同じ問題を 1 つに集約したら管理が楽とか
 **scope 外 (= 先送り、 Issue 起票済)**:
 
 - 盆栽詳細「+ 予定を登録」の単体動線 (= /work-picker?mode=schedule → DatePicker dialog 即保存、 Case A store-callback) の確認画面統一は本 Amendment の scope 外 — 同動線は日付選択 step を既に持ち、統一には ADR-0030 §17 Case A 廃止判断を伴うため別 Issue で判断 (Issue #1127 参照、 §3.6 ゲートに従い起票)。
+
+**Sess99 追補 (同日)**: 上記 scope 外とした単体動線の統一は、user 判断 (案 A) により同 Sess99 内で実装済み (= Issue #1127 Closes、ADR-0030 Notes Amended 2026-06-11 参照)。これで予定作成の全入口が BulkLogConfirmScreen 確認画面に統一された。

@@ -11,15 +11,14 @@
  */
 import { create } from 'zustand';
 
-import type { BonsaiStyle, EventType } from '@/src/db/schema';
+import type { BonsaiStyle } from '@/src/db/schema';
 
 type SpeciesResult = string | null | 'CONSUMED';
 type StyleResult = BonsaiStyle | null | 'CONSUMED';
 
-/** 作業選択モード: 'log' = 即時記録、'schedule' = 予定追加 (Issue #298 Phase 2)。 */
-export type WorkPickerMode = 'log' | 'schedule';
-type WorkPickerValue = { type: EventType; mode: WorkPickerMode };
-type WorkPickerResult = WorkPickerValue | 'CONSUMED';
+// Sess99 #1127: WorkPickerMode / WorkPickerValue / workPickerResult 系 API を削除。
+// 予定追加の store-callback (ADR-0030 Case A) は BulkLogConfirmScreen 確認画面動線に
+// 統一され、最後の利用者 (bonsai-detail) が消滅したため dead code 化。
 
 // Sess19 PR-6 (ADR-0031 D3): WorkLogPayload / PendingPhoto / WorkLogConfirmResult 削除。
 // WorkLogConfirm が直接 await + router.replace でカレンダー画面に遷移するため、
@@ -46,11 +45,6 @@ type PickerStore = {
   stylePickerResult: StyleResult;
   setStylePickerResult: (s: BonsaiStyle | null) => void;
   consumeStylePickerResult: () => BonsaiStyle | null | undefined;
-
-  // 作業選択 (work、Phase G2 part 1)
-  workPickerResult: WorkPickerResult;
-  setWorkPickerResult: (result: WorkPickerValue) => void;
-  consumeWorkPickerResult: () => WorkPickerValue | undefined;
 
   // Sess19 PR-6 (ADR-0031 D3): workLogConfirmResult / setWorkLogConfirmResult /
   // consumeWorkLogConfirmResult を削除。 WorkLogConfirm が直接 await + router.replace
@@ -94,15 +88,6 @@ export const usePickerStore = create<PickerStore>((set, get) => ({
     const result = get().stylePickerResult;
     if (result === 'CONSUMED') return undefined;
     set({ stylePickerResult: 'CONSUMED' });
-    return result;
-  },
-
-  workPickerResult: 'CONSUMED',
-  setWorkPickerResult: (result) => set({ workPickerResult: result }),
-  consumeWorkPickerResult: () => {
-    const result = get().workPickerResult;
-    if (result === 'CONSUMED') return undefined;
-    set({ workPickerResult: 'CONSUMED' });
     return result;
   },
 

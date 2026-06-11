@@ -8,13 +8,15 @@
  * Sess16 PR-Q (2026-05-20): candle_cut の松類限定表示を撤廃、 user 真意「どんな盆栽でも全種別表示」
  * シンプル化反映。 EVENT_TYPES を直接使用 (filter なし)。
  *
- * Sess18 PR-1 (2026-05-21、 ADR-0030 D2): mode による navigation 分岐。
- * - log mode: 直接 router.push('/work-log-confirm') (Case C → 解消、 戻る挙動 1 step)
- * - schedule mode: setWorkPickerResult + router.back() (Case A、 caller で DatePicker dialog)
+ * Sess18 PR-1 (2026-05-21、 ADR-0030 D2): log mode は直接 router.push('/work-log-confirm')
+ * (Case C → 解消、 戻る挙動 1 step)。
+ * Sess99 #1127 (案 A): schedule mode の store-callback (Case A、 setWorkPickerResult +
+ * caller DatePicker dialog) は撤去 — 予定追加は BulkWorkPicker → BulkLogConfirmScreen
+ * (確認画面) 動線に統一。本画面の残責務 = log mode + planned event 種別編集 (editingPlannedId)。
  *
  * Query params:
  * - bonsaiName: 表示用 (サブタイトル)
- * - mode: `'log'` (作業記録) or `'schedule'` (予定追加)、デフォルト `'log'`
+ * - mode: nav title 切替用 (`(modals)/work-picker.tsx` が参照)、デフォルト `'log'`
  */
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import React from 'react';
@@ -29,7 +31,6 @@ import { updateEvent } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
-import { usePickerStore, type WorkPickerMode } from '@/src/stores/pickerStore';
 
 export default function WorkPickerScreen() {
   const { t } = useTranslation();
@@ -37,7 +38,6 @@ export default function WorkPickerScreen() {
   const params = useLocalSearchParams<{
     bonsaiName?: string;
     bonsaiId?: string;
-    mode?: WorkPickerMode;
     /**
      * Sess77 Follow-up (ADR-0055 Notes Amended): planned event 編集モード trigger。
      * 指定時、 種別 tap で `updateEvent(id, {type: newType, payload: {}})` を 呼び、
@@ -49,7 +49,6 @@ export default function WorkPickerScreen() {
   }>();
   const bonsaiName = params.bonsaiName ?? '';
   const bonsaiId = params.bonsaiId ?? '';
-  const mode: WorkPickerMode = params.mode === 'schedule' ? 'schedule' : 'log';
   const editingPlannedId = params.editingPlannedId ?? null;
   const currentType = params.currentType ?? null;
 
@@ -69,19 +68,14 @@ export default function WorkPickerScreen() {
       }
       return;
     }
-    if (mode === 'log') {
-      // Sess18 PR-1 (ADR-0030 D2): Case C 解消、 WorkLogConfirm に直接 push。
-      // user 体感「← で 1 画面ずつ戻る」 達成 (Stack: detail → picker → confirm)。
-      // Sess19 PR-4 (ADR-0031 D1): bonsaiId 渡す (WorkLogConfirm 直接 await + createEvent で必須)
-      router.push(
-        `/work-log-confirm?bonsaiName=${encodeURIComponent(bonsaiName)}&bonsaiId=${bonsaiId}&type=${type}` as Href,
-      );
-    } else {
-      // schedule mode: caller (bonsai-detail) で DatePicker dialog を呼ぶ Case A、
-      // store-callback pattern 維持 (ADR-0030 §17-2 P2 整合)。
-      usePickerStore.getState().setWorkPickerResult({ type, mode });
-      router.back();
-    }
+    // Sess18 PR-1 (ADR-0030 D2): Case C 解消、 WorkLogConfirm に直接 push。
+    // user 体感「← で 1 画面ずつ戻る」 達成 (Stack: detail → picker → confirm)。
+    // Sess19 PR-4 (ADR-0031 D1): bonsaiId 渡す (WorkLogConfirm 直接 await + createEvent で必須)
+    // Sess99 #1127: 旧 schedule store-callback 分岐 (Case A) は撤去済み —
+    // 予定追加で本画面に来る経路は editingPlannedId (種別編集) のみで、上の early return が担う。
+    router.push(
+      `/work-log-confirm?bonsaiName=${encodeURIComponent(bonsaiName)}&bonsaiId=${bonsaiId}&type=${type}` as Href,
+    );
   };
 
   return (
