@@ -9,6 +9,9 @@ import { useKeyboardAvoidingProps } from '@/src/core/hooks/useKeyboardAvoidingPr
 import { useScrollPreservation } from '@/src/core/hooks/useScrollPreservation';
 import { useBonsaiBasicForm } from '@/src/features/bonsai/BonsaiBasicForm';
 import { BonsaiHero } from '@/src/features/bonsai/BonsaiHero';
+import { canShowGuide } from '@/src/features/guides/guideTriggers';
+import { GuideSpotlight } from '@/src/features/guides/GuideSpotlight';
+import { useSpotlightTarget } from '@/src/features/guides/useSpotlightTarget';
 import { BonsaiBasicSection } from '@/src/features/bonsai/detail/BonsaiBasicSection';
 import { BonsaiDetailTabs } from '@/src/features/bonsai/detail/BonsaiDetailTabs';
 import { BonsaiHistoryTab } from '@/src/features/bonsai/detail/BonsaiHistoryTab';
@@ -33,6 +36,7 @@ import {
   findGroupKeyForEvent,
   groupContinuousEvents,
 } from '@/src/features/event/groupContinuousEvents';
+import { useGuidesStore } from '@/src/stores/guidesStore';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
 /**
@@ -208,6 +212,16 @@ export default function BonsaiDetailScreen() {
     t,
   });
 
+  // #1178 g6 (ADR-0058): 詳細画面の初回 open でタブ列を 1 回だけスポットライト
+  // (記録は「作業履歴」、予定は「作業予定」で見返せることの案内)。
+  // タブ名は detailTabHistory / detailTabPlanTimeline の実値を {history}/{plan} に注入
+  // (引用 drift 防止、#1177 {cta} パターン)。hooks は early return より前 (rules-of-hooks)。
+  const guideSeen = useGuidesStore((s) => s.seen);
+  const markGuideSeen = useGuidesStore((s) => s.markSeen);
+  const g6Active = canShowGuide('g6DetailTabs', guideSeen);
+  const { targetRef: g6TargetRef, rect: g6Rect, measure: measureG6Target } = useSpotlightTarget();
+  const dismissG6 = React.useCallback(() => markGuideSeen('g6DetailTabs'), [markGuideSeen]);
+
   if (loading) {
     return (
       <ThemedView style={styles.center}>
@@ -230,7 +244,10 @@ export default function BonsaiDetailScreen() {
           残機能 (基本情報編集 = タブ重複、 PDF 出力 = 未実装) は user 真意により全廃。 */}
       {/* ADR-0020 §Notes Amended (2026-05-09): DetailTabs 順序 = 作業履歴 / 予定 / 基本情報 (mockup v1.0 整合) */}
       {/* Issue #439: タブバーは sticky (画面上部固定)、Hero は ScrollView 内に移動して全画面スクロールできるようにする */}
-      <BonsaiDetailTabs activeTab={activeTab} onChange={setActiveTab} t={t} />
+      {/* #1178 g6: wrapper はガイド対象の計測用 (collapsable={false}、非表示時は onLayout なし) */}
+      <View ref={g6TargetRef} collapsable={false} onLayout={g6Active ? measureG6Target : undefined}>
+        <BonsaiDetailTabs activeTab={activeTab} onChange={setActiveTab} t={t} />
+      </View>
 
       {/* Sess28 PR-3 (ADR-0037 D1 / R-46): useKeyboardAvoidingProps() で Platform 別 props を集約。
           旧 Platform.OS 分岐 + offset=64 ハードコード (Sess15 PR-TT) を hook 経由で動的化。 */}
@@ -403,6 +420,21 @@ export default function BonsaiDetailScreen() {
         onDismiss={handleKebabDismiss}
         testID="e2e_bonsai_detail_kebab_menu"
       />
+
+      {/* #1178 g6 スポットライト (生涯 1 回、ADR-0058)。リング tap も dismiss (onTargetPress なし =
+          タブは 2 つあり片方の代行操作が決められないため、案内のみで閉じる)。 */}
+      {g6Active && (
+        <GuideSpotlight
+          visible
+          targetRect={g6Rect}
+          body={t('guideDetailTabsBody')
+            .replace('{history}', t('detailTabHistory'))
+            .replace('{plan}', t('detailTabPlanTimeline'))}
+          dismissLabel={t('ok')}
+          onDismiss={dismissG6}
+          testID="e2e_bonsai_detail_guide_tabs"
+        />
+      )}
     </ThemedView>
   );
 
