@@ -1,0 +1,86 @@
+# Dev Client APK を GitHub Actions でビルドする (Sess99 恒久策)
+#
+# 背景: ローカル build (Gradle + NDK) が WSL2 のメモリを食い尽くし、Windows 側の
+# ページング I/O 失敗で BSOD 3 回 (Sess65 / 2026-06-06 0x7A / 2026-06-11 0x1E)。
+# lessons/build.md「cloud build が第一選択 (ADR-0050)」を dev APK にも適用する。
+#
+# 使い方 (= /device-verify Step 1 から参照):
+#   gh workflow run build-android-dev.yml
+#   gh run watch $(gh run list --workflow=build-android-dev.yml -L1 --json databaseId -q '.[0].databaseId')
+#   gh run download -n bonsailog-dev-apk -D dist/
+#   adb install -r dist/bonsailog-dev.apk   # 署名違いの release が入っている場合は事前 uninstall
+#
+# 注: development profile は withoutCredentials (debug 署名) のため Play 提出系 step は不要。
+
+name: Build Android Dev Client APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-dev-apk:
+    name: Build Dev Client APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Setup Java
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # build-android-play.yml と同じ .env 構成 (dev client は AdMob デモ ID のままで良い —
+      # closed-testing 段階ゲートは release workflow 側の責務)。
+      - name: Create .env file
+        run: |
+          cat <<'DOTENV' > .env
+          APP_NAME=${{ vars.APP_NAME }}
+          APP_SLUG=${{ vars.APP_SLUG }}
+          IOS_BUNDLE_IDENTIFIER=${{ vars.IOS_BUNDLE_IDENTIFIER }}
+          ANDROID_PACKAGE=${{ vars.ANDROID_PACKAGE }}
+          EAS_PROJECT_ID=${{ vars.EAS_PROJECT_ID }}
+          EAS_OWNER=${{ vars.EAS_OWNER }}
+          ADMOB_ANDROID_APP_ID=${{ secrets.ADMOB_ANDROID_APP_ID }}
+          ADMOB_ANDROID_BANNER_ID=${{ secrets.ADMOB_ANDROID_BANNER_ID }}
+          REVENUECAT_ANDROID_API_KEY=${{ secrets.REVENUECAT_ANDROID_API_KEY }}
+          REVENUECAT_IOS_API_KEY=placeholder
+          DOTENV
+
+      - name: Build Dev Client APK
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          mkdir -p dist
+          eas build --platform android --profile development --local --non-interactive --output=dist/bonsailog-dev.apk
+
+      - name: Postbuild verify (必須キー埋め込み確認)
+        run: node scripts/postbuild-verify.mjs dist/bonsailog-dev.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: bonsailog-dev-apk
+          path: dist/bonsailog-dev.apk
+          retention-days: 14

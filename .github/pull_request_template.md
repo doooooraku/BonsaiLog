@@ -92,6 +92,15 @@ docs/how-to/workflow/pr-template-appendix.md — 該当する PR では該当節
 - 期待結果:
 - 実際結果:
 
+### 6-3. 実機確認（UI / 動線 / DB に触れる PR は REQUIRED — Sess99 恒久策）
+
+> `/device-verify` (= 前提チェック → reload/build 判定 → SS 撮影 → Read 目視) で実施。
+> **「verify 緑」だけの完了報告は禁止** — どちらかに必ずチェック:
+
+- [ ] 実機確認 **済**（SS リンク / 添付：）
+- [ ] **vc\_\_ smoke test に委譲**（理由 + 対象ビルド：）
+- [ ] 適用対象外（docs / script / CI のみで画面・動線・DB に触れない）
+
 ---
 
 ## 7. 条件付きチェック（該当時 REQUIRED — 付録を本文へコピーして記入）
