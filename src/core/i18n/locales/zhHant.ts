@@ -951,7 +951,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: '無限制',
   paywallFeatureWorkLogPhoto: '工作記錄照片',
   paywallFeatureWorkLogPhotoFreeValue: '最多3張',
-  paywallFeatureWorkLogPhotoProValue: '無限制',
+  paywallFeatureWorkLogPhotoProValue: '最多10張',
   paywallFeatureCustomSpecies: '自訂樹種與樹形',
   paywallFeatureCustomSpeciesFreeValue: '最多3項',
   paywallFeatureCustomSpeciesProValue: '無限制',

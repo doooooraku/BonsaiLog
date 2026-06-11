@@ -966,7 +966,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: 'Tanpa batas',
   paywallFeatureWorkLogPhoto: 'Foto catatan kerja',
   paywallFeatureWorkLogPhotoFreeValue: 'Hingga 3',
-  paywallFeatureWorkLogPhotoProValue: 'Tanpa batas',
+  paywallFeatureWorkLogPhotoProValue: 'Hingga 10',
   paywallFeatureCustomSpecies: 'Spesies & gaya khusus',
   paywallFeatureCustomSpeciesFreeValue: 'Hingga 3',
   paywallFeatureCustomSpeciesProValue: 'Tanpa batas',

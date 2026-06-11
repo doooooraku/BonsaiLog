@@ -968,7 +968,7 @@ const ru: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: 'Без ограничений',
   paywallFeatureWorkLogPhoto: 'Фото записей работ',
   paywallFeatureWorkLogPhotoFreeValue: 'До 3',
-  paywallFeatureWorkLogPhotoProValue: 'Без ограничений',
+  paywallFeatureWorkLogPhotoProValue: 'До 10',
   paywallFeatureCustomSpecies: 'Свои виды и стили',
   paywallFeatureCustomSpeciesFreeValue: 'До 3',
   paywallFeatureCustomSpeciesProValue: 'Без ограничений',

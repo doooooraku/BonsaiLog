@@ -977,7 +977,7 @@ const baseEn = {
   paywallFeatureTagProValue: 'Unlimited',
   paywallFeatureWorkLogPhoto: 'Work log photos',
   paywallFeatureWorkLogPhotoFreeValue: 'Up to 3',
-  paywallFeatureWorkLogPhotoProValue: 'Unlimited',
+  paywallFeatureWorkLogPhotoProValue: 'Up to 10',
   paywallFeatureCustomSpecies: 'Custom species & styles',
   paywallFeatureCustomSpeciesFreeValue: 'Up to 3',
   paywallFeatureCustomSpeciesProValue: 'Unlimited',

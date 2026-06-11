@@ -970,7 +970,7 @@ const de: Partial<Record<TranslationKey, string>> = {
   paywallFeatureTagProValue: 'Unbegrenzt',
   paywallFeatureWorkLogPhoto: 'Arbeitsfotos',
   paywallFeatureWorkLogPhotoFreeValue: 'Bis zu 3',
-  paywallFeatureWorkLogPhotoProValue: 'Unbegrenzt',
+  paywallFeatureWorkLogPhotoProValue: 'Bis zu 10',
   paywallFeatureCustomSpecies: 'Eigene Arten & Stile',
   paywallFeatureCustomSpeciesFreeValue: 'Bis zu 3',
   paywallFeatureCustomSpeciesProValue: 'Unbegrenzt',

@@ -14,7 +14,7 @@
  * ADR-0049 Sess59 PR3: 作業記録写真 ③ Free 上限 3 ガード追加 (User 真意 Sess59 R3:
  * 写真ピッカー段階で 4 枚目以降を選べないようにする + 残枠 0 で押下時 Paywall)。
  * - Free: 各記録 3 枚まで、 4 枚目押下時 Paywall (source=photo_worklog)
- * - Pro:  MAX_PHOTOS_PER_EVENT = 10 まで (UI 安全上限、 v1.x 拡張候補)
+ * - Pro:  MAX_PHOTOS_PER_EVENT = 10 まで (UI 表記も「10枚まで」 = Sess101 ADR-0049 Amendment、 拡張時は i18n 同時更新)
  * - 表示は全 Free (GDPR Art.20 整合、 functional_spec §13 line 564-567)
  */
 import * as ImagePicker from 'expo-image-picker';
