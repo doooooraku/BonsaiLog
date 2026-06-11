@@ -85,6 +85,50 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
 
 ---
 
+## 1.5. 検証 tiering（変更種別 × 必須検証層）
+
+> Issue #1145 (Sess100) 由来。4 層検証（verify / E2E / 実機 / PR レビュー）を変更リスクに応じて適用し、
+> 「i18n 文言 1 key の修正に実機 smoke」のような過剰検証と「logic 変更なのに verify のみ」のような過小検証を両方防ぐ。
+> 変更種別の判定は **git diff のファイルパス**で機械的に行う（R-61: 人間判定より機械判定）。
+
+### 1.5.1. tiering 表
+
+✅ = 必須 / △ = 条件付き / − = 不要（省略宣言も不要）
+
+| #   | 変更種別（git diff パスで判定）                                     | verify | E2E (Maestro)                         | 実機確認 (/device-verify)                       |
+| --- | ------------------------------------------------------------------- | ------ | ------------------------------------- | ----------------------------------------------- |
+| T1  | docs/・.claude/・README 等ドキュメントのみ                          | ✅     | −                                     | −（PR テンプレ §6-3「適用対象外」）             |
+| T2  | scripts/・.github/・maestro/・\_\_tests\_\_/ のみ（アプリコード外） | ✅     | △ Maestro flow 変更時は当該 flow 実行 | −（当該 script / flow の実行証跡を PR 記載）    |
+| T3  | i18n locale 値のみ（`src/core/i18n/locales/**`）                    | ✅     | −                                     | △ 推奨（省略時 §6-1 に理由）                    |
+| T4  | UI style のみ（StyleSheet / token / layout、挙動変更なし）          | ✅     | △ 対象画面に既存 flow                 | ✅ SS 必須（新画面は dark SS = R-60）           |
+| T5  | logic（`src/**` / `app/**` の挙動変更）                             | ✅     | △ 対象動線に既存 flow                 | ✅                                              |
+| T6  | DB schema / migration                                               | ✅     | ✅ smoke                              | ✅（migration path + バックアップ復元）         |
+| T7  | native（`plugins/**`・`app.config.ts`・gradle 等）                  | ✅     | ✅ smoke                              | ✅（build 経由、reload/build は hook 自動判定） |
+| T8  | release 系（version bump / store metadata）                         | ✅     | ✅ smoke                              | ✅（/release-check フル実施）                   |
+
+- `verify` = `pnpm verify` 全 chain（構成・順序は `package.json` が正、CI と同一 #1140）。**全行で必須**。
+- PR レビュー（W-10.5 `/review-pr`）も**全行で必須**（省略不可）。
+- 複数種別にまたがる PR は**最も重い行**を適用する。
+- △ / ✅ の層を省略した場合は、**省略した層と理由を PR 本文 §6 に記載必須**（実機 = §6-3 のチェック、E2E = §6-1 の省略宣言）。
+
+### 1.5.2. tiering が上書きしない既存ルール（該当時は省略不可）
+
+- R-60: 新画面 PR は dark mode SS 必須
+- R-80: テスター報告起点の修正は報告手順の実機なぞり SS 必須
+- R-36.5: navigation 変更は ← back + swipe gesture 両方の実機 SS 必須
+
+### 1.5.3. W-flow フル適用境界（どこから /plan 必須か）
+
+| 変更の性質                                                                              | 適用                                                                                              |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| 新機能 / 挙動変更 / DB schema / 外部サービス連携 / ADR が絡む / 仕様判断を 1 つでも含む | `/plan` フル（W-01〜W-05.5、Issue + AC 必須）                                                     |
+| typo / docs 整備 / コメント / 既存 AC の範囲内で **diff を 1 文で説明できる**明白な修正 | Issue 省略可。ただし **PR は必須**（main 直 push 禁止）、tiering 表 + PR テンプレは通常どおり適用 |
+
+> 根拠: Anthropic 公式 best practices「diff を 1 文で説明できるタスクなら plan を skip」。
+> 迷ったら `/plan` 側に倒す。
+
+---
+
 ## 工程カード一覧（作成→リリースまで）
 
 ### 工程 W-00：フィードバック収集（NEW）
@@ -196,19 +240,14 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
 - **担当**: **Claude Code (`/implement` Skill)**
 - **ポイント**: 仕様本文に「合格条件の長文」を置くのではなく、**テストが合否を持つ**。
 
-### 工程 W-08：ローカル検証（6 ゲート）
+### 工程 W-08：ローカル検証（verify chain）
 
 - **トリガーキー**: コミットを出す前
-- **作業内容**: `pnpm verify` を実行（内部で 6 ゲート）:
-  1. `pnpm lint` — ESLint
-  2. `pnpm type-check` — TypeScript strict
-  3. `pnpm format:check` — Prettier
-  4. `pnpm test` — Jest
-  5. `pnpm i18n:check` — i18n キー整合性
-  6. `pnpm config:check` — Expo config 検証
+- **作業内容**: `pnpm verify` を実行（**構成・順序は `package.json` の `verify` script が正**、CI と同一 chain #1140。個別ゲートをここに列挙しない = 固定値多重コピー drift 防止）
+  - E2E / 実機の要否は §1.5 検証 tiering 表で判定
 - **INPUT**: 実装差分
 - **OUTPUT**: 全ゲート緑
-- **完了条件**: 6 ゲート全てパス
+- **完了条件**: `pnpm verify` の exit code 0（R-22: 末尾 tail/pipe で exit code を潰さない）
 - **担当**: **Claude Code (`/implement` Skill)**
 
 ### 工程 W-08a: CI 失敗リカバリ
