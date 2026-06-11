@@ -6,7 +6,7 @@
  * 17 言語 locale ファイル (`src/core/i18n/locales/{lang}.ts`) の指定 key 値を一括置換。
  *
  * Usage:
- *   node scripts/i18n/apply-translation.mjs <input.json> [--dry-run] [--glossary <path>]
+ *   node scripts/i18n/apply-translation.mjs <input.json> [--dry-run]
  *
  * Input JSON schema:
  *   {
@@ -21,7 +21,9 @@
  *
  * Options:
  *   --dry-run         書き込まず、 何が変更されるか stdout に出力のみ
- *   --glossary <path> 翻訳禁止リスト (ADR-0033 D3) との不整合を warn
+ *
+ * 翻訳禁止リスト (ADR-0033 D3) との不整合チェックは常時実行 (SoT = 下記 PROTECTED_TERMS、
+ * 旧 --glossary option は 2026-06-11 glossary.md 廃止に伴い撤去)。
  *
  * Exit codes:
  *   0 — success (全て期待通り)
@@ -54,8 +56,9 @@ const LANGS = [
   'tr',
 ];
 
-// ADR-0033 D3 翻訳禁止リスト (全言語で日本語音訳維持)
-const GLOSSARY_PROTECTED_TERMS = [
+// ADR-0033 D3 翻訳禁止リスト (全言語で日本語音訳維持)。SoT は本 list + ADR-0033 D3。
+// 樹形音訳 6 語は 2026-06-11 glossary.md 廃止時に旧 glossary §5 から移管。
+const PROTECTED_TERMS = [
   'bonsai',
   'niwaki',
   'karikomi',
@@ -71,14 +74,19 @@ const GLOSSARY_PROTECTED_TERMS = [
   'sabamiki',
   'bunjin',
   'ishizuki',
+  'chokkan',
+  'moyogi',
+  'shakan',
+  'kengai',
+  'han-kengai',
+  'sokan',
 ];
 
 function parseArgs(argv) {
-  const args = { input: null, dryRun: false, glossary: null };
+  const args = { input: null, dryRun: false };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--dry-run') args.dryRun = true;
-    else if (a === '--glossary') args.glossary = argv[++i];
     else if (!a.startsWith('--')) args.input = a;
   }
   return args;
@@ -114,12 +122,12 @@ function validateSchema(data, inputPath) {
   return errors;
 }
 
-function checkGlossary(translations) {
+function checkProtectedTerms(translations) {
   const warnings = [];
   for (const [key, langMap] of Object.entries(translations)) {
     for (const [lang, value] of Object.entries(langMap)) {
       const lowerValue = value.toLowerCase();
-      for (const term of GLOSSARY_PROTECTED_TERMS) {
+      for (const term of PROTECTED_TERMS) {
         const lowerTerm = term.toLowerCase();
         if (lowerValue.includes(lowerTerm)) continue;
         const transliterations = {
@@ -130,12 +138,18 @@ function checkGlossary(translations) {
           akadama: ['赤玉土'],
           kokedama: ['苔玉'],
           niwaki: ['庭木'],
+          chokkan: ['直幹'],
+          moyogi: ['模様木'],
+          shakan: ['斜幹'],
+          kengai: ['懸崖'],
+          'han-kengai': ['半懸崖'],
+          sokan: ['双幹'],
         };
         const native = transliterations[lowerTerm] || [];
         for (const n of native) {
           if (value.includes(n)) {
             warnings.push(
-              `[glossary] ${key}.${lang}="${value}" — "${n}" は ADR-0033 D3 で「${term}」 音訳維持必須`,
+              `[terms] ${key}.${lang}="${value}" — "${n}" は ADR-0033 D3 で「${term}」 音訳維持必須`,
             );
             break;
           }
@@ -234,9 +248,7 @@ function applyTranslations(translations, { dryRun }) {
 function main() {
   const args = parseArgs(process.argv);
   if (!args.input) {
-    console.error(
-      'Usage: node scripts/i18n/apply-translation.mjs <input.json> [--dry-run] [--glossary <path>]',
-    );
+    console.error('Usage: node scripts/i18n/apply-translation.mjs <input.json> [--dry-run]');
     process.exit(1);
   }
   if (!existsSync(args.input)) {
@@ -250,18 +262,12 @@ function main() {
     schemaErrors.forEach((e) => console.error(`  - ${e}`));
     process.exit(1);
   }
-  if (args.glossary) {
-    if (!existsSync(args.glossary)) {
-      console.error(`[error] Glossary ${args.glossary} not found`);
-      process.exit(2);
-    }
-    const warnings = checkGlossary(data.translations);
-    if (warnings.length) {
-      console.warn('[glossary warnings]');
-      warnings.forEach((w) => console.warn(`  - ${w}`));
-    } else {
-      console.log(`[glossary] ${args.glossary} 整合確認、 違反 0 件`);
-    }
+  const termWarnings = checkProtectedTerms(data.translations);
+  if (termWarnings.length) {
+    console.warn('[terms warnings]');
+    termWarnings.forEach((w) => console.warn(`  - ${w}`));
+  } else {
+    console.log('[terms] ADR-0033 D3 翻訳禁止リスト 整合確認、 違反 0 件');
   }
   const keyCount = Object.keys(data.translations).length;
   const expectedTotal = keyCount * LANGS.length;

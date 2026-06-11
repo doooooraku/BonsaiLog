@@ -15,8 +15,6 @@ pnpm i18n:apply path/to/translations.json
 # Dry-run (書き込まず、 何が変わるか確認)
 pnpm i18n:apply path/to/translations.json --dry-run
 
-# Glossary 整合 warning (ADR-0033 D3 翻訳禁止リスト準拠)
-pnpm i18n:apply path/to/translations.json --glossary docs/reference/glossary.md
 ```
 
 ### Input JSON schema
@@ -53,12 +51,12 @@ pnpm i18n:apply path/to/translations.json --glossary docs/reference/glossary.md
 - **i18n key**: `src/core/i18n/locales/{lang}.ts` に既存の key (新規追加は `pnpm i18n:add-key` で別途)
 - **placeholder**: `{type}` / `{count}` / `{days}` 等は各言語で維持必須 (将来 placeholder check 拡張予定)
 
-### Glossary 連携 (ADR-0033 D3)
+### 翻訳禁止リスト連携 (ADR-0033 D3)
 
-`--glossary` option を指定すると、 ADR-0033 D3 「翻訳禁止リスト」 (bonsai / niwaki / karikomi / nebari / jin / shari / kokedama / yamadori / mame / shohin / akadama / kusamono / sabamiki / bunjin / ishizuki) について以下を warn:
+ADR-0033 D3 「翻訳禁止リスト」 (bonsai / niwaki / karikomi / nebari / jin / shari / kokedama / yamadori / mame / shohin / akadama / kusamono / sabamiki / bunjin / ishizuki + 樹形音訳 Chokkan / Moyogi / Shakan / Kengai / Han-Kengai / Sokan) について**常時** warn:
 
 - ja 原文に「盆栽」 「山採り」 等が含まれているのに翻訳値に音訳が消えている (例: en に "bonsai" がない)
-- ※ Phase 1 では限定的 transliteration table 内蔵、 Phase 2 で glossary.md 全文 parse 拡張予定
+- SoT は ADR-0033 D3 + 本 script 内蔵 `PROTECTED_TERMS` (glossary.md は 2026-06-11 廃止、 --glossary option 撤去)
 
 ### Phase 1a 再実行 (regression test)
 
@@ -71,7 +69,6 @@ node scripts/i18n/apply-translation.mjs /tmp/i18n-phase1a.json --dry-run
 
 ### 関連
 
-- ADR-0033 D3 (glossary 厳守、 R-40 PR 着手前 Read 義務)
+- ADR-0033 D3 (翻訳禁止リスト厳守、 R-40 PR 着手前確認義務、 2026-06-11 Amendment で glossary 廃止)
 - Sess19-4 PR-T1a #690 (Phase 1a 17 keys × 17 言語実証)
 - Sess20 Phase H2 各 PR で再利用
-- `docs/reference/glossary.md` (用語集 19 言語統一表記)

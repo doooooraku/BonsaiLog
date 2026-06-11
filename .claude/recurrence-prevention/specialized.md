@@ -177,12 +177,12 @@
 
 ---
 
-### R-40. i18n Phase H2 翻訳適用前の glossary.md Read 義務 (Sess20 ADR-0033 D3 由来)
+### R-40. i18n 翻訳適用前の翻訳禁止リスト確認 (Sess20 ADR-0033 D3 由来、Sess101 改訂)
 
-- **ルール**: i18n Phase H2 翻訳適用 PR (画面別 17 言語翻訳適用、 PR-H2-1 〜 PR-H2-7) 着手前に `docs/reference/glossary.md` を必ず Read。 各言語プロペルソナ手動翻訳時、 glossary 概念定義 + 翻訳禁止リスト (bonsai/niwaki/karikomi/nebari/jin/shari/kokedama/yamadori/mame/shohin/akadama/kusamono/sabamiki/bunjin/ishizuki 計 15 語) を厳守。
-- **根拠**: 2026-05-21 Sess20 議論で確認。 Crowdin / Lokalise 2026 業界 standard で「Glossary 早期構築 + 厳守」 が大規模 i18n の最重要 best practice。 「同概念 3 種類の用語」 worst pattern を構造的回避。 user 真意「18 言語手動翻訳」 (ADR-0033 D1) と整合。
-- **自動化**: `scripts/i18n/apply-translation.mjs --glossary docs/reference/glossary.md` (PR-0-2 で追加) で翻訳禁止リスト違反を warn。 Phase 2 で glossary.md 全文 parse 拡張予定。
-- **関連**: ADR-0033 D3 (glossary 厳守) / `docs/reference/glossary.md` (用語集 19 言語統一表記) / `scripts/i18n/apply-translation.mjs` (PR-0-2 で昇格) / Crowdin 2026 best practice
+- **ルール**: i18n 翻訳適用 PR 着手前に ADR-0033 D3 の翻訳禁止リスト (bonsai/niwaki/karikomi/nebari/jin/shari/kokedama/yamadori/mame/shohin/akadama/kusamono/sabamiki/bunjin/ishizuki + 樹形音訳 Chokkan/Moyogi/Shakan/Kengai/Han-Kengai/Sokan) を必ず確認・厳守。
+- **根拠**: 2026-05-21 Sess20 議論で確認。 Crowdin / Lokalise 2026 業界 standard で「用語集厳守」 が大規模 i18n の最重要 best practice。 「同概念 3 種類の用語」 worst pattern を構造的回避。
+- **自動化**: `scripts/i18n/apply-translation.mjs` が翻訳禁止リスト違反を常時 warn (SoT = ADR-0033 D3 + script 内蔵 PROTECTED_TERMS。 Sess101 で glossary.md 廃止、 --glossary option 撤去)。
+- **関連**: ADR-0033 D3 (+ 2026-06-11 Amendment = glossary 廃止) / `scripts/i18n/apply-translation.mjs`
 
 ---
 

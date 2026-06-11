@@ -66,13 +66,13 @@
 
 ADR-0024 PoC で実機検証済 (5/5 PASS) の operation flow を ui-diff/ に転用すれば、低コストで R-25 評価可能。
 
-| mockup                              | 既存 PoC flow                              | 備考                                                   |
-| ----------------------------------- | ------------------------------------------ | ------------------------------------------------------ |
-| `species-picker.png`                | `maestro/flows/g1-species-picker.yml`      | formSheet PoC、ADR-0024 g1                             |
-| `style-picker-01/02.png`            | `maestro/flows/g1-style-picker.yml`        | 同上                                                   |
-| `work-picker-01/02/03.png`          | `maestro/flows/g2-work-picker.yml`         | ADR-0024 g2                                            |
-| `work-log-confirm-01/02/03.png`     | `maestro/flows/g2-worklog-confirm.yml`     | 同上                                                   |
-| `home-bulk-sched-date-01/02/03.png` | `maestro/flows/g3b-bulk-schedule-date.yml` | ADR-0024 g3b、既 ui-diff あり (`home-bulk-sched-date`) |
+| mockup                              | 既存 PoC flow                                              | 備考                                                   |
+| ----------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------ |
+| `species-picker.png`                | `maestro/flows/g1-species-picker.yml`                      | formSheet PoC、ADR-0024 g1                             |
+| `style-picker-01/02.png`            | `maestro/flows/g1-style-picker.yml`                        | 同上                                                   |
+| `work-picker-01/02/03.png`          | `maestro/flows/g2-work-picker.yml`                         | ADR-0024 g2                                            |
+| `work-log-confirm-01/02/03.png`     | `maestro/flows/g2-worklog-confirm.yml`                     | 同上                                                   |
+| `home-bulk-sched-date-01/02/03.png` | (不在 — g3b flow は未移行、現存は `g3a-bulk-log.yml` のみ) | ADR-0024 g3b、既 ui-diff あり (`home-bulk-sched-date`) |
 
 ### 中優先 (ADR-0018 Onboarding)
 

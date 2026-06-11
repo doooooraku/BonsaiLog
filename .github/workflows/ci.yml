@@ -47,7 +47,7 @@ jobs:
           # ADR / lessons / reports / personas / recurrence-prevention は除外（履歴を残してよい場所）
           LEFTOVERS=$(grep -rnE "~~F-[0-9]+~~|~~.+~~ — \*\*ADR-[0-9]+|削除お知らせ|履歴のため残置|旧 F-[0-9]+ 仕様" \
             docs/explanation docs/reference/basic_spec.md docs/reference/functional_spec.md \
-            docs/reference/constraints.md docs/reference/glossary.md docs/how-to \
+            docs/reference/constraints.md docs/how-to \
             2>/dev/null || true)
           if [ -n "$LEFTOVERS" ]; then
             echo "ERROR: 仕様書に削除履歴の痕跡が残っています。ADR にのみ集約してください (R-2)："

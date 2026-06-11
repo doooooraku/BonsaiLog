@@ -206,8 +206,6 @@ body:
       options:
         - label: 'constraints（前提/制約）に影響する可能性がある'
           required: false
-        - label: 'glossary（用語）追加が必要になりそう'
-          required: false
         - label: 'ADR が必要（比較/却下理由が後で必要）'
           required: false
         - label: 'release 手順（配布/申請/審査）に影響する可能性がある'

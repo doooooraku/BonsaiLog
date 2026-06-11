@@ -223,3 +223,12 @@ Sess18 (PR-5/10) で **メモ placeholder 19 言語手動翻訳** (266 文字列
 - **Option B**: 旧 「Claude が glossary を input context にして **17 言語**生成」 → 正 「**18 言語**生成」
 
 LANGS 配列 (`src/core/i18n/locales/` の ja 以外) を数え直すと **18 言語**、 ja 含めて全 **19 言語** (product_strategy §9-1 と整合)。 旧 typo は Sess19-4 PR-T1a `/tmp/apply-i18n-phase1a.mjs` の console.log 文言「17 keys × 17 langs = 289」 (LANGS 配列は 18 個だが log は 17 と書かれていた既存 bug) を ADR に書き写してしまったもの。 D1 タイトル「18 言語手動翻訳」 と 18 言語プロペルソナ集合表 (18 行) は変更不要 (= 翻訳対象 18 言語の意味で正しい)。
+
+### 2026-06-11 Sess101 glossary.md 廃止 — 翻訳禁止リストの SoT を本 ADR D3 + script 内蔵 table へ移管
+
+user 決定「共通言語の取りまとめは user + Claude Code の 2 者開発では不要」により `docs/reference/glossary.md` を削除した (用語の正は `basic_spec.md` §2 + `constraints.md` + コード)。本 ADR への影響:
+
+- D3 の「glossary.md Read 義務」は「**本 D3 翻訳禁止リストの確認義務**」に読み替える (R-40 同時改訂)
+- 翻訳禁止リストの SoT = **本 D3 + `scripts/i18n/apply-translation.mjs` の `PROTECTED_TERMS`** (検査は常時実行化、`--glossary <path>` option は廃止)
+- 旧 glossary §5 の樹形音訳 (**Chokkan / Moyogi / Shakan / Kengai / Han-Kengai / Sokan**) を翻訳禁止リストへ追加移管
+- 「Forward-only 互換性」の「glossary.md 不変」は本 Amendment が supersede
