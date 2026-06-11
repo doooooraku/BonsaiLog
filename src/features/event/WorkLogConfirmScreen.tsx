@@ -48,6 +48,7 @@ import {
 import { getAllPhotosByEventId, FREE_PHOTO_LIMIT_PER_EVENT } from '@/src/db/photoRepository';
 import { addPhotoFromUri, removePhotoById } from '@/src/features/photos/photoOrchestrator';
 import type { EventType } from '@/src/db/schema';
+import { maybeCelebrateFirstRecord } from '@/src/features/guides/celebrateFirstRecord';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { maybeRequestReview } from '@/src/features/review/maybeRequestReview';
@@ -372,6 +373,8 @@ export default function WorkLogConfirmScreen() {
         } else {
           useToastStore.getState().show(t('workLogDoneToast'));
         }
+        // #1178 g5 (ADR-0058): 総件数 0→1 の最初の記録なら、上の標準 Toast をお祝いに上書き
+        await maybeCelebrateFirstRecord(t);
         // ADR-0006 Sess98 Amendment D1: 記録保存成功 = ハッピーモーメント。 fire-and-forget で
         // レビュー依頼判定 (マイルストーン + cooldown gate は reviewPolicy、 遷移をブロックしない)。
         void maybeRequestReview();

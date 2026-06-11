@@ -56,6 +56,7 @@ import {
   countActiveRecurrenceGroups,
   bulkCreateRecurrenceRules,
 } from '@/src/db/recurrenceRuleRepository';
+import { maybeCelebrateFirstRecord } from '@/src/features/guides/celebrateFirstRecord';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
 import { maybePromptNotificationOptIn } from '@/src/features/notification/optInPrompt';
 import { addPhotoFromUri } from '@/src/features/photos/photoOrchestrator';
@@ -363,6 +364,8 @@ export default function BulkLogConfirmScreen() {
           .getState()
           .show(t('bulkLogDoneToast').replace('{count}', String(bonsaiIds.length)));
       }
+      // #1178 g5 (ADR-0058): 総件数 0→1 の最初の記録なら、上の標準 Toast をお祝いに上書き
+      await maybeCelebrateFirstRecord(t);
       // ADR-0006 Sess98 Amendment D1: 一括記録の保存成功もハッピーモーメント (log mode のみ、
       // schedule mode は上で早期 return 済)。 try 内 = 保存成功時のみ発火、 遷移をブロックしない。
       void maybeRequestReview();
