@@ -159,3 +159,65 @@ describe('check-native-impact.mjs hook 経由 e2e 実行 (Sess71 PR-1)', () => {
     expect(existedAfter).toBe(existedBefore); // 状態変化なし
   });
 });
+
+describe('repo 外 path の正規化 (Sess101 #1174 — 誤検知修正)', () => {
+  const REPO_ROOT = path.resolve(__dirname, '../..');
+
+  /**
+   * repo root を CLAUDE_PROJECT_DIR で明示固定した runner (決定性確保 —
+   * 実行環境に CLAUDE_PROJECT_DIR が設定済みでも本 test の前提が崩れない)。
+   */
+  function runWithHookStdinAtRoot(filePathOrPaths) {
+    const filePaths = Array.isArray(filePathOrPaths) ? filePathOrPaths : [filePathOrPaths];
+    return spawnSync('node', [SCRIPT_PATH, '--from=hook', '--dry-run'], {
+      input: JSON.stringify({ tool_input: { file_paths: filePaths } }),
+      encoding: 'utf-8',
+      env: { ...process.env, CLAUDE_PROJECT_DIR: REPO_ROOT },
+    });
+  }
+
+  test('11. repo 外の絶対 path (harness 設定等) → 判定対象外 = build 要求しない', () => {
+    // Sess101 実証ケース: ~/.claude/settings.json の編集で native 誤検知していた
+    const result = runWithHookStdinAtRoot('/home/someone/.claude/settings.json');
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/Skipped 1 path\(s\) outside repo/);
+    expect(result.stdout).toMatch(/No file paths provided/);
+    expect(result.stdout).not.toMatch(/Native impact detected/);
+  });
+
+  test('12. repo 内の絶対 path → 相対化して従来どおり判定 (native)', () => {
+    const result = runWithHookStdinAtRoot(path.join(REPO_ROOT, 'package.json'));
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/Native impact detected/);
+    // 正規化済みなので unknown ではなく native files 側に出る
+    expect(result.stdout).toMatch(/native files: package\.json/);
+  });
+
+  test('13. repo 内の絶対 path (JS-only) → js-only 判定', () => {
+    const result = runWithHookStdinAtRoot(path.join(REPO_ROOT, 'src/core/recurrence/rrule.ts'));
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/JS-only changes/);
+  });
+
+  test('14. repo 外 + repo 内の混在 → repo 外のみ除外、 repo 内は判定継続', () => {
+    const result = runWithHookStdinAtRoot([
+      '/home/someone/.claude/settings.json',
+      path.join(REPO_ROOT, 'package.json'),
+    ]);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/Skipped 1 path\(s\) outside repo/);
+    expect(result.stdout).toMatch(/Native impact detected/);
+  });
+
+  test('15. 相対 path は従来どおり (回帰、 --from=cli の git diff 出力形式)', () => {
+    const result = runWithHookStdin('package.json');
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/Native impact detected/);
+  });
+
+  test('16. repo root の prefix を持つが repo 外の path (例: <root>-backup/) → 除外', () => {
+    const result = runWithHookStdinAtRoot(`${REPO_ROOT}-backup/package.json`);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/Skipped 1 path\(s\) outside repo/);
+  });
+});
