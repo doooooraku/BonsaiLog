@@ -5,7 +5,7 @@
 > **関連の正本**:
 >
 > - 入出力スキーマ（14 作業 × 入力 → チップ → PDF → CSV）→ [`display-schema.md`](./display-schema.md)
-> - 画面遷移図（v1.7 final、6 ペルソナ動線シミュレーション付）→ [`../movcqnjg-BonsaiLog-Flow.html`](../movcqnjg-BonsaiLog-Flow.html)
+> - 画面遷移図（v1.7 final、6 ペルソナ動線シミュレーション付）→ [`../BonsaiLog-Flow.html`](../BonsaiLog-Flow.html)（コピー時に `movcqnjg-` prefix を除去して改名済み）
 > - v1.0〜v1.6 の監査アーカイブ（凍結）→ [`../wireframes-analysis.html`](../wireframes-analysis.html)
 >
 > **更新方針**: 本文書の履歴セクションに新規版を追記する形で進化させる。新規 PR チェック追加時は同 PR で履歴行も追記。

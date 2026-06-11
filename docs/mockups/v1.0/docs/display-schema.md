@@ -5,7 +5,7 @@
 > **関連の正本**:
 >
 > - 設計原則・PR チェック・Pro 方針 → [`principles.md`](./principles.md)
-> - 画面遷移図（v1.7 final）→ [`../movcqnjg-BonsaiLog-Flow.html`](../movcqnjg-BonsaiLog-Flow.html)
+> - 画面遷移図（v1.7 final）→ [`../BonsaiLog-Flow.html`](../BonsaiLog-Flow.html)（コピー時に `movcqnjg-` prefix を除去して改名済み）
 
 最終更新: 2026-05-09（v1.13 BackupScreen 独立化に伴う v2 バックログ拡張 — ZIP スキーマバージョン仕様 / iCloud 役割分担 / Onboarding 引き継ぎ分岐 / 定期バックアップ提案 UI）
 
