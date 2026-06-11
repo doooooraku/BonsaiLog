@@ -53,7 +53,7 @@ import {
 } from '@/src/db/eventRepository';
 import { FREE_PHOTO_LIMIT_PER_EVENT } from '@/src/db/photoRepository';
 import {
-  countActiveRecurrenceRules,
+  countActiveRecurrenceGroups,
   bulkCreateRecurrenceRules,
 } from '@/src/db/recurrenceRuleRepository';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
@@ -178,15 +178,16 @@ export default function BulkLogConfirmScreen() {
   // Sess79 PR-6 ADR-0056: 定期予定 (recurring) state、 schedule mode でのみ UI 表示。
   const [recurrenceValue, setRecurrenceValue] =
     React.useState<RecurrenceValue>(DEFAULT_RECURRENCE_VALUE);
-  // Pro 境界 (ADR-0049 ⑦): 現在 active rule 件数を 取得して useProGuard に渡す
-  const [activeRuleCount, setActiveRuleCount] = React.useState(0);
+  // Pro 境界 (ADR-0049 ⑦ Sess101 Amendment): 現在 active な予定グループ数を useProGuard に渡す
+  // (= ここからの保存は盆栽数に関わらず 1 グループ作成 = +1 として判定、 Sess101 #1159)
+  const [activeGroupCount, setActiveGroupCount] = React.useState(0);
   React.useEffect(() => {
     if (!isScheduleMode) return;
-    void countActiveRecurrenceRules().then(setActiveRuleCount);
+    void countActiveRecurrenceGroups().then(setActiveGroupCount);
   }, [isScheduleMode]);
   const recurringGuard = useProGuard({
     feature: 'recurring_rule',
-    currentCount: activeRuleCount,
+    currentCount: activeGroupCount,
   });
 
   // Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog (WorkLogConfirmScreen と同 pattern)
