@@ -460,6 +460,9 @@ const tr: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Bugünün işi',
   planSelectedListLabel: '{date} işi',
   planSelectedEmptyTitle: 'Bu gün için planlanmış görev yok',
+  guideRecordTabNudgeTitle: 'İlk bonsainiz kaydedildi',
+  guideRecordTabNudgeBody:
+    'Şimdi bugünün bakımını kaydetmeyi deneyin. Aşağıdaki "{tab}" sekmesine dokunun.',
   guideRecordCtaBody: 'Bugünün bakımlarından birini buradan kaydederek başlayın.',
   guidePlanCtaBody: 'Bir tarih seçin ve bu düğmeyle görev ekleyin.',
   planSelectedEmptyBody:

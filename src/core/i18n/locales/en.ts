@@ -444,6 +444,8 @@ const baseEn = {
   planSelectedListTodayLabel: "Today's work",
   planSelectedListLabel: 'Work on {date}',
   planSelectedEmptyTitle: 'No plans on this day',
+  guideRecordTabNudgeTitle: 'Your first bonsai is registered',
+  guideRecordTabNudgeBody: 'Next, try logging a care task for today. Tap the "{tab}" tab below.',
   guideRecordCtaBody: 'Start by logging one care task for today, right here.',
   guidePlanCtaBody: 'Pick a date and add a plan with this button.',
   planSelectedEmptyBody:

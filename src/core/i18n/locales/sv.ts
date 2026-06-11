@@ -461,6 +461,8 @@ const sv: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Dagens arbete',
   planSelectedListLabel: 'Arbete den {date}',
   planSelectedEmptyTitle: 'Inga planerade uppgifter den här dagen',
+  guideRecordTabNudgeTitle: 'Din första bonsai är registrerad',
+  guideRecordTabNudgeBody: 'Prova nu att logga dagens skötsel. Tryck på fliken "{tab}" nedan.',
   guideRecordCtaBody: 'Börja med att logga en av dagens skötseluppgifter direkt här.',
   guidePlanCtaBody: 'Välj ett datum och lägg till en uppgift med den här knappen.',
   planSelectedEmptyBody:

@@ -460,6 +460,8 @@ const hi: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'आज का कार्य',
   planSelectedListLabel: '{date} का कार्य',
   planSelectedEmptyTitle: 'इस दिन के लिए कोई कार्य निर्धारित नहीं है',
+  guideRecordTabNudgeTitle: 'आपका पहला बोनसाई दर्ज हो गया',
+  guideRecordTabNudgeBody: 'अब आज की एक देखभाल दर्ज करके देखें। नीचे "{tab}" टैब पर टैप करें।',
   guideRecordCtaBody: 'शुरुआत के लिए आज की एक देखभाल यहीं दर्ज करें।',
   guidePlanCtaBody: 'तारीख़ चुनें और इस बटन से कार्य जोड़ें।',
   planSelectedEmptyBody:
