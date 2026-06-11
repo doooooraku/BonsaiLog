@@ -46,6 +46,7 @@ import type {
   BackupManifest,
   BackupNamed,
   BackupPhoto,
+  BackupRecurrenceRule,
   BackupTag,
 } from './backupTypes';
 
@@ -59,6 +60,7 @@ export type {
   BackupManifest,
   BackupNamed,
   BackupPhoto,
+  BackupRecurrenceRule,
   BackupSettings,
   BackupTag,
 } from './backupTypes';
@@ -199,6 +201,22 @@ export async function buildManifestFromDb(): Promise<{
     deleted_at: string | null;
     created_at: string;
     updated_at: string;
+    recurrence_rule_id: string | null;
+  };
+
+  type RecurrenceRuleRow = {
+    id: string;
+    bonsai_id: string;
+    event_type: string;
+    rrule: string;
+    start_at_utc: string;
+    end_at_utc: string | null;
+    exdates: string;
+    tz_iana: string;
+    memo: string | null;
+    deleted_at: string | null;
+    created_at: string;
+    updated_at: string;
   };
 
   type PhotoRow = {
@@ -241,6 +259,10 @@ export async function buildManifestFromDb(): Promise<{
   const bonsaiTagRows = await db.getAllAsync<BonsaiTagRow>('SELECT * FROM bonsai_tags;');
   const customSpeciesRows = await db.getAllAsync<NamedRow>('SELECT * FROM bonsai_species_custom;');
   const customStyleRows = await db.getAllAsync<NamedRow>('SELECT * FROM bonsai_styles_custom;');
+  // Sess99 #1121: 定期予定ルール (soft-delete 済も含め全件 = events と同じ忠実度)。
+  const recurrenceRuleRows = await db.getAllAsync<RecurrenceRuleRow>(
+    'SELECT * FROM recurrence_rules;',
+  );
 
   const bonsai: BackupBonsai[] = bonsaiRows.map((row) => ({
     id: row.id,
@@ -274,6 +296,8 @@ export async function buildManifestFromDb(): Promise<{
     deletedAt: row.deleted_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    // Sess99 #1121: rule 連結を保持 (欠落すると復元後 起動時バッチが予定を二重生成する)。
+    recurrenceRuleId: row.recurrence_rule_id,
   }));
 
   const photos: BackupPhoto[] = [];
@@ -317,6 +341,21 @@ export async function buildManifestFromDb(): Promise<{
   const customSpecies: BackupNamed[] = customSpeciesRows.map(mapNamed);
   const customStyles: BackupNamed[] = customStyleRows.map(mapNamed);
 
+  const recurrenceRules: BackupRecurrenceRule[] = recurrenceRuleRows.map((row) => ({
+    id: row.id,
+    bonsaiId: row.bonsai_id,
+    eventType: row.event_type,
+    rrule: row.rrule,
+    startAtUtc: row.start_at_utc,
+    endAtUtc: row.end_at_utc,
+    exdates: row.exdates,
+    tzIana: row.tz_iana,
+    memo: row.memo,
+    deletedAt: row.deleted_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
+
   // 設定 (好み) も「完全なお引っ越し」のため含める。
   const settingsState = useSettingsStore.getState();
 
@@ -331,6 +370,7 @@ export async function buildManifestFromDb(): Promise<{
     bonsaiTags,
     customSpecies,
     customStyles,
+    recurrenceRules,
     settings: {
       language: getLang(),
       themeMode: settingsState.themeMode,
@@ -594,6 +634,10 @@ export async function importBackup(): Promise<BackupImportResult | null> {
     const customStyleRows = await db.getAllAsync<{ id: string; name: string }>(
       'SELECT id, name FROM bonsai_styles_custom;',
     );
+    // Sess99 #1121: 既存 rule ID (重複 skip 用)。
+    const recurrenceRuleRows = await db.getAllAsync<{ id: string }>(
+      'SELECT id FROM recurrence_rules;',
+    );
 
     const plan = buildAppendImportPlan({
       bonsai: manifest.bonsai,
@@ -603,6 +647,7 @@ export async function importBackup(): Promise<BackupImportResult | null> {
       bonsaiTags: manifest.bonsaiTags ?? [],
       customSpecies: manifest.customSpecies ?? [],
       customStyles: manifest.customStyles ?? [],
+      recurrenceRules: manifest.recurrenceRules ?? [],
       existingBonsaiIds: new Set(bonsaiRows.map((r) => r.id)),
       existingEventIds: new Set(eventRows.map((r) => r.id)),
       existingPhotoIds: new Set(photoRows.map((r) => r.id)),
@@ -613,9 +658,14 @@ export async function importBackup(): Promise<BackupImportResult | null> {
       existingCustomSpeciesNames: new Set(customSpeciesRows.map((r) => r.name)),
       existingCustomStyleIds: new Set(customStyleRows.map((r) => r.id)),
       existingCustomStyleNames: new Set(customStyleRows.map((r) => r.name)),
+      existingRecurrenceRuleIds: new Set(recurrenceRuleRows.map((r) => r.id)),
     });
 
-    if (plan.invalidEventRefs.length > 0 || plan.invalidPhotoRefs.length > 0) {
+    if (
+      plan.invalidEventRefs.length > 0 ||
+      plan.invalidPhotoRefs.length > 0 ||
+      plan.invalidRecurrenceRuleRefs.length > 0
+    ) {
       throw new BackupError('invalid');
     }
 

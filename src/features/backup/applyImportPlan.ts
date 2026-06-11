@@ -12,7 +12,8 @@
  *   imperative shell に残す。
  *
  * 不変条件 (凍結):
- * - INSERT 順序は FK 安全順: customSpecies → customStyles → bonsai → tags → bonsaiTags → events(+FTS) → photos。
+ * - INSERT 順序は FK 安全順: customSpecies → customStyles → bonsai → tags → bonsaiTags
+ *   → recurrenceRules → events(+FTS) → photos (rules は bonsai FK 参照、events は rule に論理連結)。
  * - FTS5 同期は active な event のみ (`deletedAt === null`)。
  * - schema v15 の列リストを厳守 (backupCoverage.test.ts が export 側を fail-closed ガード)。
  * - 途中で throw されたら withTransactionAsync が全 INSERT をロールバックする (写真ファイルの後始末は
@@ -27,6 +28,7 @@ import type {
   BackupEvent,
   BackupNamed,
   BackupPhoto,
+  BackupRecurrenceRule,
   BackupTag,
 } from './backupTypes';
 
@@ -41,7 +43,8 @@ type BackupImportPlan = AppendImportPlan<
   BackupTag,
   BackupBonsaiTag,
   BackupNamed,
-  BackupNamed
+  BackupNamed,
+  BackupRecurrenceRule
 >;
 
 /**
@@ -120,12 +123,37 @@ export async function applyImportPlan(
       );
     }
 
+    // Sess99 #1121: recurrence_rules は bonsai の後 (FK bonsai_id) / events の前 (論理連結先)。
+    for (const rule of plan.recurrenceRulesToInsert) {
+      await db.runAsync(
+        `INSERT INTO recurrence_rules
+           (id, bonsai_id, event_type, rrule, start_at_utc, end_at_utc, exdates,
+            tz_iana, memo, deleted_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+        [
+          rule.id,
+          rule.bonsaiId,
+          rule.eventType,
+          rule.rrule,
+          rule.startAtUtc,
+          rule.endAtUtc ?? null,
+          rule.exdates ?? '[]',
+          rule.tzIana,
+          rule.memo ?? null,
+          rule.deletedAt ?? null,
+          rule.createdAt,
+          rule.updatedAt,
+        ],
+      );
+    }
+
     for (const event of plan.eventsToInsert) {
       await db.runAsync(
         `INSERT INTO events
            (id, bonsai_id, type, status, occurred_at_utc, tz_offset_min, tz_iana,
-            duration_min, payload_json, note, deleted_at, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+            duration_min, payload_json, note, deleted_at, created_at, updated_at,
+            recurrence_rule_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
         [
           event.id,
           event.bonsaiId,
@@ -140,6 +168,8 @@ export async function applyImportPlan(
           event.deletedAt ?? null,
           event.createdAt,
           event.updatedAt,
+          // 旧 ZIP (recurrenceRuleId 無し) は null — 連結なしで安全に復元 (Sess99 #1121)。
+          event.recurrenceRuleId ?? null,
         ],
       );
       // FTS5 同期 (active な event のみ note + payload を可検索化)

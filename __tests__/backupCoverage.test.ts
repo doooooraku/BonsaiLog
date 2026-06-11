@@ -27,6 +27,9 @@ const BACKED_UP_TABLES = [
   'bonsai_tags',
   'events',
   'photos',
+  // Sess99 #1121: Sess81 から先送りされていたギャップを解消 (BackupRecurrenceRule + planner +
+  // applyImportPlan に統合、events.recurrence_rule_id 連結も manifest に含む)。
+  'recurrence_rules',
   'tags',
 ];
 
@@ -35,13 +38,6 @@ const EXCLUDED_TABLES: Record<string, string> = {
   species: 'seed マスタ (migration/seed で再生成)',
   species_names: 'seed マスタ (19 言語通称、migration/seed で再生成)',
   events_fts: 'FTS5 派生インデックス (復元時に events から再構築)',
-  // Sess81 hotfix で v16 migration 成功後 露出した 既存 ギャップ:
-  // Sess78 PR-2 で recurrence_rules table 追加 + Sess78-81 で recurring 機能完成しているが、
-  // backupService.ts (buildManifestFromDb / importBackup) と manifest schema への追加は v1.0.1
-  // follow-up に 未実装。 v1.0 release 後 (Sess82+) PR で 追加統合予定。
-  // 本来 BACKED_UP_TABLES が正、 現状 ギャップを 明文化して 構造的に 認知化。
-  recurrence_rules:
-    'Sess81 hotfix で migration 成功 後 露出。 backup 統合は Sess82+ PR で 対応予定 (= 現状 復元時に rule 失われる、 user データ警告必要)',
 };
 
 /** bonsai の base 列 (schemaV2 CREATE TABLE)。以降の追加列は ALTER で抽出する。 */
