@@ -461,6 +461,8 @@ const sv: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Dagens arbete',
   planSelectedListLabel: 'Arbete den {date}',
   planSelectedEmptyTitle: 'Inga planerade uppgifter den här dagen',
+  guideRecordCtaBody: 'Börja med att logga en av dagens skötseluppgifter direkt här.',
+  guidePlanCtaBody: 'Välj ett datum och lägg till en uppgift med den här knappen.',
   planSelectedEmptyBody:
     'Välj ett datum och tryck på "{cta}" nedan för att lägga till en uppgift. Dagar med uppgifter visar ○ i kalendern.',
   planSelectedEmptyRecurringLink: 'Återkommande uppgifter skapas som ett återkommande schema',

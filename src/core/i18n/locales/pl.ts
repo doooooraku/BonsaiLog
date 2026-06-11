@@ -460,6 +460,8 @@ const pl: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Dzisiejsza praca',
   planSelectedListLabel: 'Praca w dniu {date}',
   planSelectedEmptyTitle: 'Brak zaplanowanych zadań na ten dzień',
+  guideRecordCtaBody: 'Zacznij od zapisania tu jednej dzisiejszej pielęgnacji.',
+  guidePlanCtaBody: 'Wybierz datę i dodaj zadanie tym przyciskiem.',
   planSelectedEmptyBody:
     'Wybierz datę i stuknij „{cta}” poniżej, aby dodać zadanie. Dni z zadaniami mają ○ w kalendarzu.',
   planSelectedEmptyRecurringLink: 'Powtarzające się zadania utworzysz jako harmonogram cykliczny',

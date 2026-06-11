@@ -459,6 +459,8 @@ const vi: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Công việc hôm nay',
   planSelectedListLabel: 'Công việc ngày {date}',
   planSelectedEmptyTitle: 'Không có công việc nào được lên lịch cho ngày này',
+  guideRecordCtaBody: 'Hãy bắt đầu bằng cách ghi lại một việc chăm sóc hôm nay, ngay tại đây.',
+  guidePlanCtaBody: 'Chọn ngày rồi thêm công việc bằng nút này.',
   planSelectedEmptyBody:
     'Chọn ngày rồi nhấn "{cta}" bên dưới để thêm công việc. Ngày có công việc sẽ hiển thị ○ trên lịch.',
   planSelectedEmptyRecurringLink: 'Công việc lặp lại có thể tạo trong lịch định kỳ',

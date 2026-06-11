@@ -461,6 +461,8 @@ const de: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Heutige Arbeit',
   planSelectedListLabel: 'Arbeit am {date}',
   planSelectedEmptyTitle: 'Keine geplanten Aufgaben an diesem Tag',
+  guideRecordCtaBody: 'Beginne damit, eine heutige Pflege gleich hier festzuhalten.',
+  guidePlanCtaBody: 'Wähle ein Datum und füge mit diesem Button eine Aufgabe hinzu.',
   planSelectedEmptyBody:
     'Wähle ein Datum und tippe unten auf „{cta}“, um eine Aufgabe hinzuzufügen. Tage mit Aufgaben zeigen ein ○ im Kalender.',
   planSelectedEmptyRecurringLink:

@@ -460,6 +460,8 @@ const nl: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Werk van vandaag',
   planSelectedListLabel: 'Werk op {date}',
   planSelectedEmptyTitle: 'Geen geplande taken op deze dag',
+  guideRecordCtaBody: 'Begin door één verzorging van vandaag hier vast te leggen.',
+  guidePlanCtaBody: 'Kies een datum en voeg met deze knop een taak toe.',
   planSelectedEmptyBody:
     'Kies een datum en tik hieronder op "{cta}" om een taak toe te voegen. Dagen met taken tonen een ○ in de kalender.',
   planSelectedEmptyRecurringLink: 'Terugkerende taken maak je via een terugkerend schema',

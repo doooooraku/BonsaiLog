@@ -461,6 +461,8 @@ const fr: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Travail du jour',
   planSelectedListLabel: 'Travail du {date}',
   planSelectedEmptyTitle: 'Aucune tâche prévue ce jour-là',
+  guideRecordCtaBody: 'Commencez par consigner un soin du jour, juste ici.',
+  guidePlanCtaBody: 'Choisissez une date et ajoutez une tâche avec ce bouton.',
   planSelectedEmptyBody:
     'Choisissez une date et touchez « {cta} » ci-dessous pour ajouter une tâche. Les jours avec des tâches affichent un ○ sur le calendrier.',
   planSelectedEmptyRecurringLink: 'Pour les tâches répétées, créez un programme récurrent',

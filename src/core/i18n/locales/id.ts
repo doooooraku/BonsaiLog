@@ -460,6 +460,8 @@ const id: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Pekerjaan hari ini',
   planSelectedListLabel: 'Pekerjaan {date}',
   planSelectedEmptyTitle: 'Tidak ada tugas terjadwal pada hari ini',
+  guideRecordCtaBody: 'Mulailah dengan mencatat satu perawatan hari ini, di sini.',
+  guidePlanCtaBody: 'Pilih tanggal dan tambahkan tugas dengan tombol ini.',
   planSelectedEmptyBody:
     'Pilih tanggal lalu ketuk "{cta}" di bawah untuk menambahkan tugas. Hari dengan tugas ditandai ○ di kalender.',
   planSelectedEmptyRecurringLink: 'Untuk tugas berulang, buat jadwal berulang',

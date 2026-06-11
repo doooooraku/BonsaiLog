@@ -14,7 +14,7 @@
  * 振る舞い・計算式 (ADR-0031/0034/0035) は完全不変、 mode prop / URL route も不変。
  */
 import React, { useCallback } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedView } from '@/components/themed-view';
 import { BottomCtaBar } from '@/src/components/common/BottomCtaBar';
@@ -24,6 +24,10 @@ import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { useColors } from '@/src/core/theme/useColors';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
+import { canShowGuide } from '@/src/features/guides/guideTriggers';
+import { GuideSpotlight } from '@/src/features/guides/GuideSpotlight';
+import { useSpotlightTarget } from '@/src/features/guides/useSpotlightTarget';
+import { useGuidesStore } from '@/src/stores/guidesStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
 
 import { CalendarEventGroupList } from './CalendarEventGroupList';
@@ -59,6 +63,34 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
   const toggleLegend = useCallback(() => {
     setCalendarLegendCollapsed(!calendarLegendCollapsed);
   }, [calendarLegendCollapsed, setCalendarLegendCollapsed]);
+
+  // BottomCtaBar tap の本体 (BottomCtaBar onPress とガイドの操作代行で共用)
+  const handleCtaPress = useCallback(
+    () =>
+      startBulkAction(
+        data.bonsai.map((b) => ({ id: b.id, name: b.name })),
+        data.selectedDateKey,
+      ),
+    [startBulkAction, data.bonsai, data.selectedDateKey],
+  );
+
+  // #1178 g2/g3 (ADR-0058): タブ初回 open 時に BottomCtaBar をスポットライトで 1 回だけ強調。
+  // 強調領域 tap は本物の操作 (handleCtaPress) を代行 — ただし disabled (plan の過去日) 中は
+  // markSeen のみで flow は起動しない。
+  const guideId = mode === 'plan' ? 'g3PlanCta' : 'g2RecordCta';
+  const guideSeen = useGuidesStore((s) => s.seen);
+  const markGuideSeen = useGuidesStore((s) => s.markSeen);
+  const guideActive = canShowGuide(guideId, guideSeen);
+  const {
+    targetRef: guideTargetRef,
+    rect: guideRect,
+    measure: measureGuideTarget,
+  } = useSpotlightTarget();
+  const dismissGuide = useCallback(() => markGuideSeen(guideId), [markGuideSeen, guideId]);
+  const handleGuideTargetPress = useCallback(() => {
+    markGuideSeen(guideId);
+    if (!data.isFabDisabled) handleCtaPress();
+  }, [markGuideSeen, guideId, data.isFabDisabled, handleCtaPress]);
 
   return (
     <ThemedView
@@ -110,17 +142,35 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
       {/* Sess72 ADR-0054 D1: FAB -> BottomCtaBar replacement. plan mode disables
           on past dates, record mode always enabled. Inline layout solves overlap
           structurally (R-62 Layout Contract). */}
-      <BottomCtaBar
-        onPress={() =>
-          startBulkAction(
-            data.bonsai.map((b) => ({ id: b.id, name: b.name })),
-            data.selectedDateKey,
-          )
-        }
-        label={t(fabAccessibilityLabelKey)}
-        testID={`e2e_${testIdPrefix}_bottom_cta_action`}
-        disabled={data.isFabDisabled}
-      />
+      {/* #1178 g2/g3: wrapper はガイド対象の計測用 (collapsable={false} = Android で
+          native View が畳まれて measureInWindow 不能になるのを防ぐ)。ガイド非表示時は
+          onLayout を張らず計測コストゼロ。 */}
+      <View
+        ref={guideTargetRef}
+        collapsable={false}
+        onLayout={guideActive ? measureGuideTarget : undefined}
+      >
+        <BottomCtaBar
+          onPress={handleCtaPress}
+          label={t(fabAccessibilityLabelKey)}
+          testID={`e2e_${testIdPrefix}_bottom_cta_action`}
+          disabled={data.isFabDisabled}
+        />
+      </View>
+
+      {/* #1178 g2/g3 スポットライト (生涯 1 回、ADR-0058 原則 2)。
+          静的 testID 一覧: testID="e2e_plan_guide_cta" / testID="e2e_record_guide_cta" */}
+      {guideActive && (
+        <GuideSpotlight
+          visible
+          targetRect={guideRect}
+          body={t(mode === 'plan' ? 'guidePlanCtaBody' : 'guideRecordCtaBody')}
+          dismissLabel={t('ok')}
+          onDismiss={dismissGuide}
+          onTargetPress={handleGuideTargetPress}
+          testID={`e2e_${testIdPrefix}_guide_cta`}
+        />
+      )}
 
       <ConfirmDialog
         visible={actions.pendingDelete !== null}
