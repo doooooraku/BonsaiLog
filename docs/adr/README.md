@@ -120,5 +120,4 @@ cp docs/adr/adr_template.md docs/adr/ADR-0002-<short-title>.md
 ### 6-3. 影響がある箇所を更新する
 
 - constraints に関わるなら `docs/reference/constraints.md` を更新
-- 用語が増えたら `docs/reference/glossary.md` を更新
 - 合否が変わるならテスト（Jest/Maestro）を追加/更新

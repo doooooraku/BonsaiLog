@@ -106,14 +106,14 @@ git switch -c <type>/<issue-number>-<short-title>
 
 - `docs/reference/constraints.md` に違反しないか？
 - 既存 ADR と矛盾しないか？
-- `docs/reference/glossary.md` の用語で書けているか？
+- 用語が `docs/reference/basic_spec.md` §2 / コードの命名と整合しているか？
 
 #### 5-2. 必要ならドキュメント更新
 
 | 更新トリガ                 | 更新先                              |
 | -------------------------- | ----------------------------------- |
 | 収益 / プラン差分          | `constraints.md`                    |
-| 用語が増えた               | `glossary.md`                       |
+| 用語が増えた               | `basic_spec.md` §2                  |
 | 「なぜそう決めたか」がある | 新 ADR を作成                       |
 | 新機能の挙動               | `docs/reference/functional_spec.md` |
 

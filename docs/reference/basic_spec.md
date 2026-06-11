@@ -89,15 +89,13 @@
 
 ## 2. 用語
 
-詳細は [`glossary.md`](./glossary.md) を正とする。本書では以下 10 語のみ定義する。
+用語の定義は本節とコード（`src/db/schema.ts` の EVENT_TYPES ほか）を正とする。
 
 - **盆栽 (Bonsai)**: アプリで管理する樹木 1 本。写真・作業履歴・メモを持つ親エンティティ。
 - **樹種 (Species)**: 黒松・真柏・Ficus retusa など。学名を主キー、各言語の通称を副項目として持つ。
-- **作業 (Event / Care Event)**: 水やり・剪定・針金がけ・植替え・施肥・葉刈り・病害虫対処などの記録単位。1 つの盆栽に時系列で紐付く。
-- **リマインダー (Reminder)**: 次回作業の予定通知。**ユーザー手動設定のみ**で生成される。
-- **分散 (Distribution)**: 複数の樹の作業が同じ週に集中しないようずらすアルゴリズム。
-- **初期ガイド (Starter Guide)**: 新規盆栽登録時に生成される、最初の 30 日分の作業カレンダー。
-- **お引っ越し (Device Migration)**: 旧端末から新端末へ全データ（DB + 写真）を暗号化転送する機能。
+- **作業 (Event / Care Event)**: 水やり・剪定・針金がけ・植替え・施肥・葉刈りなど 14 種の記録単位（SoT は `src/db/schema.ts` EVENT_TYPES）。1 つの盆栽に時系列で紐付く。
+- **通知 (Notification)**: 作業予定のローカル通知（F-16、ADR-0014）。**ユーザー手動設定のみ**で生成される（"reminder" は禁止語 = constraints §5-2）。
+- **お引っ越し (Device Migration)**: 旧端末から新端末へ全データ（DB + 写真）を ZIP + Share Sheet で転送する機能（暗号化なし、ADR-0007）。
 - **Pro（プレミアム）**: 課金済みの状態。`premium` Entitlement で識別。
 - **樹形スタイル (Style)**: Chokkan（直幹）/ Moyogi（模様木）/ Shakan（斜幹）/ Kengai（懸崖）等の分類。
 - **継承モード (Inheritance Mode)**: 先代の盆栽作業履歴を自記録と接続表示する機能（v1.1+）。
@@ -871,11 +869,9 @@ AdMob 禁止カテゴリ抵触・医療類似判定リスク回避のため、**
 - [`product_strategy.md`](../explanation/product_strategy.md): なぜこのアプリを作るか、痛み×機能対応表
 - [`constraints.md`](./constraints.md): 前提 / 制約 / 不変条件
 - [`functional_spec.md`](./functional_spec.md): UI と状態の詳細（ある場合）
-- [`glossary.md`](./glossary.md): 用語の正
 - [`docs/adr/`](../adr/): 意思決定の履歴
-- [`docs/i18n/translation_guide.md`](../i18n/translation_guide.md): Claude Code 翻訳プロンプトテンプレート
-- `scripts/validate_i18n.py`: 翻訳検証スクリプト
-- `scripts/i18n-audit.mjs`: 翻訳キー監査
+- [`docs/adr/ADR-0033-i18n-translation-policy.md`](../adr/ADR-0033-i18n-translation-policy.md): 翻訳方針（18 言語手動翻訳 + 翻訳禁止リスト）
+- `pnpm i18n:check` / `pnpm i18n:audit`: 翻訳検証・監査（実体は `scripts/i18n-check.mjs` / `scripts/i18n-audit.mjs`）
 - `src/db/schema.ts`: SQLite スキーマの正
 - `src/db/filePathUtils.ts`: 相対パス変換ユーティリティ
 

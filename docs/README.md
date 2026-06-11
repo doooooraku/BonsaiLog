@@ -15,13 +15,13 @@
 
 ### Diátaxis 4 区分 + ADR（知識の置き場）
 
-| ディレクトリ     | 区分                 | 役割・更新ルール                                                                                                                                               |
-| ---------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `explanation/`   | Diátaxis Explanation | なぜ作るか・価値・スコープ境界（`product_strategy.md` が代表）。変えにくい「地図」                                                                             |
-| `reference/`     | Diátaxis Reference   | 変わりにくい事実: 仕様（basic/functional）、`constraints.md`、`glossary.md`、`design_system.md`、`architecture.md`、`doc-routing.md`、`tasks/lessons/`（教訓） |
-| `how-to/`        | Diátaxis How-to      | 手順書。`development/` `workflow/` `testing/` `ui-diff/` `release/` + `workflow/prompts/`（次セッション用 prompt 雛形 = P-XX とテンプレ）                      |
-| `adr/`           | ADR                  | なぜそうしたか（決定ログ）。履歴として増える。変更は Amendment で追記（R-2: 履歴は ADR に集約）                                                                |
-| （`tutorials/`） | Diátaxis Tutorial    | **現状なし**（個人開発でオンボーディング需要が薄いため未設置）。必要になったら新設し、本表と docs-lint allowlist に追加                                        |
+| ディレクトリ     | 区分                 | 役割・更新ルール                                                                                                                                |
+| ---------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `explanation/`   | Diátaxis Explanation | なぜ作るか・価値・スコープ境界（`product_strategy.md` が代表）。変えにくい「地図」                                                              |
+| `reference/`     | Diátaxis Reference   | 変わりにくい事実: 仕様（basic/functional）、`constraints.md`、`design_system.md`、`architecture.md`、`doc-routing.md`、`tasks/lessons/`（教訓） |
+| `how-to/`        | Diátaxis How-to      | 手順書。`development/` `workflow/` `testing/` `ui-diff/` `release/` + `workflow/prompts/`（次セッション用 prompt 雛形 = P-XX とテンプレ）       |
+| `adr/`           | ADR                  | なぜそうしたか（決定ログ）。履歴として増える。変更は Amendment で追記（R-2: 履歴は ADR に集約）                                                 |
+| （`tutorials/`） | Diátaxis Tutorial    | **現状なし**（個人開発でオンボーディング需要が薄いため未設置）。必要になったら新設し、本表と docs-lint allowlist に追加                         |
 
 ### 運用記録（生きているトラッカー）
 
@@ -58,7 +58,7 @@
 ## 2. 「最初は固定」の考え方
 
 - **原則は正しい**。ただし「固定」ではなく **「変えにくい」** が正確
-- 変えにくい（基盤）: `product_strategy.md` / `basic_spec.md` / `functional_spec.md` / `glossary.md`
+- 変えにくい（基盤）: `product_strategy.md` / `basic_spec.md` / `functional_spec.md`
 - 集約して更新: `constraints.md`（1 枚に集約、追記型ではない）
 - 履歴として増える: `adr/ADR-*.md`（決定ログが蓄積）
 - 仕様書は「仕様変更の根拠（ADR）」と「テスト（合否）」が揃う時だけ変える
@@ -79,7 +79,7 @@
 
 - **A. 仕様に影響する？** → YES: `basic_spec` / `functional_spec` を更新
 - **B. 前提/制約が変わる？** → YES: `constraints.md` を更新
-- **C. 用語の意味が変わる？** → YES: `glossary.md` を更新
+- **C. 用語の意味が変わる？** → YES: `basic_spec.md` §2 を更新
 - **D. 「なぜそうしたか」が議論になる？** → YES: ADR を追加
 - **E. 合否条件が変わる？** → YES: テストを追加/更新
 - **F. プロジェクトが完了した？** → YES: 計画書/報告書を `archive/` へ、一時 doc は削除、台帳の行を更新

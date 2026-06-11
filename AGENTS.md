@@ -156,7 +156,7 @@ This project is run by **Claude Code alone** (Codex は使用しない、2026-05
 | W-02   | Create Issue                | Fill required fields in Issue Forms                     |
 | W-03   | Prioritize                  | Impact × Effort × Risk                                  |
 | W-04   | Branch setup                | Create `feat/N-desc` from main                          |
-| W-05   | Finalize spec               | Update constraints / ADR / glossary, define AC          |
+| W-05   | Finalize spec               | Update constraints / ADR, define AC                     |
 | W-05.5 | Self-handoff (Context note) | Add `## Context` section to Issue (self note)           |
 | W-06   | Implement                   | Write the code (small commits)                          |
 | W-07   | Write tests                 | AC → Jest / Maestro                                     |

@@ -9,7 +9,6 @@
   * `docs/reference/constraints.md`（前提/制約の一枚岩）
   * `docs/reference/basic_spec.md`（基本仕様＝不変条件寄り）
   * `docs/reference/functional_spec.md`（機能仕様＝UI/状態/制約の“結論”だけ）
-  * `docs/reference/glossary.md`（用語の正）
 * **ADR（なぜそう決めたか）**：`docs/adr/ADR-*.md`（本文から理由を追い出す）
 * **How-to（手順）**：
 
@@ -79,7 +78,7 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
   - 価値/境界：`docs/explanation/product_strategy.md`
   - 前提/制約：`docs/reference/constraints.md`
   - 仕様（結論）：`docs/reference/basic_spec.md` / `docs/reference/functional_spec.md`
-  - 用語：`docs/reference/glossary.md`
+  - 用語：`docs/reference/basic_spec.md` §2
   - 理由：`docs/adr/ADR-*.md`
   - 合否：テスト（Jest）＋必要なら `maestro/**`（E2E）
 
@@ -151,7 +150,6 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
   - `docs/explanation/product_strategy.md` の作成
   - `docs/reference/basic_spec.md` の作成/更新
   - `docs/reference/functional_spec.md` の作成/更新
-  - `docs/reference/glossary.md`（用語が増える場合）
 
 - **完了条件**：第三者が読んで「何を作る/作らない」が同じ理解になる
 - **担当**：人間（あなた）
@@ -167,7 +165,7 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
 - **OUTPUT**：GitHub Issue（bug / feature）
 - **完了条件**：
   - 受け入れ条件が“テスト文”で書かれている
-  - 参照先（constraints / glossary / basic_spec / functional_spec / ADR）がリンクされている
+  - 参照先（constraints / basic_spec / functional_spec / ADR）がリンクされている
   - Issue本文に「タスク分割」がある（チェックリスト or サブIssue）
 
 - **担当**: Claude Code (`/plan` Skill)
@@ -196,7 +194,7 @@ BonsaiLog を **「仕様→Issue→実装→テスト→PR→マージ→リリ
 - **作業内容**:
   - 人間（あなた）と対話して不明点を解消する
   - 不変条件 → `basic_spec.md`
-  - 用語 → `glossary.md`
+  - 用語 → `basic_spec.md` §2
   - 前提 / 制約 → `constraints.md`
   - 理由（なぜ）→ 新 ADR を作成
   - **AC（受け入れ条件）を Jest テストに落とせる粒度で決める**
