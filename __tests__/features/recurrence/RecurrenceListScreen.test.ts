@@ -105,6 +105,17 @@ describe('RecurrenceListScreen (Sess81 PR-7.5、 ADR-0056 + ADR-0035 D9 部分 r
     expect(SCREEN_SRC).toMatch(/nextLabel:\s*\{\s*fontSize:\s*13/);
   });
 
+  test('5d. Sess101 #1171: カード tap = 編集遷移 (kebab 編集とハンドラ共通)', () => {
+    // 編集遷移は handleEditGroup 1 箇所 (カード onPress + kebab 編集の二重実装禁止)
+    expect(SCREEN_SRC).toContain('handleEditGroup');
+    expect(SCREEN_SRC).toMatch(/onPress=\{\(\) => handleEditGroup\(item\)\}/);
+    expect(SCREEN_SRC).toMatch(/onPress: \(\) => handleEditGroup\(kebabTarget\)/);
+    // 遷移 push はハンドラ内の 1 箇所のみ
+    expect(SCREEN_SRC.match(/recurring-rules\/edit/g)).toHaveLength(1);
+    // press feedback
+    expect(SCREEN_SRC).toContain('cardPressed');
+  });
+
   test('6. empty state 実装 (= 「予定タブから 🔁 で 作成できます」 案内)', () => {
     expect(SCREEN_SRC).toContain("t('recurringListEmptyTitle')");
     expect(SCREEN_SRC).toContain("t('recurringListEmptyDesc')");
