@@ -46,6 +46,15 @@ for (const line of src.split('\n')) {
 if (rows.length === 0) errors.push(`${SOURCE} からデータ行を 1 行も parse できなかった`);
 
 // ---- 2. 実在検査 (doc path + glob 接頭 dir) ----
+// gitignored な生成物 dir (例: /android = prebuild 産物) はクリーン checkout (CI / worktree)
+// に存在しないため、実在検査の対象外とする (glob 自体は rules に残す — 存在する環境でのみ発火)
+const gitignored = new Set(
+  readFileSync(join(ROOT, '.gitignore'), 'utf8')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#'))
+    .map((l) => l.replace(/^\//, '').replace(/\/$/, '')),
+);
 for (const row of rows) {
   if (row.globs.length === 0) errors.push(`[${row.id}] glob が backtick で 1 つも書かれていない`);
   if (row.docs.length === 0)
@@ -55,7 +64,7 @@ for (const row of rows) {
   }
   for (const glob of row.globs) {
     const prefix = glob.includes('*') ? glob.slice(0, glob.indexOf('*')).replace(/\/$/, '') : glob;
-    if (prefix && !existsSync(join(ROOT, prefix)))
+    if (prefix && !existsSync(join(ROOT, prefix)) && !gitignored.has(prefix))
       errors.push(`[${row.id}] glob の接頭が実在しない: ${glob} (検査対象: ${prefix})`);
   }
 }

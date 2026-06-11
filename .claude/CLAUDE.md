@@ -8,6 +8,7 @@
 - `AGENTS.md` (core project rules for all agents)
 - `docs/reference/constraints.md` (immutable project rules)
 - `docs/how-to/development/coding_rules.md` (coding conventions)
+- `docs/reference/doc-routing.md` (Code→Docs ルーティング原本 — 該当 path の Read 時に `.claude/rules/routing/*` が自動注入される)
 
 ---
 
@@ -23,60 +24,32 @@
 ### 2. Sub-Agent Strategy
 
 - Keep main context window clean — delegate research to sub-agents
-- 1 sub-agent = 1 task
-- Use parallel sub-agents for independent queries (up to 5 concurrent)
-
-**Project subagents** (installed at `~/.claude/agents/`):
+- 1 sub-agent = 1 task / 独立 query は並列 (up to 5 concurrent)
+- **Plan agent の critical claim は実装前に 1 次資料を Read で確認** (Sess90 PR-A 教訓): framework 挙動 (cascade/inherit)・型制限・API 挙動の主張は agent の学習データ依存で陳腐化リスクあり。確認先 = framework docs / `node_modules/<lib>` の型定義 / 既存実装の grep。事例詳細: `docs/reference/tasks/lessons/retro.md` の [2026-06-10] Sess90 エントリ
 
 | Agent              | Tools                  | Model | When to use                                               |
 | ------------------ | ---------------------- | ----- | --------------------------------------------------------- |
 | `eas-build-doctor` | Bash, Read, Glob, Grep | haiku | Before any local/remote EAS build — env validation        |
 | `commit-helper`    | Bash, Read             | haiku | Drafting Conventional Commits messages with user approval |
 
-> **Note**: Claude Code currently only loads subagents from `~/.claude/agents/` (user scope), not from `<repo>/.claude/agents/`. Master copies are kept under `.claude/agents/` for reference; copy them with `cp -n .claude/agents/*.md ~/.claude/agents/` if you need to (re)install. Verified 2026-04-11.
-
-**Plan agent の critical claim は実装前に 1 次資料で Read 確認 (Sess90 PR-A 教訓)**:
-
-Plan agent / cross-check agent からの出力で **framework specific な挙動主張** (= 「root → nested で cascade される」「type X は Y を受け入れる」「API Z は idempotent」 等) は agent の学習データに依存するため陳腐化リスクあり。 実装前に以下を Read で 1 次確認:
-
-- **cascade / inherit 主張** → 該当 framework の docs or 既存 nested 実装 file (例: Expo Router なら `app/<group>/_layout.tsx` の screenOptions 設定状況を grep)
-- **型制限 主張** → `@types/<lib>` or `node_modules/<lib>/types/` の type definition (例: `headerTitleStyle` の型は `node_modules/@react-navigation/native-stack/lib/typescript/...`)
-- **API 挙動 主張** → SDK changelog or 既存呼び出し file での実装パターン (例: 「Expo deep link は (tabs) group route を受け入れる?」 → 既存 (modals) route の呼び出し方を grep)
-
-確認漏れの代表例: Sess90 PR-A で Plan agent が「Expo Router root `<Stack screenOptions>` は nested に cascade」 と出力 → 実装中に nested で font 未適用発覚 → 4 nested layout 追加修正 (+10 分の手戻り)。 1 次資料 Read で 1 分の事前確認すれば回避可能だった。
+<!-- 人間向け注記: Claude Code は subagents を ~/.claude/agents/ (user scope) から load する。
+     master copy は .claude/agents/ に保管。再 install: cp -n .claude/agents/*.md ~/.claude/agents/
+     (Verified 2026-04-11) -->
 
 ### 3. Self-Improvement Loop
 
-- Record corrections in `docs/reference/tasks/lessons.md`
+- Record corrections in `docs/reference/tasks/lessons/` (領域索引は `lessons/README.md` が唯一の正)
 - Write rules to prevent repeating the same mistakes
 - Review lessons at session start
 
-### 4. Discussion Mode (議論モード必須チェックリスト)
+### 4. 議論・編集・記憶の必須チェック (正本 pointer)
 
-When the user asks to discuss / explore / plan (not implement):
+重複記載しない (多重コピーは drift 源)。正本と注入経路:
 
-- Use `/discuss` Skill
-- Do NOT write code until explicitly approved
-- Multiple expert viewpoints + bias removal + simulation
-
-**議論開始前の必須チェック (R-13/R-14/R-16/R-17/R-20)**:
-
-- [ ] **(R-13)** 議論冒頭で「本議論で **N 件質問**します、想定 **M ラウンド** です」を予告
-- [ ] **(R-14)** ユーザーが「わからない」「専門用語多い」と発言したら、以降の応答で専門用語に「やさしい言い換え」併記強制
-- [ ] **(R-16)** Design / モックアップ参照時は「Design は下書き、ADR が正」を冒頭明示
-- [ ] **(R-20)** 「念のため」「再検証」「再議論」プロンプト時は議論開始前に既存 ADR / functional_spec の該当セクションを必ず Read
-- [ ] **(R-7)** 議論深さ 3 ラウンド以上、(R-8) フラット視点専門家 1 名以上、(R-10) 4 ペルソナ評価必須
-- [ ] **(R-17)** 「全部推薦で OK」回答受領しても即時実行禁止、TaskCreate → 計画提示 → 承認 → 実行 の 4 段階強制
-
-**ファイル編集時の必須チェック (R-18 / R-1 自動化)**:
-
-- [ ] **(R-18)** Edit / Write 前に必ず Read。`.claude/hooks/check-read-before-edit.mjs` が PreToolUse で block する
-- [ ] **(R-1)** 一括編集後 `pnpm docs:lint` で取り消し線 / Codex 言及 / ADR 連番チェック (PostToolUse hook で自動 grep)
-
-**Engram 保存時の制約 (R-19)**:
-
-- [ ] **(R-19)** mem_save の content は 1KB (1024 文字) 以内、長文は ADR / Issue 本文に書く
-- [ ] **(R-15)** mem_save が 30 秒以上応答ない場合はハング扱い、ユーザーに即時報告
+- **議論モード checklist (R-7/8/10/13/14/16/17/20)**: hooks が毎セッション自動注入 (SessionStart + UserPromptSubmit)。正本は `.claude/recurrence-prevention.md` + `.claude/recurrence-prevention/specialized.md`
+- **Edit/Write 前 Read (R-18)**: `.claude/hooks/check-read-before-edit.mjs` が PreToolUse で block
+- **一括編集後 lint (R-1)**: PostToolUse hook が自動実行 + 機械修正後は full diff + Read 目視 (grep 検算だけは禁止)
+- **Engram 制約 (R-19 content ≤1KB / R-15 30 秒無応答はハング報告)**: SessionStart hook が注入
 
 ---
 
@@ -86,8 +59,8 @@ On any new session, Claude Code should:
 
 1. Read `AGENTS.md` (root) for core project rules
 2. Read `.claude/CLAUDE.md` (this file) for Claude Code extensions
-3. Read `docs/reference/tasks/lessons.md` (索引) — 必要な領域のみ `lessons/<domain>.md` を Read
-4. **Read `.claude/recurrence-prevention.md` for behavioral rules (汎用 R-1〜R-12 + 専門 R-13 以降の索引、最新番号は同ファイルが正)** — 必読、行動 lesson。 専門ルール詳細は `.claude/recurrence-prevention/specialized.md` を参照。 **3 回再発で hook / ESLint / CI に昇華必須** (CLAUDE.md §9 / 記憶の昇華ルール)、`scripts/docs-lint.mjs` で 250 行上限 + 親索引×specialized 見出し parity を自動検出
+3. Read `docs/reference/tasks/lessons/README.md` (領域索引) — 必要な領域のみ `lessons/<domain>.md` を Read
+4. **Read `.claude/recurrence-prevention.md`** (汎用 R + 専門 R の索引、最新の R 番号は同ファイルが正) — 必読、行動 lesson。詳細は `.claude/recurrence-prevention/specialized.md`。**3 回再発で hook / ESLint / CI に昇華必須** (user global CLAUDE.md §9)。行数上限・索引 parity は `scripts/docs-lint.mjs` が機械検出 (チェック一覧は script 冒頭 doc が正)
 5. **Read `docs/reference/personas.md` if exists** — 議論時にペルソナ評価で使用
 6. If Plan mode: read `docs/reference/constraints.md` + relevant ADRs
 
@@ -116,46 +89,17 @@ Implementation Skills (Claude Code 単独運用、2026-05-01 から両系統 Ski
 ## Commands
 
 - `pnpm dev` — start Metro
-- `pnpm verify` — full check (lint + type-check + format + test + i18n + config + **docs:lint**)
-- `pnpm test` — Jest unit tests
-- `pnpm test:e2e` — Maestro E2E
+- `pnpm verify` — full check chain (構成は `package.json` の `verify` script が正)
+- `pnpm test` — Jest unit tests / `pnpm test:e2e` — Maestro E2E
 - `pnpm build:android:apk:local` — local APK build (`SKIP_KEYS=1` for first build)
 - `pnpm build:android:aab:local` — local AAB build for production
 - `pnpm i18n:check` — verify all locale keys are present
-- `pnpm docs:lint` — Codex 言及残存 / ADR 番号歯抜け / 取り消し線 / lessons.md 肥大化チェック
+- `pnpm docs:lint` — docs 整合 lint (チェック一覧は `scripts/docs-lint.mjs` 冒頭 doc が正)
 - `pnpm metadata:check` — validate `fastlane/metadata/`
+- `pnpm gen:doc-routing` — `doc-routing.md` → `.claude/rules/routing/*` 再生成 (drift は `verify:doc-routing` が検出)
 
 ---
 
-## UI Diff 自動改善ループ運用ルール (Phase 0.1〜)
+## UI Diff 自動改善ループ
 
-ユーザーが「ループ開始」「auto-improve loop start」と Claude に伝えたら、以下のルールで自動改善ループを実行する。詳細は `docs/how-to/ui-diff/auto-improve-loop.md` 参照。
-
-### スコープ厳守
-- ✅ UI 整合性のみ (style / layout / mockup integration)
-- ❌ 機能追加 / DB schema 変更 / API 変更 / ADR 変更
-- 機能変更が必要な場合は人間に上申 (`needs-human-review` ラベル)
-
-### 承認モード (半自走)
-- 各 PR 前に 1 文の計画提示 + 10 秒待機
-- ユーザー応答なし = 暗黙承認
-- ユーザーが「stop」「待って」で即停止
-
-### 暴走対策 (3 重防御)
-1. Kill switch: `/tmp/claude-stop.flag` 存在チェック (`scripts/ui-diff/kill-switch.mjs`)
-2. Skip list: 同 flow 同箇所 2 回失敗で永久 skip (`scripts/ui-diff/skip-list.json`)
-3. RMSE 悪化検知: latest > prev × 1.1 で `git revert HEAD` (`scripts/ui-diff/auto-revert.mjs`)
-
-### PR テンプレ
-- title: `fix(ui-diff-auto): <flow-id> <修正概要>`
-- body: 整合度 before/after + diff PNG link + 修正根拠
-- 全 PR で `pnpm verify` 緑 + GitHub CI 緑必須
-
-### 終了条件
-- 全 41 画面 (4 HTML 内全画面) 整合度レベル 2 (80%) 達成
-- ユーザー停止指示
-- Kill switch 検知
-
-### 進捗共有
-- `scripts/ui-diff/out/SUMMARY-loop.md` 毎サイクル更新
-- 5 サイクルごとに Engram session_summary 保存
+ユーザーが「ループ開始」「auto-improve loop start」と伝えたら: `docs/how-to/ui-diff/auto-improve-loop.md` を Read して従うこと (Read した瞬間に運用ルール `.claude/rules/ui-diff-loop.md` も自動注入される — スコープ厳守 / 暴走対策 3 重防御 / 終了条件はそちらが正)。
