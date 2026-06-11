@@ -92,7 +92,7 @@
 
 - **ルール**: ADR の Decision で具体的な技術仕様 (DB schema、SDK バージョン、tokenize オプション等) が書かれている場合、実装着手前 + Phase 完了前に該当ファイルを Read + grep で ADR と整合確認する。テストや CI 緑だけでは drift 検出できない。さらに **ImageMagick RMSE / CI / lint 等の機械的検証ツール合格だけで「達成 / 完遂」 と判定してはいけない。最終判定は Claude Read による目視評価 (構造系 4 項目: タブ構成 / セクション構成 / UI 種別 / スクロール範囲) が必須**。
 - **根拠**: 2026-05-03 セッションで `events_fts` の `tokenize="trigram"` (実コード) と ADR-0008 §4.3.4 の `tokenize='trigram remove_diacritics 1' detail=column` (仕様) の乖離を発見。2026-05-11 セッションで ImageMagick RMSE 22249 (5.4% 改善) のみで bonsai-detail 達成と判定したが、ユーザー指摘で構造的大差 (read-only vs 編集 form / list vs timeline) を見逃していたことが発覚 (Issue #439-#441 再起票、PR #442 で運用切替)。
-- **自動化**: `.claude/hooks/check-structure-eval-before-skiplist-update.mjs` で skip-list.json 編集時に構造系 4 項目キーワード未含有を block。`.github/pull_request_template.md` §7.6 で PR description に構造系 4 項目記載を必須化。
+- **自動化**: `.claude/hooks/check-structure-eval-before-skiplist-update.mjs` で skip-list.json 編集時に構造系 4 項目キーワード未含有を block。PR テンプレ付録 `docs/how-to/workflow/pr-template-appendix.md` §7.6 で PR description に構造系 4 項目記載を必須化。
 
 ### R-26. 外部 Design 部分採用判定時のブランド統一感評価 + 画面マップ必須化
 
@@ -132,7 +132,7 @@
   5. **mockup スクショと RN スクショを並べて Read で目視比較** → 整合性レベル明記 (`docs/reference/integration-criteria.md` 参照)
 - **整合性レベル要求**: レベル 2 (見た目 80% 一致) 以上で「整合済」マーク (将来レベル 3 へ)
 - **根拠**: 2026-05-10 セッションで PR #341/#342/#350 を「整合済」マークしたが、実機画像比較で乖離 (チェックマーク未表示 / SelectionToolbar 未表示 / FAB 連動失敗 / 「N件選択中」未表示) が発覚。「視覚確認ループ無し」+ 「整合済の定義不在」が根本原因。
-- **自動化**: `.github/pull_request_template.md` で 5 段階チェックボックス強制 (T1-3)。`docs/reference/integration-criteria.md` でレベル定義 (T1-1)。
+- **自動化**: PR テンプレ付録 `docs/how-to/workflow/pr-template-appendix.md` §7.5 で 5 段階チェックボックス強制 (T1-3)。`docs/reference/integration-criteria.md` でレベル定義 (T1-1)。
 
 ### R-30. 外部 lib のテスト stability 変更時 PoC 必須化
 
@@ -169,7 +169,7 @@
   - **R-39.3**: store-callback chain (`setX + router.back() + caller useFocusEffect で consume`) は ADR-0030 Case A (dialog 起動) + Case B (state 更新のみ) のみ許容。 「次の画面に進む / DB に書込む」 用途は **直接 await + router.replace / router.push** 必須 (ADR-0031 Case 4 で log mode form 保存後遷移 pattern を確立)
   - **R-39.4**: grep-based 検出: `scripts/check-navigation-patterns.mjs` AP-3 (Sess19 PR-7 で追加) で warning。 将来 ESLint AST rule 化
 - **根拠**: 2026-05-21 Sess19 実機検証 (8 試行 100% 再現) で発覚。 Sess16-18 で 53 PR 投下した form 改修中、 Single 動線の DB 書込が **stale closure で完全失敗** していた。 `app/(tabs)/bonsai/[id]/index.tsx` の useFocusEffect callback が `useCallback(..., [handleSchedulePickerSelect])` で memoize、 `persistEventWithPayload` 関数を closure 経由で呼ぶが、 callback memo 化により **初回 mount 時の関数 reference (item=null) を永続保持** → `if (!item) return;` で静かに早期 return → DB 書込スキップ。 ESLint exhaustive-deps disable + メンタル契約で構造的破綻、 Maestro flow にも DB 反映 assertion が無く 53 PR 通過。 ADR-0031 で path 変更 (直接 await + router.replace) + 本 R-rule で構造防止。
-- **自動化**: `scripts/check-navigation-patterns.mjs` AP-3 で `useFocusEffect.*useCallback.*persist|countSameDay` pattern を grep-based 検出、 warning 出力 (Sess19 PR-7 で追加)。 PR テンプレ §7.6.4 で navigation 変更 PR の DB 反映 manual 検証 SS 添付必須化 (Sess19 PR-7)。
+- **自動化**: `scripts/check-navigation-patterns.mjs` AP-3 で `useFocusEffect.*useCallback.*persist|countSameDay` pattern を grep-based 検出、 warning 出力 (Sess19 PR-7 で追加)。 PR テンプレ付録 §7.6.4 で navigation 変更 PR の DB 反映 manual 検証 SS 添付必須化 (Sess19 PR-7)。
 - **関連**: ADR-0030 (Navigation patterns Case 分類) / ADR-0031 (Sess19 カレンダー統一 + stale closure 撲滅) / `scripts/check-navigation-patterns.mjs` / Sess19 retro
 
 ---
@@ -178,14 +178,14 @@
 
 - **ルール**: route (e.g., `/(tabs)/<name>` / `/<route>`) や Phase / 構造を変更する PR では、 以下を必ず実施:
   1. **事前 grep**: 廃止予定の path / testID / component 名で `grep -rn '<pattern>' --include="*.tsx" --include="*.ts" --include="*.yml" --include="*.json"` を全網羅実行
-  2. **影響範囲を PR 本文 §11「影響範囲全網羅 grep 結果」 に記載**: 全 hit を列挙、 修正済 / 修正不要 の判断を明記
+  2. **影響範囲を PR 本文に記載 (PR テンプレ付録 §7.8)**: 全 hit を列挙、 修正済 / 修正不要 の判断を明記
   3. **`scripts/obsolete-routes.json` に新 entry 追加**: 廃止 route を構造管理、 `.claude/hooks/check-obsolete-routes.mjs` (Sess8 Retro S-2) が Edit/Write 時に block
   4. **計画段階で「N 件」 と楽観計上禁止**: 実 grep を先に走らせて確定数を出す
 - **根拠**: 2026-05-17 Sess7 PR-1 (#543) で settings タブ → `app/settings/` 移動時、 (1) `SearchHeader.tsx:138` の `router.push('/(tabs)/settings')` 古い path 残存、 (2) `look-back/index.tsx:81` の `showSettings={false}` (歯車不表示)、 (3) Maestro flow 14 個と計画したが実 grep で 19 個と判明 = 計 3 件の漏れ。 Sess8 PR-1 (#545) で hotfix。 同種の path 漏れは Phase 1b 系で多発リスク。
 - **自動化**:
   - `.claude/hooks/check-obsolete-routes.mjs`: Edit/Write 前に対象 file 内の廃止 route hit で block (S-2)
   - `scripts/obsolete-routes.json`: 廃止 route を一元管理 (新規 entry 追加 → 全ファイル grep 自動 block)
-  - `.github/pull_request_template.md` §11: route / Phase 変更時の全網羅 grep 結果記載を必須化 (S-3)
+  - PR テンプレ付録 `docs/how-to/workflow/pr-template-appendix.md` §7.8: route / Phase 変更時の全網羅 grep 結果記載を必須化 (S-3、旧「§11」表記は番号 drift のため訂正)
 
 ---
 
@@ -408,7 +408,7 @@
   - [ ] `grep -rn '<new_type>' src/` で 4 file (WorkLogTypeFormFields / payloadValidator / buildHistoryChips / EventIcons) すべてに hit するか
   - [ ] `pnpm test` で exhaustive 走査 test 全 PASS
   - [ ] 実機検証で「row 展開時 chip + iconBox + form 入力 + 保存 / 表示」 すべて動作
-- **関連**: ADR-0041 Phase η/θ (Sess34) / Sess16 PR-E (silent bug 起点) / PR-Q-fix #799 (schema 漏れ修正) / design_system §24-5 (EventIcon mapping SoT) / PR テンプレ §7.5 R-25 5 項目目「EventRow 表示モード + sub-layout」
+- **関連**: ADR-0041 Phase η/θ (Sess34) / Sess16 PR-E (silent bug 起点) / PR-Q-fix #799 (schema 漏れ修正) / design_system §24-5 (EventIcon mapping SoT) / PR テンプレ付録 §7.6.1 構造系 5 項目目「EventRow 表示モード + sub-layout」
 
 ---
 
