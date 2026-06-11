@@ -87,8 +87,11 @@
 - **ルール**: 新アプリ初回 build では ① `.easignore` (無いと .gitignore が使われ .env が除外され required() で死ぬ) ② `plugins/withAsyncStorageRepo.js` (async-storage v3 KMP の maven path) ③ `postbuild-verify.mjs` も `SKIP_KEYS=1` 対応、を確認 (テンプレにバックポート済)。
 - **出典**: memory `eas-build-fixes` から昇格 (P2、2026-06-10)。
 
-### WSL2 で Android build すると PC ごとハングする → `.wslconfig` 上限必須
+### WSL2 で Android build すると PC ごとハングする → ローカル build 原則禁止 (guard で機械ブロック)
 
 - **何が起きたか**: Gradle + NDK + Metro 合計 15-20GB が WSL2 デフォルト (メモリ無制限) で Windows 側 RAM を食い尽くしシステム全体停止 (Sess65)。
-- **ルール**: `C:\Users\<user>\.wslconfig` に `memory=20GB` (32GB host 想定) 等の上限を設定してから local build する。cloud build (ADR-0050) が第一選択。
-- **出典**: memory `wsl2-android-build-config` から昇格 (P2、2026-06-10)。
+- **再発 (2026-06-11 Sess99 = 3 回目)**: `.wslconfig` 上限 (memory=20GB/32GB host) を設定済みでも、build が WSL の 20GB を満たすと Windows 側がページファイル多用 → ページング読み戻し失敗で **BSOD** (BugCheck 0x1E / arg1=0xc0000006 STATUS_IN_PAGE_ERROR)。2026-06-06 にも同系 BugCheck 0x7A (KERNEL_DATA_INPAGE_ERROR / 0xc000000e) があり、**メモリ上限だけでは防げない**ことが確定。INPAGE 系の反復は SSD 劣化の兆候の可能性もある (user に CrystalDiskInfo 確認を推奨済)。
+- **ルール (3 回再発 → 自動化、user global CLAUDE.md §9)**:
+  1. **dev APK も cloud build**: `gh workflow run build-android-dev.yml` → artifact `bonsailog-dev-apk` を `gh run download` (Sess99 新設)。release は従来どおり `build-android-play.yml` (ADR-0050)。
+  2. **ローカル build は `scripts/guard-local-build.mjs` が exit 1 でブロック** (`build:android:*:local` 3 script に配線済)。意図的に回す場合のみ `FORCE_LOCAL_BUILD=1`。
+- **出典**: memory `wsl2-android-build-config` から昇格 (P2、2026-06-10) + Sess99 再発で guard 化 (2026-06-11)。
