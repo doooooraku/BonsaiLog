@@ -310,6 +310,7 @@ R1-R4 で実装計画を詰めた:
 - `FREE_RECURRENCE_RULE_LIMIT = 3` const (`src/db/recurrenceRuleRepository.ts`、 `FREE_TAG_LIMIT` / `FREE_CUSTOM_SPECIES_LIMIT` pattern 踏襲)
 - `countActiveRecurrenceRules(): Promise<number>` (`countCustomTags` pattern)
 - `canCreateRecurrenceRule(): Promise<boolean>` (`canCreateNewTag` pattern)
+- ※ 上記 3 識別子は Sess101 で予定グループ単位へ改訂済 (= 当時の歴史記録として残置、 現行名は §Notes Amended Sess101 の対応表参照)
 - `useProGuard({ feature: 'recurring_rule', currentCount })` で UI 配線
 
 **Grandfathered 戦略**: 既存 4+ rule (仕様上ありえないが保証) 表示/編集/削除 OK + 追加のみ Paywall (Slack 2022 churn 事件回避、 本 ADR の Driver 2 整合)。
@@ -366,3 +367,25 @@ R1-R4 で実装計画を詰めた:
 **実機検証**: versionCode 13 release 前にまとめて (= Sess76 pattern 踏襲、 SH-M25 Dev Build + Metro 起動 dir 罠回避)。
 
 **関連**: Sess59 PR5 (= 当時の実装漏れ起点) / Sess89 PR #1028/1030/1031/本 PR / R-65 拡張 (= CRUD カバレッジ events → master/custom 全領域) / R-72 (= master/custom CRUD pattern SoT)。
+
+---
+
+### §Notes Amended Sess101 (2026-06-11) — ⑦ 定期予定の数え方を rule 単位 → 予定グループ単位へ (#1159)
+
+**背景**: Sess99 #1122 (案 G2) で「予定グループ」 概念を導入した結果、 課金境界だけが rule 単位 (= 盆栽 × 予定) のまま残り、 「盆栽 3 本に予定 1 つ作っただけで Free 上限」 という user 認知 (= 予定 1 件) との不一致が構造化していた。 Sess101 /discuss で user が「予定グループ単位 (= 予定 3 つまで、 盆栽数は問わない)」 を決定 (= 収益影響了承済、 Engram obs 586)。
+
+**決定**:
+
+| 項目       | 旧 (Sess78)                      | 新 (Sess101)                                               |
+| ---------- | -------------------------------- | ---------------------------------------------------------- |
+| 数える単位 | rule (= 盆栽 × 予定)             | 予定グループ (`COUNT(DISTINCT COALESCE(group_id, id))`)    |
+| 上限定数   | `FREE_RECURRENCE_RULE_LIMIT = 3` | `FREE_RECURRENCE_GROUP_LIMIT = 3`                          |
+| 件数関数   | `countActiveRecurrenceRules`     | `countActiveRecurrenceGroups`                              |
+| 判定関数   | `canCreateRecurrenceRule`        | `canCreateRecurrenceGroup`                                 |
+| 編集時判定 | 置換後 rule 総数で判定           | 判定なし (= グループ数不変、 盆栽増減・種別変更は Free 可) |
+
+- group_id NULL の旧 rule は rule.id を 1 本グループとして数える (= `ruleGroupKey` と同一規約) — 単独作成 rule の件数解釈は従来と同一、 複数盆栽グループのみ緩和方向
+- **Grandfathered**: 既存 4+ グループ = 表示/編集/削除 OK + 追加のみ Paywall (不変)。 上限緩和方向の変更のため既存 user に不利益なし (= Grandfathered badge が消える user はあり得るが緩和)
+- **IAP 説明文**: 「定期予定: Free 3 件 / Pro 無制限」 はグループ単位でも文言上正のため変更なし (= Play Console / App Store Connect 更新不要)。 Paywall / PlanSection の i18n 値「3件まで」 も同様に変更なし
+
+**関連**: ADR-0056 D7 (Sess101 改訂) / Issue #1159 / Sess101 /discuss (= カード予定中心化 #1158・次回 SoT #1157 と同議論)。

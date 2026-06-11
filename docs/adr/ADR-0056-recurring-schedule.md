@@ -161,14 +161,16 @@ recurring 由来 event の ⋮ menu tap → **3 択 ConfirmDialog**:
 
 i18n key: `recurringRuleEditScopeThis` / `recurringRuleEditScopeFollowing` / `recurringRuleEditScopeAll` (Sess77 ADR-0055 status 別意味分化 pattern 拡張)。
 
-### D7. Pro 境界: Free 3 件 / Pro 無制限 (ADR-0049 ⑦ 追加)
+### D7. Pro 境界: Free 3 件 / Pro 無制限 (ADR-0049 ⑦ 追加、 Sess101 #1159 改訂 = 予定グループ単位)
 
-- `FREE_RECURRENCE_RULE_LIMIT = 3` const (`FREE_TAG_LIMIT` / `FREE_CUSTOM_SPECIES_LIMIT` pattern 完全踏襲)
-- `countActiveRecurrenceRules(): Promise<number>` (`countCustomTags` pattern)
-- `canCreateRecurrenceRule(): Promise<boolean>` (`canCreateNewTag` pattern)
-- `useProGuard({ feature: 'recurring_rule', currentCount })` で UI 配線
+- **数える単位 (Sess101 改訂)**: rule 単位 → **予定グループ単位** (`COUNT(DISTINCT COALESCE(group_id, id))`)。 Free = 3 グループまで、 各グループの盆栽数は問わない (= 「3 盆栽 × 1 予定で上限到達」 の概念不一致を解消、 user 決定。 詳細は ADR-0049 §Notes Amended Sess101)
+- `FREE_RECURRENCE_GROUP_LIMIT = 3` const (= 旧 `FREE_RECURRENCE_RULE_LIMIT`、 `FREE_TAG_LIMIT` pattern 踏襲)
+- `countActiveRecurrenceGroups(): Promise<number>` (= 旧 countActiveRecurrenceRules)
+- `canCreateRecurrenceGroup(): Promise<boolean>` (= 旧 canCreateRecurrenceRule)
+- `useProGuard({ feature: 'recurring_rule', currentCount })` で UI 配線 (currentCount = グループ数)
 - PaywallScreen FeatureRow 6 → 7 行化 + Settings PlanSection bullet 6 → 7 個化
-- **Grandfathered 戦略**: 既存 4+ rule (仕様上ありえないが保証) 表示/編集/削除 OK + 追加のみ Paywall (Slack 2022 churn 事件回避、 ADR-0049 教訓踏襲)
+- **編集はグループ数不変** → 盆栽の増減・種別変更は Free でも常に可 (= Grandfathered 4+ グループの編集も可)
+- **Grandfathered 戦略**: 既存 4+ グループ 表示/編集/削除 OK + 追加のみ Paywall (Slack 2022 churn 事件回避、 ADR-0049 教訓踏襲)
 
 ### D8. ADR-0011 哲学侵食回避 (i18n 厳守)
 
@@ -670,7 +672,7 @@ user 「関数化して同じ問題を 1 つに集約したら管理が楽とか
 2. **作成**: `bulkCreateRecurrenceRules` が呼出 1 回ごとに共有 ulid を採番して全 rule に stamp。BulkLogConfirmScreen の recurring 分岐も旧 loop → bulk 関数に置換 (R-73 整合)。
 3. **一覧 (RecurrenceListScreen)**: グループ単位 1 行表示 — 盆栽名 join + ×N badge + 種別・頻度 + 次回 (= member 最小)。削除はグループ全員 soft-delete。
 4. **編集 (RecurrenceFormScreen)**: 代表 rule id で起動し `getActiveRulesByGroupKey` で全員復元。**対象の盆栽の増減** (= BonsaiMultiSelect returnTo=back で選び直し) と**作業種別の変更** (= WorkTypeGrid インライン開閉) が可能に。保存 = `replaceRecurrenceRuleGroup` (全員 soft-delete + 新セットで bulk 再作成、group_id 維持、既存 ConfirmDialog 経由 = R-78/R-79 整合)。
-5. **Pro 境界**: 数え方は現行どおり rule 本数 (= 盆栽×予定)。編集時は「置換後総数」(現在数 − 旧 member 数 + 新 member 数) で判定 (= 料金体系に影響を出さない)。
+5. **Pro 境界**: 数え方は現行どおり rule 本数 (= 盆栽×予定)。編集時は「置換後総数」(現在数 − 旧 member 数 + 新 member 数) で判定 (= 料金体系に影響を出さない)。**(Sess101 #1159 で改訂: 予定グループ単位カウントへ — D7 Sess101 改訂を参照)**
 6. **バックアップ**: BackupRecurrenceRule に groupId 追従 (optional = #1130 直後 ZIP 後方互換)。
 7. **SoT 抽出 (user 恒常指示)**: 作業種別 grid を `WorkTypeGrid` に集約 (WorkPickerScreen / BulkWorkPickerScreen / RecurrenceFormScreen の 3 箇所 WET 解消)。
 
