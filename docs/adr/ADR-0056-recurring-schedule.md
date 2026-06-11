@@ -675,3 +675,16 @@ user 「関数化して同じ問題を 1 つに集約したら管理が楽とか
 7. **SoT 抽出 (user 恒常指示)**: 作業種別 grid を `WorkTypeGrid` に集約 (WorkPickerScreen / BulkWorkPickerScreen / RecurrenceFormScreen の 3 箇所 WET 解消)。
 
 **関連**: Issue #1122 / Sess89 PR-C (旧 案 X) / R-73 / R-78
+
+#### Sess101 Amendment (= 一覧カードの予定中心化 + 次回表示 SoT、 2026-06-11)
+
+**起点**: user 指摘 3 点 — ①「定期予定の管理」 カードが盆栽名主役 (= 旧「盆栽単位」 思想の名残) で、 予定別管理の概念 (Sess99 Amendment 2 起点のタグ型) に UI が未整合 ②作成画面「次回 2026/6/11 (木)」 vs 一覧「次回 2026-06-15」 の不整合 ③一覧の文字サイズが小さい。/discuss (6 人チーム + 1 次情報調査 + rrule lib 実シミュレーション) で真因確定 → user 決定。
+
+**決定**:
+
+1. **一覧カードの予定中心化 (#1158)**: 1 行目 = 種別 · 頻度 (16/600 主役)、 2 行目 = 盆栽件数のみ (`recurringListItemBonsaiCount`、 14)、 3 行目 = 次回 (13、 ローカライズ日付 + 通知時刻 = フォーム RulePreviewCard と形式統一)。盆栽名 join + ×N badge は廃止 (= #1153 の badge 配置調整はこの廃止に吸収)。`recurringListItemDeletedBonsai` key は参照ゼロ化するが残置 (= i18n 棚卸 routine で判断)。
+2. **「次回」 計算の SoT 化 (#1157)**: `computeFirstOccurrenceDateKey()` (= expandRRule と同一経路の純関数) を新設し、 フォームの「次回」 行を実計算値に変更 (= 案 a 正直表示、 ヒント文言なし)。旧「次回 = 開始日」 直表示 (Sess94 PR-B) は BYDAY 対応 (Sess93 PR-2) 以降、 開始日が rule 不一致の場合 (例: 開始 木曜 + 毎週月曜) に偽表示 + silent drop を見せていた — rrule lib は意図的 RFC 5545 非準拠で、 dtstart が rule に合致しない場合 occurrence に含めない。
+3. **G1 (junction 本格グループ化) は引き続き見送り**: タグ型概念は UI 層 (= G2) で完全に実現でき、 schema v18 直後の migration 多重化リスクを回避。**再検討条件**: ①グループ内 rule の個別編集ニーズ (= member ごとに頻度/例外日を変えたい) の顕在化 ②rule 件数増による一覧/編集の性能問題 ③replaceRecurrenceRuleGroup の transaction 保証で防げないグループ内 drift 事例の発生 — いずれかが起きたら G1 を再評価。
+4. **既知トレードオフ (user 了承済 = 案イ)**: 件数のみ表示のため「施肥 · 毎週月曜」 が 2 グループあると一覧上は見分け不能。将来の緩和候補 = 予定グループへの任意名前付け (= タグ型完成形)。
+
+**関連**: Issue #1157 / #1158 / #1159 (= Free 境界のグループ単位化、 D7 改訂は #1159 側 Amendment 参照)
