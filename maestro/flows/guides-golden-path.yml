@@ -1,0 +1,169 @@
+## 文脈内ガイド golden path 実機検証 flow (#1178 / ADR-0058)
+##
+## 検証目的: 新規状態から 登録 → g1 → 記録タブ → g2 → 記録保存 → g5 が各 1 回だけ出ること +
+## 再起動後に再表示されないこと (guidesStore persist)。
+##
+## 経路:
+## 1. App 起動 (clearState) + Dev Client + Onboarding skip
+## 2. 盆栽 1 本登録 (g4-bonsai-new.yml と同手順)
+## 3. Home 復帰 → g1 スポットライト表示 → 強調タブ tap → 記録タブ遷移
+## 4. g2 スポットライト表示 → 強調ボタン tap → 一括記録 flow (盆栽選択 → 水やり → 保存)
+## 5. g5 お祝い Toast (「最初の記録ができました。…」) 表示
+## 6. 再起動 (state 維持) → g1 / g2 が再表示されないこと
+##
+## 実機実行コマンド (3 回反復、R-30 現基準):
+##   for i in 1 2 3; do maestro test maestro/flows/guides-golden-path.yml; done
+appId: 'com.dooooraku.bonsailog'
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- tapOn:
+    text: 'Continue'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- pressKey: 'Back'
+- waitForAnimationToEnd
+
+# --- Onboarding (welcome → 言語 ja → 通知 skip) ---
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_lang_ja'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+
+# --- 盆栽 1 本登録 ---
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 30000
+- tapOn:
+    id: 'e2e_home_empty_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_create_screen'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_bonsai_create_name'
+- inputText: 'Matsu'
+- scrollUntilVisible:
+    element:
+      id: 'e2e_bonsai_create_submit'
+    direction: DOWN
+    timeout: 10000
+    visibilityPercentage: 30
+- tapOn:
+    id: 'e2e_bonsai_create_submit'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# --- g1: Home 復帰でスポットライト → 強調タブ tap で記録タブへ ---
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_guide_record_tab'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_home_guide_record_tab_target'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_record_screen'
+    timeout: 10000
+
+# --- g2: 記録タブ初回でスポットライト → 強調ボタン tap で一括記録 flow ---
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_record_guide_cta'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_record_guide_cta_target'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_multi_select_screen'
+    timeout: 10000
+- tapOn:
+    text: 'Matsu'
+    retryTapIfNoChange: true
+- tapOn:
+    id: 'e2e_bonsai_multi_select_confirm'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_work_picker_screen'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_bulk_work_picker_watering'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_log_confirm_screen'
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: 'e2e_bulk_log_save_cta'
+    direction: DOWN
+    timeout: 10000
+    visibilityPercentage: 30
+- tapOn:
+    id: 'e2e_bulk_log_save_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# --- g5: お祝い Toast (標準 Toast を上書き、6 秒表示) ---
+- extendedWaitUntil:
+    visible:
+      text: '最初の記録ができました。.*'
+    timeout: 10000
+
+# --- 再起動 (state 維持) → ガイドが再表示されない (persist 検証) ---
+- launchApp: {}
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_list'
+    timeout: 30000
+- assertNotVisible:
+    id: 'e2e_home_guide_record_tab'
+- tapOn:
+    id: 'e2e_tab_record'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_record_screen'
+    timeout: 10000
+- assertNotVisible:
+    id: 'e2e_record_guide_cta'
