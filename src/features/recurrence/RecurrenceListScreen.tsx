@@ -4,8 +4,9 @@
  * 動線: ふりかえりタブ → 「🔁 定期予定を管理」 card tap → 本画面
  *
  * 責務:
- * - active rules (deleted_at IS NULL) を 作成順 (新しい順) で 一覧表示
- * - 各 rule = 盆栽名 / 種別 / RRULE 人間可読ラベル / 次回 / 終了日
+ * - active rules (deleted_at IS NULL) を 作成順 (新しい順) で グループ 1 行 一覧表示
+ * - 各グループ = 種別 · RRULE 人間可読ラベル (主役) / 盆栽件数 / 次回 (ローカライズ日付 + 通知時刻)
+ *   (Sess101 #1158: 予定グループ中心 UI — 盆栽名 join + ×N badge は廃止、 盆栽は件数のみ)
  * - 削除 kebab → ConfirmDialog → softDeleteRecurrenceRule + reload (= R-44 破壊的操作 pattern)
  * - empty state (= 「予定タブから 🔁 で作成できます」 案内)
  * - 編集動線 = v1.0.1 PR-8 (連動編集 3 択 ConfirmDialog) で 追加予定、 本 PR-7.5 では 表示 + 削除のみ
@@ -28,6 +29,7 @@ import { BottomCtaBar } from '@/src/components/common/BottomCtaBar';
 import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { EventIcon, MoreVerticalIcon } from '@/src/components/icons';
 import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
+import { formatLocalizedShortDateWithWeekday } from '@/src/core/datetime/formatLocalized';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { parseCustomRruleDays } from '@/src/core/recurrence/rrule';
@@ -42,6 +44,7 @@ import {
   useRecurrenceRules,
   type RecurrenceRuleGroup,
 } from '@/src/features/recurrence/useRecurrenceRules';
+import { useSettingsStore } from '@/src/stores/settingsStore';
 
 /**
  * RRULE 文字列 → 人間可読 label に変換 (= preset 静的逆引き、 Sess89 PR-B 拡張)。
@@ -69,9 +72,11 @@ function rruleToHumanLabel(rrule: string): TranslationKey {
 }
 
 export default function RecurrenceListScreen() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const c = useColors();
   const router = useRouter();
+  // Sess101 #1158: 「次回」 行 = フォーム RulePreviewCard と同形式 (ローカライズ日付 + 通知時刻 SoT)
+  const notifTime = useSettingsStore((s) => s.notificationDailySummaryTime);
   // Sess99 #1122 案 G2: グループ単位 (= 同時作成 rule 群を 1 行) で表示・編集・削除する。
   const { rules, groups, bonsaiMap, nextOccurrenceMap, loading, reload } = useRecurrenceRules();
   // Sess82 PR-D: 「+ 新規追加」 BottomCtaBar = useBulkActionFlow('recurring') 経由で 盆栽 picker → BulkWorkPicker → /recurring-rules/new
@@ -166,12 +171,9 @@ export default function RecurrenceListScreen() {
           keyExtractor={(item) => item.key}
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => {
-            // Sess99 #1122 案 G2: 1 行 = 1 グループ。 盆栽名は member 全員を「、」 join + ×N badge。
+            // Sess101 #1158: 1 行 = 1 グループ、 主役 = 種別 · 頻度 (= 予定グループ中心 UI)。
+            // 盆栽は件数のみ表示 (盆栽名 join + ×N badge は廃止 — タグ型「予定単位の管理」 概念に整合)。
             const rep = item.representative;
-            const bonsaiNames = item.rules.map(
-              (r) => bonsaiMap.get(r.bonsaiId)?.name ?? t('recurringListItemDeletedBonsai'),
-            );
-            const bonsaiLabel = bonsaiNames.join('、');
             const eventLabel = t(`eventType_${rep.eventType}` as TranslationKey);
             const humanRruleKey = rruleToHumanLabel(rep.rrule);
             // Sess89 PR-B: custom RRULE (= FREQ=DAILY;INTERVAL=N) は N を抽出して「{n} 日ごと」 表示
@@ -186,8 +188,12 @@ export default function RecurrenceListScreen() {
               .filter((v): v is string => v !== null)
               .sort();
             const nextOccurrence = nexts[0] ?? null;
+            // Sess101 #1158: 生 ISO (YYYY-MM-DD) → ローカライズ日付 + 通知時刻 (フォームの次回行と形式統一)
             const nextLabel = nextOccurrence
-              ? t('recurringListItemNextOccurrence').replace('{date}', nextOccurrence.slice(0, 10))
+              ? t('recurringListItemNextOccurrence').replace(
+                  '{date}',
+                  `${formatLocalizedShortDateWithWeekday(nextOccurrence.slice(0, 10), lang)} ${notifTime}`,
+                )
               : t('recurringListItemNextOccurrenceNone');
             return (
               <View
@@ -200,26 +206,18 @@ export default function RecurrenceListScreen() {
                   <EventIcon type={rep.eventType as EventType} size={22} />
                 </View>
                 <View style={styles.cardBody}>
-                  <ThemedText style={[styles.bonsaiName, { color: c.text }]} numberOfLines={1}>
-                    {bonsaiLabel}
-                  </ThemedText>
-                  <ThemedText style={[styles.eventLabel, { color: c.textSecondary }]}>
+                  <ThemedText style={[styles.groupTitle, { color: c.text }]} numberOfLines={1}>
                     {eventLabel} · {rruleLabel}
                   </ThemedText>
-                  {/* Sess99 user 指摘: ×N badge は盆栽名の右 (上段) だと名前と被るため
-                      カード右下 (次回行の右端) に配置。 */}
-                  <View style={styles.bottomRow}>
-                    <ThemedText style={[styles.nextLabel, { color: c.textMuted }]}>
-                      {nextLabel}
-                    </ThemedText>
-                    {item.rules.length > 1 && (
-                      <View style={[styles.countBadge, { backgroundColor: c.badgeBg }]}>
-                        <ThemedText style={[styles.countBadgeText, { color: c.tint }]}>
-                          ×{item.rules.length}
-                        </ThemedText>
-                      </View>
+                  <ThemedText style={[styles.bonsaiCount, { color: c.textSecondary }]}>
+                    {t('recurringListItemBonsaiCount').replace(
+                      '{count}',
+                      String(item.rules.length),
                     )}
-                  </View>
+                  </ThemedText>
+                  <ThemedText style={[styles.nextLabel, { color: c.textMuted }]}>
+                    {nextLabel}
+                  </ThemedText>
                 </View>
                 <Pressable
                   accessibilityRole="button"
@@ -312,28 +310,11 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   cardBody: { flex: 1, minWidth: 0, gap: 2 },
-  bonsaiName: { fontSize: 15, fontWeight: '600' },
-  // Sess99 user 指摘: ×N badge は右下 (次回行の右端) — 盆栽名との被り回避
-  bottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  // Sess99 #1122 案 G2: グループ member 数 badge (BADGE_SOFT token、 履歴タブ ×N と同型)
-  countBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  countBadgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.4,
-  },
-  eventLabel: { fontSize: 13 },
-  // Sess82 PR-B: endLabel → nextLabel (= 「次回 yyyy-mm-dd」 表示、 ADR-0056 D4-1)
-  nextLabel: { fontSize: 12 },
+  // Sess101 #1158: 主役 = 種別 · 頻度 (16/600)、 2 行目 = 盆栽件数 (14)、 3 行目 = 次回 (13)
+  groupTitle: { fontSize: 16, fontWeight: '600' },
+  bonsaiCount: { fontSize: 14 },
+  // Sess82 PR-B: endLabel → nextLabel (= 次回表示、 ADR-0056 D4-1)。 Sess101 #1158 で 12 → 13 拡大
+  nextLabel: { fontSize: 13 },
   kebabButton: {
     width: 32,
     height: 32,

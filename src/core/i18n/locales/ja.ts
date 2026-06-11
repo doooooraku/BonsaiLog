@@ -1011,6 +1011,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   recurringListItemNextOccurrence: '次回: {date}',
   recurringListItemNextOccurrenceNone: '次回未定',
   recurringListItemDeletedBonsai: '(削除済の盆栽)',
+  recurringListItemBonsaiCount: '盆栽 {count} 本',
   recurringListDeleteConfirmTitle: 'この定期予定を削除しますか?',
   recurringListDeleteConfirmDesc: '今後の予定もすべて削除されます (30 日後に完全削除)',
   recurringListProBadgeOverLimit: 'Free 上限超過',

@@ -89,6 +89,20 @@ describe('RecurrenceListScreen (Sess81 PR-7.5、 ADR-0056 + ADR-0035 D9 部分 r
     expect(REPO_SRC).toContain('group_id');
   });
 
+  test('5c. Sess101 #1158: 予定中心カード (種別·頻度 主役 / 盆栽件数のみ / 次回ローカライズ)', () => {
+    // 盆栽は件数のみ (i18n key) — 盆栽名 join + ×N badge は廃止
+    expect(SCREEN_SRC).toContain("t('recurringListItemBonsaiCount')");
+    expect(SCREEN_SRC).not.toContain('countBadge');
+    expect(SCREEN_SRC).not.toContain("t('recurringListItemDeletedBonsai')");
+    // 次回 = ローカライズ日付 + 通知時刻 (フォーム RulePreviewCard と形式統一)
+    expect(SCREEN_SRC).toContain('formatLocalizedShortDateWithWeekday');
+    expect(SCREEN_SRC).toContain('notificationDailySummaryTime');
+    // 文字サイズ (Sess101 user 決定: 16 / 14 / 13)
+    expect(SCREEN_SRC).toMatch(/groupTitle:\s*\{\s*fontSize:\s*16/);
+    expect(SCREEN_SRC).toMatch(/bonsaiCount:\s*\{\s*fontSize:\s*14/);
+    expect(SCREEN_SRC).toMatch(/nextLabel:\s*\{\s*fontSize:\s*13/);
+  });
+
   test('6. empty state 実装 (= 「予定タブから 🔁 で 作成できます」 案内)', () => {
     expect(SCREEN_SRC).toContain("t('recurringListEmptyTitle')");
     expect(SCREEN_SRC).toContain("t('recurringListEmptyDesc')");
