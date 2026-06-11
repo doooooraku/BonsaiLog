@@ -8,7 +8,7 @@
 - **正（Source of Truth）**:
   - 依存関係 / SDK / バージョン: `package.json`（本書に固定記載しない）
   - 受け入れ条件（合否）: Jest テスト（`__tests__/` 配下）+ Maestro E2E（`maestro/flows/`）
-  - UI の正: Figma（リンクで参照。本書に UI 細部を書きすぎない）
+  - UI の正: design_system.md + docs/mockups/（ADR が正、R-16。本書に UI 細部を書きすぎない）
   - 意思決定の理由: ADR（`docs/adr/`）
   - 前提 / 制約の一枚岩: `docs/reference/constraints.md`
 - **更新トリガ**: 仕様変更 PR で「本書 or テスト or ADR」のどれを更新したか説明できない場合は NG
@@ -886,7 +886,7 @@ AdMob 禁止カテゴリ抵触・医療類似判定リスク回避のため、**
 - **Diátaxis**（ディアタクシス）: ドキュメントを 4 つに分ける考え方。Tutorial（使い方）/ How-to（手順）/ Reference（事実）/ Explanation（考え方）。本書は Reference。
 - **Reference 文書**: 「何ができる」を事実として書く説明書。
 - **ADR**（Architecture Decision Record）: 「なぜこう決めたか」を残す日記。
-- **Figma**: デザインツール。画面の見た目の「正解」が置いてある。
+- **design_system.md / docs/mockups/**: 画面の見た目の「正解」が置いてある（token / pattern SoT + ClaudeDesign mockup。ADR が正、R-16）。
 - **Jest**: JavaScript のテストを書く道具。
 - **Maestro**: アプリを自動で操作してテストする道具。
 - **SQLite**: アプリの中で使える小さなデータベース。Excel の賢い版。

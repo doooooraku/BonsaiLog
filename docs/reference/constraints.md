@@ -28,7 +28,7 @@
 
 - バージョン番号の固定（→ `package.json` / CI を参照）
 - “コードと同じ細かさ” の実装詳細（→ 実装とテストが正）
-- UI のピクセル指定（→ Figma が正）
+- UI のピクセル指定（→ design_system.md が正）
 - コマンド手順の細部（→ How-to に置く。ここには置かない）
 
 ### 0-4. 更新トリガー（更新漏れ防止）
@@ -199,7 +199,7 @@ Pro 機能 6 項目の境界 SoT は **[ADR-0049](../adr/ADR-0049-pro-feature-bo
 
 ### 5-2. UI 文言の禁止語 / 許可語
 
-「診断しない、記録する」原則（§1-4）を UI レベルで強制するため、以下を CI（`pnpm i18n:audit`）で検出して落とす。
+「診断しない、記録する」原則（§1-4）を UI レベルで強制するため、以下を CI（`pnpm verify:i18n` 内の `i18n:forbidden` = scripts/i18n-forbidden-words.mjs）で検出して落とす。
 
 **禁止語**:
 
@@ -215,8 +215,8 @@ Pro 機能 6 項目の境界 SoT は **[ADR-0049](../adr/ADR-0049-pro-feature-bo
 
 ## 6. UI の正（ズレ防止）
 
-- UI の「見た目の正」は **Figma** とする（仕様書は “何ができるか/できないか” の合意まで）
-- 仕様書にピクセル単位の細部を固定記述しない（Figma へ寄せる）
+- UI の「見た目の正」は **`design_system.md` (token / pattern SoT) + `docs/mockups/` (参考下書き)** とする。Design と ADR が矛盾したら **ADR が正** (R-16)。仕様書は “何ができるか/できないか” の合意まで
+- 仕様書にピクセル単位の細部を固定記述しない（design_system.md へ寄せる）
 - ダークモード / 屋外モード（高輝度モード）を提供する（F-15）
 
 ---
@@ -240,7 +240,7 @@ Pro 機能 6 項目の境界 SoT は **[ADR-0049](../adr/ADR-0049-pro-feature-bo
 | ID   | 機能名                                                      |
 | ---- | ----------------------------------------------------------- |
 | F-01 | 盆栽の登録・管理                                            |
-| F-02 | 作業履歴記録（13 種のイベント + 「最後の水やりから N 日」） |
+| F-02 | 作業履歴記録（14 種のイベント + 「最後の水やりから N 日」） |
 | F-04 | 水やり履歴の可視化 — 撤廃 (ADR-0039、 2026-05-22)           |
 | F-05 | — 撤廃 (Sess19-3 2026-05-21、 ADR-0011 Amend)               |
 | F-07 | 針金がけ記録・外し時期表示                                  |
@@ -255,9 +255,9 @@ Pro 機能 6 項目の境界 SoT は **[ADR-0049](../adr/ADR-0049-pro-feature-bo
 | F-16 | ローカル通知                                                |
 | F-17 | 作業カレンダー（予定 + 記録の月次表示、 PlanScreen 統合）   |
 
-### 作業イベント種別（13 種、F-02）
+### 作業イベント種別（14 種、F-02 — SoT は `src/db/schema.ts` EVENT_TYPES）
 
-`watering` / `pruning` / `wiring` / `unwiring` / `repotting` / `fertilizing` / `pest_control` / `leaf_trimming` / `defoliation` / `deshoot` / `candle_cut` / `moss_care` / `position_change`
+`watering` / `pruning` / `wiring` / `unwiring` / `repotting` / `fertilizing` / `pest_control` / `leaf_trimming` / `leaf_first_aid` / `defoliation` / `deshoot` / `candle_cut` / `moss_care` / `position_change`
 
 ---
 
@@ -265,7 +265,7 @@ Pro 機能 6 項目の境界 SoT は **[ADR-0049](../adr/ADR-0049-pro-feature-bo
 
 - カバレッジ閾値は `package.json` の Jest 設定を正とする
 - F-11 のような **2 端末 + クロス OS 転送**を要する機能は、E2E（Maestro）では画面到達のみ。**手動 E2E 必須**を Issue / PR で明示する
-- CI 必須ゲート: lint / type-check / test / i18n:check / config:check（`pnpm verify` で一括、CI では個別 step に分割）
+- CI 必須ゲート: `pnpm verify`（全 gate 連結、構成は `package.json` の scripts.verify が正。CI では verify を一括実行）
 
 ---
 
