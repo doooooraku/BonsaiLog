@@ -460,7 +460,13 @@ const fr: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: 'Travail du jour',
   planSelectedListLabel: 'Travail du {date}',
-  planSelectedEmpty: 'Aucun travail ce jour',
+  planSelectedEmptyTitle: 'Aucune tâche prévue ce jour-là',
+  planSelectedEmptyBody:
+    'Choisissez une date et touchez « {cta} » ci-dessous pour ajouter une tâche. Les jours avec des tâches affichent un ○ sur le calendrier.',
+  planSelectedEmptyRecurringLink: 'Pour les tâches répétées, créez un programme récurrent',
+  recordSelectedEmptyTitle: 'Aucun soin enregistré ce jour-là',
+  recordSelectedEmptyBody:
+    'Après le soin, touchez « {cta} » ci-dessous pour le consigner. Les jours avec des soins affichent un ● sur le calendrier.',
   planEventPlanned: 'Planned',
   planGroupExpand: 'Développer',
   planGroupCollapse: 'Réduire',

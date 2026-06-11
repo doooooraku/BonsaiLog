@@ -457,7 +457,13 @@ const th: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: 'งานวันนี้',
   planSelectedListLabel: 'งานวันที่ {date}',
-  planSelectedEmpty: 'ไม่มีงานในวันนี้',
+  planSelectedEmptyTitle: 'ไม่มีงานที่กำหนดไว้ในวันนี้',
+  planSelectedEmptyBody:
+    'เลือกวันที่แล้วแตะ "{cta}" ด้านล่างเพื่อเพิ่มงาน วันที่มีงานจะแสดง ○ บนปฏิทิน',
+  planSelectedEmptyRecurringLink: 'งานที่ทำซ้ำเป็นประจำ สร้างได้จากกำหนดการประจำ',
+  recordSelectedEmptyTitle: 'ไม่มีบันทึกในวันนี้',
+  recordSelectedEmptyBody:
+    'หลังดูแลต้นไม้แล้ว แตะ "{cta}" ด้านล่างเพื่อบันทึกไว้ วันที่มีบันทึกจะแสดง ● บนปฏิทิน',
   planEventPlanned: 'Planned',
   planGroupExpand: 'ขยาย',
   planGroupCollapse: 'ย่อ',

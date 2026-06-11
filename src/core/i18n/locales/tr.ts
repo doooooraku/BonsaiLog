@@ -459,7 +459,13 @@ const tr: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: 'Bugünün işi',
   planSelectedListLabel: '{date} işi',
-  planSelectedEmpty: 'Bu gün iş yok',
+  planSelectedEmptyTitle: 'Bu gün için planlanmış görev yok',
+  planSelectedEmptyBody:
+    'Bir tarih seçin ve görev eklemek için aşağıdaki "{cta}" düğmesine dokunun. Görev olan günler takvimde ○ ile gösterilir.',
+  planSelectedEmptyRecurringLink: 'Tekrarlayan görevler için yinelenen plan oluşturun',
+  recordSelectedEmptyTitle: 'Bu gün için kayıt yok',
+  recordSelectedEmptyBody:
+    'Bakımdan sonra kaydetmek için aşağıdaki "{cta}" düğmesine dokunun. Kayıt olan günler takvimde ● ile gösterilir.',
   planEventPlanned: 'Planned',
   planGroupExpand: 'Genişlet',
   planGroupCollapse: 'Daralt',

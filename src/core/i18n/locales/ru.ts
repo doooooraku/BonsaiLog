@@ -460,7 +460,13 @@ const ru: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: 'Сегодняшняя работа',
   planSelectedListLabel: 'Работа на {date}',
-  planSelectedEmpty: 'Нет работы в этот день',
+  planSelectedEmptyTitle: 'На этот день нет задач',
+  planSelectedEmptyBody:
+    'Выберите дату и нажмите «{cta}» внизу, чтобы добавить задачу. Дни с задачами отмечаются ○ в календаре.',
+  planSelectedEmptyRecurringLink: 'Повторяющиеся задачи можно создать как повторяющееся расписание',
+  recordSelectedEmptyTitle: 'На этот день нет записей',
+  recordSelectedEmptyBody:
+    'После ухода нажмите «{cta}» внизу, чтобы сохранить запись. Дни с записями отмечаются ● в календаре.',
   planEventPlanned: 'Planned',
   planGroupExpand: 'Развернуть',
   planGroupCollapse: 'Свернуть',

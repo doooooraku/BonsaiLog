@@ -442,7 +442,13 @@ const ja: Partial<Record<TranslationKey, string>> = {
   dowSat: '土',
   planSelectedListTodayLabel: '今日 · {count}件',
   planSelectedListLabel: '{date} · {count}件',
-  planSelectedEmpty: '予定はありません。',
+  planSelectedEmptyTitle: 'この日の予定はありません',
+  planSelectedEmptyBody:
+    '日付を選んで、下の「{cta}」から登録できます。登録した日はカレンダーに ○ が付きます。',
+  planSelectedEmptyRecurringLink: 'くり返す予定は、定期予定から作れます',
+  recordSelectedEmptyTitle: 'この日の記録はありません',
+  recordSelectedEmptyBody:
+    'お手入れをしたら、下の「{cta}」から残せます。記録した日はカレンダーに ● が付きます。',
   planEventPlanned: '予定',
   planGroupExpand: '個別に開く',
   planGroupCollapse: 'まとめる',

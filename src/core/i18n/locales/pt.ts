@@ -460,7 +460,13 @@ const pt: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: 'Trabalho de hoje',
   planSelectedListLabel: 'Trabalho de {date}',
-  planSelectedEmpty: 'Sem trabalho neste dia',
+  planSelectedEmptyTitle: 'Sem tarefas planeadas neste dia',
+  planSelectedEmptyBody:
+    'Escolha uma data e toque em "{cta}" abaixo para adicionar uma tarefa. Os dias com tarefas mostram um ○ no calendário.',
+  planSelectedEmptyRecurringLink: 'Para tarefas repetidas, crie um agendamento recorrente',
+  recordSelectedEmptyTitle: 'Sem registos neste dia',
+  recordSelectedEmptyBody:
+    'Depois de cuidar das suas árvores, toque em "{cta}" abaixo para registar. Os dias com registos mostram um ● no calendário.',
   planEventPlanned: 'Planned',
   planGroupExpand: 'Expandir',
   planGroupCollapse: 'Recolher',

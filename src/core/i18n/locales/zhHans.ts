@@ -447,7 +447,12 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: '今天的作业',
   planSelectedListLabel: '{date} 的作业',
-  planSelectedEmpty: '当天没有作业',
+  planSelectedEmptyTitle: '这一天没有安排任务',
+  planSelectedEmptyBody: '选择日期，点按下方“{cta}”即可添加任务。有任务的日期会在日历上显示 ○。',
+  planSelectedEmptyRecurringLink: '需要重复的任务，可以创建定期安排',
+  recordSelectedEmptyTitle: '这一天没有记录',
+  recordSelectedEmptyBody:
+    '完成养护后，点按下方“{cta}”即可留下记录。有记录的日期会在日历上显示 ●。',
   planEventPlanned: 'Planned',
   planGroupExpand: '展开',
   planGroupCollapse: '收起',

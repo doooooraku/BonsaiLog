@@ -459,7 +459,13 @@ const pl: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: 'Dzisiejsza praca',
   planSelectedListLabel: 'Praca w dniu {date}',
-  planSelectedEmpty: 'Brak pracy w tym dniu',
+  planSelectedEmptyTitle: 'Brak zaplanowanych zadań na ten dzień',
+  planSelectedEmptyBody:
+    'Wybierz datę i stuknij „{cta}” poniżej, aby dodać zadanie. Dni z zadaniami mają ○ w kalendarzu.',
+  planSelectedEmptyRecurringLink: 'Powtarzające się zadania utworzysz jako harmonogram cykliczny',
+  recordSelectedEmptyTitle: 'Brak wpisów na ten dzień',
+  recordSelectedEmptyBody:
+    'Po pielęgnacji stuknij „{cta}” poniżej, aby ją zapisać. Dni z wpisami mają ● w kalendarzu.',
   planEventPlanned: 'Planned',
   planGroupExpand: 'Rozwiń',
   planGroupCollapse: 'Zwiń',

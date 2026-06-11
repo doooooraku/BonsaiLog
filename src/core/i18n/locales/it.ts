@@ -460,7 +460,14 @@ const it: Partial<Record<TranslationKey, string>> = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: 'Lavoro di oggi',
   planSelectedListLabel: 'Lavoro del {date}',
-  planSelectedEmpty: 'Nessun lavoro in questo giorno',
+  planSelectedEmptyTitle: 'Nessuna attività pianificata per questo giorno',
+  planSelectedEmptyBody:
+    'Scegli una data e tocca "{cta}" qui sotto per aggiungere una attività. I giorni con attività mostrano un ○ sul calendario.',
+  planSelectedEmptyRecurringLink:
+    'Per le attività che si ripetono, crea una pianificazione ricorrente',
+  recordSelectedEmptyTitle: 'Nessuna cura registrata per questo giorno',
+  recordSelectedEmptyBody:
+    'Dopo la cura, tocca "{cta}" qui sotto per registrarla. I giorni con registrazioni mostrano un ● sul calendario.',
   planEventPlanned: 'Planned',
   planGroupExpand: 'Espandi',
   planGroupCollapse: 'Riduci',

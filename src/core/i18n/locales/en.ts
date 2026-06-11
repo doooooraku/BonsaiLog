@@ -443,7 +443,13 @@ const baseEn = {
   dowSat: 'Sat',
   planSelectedListTodayLabel: "Today's work",
   planSelectedListLabel: 'Work on {date}',
-  planSelectedEmpty: 'No work on this day',
+  planSelectedEmptyTitle: 'No plans on this day',
+  planSelectedEmptyBody:
+    'Pick a date and tap "{cta}" below to add a plan. Days with plans get a ○ on the calendar.',
+  planSelectedEmptyRecurringLink: 'For repeating plans, create a recurring schedule',
+  recordSelectedEmptyTitle: 'No records on this day',
+  recordSelectedEmptyBody:
+    'After caring for your trees, tap "{cta}" below to keep a record. Days with records get a ● on the calendar.',
   planEventPlanned: 'Planned',
   planGroupExpand: 'Expand',
   planGroupCollapse: 'Collapse',
