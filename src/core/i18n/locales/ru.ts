@@ -461,6 +461,9 @@ const ru: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Сегодняшняя работа',
   planSelectedListLabel: 'Работа на {date}',
   planSelectedEmptyTitle: 'На этот день нет задач',
+  guideRecordTabNudgeTitle: 'Ваш первый бонсай зарегистрирован',
+  guideRecordTabNudgeBody:
+    'Теперь попробуйте записать сегодняшний уход. Нажмите вкладку «{tab}» внизу.',
   guideRecordCtaBody: 'Начните с одной сегодняшней записи об уходе — прямо здесь.',
   guidePlanCtaBody: 'Выберите дату и добавьте задачу этой кнопкой.',
   planSelectedEmptyBody:

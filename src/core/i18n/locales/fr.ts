@@ -461,6 +461,9 @@ const fr: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Travail du jour',
   planSelectedListLabel: 'Travail du {date}',
   planSelectedEmptyTitle: 'Aucune tâche prévue ce jour-là',
+  guideRecordTabNudgeTitle: 'Votre premier bonsaï est enregistré',
+  guideRecordTabNudgeBody:
+    "Ensuite, essayez de consigner un soin du jour. Touchez l'onglet « {tab} » ci-dessous.",
   guideRecordCtaBody: 'Commencez par consigner un soin du jour, juste ici.',
   guidePlanCtaBody: 'Choisissez une date et ajoutez une tâche avec ce bouton.',
   planSelectedEmptyBody:

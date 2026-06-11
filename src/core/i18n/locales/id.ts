@@ -460,6 +460,8 @@ const id: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Pekerjaan hari ini',
   planSelectedListLabel: 'Pekerjaan {date}',
   planSelectedEmptyTitle: 'Tidak ada tugas terjadwal pada hari ini',
+  guideRecordTabNudgeTitle: 'Bonsai pertama Anda sudah terdaftar',
+  guideRecordTabNudgeBody: 'Berikutnya, coba catat perawatan hari ini. Ketuk tab "{tab}" di bawah.',
   guideRecordCtaBody: 'Mulailah dengan mencatat satu perawatan hari ini, di sini.',
   guidePlanCtaBody: 'Pilih tanggal dan tambahkan tugas dengan tombol ini.',
   planSelectedEmptyBody:

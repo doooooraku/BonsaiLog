@@ -458,6 +458,8 @@ const ko: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: '오늘의 작업',
   planSelectedListLabel: '{date}의 작업',
   planSelectedEmptyTitle: '이 날에는 예정된 작업이 없습니다',
+  guideRecordTabNudgeTitle: '첫 분재를 등록했습니다',
+  guideRecordTabNudgeBody: '다음은 오늘의 관리를 기록해 보세요. 아래 "{tab}" 탭을 탭하세요.',
   guideRecordCtaBody: '먼저 오늘의 관리 하나를 여기에서 기록해 보세요.',
   guidePlanCtaBody: '날짜를 선택하고 이 버튼으로 작업을 추가할 수 있습니다.',
   planSelectedEmptyBody:

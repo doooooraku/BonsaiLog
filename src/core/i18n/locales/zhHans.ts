@@ -448,6 +448,8 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: '今天的作业',
   planSelectedListLabel: '{date} 的作业',
   planSelectedEmptyTitle: '这一天没有安排任务',
+  guideRecordTabNudgeTitle: '已登记你的第一盆盆景',
+  guideRecordTabNudgeBody: '接下来，试着记录今天的养护吧。点按下方的“{tab}”标签页。',
   guideRecordCtaBody: '先从今天的一项养护开始，在这里留下记录吧。',
   guidePlanCtaBody: '选择日期，用这个按钮添加任务。',
   planSelectedEmptyBody: '选择日期，点按下方“{cta}”即可添加任务。有任务的日期会在日历上显示 ○。',

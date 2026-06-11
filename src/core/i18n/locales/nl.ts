@@ -460,6 +460,9 @@ const nl: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Werk van vandaag',
   planSelectedListLabel: 'Werk op {date}',
   planSelectedEmptyTitle: 'Geen geplande taken op deze dag',
+  guideRecordTabNudgeTitle: 'Je eerste bonsai is geregistreerd',
+  guideRecordTabNudgeBody:
+    'Probeer nu een verzorging van vandaag vast te leggen. Tik op het tabblad "{tab}" hieronder.',
   guideRecordCtaBody: 'Begin door één verzorging van vandaag hier vast te leggen.',
   guidePlanCtaBody: 'Kies een datum en voeg met deze knop een taak toe.',
   planSelectedEmptyBody:

@@ -458,6 +458,8 @@ const th: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'งานวันนี้',
   planSelectedListLabel: 'งานวันที่ {date}',
   planSelectedEmptyTitle: 'ไม่มีงานที่กำหนดไว้ในวันนี้',
+  guideRecordTabNudgeTitle: 'ลงทะเบียนบอนไซต้นแรกของคุณแล้ว',
+  guideRecordTabNudgeBody: 'ต่อไป ลองบันทึกการดูแลของวันนี้ แตะแท็บ "{tab}" ด้านล่าง',
   guideRecordCtaBody: 'เริ่มจากบันทึกการดูแลของวันนี้สักหนึ่งรายการได้ที่นี่',
   guidePlanCtaBody: 'เลือกวันที่แล้วเพิ่มงานด้วยปุ่มนี้',
   planSelectedEmptyBody:

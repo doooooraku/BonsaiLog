@@ -443,6 +443,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: '今日 · {count}件',
   planSelectedListLabel: '{date} · {count}件',
   planSelectedEmptyTitle: 'この日の予定はありません',
+  guideRecordTabNudgeTitle: 'はじめての盆栽を登録しました',
+  guideRecordTabNudgeBody: '次は、今日のお手入れを記録してみましょう。下の「{tab}」タブをタップ。',
   guideRecordCtaBody: 'まずは今日のお手入れをひとつ、ここから記録してみましょう。',
   guidePlanCtaBody: '日付を選んで、このボタンから予定を入れられます。',
   planSelectedEmptyBody:

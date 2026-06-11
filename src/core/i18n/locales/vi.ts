@@ -459,6 +459,9 @@ const vi: Partial<Record<TranslationKey, string>> = {
   planSelectedListTodayLabel: 'Công việc hôm nay',
   planSelectedListLabel: 'Công việc ngày {date}',
   planSelectedEmptyTitle: 'Không có công việc nào được lên lịch cho ngày này',
+  guideRecordTabNudgeTitle: 'Cây bonsai đầu tiên của bạn đã được đăng ký',
+  guideRecordTabNudgeBody:
+    'Tiếp theo, hãy thử ghi lại việc chăm sóc hôm nay. Nhấn thẻ "{tab}" bên dưới.',
   guideRecordCtaBody: 'Hãy bắt đầu bằng cách ghi lại một việc chăm sóc hôm nay, ngay tại đây.',
   guidePlanCtaBody: 'Chọn ngày rồi thêm công việc bằng nút này.',
   planSelectedEmptyBody:
