@@ -1,0 +1,179 @@
+# 定期予定 編集 E2E: 編集 → ConfirmDialog (R-78/79 破壊的操作の事前通知) → 保存 flow
+# (Sess99 #1124、ADR-0056 Sess93 持ち越しの解消)
+#
+# 検証点:
+# 1. 一覧 kebab → 編集 → RecurrenceFormScreen (edit mode) 到達
+# 2. 保存 tap で ConfirmDialog (「既存の予定は作り直されます」) が表示される
+# 3. confirm → 一覧に戻り、グループが引き続き 1 行表示される (案 G2 group_id 維持)
+#
+# 前提: recurring-memo-byday.yml と同じ手順で rule を 1 件作成してから編集する
+# _template.yml 派生 (R-31: testID 経由のみ / launchApp 後 Back / 3 回反復で実行)
+
+appId: 'com.dooooraku.bonsailog'
+name: 'recurring: edit -> ConfirmDialog -> save (Sess99 #1124)'
+tags:
+  - recurring
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- pressKey: 'Back'
+- waitForAnimationToEnd
+
+# Onboarding skip
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 20000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+
+# seed 投入
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 20000
+- tapOn:
+    id: 'e2e_bonsai_home_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    text: 'OK'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    point: '7%, 7%'
+- waitForAnimationToEnd
+
+# rule を 1 件作成 (毎週 preset、メモなしの最短経路)
+- tapOn:
+    id: 'e2e_tab_look_back'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_look_back_card_recurring'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_recurrence_list_screen'
+    timeout: 15000
+- tapOn:
+    id: 'e2e_recurrence_list_create_new'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_multi_select_screen'
+    timeout: 15000
+- tapOn:
+    id: 'e2e_bonsai_multi_select_card_.*'
+    retryTapIfNoChange: true
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_bonsai_multi_select_confirm'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_work_picker_screen'
+    timeout: 15000
+- tapOn:
+    id: 'e2e_bulk_work_picker_watering'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_recurrence_form_screen'
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: 'e2e_recurrence_form_save'
+    direction: DOWN
+    timeout: 10000
+    optional: true
+- tapOn:
+    id: 'e2e_recurrence_form_save'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_recurrence_list_screen'
+    timeout: 15000
+
+# kebab → 編集 → form (edit mode)
+- tapOn:
+    id: 'e2e_recurrence_rule_kebab_.*'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_recurrence_kebab_edit_.*'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_recurrence_form_screen'
+    timeout: 15000
+
+# 保存 tap → ConfirmDialog (R-78/79) → confirm → 一覧復帰 + グループ 1 行維持
+- scrollUntilVisible:
+    element:
+      id: 'e2e_recurrence_form_save'
+    direction: DOWN
+    timeout: 10000
+    optional: true
+- tapOn:
+    id: 'e2e_recurrence_form_save'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_recurrence_edit_confirm'
+    timeout: 10000
+- tapOn:
+    id: 'e2e_recurrence_edit_confirm_confirm'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_recurrence_list_screen'
+    timeout: 15000
+- assertVisible:
+    id: 'e2e_recurrence_rule_.*'
