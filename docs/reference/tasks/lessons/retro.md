@@ -4,6 +4,15 @@
 
 ---
 
+## [2026-06-11] Sess100 #1149 Stop hook verify ゲート — 採用判断
+
+**判定: 採用** (default ON、PR #1157 で本配線)。根拠: 合成 7 ケース (#1155) + 採用版 5 ケース + live 3 関門 (#1156 実装フローで実走) = 15/15 PASS、誤 block ゼロ。指紋 = `git stash create` tree oid (commit 不変) が「verify→commit→終了」の正規フローと両立することを T6/live③ で実証。
+
+- **教訓 1**: opt-in 試験版 → live 実証 → default ON の 3 段階が安全だった (R-30 の 2/2 基準を段階ごとに適用)
+- **教訓 2**: default ON 化の前に「他セッションの残置変更で docs 専用セッションが誤爆する」シナリオを発見 → transcript 走査 (R-18 hook と同方式) で「自セッションが編集した時だけ」条件を追加。**hook を全員 ON にする時は『自分以外が原因の状態』での誤発動を必ずシミュレーションする**
+- **/goal 併用**: CLI 組み込みのため Claude からは起動不可、user 手入力が必要 (本セッションでは未実施)。次の実装セッションで `/goal AC 全達成 + pnpm verify EXIT=0` を試し、Stop gate との重複/補完を評価する (残課題、Issue #1149 クローズ後は本エントリが追跡先)
+- 安全網: `.claude/.stop-gate-off` (R-61) + 公式の連続 8 block 強制終了
+
 ## [2026-06-11] Doc-Truth Audit 2 日間総括 (後半戦 バッチ②b〜⑩ + 完走)
 
 6/10 20:04 (基準 `11b3337`) 〜 6/11 09:33 (#1113) で台帳 420 行 全判定・未処理 0 を機械検算 (✅349 / 修正・処置済 35 / 🟡24 / 🔴5 / ❌4 / ⚪1)。監査由来 28 PR + 構造防御 4 件 (placeholder gate check7 / R 索引 parity check8 / verify:ai-sync / main branch protection)。前半戦 (P0〜P2) の retro は下記 [2026-06-10] エントリ、本エントリは後半戦 + 全体総括で重複なし。

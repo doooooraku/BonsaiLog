@@ -415,3 +415,15 @@ pnpm verify                # 冒頭で verify:node を実行
 
 - `~/.claude/rules/wsl2-environment.md` (= user global) が Sess1-2 (2026-04) の Node 20 LTS 時代の指示のまま、 `.nvmrc=22` 更新時に同期されていなかった
 - Sess82 PR-E で本 chapter + `pnpm verify:node` 配線 + `wsl2-environment.md` 動的読み込み pattern で構造解決
+
+## 12. Stop hook verify ゲート (Sess100、 Issue #1149)
+
+ターン終了 (Stop) 時に `.claude/hooks/stop-verify-gate.mjs` が以下 3 条件の AND で終了を block する (exit 2):
+
+1. 本セッション (subagent 含む) が `src` / `app` / `plugins` / `app.config.ts` を Edit/Write した (transcript 走査)
+2. その内容で `pnpm verify` が緑になった記録 (`.claude/.verify-state.json`、`scripts/dev/record-verify-state.mjs` が verify chain 末尾で自動記録) と現在の内容指紋が不一致
+3. 安全網フラグ `.claude/.stop-gate-off` が存在しない (R-61。作る時は理由を 1 行書き残す)
+
+- **解除方法 = `pnpm verify` を回して緑にする** (指紋が自動更新)。commit しても内容が同じなら指紋は不変 (誤 block しない)
+- docs / scripts のみの変更や他セッションの残置変更では block しない (#1145 tiering 表 T1/T2 整合)
+- 暴走上限 = 公式仕様「連続 8 block で強制終了」。試験記録 = 合成 7+5 ケース + live 3 関門 (PR #1155/#1156/#1157)

@@ -95,6 +95,8 @@ pnpm verify
 
 **E2E / 実機確認の要否判定**: `docs/how-to/workflow/whole_workflow.md` §1.5 検証 tiering 表 (T1〜T8) が正。変更種別 (git diff のファイルパス) で判定し、省略する層は PR 本文 §6 に理由を記載する。
 
+**Stop hook ゲート (#1149)**: src/app/plugins/app.config.ts を編集したセッションは、その内容で `pnpm verify` が緑になるまで**ターン終了が block される** (`.claude/hooks/stop-verify-gate.mjs`)。verify 成功で指紋が自動記録され解除。詳細は `docs/how-to/development/dev-workflow.md` §12。
+
 ### W-08a: CI 失敗時のリカバリ
 
 `pnpm verify` が失敗したら:
