@@ -511,9 +511,7 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   wiringUnwireInWeeks: '{weeks} 週後解開',
   wiringUnwireOverdueWeeks: '已逾期 {weeks} 週',
   // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs (English fallback) ---
-  detailTabTimeline: 'Timeline',
   detailTabHistory: 'History',
-  detailTabPhotos: 'Photos',
   // --- ADR-0020 v1.x-3: work log confirm sheet (English fallback) ---
   workLogTitle: '記錄{type}',
   workLogNote: '備註',

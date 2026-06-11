@@ -526,9 +526,7 @@ const nl: Partial<Record<TranslationKey, string>> = {
   wiringUnwireInWeeks: 'Verwijderen over {weeks} weken',
   wiringUnwireOverdueWeeks: '{weeks} weken te laat',
   // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs (English fallback) ---
-  detailTabTimeline: 'Timeline',
   detailTabHistory: 'History',
-  detailTabPhotos: 'Photos',
   // --- ADR-0020 v1.x-3: work log confirm sheet (English fallback) ---
   workLogTitle: '{type} loggen',
   workLogNote: 'Notitie',

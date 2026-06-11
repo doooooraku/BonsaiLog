@@ -525,9 +525,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   wiringUnwireInWeeks: 'Lepas dalam {weeks} minggu',
   wiringUnwireOverdueWeeks: 'Terlambat {weeks} minggu',
   // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs (English fallback) ---
-  detailTabTimeline: 'Timeline',
   detailTabHistory: 'History',
-  detailTabPhotos: 'Photos',
   // --- ADR-0020 v1.x-3: work log confirm sheet (English fallback) ---
   workLogTitle: 'Catat {type}',
   workLogNote: 'Catatan',

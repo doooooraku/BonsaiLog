@@ -477,9 +477,7 @@ const baseEn = {
   wiringUnwireOverdueWeeks: 'Overdue by {weeks} weeks',
 
   // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs ---
-  detailTabTimeline: 'Timeline',
   detailTabHistory: 'History',
-  detailTabPhotos: 'Photos',
 
   // --- ADR-0020 Phase 3: bonsai detail watering history (SS 222921) ---
   wateringSummaryStreak: 'Current streak',
