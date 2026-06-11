@@ -60,7 +60,7 @@
 2. ✅ **Plan agent 出力の critical claim を実装前に Read で 1 次資料確認** (= **Sess91 PR-A で `.claude/CLAUDE.md` §2 に追記済**) — cascade / 型挙動 等 framework specific は agent の memory に依存しがち
 3. **PR-C lint script を Sess92+ で error 昇格** — false positive 2 セッション以上観察、 残 3 件 (= body 内 NotoSerifJP) を別 PR で fix
 4. **`worktree-init.sh` で `check-hooks.mjs` 自動順序確認** — PR 毎の format check 失敗 → prettier auto-fix を構造排除
-5. **`docs/reference/deep-link-route-map.md` 起票** — `(tabs)` group route は tab tap 必須 等の罠を documented
+5. **`docs/reference/deep-link-route-map.md` 起票** — `(tabs)` group route は tab tap 必須 等の罠を documented ※2026-06-11 監査注記: 未起票のまま (git 履歴なし)。必要が再浮上したら起票
 
 ### 教訓 5 (= 次 app 作る時 必ず思い出す)
 

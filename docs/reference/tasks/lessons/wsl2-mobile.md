@@ -188,5 +188,5 @@ sleep 1
 - `scripts/ui-diff/capture-app.sh` (preflight を呼ぶ)
 - `maestro/flows/ui-diff/bonsai-tab.yml` (Maestro 2.0 構文 + bonsailog scheme の雛形)
 - `docs/adr/ADR-0021-ui-diff-pipeline.md` (本パイプライン全体の意思決定)
-- `docs/reference/lessons.md` (索引、本ファイルもここから辿れる)
+- `docs/reference/tasks/lessons/README.md` (領域索引、本ファイルもここから辿れる)
 - `~/.claude/projects/.../memory/ui-diff-wsl2-quirks.md` (Auto memory 索引)

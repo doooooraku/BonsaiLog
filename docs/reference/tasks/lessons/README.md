@@ -2,21 +2,31 @@
 
 技術 lesson は領域別フォルダに分割されています。**膨大化で重要部分が読まれない問題を回避**するため、必要な領域のファイルのみ Read してください。
 
-> 行動 lesson (議論深さ / バイアス排除 / ペルソナ評価 等) は **`.claude/recurrence-prevention.md`** (R-1〜R-20) を参照。
+> 行動 lesson (議論深さ / バイアス排除 / ペルソナ評価 等) は **`.claude/recurrence-prevention.md`** を参照 (最新の R 番号は同ファイルの索引が正)。
+>
+> **本ファイルが領域索引の唯一の正** (Doc-Truth Audit バッチ⑦ 2026-06-11 で一本化。旧 `../lessons.md` は誘導のみ)。
 
 ## 領域別ファイル
 
-| ファイル                               | 内容                                                                                      | 想定読者                 |
-| -------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------ |
-| [`docs.md`](./docs.md)                 | ドキュメント管理 / 棚卸 / 索引更新 / 参照整合性                                           | docs 編集時              |
-| [`db.md`](./db.md)                     | SQLite マイグレ冪等性 / Drizzle / バックアップフィールド / i18n キー管理                  | DB / i18n 実装時         |
-| [`build.md`](./build.md)               | EAS local build / 環境変数 / API キー / 画像相対パス / CI/CD 検証スクリプト               | ビルド・CI 作業時        |
-| [`runtime.md`](./runtime.md)           | デバッグワークフロー / logcat False Positive / Android predictive back / 開発環境 PATH    | デバッグ・Android 実装時 |
-| [`store.md`](./store.md)               | App Store / Google Play 申請 / メタデータ / UX 文言 / 法的リンク                          | リリース作業時           |
-| [`billing.md`](./billing.md)           | RevenueCat / Pro 状態管理 / Champion 方式 / 別アプリ踏襲時のペルソナ再評価                | 課金実装時               |
-| [`design.md`](./design.md)             | Claude Design 作成時の ADR 添付 / テンプレ残骸検査 / design_system.md 整合確認            | UI 改修・Design 作成時   |
-| [`discuss.md`](./discuss.md)           | 議論プロセス (R-34 認識ギャップ防止 / R-35 alternative 提示 / 業界事例)                   | /discuss 起動時          |
-| [`notification.md`](./notification.md) | 通知 F-16 (未配線デッドコード検出 / 許可取得タイミング soft-ask / 単一トグル起動時副作用) | 通知・権限実装時         |
+| ファイル                                         | 内容                                                                                      | 想定読者                 |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------- | ------------------------ |
+| [`docs.md`](./docs.md)                           | ドキュメント管理 / 棚卸 / 索引更新 / 参照整合性                                           | docs 編集時              |
+| [`db.md`](./db.md)                               | SQLite マイグレ冪等性 / Drizzle / バックアップフィールド / i18n キー管理                  | DB / i18n 実装時         |
+| [`build.md`](./build.md)                         | EAS local build / 環境変数 / API キー / 画像相対パス / CI/CD 検証スクリプト               | ビルド・CI 作業時        |
+| [`runtime.md`](./runtime.md)                     | デバッグワークフロー / logcat False Positive / Android predictive back / 開発環境 PATH    | デバッグ・Android 実装時 |
+| [`store.md`](./store.md)                         | App Store / Google Play 申請 / メタデータ / UX 文言 / 法的リンク                          | リリース作業時           |
+| [`billing.md`](./billing.md)                     | RevenueCat / Pro 状態管理 / Champion 方式 / 別アプリ踏襲時のペルソナ再評価                | 課金実装時               |
+| [`design.md`](./design.md)                       | Claude Design 作成時の ADR 添付 / テンプレ残骸検査 / design_system.md 整合確認            | UI 改修・Design 作成時   |
+| [`discuss.md`](./discuss.md)                     | 議論プロセス (R-34 認識ギャップ防止 / R-35 alternative 提示 / 業界事例)                   | /discuss 起動時          |
+| [`notification.md`](./notification.md)           | 通知 F-16 (未配線デッドコード検出 / 許可取得タイミング soft-ask / 単一トグル起動時副作用) | 通知・権限実装時         |
+| [`navigation.md`](./navigation.md)               | expo-router の仕様未確定/直感に反する挙動の罠集約 (Sess12 PR-G 確立)                      | navigation 実装時        |
+| [`iap.md`](./iap.md)                             | IAP / RevenueCat 構造修復の学び (territory / offering / 価格取得、Sess81 起こし)          | IAP 改修時               |
+| [`release.md`](./release.md)                     | リリース工程の繰り返し回避 lesson (ADR-0050 補完、Sess61〜)                               | リリース作業時           |
+| [`wsl2-mobile.md`](./wsl2-mobile.md)             | WSL2 + adb / Maestro 2.0 / Expo Go 衝突 → preflight.mjs で構造的検出 (ADR-0021)           | UI 差分 / Maestro 実装時 |
+| [`auto-improve-loop.md`](./auto-improve-loop.md) | Maestro Android 技術制約 + skip-list 判定 + 半自走モード運用                              | UI 自動改善ループ運用時  |
+| [`refactor.md`](./refactor.md)                   | 大規模リファクタ Phase 3-7 の学び (knip / verify 完全実行 / git rm+add 罠)                | 次回大規模リファクタ時   |
+| [`retro.md`](./retro.md)                         | sprint / milestone 単位 retro 結果集約 (KPT + ボトルネック + 教訓)                        | sprint 完了時            |
+| [`git.md`](./git.md)                             | 並行 PR の rebase theirs anchor 消失 / stash --staged new file 罠 (P2 昇格)               | 並行 PR / rebase 作業時  |
 
 ## 運用ルール
 
