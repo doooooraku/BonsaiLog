@@ -14,9 +14,9 @@
   - PR レビューする人
   - 不具合を切り分ける人
 - **この文書に「書かない」こと**（ドリフト防止）:
-  - 開発手順・コマンド → `docs/how-to/whole_workflow.md`
+  - 開発手順・コマンド → `docs/how-to/workflow/whole_workflow.md`
   - 背景や思想の長文 → `docs/adr/`
-  - 画面の見た目詳細 → Figma（正）
+  - 画面の見た目詳細 → design_system.md + docs/mockups/（ADR が正、R-16）
   - できること/できないことの境界 → `basic_spec.md`
 - **ソース・オブ・トゥルース（正）**:
   1. この機能設計書（期待動作）

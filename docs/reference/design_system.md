@@ -717,7 +717,7 @@ if (version < N + 1) {
 
 ### 18-4. 自動検出 (将来)
 
-- `scripts/eslint-rules/destructive-undo.mjs` (Phase ζ-3 or v1.x): `softDelete*` / `purge*` callsite が `Toast.show()` wrap されているか AST grep (R-44 連動、 Sess26 PR-η-3 の lint script を AST 化)
+- `scripts/check-destructive-undo.mjs` (Phase ζ-3 or v1.x): `softDelete*` / `purge*` callsite が `Toast.show()` wrap されているか AST grep (R-44 連動、 Sess26 PR-η-3 の lint script を AST 化)
 - 当面 code review + ADR-0036 整合 grep
 
 ### 18-5. 関連
@@ -1088,7 +1088,7 @@ const { onScroll, scrollEventThrottle } = useScrollPreservation(scrollRef);
 - `src/features/event/EventRowPhotoStrip.tsx` (Phase η、 forward-only 温存)
 - `src/features/event/buildHistoryChips.ts` (14 種別 chip 生成 + fieldLabelKey)
 - `src/features/event/HistoryChip.tsx` (labeled 表示)
-- `src/features/event/payloadValidator.ts` (14 種別 schema、 PR-Q-fix で漏れ修正)
+- `src/db/eventPayloadValidator.ts` (14 種別 schema、 PR-Q-fix で漏れ修正)
 - `__tests__/components/icons/EventIcons.test.tsx` (exhaustive 走査)
 - `__tests__/features/event/buildHistoryChips.test.ts` (14 種別 chip 生成 + payload 各 case)
 - `__tests__/features/event/payloadValidator.test.ts` (schema strip 防止 test)

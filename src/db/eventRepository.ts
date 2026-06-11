@@ -4,7 +4,7 @@
  * Related:
  * - Issue #17 F-02 foundation (PR-C)
  * - schema.ts: events + tags + event_tags + events_fts (PR-B)
- * - payloadValidator.ts: 13 種別 Valibot
+ * - payloadValidator.ts: 14 種別 Valibot
  * - filePathUtils はファイル系ではないため不要
  *
  * 設計方針:
