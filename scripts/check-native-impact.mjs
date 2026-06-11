@@ -32,7 +32,7 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { execSync } from 'node:child_process';
 
 // =============================================================================
@@ -118,6 +118,41 @@ export function classifyMany(filePaths) {
   // unknown は安全側で native 扱い (R-61 整合: 機械判定 + 安全網)
   const verdict = nativeFiles.length + unknownFiles.length > 0 ? 'native' : 'js-only';
   return { verdict, nativeFiles, unknownFiles };
+}
+
+/**
+ * hook が渡す絶対 path を repo root 基準に正規化する (Sess101 #1174)。
+ *
+ * 背景: classify() の正規表現は repo 相対 path 前提だが、 Claude Code hook は
+ * 絶対 path を渡す。 repo 外の path (例: ~/.claude/settings.json = harness 設定)
+ * はどのパターンにも一致せず unknown → 安全側で native 扱いとなり、
+ * **アプリと無関係な編集で不要な build を要求する誤検知**が起きていた (Sess101 実証)。
+ *
+ * - 絶対 path で repo 内 → repo 相対に変換して判定対象に残す
+ * - 絶対 path で repo 外 → **判定対象から除外** (skipped として返す、 アプリに影響しない)
+ * - 相対 path → そのまま (従来挙動、 --from=cli の git diff 出力)
+ *
+ * @param {string[]} filePaths
+ * @param {string} repoRoot - 絶対 path (CLAUDE_PROJECT_DIR ?? cwd)
+ * @returns {{normalized: string[], skipped: string[]}}
+ */
+export function normalizeToRepoRelative(filePaths, repoRoot) {
+  const root = resolve(repoRoot);
+  const normalized = [];
+  const skipped = [];
+  for (const fp of filePaths) {
+    if (!isAbsolute(fp)) {
+      normalized.push(fp);
+      continue;
+    }
+    const abs = resolve(fp);
+    if (abs === root || abs.startsWith(root + sep)) {
+      normalized.push(relative(root, abs));
+    } else {
+      skipped.push(fp);
+    }
+  }
+  return { normalized, skipped };
 }
 
 // =============================================================================
@@ -224,8 +259,18 @@ function main() {
     process.exit(1);
   }
 
+  // Sess101 #1174: 絶対 path を repo 相対へ正規化、 repo 外 path は判定対象外
+  const repoRoot = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
+  const { normalized, skipped } = normalizeToRepoRelative(filePaths, repoRoot);
+  if (skipped.length > 0) {
+    process.stdout.write(
+      `[check-native-impact] Skipped ${skipped.length} path(s) outside repo (no app impact): ${skipped.join(', ')}\n`,
+    );
+  }
+  filePaths = normalized;
+
   if (filePaths.length === 0) {
-    // 何もしない (hook 経由で非 file edit event の場合等)
+    // 何もしない (hook 経由で非 file edit event / repo 外 path のみの場合等)
     process.stdout.write(
       `[check-native-impact] No file paths provided from ${args.from}, skipping.\n`,
     );
