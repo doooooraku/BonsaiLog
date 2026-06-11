@@ -1090,6 +1090,8 @@ const ja: Partial<Record<TranslationKey, string>> = {
   weekdayThuShort: '木',
   weekdayFriShort: '金',
   weekdaySatShort: '土',
+  recurringWeeklyByDaysSummary: '毎週{days}曜',
+  recurringWeeklyByDaysSeparator: '・',
   recurringStartDateLabel: '開始日',
   recurringInitialDateLabel: '初回の予定日',
   recurringStartDateHint: 'この日が最初の予定になり、 ここから繰り返します。',
