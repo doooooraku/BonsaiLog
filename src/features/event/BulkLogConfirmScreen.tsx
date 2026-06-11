@@ -270,11 +270,15 @@ export default function BulkLogConfirmScreen() {
         // ADR-0014 Amended: 初回予定登録時の通知 soft-ask 判定 (通知 OFF かつ未提示なら生涯 1 回表示)。
         // Sess99 #1119: BulkWorkPicker 直接保存 path の廃止に伴い本画面へ移植 (挙動維持)。
         maybePromptNotificationOptIn();
-        // Sess99 #1127 (案 A): 盆栽詳細起点 (returnTo=dismiss) は modal stack を全閉じして
-        // 起点の盆栽詳細に戻る (useFocusEffect reload で新予定が timeline に反映される)。
+        // Sess99 #1127 (案 A): 盆栽詳細起点 (returnTo=dismiss) は modal 群を閉じて起点の
+        // 盆栽詳細に戻る (focus reload で新予定が timeline に反映される)。
+        // 実機検証 (Sess99 SS-15/20) で判明: (modals) は nested Stack のため dismissAll() /
+        // dismiss(2) は**その Stack 内の先頭 (= picker) より下に戻れない**。
+        // → dismissAll (modal 群の先頭まで畳む) + back (modal 群自体を閉じる) の 2 段で脱出する。
         // 予定タブ起点 (default) は従来どおりカレンダーへ replace (選択日 restore 付き)。
         if (returnToDismiss) {
           router.dismissAll();
+          router.back();
           return;
         }
         const dateKey = occurredAtDate || (occurredAtUtc?.slice(0, 10) ?? '');
