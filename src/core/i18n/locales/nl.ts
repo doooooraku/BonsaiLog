@@ -464,6 +464,10 @@ const nl: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeBody:
     'Probeer nu een verzorging van vandaag vast te leggen. Tik op het tabblad "{tab}" hieronder.',
   guideRecordCtaBody: 'Begin door één verzorging van vandaag hier vast te leggen.',
+  guideFirstRecordToast:
+    'Je eerste registratie is opgeslagen. De dag toont nu een ● in de kalender en je vindt hem terug in de lijst hieronder.',
+  guideDetailTabsBody:
+    'Bekijk eerder werk in "{history}" en komende taken in "{plan}", boom voor boom.',
   guidePlanCtaBody: 'Kies een datum en voeg met deze knop een taak toe.',
   planSelectedEmptyBody:
     'Kies een datum en tik hieronder op "{cta}" om een taak toe te voegen. Dagen met taken tonen een ○ in de kalender.',

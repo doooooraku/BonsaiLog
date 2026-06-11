@@ -465,6 +465,10 @@ const it: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeBody:
     'Ora prova a registrare una cura di oggi. Tocca la scheda "{tab}" qui sotto.',
   guideRecordCtaBody: 'Inizia registrando una cura di oggi, proprio qui.',
+  guideFirstRecordToast:
+    'La tua prima registrazione è salvata. Il giorno ora mostra un ● sul calendario e puoi rivederla nella lista qui sotto.',
+  guideDetailTabsBody:
+    'Rivedi le cure passate in "{history}" e le attività future in "{plan}", albero per albero.',
   guidePlanCtaBody: 'Scegli una data e aggiungi una attività con questo pulsante.',
   planSelectedEmptyBody:
     'Scegli una data e tocca "{cta}" qui sotto per aggiungere una attività. I giorni con attività mostrano un ○ sul calendario.',

@@ -464,6 +464,10 @@ const sv: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeTitle: 'Din första bonsai är registrerad',
   guideRecordTabNudgeBody: 'Prova nu att logga dagens skötsel. Tryck på fliken "{tab}" nedan.',
   guideRecordCtaBody: 'Börja med att logga en av dagens skötseluppgifter direkt här.',
+  guideFirstRecordToast:
+    'Din första anteckning är sparad. Dagen visar nu ● i kalendern och du hittar den i listan nedan.',
+  guideDetailTabsBody:
+    'Se tidigare arbete i "{history}" och kommande uppgifter i "{plan}", träd för träd.',
   guidePlanCtaBody: 'Välj ett datum och lägg till en uppgift med den här knappen.',
   planSelectedEmptyBody:
     'Välj ett datum och tryck på "{cta}" nedan för att lägga till en uppgift. Dagar med uppgifter visar ○ i kalendern.',

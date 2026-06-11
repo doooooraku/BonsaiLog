@@ -446,6 +446,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeTitle: 'はじめての盆栽を登録しました',
   guideRecordTabNudgeBody: '次は、今日のお手入れを記録してみましょう。下の「{tab}」タブをタップ。',
   guideRecordCtaBody: 'まずは今日のお手入れをひとつ、ここから記録してみましょう。',
+  guideFirstRecordToast:
+    '最初の記録ができました。カレンダーに ● が付き、下の一覧からいつでも見返せます。',
+  guideDetailTabsBody:
+    '記録した作業は「{history}」で、これからの予定は「{plan}」で、この木ごとに見返せます。',
   guidePlanCtaBody: '日付を選んで、このボタンから予定を入れられます。',
   planSelectedEmptyBody:
     '日付を選んで、下の「{cta}」から登録できます。登録した日はカレンダーに ○ が付きます。',

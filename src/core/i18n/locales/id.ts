@@ -463,6 +463,10 @@ const id: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeTitle: 'Bonsai pertama Anda sudah terdaftar',
   guideRecordTabNudgeBody: 'Berikutnya, coba catat perawatan hari ini. Ketuk tab "{tab}" di bawah.',
   guideRecordCtaBody: 'Mulailah dengan mencatat satu perawatan hari ini, di sini.',
+  guideFirstRecordToast:
+    'Catatan pertama Anda tersimpan. Hari itu kini bertanda ● di kalender dan bisa dilihat lagi di daftar bawah.',
+  guideDetailTabsBody:
+    'Lihat pekerjaan lalu di "{history}" dan rencana mendatang di "{plan}", pohon demi pohon.',
   guidePlanCtaBody: 'Pilih tanggal dan tambahkan tugas dengan tombol ini.',
   planSelectedEmptyBody:
     'Pilih tanggal lalu ketuk "{cta}" di bawah untuk menambahkan tugas. Hari dengan tugas ditandai ○ di kalender.',

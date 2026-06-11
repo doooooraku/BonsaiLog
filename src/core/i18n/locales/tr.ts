@@ -464,6 +464,10 @@ const tr: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeBody:
     'Şimdi bugünün bakımını kaydetmeyi deneyin. Aşağıdaki "{tab}" sekmesine dokunun.',
   guideRecordCtaBody: 'Bugünün bakımlarından birini buradan kaydederek başlayın.',
+  guideFirstRecordToast:
+    'İlk kaydınız alındı. O gün takvimde ● ile işaretlendi, aşağıdaki listeden her zaman bakabilirsiniz.',
+  guideDetailTabsBody:
+    'Geçmiş işleri "{history}" sekmesinde, gelecek görevleri "{plan}" sekmesinde ağaç ağaç görün.',
   guidePlanCtaBody: 'Bir tarih seçin ve bu düğmeyle görev ekleyin.',
   planSelectedEmptyBody:
     'Bir tarih seçin ve görev eklemek için aşağıdaki "{cta}" düğmesine dokunun. Görev olan günler takvimde ○ ile gösterilir.',

@@ -463,6 +463,10 @@ const vi: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeBody:
     'Tiếp theo, hãy thử ghi lại việc chăm sóc hôm nay. Nhấn thẻ "{tab}" bên dưới.',
   guideRecordCtaBody: 'Hãy bắt đầu bằng cách ghi lại một việc chăm sóc hôm nay, ngay tại đây.',
+  guideFirstRecordToast:
+    'Ghi chép đầu tiên của bạn đã được lưu. Ngày đó hiện có ● trên lịch và bạn có thể xem lại trong danh sách bên dưới.',
+  guideDetailTabsBody:
+    'Xem việc đã làm trong "{history}" và kế hoạch sắp tới trong "{plan}", theo từng cây.',
   guidePlanCtaBody: 'Chọn ngày rồi thêm công việc bằng nút này.',
   planSelectedEmptyBody:
     'Chọn ngày rồi nhấn "{cta}" bên dưới để thêm công việc. Ngày có công việc sẽ hiển thị ○ trên lịch.',

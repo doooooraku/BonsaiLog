@@ -465,6 +465,10 @@ const es: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeBody:
     'Ahora prueba a registrar un cuidado de hoy. Toca la pestaña "{tab}" abajo.',
   guideRecordCtaBody: 'Empieza registrando un cuidado de hoy, justo aquí.',
+  guideFirstRecordToast:
+    'Tu primer registro está guardado. El día ahora muestra un ● en el calendario y puedes verlo en la lista de abajo.',
+  guideDetailTabsBody:
+    'Consulta el trabajo pasado en "{history}" y las tareas futuras en "{plan}", árbol por árbol.',
   guidePlanCtaBody: 'Elige una fecha y añade una tarea con este botón.',
   planSelectedEmptyBody:
     'Elige una fecha y toca "{cta}" abajo para añadir una tarea. Los días con tareas muestran un ○ en el calendario.',

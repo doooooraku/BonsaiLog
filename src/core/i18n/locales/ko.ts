@@ -461,6 +461,10 @@ const ko: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeTitle: '첫 분재를 등록했습니다',
   guideRecordTabNudgeBody: '다음은 오늘의 관리를 기록해 보세요. 아래 "{tab}" 탭을 탭하세요.',
   guideRecordCtaBody: '먼저 오늘의 관리 하나를 여기에서 기록해 보세요.',
+  guideFirstRecordToast:
+    '첫 기록이 저장되었습니다. 달력의 해당 날짜에 ● 표시가 생겼고, 아래 목록에서 언제든 볼 수 있습니다.',
+  guideDetailTabsBody:
+    '지난 작업은 "{history}"에서, 앞으로의 예정은 "{plan}"에서 나무별로 볼 수 있습니다.',
   guidePlanCtaBody: '날짜를 선택하고 이 버튼으로 작업을 추가할 수 있습니다.',
   planSelectedEmptyBody:
     '날짜를 선택하고 아래 "{cta}" 버튼으로 작업을 추가할 수 있습니다. 작업이 있는 날은 달력에 ○ 표시가 나타납니다.',
