@@ -99,10 +99,10 @@
 | **R-15** | MCP ツールのハング判定 | `mem_save` 等 30 秒以上応答ないらハング扱い、user に 3 択 (継続/キャンセル/代替) 報告 |
 | **R-16** | Design / モックアップ参照時の SoT 明示 | UI = OpenDesign、ビジネス仕様 = ADR を冒頭明示 |
 | **R-17** | 「全部推薦で OK」 即時実行禁止 (4 段階) | 包括承認後も TaskCreate → 計画 → 承認 → 実行 を厳守 |
-| **R-18** | Read 前 Edit の絶対禁止 | Edit/Write 前に同 path を必ず Read (PreToolUse hook で block) |
+| **R-18** | ~~Read 前 Edit の絶対禁止~~ (退役) | **退役 2026-06-11 (#1144)**: `check-read-before-edit.mjs` (PreToolUse exit 2) が全文を構造強制、違反は機械的に不可能。hook 撤去時は本 R を復活させること |
 | **R-19** | Engram 保存は短い要約版 | `mem_save` content ≤ 1KB、長文は ADR / Issue 本文へ |
 | **R-20** | 「念のため」 議論前に既存 ADR Read | 「念のため」「再検証」 検知時、議論前に既存 ADR を必ず Read |
-| **R-21** | 並列サブエージェントは worktree 隔離 | `Agent` `run_in_background=true` で `isolation: "worktree"` 必須 |
+| **R-21** | ~~並列サブエージェントは worktree 隔離~~ (退役) | **退役 2026-06-11 (#1144)**: `check-agent-isolation.mjs` (PreToolUse exit 2) が構造強制 (background Agent の isolation 未指定を block)。hook 撤去時は本 R を復活させること |
 | **R-22** | verify exit code 保全 | background `pnpm verify` で 末尾 tail/pipe 禁止、`grep -E '^EXIT='` で明示確認 |
 | **R-23** | スキーマフィールド名 grep 検証 | Drizzle / Valibot 型のフィールド名を初使用時、schema.ts Read |
 | **R-24** | 行数上限 (肥大化防止) | lessons/<area>.md ≤ 200 行、recurrence-prevention.md ≤ 250 行 |
@@ -112,9 +112,9 @@
 | **R-28** | UI 表現 vs ビジネス仕様 境界判定 | 7 ステップ判定フローで適切な SoT 選択 + 更新プロセス決定 |
 | **R-29** | 写経駆動開発 5 段階 | mockup Read → mockup SS Read → RN Read → RN 撮影 → 並列比較 |
 | **R-30** | 外部 lib stability PoC | testing lib 変更時 2/2 = 100% 厳格基準で PoC、plan B 先確定 |
-| **R-31** | Maestro flow 作成時の事前確認 | testID grep + `_template.yml` 使用 + text tap 禁止 |
+| **R-31** | Maestro flow 作成時の事前確認 (一部 hook 昇華済み) | 人間手順 = testID grep + `_template.yml` 使用 + runtime は uiautomator dump 確認。text tap / 誤 appId は hook + verify:maestro が機械強制 (#1144) |
 | **R-32** | commit 直前の git diff --cached 目視 | staged 内容と議論修正項目の整合確認、git restore 罠回避 |
-| **R-33** | route / Phase 変更時の影響範囲全網羅 grep | 廃止 path 文字列を全 grep + PR 本文に grep 結果記載、 `scripts/obsolete-routes.json` + `.claude/hooks/check-obsolete-routes.mjs` で構造的検出 (Sess8 PR-5+1) |
+| **R-33** | route / Phase 変更時の影響範囲全網羅 grep (一部 hook 昇華済み) | 人間手順 = 廃止 path 全 grep + PR 付録 §7.8 記載 + `obsolete-routes.json` 登録 + 楽観計上禁止。登録済み route の再使用は hook が機械 block (#1144) |
 | **R-34** | 議論承認の整合性確認 (同類カテゴリ複数項目) | AskUserQuestion で同類カテゴリ (例: 「Home 要素」 D2/D3) 複数項目を 1 質問に詰め込まない。 個別質問に分離 OR 推薦案明示後に各項目について逐次確認。 Sess9 PR-2 (D2/D3 混同) で revert ロス。 詳細: `lessons/discuss.md` |
 | **R-35** | 議論時 alternative 必須提示 + 業界事例「現状最適解」 明示 | 議論 Round で初期案 1 つだけでなく alternative 2-3 案を必ず併記。 業界事例リサーチで「最新トレンド = 現状最適解」 を明示し、 古いパターン (Apple Notes long-press 等) を「業界 outdated」 と判定。 Sess9 PR-9 → PR-10 long-press → toggle 60 分ロスが根拠。 詳細: `lessons/discuss.md` |
 | **R-36** | navigation API 使用時 1 次情報確認 + 実機検証必須 | `router.dismissAll` / `router.canDismiss` 等 expo-router API の挙動を **docs/source で確認 + 実機で挙動検証** してから採用。 `while (canX) { doX() }` パターンは無限 loop リスクで禁止 (max iteration limit or 別 API)。 Sess12 PR-F で canDismiss loop → JS thread freeze 事例。 **Sess18 PR-3 (2026-05-21) で R-36.4/R-36.5 追加**: **R-36.4 UX 評価必須**: 新規 navigation 実装時、 「← で戻ったら user は何画面戻ったと感じるか」 を議論 step として必須化 (ADR-0030 §17 Case A/B/C 分類)。 **R-36.5 実機検証義務**: navigation 変更を伴う PR は実機で ← back button + 画面端 swipe gesture の両方の挙動 SS を PR 添付必須 (PR テンプレ §7.6)。 Sess17 違和感 ④ (戻る 2 画面飛び) が Case C 不明確で発生した教訓。 詳細: `lessons/navigation.md` + `docs/adr/ADR-0030.md` |

@@ -48,9 +48,7 @@
 
 ### R-18. Read 前 Edit の絶対禁止
 
-- **ルール**: `Edit` / `Write` ツールを呼ぶ前に、必ず**そのセッション内で同じファイル path の `Read` を 1 回以上**実施。並列 Edit 時は全ファイルを Read 済み確認。
-- **根拠**: 本セッションで `Edit` を `Read` 前に試行 → "File has not been read yet" エラーが 5 回以上発生。
-- **自動化**: `.claude/hooks/check-read-before-edit.mjs` で PreToolUse に Edit/Write を block する hook 実装。Hook が「直近の Read tool_use ログに該当 path がない」を検出 → exit 2 で中断 + メッセージ。
+- **退役**: 2026-06-11 (#1144、ADR-0046 D-1 方式) / 理由: `.claude/hooks/check-read-before-edit.mjs` (PreToolUse exit 2 block) が全文を構造強制し、違反は機械的に不可能 / 代替: hook が恒久ガード。hook を撤去・改名する場合は本 R を復活させること。旧本文は git 履歴参照。
 
 ### R-19. Engram 保存は短い要約版に制限
 
@@ -66,9 +64,7 @@
 
 ### R-21. 並列サブエージェントは worktree 隔離必須
 
-- **ルール**: `Agent` ツールを `run_in_background=true` で起動する際、`isolation: "worktree"` を **必ず指定する**。foreground (1 件ずつ実行) なら不要。read-only / 専用エージェント (Explore / Plan / commit-helper 等) は対象外。
-- **根拠**: 2026-05-02 セッションで 5 サブエージェントが同 working directory を共有し、互いの git stash / checkout / edit が衝突 → F-09 / F-10 / F-32 が完成不能、F-15 エージェントが eventRepository.ts を 45 行誤削除しかけた。並列エージェント完了報告 6 件中 4 件が「並列カオスで完了不能」と報告。
-- **自動化**: `.claude/hooks/check-agent-isolation.mjs` で PreToolUse Agent / Task tool 起動時に isolation チェック、未指定なら exit 2 で block。
+- **退役**: 2026-06-11 (#1144、ADR-0046 D-1 方式) / 理由: `.claude/hooks/check-agent-isolation.mjs` (PreToolUse exit 2 block) が構造強制 (background Agent の `isolation: "worktree"` 未指定を block、foreground / read-only agent の除外も hook 側に実装済み) / 代替: hook が恒久ガード。撤去時は本 R を復活させること。旧本文 (2026-05-02 並列カオス事例) は git 履歴参照。
 
 ### R-22. pnpm verify を background で実行する時の exit code 保全
 
@@ -142,14 +138,11 @@
 
 ### R-31. Maestro flow 新規作成時の事前 testID 検索 + template 使用
 
-- **ルール**: 新規 `maestro/flows/*.yml` 作成時、必ず以下を実施:
+- **ルール (人間手順、残存)**: 新規 `maestro/flows/*.yml` 作成時:
   1. 関連画面の testID 事前 grep (`grep -rn 'e2e_' app/<screen>/ src/features/<feature>/`)
-  2. `maestro/flows/_template.yml` をコピーして start (`cp maestro/flows/_template.yml maestro/flows/<new>.yml`)
-  3. 標準 step 順序を維持 (launchApp → pressKey:Back → extendedWaitUntil → 固有手順)
-  4. `tapOn: text: '...'` 禁止 (testID 経由のみ、TabBar 「設定」 text tap で Developer Menu 誤起動回避)
-  5. **(Sess96 強化、 旧 Issue #528-T5 / #1078 由来)** grep で testID の存在が確認できない経路 (= 新規画面 / 動的生成 UI / RN Alert picker 等) は、 **実機で該当画面まで手動操作 + `adb shell uiautomator dump` で testID の実在を確認**してから flow を書く (= 静的 grep は「コードに書いてある」 までしか保証しない、 runtime で render されるかは dump が正)
-- **根拠**: 2026-05-12 セッションで testID 確認を後回しにし、6 段階の試行錯誤で 1 時間ロス (R-9 violation)。`text: '設定'` tap で Expo Dev Client Developer Menu が誤起動した事例あり。項目 5 は 2026-05-15 retro P5 (onboarding-notification 経路調査未済で testID 不在 fail) 由来、 Sess89+ の実機検証では uiautomator dump が座標確定の標準手段として定着済 (lessons/testing.md §9)。
-- **自動化**: `.claude/hooks/check-maestro-flow-creation.mjs` で PreToolUse Write at `maestro/flows/*.yml` を hook、禁止パターン (text tap / 誤 appId) 検出で exit 2 block。`scripts/lint-maestro.mjs` で CI 強制 (pnpm verify:maestro-lint)。
+  2. `maestro/flows/_template.yml` をコピーして start
+  3. grep で testID の実在が確認できない経路 (新規画面 / 動的生成 UI / RN Alert picker 等) は **実機 `adb shell uiautomator dump` で runtime 実在を確認**してから flow を書く (静的 grep は render を保証しない)
+- **一部昇華済み (2026-06-11 #1144)**: text tap 禁止 / 誤 appId / 禁止パターンは `.claude/hooks/check-maestro-flow-creation.mjs` (PreToolUse exit 2 block) + Maestro flow lint (`pnpm verify` chain) が機械強制。根拠事例 (2026-05-12 の 1 時間ロス等) は git 履歴参照。
 
 ### R-32. commit 直前の git diff --cached 目視 + 議論修正項目の inclusion verify
 
@@ -176,16 +169,11 @@
 
 ### R-33. route / Phase 変更時の影響範囲全網羅 grep (廃止 route 構造的検出)
 
-- **ルール**: route (e.g., `/(tabs)/<name>` / `/<route>`) や Phase / 構造を変更する PR では、 以下を必ず実施:
-  1. **事前 grep**: 廃止予定の path / testID / component 名で `grep -rn '<pattern>' --include="*.tsx" --include="*.ts" --include="*.yml" --include="*.json"` を全網羅実行
-  2. **影響範囲を PR 本文に記載 (PR テンプレ付録 §7.8)**: 全 hit を列挙、 修正済 / 修正不要 の判断を明記
-  3. **`scripts/obsolete-routes.json` に新 entry 追加**: 廃止 route を構造管理、 `.claude/hooks/check-obsolete-routes.mjs` (Sess8 Retro S-2) が Edit/Write 時に block
-  4. **計画段階で「N 件」 と楽観計上禁止**: 実 grep を先に走らせて確定数を出す
-- **根拠**: 2026-05-17 Sess7 PR-1 (#543) で settings タブ → `app/settings/` 移動時、 (1) `SearchHeader.tsx:138` の `router.push('/(tabs)/settings')` 古い path 残存、 (2) `look-back/index.tsx:81` の `showSettings={false}` (歯車不表示)、 (3) Maestro flow 14 個と計画したが実 grep で 19 個と判明 = 計 3 件の漏れ。 Sess8 PR-1 (#545) で hotfix。 同種の path 漏れは Phase 1b 系で多発リスク。
-- **自動化**:
-  - `.claude/hooks/check-obsolete-routes.mjs`: Edit/Write 前に対象 file 内の廃止 route hit で block (S-2)
-  - `scripts/obsolete-routes.json`: 廃止 route を一元管理 (新規 entry 追加 → 全ファイル grep 自動 block)
-  - PR テンプレ付録 `docs/how-to/workflow/pr-template-appendix.md` §7.8: route / Phase 変更時の全網羅 grep 結果記載を必須化 (S-3、旧「§11」表記は番号 drift のため訂正)
+- **ルール (人間手順、残存)**: route / Phase / testID を変更する PR では:
+  1. 廃止予定の path / testID / component 名で全網羅 grep を**事前**実行 (計画段階の「N 件」楽観計上禁止、実 grep で確定数)
+  2. 全 hit + 修正済/不要の判断を PR テンプレ付録 §7.8 に記載
+  3. 廃止 route を `scripts/obsolete-routes.json` に新 entry 追加 (これが下記 hook の検出源になる)
+- **一部昇華済み (2026-06-11 #1144)**: obsolete-routes.json 登録済み route の再使用は `.claude/hooks/check-obsolete-routes.mjs` (Edit/Write 時 exit 2 block) が機械強制。根拠事例 (Sess7 #543 の 3 件漏れ → Sess8 #545 hotfix) は git 履歴参照。
 
 ---
 
