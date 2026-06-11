@@ -12,7 +12,7 @@
  *
  * Sess16 PR-B1 で **複数作業対応を削除** (user 真意: 「複数作業記録はあまりない」)。
  * cell tap で即遷移、 緑反転 + 下部 CTA + 「メモを追加」 toggle 全廃。
- *   - schedule mode: bulkScheduleEvents 即書込 → router.replace('/(tabs)/plan')
+ *   - schedule mode: router.push('/bulk-log-confirm?mode=schedule') (日付 + 定期 確認画面、 Sess99 #1119)
  *   - log mode: router.push('/bulk-log-confirm?type=<single>') (note + 日付 + 写真 入力画面)
  */
 import { router, useLocalSearchParams, type Href } from 'expo-router';
@@ -20,18 +20,11 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { useToastStore } from '@/src/components/Toast';
 import { BonsaiChipPickerLayout } from '@/src/features/bonsai/BonsaiChipPickerLayout';
-// Sess80 PR-6.5 ADR-0056: schedule mode 1 タップ動線完全復活、 Sess79 PR-6 退化を 部分 revert。
-// toLocalDateKey は Sess67 PR #942 で core/datetime に SoT 移動済、 ESLint boundaries 違反なし。
-import { getTzOffsetMin, nowUtc, toLocalDateKey } from '@/src/core/datetime';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 // Sess68 PR #C: 全 forbidden token を inline c.* 化。
 import { useColors } from '@/src/core/theme/useColors';
-import { bulkScheduleEvents } from '@/src/db/eventRepository';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
-import { maybePromptNotificationOptIn } from '@/src/features/notification/optInPrompt';
-import { triggerSummaryReschedule } from '@/src/features/notification/triggerReschedule';
 import { WorkTypeIcon } from '@/src/features/event/WorkTypeIcon';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
@@ -49,9 +42,6 @@ export default function BulkWorkPickerScreen() {
   const scheduleDate = params.date ?? '';
 
   const selectedBonsais = usePickerStore((s) => s.bulkContext?.selectedBonsais ?? []);
-
-  // Sess80 PR-6.5 ADR-0056: 1 タップ動線復活で 重複 tap 防止 state 必要 (Sess79 PR-6 で 一旦削除)
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // Sess83 ADR-0025 §7 Notes Amended (R-71 起票): 1 件 case の表現契約 = 「同じ」 文言の
   // compositional 違和感 (1 件 case で「同じ」 は文法成立せず) + chip 視覚曖昧化を解消するため、
@@ -71,31 +61,16 @@ export default function BulkWorkPickerScreen() {
 
   // Sess16 PR-B1: cell tap で即遷移 (複数作業対応削除、 user 真意「単一作業のみ」)。
   const handleSelect = React.useCallback(
-    async (type: EventType) => {
-      if (isSubmitting) return;
+    (type: EventType) => {
       const bonsaiIds = selectedBonsais.map((b) => b.id);
 
-      // Sess80 PR-6.5 ADR-0056: schedule mode 1 タップ動線完全復活 (Sess79 PR-6 退化を 部分 revert)。
-      // recurring (定期予定) は Sess80 PR-7.5 で 新規追加する「もっと」 タブの 管理ハブ経由で 入力、
-      // 本画面の schedule mode は 単発予定の 即書込 専用化 (= 業務プロ user の 1 タップ動線完全維持)。
+      // Sess99 #1119 (ADR-0056 Sess99 Amendment / 案 a): schedule mode は BulkLogConfirmScreen
+      // (mode=schedule) 経由に変更。 Sess80 PR-6.5 の 1 タップ即書込は user 実機検証「確認画面が
+      // 出ない」 指摘で改訂 — 確認画面で日付編集 + 定期 toggle を確認してから保存する。
+      // 保存処理 (bulkScheduleEvents + toast + 通知 soft-ask + reschedule) は確認画面側に集約。
       if (mode === 'schedule') {
-        setIsSubmitting(true);
-        // Sess36 PR-7 (ADR-0042 関連 fix): TZ 安全な local 「今日」 (toLocalDateKey)、
-        // 旧 `nowUtc().slice(0, 10)` は UTC 日付で JST 早朝に前日 default 化する bug 回避。
-        const dateStr = scheduleDate || toLocalDateKey(nowUtc() as string, getTzOffsetMin());
-        const occurredAtUtc = `${dateStr}T00:00:00.000Z`;
-        try {
-          await bulkScheduleEvents({ bonsaiIds, type, occurredAtUtc });
-          useToastStore.getState().show(t('bulkScheduleDoneToast').replace('{count}', '1'));
-          // ADR-0014 Amended: 初回予定登録時の通知 soft-ask 判定 (通知 OFF かつ未提示なら生涯 1 回表示)。
-          maybePromptNotificationOptIn();
-        } catch (error) {
-          console.warn('[bulk-schedule] failed:', error);
-        }
-        // Sess12 PR-I: 通知 reschedule (planned events 変化 → 当日まとめ通知再予約)
-        void triggerSummaryReschedule(t);
-        // Sess12 PR-G 改善 I: router.replace で予定タブに直接遷移
-        router.replace('/(tabs)/plan' as Href);
+        const dateParam = scheduleDate ? `&date=${encodeURIComponent(scheduleDate)}` : '';
+        router.push(`/bulk-log-confirm?type=${type}&mode=schedule${dateParam}` as Href);
         return;
       }
 
@@ -123,7 +98,7 @@ export default function BulkWorkPickerScreen() {
       const dateParam = scheduleDate ? `&date=${encodeURIComponent(scheduleDate)}` : '';
       router.push(`/bulk-log-confirm?type=${type}${dateParam}` as Href);
     },
-    [isSubmitting, mode, scheduleDate, selectedBonsais, t],
+    [mode, scheduleDate, selectedBonsais],
   );
 
   return (

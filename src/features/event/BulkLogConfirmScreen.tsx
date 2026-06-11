@@ -57,6 +57,7 @@ import {
   createRecurrenceRule,
 } from '@/src/db/recurrenceRuleRepository';
 import { cancelForEvent } from '@/src/features/notification/cancelForEvent';
+import { maybePromptNotificationOptIn } from '@/src/features/notification/optInPrompt';
 import { addPhotoFromUri } from '@/src/features/photos/photoOrchestrator';
 import { useProGuard } from '@/src/features/pro/useProGuard';
 import { EVENT_TYPES, type EventType } from '@/src/db/schema';
@@ -260,6 +261,9 @@ export default function BulkLogConfirmScreen() {
           : 'bulkScheduleDoneToast';
         const toastCount = recurrenceValue.enabled ? recurringCreatedCount : bonsaiIds.length;
         useToastStore.getState().show(t(toastKey).replace('{count}', String(toastCount)));
+        // ADR-0014 Amended: 初回予定登録時の通知 soft-ask 判定 (通知 OFF かつ未提示なら生涯 1 回表示)。
+        // Sess99 #1119: BulkWorkPicker 直接保存 path の廃止に伴い本画面へ移植 (挙動維持)。
+        maybePromptNotificationOptIn();
         const dateKey = occurredAtDate || (occurredAtUtc?.slice(0, 10) ?? '');
         router.replace(`/(tabs)/plan?selectedDateKey=${dateKey}`);
         return;
@@ -378,10 +382,11 @@ export default function BulkLogConfirmScreen() {
           contentContainerStyle={styles.body}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Sess33 PR-1: タイトル + サブタイトルを ScrollView 内 (旧 sticky header 廃止)。 */}
+          {/* Sess33 PR-1: タイトル + サブタイトルを ScrollView 内 (旧 sticky header 廃止)。
+              Sess99 #1119: schedule mode は予定追加用タイトルに切替。 */}
           <View style={styles.titleBlock}>
             <ThemedText style={[styles.title, { color: c.text }]}>
-              {t('bulkLogConfirmTitle')
+              {t(isScheduleMode ? 'bulkScheduleConfirmTitle' : 'bulkLogConfirmTitle')
                 .replace('{label}', typeLabel)
                 .replace('{count}', String(selectedBonsais.length))}
             </ThemedText>
@@ -404,7 +409,9 @@ export default function BulkLogConfirmScreen() {
             ))}
           </ScrollView>
 
-          {/* Sess16 PR-B2: 日付選択 (mockup 14 種別共通、 chips の後・form の前)。 */}
+          {/* Sess16 PR-B2: 日付選択 (mockup 14 種別共通、 chips の後・form の前)。
+              Sess99 #1119: schedule mode は未来日の予定が本筋のため maxToday を外す
+              (= 過去日も従来の即書込と同様に許容、 制限強化はしない)。 */}
           <View style={styles.field}>
             <LabeledDateRow
               label={t('workLogDateField')}
@@ -413,15 +420,20 @@ export default function BulkLogConfirmScreen() {
               value={occurredAtDate}
               onChangeText={setOccurredAtDate}
               placeholder={t('workLogDatePlaceholderToday')}
-              maxToday
+              maxToday={!isScheduleMode}
               testID="e2e_bulk_log_date"
               testIDClear="e2e_bulk_log_date_clear"
             />
           </View>
 
           {/* Sess17 PR-H2 (ADR-0029 D5): 14 種別固有 form を WorkLogTypeFormFields で
-            WorkLogConfirm (Single) と 1:1 同じ UI 表示。 */}
-          <WorkLogTypeFormFields type={selectedType} state={formState} onChange={setFormState} />
+            WorkLogConfirm (Single) と 1:1 同じ UI 表示。
+            Sess99 #1119: schedule mode では非表示 — 保存 path (bulkScheduleEvents /
+            createRecurrenceRule) が payload を持たないため、 表示したまま保存すると入力が
+            無言で捨てられる (silent data loss)。 種別固有入力は記録時 (planned → logged 変換) に行う。 */}
+          {!isScheduleMode ? (
+            <WorkLogTypeFormFields type={selectedType} state={formState} onChange={setFormState} />
+          ) : null}
 
           {/* Sess79 PR-6 ADR-0056: schedule mode でのみ RecurrencePicker 表示 (= 定期予定 toggle + 6 preset + 終了日 3 択) */}
           {isScheduleMode ? (
@@ -439,45 +451,51 @@ export default function BulkLogConfirmScreen() {
             Sess31 PR-1 (R-46 拡張): onFocus で auto-scroll、 IME 起動時にメモ欄を可視範囲に。
             Sess32 PR-1 (R-46 v3): forwardRef + measureLayout で ScrollView 内 y 位置を精密取得、
             旧 onLayout + memoY 方式 (Sess31 PR-2) は max scroll 値で頭打ちになる事象を解消。 */}
-          <View style={styles.field}>
-            <LabeledTextInput
-              ref={noteInputRef}
-              label={t('workLogNote')}
-              optional
-              optionalText={t('workLogOptional')}
-              value={note}
-              onChangeText={(v) => setNote(v.slice(0, 2000))}
-              placeholder={t(getWorkLogNotePlaceholderKey(selectedType) as TranslationKey)}
-              maxLength={2000}
-              showCounter
-              multiline
-              testID="e2e_bulk_log_confirm_note_input"
-              onFocus={handleNoteFocus}
-            />
-          </View>
+          {/* Sess99 #1119: メモ + 写真は schedule mode では非表示 — 保存 path が note / photos を
+            持たず silent data loss になるため (status='planned' は写真なしが仕様、 #1062 整合)。 */}
+          {!isScheduleMode ? (
+            <View style={styles.field}>
+              <LabeledTextInput
+                ref={noteInputRef}
+                label={t('workLogNote')}
+                optional
+                optionalText={t('workLogOptional')}
+                value={note}
+                onChangeText={(v) => setNote(v.slice(0, 2000))}
+                placeholder={t(getWorkLogNotePlaceholderKey(selectedType) as TranslationKey)}
+                maxLength={2000}
+                showCounter
+                multiline
+                testID="e2e_bulk_log_confirm_note_input"
+                onFocus={handleNoteFocus}
+              />
+            </View>
+          ) : null}
 
           {/* Sess16 PR-B2: 写真添付 (mockup 14 種別共通、 Pro 最大 10 枚、 全 bonsai に同 photos 紐付け、 ADR-0049 Sess59 PR3 Free 3 枚) */}
-          <View style={styles.field}>
-            <PhotoField
-              label={t('workLogPhotoField')}
-              optional
-              optionalText={t('workLogOptional')}
-              photos={photos}
-              onChange={setPhotos}
-              isPro={photoGuard.isPro}
-              onLimitReached={showPhotoLimitPaywall}
-              testID="e2e_bulk_log_photo_field"
-            />
-          </View>
+          {!isScheduleMode ? (
+            <View style={styles.field}>
+              <PhotoField
+                label={t('workLogPhotoField')}
+                optional
+                optionalText={t('workLogOptional')}
+                photos={photos}
+                onChange={setPhotos}
+                isPro={photoGuard.isPro}
+                onLimitReached={showPhotoLimitPaywall}
+                testID="e2e_bulk_log_photo_field"
+              />
+            </View>
+          ) : null}
         </ScrollView>
 
         <View style={[styles.footer, { borderTopColor: c.border, backgroundColor: c.background }]}>
+          {/* Sess99 #1119: schedule mode は既存 bulkScheduleConfirmCta (Sess79 由来) を流用。 */}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('bulkLogSaveCta').replace(
-              '{count}',
-              String(selectedBonsais.length),
-            )}
+            accessibilityLabel={t(
+              isScheduleMode ? 'bulkScheduleConfirmCta' : 'bulkLogSaveCta',
+            ).replace('{count}', String(selectedBonsais.length))}
             accessibilityState={{ disabled: isSubmitting }}
             disabled={isSubmitting}
             style={[styles.cta, { backgroundColor: c.tint }, isSubmitting && styles.ctaDisabled]}
@@ -485,7 +503,10 @@ export default function BulkLogConfirmScreen() {
             testID="e2e_bulk_log_save_cta"
           >
             <ThemedText style={styles.ctaText}>
-              {t('bulkLogSaveCta').replace('{count}', String(selectedBonsais.length))}
+              {t(isScheduleMode ? 'bulkScheduleConfirmCta' : 'bulkLogSaveCta').replace(
+                '{count}',
+                String(selectedBonsais.length),
+              )}
             </ThemedText>
           </Pressable>
         </View>
