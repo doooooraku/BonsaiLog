@@ -7,12 +7,12 @@
 > 1. doc を実態と突き合わせて検証したら該当行の「最終検証日」と「判定」を更新する
 > 2. 新規 doc を作ったら行を追加する (判定 ✅ / 最終検証日 = 作成日)
 > 3. doc を削除・改名したら行を更新する
-> 4. 棚卸 (P4 予定): 鮮度スクリプトが「doc の最終 commit < 対応コードの最終 commit」かつ「最終検証日が 90 日超」の行を自動列挙する
+> 4. **棚卸 cadence (30 日周期、次回 2026-07-10 頃)**: `pnpm metrics:doc-30day-zero` (利用頻度) と `pnpm metrics:doc-freshness` (正確性 — 「doc の最終 commit < 対応コードの最終 commit」かつ「最終検証日 90 日超」を自動列挙) の **両方** を実行し、flagged を本台帳へ反映する。実行導線 = /retro Step 9 / /memory-review。全面再監査が必要になったら `docs/how-to/workflow/prompts/P-15_doc-truth-audit.md` (差分監査の基準 = `b4c9716`)
 >
 > **凡例 (判定)**: ✅=一致 / ❌=乖離あり / 🟡=軽微・不急 / 🔴=要対応 (処置済は注記) / ⚪=判定保留 / 🔵=user 手動確認待ち / 修正済=監査内で修正完了
 > **SoT 区分**: C=code-derived / D=decision(歴史文書) / P=process(手順書) / E=external(ストア・SaaS が正) / G=governance / M=memory
 
-## 台帳 (420 行)
+## 台帳 (427 行 = 初期転記 420 + 補遺 7)
 
 | No  | path                                                                                                                     | 区分 | 判定                         | 最終検証日 |
 | --- | ------------------------------------------------------------------------------------------------------------------------ | ---- | ---------------------------- | ---------- |
@@ -436,8 +436,16 @@
 | 418 | `.claude/skills/i18n-add/SKILL.md`                                                                                       | G    | ✅                           | 2026-06-11 |
 | 419 | `docs/how-to/release/production-promotion-checklist.md`                                                                  | P    | 🟡→**修正済 (本 PR)**        | 2026-06-11 |
 | 420 | `docs/reference/tasks/lessons/git.md`                                                                                    | P    | ✅                           | 2026-06-11 |
+| 421 | `docs/how-to/workflow/prompts/P-13_review-request-feature.md`                                                            | P    | ✅                           | 2026-06-11 |
+| 422 | `docs/how-to/workflow/prompts/P-14_doc-truth-structural-defenses.md`                                                     | P    | ✅                           | 2026-06-11 |
+| 423 | `docs/reference/doc-routing.md`                                                                                          | P    | ✅                           | 2026-06-11 |
+| 424 | `docs/audit/freshness-ledger.md`                                                                                         | P    | ✅                           | 2026-06-11 |
+| 425 | `docs/how-to/workflow/pr-template-appendix.md`                                                                           | P    | ✅                           | 2026-06-11 |
+| 426 | `.claude/rules/ui-diff-loop.md`                                                                                          | G    | ✅                           | 2026-06-11 |
+| 427 | `docs/how-to/workflow/prompts/P-15_doc-truth-audit.md`                                                                   | P    | ✅                           | 2026-06-11 |
 
 ## 転記検算 (2026-06-11 初期化時)
 
 - 転記行数: 420 (原台帳の番号付き行 全件、欠番 なし)
 - 原台帳完走時の機械集計: 判定済み 420 行・未処理 0 (内訳は原台帳「バッチ⑨⑩ + 残余 sweep 処理記録」参照)
+- 補遺 No.421-427 (2026-06-11 P3/P4): 監査完走後の新規 doc 7 件を更新ルール 2 で追加 (台帳 計 427 行)
