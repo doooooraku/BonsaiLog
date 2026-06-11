@@ -96,7 +96,7 @@ god component(巨大ファイル)は**一度に壊さず**、旧 API を wrapper
 4. ✅ **Phase 6(境界整理・完了)**: §2 の違反を是正、boundary plugin を error 化(ADR-0048)。
 5. **Phase 7(掃除)**: knip がフラグした死コードを user 承認後に削除。
 
-詳細は `docs/refactor/master-plan.md` を正とする。
+詳細は `docs/archive/refactor-2026-05/master-plan.md` を正とする。
 
 ---
 
@@ -149,7 +149,7 @@ god component(巨大ファイル)は**一度に壊さず**、旧 API を wrapper
 
 ## 関連
 
-- `docs/refactor/master-plan.md` — リファクタ全体計画(Phase 3-7)
+- `docs/archive/refactor-2026-05/master-plan.md` — リファクタ全体計画(Phase 3-7)
 - `docs/reference/constraints.md` — 不変条件
-- `docs/adr/` — 個別意思決定(0008 日時 / 0027・0029 Form atom / 0033 i18n / 0042 theme / 0046 FSD 予定)
+- `docs/adr/` — 個別意思決定(0008 日時 / 0027・0029 Form atom / 0033 i18n / 0042 theme / 0048 FSD 層定義)
 - `.claude/recurrence-prevention.md` — 行動ルール(R-1〜)

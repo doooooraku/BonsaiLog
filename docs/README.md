@@ -2,168 +2,93 @@
 
 このディレクトリは「仕様を生かし続ける」ための docs-as-code の中核です。
 ドキュメントは **役割で分けて、更新ルールを固定** します。
+分類の枠組みは [Diátaxis](https://diataxis.fr/)（Tutorial / How-to / Reference / Explanation）+ ADR です。
+
+> **本 README は「ディレクトリの役割」だけを宣言します。個別ファイルは列挙しません**
+> （列挙は drift 源 — Doc-Truth Audit 2026-06 の教訓）。
+> 各ファイルの鮮度・判定は `docs/audit/freshness-ledger.md`（中央台帳）が正。
+> ディレクトリ一覧の機械検査は `scripts/docs-lint.mjs`（`pnpm docs:lint`）の allowlist が正。
 
 ---
 
-## 1. まず全体像（どれが何の文書？）
+## 1. ディレクトリマップ（役割宣言）
 
-### Explanation（なぜ/価値/境界）
+### Diátaxis 4 区分 + ADR（知識の置き場）
 
-- `docs/explanation/product_strategy.md`
-  - 価値、やる/やらない、判断基準を固定する「地図」
+| ディレクトリ     | 区分                 | 役割・更新ルール                                                                                                                                               |
+| ---------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `explanation/`   | Diátaxis Explanation | なぜ作るか・価値・スコープ境界（`product_strategy.md` が代表）。変えにくい「地図」                                                                             |
+| `reference/`     | Diátaxis Reference   | 変わりにくい事実: 仕様（basic/functional）、`constraints.md`、`glossary.md`、`design_system.md`、`architecture.md`、`doc-routing.md`、`tasks/lessons/`（教訓） |
+| `how-to/`        | Diátaxis How-to      | 手順書。`development/` `workflow/` `testing/` `ui-diff/` `release/` + `workflow/prompts/`（次セッション用 prompt 雛形 = P-XX とテンプレ）                      |
+| `adr/`           | ADR                  | なぜそうしたか（決定ログ）。履歴として増える。変更は Amendment で追記（R-2: 履歴は ADR に集約）                                                                |
+| （`tutorials/`） | Diátaxis Tutorial    | **現状なし**（個人開発でオンボーディング需要が薄いため未設置）。必要になったら新設し、本表と docs-lint allowlist に追加                                        |
 
-### Reference（変わりにくい事実）
+### 運用記録（生きているトラッカー）
 
-- `docs/reference/basic_spec.md`
-  - アプリが「何をするか」の基本仕様
-- `docs/reference/functional_spec.md`
-  - 機能が「どう動くか」の仕様
-- `docs/reference/feature_spec_template.md`
-  - 機能仕様を追加するときのテンプレート
-- `docs/reference/glossary.md`
-  - 用語の意味の辞書
-- `docs/reference/constraints.md`
-  - 前提/制約/非ゴールの一枚岩（ルールブック）
-- `docs/reference/tasks/lessons.md`
-  - 開発中に得た教訓・学びの記録
+| 場所              | 役割                                                                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `audit/`          | 監査・検証の運用記録。`freshness-ledger.md` = 全 doc の鮮度中央台帳（30 日棚卸、scripts からパス参照されるため移動禁止）+ 実機検証記録 |
+| `improvements.md` | PR ごとの「意図的な妥協」トラッカー（PR テンプレ DoD と連動）                                                                          |
 
-### ADR（なぜそうしたか）
+### アーカイブ（完了したプロジェクトの凍結記録）
 
-- `docs/adr/ADR-0001-initial-decisions.md` — 初期の技術選定・アーキテクチャ決定
-- `docs/adr/ADR-0002-revenue-model.md` — 収益モデルの選択（広告 + サブスク）
-- `docs/adr/ADR-0003-storage-policy.md` — データ保存方針（AsyncStorage vs SecureStore）
-- `docs/adr/ADR-0004-language-set.md` — ローカライズ範囲（19 言語、RTL 除外）
-- `docs/adr/ADR-0005-ios-encryption-compliance.md` — iOS 暗号化エクスポートコンプライアンス
-- `docs/adr/ADR-0006-in-app-review-trigger.md` — アプリ内レビュー促進のタイミング設計
-- `docs/adr/adr_template.md` — ADR を追加するときのテンプレート
+| 場所       | 役割                                                                                                                                                                        |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `archive/` | 完了済みプロジェクトの計画書・報告書・調査資料・監査台帳スナップショット。`<topic-YYYY-MM>/` 単位（例: `refactor-2026-05/` `research-2026-04/` `doc-truth-audit-2026-06/`） |
 
-### How-to（手順 — サブディレクトリ別）
+**archive ルール**:
 
-**ルート**（テンプレート全体に関わる）
+1. プロジェクトが完了（報告書 merge / 結論を現役 doc へ反映済み）したら `docs/archive/<topic-YYYY-MM>/` へ `git mv` する
+2. archive 内は **凍結** — 内容は当時のまま温存し、旧パス記述も修正しない（スナップショットとしての価値を守る）
+3. 現役 doc から archive を参照するのは OK（根拠資料リンク）。archive を SoT として扱うのは NG
+4. 役目を終えた一時 doc（セッション handoff 等）は archive ではなく **削除**（git 履歴が記録）
 
-- `docs/how-to/quickstart.md` — プロジェクトの初期セットアップ手順
+### 公開物・アセット（Diátaxis 外）
 
-**development/**（開発時に頻繁に参照）
-
-- `docs/how-to/development/coding_rules.md` — 実装時のコード規約・設計ルール
-- `docs/how-to/development/android_build.md` — Android の Debug / Release ビルド手順
-- `docs/how-to/development/ios_build.md` — iOS の Debug / Release ビルド手順
-- `docs/how-to/development/debug_guide.md` — デバッグの進め方ガイド
-- `docs/how-to/development/sentry_setup.md` — Sentry（エラー監視）のセットアップ手順
-- `docs/how-to/development/admob_advertising_setup.md` — AdMob 広告のセットアップ手順
-- `docs/how-to/development/dev_vs_preview_builds.md` — Dev Build vs Preview Build の使い分け
-
-**workflow/**（フロー / リリース運用）
-
-- `docs/how-to/workflow/whole_workflow.md` — 仕様→Issue→実装→テスト→PR→マージ→リリースの全体フロー
-- `docs/how-to/workflow/git_workflow.md` — Issue→Branch→Commit→PR→Merge の Git 運用手順
-- `docs/how-to/workflow/store_listing_guide.md` — ストア掲載情報の管理ガイド
-- `docs/how-to/workflow/screenshot_generation.md` — ストア掲載用スクリーンショットの生成手順
-- `docs/how-to/workflow/google_play_release.md` — Google Play ストアリリース手順
-- `docs/how-to/workflow/ios_testflight_release.md` — iOS TestFlight リリース手順
-- `docs/how-to/workflow/release_notes_template.md` — リリースノートテンプレート
-
-**testing/**（テスト関連）
-
-- `docs/how-to/testing/testing.md` — テストの実行方法（Jest / Maestro / CI）
-
-**i18n/**（多言語対応）
-
-- 必要に応じて追加（翻訳ルール、ロケールチェック手順など）
+| 場所                                               | 役割                                                                                                                      |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `index.html` / `privacy/` / `terms/` / `.nojekyll` | **GitHub Pages 公開物**。URL がアプリ（app.config.ts / Paywall）・ストア申請から参照されるため **移動・削除・改名は禁止** |
+| `legal/`                                           | 上記公開 HTML の生成テンプレート（運用は `legal/README.md`）                                                              |
+| `mockups/`                                         | v1.0 モックアップ + スクリーンショット（R-29 写経駆動開発の参照元）                                                       |
+| `store-listing/`                                   | ストア掲載文の作業場（提出の正本は `fastlane/metadata/` — 詳細は `store-listing/README.md`）                              |
+| `assets/`                                          | ドキュメント用画像（手順書のスクリーンショット等）                                                                        |
 
 ---
 
-## 2. 「最初は固定」の考え方は正しい？
+## 2. 「最初は固定」の考え方
 
-結論：
-
-- **はい、原則は正しい**です。
-- ただし **「固定」ではなく「変えにくい」** が正確。
-
-### 2-1. 変えにくい（基盤になる）
-
-- `product_strategy.md`
-- `basic_spec.md`
-- `functional_spec.md`
-- `glossary.md`
-
-これらは **アプリ開発の土台** なので、
-変えると影響が大きい → だから **安定させる** のが狙いです。
-
-### 2-2. 進むほど増える/蓄積する
-
-- `constraints.md` は **1枚に集約して更新**（増えるが「追記型」ではない）
-- `docs/adr/ADR-*.md` は **履歴として増える**（決定ログが蓄積）
-
-### 2-3. “固定に見えるが動く” もの
-
-- 仕様書（basic/functional）は更新し得る
-  - ただし **「仕様変更の根拠（ADR）」と「テスト（合否）」が揃う時だけ** 変える
+- **原則は正しい**。ただし「固定」ではなく **「変えにくい」** が正確
+- 変えにくい（基盤）: `product_strategy.md` / `basic_spec.md` / `functional_spec.md` / `glossary.md`
+- 集約して更新: `constraints.md`（1 枚に集約、追記型ではない）
+- 履歴として増える: `adr/ADR-*.md`（決定ログが蓄積）
+- 仕様書は「仕様変更の根拠（ADR）」と「テスト（合否）」が揃う時だけ変える
 
 ---
 
 ## 3. 仕様が「生き続ける」条件（最小セット）
 
 1. **Issue Forms** で必須項目を強制する
-2. **PRテンプレ** で docs/ADR/テストの更新要否を毎回判断させる
-3. **CODEOWNERS + ブランチ保護** でレビューとCIを必須にする
-4. **テストが合否の正** になる（CIで必ず動く）
-
-この4つが揃うと「更新漏れ」が自然に止まります。
-
----
-
-## 4. ドキュメント更新の判断フロー（超簡単）
-
-### A. 仕様に影響する変更？
-
-- YES → `basic_spec` / `functional_spec` を更新
-- NO → 次へ
-
-### B. 前提/制約が変わる？
-
-- YES → `constraints.md` を更新
-- NO → 次へ
-
-### C. 用語の意味が変わる？
-
-- YES → `glossary.md` を更新
-- NO → 次へ
-
-### D. 「なぜそうしたか」が議論になる？
-
-- YES → ADR を追加
-- NO → 次へ
-
-### E. 合否条件が変わる？
-
-- YES → テストを追加/更新
-- NO → そのまま
+2. **PR テンプレ** で docs/ADR/テストの更新要否を毎回判断させる
+3. **ブランチ保護 + CI（`pnpm verify`）** でゲートを必須にする
+4. **テストが合否の正** になる（CI で必ず動く）
+5. **30 日棚卸**（`pnpm metrics:doc-freshness` + `metrics:doc-30day-zero` → `audit/freshness-ledger.md` へ反映）
 
 ---
 
-## 5. “仕様を生かし続ける” ための役割分担（人間 / AI）
+## 4. ドキュメント更新の判断フロー
 
-- 人間（あなた）：価値判断、境界決め、最終責任
-- AI（Claude Code）：文章整形、Issue起票補助、テスト/実装の反復
-
----
-
-## 6. 具体例（1つだけ）
-
-「Free のアイテム数を 5 件まで増やす」変更をする場合：
-
-- `constraints.md` を更新（Free/Pro 差分が変わる）
-- ADR を追加（なぜ 5 にする？代案は？）
-- `basic_spec.md` と `functional_spec.md` を更新
-- テスト（Jest/E2E）で合否条件を更新
-- PR テンプレで更新済みリンクを貼る
+- **A. 仕様に影響する？** → YES: `basic_spec` / `functional_spec` を更新
+- **B. 前提/制約が変わる？** → YES: `constraints.md` を更新
+- **C. 用語の意味が変わる？** → YES: `glossary.md` を更新
+- **D. 「なぜそうしたか」が議論になる？** → YES: ADR を追加
+- **E. 合否条件が変わる？** → YES: テストを追加/更新
+- **F. プロジェクトが完了した？** → YES: 計画書/報告書を `archive/` へ、一時 doc は削除、台帳の行を更新
 
 ---
 
-## 7. 迷った時のチェックリスト
+## 5. 迷った時のチェックリスト
 
-- 仕様の正はどこ？（基本は docs + テスト + ADR）
+- 仕様の正はどこ？（基本は docs + テスト + ADR。優先順位は `AGENTS.md` §2.2）
 - その変更は「前提/制約」を壊していない？
 - 合否はテストで判定できる？
-- PRテンプレに必要なリンクは貼った？
+- 新しいディレクトリを docs/ 直下に作っていない？（作るなら本 README §1 に役割を書き、`scripts/docs-lint.mjs` の allowlist に追加 — 無断追加は `pnpm docs:lint` が検出）

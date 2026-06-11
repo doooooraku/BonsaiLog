@@ -3,7 +3,7 @@
 - Status: Accepted
 - Date: 2026-06-10
 - Deciders: @doooooraku
-- Related: Doc-Truth Audit 2026-06 P0 (docs/audit/doc-truth-audit-2026-06/state.md) / ADR-0017 §④ (Privacy URL / Terms URL)
+- Related: Doc-Truth Audit 2026-06 P0 (docs/archive/doc-truth-audit-2026-06/state.md) / ADR-0017 §④ (Privacy URL / Terms URL)
 
 ---
 
@@ -90,7 +90,7 @@
 ## Links（関連リンク：正へ寄せる）
 
 - constraints: `docs/reference/constraints.md`
-- 監査台帳: `docs/audit/doc-truth-audit-2026-06/state.md` (P0 ヘルスチェック実測値 + 承認記録)
+- 監査台帳: `docs/archive/doc-truth-audit-2026-06/state.md` (P0 ヘルスチェック実測値 + 承認記録)
 - ADR-0017 §④ (Privacy URL / Terms URL を GitHub Pages で公開する決定)
 - ADR-0047 (追加課金ゼロ方針)
 - Pages 実 URL: <https://doooooraku.github.io/BonsaiLog/>

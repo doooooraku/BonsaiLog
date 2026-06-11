@@ -10,7 +10,7 @@
  *
  * 対象: Edit/Write の new_string or content に廃止 pattern が hit すれば exit 2 (block)。
  * 例外:
- * - docs/adr/ / docs/handoff/ / .claude/recurrence-prevention / lessons / changelog 系: doc 記述 OK (historical reference)
+ * - docs/adr/ / docs/archive/ / .claude/recurrence-prevention / lessons / changelog 系: doc 記述 OK (historical reference)
  * - scripts/ui-diff/config.ts: comment 内の歴史記述 OK
  * - obsolete-routes.json 自身: pattern 定義のため OK
  */
@@ -30,7 +30,7 @@ if (!targetPath) process.exit(0);
 // 除外 path (doc / 履歴系)
 const EXEMPT_PATTERNS = [
   /\/docs\/adr\//,
-  /\/docs\/handoff\//,
+  /\/docs\/archive\//,
   /\/docs\/explanation\//,
   /\/docs\/reference\/tasks\/lessons/,
   /\.claude\/recurrence-prevention/,

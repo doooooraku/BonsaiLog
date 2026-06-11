@@ -246,7 +246,7 @@ cat scripts/ui-diff/out/<timestamp>/report.md
 #### 1 画面 UI 整合ループの標準手順書整備 (Sess5 PR-3)
 
 - 8 step ループ標準手順を `docs/how-to/ui-diff/screen-integration-loop.md` に集約 (1 画面 20-30 分、 user 確認 3 回以内目標)
-- 次セッション prompt 雛形: `docs/handoff/templates/screen-integration-prompt.md`
+- 次セッション prompt 雛形: `docs/how-to/workflow/prompts/screen-integration-prompt.md`
 - Sess5 学び 4 件 (pairing-report 構造 bug / multi-page 撮影 / ICON_FALLBACK 脱却 / 文言短縮) を `docs/reference/tasks/lessons/auto-improve-loop.md` に集約
 - `AGENTS.md` Session Start Checklist に UI 整合タスク時の必読 docs リンク追加、 `.claude/hooks/session-start-design-reminder.mjs` にキーワード検知拡張 (D ハイブリッド)
 

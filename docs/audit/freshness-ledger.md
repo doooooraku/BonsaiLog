@@ -1,7 +1,7 @@
 # Doc 鮮度中央台帳 (freshness-ledger)
 
 > **目的**: 全 doc の「最後に実態と突き合わせて検証した日」を 1 箇所で管理する中央台帳 (Doc-Truth Audit P3-4、per-doc frontmatter は付けない = user 決定 2026-06-11)。
-> **初期データ**: Doc-Truth Audit 2026-06 の監査台帳 (`docs/audit/doc-truth-audit-2026-06/state.md`、完走 commit `b4c9716`) から path / 区分 / 判定 / 処理日 (= 最終検証日) を機械転記。判定の根拠・要約は原台帳を参照。
+> **初期データ**: Doc-Truth Audit 2026-06 の監査台帳 (`docs/archive/doc-truth-audit-2026-06/state.md`、完走 commit `b4c9716`) から path / 区分 / 判定 / 処理日 (= 最終検証日) を機械転記。判定の根拠・要約は原台帳を参照。
 > **更新ルール**:
 >
 > 1. doc を実態と突き合わせて検証したら該当行の「最終検証日」と「判定」を更新する
@@ -9,7 +9,7 @@
 > 3. doc を削除・改名したら行を更新する
 > 4. **棚卸 cadence (30 日周期、次回 2026-07-10 頃)**: `pnpm metrics:doc-30day-zero` (利用頻度) と `pnpm metrics:doc-freshness` (正確性 — 「doc の最終 commit < 対応コードの最終 commit」かつ「最終検証日 90 日超」を自動列挙) の **両方** を実行し、flagged を本台帳へ反映する。実行導線 = /retro Step 9 / /memory-review。全面再監査が必要になったら `docs/how-to/workflow/prompts/P-15_doc-truth-audit.md` (差分監査の基準 = `b4c9716`)
 >
-> **凡例 (判定)**: ✅=一致 / ❌=乖離あり / 🟡=軽微・不急 / 🔴=要対応 (処置済は注記) / ⚪=判定保留 / 🔵=user 手動確認待ち / 修正済=監査内で修正完了
+> **凡例 (判定)**: ✅=一致 / ❌=乖離あり / 🟡=軽微・不急 / 🔴=要対応 (処置済は注記) / ⚪=判定保留 / 🔵=user 手動確認待ち / 修正済=監査内で修正完了 / 削除=repo から削除済 (path は当時のまま、復元は git 履歴)
 > **SoT 区分**: C=code-derived / D=decision(歴史文書) / P=process(手順書) / E=external(ストア・SaaS が正) / G=governance / M=memory
 
 ## 台帳 (427 行 = 初期転記 420 + 補遺 7)
@@ -73,16 +73,16 @@
 | 55  | `docs/adr/ADR-0056-recurring-schedule.md`                                                                                | D    | ✅                           | 2026-06-11 |
 | 56  | `docs/adr/README.md`                                                                                                     | D    | ✅                           | 2026-06-11 |
 | 57  | `docs/adr/adr_template.md`                                                                                               | D    | ✅                           | 2026-06-11 |
-| 58  | `docs/architecture.md`                                                                                                   | C    | 🟡→**修正済 (本 PR)**        | 2026-06-11 |
+| 58  | `docs/reference/architecture.md`                                                                                         | C    | 🟡→**修正済 (本 PR)**        | 2026-06-11 |
 | 59  | `docs/audit/code-docs-consistency-audit.md`                                                                              | D    | ✅                           | 2026-06-11 |
 | 60  | `docs/audit/sess59-pr1-5-real-device-verification.md`                                                                    | D    | ✅                           | 2026-06-11 |
 | 61  | `docs/audit/sess60-pr1-3-real-device-verification.md`                                                                    | D    | ✅                           | 2026-06-11 |
 | 62  | `docs/explanation/product_strategy.md`                                                                                   | D    | 🟡                           | 2026-06-11 |
 | 63  | `docs/explanation/ui-diff-loop-for-beginners.md`                                                                         | P    | ✅                           | 2026-06-11 |
-| 64  | `docs/handoff/sess1-progress-2026-05-17.md`                                                                              | D    | ✅                           | 2026-06-11 |
-| 65  | `docs/handoff/sess3-progress-2026-05-17.md`                                                                              | D    | ✅                           | 2026-06-11 |
-| 66  | `docs/handoff/sess8-pr2-phase2-prompt.md`                                                                                | D    | ✅                           | 2026-06-11 |
-| 67  | `docs/handoff/templates/screen-integration-prompt.md`                                                                    | P    | ✅                           | 2026-06-11 |
+| 64  | `docs/handoff/sess1-progress-2026-05-17.md`                                                                              | D    | 削除 (2026-06 docs 再編)     | 2026-06-11 |
+| 65  | `docs/handoff/sess3-progress-2026-05-17.md`                                                                              | D    | 削除 (2026-06 docs 再編)     | 2026-06-11 |
+| 66  | `docs/handoff/sess8-pr2-phase2-prompt.md`                                                                                | D    | 削除 (2026-06 docs 再編)     | 2026-06-11 |
+| 67  | `docs/how-to/workflow/prompts/screen-integration-prompt.md`                                                              | P    | ✅                           | 2026-06-11 |
 | 68  | `docs/how-to/development/admob_advertising_setup.md`                                                                     | P    | 🟡→**修正済 (本 PR)**        | 2026-06-11 |
 | 69  | `docs/how-to/development/android_build.md`                                                                               | P    | 🟡→**修正済 (本 PR)**        | 2026-06-11 |
 | 70  | `docs/how-to/development/coding_rules.md`                                                                                | P    | 🟡→**修正済 (本 PR)**        | 2026-06-11 |
@@ -133,14 +133,14 @@
 | 115 | `docs/mockups/v1.0/wireframes/05-Monetization.html`                                                                      | D    | ✅                           | 2026-06-11 |
 | 116 | `docs/privacy/index.html`                                                                                                | C    | 🟡                           | 2026-06-10 |
 | 117 | `docs/privacy/ja/index.html`                                                                                             | C    | 🟡                           | 2026-06-10 |
-| 118 | `docs/refactor/master-plan.md`                                                                                           | D    | ✅                           | 2026-06-11 |
-| 119 | `docs/refactor/phase-1-explore.md`                                                                                       | D    | ✅                           | 2026-06-11 |
-| 120 | `docs/refactor/phase-3-plan.md`                                                                                          | D    | ✅                           | 2026-06-11 |
-| 121 | `docs/refactor/phase-4-bonsai-detail.md`                                                                                 | D    | ✅                           | 2026-06-11 |
-| 122 | `docs/refactor/phase-4-report.md`                                                                                        | D    | ✅                           | 2026-06-11 |
-| 123 | `docs/refactor/phase-6-plan.md`                                                                                          | D    | ✅                           | 2026-06-11 |
-| 124 | `docs/refactor/phase-6-report.md`                                                                                        | D    | ✅                           | 2026-06-11 |
-| 125 | `docs/refactor/phase-7-report.md`                                                                                        | D    | ✅                           | 2026-06-11 |
+| 118 | `docs/archive/refactor-2026-05/master-plan.md`                                                                           | D    | ✅                           | 2026-06-11 |
+| 119 | `docs/archive/refactor-2026-05/phase-1-explore.md`                                                                       | D    | ✅                           | 2026-06-11 |
+| 120 | `docs/archive/refactor-2026-05/phase-3-plan.md`                                                                          | D    | ✅                           | 2026-06-11 |
+| 121 | `docs/archive/refactor-2026-05/phase-4-bonsai-detail.md`                                                                 | D    | ✅                           | 2026-06-11 |
+| 122 | `docs/archive/refactor-2026-05/phase-4-report.md`                                                                        | D    | ✅                           | 2026-06-11 |
+| 123 | `docs/archive/refactor-2026-05/phase-6-plan.md`                                                                          | D    | ✅                           | 2026-06-11 |
+| 124 | `docs/archive/refactor-2026-05/phase-6-report.md`                                                                        | D    | ✅                           | 2026-06-11 |
+| 125 | `docs/archive/refactor-2026-05/phase-7-report.md`                                                                        | D    | ✅                           | 2026-06-11 |
 | 126 | `docs/reference/basic_spec.md`                                                                                           | C    | 🟡→**一部修正済 (本 PR)**    | 2026-06-11 |
 | 127 | `docs/reference/constraints.md`                                                                                          | C    | ❌→**修正済 (本 PR + F-2a)** | 2026-06-11 |
 | 128 | `docs/reference/design_system.md`                                                                                        | C    | 🟡→**修正済 (本 PR)**        | 2026-06-11 |
@@ -190,12 +190,12 @@
 | 172 | `docs/reference/tasks/lessons/store.md`                                                                                  | P    | ✅                           | 2026-06-11 |
 | 173 | `docs/reference/tasks/lessons/wsl2-mobile.md`                                                                            | P    | 🟡→**修正済 (本 PR)**        | 2026-06-11 |
 | 174 | `docs/reference/ui-diff-flow-mapping.md`                                                                                 | C    | 🟡                           | 2026-06-11 |
-| 175 | `docs/reports/basic-spec-research.md`                                                                                    | D    | ✅                           | 2026-06-11 |
-| 176 | `docs/reports/functional-spec-research.md`                                                                               | D    | ✅                           | 2026-06-11 |
-| 177 | `docs/reports/product-strategy-research-v1.md`                                                                           | D    | ✅                           | 2026-06-11 |
-| 178 | `docs/reports/product-strategy-research-v2.md`                                                                           | D    | ✅                           | 2026-06-11 |
-| 179 | `docs/reports/repolog-feedback-handoff.md`                                                                               | D    | ✅                           | 2026-06-11 |
-| 180 | `docs/reports/template-migration-review.md`                                                                              | D    | ✅                           | 2026-06-11 |
+| 175 | `docs/archive/research-2026-04/basic-spec-research.md`                                                                   | D    | ✅                           | 2026-06-11 |
+| 176 | `docs/archive/research-2026-04/functional-spec-research.md`                                                              | D    | ✅                           | 2026-06-11 |
+| 177 | `docs/archive/research-2026-04/product-strategy-research-v1.md`                                                          | D    | ✅                           | 2026-06-11 |
+| 178 | `docs/archive/research-2026-04/product-strategy-research-v2.md`                                                          | D    | ✅                           | 2026-06-11 |
+| 179 | `docs/reports/repolog-feedback-handoff.md`                                                                               | D    | 削除 (2026-06 docs 再編)     | 2026-06-11 |
+| 180 | `docs/reports/template-migration-review.md`                                                                              | D    | 削除 (2026-06 docs 再編)     | 2026-06-11 |
 | 181 | `docs/store-listing/README.md`                                                                                           | E    | ✅                           | 2026-06-10 |
 | 182 | `docs/store-listing/data-safety/data-safety-declaration.md`                                                              | E    | ✅                           | 2026-06-10 |
 | 183 | `docs/terms/index.html`                                                                                                  | C    | 🟡                           | 2026-06-10 |

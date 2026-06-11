@@ -1597,7 +1597,7 @@ CLAUDE.md §9 (2 回再発でルール化検討) に基づき起票。
 
 ### 関連
 
-- 由来: Doc-Truth Audit P2 集計③ (docs/audit/doc-truth-audit-2026-06/state.md)
+- 由来: Doc-Truth Audit P2 集計③ (docs/archive/doc-truth-audit-2026-06/state.md)
 - 連携 R: R-17 (= 即時実行禁止 4 段階、先送りの逆方向の統制)
 - meta-rule: CLAUDE.md §9 記憶の昇華ルール
 

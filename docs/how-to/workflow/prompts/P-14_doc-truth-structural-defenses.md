@@ -67,7 +67,7 @@ JSON
 - `/home/doooo/04_app-factory/apps/BonsaiLog/scripts/docs-lint.mjs` (防御 2: 親索引 × 本文見出しの parity 検算)
 - `/home/doooo/04_app-factory/apps/BonsaiLog/agent-tools/scripts/sync-agent-tools.mjs` (防御 3: `--check` mode)
 - 同 repo `package.json` の `verify` chain (`verify:docs` / `verify:ai-sync` の連結例)
-- 経緯の 1 次資料: 同 repo `docs/audit/doc-truth-audit-2026-06/state.md` (台帳) + `docs/reference/tasks/lessons/retro.md` の [2026-06-10] / [2026-06-11] エントリ
+- 経緯の 1 次資料: 同 repo `docs/archive/doc-truth-audit-2026-06/state.md` (台帳) + `docs/reference/tasks/lessons/retro.md` の [2026-06-10] / [2026-06-11] エントリ
 
 ---
 
