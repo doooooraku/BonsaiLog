@@ -102,6 +102,15 @@ export default function RecurrenceListScreen() {
     setKebabTarget(null);
   }, []);
 
+  // Sess101 #1171: カード tap = 編集 (kebab → 編集と同一遷移、 ハンドラ共通化)。
+  // 代表 rule の id で起動し RecurrenceFormScreen がグループ全員を復元する (Sess99 #1122)。
+  const handleEditGroup = useCallback(
+    (group: RecurrenceRuleGroup): void => {
+      router.push(`/recurring-rules/edit/${group.representative.id}` as Href);
+    },
+    [router],
+  );
+
   const handleDeleteRequest = useCallback((group: RecurrenceRuleGroup): void => {
     setDeleteTarget(group);
   }, []);
@@ -127,15 +136,12 @@ export default function RecurrenceListScreen() {
   }, [isDeleting]);
 
   // Sess82 PR-C: kebab menu items 動的構築 (= CalendarTabScreen 既使用 pattern 踏襲、 ADR-0036 D7)
-  // Sess99 #1122: 編集は代表 rule の id で起動 (RecurrenceFormScreen がグループ全員を復元)
   const kebabItems: readonly RowActionMenuItem[] = kebabTarget
     ? [
         {
           key: 'edit',
           label: t('rowActionMenuEdit'),
-          onPress: () => {
-            router.push(`/recurring-rules/edit/${kebabTarget.representative.id}` as Href);
-          },
+          onPress: () => handleEditGroup(kebabTarget),
           testID: `e2e_recurrence_kebab_edit_${kebabTarget.representative.id}`,
         },
         {
@@ -204,8 +210,17 @@ export default function RecurrenceListScreen() {
                 )
               : t('recurringListItemNextOccurrenceNone');
             return (
-              <View
-                style={[styles.card, { backgroundColor: c.surface, borderColor: c.borderStrong }]}
+              // Sess101 #1171: カード本体 tap = 編集遷移 (旧実装はタップ無反応で user 期待と乖離)。
+              // kebab は内側 Pressable が touch を消費するためカード遷移を誘発しない。
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('rowActionMenuEdit')}
+                style={({ pressed }) => [
+                  styles.card,
+                  { backgroundColor: c.surface, borderColor: c.borderStrong },
+                  pressed && styles.cardPressed,
+                ]}
+                onPress={() => handleEditGroup(item)}
                 testID={`e2e_recurrence_rule_${rep.id}`}
               >
                 <View
@@ -237,7 +252,7 @@ export default function RecurrenceListScreen() {
                 >
                   <MoreVerticalIcon size={20} color={c.textSecondary} />
                 </Pressable>
-              </View>
+              </Pressable>
             );
           }}
           ListHeaderComponent={
@@ -308,6 +323,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
+  // Sess101 #1171: カード tap = 編集の press feedback (NotificationCard 等の opacity pattern 踏襲)
+  cardPressed: { opacity: 0.7 },
   iconBox: {
     width: 44,
     height: 44,
