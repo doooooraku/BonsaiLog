@@ -20,30 +20,14 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, rmSync
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { SOURCE, parseDocRouting, globPrefix } from './lib/parse-doc-routing.mjs';
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SOURCE = 'docs/reference/doc-routing.md';
 const OUT_DIR = '.claude/rules/routing';
 const CHECK = process.argv.includes('--check');
 
-const errors = [];
-
-// ---- 1. 原本表の parse ----
-const src = readFileSync(join(ROOT, SOURCE), 'utf8');
-const rows = [];
-for (const line of src.split('\n')) {
-  // データ行のみ: | id | ... | (ヘッダ行 `| ID |` と区切り行 `| ---` を除外)
-  const m = line.match(/^\| ([a-z][a-z0-9-]*) +\|/);
-  if (!m) continue;
-  const cells = line.split('|').map((c) => c.trim());
-  // cells[0] は空、[1]=ID, [2]=glob, [3]=doc, [4]=観点
-  if (cells.length < 5) {
-    errors.push(`列不足の行: ${line.slice(0, 60)}…`);
-    continue;
-  }
-  const ticks = (cell) => [...cell.matchAll(/`([^`]+)`/g)].map((x) => x[1]);
-  rows.push({ id: cells[1], globs: ticks(cells[2]), docs: ticks(cells[3]), point: cells[4] });
-}
-if (rows.length === 0) errors.push(`${SOURCE} からデータ行を 1 行も parse できなかった`);
+// ---- 1. 原本表の parse (lib/parse-doc-routing.mjs と共用) ----
+const { rows, errors } = parseDocRouting(ROOT);
 
 // ---- 2. 実在検査 (doc path + glob 接頭 dir) ----
 // gitignored な生成物 dir (例: /android = prebuild 産物) はクリーン checkout (CI / worktree)
@@ -63,7 +47,7 @@ for (const row of rows) {
     if (!existsSync(join(ROOT, doc))) errors.push(`[${row.id}] doc が実在しない: ${doc}`);
   }
   for (const glob of row.globs) {
-    const prefix = glob.includes('*') ? glob.slice(0, glob.indexOf('*')).replace(/\/$/, '') : glob;
+    const prefix = globPrefix(glob);
     if (prefix && !existsSync(join(ROOT, prefix)) && !gitignored.has(prefix))
       errors.push(`[${row.id}] glob の接頭が実在しない: ${glob} (検査対象: ${prefix})`);
   }
