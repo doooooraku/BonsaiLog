@@ -1,9 +1,9 @@
 /**
- * レビュー依頼の試行履歴 store (Zustand + AsyncStorage 永続化、ADR-0006 Sess98 Amendment)。
+ * レビュー依頼の試行履歴 store (Zustand + AsyncStorage 永続化、ADR-0006 Sess98 Amendment + 追補 2)。
  *
- * - D5: 表示有無は検知不可 (Google Play 仕様) のため「requestReview() を呼んだ = 試行」として記録
+ * - D5: 表示/キャンセル/送信の別は検知不可 (OS 仕様) のため「requestReview() を呼んだ = 試行」として記録
  * - 自前の年間/生涯 cap は持たない (頻度制御は OS quota に任せる)。 持つのは
- *   cooldown 起点 (lastRequestAtUtc) + 試行済みマイルストーン (lastMilestone) のみ
+ *   cooldown 起点 (lastRequestAtUtc) + 増分判定の起点 (countAtLastRequest) のみ
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
@@ -14,14 +14,14 @@ import { nowUtc } from '@/src/core/datetime';
 type ReviewState = {
   /** D4: 初回起動 UTC ISO (3 日保護の起点)。 bootstrapReviewFirstLaunch が起動時に刻む。 */
   firstLaunchAtUtc: string | null;
-  /** 試行回数 (cooldown 逓増 30→60→90 日の添字)。 */
+  /** 試行回数 (閾値チューニング用の参考値。 判定には未使用)。 */
   requestCount: number;
-  /** 直近試行の UTC ISO。 */
+  /** 直近試行の UTC ISO (cooldown の起点)。 */
   lastRequestAtUtc: string | null;
-  /** 試行済みの最大マイルストーン (同一マイルストーンで 1 回のみ、 0 = 未試行)。 */
-  lastMilestone: number;
+  /** 直近試行時点の累計 logged 数 (ループ条件「+10 件」の起点、 null = 未試行)。 */
+  countAtLastRequest: number | null;
   ensureFirstLaunch: () => void;
-  markRequested: (milestone: number) => void;
+  markRequested: (totalLoggedCount: number) => void;
 };
 
 export const useReviewStore = create<ReviewState>()(
@@ -30,20 +30,23 @@ export const useReviewStore = create<ReviewState>()(
       firstLaunchAtUtc: null,
       requestCount: 0,
       lastRequestAtUtc: null,
-      lastMilestone: 0,
+      countAtLastRequest: null,
       ensureFirstLaunch: () => {
         if (get().firstLaunchAtUtc == null) set({ firstLaunchAtUtc: nowUtc() as string });
       },
-      markRequested: (milestone) =>
+      markRequested: (totalLoggedCount) =>
         set((s) => ({
           requestCount: s.requestCount + 1,
           lastRequestAtUtc: nowUtc() as string,
-          lastMilestone: Math.max(s.lastMilestone, milestone),
+          countAtLastRequest: totalLoggedCount,
         })),
     }),
     {
       name: 'bonsailog-review',
       storage: createJSONStorage(() => AsyncStorage),
+      // Sess98 追補 2: lastMilestone → countAtLastRequest へ shape 変更。 旧 shape を含む
+      // 配布ビルドは存在しない (versionCode 14 未ビルド) ため migrate 不要、 version のみ刻む。
+      version: 2,
     },
   ),
 );
