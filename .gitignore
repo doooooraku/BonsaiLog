@@ -58,6 +58,11 @@ app-example
 # Claude Code 一時ファイル
 .claude/scheduled_tasks.lock
 
+# #1149 Stop hook verify ゲート (指紋記録 + opt-in/off フラグ、ローカル状態)
+.claude/.verify-state.json
+.claude/.stop-gate-on
+.claude/.stop-gate-off
+
 # Sess89+ PR1/PR2 doc 計測 (= analyze-doc-reads.mjs + log-doc-reads.mjs 出力)
 # baseline-reads.csv (PR1) / doc-reads.jsonl (PR2) はローカル計測のみ commit 不要
 .claude/metrics/
