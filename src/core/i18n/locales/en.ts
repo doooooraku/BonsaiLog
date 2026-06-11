@@ -1011,6 +1011,7 @@ const baseEn = {
   recurringListItemNextOccurrence: 'Next: {date}',
   recurringListItemNextOccurrenceNone: 'No upcoming events',
   recurringListItemDeletedBonsai: '(deleted bonsai)',
+  recurringListItemBonsaiCount: '{count} bonsai',
   recurringListDeleteConfirmTitle: 'Delete this recurring schedule?',
   recurringListDeleteConfirmDesc:
     'All future events will be deleted (30 days until permanent deletion)',
