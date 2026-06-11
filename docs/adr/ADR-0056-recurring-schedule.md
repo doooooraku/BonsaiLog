@@ -640,3 +640,20 @@ user 「関数化して同じ問題を 1 つに集約したら管理が楽とか
 2. **R-78 破壊的操作通知**: 既存実装 (= replaceRecurrenceRule wrapper) に内在する「黙って削除 + 再生成」 を ConfirmDialog で user に明示、 既存 Pattern を 構造的に防御。
 3. **議論 → PR scope 整理**: 当初 8 PR plan を 議論精緻化 (= user 「kebab メニューは 3 つ keep」 確定、 ルール編集動線縮小) で PR-5/PR-7 を follow-up に縮小、 6 PR で コア機能完成。
 4. **モック画像の「切り出し位置」 解釈**: モック 3 枚 (145040/114/144) には 盆栽 chip + 作業種別 row が 写っていなかったが、 user 確認で「下半分のみ切り取り、 現状 keep で OK (= PR #1057 BonsaiChipList SoT で 既に統一済)」 と判明 = SS 範囲 だけ で 結論する 危険を 回避。
+
+#### Sess99 Amendment (= 単発予定の確認画面通過、 2026-06-11)
+
+**起点**: user が v13 (.aab) 実機検証で「予定を作成する際に確認画面が表示されない」を指摘 → 調査の結果、上記 Sess93 持ち越しの **PR-5 deferred** (= work-picker → BulkLogConfirmScreen 通過設計) が Issue 未起票のまま追跡消失していたことが判明 (= Issue #1119 起票 + 恒久策 PR テンプレ §3.6 新設の起点)。
+
+**user 判断 (= 案 a 採用)**: 3 案 (a: 毎回確認画面 / b: 1 タップ維持 + Undo / c: 起票のみ) を提示し、**案 a (毎回 BulkLogConfirmScreen を通過、確認画面で日付編集可)** を user が選択。
+
+**決定 (= Sess80 PR-6.5 の改訂)**:
+
+1. **BulkWorkPicker schedule mode の 1 タップ即書込を廃止**: 種別 tap → `/bulk-log-confirm?type=<type>&mode=schedule` に push (= log mode と同型の Case C 直接遷移)。Sess80 PR-6.5 で「業務プロ user の 1 タップ動線」として意図的に採用した設計だが、実 user 検証で「確認なしの即保存」が期待と乖離したため上書き。
+2. **確認画面 (BulkLogConfirmScreen schedule mode) の表示内容**: 盆栽 chips + 日付 (編集可、 maxToday 解除 = 未来日許容) + RecurrencePicker (既存) + CTA `bulkScheduleConfirmCta`。種別固有 form / メモ / 写真は **非表示** (= 保存 path が payload/note/photos を持たず silent data loss になるため。予定への memo は定期予定 hub 動線 = RecurrenceFormScreen が担当)。
+3. **挙動移植**: toast + `maybePromptNotificationOptIn()` (ADR-0014 soft-ask) + `triggerSummaryReschedule` は確認画面の保存成功 path に集約 (挙動維持)。
+4. **タイトル文言**: `bulkScheduleConfirmTitle` 新設 (19 言語、 ja『{label}の予定を{count}件に追加』)。
+
+**scope 外 (= 先送り、 Issue 起票済)**:
+
+- 盆栽詳細「+ 予定を登録」の単体動線 (= /work-picker?mode=schedule → DatePicker dialog 即保存、 Case A store-callback) の確認画面統一は本 Amendment の scope 外 — 同動線は日付選択 step を既に持ち、統一には ADR-0030 §17 Case A 廃止判断を伴うため別 Issue で判断 (Issue #1127 参照、 §3.6 ゲートに従い起票)。

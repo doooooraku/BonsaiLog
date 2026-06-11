@@ -220,6 +220,7 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   bulkScheduleDoneToast: 'Schedule added to {count} bonsai',
   bulkPickerSheetSubLog: 'Log the same action to {count} bonsai',
   bulkLogConfirmTitle: 'Log {label} for {count} bonsai',
+  bulkScheduleConfirmTitle: 'Schedule {label} for {count} bonsai',
   bulkLogConfirmSub: 'Same content saved to each bonsai',
   bulkLogConfirmNoteLabel: 'Note (optional)',
   bulkLogConfirmNotePlaceholder: 'Free note',

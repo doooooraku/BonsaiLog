@@ -140,9 +140,19 @@ tags:
       id: 'e2e_bulk_work_picker_screen'
     timeout: 15000
 
-# 水やり tap (capture point 3: Toast 表示 + 戻る)
+# 水やり tap (Sess99 #1119 / 案 a: 種別 tap → BulkLogConfirmScreen mode=schedule に遷移)
 - tapOn:
     id: 'e2e_bulk_work_picker_watering'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# Sess99 #1119: 確認画面 (日付 + 定期 picker) で保存 CTA tap → Toast 表示 + 戻る
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_log_confirm_screen'
+    timeout: 15000
+- tapOn:
+    id: 'e2e_bulk_log_save_cta'
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 

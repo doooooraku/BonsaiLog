@@ -247,6 +247,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bulkScheduleDoneToast: '{count}件の予定を追加しました',
   bulkPickerSheetSubLog: '{count}件の盆栽に同じ作業を記録',
   bulkLogConfirmTitle: '{label}を{count}件にまとめて記録',
+  bulkScheduleConfirmTitle: '{label}の予定を{count}件に追加',
   bulkLogConfirmSub: '同じ内容で各盆栽に保存します',
   bulkLogConfirmNoteLabel: 'メモ (任意)',
   bulkLogConfirmNotePlaceholder: '自由メモ',
