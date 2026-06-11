@@ -33,8 +33,8 @@
 ## この表が働く 3 場面
 
 1. **開発中**: 該当 glob のファイルを Read した瞬間、生成済み routing rule が自動でコンテキストに注入される (path-scoped rules、公式機能)
-2. **PR 時**: PR テンプレートの「doc-routing.md の該当行を確認した / 影響 doc を更新した or 不要の理由」チェック (P4 で追加予定)
-3. **棚卸時**: 鮮度スクリプト (P4 予定) が「doc の最終 commit < 対応コードの最終 commit」かつ「`docs/audit/freshness-ledger.md` の最終検証日が 90 日超」の doc を自動列挙
+2. **PR 時**: PR テンプレート core §8 の「doc-routing.md の該当行を確認した / 影響 doc を更新した or 不要の理由」チェック (P4 で追加済み 2026-06-11)
+3. **棚卸時**: `pnpm metrics:doc-freshness` が「doc の最終 commit < 対応コードの最終 commit」かつ「`docs/audit/freshness-ledger.md` の最終検証日が 90 日超」の doc を自動列挙 (P4 で追加済み)
 
 ## 運用メモ
 

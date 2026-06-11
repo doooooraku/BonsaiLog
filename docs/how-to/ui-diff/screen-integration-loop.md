@@ -13,7 +13,7 @@
 - prompt 雛形: `docs/handoff/templates/screen-integration-prompt.md`
 - 学び集約: `docs/reference/tasks/lessons/auto-improve-loop.md`
 - 行動 lesson: `.claude/recurrence-prevention.md` (R-1 / R-13 / R-17 / R-25 / R-29)
-- PR template: `.github/pull_request_template.md` §7.5 / §7.6 / W-10.5
+- PR template: `.github/pull_request_template.md` (core §7 / §14 W-10.5) + 付録 `docs/how-to/workflow/pr-template-appendix.md` §7.5 / §7.6
 
 ---
 
