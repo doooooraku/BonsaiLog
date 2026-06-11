@@ -1,0 +1,159 @@
+# 定期予定 作成 E2E: メモ + 曜日指定 (BYDAY) flow (Sess99 #1124、ADR-0056 Sess93 持ち越しの解消)
+#
+# 検証点:
+# 1. ふりかえり → 定期予定を管理 → + 新規追加 → 盆栽選択 → 種別選択 → form 到達
+# 2. 「毎週」 preset + 曜日 (月) 選択 + メモ入力ができる
+# 3. 保存 → 一覧に戻り、作成したグループが 1 行表示される (案 G2)
+#
+# _template.yml 派生 (R-31: testID 経由のみ / launchApp 後 Back / 3 回反復で実行)
+
+appId: 'com.dooooraku.bonsailog'
+name: 'recurring: memo + byday create (Sess99 #1124)'
+tags:
+  - recurring
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+- pressKey: 'Back'
+- waitForAnimationToEnd
+
+# Onboarding skip (clearState で毎回発火)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_onboarding_welcome_cta'
+    timeout: 20000
+- tapOn:
+    id: 'e2e_onboarding_welcome_cta'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_ja'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_lang_next'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut1'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_onboarding_tut_skip_tut5'
+    retryTapIfNoChange: true
+    optional: true
+- waitForAnimationToEnd
+
+# seed 投入 (盆栽が必要)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_home_empty_cta'
+    timeout: 20000
+- tapOn:
+    id: 'e2e_bonsai_home_settings'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: 'e2e_dev_seed_button'
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: 'e2e_dev_seed_button'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    text: 'OK'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    point: '7%, 7%'
+- waitForAnimationToEnd
+
+# ふりかえり → 定期予定を管理
+- tapOn:
+    id: 'e2e_tab_look_back'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_look_back_card_recurring'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_recurrence_list_screen'
+    timeout: 15000
+
+# + 新規追加 → 盆栽選択 → 種別選択 (水やり)
+- tapOn:
+    id: 'e2e_recurrence_list_create_new'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_multi_select_screen'
+    timeout: 15000
+- tapOn:
+    id: 'e2e_bonsai_multi_select_card_.*'
+    retryTapIfNoChange: true
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_bonsai_multi_select_confirm'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bulk_work_picker_screen'
+    timeout: 15000
+- tapOn:
+    id: 'e2e_bulk_work_picker_watering'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+
+# RecurrenceFormScreen: 毎週 preset + 曜日 (月=1) + メモ
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_recurrence_form_screen'
+    timeout: 15000
+- tapOn:
+    id: 'e2e_recurrence_picker_preset_weekly'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_recurrence_picker_byday_1'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- tapOn:
+    id: 'e2e_recurrence_form_memo'
+    retryTapIfNoChange: true
+- inputText: 'weekly memo'
+- hideKeyboard
+- waitForAnimationToEnd
+
+# 保存 → 一覧に戻り、グループ 1 行が表示される (案 G2)
+- scrollUntilVisible:
+    element:
+      id: 'e2e_recurrence_form_save'
+    direction: DOWN
+    timeout: 10000
+    optional: true
+- tapOn:
+    id: 'e2e_recurrence_form_save'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_recurrence_list_screen'
+    timeout: 15000
+- assertVisible:
+    id: 'e2e_recurrence_rule_.*'
