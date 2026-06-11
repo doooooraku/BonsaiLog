@@ -100,6 +100,6 @@ Implementation Skills (Claude Code 単独運用、2026-05-01 から両系統 Ski
 
 ---
 
-## UI Diff 自動改善ループ
+## UI 整合 (mockup 寄せ) の標準
 
-ユーザーが「ループ開始」「auto-improve loop start」と伝えたら: `docs/how-to/ui-diff/auto-improve-loop.md` を Read して従うこと (Read した瞬間に運用ルール `.claude/rules/ui-diff-loop.md` も自動注入される — スコープ厳守 / 暴走対策 3 重防御 / 終了条件はそちらが正)。
+写経駆動 (R-29 5 段階) + `/device-verify` が標準 (ADR-0059)。旧「UI Diff 自動改善ループ」は退役済み — 「ループ開始」指示が来たら ADR-0059 の標準フローを案内すること。

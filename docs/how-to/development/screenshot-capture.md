@@ -23,7 +23,7 @@ mockup 側のスクショは **事前生成済 + git commit 済** (`docs/mockups
 
 ```bash
 PATH=/home/doooo/.local/bin:/home/doooo/.nvm/versions/node/v22.22.2/bin:/usr/bin:/bin \
-  corepack pnpm exec tsx scripts/ui-diff/generate-mockup-screenshots.ts
+  corepack pnpm exec tsx scripts/mockups/generate-mockup-screenshots.ts
 ```
 
 ---

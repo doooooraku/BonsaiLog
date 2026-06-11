@@ -1,6 +1,7 @@
 # P-11: docs/mockups/v1.0/ から React Native 実装プロンプト(Claude Code に再現させる)
 
 > 📦 **状態注記 (2026-06-11)**: mockup v1.0 の実装統合は完了済み。本プロンプト集は再利用時の参考レシピ。なお `app.sqlite` (OpenDesign チャット履歴) は **git 管理外のローカル限定ファイルで現存しない**ため、参照している Step (ユーザー文脈把握) は skip すること。
+> 📦 **状態注記 (2026-06-12, ADR-0059)**: 本文中の **P-09 切替判定は読み飛ばすこと** — P-09 / P-12 / ui-diff pipeline は退役済み。既存実装の有無に関わらず **写経駆動 (R-29 5 段階) + /device-verify** (ADR-0059 標準) で進める。
 
 `docs/mockups/v1.0/` の OpenDesign 採用版(HTML / jsx / tokens.css / docs / app.sqlite)を BonsaiLog の React Native + Expo コードに反映するためのプロンプト集。**1 語トリガー**で Claude Code が以下を順次実行する:
 

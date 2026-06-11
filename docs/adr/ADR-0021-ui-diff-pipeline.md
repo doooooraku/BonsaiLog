@@ -1,6 +1,8 @@
 # ADR-0021: UI 差分検出パイプライン (実機 vs ClaudeDesign)
 
-- Status: Accepted (**Initial — 初期版、実機 PoC の結果で方式変更ありうる**)
+> **2026-06-12 追記 (Superseded)**: mockup→UI 反映の標準は **写経駆動 (R-29) + 実機 SS 目視 (/device-verify)** に移行し、本 pipeline (scripts/ui-diff / maestro/flows/ui-diff / skip-list / pairing-report / 自動改善ループ) は退役した。経緯・存続資産・復活条件は [ADR-0059](./ADR-0059-mockup-ui-reflection-standard.md) を参照。資産は git 履歴から復元可能。
+
+- Status: Superseded by [ADR-0059](./ADR-0059-mockup-ui-reflection-standard.md) (2026-06-12, 写経駆動 + 実機 SS 目視へ標準移行)
 - Date: 2026-05-06
 - Deciders: @doooooraku
 - Related: ADR-0020 (Claude Design 全面採用 / 比較ペア定義の出典) / ADR-0019 (Superseded by ADR-0020) / ADR-0011 (記録のみ哲学、UI 差分検出には関与せず) / `scripts/store-screenshots/` (Playwright 思想の前例) / ClaudeDesign 正本 `C:\Users\doooo\Downloads\BonsaiLog_template\`

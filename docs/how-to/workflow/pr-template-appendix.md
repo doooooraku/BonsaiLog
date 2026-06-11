@@ -87,11 +87,11 @@
 
 ---
 
-## 7.6. Claude Read 評価ガイド遵守（ui-diff / 達成判定 / navigation / テスター報告 PR で REQUIRED）
+## 7.6. Claude Read 評価ガイド遵守（UI 整合 / 達成判定 / navigation / テスター報告 PR で REQUIRED）
 
 > **背景**: 2026-05-11 セッションで ImageMagick RMSE のみで「達成」 と判定し、bonsai-detail 3 タブで構造的大差を見逃した (Issue #439-#441 で再起票)。PR #442 で「ImageMagick は第一フィルタ、最終判定は Claude Read 主導」 に運用切替。
 
-### 7.6.1. ui-diff / skip-list 編集 PR の構造系 5 項目チェック (REQUIRED、Sess34 ADR-0041 で 4→5 拡張)
+### 7.6.1. UI 整合 (mockup 寄せ) PR の構造系 5 項目チェック (REQUIRED、Sess34 ADR-0041 で 4→5 拡張、ADR-0059 標準)
 
 - [ ] mockup 該当 PNG を **Read で目視確認**した (artifact パス: \_\_\_\_\_)
 - [ ] 実機 SS を **Read で目視確認**した (artifact パス: \_\_\_\_\_)
@@ -101,7 +101,7 @@
   - [ ] **UI 種別**: list / timeline / form / grid のどれか、mockup と一致
   - [ ] **スクロール範囲**: 全画面スクロール可能か (Hero 固定 + 下のみスクロール NG)
   - [ ] **EventRow 表示モード + sub-layout** (Sess34 ADR-0041 Phase η/θ): `displayMode` が callsite mapping (design_system §24-2) と一致、detailed mode の sub-layout が ADR-0041 §Phase θ Decision と一致
-- [ ] RMSE 数値 **+ 構造系 5 項目** の両方を満たす
+- [ ] 構造系 5 項目 + `integration-criteria.md` レベル 2 (見た目 80% 一致) を満たす
 
 ### 7.6.2. 「完遂」/「達成」 表記時の Phase 分割明示 (REQUIRED if 「完遂」 表記)
 

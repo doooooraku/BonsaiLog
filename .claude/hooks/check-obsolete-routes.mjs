@@ -11,7 +11,6 @@
  * 対象: Edit/Write の new_string or content に廃止 pattern が hit すれば exit 2 (block)。
  * 例外:
  * - docs/adr/ / docs/archive/ / .claude/recurrence-prevention / lessons / changelog 系: doc 記述 OK (historical reference)
- * - scripts/ui-diff/config.ts: comment 内の歴史記述 OK
  * - obsolete-routes.json 自身: pattern 定義のため OK
  */
 import { readFileSync, existsSync } from 'node:fs';
