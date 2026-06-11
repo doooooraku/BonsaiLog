@@ -7,7 +7,7 @@
  * 確認項目:
  * 1. listActiveRecurrenceRules() を 取得元として 使用 (useRecurrenceRules hook 経由)
  * 2. softDeleteRecurrenceRule() を 削除動線で 使用 (ConfirmDialog から)
- * 3. FREE_RECURRENCE_RULE_LIMIT を 件数超過 badge 判定に 使用 (ADR-0049 ⑦)
+ * 3. FREE_RECURRENCE_GROUP_LIMIT を グループ数超過 badge 判定に 使用 (ADR-0049 ⑦ Sess101)
  * 4. ConfirmDialog (R-44 破壊的操作 pattern) を 削除確認で 使用
  * 5. 6 preset RRULE → 人間可読 i18n key 逆引き (recurringPreset* + recurringRruleHumanCustom)
  * 6. testID 命名規約 (= e2e_recurrence_*)
@@ -50,9 +50,11 @@ describe('RecurrenceListScreen (Sess81 PR-7.5、 ADR-0056 + ADR-0035 D9 部分 r
     expect(SCREEN_SRC).toContain("t('recurringListDeleteConfirmDesc')");
   });
 
-  test('3. FREE_RECURRENCE_RULE_LIMIT を 件数超過 badge 判定に使用 (ADR-0049 ⑦ Grandfathered)', () => {
-    expect(SCREEN_SRC).toContain('FREE_RECURRENCE_RULE_LIMIT');
+  test('3. FREE_RECURRENCE_GROUP_LIMIT を グループ数超過 badge 判定に使用 (ADR-0049 ⑦ Sess101 Amendment)', () => {
+    expect(SCREEN_SRC).toContain('FREE_RECURRENCE_GROUP_LIMIT');
     expect(SCREEN_SRC).toContain('isOverFreeLimit');
+    // Sess101 #1159: rule 数ではなく予定グループ数 (= user 認知の「予定の件数」) で判定
+    expect(SCREEN_SRC).toMatch(/groups\.length > FREE_RECURRENCE_GROUP_LIMIT/);
     expect(SCREEN_SRC).toContain("t('recurringListProBadgeOverLimit')");
   });
 

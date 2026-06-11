@@ -11,9 +11,9 @@
  * - empty state (= 「予定タブから 🔁 で作成できます」 案内)
  * - 編集動線 = v1.0.1 PR-8 (連動編集 3 択 ConfirmDialog) で 追加予定、 本 PR-7.5 では 表示 + 削除のみ
  *
- * Pro 境界:
- * - Free user で 件数 > FREE_RECURRENCE_RULE_LIMIT (= 3) の場合のみ Grandfathered badge 表示
- *   (= ADR-0049 ⑦ 既存 4+ rule は表示/削除 OK、 追加のみ Paywall)
+ * Pro 境界 (Sess101 #1159: 予定グループ単位):
+ * - Free user で グループ数 > FREE_RECURRENCE_GROUP_LIMIT (= 3) の場合のみ Grandfathered badge 表示
+ *   (= ADR-0049 ⑦ Sess101 Amendment 既存 4+ グループは表示/編集/削除 OK、 追加のみ Paywall)
  *
  * 参照: docs/adr/ADR-0056-recurring-schedule.md / docs/adr/ADR-0035 D9 Sess81 部分 revert
  *        src/features/recurrence/useRecurrenceRules.ts (hook)
@@ -35,7 +35,7 @@ import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { parseCustomRruleDays } from '@/src/core/recurrence/rrule';
 import { useColors } from '@/src/core/theme/useColors';
 import {
-  FREE_RECURRENCE_RULE_LIMIT,
+  FREE_RECURRENCE_GROUP_LIMIT,
   softDeleteRecurrenceRule,
 } from '@/src/db/recurrenceRuleRepository';
 import type { EventType } from '@/src/db/schema';
@@ -147,7 +147,8 @@ export default function RecurrenceListScreen() {
       ]
     : [];
 
-  const isOverFreeLimit = rules.length > FREE_RECURRENCE_RULE_LIMIT;
+  // Sess101 #1159: Grandfathered badge 判定もグループ数 (= user 認知の「予定の件数」) で行う
+  const isOverFreeLimit = groups.length > FREE_RECURRENCE_GROUP_LIMIT;
 
   return (
     <ThemedView
@@ -241,8 +242,8 @@ export default function RecurrenceListScreen() {
                 ]}
               >
                 <ThemedText style={[styles.overLimitText, { color: c.tint }]}>
-                  {t('recurringListProBadgeOverLimit')} ({rules.length}/{FREE_RECURRENCE_RULE_LIMIT}
-                  )
+                  {t('recurringListProBadgeOverLimit')} ({groups.length}/
+                  {FREE_RECURRENCE_GROUP_LIMIT})
                 </ThemedText>
               </View>
             ) : null

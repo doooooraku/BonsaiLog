@@ -62,8 +62,8 @@ import { useColors } from '@/src/core/theme/useColors';
 import { getBonsaiById } from '@/src/db/bonsaiRepository';
 import {
   bulkCreateRecurrenceRules,
-  countActiveRecurrenceRules,
-  FREE_RECURRENCE_RULE_LIMIT,
+  countActiveRecurrenceGroups,
+  FREE_RECURRENCE_GROUP_LIMIT,
   getActiveRulesByGroupKey,
   getRecurrenceRuleById,
   replaceRecurrenceRuleGroup,
@@ -189,7 +189,8 @@ export default function RecurrenceFormScreen() {
   const [saving, setSaving] = useState(false);
   // Sess93 PR-4: 編集モード ConfirmDialog 表示 state (= R-79 破壊的データ操作の事前通知)
   const [showEditConfirm, setShowEditConfirm] = useState(false);
-  const [activeRuleCount, setActiveRuleCount] = useState(0);
+  // Sess101 #1159: Free 境界 = 予定グループ数 (rule 数ではない)
+  const [activeGroupCount, setActiveGroupCount] = useState(0);
 
   const isPro = useProStore((s) => s.isPro);
 
@@ -197,8 +198,8 @@ export default function RecurrenceFormScreen() {
     let cancelled = false;
     void (async () => {
       try {
-        const count = await countActiveRecurrenceRules();
-        if (!cancelled) setActiveRuleCount(count);
+        const count = await countActiveRecurrenceGroups();
+        if (!cancelled) setActiveGroupCount(count);
 
         if (mode === 'edit' && params.ruleId) {
           const rule = await getRecurrenceRuleById(params.ruleId);
@@ -280,12 +281,10 @@ export default function RecurrenceFormScreen() {
   const performSave = useCallback(async (): Promise<void> => {
     if (bonsais.length === 0 || !eventType || saving) return;
 
-    // Sess99 #1122: 編集 = 置換 (旧メンバー分が減る) を考慮した置換後総数で Pro 境界判定
-    const prospectiveCount =
-      mode === 'edit'
-        ? activeRuleCount - memberRuleIds.length + bonsais.length
-        : activeRuleCount + bonsais.length;
-    if (!isPro && prospectiveCount > FREE_RECURRENCE_RULE_LIMIT) {
+    // Sess101 #1159: Free 境界 = 予定グループ数 (ADR-0049 ⑦ Sess101 Amendment)。
+    // 編集 = グループ置換でグループ数不変 → 盆栽の増減・種別変更は Free でも常に可
+    // (Grandfathered 4+ グループの編集も通す)。 新規 = +1 グループのみ判定。
+    if (!isPro && mode === 'create' && activeGroupCount >= FREE_RECURRENCE_GROUP_LIMIT) {
       router.push('/pro?source=recurring_rule' as Href);
       return;
     }
@@ -348,7 +347,7 @@ export default function RecurrenceFormScreen() {
     saving,
     t,
     isPro,
-    activeRuleCount,
+    activeGroupCount,
     memo,
   ]);
 

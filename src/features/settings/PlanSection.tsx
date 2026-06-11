@@ -76,8 +76,9 @@ const PRO_FEATURE_ROWS: FeatureRowKey[] = [
     free: 'paywallFeatureCustomSpeciesFreeValue',
     pro: 'paywallFeatureCustomSpeciesProValue',
   },
-  // ⑦ 定期予定 (Sess81 PR-9、 ADR-0056 D7 + ADR-0049 Sess78 Amendment)
-  // Free 3 件 / Pro 無制限、 タグ ②・カスタム樹種 ⑥ と同型 (FREE_RECURRENCE_RULE_LIMIT = 3)
+  // ⑦ 定期予定 (Sess81 PR-9、 ADR-0056 D7 + ADR-0049 Sess101 Amendment)
+  // Free 3 件 (= 予定グループ単位、 盆栽数は問わない、 Sess101 #1159) / Pro 無制限
+  // (FREE_RECURRENCE_GROUP_LIMIT = 3。 文言「3件まで」 はグループ単位でも正のため i18n 変更なし)
   {
     label: 'paywallFeatureRecurringRule',
     free: 'paywallFeatureRecurringRuleFreeValue',

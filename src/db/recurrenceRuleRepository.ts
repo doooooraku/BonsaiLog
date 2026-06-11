@@ -6,9 +6,9 @@
  * - 8 週分 events 事前展開 + 起動時バッチで 不足分を 追加展開
  * - scope 3 択 (this / following / all) は updateRecurrenceRule で 使用 (実装は 簡易版、 PR-5 で 完成)
  *
- * Pro 境界 (ADR-0049 ⑦ Amendment、 ADR-0056 D7):
- * - FREE_RECURRENCE_RULE_LIMIT = 3 (タグ ②・カスタム樹種 ⑥ pattern 完全踏襲)
- * - countActiveRecurrenceRules / canCreateRecurrenceRule で UI 配線
+ * Pro 境界 (ADR-0049 ⑦ Sess101 Amendment、 ADR-0056 D7 Sess101 改訂):
+ * - FREE_RECURRENCE_GROUP_LIMIT = 3 (= 予定グループ単位、 Sess101 #1159 で rule 単位から変更)
+ * - countActiveRecurrenceGroups / canCreateRecurrenceGroup で UI 配線
  *
  * R-66 厳守: RRULE 展開は expandRRule 純関数経由のみ、 `toLocalDateKey` で 正規化済。
  */
@@ -20,8 +20,13 @@ import { expandRRule } from '@/src/core/recurrence/rrule';
 
 import { getDb } from './db';
 
-/** Free user の 定期予定ルール 上限 (ADR-0049 ⑦ + ADR-0056 D7、 タグ ②・カスタム樹種 ⑥ pattern 踏襲)。 */
-export const FREE_RECURRENCE_RULE_LIMIT = 3;
+/**
+ * Free user の 定期予定上限 (ADR-0049 ⑦ Sess101 Amendment + ADR-0056 D7 Sess101 改訂)。
+ *
+ * Sess101 #1159: 数え方を rule 単位 → **予定グループ単位** に変更。 「3 盆栽 × 1 予定で
+ * Free 上限到達」 という user 認知 (= 予定 1 件) との概念不一致を解消 — 盆栽数は問わない。
+ */
+export const FREE_RECURRENCE_GROUP_LIMIT = 3;
 
 /** rule 作成時 / 起動時 batch で 何週分先まで 事前展開するか (ADR-0056 D3)。 */
 export const RECURRENCE_PREEXPAND_WEEKS = 8;
@@ -286,13 +291,15 @@ export async function bulkCreateRecurrenceRules(
 }
 
 /**
- * 現在 active な (deleted_at IS NULL) ルール件数を返す。
- * Pro 境界判定 (ADR-0049 ⑦ + ADR-0056 D7) で使用。
+ * 現在 active な (deleted_at IS NULL) 予定グループ数を返す (Sess101 #1159)。
+ *
+ * group_id NULL の旧 rule は rule.id を 1 本グループとして数える (= `ruleGroupKey` と
+ * 同一の COALESCE 規約)。 Pro 境界判定 (ADR-0049 ⑦ Sess101 Amendment + ADR-0056 D7) で使用。
  */
-export async function countActiveRecurrenceRules(): Promise<number> {
+export async function countActiveRecurrenceGroups(): Promise<number> {
   const db = await getDb();
   const row = await db.getFirstAsync<{ count: number }>(
-    'SELECT COUNT(*) AS count FROM recurrence_rules WHERE deleted_at IS NULL;',
+    'SELECT COUNT(DISTINCT COALESCE(group_id, id)) AS count FROM recurrence_rules WHERE deleted_at IS NULL;',
   );
   return row?.count ?? 0;
 }
@@ -398,16 +405,16 @@ export async function getNextOccurrence(ruleId: string, nowUtcIso: string): Prom
 }
 
 /**
- * 新規 rule 作成可否 (Pro 境界判定、 ADR-0056 D7 + Grandfathered 戦略整合)。
+ * 新規予定グループ作成可否 (Pro 境界判定、 ADR-0056 D7 Sess101 改訂 + Grandfathered 戦略整合)。
  *
  * - Pro user: 常に true
- * - Free user: 現在件数 < FREE_RECURRENCE_RULE_LIMIT (= 3) なら true
- * - Grandfathered: 既存 4+ rule は表示/編集/削除 OK + 追加のみ Paywall (本関数で 規制)
+ * - Free user: 現在グループ数 < FREE_RECURRENCE_GROUP_LIMIT (= 3) なら true (盆栽数は問わない)
+ * - Grandfathered: 既存 4+ グループは表示/編集/削除 OK + 追加のみ Paywall (本関数で 規制)
  */
-export async function canCreateRecurrenceRule(isPro: boolean): Promise<boolean> {
+export async function canCreateRecurrenceGroup(isPro: boolean): Promise<boolean> {
   if (isPro) return true;
-  const count = await countActiveRecurrenceRules();
-  return count < FREE_RECURRENCE_RULE_LIMIT;
+  const count = await countActiveRecurrenceGroups();
+  return count < FREE_RECURRENCE_GROUP_LIMIT;
 }
 
 /**

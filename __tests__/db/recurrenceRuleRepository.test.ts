@@ -9,8 +9,8 @@ import * as repo from '@/src/db/recurrenceRuleRepository';
 
 describe('recurrenceRuleRepository (Sess78 PR-3、 ADR-0056 D7)', () => {
   describe('Pro 境界 定数 (ADR-0049 ⑦ + ADR-0056 D7)', () => {
-    test('FREE_RECURRENCE_RULE_LIMIT は 3 (タグ ②・カスタム樹種 ⑥ pattern 踏襲)', () => {
-      expect(repo.FREE_RECURRENCE_RULE_LIMIT).toBe(3);
+    test('FREE_RECURRENCE_GROUP_LIMIT は 3 (Sess101 #1159: 予定グループ単位、 盆栽数は問わない)', () => {
+      expect(repo.FREE_RECURRENCE_GROUP_LIMIT).toBe(3);
     });
 
     test('RECURRENCE_PREEXPAND_WEEKS は 8 (ADR-0056 D3)', () => {
@@ -27,12 +27,12 @@ describe('recurrenceRuleRepository (Sess78 PR-3、 ADR-0056 D7)', () => {
       expect(typeof repo.createRecurrenceRule).toBe('function');
     });
 
-    test('countActiveRecurrenceRules', () => {
-      expect(typeof repo.countActiveRecurrenceRules).toBe('function');
+    test('countActiveRecurrenceGroups (Sess101 #1159: グループ単位カウント)', () => {
+      expect(typeof repo.countActiveRecurrenceGroups).toBe('function');
     });
 
-    test('canCreateRecurrenceRule (Pro 境界判定)', () => {
-      expect(typeof repo.canCreateRecurrenceRule).toBe('function');
+    test('canCreateRecurrenceGroup (Pro 境界判定)', () => {
+      expect(typeof repo.canCreateRecurrenceGroup).toBe('function');
     });
 
     test('expandFutureEventsForAllActiveRules (起動時バッチ)', () => {
@@ -48,10 +48,23 @@ describe('recurrenceRuleRepository (Sess78 PR-3、 ADR-0056 D7)', () => {
     });
   });
 
-  describe('canCreateRecurrenceRule の Pro 判定ロジック', () => {
+  describe('canCreateRecurrenceGroup の Pro 判定ロジック', () => {
     test('Pro user は常に true (count 問わず)', async () => {
       // mock getDb は本 test で 不要 (= isPro=true で早期 return)
-      await expect(repo.canCreateRecurrenceRule(true)).resolves.toBe(true);
+      await expect(repo.canCreateRecurrenceGroup(true)).resolves.toBe(true);
+    });
+  });
+
+  describe('グループ単位カウント SQL (Sess101 #1159、 ADR-0049 ⑦ Sess101 Amendment)', () => {
+    test('COUNT(DISTINCT COALESCE(group_id, id)) で旧データ (group_id NULL) も 1 本グループとして数える', () => {
+      const src = require('fs').readFileSync(
+        require('path').resolve(__dirname, '../../src/db/recurrenceRuleRepository.ts'),
+        'utf8',
+      );
+      expect(src).toContain('COUNT(DISTINCT COALESCE(group_id, id))');
+      // 旧 rule 単位カウントへの逆行防止
+      expect(src).not.toContain('FREE_RECURRENCE_RULE_LIMIT');
+      expect(src).not.toContain('countActiveRecurrenceRules');
     });
   });
 });
