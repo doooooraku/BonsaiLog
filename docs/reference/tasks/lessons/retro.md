@@ -6,11 +6,11 @@
 
 ## [2026-06-11] Sess100 #1149 Stop hook verify ゲート — 採用判断
 
-**判定: 採用** (default ON、PR #1157 で本配線)。根拠: 合成 7 ケース (#1155) + 採用版 5 ケース + live 3 関門 (#1156 実装フローで実走) = 15/15 PASS、誤 block ゼロ。指紋 = `git stash create` tree oid (commit 不変) が「verify→commit→終了」の正規フローと両立することを T6/live③ で実証。
+**判定: 採用** (default ON、PR #1160 で本配線)。根拠: 合成 7 ケース (#1155) + 採用版 5 ケース + live 3 関門 (#1156 実装フローで実走) = 15/15 PASS、誤 block ゼロ。指紋 = `git stash create` tree oid (commit 不変) が「verify→commit→終了」の正規フローと両立することを T6/live③ で実証。
 
 - **教訓 1**: opt-in 試験版 → live 実証 → default ON の 3 段階が安全だった (R-30 の 2/2 基準を段階ごとに適用)
 - **教訓 2**: default ON 化の前に「他セッションの残置変更で docs 専用セッションが誤爆する」シナリオを発見 → transcript 走査 (R-18 hook と同方式) で「自セッションが編集した時だけ」条件を追加。**hook を全員 ON にする時は『自分以外が原因の状態』での誤発動を必ずシミュレーションする**
-- **/goal 併用**: CLI 組み込みのため Claude からは起動不可、user 手入力が必要 (本セッションでは未実施)。次の実装セッションで `/goal AC 全達成 + pnpm verify EXIT=0` を試し、Stop gate との重複/補完を評価する (残課題、Issue #1149 クローズ後は本エントリが追跡先)
+- **/goal 併用 (Sess100 同日試行済み)**: CLI 組み込みのため user 手入力が必要 (`/goal Issue #1123 の AC 全達成 + pnpm verify が EXIT=0` で発動確認)。session スコープの Stop hook として動作し、条件成立まで終了 block + 条件成立で自動解除。**Stop gate との関係 = 補完**: gate は機械条件 (verify 緑) を毎セッション無条件で守る恒久層、/goal は意味条件 (AC 達成等) をセッション単位で user が宣言する任意層。重複ではないので両方維持。推奨運用 = 大きめの実装セッション冒頭に user が /goal を 1 行打つ
 - 安全網: `.claude/.stop-gate-off` (R-61) + 公式の連続 8 block 強制終了
 
 ## [2026-06-11] Doc-Truth Audit 2 日間総括 (後半戦 バッチ②b〜⑩ + 完走)
