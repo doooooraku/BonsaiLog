@@ -20,10 +20,11 @@
  * 長押し → アーカイブ確認 (ADR-0025 Notes Amended): 廃止したのは「一括選択モード」であり、
  * 単一カードの長押し → カスタム ConfirmDialog 直行 → archiveBonsai は別動線として再導入 (ADR-0036 D1 整合)。
  */
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -43,7 +44,10 @@ import { buildBonsaiCardData } from '@/src/features/bonsai/cardDataBuilder';
 import { FilterEmptyState } from '@/src/features/bonsai/FilterEmptyState';
 import { HomeFilterTabs, type FilterChip } from '@/src/features/bonsai/HomeFilterTabs';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
+import { shouldShowG1RecordTabNudge } from '@/src/features/guides/guideTriggers';
+import { GuideSpotlight } from '@/src/features/guides/GuideSpotlight';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
+import { useGuidesStore } from '@/src/stores/guidesStore';
 import { usePickerStore } from '@/src/stores/pickerStore';
 
 const ALL_FILTER_ID = 'ALL';
@@ -138,6 +142,27 @@ export default function BonsaiHomeScreen() {
       }
     }, [reload]),
   );
+
+  // #1178 g1 (ADR-0058): 盆栽 1 本目の登録直後、タブバー「記録」をスポットライトで 1 回だけ誘導。
+  // タブバー項目は navigator 内部で ref 計測不能のため、静的 4 タブ構成から決定的に算出する
+  // (記録 = index 2 → x = 幅/2、幅 = 全幅/4。高さ = useBottomTabBarHeight、bottom inset 込)。
+  // wrapper 計測案 (tabBarButton 差替) はタブ layout 改変リスクで不採用 — ADR-0058 Consequences。
+  // フィルタ中 (1 件に絞れただけ) は誤発火するため ALL のときのみ判定。
+  const tabBarHeight = useBottomTabBarHeight();
+  const { width: winW, height: winH } = useWindowDimensions();
+  const guideSeen = useGuidesStore((s) => s.seen);
+  const markGuideSeen = useGuidesStore((s) => s.markSeen);
+  const g1Active =
+    selectedFilter === ALL_FILTER_ID && shouldShowG1RecordTabNudge(items.length, guideSeen);
+  const recordTabRect = useMemo(
+    () => ({ x: (winW / 4) * 2, y: winH - tabBarHeight, width: winW / 4, height: tabBarHeight }),
+    [winW, winH, tabBarHeight],
+  );
+  const dismissG1 = useCallback(() => markGuideSeen('g1RecordTabNudge'), [markGuideSeen]);
+  const handleG1TargetPress = useCallback(() => {
+    markGuideSeen('g1RecordTabNudge');
+    router.push('/(tabs)/record' as Href);
+  }, [markGuideSeen, router]);
 
   if (loading) {
     return (
@@ -258,6 +283,21 @@ export default function BonsaiHomeScreen() {
         onCancel={() => setPendingArchiveId(null)}
         testID="e2e_home_confirm_archive"
       />
+
+      {/* #1178 g1 スポットライト (生涯 1 回、ADR-0058)。本物の「記録」タブを指し、
+          tap は遷移を代行。dismiss = あとで (skipForLater)。 */}
+      {g1Active && (
+        <GuideSpotlight
+          visible
+          targetRect={recordTabRect}
+          title={t('guideRecordTabNudgeTitle')}
+          body={t('guideRecordTabNudgeBody').replace('{tab}', t('tabRecord'))}
+          dismissLabel={t('skipForLater')}
+          onDismiss={dismissG1}
+          onTargetPress={handleG1TargetPress}
+          testID="e2e_home_guide_record_tab"
+        />
+      )}
     </ThemedView>
   );
 }
