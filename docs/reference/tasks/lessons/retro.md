@@ -4,7 +4,37 @@
 
 ---
 
-## [2026-06-12] Sess103 #1193 docs 直接 Read 監査 完走 (148 ファイル + 6 PR / 約 1h40m / CI fail 0 / revert 0)
+## [2026-06-12] Sess104 ja 文言監査 + 全 18 言語ペルソナ翻訳 完遂 (#1208 + #1207 / 27 PR / 約 4.5h / CI fail 1 / revert 0)
+
+実データ: PR #1209-#1235 全 merge (ja 監査 6 + 翻訳規範 1 + 言語別 18 + 表セル fix 1 + α)。diff 面積 = locales 97.6%。CI fail 1 (#1209 初回 prettier、verify 実行中の file 編集が原因)。手戻り commit 0。ローカル verify 51 回。翻訳量 ~8,800 値、en 同一値 55% → 2.7%。実機 SS 87 枚 (全 18 言語切替)。
+
+### Keep
+
+- **agent はソース非編集・JSON 出力のみ** — 17 並列翻訳で conflict ゼロ。ソース編集と検証を main loop に一元化 (適用経路は ADR-0033 Sess104 Amendment に記録済)
+- **dry-run 自己検証を agent prompt に組込** — 5 agent が独立に apply script の致命バグ (隣接キー無言削除) を再発見 = 設計に交差検証が内蔵された
+- **en を用語参照として先行確定 → 17 言語へ** — settingsRestore の課金導線誤訳 (購入復元→バックアップ復元) が全言語に伝染していたのを翻訳前に止血
+- **「変更キーのみ提出」指示** — agent 出力を約半分に圧縮、apply も差分のみで安全
+- **言語別 1 PR + 機械検査 3 種 (placeholder / PROTECTED_TERMS / forbidden) + 全 verify** — 545 行級 diff でも合否が機械判定できた
+
+### Problem
+
+- **実機の言語切替 SS 掃引が brittle** — uiautomator dump が時々 text 空 / BACK の挙動が文脈依存 (paywall・リスト・home) / 誤タップでテスト広告の Chrome に 2 回脱落。18 言語で再同期を 6 回以上 (推定 +25 分)
+- **worktree agent 起動が core.hooksPath を `.git/hooks` に戻す** — 3 回再発 (CLAUDE.md §9 の仕組み化しきい値到達)。verify:hooks が検出するが修復は手動
+- **apply script に潜在バグ 2 件** (double-quote 終端誤認 / 実改行未エスケープ) — 兆候は「missed 1 件」「prettier parse error」として現れた。dry-run の missed 件数を 0 でない時に即調査する規律が効いた
+- **check-native-impact が package.json の scripts 追加で native 判定** — 誤検知 2 回、dev build 15 分を提案された (rm flag で回避、根拠は deps diff)
+- **verify 実行中に file 編集** → CI prettier fail 1 回 (検査スナップショットのすり抜け)
+
+### Try (次回以降)
+
+- **hooksPath 自動修復の仕組み化** (3 回再発 → Issue #1236 起票): worktree agent 完了後 or pre-commit で check-hooks.mjs の自動修復を走らせる
+- **言語切替 SS 掃引の script/Maestro 化**: 言語リスト行に testID を付与し `maestro/flows/i18n-sweep.yml` で 18 言語 × 3 画面を機械化 (今回の座標+SS 方式は人手再同期が必要)
+- **check-native-impact.mjs を deps 限定判定に改良** (package.json は dependencies/devDependencies の diff のみ native 扱い)
+- **verify 実行中は file 編集をしない** (検査対象のスナップショット保全)
+- **PR チェーン 1 コマンド化 (commit→push→PR→CI watch→merge --repo)** は有効だった — merge は `--repo` 指定で local git 非接触にするのが安全 (gh の --delete-branch は checkout を奪う)
+
+### 教訓
+
+- **SoT 言語の誤訳は全言語に複製される — 翻訳の前に原文監査 (ja → en → 17 言語の順序自体が品質装置)**
 
 実データ: PR #1194-#1200 (merge 10:16〜11:27 JST、平均 12 分/PR)。CI 全 success (verify 約 2 分 ×7)。手戻り commit 0。diff 面積 = docs/reference 59% + i18n 15.7% (並行セッション分込み)。ローカル verify 3 回 + CI watch 5 回。R 増分 = 注記修正のみ (新規起票 0)。
 

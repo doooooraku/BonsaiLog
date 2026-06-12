@@ -47,7 +47,7 @@
 | 29  | `docs/adr/ADR-0030-navigation-patterns-unification.md`                                                                   | D    | ✅                                                        | 2026-06-11 |
 | 30  | `docs/adr/ADR-0031-calendar-unified-flow-and-stale-closure-fix.md`                                                       | D    | ✅                                                        | 2026-06-11 |
 | 31  | `docs/adr/ADR-0032-planned-logged-distinction.md`                                                                        | D    | ✅                                                        | 2026-06-11 |
-| 32  | `docs/adr/ADR-0033-i18n-translation-policy.md`                                                                           | D    | ✅                                                        | 2026-06-11 |
+| 32  | `docs/adr/ADR-0033-i18n-translation-policy.md`                                                                           | D    | ✅ (Sess104 Amendment = ペルソナ詳細 + DoD)               | 2026-06-12 |
 | 33  | `docs/adr/ADR-0034-calendar-ux-phase-delta.md`                                                                           | D    | ✅                                                        | 2026-06-11 |
 | 34  | `docs/adr/ADR-0035-calendar-and-conversion-phase-epsilon.md`                                                             | D    | ✅                                                        | 2026-06-11 |
 | 35  | `docs/adr/ADR-0036-destructive-action-pattern.md`                                                                        | D    | ✅                                                        | 2026-06-11 |
@@ -445,6 +445,8 @@
 | 427 | `docs/how-to/workflow/prompts/P-15_doc-truth-audit.md`                                                                   | P    | ✅                                                        | 2026-06-11 |
 | 428 | `docs/adr/ADR-0058-contextual-guides.md`                                                                                 | D    | ✅                                                        | 2026-06-12 |
 | 429 | `docs/adr/ADR-0059-mockup-ui-reflection-standard.md`                                                                     | D    | ✅                                                        | 2026-06-12 |
+| 430 | `docs/adr/ADR-0060-ja-copy-style-standard.md`                                                                            | D    | ✅                                                        | 2026-06-12 |
+| 431 | `docs/reference/copy-style-ja.md`                                                                                        | R    | ✅                                                        | 2026-06-12 |
 
 ## 転記検算 (2026-06-11 初期化時)
 
@@ -452,3 +454,4 @@
 - 原台帳完走時の機械集計: 判定済み 420 行・未処理 0 (内訳は原台帳「バッチ⑨⑩ + 残余 sweep 処理記録」参照)
 - 補遺 No.421-427 (2026-06-11 P3/P4): 監査完走後の新規 doc 7 件を更新ルール 2 で追加
 - 補遺 No.428-429 (2026-06-12 Sess101): ADR-0058 (guides 基盤) + ADR-0059 (mockup→UI 標準) を更新ルール 2 で追加 (台帳 計 429 行)
+- 補遺 No.430-431 (2026-06-12 Sess104): ADR-0060 (ja 文言スタイル基準) + copy-style-ja.md を更新ルール 2 で追加 (台帳 計 431 行)。同日 ADR-0033 行を Sess104 Amendment 検証で更新
