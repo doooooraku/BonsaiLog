@@ -44,7 +44,7 @@ import { execSync } from 'node:child_process';
  * 拡張時は本配列に追加するだけ (R-61 整合: 個別判断ではなく rule 集中管理)。
  */
 const NATIVE_PATTERNS = [
-  /^package\.json$/, // deps 変更時 (scripts 変更のみは別途 git diff で判定するのが理想だが安全側で flag)
+  /^package\.json$/, // path 一致後に classifyPackageJsonChange() で内容判定 (deps 系 section 外のみなら js-only、Sess104)
   /^pnpm-lock\.yaml$/, // 同上
   /^app\.json$/,
   /^app\.config\.(js|ts|mjs|cjs)$/,
@@ -100,6 +100,44 @@ export function classify(filePath) {
   }
   // 3) どちらにも一致しない → unknown (安全側で native 扱い、 log に出して NATIVE_PATTERNS 拡張候補)
   return 'unknown';
+}
+
+/**
+ * package.json の変更が native 影響 (deps 系 section) を含むかを内容で判定する
+ * (Sess104 retro Try: scripts 追加だけで native 判定 → dev build 15 分を提案される誤検知が 2 回)。
+ *
+ * HEAD と作業ツリーの package.json を parse し、native 影響しうる section
+ * (dependencies / devDependencies / peerDependencies / optionalDependencies /
+ *  resolutions / overrides / pnpm) を deep 比較する。差異なし = js-only。
+ * parse 失敗・git 失敗時は安全側で native (R-61 整合)。
+ *
+ * @param {string} repoRoot
+ * @returns {'native'|'js-only'}
+ */
+export function classifyPackageJsonChange(repoRoot = process.cwd()) {
+  const NATIVE_SECTIONS = [
+    'dependencies',
+    'devDependencies',
+    'peerDependencies',
+    'optionalDependencies',
+    'resolutions',
+    'overrides',
+    'pnpm',
+  ];
+  try {
+    const head = JSON.parse(
+      execSync('git show HEAD:package.json', { cwd: repoRoot, encoding: 'utf8' }),
+    );
+    const work = JSON.parse(readFileSync(resolve(repoRoot, 'package.json'), 'utf8'));
+    for (const sec of NATIVE_SECTIONS) {
+      if (JSON.stringify(head[sec] ?? null) !== JSON.stringify(work[sec] ?? null)) {
+        return 'native';
+      }
+    }
+    return 'js-only';
+  } catch {
+    return 'native'; // 安全側 (parse 不能・初回 commit 前など)
+  }
 }
 
 /**
@@ -277,7 +315,16 @@ function main() {
     process.exit(0);
   }
 
-  const { verdict, nativeFiles, unknownFiles } = classifyMany(filePaths);
+  let { verdict, nativeFiles, unknownFiles } = classifyMany(filePaths);
+
+  // Sess104: package.json は path だけでなく内容で再判定 (deps 系 section の差分がなければ js-only)
+  if (nativeFiles.includes('package.json') && classifyPackageJsonChange(repoRoot) === 'js-only') {
+    nativeFiles = nativeFiles.filter((f) => f !== 'package.json');
+    verdict = nativeFiles.length + unknownFiles.length > 0 ? 'native' : 'js-only';
+    process.stdout.write(
+      '[check-native-impact] package.json の差分は deps 系 section 外 (scripts 等) → js-only 扱い\n',
+    );
+  }
 
   if (verdict === 'native') {
     const summary =

@@ -78,11 +78,17 @@ describe('check-native-impact.mjs 静的解析 (Sess71 PR-1)', () => {
 });
 
 describe('check-native-impact.mjs hook 経由 e2e 実行 (Sess71 PR-1)', () => {
-  test('1. package.json (single native) → Native impact detected', () => {
+  test('1. package.json (deps 系 section に差分なし) → 内容判定で js-only (Sess104)', () => {
+    // テスト実行時の作業ツリーは HEAD と deps 一致が前提 (CI / 通常開発)。
+    // classifyPackageJsonChange() が deps 系 section を比較し js-only へ降格する。
     const result = runWithHookStdin('package.json');
     expect(result.status).toBe(0);
-    expect(result.stdout).toMatch(/Native impact detected/);
-    expect(result.stdout).toMatch(/package\.json/);
+    expect(result.stdout).toMatch(/deps 系 section 外|JS-only changes/);
+  });
+
+  test('1b. classifyPackageJsonChange 関数 export あり (deps 内容判定)', () => {
+    expect(SRC).toMatch(/export function classifyPackageJsonChange\(/);
+    expect(SRC).toMatch(/devDependencies/);
   });
 
   test('2. constants/theme.ts (single JS-only) → JS-only changes', () => {
@@ -104,7 +110,7 @@ describe('check-native-impact.mjs hook 経由 e2e 実行 (Sess71 PR-1)', () => {
   test('4. 1 つでも native → native verdict (混在)', () => {
     const result = runWithHookStdin([
       'constants/theme.ts',
-      'package.json', // ← native
+      'pnpm-lock.yaml', // ← native (package.json は Sess104 から内容判定のため固定 native の例に lock を使用)
       'docs/adr/ADR-0046.md',
     ]);
     expect(result.status).toBe(0);
@@ -186,11 +192,11 @@ describe('repo 外 path の正規化 (Sess101 #1174 — 誤検知修正)', () =>
   });
 
   test('12. repo 内の絶対 path → 相対化して従来どおり判定 (native)', () => {
-    const result = runWithHookStdinAtRoot(path.join(REPO_ROOT, 'package.json'));
+    const result = runWithHookStdinAtRoot(path.join(REPO_ROOT, 'pnpm-lock.yaml'));
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/Native impact detected/);
     // 正規化済みなので unknown ではなく native files 側に出る
-    expect(result.stdout).toMatch(/native files: package\.json/);
+    expect(result.stdout).toMatch(/native files: pnpm-lock\.yaml/);
   });
 
   test('13. repo 内の絶対 path (JS-only) → js-only 判定', () => {
@@ -202,7 +208,7 @@ describe('repo 外 path の正規化 (Sess101 #1174 — 誤検知修正)', () =>
   test('14. repo 外 + repo 内の混在 → repo 外のみ除外、 repo 内は判定継続', () => {
     const result = runWithHookStdinAtRoot([
       '/home/someone/.claude/settings.json',
-      path.join(REPO_ROOT, 'package.json'),
+      path.join(REPO_ROOT, 'pnpm-lock.yaml'),
     ]);
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/Skipped 1 path\(s\) outside repo/);
@@ -210,7 +216,7 @@ describe('repo 外 path の正規化 (Sess101 #1174 — 誤検知修正)', () =>
   });
 
   test('15. 相対 path は従来どおり (回帰、 --from=cli の git diff 出力形式)', () => {
-    const result = runWithHookStdin('package.json');
+    const result = runWithHookStdin('pnpm-lock.yaml');
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/Native impact detected/);
   });
