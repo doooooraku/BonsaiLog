@@ -21,10 +21,11 @@
  * 単一カードの長押し → カスタム ConfirmDialog 直行 → archiveBonsai は別動線として再導入 (ADR-0036 D1 整合)。
  */
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useIsFocused } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Dimensions, FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -149,14 +150,21 @@ export default function BonsaiHomeScreen() {
   // wrapper 計測案 (tabBarButton 差替) はタブ layout 改変リスクで不採用 — ADR-0058 Consequences。
   // フィルタ中 (1 件に絞れただけ) は誤発火するため ALL のときのみ判定。
   const tabBarHeight = useBottomTabBarHeight();
-  const { width: winW, height: winH } = useWindowDimensions();
+  // 座標基準は screen (GuideSpotlight の全画面 Modal と同一基準)。useWindowDimensions は
+  // status bar / nav inset 除外値を返す端末があり、リングが実タブから ~55dp 上にズレた
+  // (Sess102 実機実測: 記録タブ実座標 [360,1393] vs 計算 1282)。portrait 固定で静的取得可。
+  const { width: scrW, height: scrH } = Dimensions.get('screen');
   const guideSeen = useGuidesStore((s) => s.seen);
   const markGuideSeen = useGuidesStore((s) => s.markSeen);
+  // isFocused 必須: 背景タブからの Modal 多重表示防止 (Sess102 実機実証、CalendarTabScreen と同根)
+  const isFocused = useIsFocused();
   const g1Active =
-    selectedFilter === ALL_FILTER_ID && shouldShowG1RecordTabNudge(items.length, guideSeen);
+    isFocused &&
+    selectedFilter === ALL_FILTER_ID &&
+    shouldShowG1RecordTabNudge(items.length, guideSeen);
   const recordTabRect = useMemo(
-    () => ({ x: (winW / 4) * 2, y: winH - tabBarHeight, width: winW / 4, height: tabBarHeight }),
-    [winW, winH, tabBarHeight],
+    () => ({ x: (scrW / 4) * 2, y: scrH - tabBarHeight, width: scrW / 4, height: tabBarHeight }),
+    [scrW, scrH, tabBarHeight],
   );
   const dismissG1 = useCallback(() => markGuideSeen('g1RecordTabNudge'), [markGuideSeen]);
   const handleG1TargetPress = useCallback(() => {

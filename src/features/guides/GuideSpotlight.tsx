@@ -14,7 +14,7 @@
  * (Modal 越しの touch passthrough は platform 差異が大きく、代行が決定的で teste可能)。
  */
 import React from 'react';
-import { Modal, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Dimensions, Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useColors } from '@/src/core/theme/useColors';
@@ -48,7 +48,11 @@ export function GuideSpotlight({
   testID = 'e2e_guide_spotlight',
 }: GuideSpotlightProps) {
   const c = useColors();
-  const { width, height } = useWindowDimensions();
+  // 座標基準は screen (物理全画面) — statusBarTranslucent な全画面 Modal の描画原点と一致させる。
+  // useWindowDimensions は status bar / nav inset を除いた値を返す端末があり、g1 のリングが
+  // 実タブから ~55dp 上にズレた (Sess102 実機実測: window 1408px vs screen 1520px)。
+  // 本アプリは portrait 固定のため Dimensions.get の静的取得で十分。
+  const { width, height } = Dimensions.get('screen');
 
   if (!visible || targetRect === null) return null;
 
@@ -59,7 +63,17 @@ export function GuideSpotlight({
       : { top: layout.ring.y + layout.ring.height + 12 };
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={onDismiss}>
+    // statusBarTranslucent/navigationBarTranslucent: Modal を全画面化して描画原点を
+    // 画面座標に一致させる (Sess102 実機検証: 非全画面 Modal では原点がズレ、g1 の
+    // リングが「記録」タブでなく AdBanner を囲んだ)。measureInWindow の座標とも整合。
+    <Modal
+      visible
+      transparent
+      statusBarTranslucent
+      navigationBarTranslucent
+      animationType="fade"
+      onRequestClose={onDismiss}
+    >
       <View style={styles.root} accessibilityViewIsModal testID={testID}>
         {/* 暗幕 4 枚 (上下左右) — tap で dismiss (ConfirmDialog backdrop 整合) */}
         {layout.backdrops.map((b, i) =>
