@@ -28,7 +28,28 @@ const NOTATION_DICT = {
   頂き: 'いただき',
   致しま: 'いたしま',
   することができま: 'できま',
+  '...': '…',
 };
+
+// 数値・英字を描画するプレースホルダ名 (spacing 検査対象)。
+// {type} {label} {name} 等は和文を描画するため対象外 (密着可)。
+const NUMERIC_PLACEHOLDERS = new Set([
+  'count',
+  'days',
+  'weeks',
+  'months',
+  'years',
+  'n',
+  'i',
+  'total',
+  'limit',
+  'used',
+  'time',
+  'date',
+  'bonsai',
+  'events',
+  'photos',
+]);
 
 // --- 文末句点ルールの suffix 判定 ---
 const PERIOD_REQUIRED_SUFFIX = /(Desc|Body|Detail|Description|FinePrint)$/;
@@ -40,8 +61,23 @@ const JA = 'ぁ-んァ-ヶ一-龯ー々';
 
 // --- ルール別 allowlist (意図的な例外。理由をコメントで残すこと) ---
 const ALLOWLIST = {
-  spacing: new Set([]),
-  period: new Set([]),
+  // 相対時間・経過表現の複合語 (「3日前」「2週経過」「樹齢: 35年」) は密着が日本語慣行。
+  // recurringWeeklyByDaysSummary の {days} は曜日名 (和文) を描画する。
+  spacing: new Set([
+    'elapsedDays',
+    'elapsedWeeks',
+    'elapsedMonths',
+    'elapsedYears',
+    'ageEstimatedFormat',
+    'timelineConsecutive',
+    'wiringRowWeeks',
+    'wiringUnwireOverdue',
+    'wiringUnwireInWeeks',
+    'wiringUnwireOverdueWeeks',
+    'recurringWeeklyByDaysSummary',
+  ]),
+  // ブランドタグライン「鉢 1 本ずつ、一生分。」の句点は意匠。
+  period: new Set(['onboardingWelcomeTitle', 'paywallHeroTitle']),
   notation: new Set([]),
   fullwidth: new Set([]),
   jaSpace: new Set([]),
@@ -66,18 +102,29 @@ function extractEntries(fileText) {
 
 function checkSpacing(key, value, violations) {
   if (ALLOWLIST.spacing.has(key)) return;
-  // 英数字 (またはプレースホルダ閉じ }) の直後に和文 / 和文の直後に英数字 (または {)
-  const after = new RegExp(`[A-Za-z0-9}][${JA}]`, 'g');
-  const before = new RegExp(`[${JA}][A-Za-z0-9{]`, 'g');
+  const push = (index) =>
+    violations.push({
+      rule: 'spacing',
+      key,
+      detail: `英数字と和文の間に半角スペースが必要: 「...${value.slice(Math.max(0, index - 6), index + 8)}...」`,
+    });
+  // 1) リテラル英数字と和文の隣接 (placeholder 内部の英字は brace が挟まるため誤検知しない)
+  const after = new RegExp(`[A-Za-z0-9][${JA}]`, 'g');
+  const before = new RegExp(`[${JA}][A-Za-z0-9]`, 'g');
   for (const re of [after, before]) {
     let m;
-    while ((m = re.exec(value)) != null) {
-      violations.push({
-        rule: 'spacing',
-        key,
-        detail: `英数字と和文の間に半角スペースが必要: 「...${value.slice(Math.max(0, m.index - 6), m.index + 8)}...」`,
-      });
-    }
+    while ((m = re.exec(value)) != null) push(m.index);
+  }
+  // 2) 数値系 placeholder と和文の隣接 ({count}件 等)。和文を描画する placeholder は対象外。
+  const ph = /\{(\w+)\}/g;
+  const jaChar = new RegExp(`[${JA}]`);
+  let m;
+  while ((m = ph.exec(value)) != null) {
+    if (!NUMERIC_PLACEHOLDERS.has(m[1])) continue;
+    const beforeCh = value[m.index - 1];
+    const afterCh = value[m.index + m[0].length];
+    if (beforeCh && jaChar.test(beforeCh)) push(m.index);
+    if (afterCh && jaChar.test(afterCh)) push(m.index + m[0].length - 1);
   }
 }
 
