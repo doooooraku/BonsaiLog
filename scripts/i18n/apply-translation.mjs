@@ -165,7 +165,10 @@ function escapeForRegex(s) {
 }
 
 function escapeForJsString(s) {
-  return s.replace(/'/g, "\\'");
+  // Sess104: 入力 JSON 由来の「実改行」をエスケープしないと TS の string literal が壊れる
+  // (sv で実証: Unterminated string literal)。実改行のみ \n エスケープへ変換する。
+  // 既に 2 文字表現 (backslash + n) で来た値はそのまま通す (旧来の正常系)。
+  return s.replace(/'/g, "\\'").replace(/\r\n/g, '\n').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
 }
 
 /**
