@@ -4,6 +4,36 @@
 
 ---
 
+## [2026-06-12] Sess103 #1193 docs 直接 Read 監査 完走 (148 ファイル + 6 PR / 約 1h40m / CI fail 0 / revert 0)
+
+実データ: PR #1194-#1200 (merge 10:16〜11:27 JST、平均 12 分/PR)。CI 全 success (verify 約 2 分 ×7)。手戻り commit 0。diff 面積 = docs/reference 59% + i18n 15.7% (並行セッション分込み)。ローカル verify 3 回 + CI watch 5 回。R 増分 = 注記修正のみ (新規起票 0)。
+
+### Keep
+
+- **進捗の外部保存で compaction 無損失** — plan ファイル「セッション進捗サマリ」+ Issue 進捗コメントに batch 単位で書き残し、記憶リセット直後に 1 分で再開できた
+- **注記方式の一貫適用** — 歴史文書 (ADR/lessons/design_system §採番) は本文温存 + 死パス・stale 記述に「※現行は X」付せん。採番 rename は参照破壊リスクで全件回避
+- **「予定」表記は完了裏取りしてから現行化** — script 実在 + R 起票 grep + git log で裏取り → design_system「Sess69 PR-D 予定」×3 が実は完了済みと確定
+- **並行セッション完全分離** — worktree 6 本使い捨て + #1178 完全譲渡で衝突ゼロ (R-81 hook 有効性の実証)
+
+### Problem
+
+- **幽霊参照が憲法級ファイルに長期生存** — AGENTS.md の「Codex 不採用 ADR」「R-22 (Codex 不採用)」は存在しない記録への参照 (R-22 は起票時から verify exit code 保全)。Sess56 監査も素通り = 既存 lint は「パスの実在」を見るが「参照内容の真偽」(ADR 番号・R 番号と実体の一致) を見ない
+- **R-55 sweep の対象漏れ 1 件** — 「約 15 分」grep が `scripts/*.sh` を含まず orchestrate.sh コメント見逃し (Batch 2 で補完)。grep 対象拡張子の列挙漏れは網羅主張の穴
+- **merge + worktree 清掃の足場事故 ×2** — worktree cwd 内から `gh pr merge --delete-branch` + `git worktree remove` を実行し cwd 消失 / branch 削除失敗の小手戻り
+
+### Try (次回以降)
+
+- **R/ADR 番号参照の実在チェック** を docs-lint 昇華候補に (「R-XX (説明)」の説明と specialized.md 見出しの突合)。3 回目の幽霊参照発見で必須化 (今回 2 件 = 検討開始ライン)
+- **merge + 清掃は main repo cwd から** `gh pr merge` → `git worktree remove` の順で実行 (worktree 内から自分の足場を消さない)
+- **次回 docs 監査は差分方式** — 完走 commit `158054e1` 以後の変更 doc のみ (7/10 棚卸に統合済)
+- **/retro Step 2 幅広収集メニュー** (本 PR で Skill 化) — CI 実測 / revert 件数 / dirstat / R 増分 / verify 痕跡を 1 コマンド級で毎回収集、「詰まった点」の記憶依存を低減
+
+### 教訓
+
+- **「参照の実在」と「参照の真偽」は別の検査** — パス実在 lint は「存在しない ADR 番号」「中身の違う R 番号」を検出できない。番号参照は引用時に 1 次資料 (実ファイルの見出し) と突合する
+
+---
+
 ## [2026-06-11] Sess100 #1149 Stop hook verify ゲート — 採用判断
 
 **判定: 採用** (default ON、PR #1160 で本配線)。根拠: 合成 7 ケース (#1155) + 採用版 5 ケース + live 3 関門 (#1156 実装フローで実走) = 15/15 PASS、誤 block ゼロ。指紋 = `git stash create` tree oid (commit 不変) が「verify→commit→終了」の正規フローと両立することを T6/live③ で実証。

@@ -58,6 +58,37 @@ gh pr list --state all --limit 100 --json number,title,state,createdAt,mergedAt
 - 最も時間がかかった PR
 - 最も手戻りが多かった Issue
 
+**幅広収集メニュー (Sess103 retro 拡張 — 全部 1 コマンド級の軽量収集、取れるものは全部取る)**:
+
+> 「詰まった点」を記憶だけで書かないため、以下も対象期間で収集する。重い採掘 (transcript 走査等) はやらない方針 (user 決定 2026-06-12: 厳密さより幅)。
+
+```bash
+# CI 実測 (fail 件数 + 所要時間 — 手戻りの定量化)
+gh run list --limit 30 --json name,conclusion,createdAt,updatedAt,displayTitle \
+  --jq '.[] | select(.createdAt >= "<ISO>") | "\(.conclusion)\t\(.name)\t\((((.updatedAt|fromdate)-(.createdAt|fromdate))/60|floor))min"'
+
+# 手戻り commit (revert / hotfix)
+git log --oneline --since="<date>" --grep="revert\|Revert\|hotfix" origin/main
+
+# 領域別 diff 面積 (どこを一番触ったか)
+git diff --dirstat=lines,1 <start-commit>..<end-commit>
+
+# R ルール / lessons の増分 (学びの量)
+git diff --stat <start>..<end> -- .claude/recurrence-prevention* docs/reference/tasks/lessons/
+
+# verify / CI watch の実行痕跡 (ローカル検証回数)
+ls /tmp/*verify*.log /tmp/*checks*.log 2>/dev/null
+
+# Issue の増減 (期間内 created)
+gh issue list --state all --limit 50 --search "created:>=<date>" --json number,title,state
+
+# (リリース retro 時) release-logs の実測時間
+ls dist/release-logs/
+```
+
+- Engram: `mem_search` で対象期間の decision / bugfix observation を引いて意思決定の流れを補完
+- 収集できなかった源は「未収集 (理由)」と明示する (網羅を装わない、R-25 の親戚)
+
 ### Step 3: タイムライン作成
 
 | #   | 日付/期間 | フェーズ | やったこと | 使ったツール | 結果 | 詰まった点 | 所要時間 |
