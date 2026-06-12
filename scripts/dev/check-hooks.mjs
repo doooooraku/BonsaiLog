@@ -18,6 +18,11 @@
  *   node scripts/dev/check-hooks.mjs --quiet    # OK 時に出力しない
  *
  * 由来: Sess81 振り返り 6 名チーム + R-61 (= 機械判定 + 安全網) 適用。
+ *
+ * Sess104 #1236: worktree 隔離 agent (Agent tool) の起動後に core.hooksPath が
+ * `.git/hooks` へ戻る事象が 1 日 3 回再発したため、PostToolUse(Agent|Task) hook
+ * (.claude/settings.json) から本 script (--quiet = auto-fix) を自動実行する。
+ * auditing は従来どおり verify:hooks (--check) が担う。
  */
 import { execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
