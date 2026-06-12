@@ -13,6 +13,7 @@
  * - 月グリッド: CalendarMonthGrid / 選択日一覧: CalendarEventGroupList
  * 振る舞い・計算式 (ADR-0031/0034/0035) は完全不変、 mode prop / URL route も不変。
  */
+import { useIsFocused } from '@react-navigation/native';
 import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
@@ -80,7 +81,10 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
   const guideId = mode === 'plan' ? 'g3PlanCta' : 'g2RecordCta';
   const guideSeen = useGuidesStore((s) => s.seen);
   const markGuideSeen = useGuidesStore((s) => s.markSeen);
-  const guideActive = canShowGuide(guideId, guideSeen);
+  // isFocused 必須: RN Modal は非フォーカス画面 (背景タブ) からも表示されるため、ガード
+  // なしだと使い方ページの reset 直後に背景タブの g2/g3 が多重表示される (Sess102 実機実証)。
+  const isFocused = useIsFocused();
+  const guideActive = isFocused && canShowGuide(guideId, guideSeen);
   const {
     targetRef: guideTargetRef,
     rect: guideRect,

@@ -1,3 +1,4 @@
+import { useIsFocused } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
@@ -218,7 +219,9 @@ export default function BonsaiDetailScreen() {
   // (引用 drift 防止、#1177 {cta} パターン)。hooks は early return より前 (rules-of-hooks)。
   const guideSeen = useGuidesStore((s) => s.seen);
   const markGuideSeen = useGuidesStore((s) => s.markSeen);
-  const g6Active = canShowGuide('g6DetailTabs', guideSeen);
+  // isFocused 必須: 背景画面からの Modal 多重表示防止 (Sess102 実機実証、CalendarTabScreen と同根)
+  const isFocused = useIsFocused();
+  const g6Active = isFocused && canShowGuide('g6DetailTabs', guideSeen);
   const { targetRef: g6TargetRef, rect: g6Rect, measure: measureG6Target } = useSpotlightTarget();
   const dismissG6 = React.useCallback(() => markGuideSeen('g6DetailTabs'), [markGuideSeen]);
 

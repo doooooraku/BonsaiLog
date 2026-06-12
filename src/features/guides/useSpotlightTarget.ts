@@ -11,7 +11,7 @@
  * null のまま (GuideSpotlight は null 中なにも描画しない契約なので安全)。
  */
 import { useCallback, useRef, useState } from 'react';
-import type { View } from 'react-native';
+import { Platform, StatusBar, type View } from 'react-native';
 
 import type { TargetRect } from './spotlightLayout';
 
@@ -23,7 +23,11 @@ export function useSpotlightTarget() {
     targetRef.current?.measureInWindow((x, y, width, height) => {
       // 計測がまだ確定しない frame (width/height 0) は捨てる — 0 矩形の spotlight 誤描画防止
       if (width > 0 && height > 0) {
-        setRect({ x, y, width, height });
+        // Android: measureInWindow の原点は status bar の下 — GuideSpotlight の全画面 Modal
+        // (statusBarTranslucent) は画面最上端原点のため、status bar 高さを加算して画面座標に
+        // 揃える (Sess102 実機実測: 補正なしだとリングが ~status bar 分だけ上に伸びる)。
+        const statusBarOffset = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
+        setRect({ x, y: y + statusBarOffset, width, height });
       }
     });
   }, []);
