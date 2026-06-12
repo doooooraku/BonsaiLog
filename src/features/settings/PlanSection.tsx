@@ -23,6 +23,11 @@ import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 // Sess70 PR-C3: BRAND_GREEN / ON_BRAND を scheme-aware (c.tint / c.onTint) に移行
 // (ADR-0015/0052 Sess69 PR-A Amendment 整合)。 ACCENT_GOLD は Pro バッジ専用 brand-static 維持。
 import { ACCENT_GOLD } from '@/src/core/theme/colors';
+import {
+  featureTableHeaderLabel,
+  featureTableHeaderValue,
+  featureTableHeaderValuePro,
+} from '@/src/core/theme/typography';
 import { useColors } from '@/src/core/theme/useColors';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import { useProStore } from '@/src/stores/proStore';
@@ -303,26 +308,20 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
   },
+  // Sess104 #1210: typography は featureTable* token に集約 (正準 = Paywall 版)。
   featureHeaderLabel: {
     flex: 1,
-    fontSize: 10,
-    letterSpacing: 1.0,
-    textTransform: 'uppercase',
-    fontWeight: '600',
+    ...featureTableHeaderLabel,
   },
   featureHeaderFree: {
     width: 60,
     textAlign: 'center',
-    fontSize: 10,
-    letterSpacing: 1.0,
-    fontWeight: '600',
+    ...featureTableHeaderValue,
   },
   featureHeaderPro: {
     width: 60,
     textAlign: 'center',
-    fontSize: 10,
-    letterSpacing: 1.0,
-    fontWeight: '700',
+    ...featureTableHeaderValuePro,
   },
   featureRow: {
     flexDirection: 'row',

@@ -259,5 +259,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: 'rgba(198,158,72,0.18)',
   },
-  proBadgeText: { fontSize: 9, letterSpacing: 0.6, fontWeight: '600' },
+  // Sess104 #1210: 9px は可読性下限割れ (高橋ペルソナ 62 歳) → 10px (badge 標準) へ
+  proBadgeText: { fontSize: 10, letterSpacing: 0.6, fontWeight: '600' },
 });

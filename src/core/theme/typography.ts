@@ -229,3 +229,31 @@ export const displayTitleSerif: TextStyle = {
   lineHeight: 32,
   letterSpacing: 0.5,
 };
+
+/**
+ * Free/Pro 機能比較表のヘッダー行 (FEATURE / FREE / PRO)。
+ * Paywall (PaywallScreen) と設定プラン表 (PlanSection) の重複定義 6 箇所を集約
+ * (Sess104 #1210 第 1 弾)。正準 = Paywall 版 (Inter / letterSpacing 1.2)。
+ * layout 系 (flex / width / textAlign) と color は caller 側 spread で指定する。
+ */
+export const featureTableHeaderLabel: TextStyle = {
+  fontFamily: 'Inter_400Regular',
+  fontSize: 10,
+  letterSpacing: 1.2,
+  textTransform: 'uppercase',
+};
+
+/** 機能比較表ヘッダーの FREE 列 (uppercase 不要、i18n 値がそのまま入る)。 */
+export const featureTableHeaderValue: TextStyle = {
+  fontFamily: 'Inter_400Regular',
+  fontSize: 10,
+  letterSpacing: 1.2,
+};
+
+/** 機能比較表ヘッダーの PRO 列 (強調 weight)。 */
+export const featureTableHeaderValuePro: TextStyle = {
+  fontFamily: 'Inter_400Regular',
+  fontSize: 10,
+  letterSpacing: 1.2,
+  fontWeight: '500',
+};
