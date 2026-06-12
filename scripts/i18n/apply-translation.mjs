@@ -197,19 +197,32 @@ function applyTranslationsToFile(content, translations, lang, missedOut) {
       missedOut.push(`${lang}: ${key}`);
       continue;
     }
-    // end: 同 line に `',` ある (single-line) or 後続 line で `',` 終端まで探す (multi-line、 最大 20 line)
+    // end: 値の string literal がある line を quote 認識で特定する。
+    // Sess104 修正: 旧実装は `'` 終端のみ前提で、double-quote 値 (`key: "Today's work",`) や
+    // エスケープ `\'` を含む値で次 key の line を終端と誤認し、次 key を無言削除するバグがあった。
+    // JS の string literal は raw 改行を含めないため、値は start line か直後の 1 line に必ず収まる。
+    const findLiteralEnd = (line) => {
+      // line 内の最初の quote (' or ") から escape 認識で閉じ quote を探す。閉じていれば true。
+      const qIdx = line.search(/['"]/);
+      if (qIdx === -1) return false;
+      const q = line[qIdx];
+      for (let p = qIdx + 1; p < line.length; p++) {
+        if (line[p] === '\\') {
+          p++; // escape された次の 1 文字を skip
+          continue;
+        }
+        if (line[p] === q) return true;
+      }
+      return false;
+    };
     let endLineIdx = -1;
-    for (let i = startLineIdx; i < Math.min(lines.length, startLineIdx + 20); i++) {
-      // `',` または `'` + 改行 + 次の line から始まる pattern
-      if (/'\s*,?\s*$/.test(lines[i]) && i > startLineIdx) {
-        endLineIdx = i;
-        break;
-      }
-      // single-line: `  key: 'value',` の場合は同 line で完結
-      if (i === startLineIdx && /:\s*'[^']*'\s*,?\s*$/.test(lines[i])) {
-        endLineIdx = i;
-        break;
-      }
+    const restOfStartLine = lines[startLineIdx].replace(startRe, '$2');
+    if (/['"]/.test(restOfStartLine)) {
+      // 値が同 line にある: 閉じ quote まで揃っていることを確認
+      if (findLiteralEnd(restOfStartLine)) endLineIdx = startLineIdx;
+    } else if (startLineIdx + 1 < lines.length && findLiteralEnd(lines[startLineIdx + 1])) {
+      // prettier 折返し: 値 literal は直後の line に 1 つで完結
+      endLineIdx = startLineIdx + 1;
     }
     if (endLineIdx === -1) {
       missedOut.push(`${lang}: ${key}`);
