@@ -79,7 +79,7 @@ pnpm release:android   # = bash scripts/release-android-orchestrate.sh
 4. `build:android:aab:local` — AAB ビルド (約 12 分)
 5. `submit:android` — EAS Submit (track=alpha, draft, --no-wait)
 6. `release-snapshot.mjs after` — 再撮影
-7. `release-diff.mjs` — 4 検証 (Draft +1 / versionCode +1 / whatsnew 反映 / 経過時間 < 30 min)
+7. `release-diff.mjs` — 4 検証 (Draft +1 / versionCode +1 / whatsnew 反映 / 経過時間 < 45 min)
 8. `release-log.mjs summary` + `cleanup` — summary.md 生成 + 古いログ削除
 
 ### 2-2. summary.md を読んで Console で 1 クリック

@@ -82,10 +82,10 @@ async function main() {
       warning: true, // PR6: setReleaseNotes 別 step で投稿、 失敗時は warning として user へ通知
     },
     {
-      label: 'snapshot 経過時間 < 30 min',
-      expected: '< 1800s',
+      label: 'snapshot 経過時間 < 45 min',
+      expected: '< 2700s',
       actual: `${elapsedSec}s`,
-      pass: elapsedMs > 0 && elapsedMs < 1800 * 1000,
+      pass: elapsedMs > 0 && elapsedMs < 2700 * 1000, // Sess103: cloud build 実測 33-35 分 (ADR-0050 Sess103 Amendment) に合わせ 30→45 min
       warning: true, // PR7: critical → warning 降格。 セッション中断で経過時間が延びる事象を critical 判定から除外
     },
   ];
