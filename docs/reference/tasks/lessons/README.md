@@ -22,8 +22,8 @@
 | [`navigation.md`](./navigation.md)               | expo-router の仕様未確定/直感に反する挙動の罠集約 (Sess12 PR-G 確立)                      | navigation 実装時        |
 | [`iap.md`](./iap.md)                             | IAP / RevenueCat 構造修復の学び (territory / offering / 価格取得、Sess81 起こし)          | IAP 改修時               |
 | [`release.md`](./release.md)                     | リリース工程の繰り返し回避 lesson (ADR-0050 補完、Sess61〜)                               | リリース作業時           |
-| [`wsl2-mobile.md`](./wsl2-mobile.md)             | WSL2 + adb / Maestro 2.0 / Expo Go 衝突 → preflight.mjs で構造的検出 (ADR-0021)           | UI 差分 / Maestro 実装時 |
-| [`auto-improve-loop.md`](./auto-improve-loop.md) | Maestro Android 技術制約 + skip-list 判定 + 半自走モード運用                              | UI 自動改善ループ運用時  |
+| [`wsl2-mobile.md`](./wsl2-mobile.md)             | WSL2 + adb / Maestro 2.0 / Expo Go 衝突の罠 (preflight.mjs は ADR-0059 退役で削除済)      | adb / Maestro 実装時     |
+| [`auto-improve-loop.md`](./auto-improve-loop.md) | Maestro Android 技術制約 + i18n script 周知 (ループ自体は ADR-0059 で退役済)              | Maestro 制約確認時       |
 | [`refactor.md`](./refactor.md)                   | 大規模リファクタ Phase 3-7 の学び (knip / verify 完全実行 / git rm+add 罠)                | 次回大規模リファクタ時   |
 | [`retro.md`](./retro.md)                         | sprint / milestone 単位 retro 結果集約 (KPT + ボトルネック + 教訓)                        | sprint 完了時            |
 | [`git.md`](./git.md)                             | 並行 PR の rebase theirs anchor 消失 / stash --staged new file 罠 (P2 昇格)               | 並行 PR / rebase 作業時  |
