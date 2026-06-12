@@ -38,7 +38,12 @@ import {
   type PurchaseErrorKind,
 } from '@/src/services/proService';
 import { useProStore } from '@/src/stores/proStore';
-import { SERIF_FAMILY } from '@/src/core/theme/typography';
+import {
+  SERIF_FAMILY,
+  featureTableHeaderLabel,
+  featureTableHeaderValue,
+  featureTableHeaderValuePro,
+} from '@/src/core/theme/typography';
 
 // F-13 Phase 2c-2 (Issue #20, ADR-0009 AC8): RC エラーコードを UI 文言キーにマッピング
 // Sess81: offeringsEmpty を追加 (= RC Offerings null or Package not found のとき
@@ -447,26 +452,18 @@ const styles = StyleSheet.create({
   },
   featureHeaderLabel: {
     flex: 1,
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
+    ...featureTableHeaderLabel,
   },
   featureHeaderFree: {
     width: 64,
     textAlign: 'center',
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    letterSpacing: 1.2,
+    ...featureTableHeaderValue,
   },
   // Sess70 PR-C3: color は inline c.tint (scheme-aware)。
   featureHeaderPro: {
     width: 64,
     textAlign: 'center',
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    letterSpacing: 1.2,
-    fontWeight: '500',
+    ...featureTableHeaderValuePro,
   },
   featureRow: {
     flexDirection: 'row',

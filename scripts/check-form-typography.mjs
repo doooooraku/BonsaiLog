@@ -52,6 +52,10 @@ function listTargetFiles() {
         if (p.startsWith('src/components/form/') && p.endsWith('.tsx')) return true;
         // Work/Bulk 系 caller
         if (p.match(/^src\/features\/event\/.*(Work|Bulk).*Screen\.tsx$/)) return true;
+        // Sess104 #1210: 全 UI 領域へ拡張 (再増殖の見える化。form 以外は summary 表示)
+        if (p.startsWith('src/features/') && p.endsWith('.tsx')) return true;
+        if (p.startsWith('src/shared/') && p.endsWith('.tsx')) return true;
+        if (p.startsWith('app/') && p.endsWith('.tsx')) return true;
         return false;
       })
       .filter((p) => {
@@ -112,19 +116,41 @@ function main() {
     process.exit(0);
   }
 
-  console.log('⚠️  Form atom typography drift 検出 (ADR-0029 D1 / design_system.md §12-6):');
+  console.log('⚠️  Typography drift 検出 (ADR-0029 D1 / design_system.md §12-6 / #1210):');
   console.log('');
-  console.log('以下の hardcoded fontSize / fontWeight は src/core/theme/typography.ts');
-  console.log('の token (formLabel / formOptional / formInput 等) 経由に置換することを推奨。');
-  console.log('Sess17 では warning のみ (CI block しない)、 ESLint AST rule 化は Sess18 以降。');
+  console.log('hardcoded fontSize / fontWeight は src/core/theme/typography.ts の token');
+  console.log('(formLabel / featureTableHeader* 等) 経由に段階置換する (#1210 台帳)。');
   console.log('');
-  allIssues.forEach(({ file, line, snippet, kind }) => {
+
+  // Sess104 #1210: 全域拡張に伴い、form 系 (従来スコープ) のみ個別行を表示、
+  // それ以外は file 単位の summary 表示 (verify ログの氾濫防止)。--verbose で全行。
+  const verbose = process.argv.includes('--verbose');
+  const isLegacyScope = (p) =>
+    p.startsWith('src/components/form/') ||
+    /^src\/features\/event\/.*(Work|Bulk).*Screen\.tsx$/.test(p);
+
+  const legacy = allIssues.filter(({ file }) => isLegacyScope(file));
+  const wide = allIssues.filter(({ file }) => !isLegacyScope(file));
+
+  legacy.forEach(({ file, line, snippet, kind }) => {
     console.log(`  ${file}:${line}: ${snippet} (${kind})`);
   });
+  if (verbose) {
+    wide.forEach(({ file, line, snippet, kind }) => {
+      console.log(`  ${file}:${line}: ${snippet} (${kind})`);
+    });
+  } else if (wide.length > 0) {
+    const byFile = new Map();
+    wide.forEach(({ file }) => byFile.set(file, (byFile.get(file) ?? 0) + 1));
+    const top = [...byFile.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    console.log(`  (全域スコープ: ${wide.length} 件 / ${byFile.size} files — 上位:`);
+    top.forEach(([f, n]) => console.log(`    ${f}: ${n} 件`));
+    console.log('   全行表示は --verbose)');
+  }
   console.log('');
   console.log(`合計: ${allIssues.length} 件、 ${files.length} files scanned`);
 
-  // Sess17 では warning のみ、 exit 0
+  // warning のみ、 exit 0 (段階置換中の baseline 監視)
   process.exit(0);
 }
 
