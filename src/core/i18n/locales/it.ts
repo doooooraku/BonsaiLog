@@ -836,8 +836,8 @@ const it: Partial<Record<TranslationKey, string>> = {
   customLimitDesc:
     'Il piano Free consente fino a {count} specie e stili personalizzati. Passa a Pro per averne illimitati.',
   // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
-  paywallFeatureCsvFreeValue: 'Non disponibile',
-  paywallFeatureCsvProValue: 'Disponibile',
+  paywallFeatureCsvFreeValue: 'No',
+  paywallFeatureCsvProValue: 'Sì',
   // --- Sess60 PR3: SpeciesPicker/StylePicker カスタム差別化 (section header + badge + counter) ---
   pickerSectionMaster: 'Predefinito',
   pickerSectionCustom: 'Personalizzato',

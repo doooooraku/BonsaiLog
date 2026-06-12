@@ -408,8 +408,8 @@ const pl: Partial<Record<TranslationKey, string>> = {
   paywallFeatureCsv: 'Eksport CSV/PDF',
   paywallFeaturePdf: 'Eksport PDF',
   paywallFeatureNoAds: 'Reklamy',
-  paywallFeatureNoAdsFreeValue: 'Wyświetlane',
-  paywallFeatureNoAdsProValue: 'Ukryte',
+  paywallFeatureNoAdsFreeValue: 'Tak',
+  paywallFeatureNoAdsProValue: 'Nie',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
   wiringListEmpty: 'Brak aktywnych wpisów drutowania',
   wiringRowWeeks: '{weeks} tyg. od założenia',
@@ -833,8 +833,8 @@ const pl: Partial<Record<TranslationKey, string>> = {
   customLimitDesc:
     'Plan Free pozwala dodać do {count} własnych gatunków i stylów. Przejdź na Pro, aby uzyskać nieograniczony dostęp.',
   // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
-  paywallFeatureCsvFreeValue: 'Niedostępne',
-  paywallFeatureCsvProValue: 'Dostępne',
+  paywallFeatureCsvFreeValue: 'Nie',
+  paywallFeatureCsvProValue: 'Tak',
   // --- Sess60 PR3: SpeciesPicker/StylePicker カスタム差別化 (section header + badge + counter) ---
   pickerSectionMaster: 'Wbudowane',
   pickerSectionCustom: 'Własne',

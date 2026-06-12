@@ -411,8 +411,8 @@ const id: Partial<Record<TranslationKey, string>> = {
   paywallFeatureCsv: 'Ekspor CSV/PDF',
   paywallFeaturePdf: 'Ekspor PDF',
   paywallFeatureNoAds: 'Iklan',
-  paywallFeatureNoAdsFreeValue: 'Ditampilkan',
-  paywallFeatureNoAdsProValue: 'Disembunyikan',
+  paywallFeatureNoAdsFreeValue: 'Ya',
+  paywallFeatureNoAdsProValue: 'Tidak',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
   wiringListEmpty: 'Tidak ada catatan kawat terpasang',
   wiringRowWeeks: 'Sudah {weeks} minggu',
@@ -836,8 +836,8 @@ const id: Partial<Record<TranslationKey, string>> = {
   customLimitDesc:
     'Paket Free memungkinkan menambah hingga {count} spesies dan gaya kustom. Tingkatkan ke Pro untuk tanpa batas.',
   // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
-  paywallFeatureCsvFreeValue: 'Tidak tersedia',
-  paywallFeatureCsvProValue: 'Tersedia',
+  paywallFeatureCsvFreeValue: 'Tidak',
+  paywallFeatureCsvProValue: 'Ya',
   // --- Sess60 PR3: SpeciesPicker/StylePicker カスタム差別化 (section header + badge + counter) ---
   pickerSectionMaster: 'Bawaan',
   pickerSectionCustom: 'Kustom',
