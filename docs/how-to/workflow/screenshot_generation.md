@@ -19,6 +19,7 @@ Maestro を使って、各ロケール（言語設定）の生スクリーンシ
 
 ```bash
 # Maestro フローを実行してスクリーンショットを撮影する
+# 注: maestro/flows/screenshots.yml は未作成 — ストア SS 撮影着手時に _template.yml から作成する
 maestro test maestro/flows/screenshots.yml
 ```
 

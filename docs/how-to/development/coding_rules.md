@@ -25,7 +25,7 @@
 - **前提/制約（変わりにくい約束）**：`docs/reference/constraints.md` が正
 - **なぜそうしたか（理由・代案・結論）**：`docs/adr/ADR-*.md` が正
 - **合否（受け入れ条件）**：自動テスト（Jest / Maestro）が正
-- **UIの最終図面**：Figma が正（URLを docs に置く）
+- **UIの最終図面**：mockup (`docs/mockups/v1.0/`) + `docs/reference/design_system.md` が正（ADR-0020/0059。Figma は不使用）
 
 > ここがブレると仕様書が死ぬので、この「正の置き場」を絶対に守る。
 
@@ -98,10 +98,11 @@
 
 あなたの反省点「仕様書だけUI→改修多発」を潰すためのルール。
 
-### 4.1 UIの正はFigma
+### 4.1 UIの正は mockup + design_system.md（Figma は不使用）
 
-- 画面・コンポーネント・余白・状態（通常/空/エラー/ロード）は **Figmaに集約**
-- docsには **Figmaリンク** と **画面一覧（索引）** だけ置く（ズレにくい）
+- 画面・コンポーネント・状態（通常/空/エラー/ロード）の見た目は **mockup (`docs/mockups/v1.0/`) が正**（ADR-0020、画面マップは ADR-0020 §Notes）
+- 色・余白・タイポグラフィの token は **`docs/reference/design_system.md` が正**（mockup と乖離したら design_system 優先、R-25）
+- mockup → 実装の反映は **写経駆動 R-29 5 段階 + /device-verify**（ADR-0059 標準）
 
 ### 4.2 画面（app/）は薄く
 
@@ -113,7 +114,7 @@
 
 - Tamagui は Phase 7 (2026-05-30) で撤去済。 現実装は `src/core/theme/useColors.ts` + plain hex
 - 直値 (`#xxx`) を JSX に増やさない → `useColors()` hook 経由で参照
-- ESLint `no-direct-hex-in-jsx` ルールで構造防止
+- ESLint `local/no-color-token-in-stylesheet` + `local/no-color-hex-literal-in-stylesheet` ルールで構造防止 (ADR-0052)
 - 詳細は `docs/reference/design_system.md` §6 を参照
 - 同じUIが2回出たら共通化候補（`src/components` へ）
 

@@ -12,7 +12,7 @@
 #   0. release-log.mjs init       — タイムスタンプ + ログディレクトリ発行 + .current 永続化
 #   1. preflight --auto-fix       — 30 項目検査 + 自動修復 (ローカル状態確認のみ)
 #   2. cloud trigger              — gh workflow run + run-id 取得
-#   3. gh run watch               — workflow 完了まで監視 (約 15 分、 Claude が口頭中継)
+#   3. gh run watch               — workflow 完了まで監視 (約 35 分 = 実測 33-35 分、 Claude が口頭中継)
 #   4. gh run download            — AAB artifact + release-logs artifact をローカル DL
 #   5. smoke test                 — 実機接続あれば adb で起動確認、 なければ skip
 #   6. release-log summary        — summary.md 整形

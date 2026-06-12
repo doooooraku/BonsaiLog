@@ -1,4 +1,4 @@
-# docs/how-to/git_workflow.md
+# docs/how-to/workflow/git_workflow.md
 
 # Git Workflow（Issue → Branch → Commit → PR → Merge）
 
