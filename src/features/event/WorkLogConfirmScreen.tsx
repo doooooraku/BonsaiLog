@@ -365,16 +365,19 @@ export default function WorkLogConfirmScreen() {
           }
         }
         void triggerSummaryReschedule(t);
+        // #1178 g5 (ADR-0058): 総件数 0→1 の最初の記録ならお祝いバナー (GuideBanner) を表示し、
+        // 標準の保存 Toast はスキップ (二重表示防止、Sess102 user 指摘で意匠分離)
+        const celebrated = await maybeCelebrateFirstRecord(t);
         // Toast 文言分岐 (ADR-0035 D8 統一): convertedCount > 0 で「予定 N 件を記録に変更」 / それ以外で「記録しました」
-        if (convertedCount > 0) {
-          useToastStore
-            .getState()
-            .show(t('planEventConvertedToast').replace('{count}', String(convertedCount)));
-        } else {
-          useToastStore.getState().show(t('workLogDoneToast'));
+        if (!celebrated) {
+          if (convertedCount > 0) {
+            useToastStore
+              .getState()
+              .show(t('planEventConvertedToast').replace('{count}', String(convertedCount)));
+          } else {
+            useToastStore.getState().show(t('workLogDoneToast'));
+          }
         }
-        // #1178 g5 (ADR-0058): 総件数 0→1 の最初の記録なら、上の標準 Toast をお祝いに上書き
-        await maybeCelebrateFirstRecord(t);
         // ADR-0006 Sess98 Amendment D1: 記録保存成功 = ハッピーモーメント。 fire-and-forget で
         // レビュー依頼判定 (マイルストーン + cooldown gate は reviewPolicy、 遷移をブロックしない)。
         void maybeRequestReview();

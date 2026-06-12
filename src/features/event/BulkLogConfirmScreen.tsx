@@ -354,18 +354,21 @@ export default function BulkLogConfirmScreen() {
           }
         }
       }
+      // #1178 g5 (ADR-0058): 総件数 0→1 の最初の記録ならお祝いバナー (GuideBanner) を表示し、
+      // 標準の保存 Toast はスキップ (二重表示防止、Sess102 user 指摘で意匠分離)
+      const celebrated = await maybeCelebrateFirstRecord(t);
       // Toast 文言分岐 (ADR-0035 D8 統一)
-      if (convertedCount > 0) {
-        useToastStore
-          .getState()
-          .show(t('planEventConvertedToast').replace('{count}', String(convertedCount)));
-      } else {
-        useToastStore
-          .getState()
-          .show(t('bulkLogDoneToast').replace('{count}', String(bonsaiIds.length)));
+      if (!celebrated) {
+        if (convertedCount > 0) {
+          useToastStore
+            .getState()
+            .show(t('planEventConvertedToast').replace('{count}', String(convertedCount)));
+        } else {
+          useToastStore
+            .getState()
+            .show(t('bulkLogDoneToast').replace('{count}', String(bonsaiIds.length)));
+        }
       }
-      // #1178 g5 (ADR-0058): 総件数 0→1 の最初の記録なら、上の標準 Toast をお祝いに上書き
-      await maybeCelebrateFirstRecord(t);
       // ADR-0006 Sess98 Amendment D1: 一括記録の保存成功もハッピーモーメント (log mode のみ、
       // schedule mode は上で早期 return 済)。 try 内 = 保存成功時のみ発火、 遷移をブロックしない。
       void maybeRequestReview();
