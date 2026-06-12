@@ -46,11 +46,12 @@ describe('check-native-impact.mjs 静的解析 (Sess71 PR-1)', () => {
 
   test('2. JS_ONLY_PATTERNS 配列定義あり (主要 JS file pattern を網羅)', () => {
     expect(SRC).toMatch(/const JS_ONLY_PATTERNS = \[/);
-    // 代表 4 つ確認
+    // 代表 5 つ確認
     expect(SRC).toMatch(/constants\|src\|app\|components/);
     expect(SRC).toMatch(/\/\^docs\\\//);
     expect(SRC).toMatch(/\/\^__tests__\\\//);
     expect(SRC).toMatch(/\/\^\\\.claude\\\//);
+    expect(SRC).toMatch(/\/\^maestro\\\//); // Sess104: E2E flow は js-only (unknown→native 誤検知の解消)
   });
 
   test('3. classify 関数 export あり (hook/cli 共通核)', () => {
