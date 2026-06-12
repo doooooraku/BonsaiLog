@@ -58,6 +58,37 @@ gh pr list --state all --limit 100 --json number,title,state,createdAt,mergedAt
 - 最も時間がかかった PR
 - 最も手戻りが多かった Issue
 
+**幅広収集メニュー (Sess103 retro 拡張 — 全部 1 コマンド級の軽量収集、取れるものは全部取る)**:
+
+> 「詰まった点」を記憶だけで書かないため、以下も対象期間で収集する。重い採掘 (transcript 走査等) はやらない方針 (user 決定 2026-06-12: 厳密さより幅)。
+
+```bash
+# CI 実測 (fail 件数 + 所要時間 — 手戻りの定量化)
+gh run list --limit 30 --json name,conclusion,createdAt,updatedAt,displayTitle \
+  --jq '.[] | select(.createdAt >= "<ISO>") | "\(.conclusion)\t\(.name)\t\((((.updatedAt|fromdate)-(.createdAt|fromdate))/60|floor))min"'
+
+# 手戻り commit (revert / hotfix)
+git log --oneline --since="<date>" --grep="revert\|Revert\|hotfix" origin/main
+
+# 領域別 diff 面積 (どこを一番触ったか)
+git diff --dirstat=lines,1 <start-commit>..<end-commit>
+
+# R ルール / lessons の増分 (学びの量)
+git diff --stat <start>..<end> -- .claude/recurrence-prevention* docs/reference/tasks/lessons/
+
+# verify / CI watch の実行痕跡 (ローカル検証回数)
+ls /tmp/*verify*.log /tmp/*checks*.log 2>/dev/null
+
+# Issue の増減 (期間内 created)
+gh issue list --state all --limit 50 --search "created:>=<date>" --json number,title,state
+
+# (リリース retro 時) release-logs の実測時間
+ls dist/release-logs/
+```
+
+- Engram: `mem_search` で対象期間の decision / bugfix observation を引いて意思決定の流れを補完
+- 収集できなかった源は「未収集 (理由)」と明示する (網羅を装わない、R-25 の親戚)
+
 ### Step 3: タイムライン作成
 
 | #   | 日付/期間 | フェーズ | やったこと | 使ったツール | 結果 | 詰まった点 | 所要時間 |
@@ -110,6 +141,23 @@ gh pr list --state all --limit 100 --json number,title,state,createdAt,mergedAt
 └─ 根本原因: ...
 └─ 対策: ...
 ```
+
+**深掘りプロトコル (Sess103 拡張 — TOP 1 ボトルネック + 構造的発見に適用)**:
+
+1. **外部 1 次情報との突合**: 内部データのなぜなぜで止めず、業界 framework と突き合わせて対策の妥当性を検証する (WebSearch 可)。基本 3 点セット:
+   - Google SRE postmortem (action item は specific / owned / due-dated。追跡なき action item は「変化の mechanism でなく歴史記録」になる)
+   - Amazon mechanism thinking (「Good intentions don't work, mechanisms do」— mechanism = tool + adoption + auditing の 3 点が揃って初めて mechanism)
+   - トヨタ標準化 (Ohno「標準なくして改善なし」— 成功は標準化して次の基準にする)
+2. **複数視点議論**: テックリード / QA / プロセス専門家 / 素人 / そもそも論 (フラット視点) で対策案を批判的に検討。バイアス排除 = 自己作業の評価は機械出力 (CI 結果 / git log) で裏取りし、推定値は「推定」と明示
+3. **仮説 → シミュレーション → 再評価**: 対策案を手元の実データに当てて「導入していたら何が変わったか」を 1 回以上シミュレートしてから採否判定
+
+**アドリブ成功レンズ (必須 — Issue/PR に現れない改善の種を拾う)**:
+
+> 失敗→再発防止は R ルール / hook の昇華パイプラインがあるが、「即興でうまくいったやり方」は気づかれず消える (negativity bias)。改善が失敗駆動に片寄らないための成功駆動の入口。
+
+1. セッション内で **アドリブ (計画外の工夫) でうまくいったこと**を列挙する (例: 進捗の外部保存、CI 待ちと次作業の並行化、調査手順の即興発明)
+2. 各々に「**仕組み化する (実装先 = file path or Issue 番号を明記) / しない (理由)**」を判定する。Keep (意図) で止めない — KPT の Keep は good intentions であり mechanism ではない
+3. 仕組み化する場合は tool (テンプレ / script / skill 追記) + adoption (どの手順が強制するか) + auditing (効いたかを次回 retro で確認) まで設計する
 
 ### Step 6: 改善提案
 
