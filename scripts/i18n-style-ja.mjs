@@ -32,7 +32,8 @@ const NOTATION_DICT = {
 
 // --- 文末句点ルールの suffix 判定 ---
 const PERIOD_REQUIRED_SUFFIX = /(Desc|Body|Detail|Description|FinePrint)$/;
-const PERIOD_FORBIDDEN_SUFFIX = /(Title|Label|Cta|Badge|Action|Button|Tab|Section|Short|Toggle|Placeholder|Header|Name)$/;
+const PERIOD_FORBIDDEN_SUFFIX =
+  /(Title|Label|Cta|Badge|Action|Button|Tab|Section|Short|Toggle|Placeholder|Header|Name)$/;
 
 // --- 和文文字クラス (ひらがな/カタカナ/漢字/長音/々) ---
 const JA = 'ぁ-んァ-ヶ一-龯ー々';
@@ -86,11 +87,19 @@ function checkPeriod(key, value, violations) {
   if (PERIOD_REQUIRED_SUFFIX.test(key)) {
     // 文形 (です・ます等で終わる) なのに句点なし → 違反。体言止めキャプションは対象外。
     if (/(ます|です|ました|ません|ください|さい)$/.test(trimmed)) {
-      violations.push({ rule: 'period', key, detail: `文形の説明文は句点「。」で終わる: 「${trimmed.slice(-12)}」` });
+      violations.push({
+        rule: 'period',
+        key,
+        detail: `文形の説明文は句点「。」で終わる: 「${trimmed.slice(-12)}」`,
+      });
     }
   } else if (PERIOD_FORBIDDEN_SUFFIX.test(key)) {
     if (/。$/.test(trimmed)) {
-      violations.push({ rule: 'period', key, detail: `タイトル/ラベル系は句点なし: 「${trimmed.slice(-12)}」` });
+      violations.push({
+        rule: 'period',
+        key,
+        detail: `タイトル/ラベル系は句点なし: 「${trimmed.slice(-12)}」`,
+      });
     }
   }
 }
@@ -125,7 +134,11 @@ function checkFullwidth(key, value, violations) {
   const re = /[？！（）：；［］　０-９Ａ-Ｚａ-ｚ]/g;
   let m;
   while ((m = re.exec(value)) != null) {
-    violations.push({ rule: 'fullwidth', key, detail: `全角記号/英数字「${m[0]}」は半角にする: ${value}` });
+    violations.push({
+      rule: 'fullwidth',
+      key,
+      detail: `全角記号/英数字「${m[0]}」は半角にする: ${value}`,
+    });
   }
 }
 
@@ -154,7 +167,11 @@ function run() {
   console.log('');
   console.log(
     `i18n style check (ja): ${entries.length} keys, ${violations.length} violations` +
-      (violations.length > 0 ? ` (${Object.entries(byRule).map(([r, n]) => `${r}: ${n}`).join(', ')})` : ''),
+      (violations.length > 0
+        ? ` (${Object.entries(byRule)
+            .map(([r, n]) => `${r}: ${n}`)
+            .join(', ')})`
+        : ''),
   );
   console.log('基準: docs/reference/copy-style-ja.md (ADR-0060)');
 
