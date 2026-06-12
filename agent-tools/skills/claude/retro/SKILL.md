@@ -142,6 +142,23 @@ ls dist/release-logs/
 └─ 対策: ...
 ```
 
+**深掘りプロトコル (Sess103 拡張 — TOP 1 ボトルネック + 構造的発見に適用)**:
+
+1. **外部 1 次情報との突合**: 内部データのなぜなぜで止めず、業界 framework と突き合わせて対策の妥当性を検証する (WebSearch 可)。基本 3 点セット:
+   - Google SRE postmortem (action item は specific / owned / due-dated。追跡なき action item は「変化の mechanism でなく歴史記録」になる)
+   - Amazon mechanism thinking (「Good intentions don't work, mechanisms do」— mechanism = tool + adoption + auditing の 3 点が揃って初めて mechanism)
+   - トヨタ標準化 (Ohno「標準なくして改善なし」— 成功は標準化して次の基準にする)
+2. **複数視点議論**: テックリード / QA / プロセス専門家 / 素人 / そもそも論 (フラット視点) で対策案を批判的に検討。バイアス排除 = 自己作業の評価は機械出力 (CI 結果 / git log) で裏取りし、推定値は「推定」と明示
+3. **仮説 → シミュレーション → 再評価**: 対策案を手元の実データに当てて「導入していたら何が変わったか」を 1 回以上シミュレートしてから採否判定
+
+**アドリブ成功レンズ (必須 — Issue/PR に現れない改善の種を拾う)**:
+
+> 失敗→再発防止は R ルール / hook の昇華パイプラインがあるが、「即興でうまくいったやり方」は気づかれず消える (negativity bias)。改善が失敗駆動に片寄らないための成功駆動の入口。
+
+1. セッション内で **アドリブ (計画外の工夫) でうまくいったこと**を列挙する (例: 進捗の外部保存、CI 待ちと次作業の並行化、調査手順の即興発明)
+2. 各々に「**仕組み化する (実装先 = file path or Issue 番号を明記) / しない (理由)**」を判定する。Keep (意図) で止めない — KPT の Keep は good intentions であり mechanism ではない
+3. 仕組み化する場合は tool (テンプレ / script / skill 追記) + adoption (どの手順が強制するか) + auditing (効いたかを次回 retro で確認) まで設計する
+
 ### Step 6: 改善提案
 
 3 カテゴリで整理:

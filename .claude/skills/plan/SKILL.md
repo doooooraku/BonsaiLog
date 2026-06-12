@@ -155,6 +155,8 @@ git switch -c <type>/<issue-number>-<short-title>
 
 ### W-05.5: 実装への自己引き継ぎ (Context note)
 
+**長丁場タスク (3+ batch / コンテキスト圧縮を跨ぐ見込み) の場合**: plan ファイルに「## セッション進捗サマリ (最新 state — 圧縮後はここから再開)」節を必ず設け、batch 完了ごとに更新する。圧縮 (compaction) 後の再開コストをゼロ化する mechanism (Sess103 #1193 で実証 — 記憶リセット直後 1 分で再開。意識頼みの運用から /plan 必須手順に昇格、retro.md [2026-06-12] 由来)。
+
 Issue 本文に以下のセクションを **必ず追加** する:
 
 ```markdown
