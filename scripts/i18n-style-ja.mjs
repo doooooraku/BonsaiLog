@@ -95,7 +95,8 @@ function extractEntries(fileText) {
   const pattern = /^\s*([A-Za-z0-9_]+)\s*:\s*\n?\s*(['"`])((?:\\.|(?!\2)[^\\])*)\2/gm;
   let match;
   while ((match = pattern.exec(body)) != null) {
-    entries.push({ key: match[1], value: match[3] });
+    // \n エスケープを実改行に正規化 (spacing 検査が `n` を英字と誤認しないように)
+    entries.push({ key: match[1], value: match[3].replace(/\\n/g, '\n') });
   }
   return entries;
 }
