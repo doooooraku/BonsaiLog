@@ -117,6 +117,8 @@ argument-hint: '[議題] 議論したいテーマ or 検討事項'
 └─ 恒久策: [仕組みとして何を導入するか]
 ```
 
+恒久策は **mechanism 3 点セット**を満たすこと: ①tool (script / hook / テンプレ) ②adoption (どの手順がそれを強制するか) ③auditing (効いたかを何で確認するか)。tool だけの恒久策は good intentions 止まり (Amazon mechanism thinking、Sess103 retro 由来)。
+
 ### Step 6: シミュレーション
 
 「この案を実装したらどうなるか」を時系列で書く:
