@@ -378,7 +378,7 @@ F-04 を以下の構成で実装する。
 - reference: `docs/reference/basic_spec.md` (§F-04 詳細仕様 — 本 ADR で書換)
 - reference: `docs/reference/functional_spec.md` (§9 F-04 詳細 — 本 ADR で書換)
 - reference: `docs/reference/personas.md` (4 ペルソナ評価)
-- glossary: `docs/reference/glossary.md` (Event / watering / 13 種 event_type / ヒートマップ / BottomSheet — 追加予定)
+- glossary: `docs/reference/glossary.md` (Event / watering / 13 種 event_type / ヒートマップ / BottomSheet — 追加予定) ※廃止 — Sess101 #1169 で glossary.md 削除 (用語の正 = basic_spec §2 + constraints + コード、翻訳禁止リストは ADR-0033 D3)
 - 行動 lesson: `.claude/recurrence-prevention.md` (R-1〜R-12)
 - 連動 ADR:
   - `docs/adr/ADR-0008-f02-event-data-model.md` (events STI + Drizzle + ULID + status + datetime ラッパー)

@@ -434,7 +434,7 @@ F-16 を以下の構成で実装する。
 - reference: `docs/reference/basic_spec.md` (§F-16 / §F-07 / Free/Pro 表 — 本 ADR で書換)
 - reference: `docs/reference/functional_spec.md` (§21 F-16 / §12 F-07 / §22 / §23 — 本 ADR で書換)
 - reference: `docs/reference/personas.md`（4 ペルソナ評価）
-- glossary: `docs/reference/glossary.md`（追加用語多数、本 ADR Follow-up）
+- glossary: `docs/reference/glossary.md`（追加用語多数、本 ADR Follow-up） ※廃止 — Sess101 #1169 で glossary.md 削除 (用語の正 = basic_spec §2 + constraints + コード、翻訳禁止リストは ADR-0033 D3)
 - 行動 lesson: `.claude/recurrence-prevention.md` (R-1〜R-12)
 - 連動 ADR:
   - `docs/adr/ADR-0007-f11-data-migration-design.md` (F-11 ZIP に AsyncStorage 含む)

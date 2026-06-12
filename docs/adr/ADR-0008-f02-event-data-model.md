@@ -215,7 +215,7 @@ F-02 を以下の構成で実装する。
 - constraints: `docs/reference/constraints.md` (§1-2 ULID 化、§1-4 AI 非搭載、§5-2 禁止語)
 - reference: `docs/reference/basic_spec.md` (§5.1 events 設計、§5.3 STI 採用理由、§5.4 性能目標、§7 F-02 機能)
 - reference: `docs/reference/functional_spec.md` (§7 F-02 詳細、§14 検索)
-- glossary: `docs/reference/glossary.md` (Event / event_type 13 種 + observation/other → 16 種、STI、payload_json、events_fts)
+- glossary: `docs/reference/glossary.md` (Event / event_type 13 種 + observation/other → 16 種、STI、payload_json、events_fts) ※廃止 — Sess101 #1169 で glossary.md 削除 (用語の正 = basic_spec §2 + constraints + コード、翻訳禁止リストは ADR-0033 D3)
 - 連動 ADR: `docs/adr/ADR-0003-storage-policy.md`、`docs/adr/ADR-0007-f11-data-migration-design.md`
 - 影響 Issue: #14 (F-01)、#15 (F-08)
 - PR: #<TBD>

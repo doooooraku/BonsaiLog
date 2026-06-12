@@ -471,7 +471,7 @@ F-15 を以下の構成で実装する。
 - reference: `docs/reference/basic_spec.md` (F-15 セクション — 本 ADR で書換)
 - reference: `docs/reference/functional_spec.md` (§20 F-15 — 本 ADR で書換)
 - reference: `docs/reference/personas.md` (4 ペルソナ評価)
-- glossary: `docs/reference/glossary.md` (追加用語多数、本 ADR Follow-up)
+- glossary: `docs/reference/glossary.md` (追加用語多数、本 ADR Follow-up) ※廃止 — Sess101 #1169 で glossary.md 削除 (用語の正 = basic_spec §2 + constraints + コード、翻訳禁止リストは ADR-0033 D3)
 - 行動 lesson: `.claude/recurrence-prevention.md` (R-1〜R-12)
 - 既存資産: `tamagui.config.ts` (本 ADR で全面書換) / `app.config.ts` (`userInterfaceStyle` 追加)
 - 連動 ADR:
@@ -627,7 +627,7 @@ F-15 を以下の構成で実装する。
 ### 実態と整合する theme system
 
 - 正: `src/core/theme/colors.ts` + `src/core/theme/useColors.ts` + `constants/theme.ts` (Colors)、design system は `docs/reference/design_system.md` で集約。
-- ADR-0042 (theme tokens SoT) が現実の theme 基盤を定義済。
+- 現実の theme 基盤の SoT = `design_system.md` §2 (Colors token) + ADR-0052 (dark theme cascade)。※旧記載「ADR-0042 (theme tokens SoT)」は誤記 — ADR-0042 はタブ icon / FAB SoT (Sess103 監査で訂正)。
 - 「直 hex 禁止」は ESLint `no-restricted-syntax` の hardcode 検出 + `docs/reference/design_system.md` の token 経由強制で代替。
 
 ### 削除対象 (Phase 7 PR 7-4)
