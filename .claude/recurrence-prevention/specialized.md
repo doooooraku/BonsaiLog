@@ -1390,7 +1390,7 @@ caller が `recurrence_rules` / `events` / `bonsai` 等の DB エンティティ
 
 ### 関連
 
-- 同型 pattern (= 半分): R-?? `<Stack.Screen options>` 単独 (= Sess66 PR5 SoT 確立、 ADR-0053 本文)
+- 同型 pattern (= 半分): `<Stack.Screen options>` 単独配線 (= Sess66 PR5 SoT 確立、 ADR-0053 本文。 R 番号なし — 本 R-74 が完全版)
 - 完全 pattern 確立: ADR-0053 Sess74 PR-3 Amendment (E2 動的 title 更新) + Sess90 PR-A Amendment (本 R 起票で 3 screen 配線漏れ修復)
 - meta-rule: R-25 (= 機械判定で達成確認) / R-55 (= 関連項目網羅調査)
 - 由来 PR: Sess90 PR-A (本 R 起票)

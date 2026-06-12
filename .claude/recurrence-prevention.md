@@ -1,8 +1,8 @@
 # 再発防止プロトコル（行動パターン）
 
 > **セッション開始時に必ず読むこと**。
-> このファイルは「**行動 lesson**」を集約。技術 lesson は `docs/reference/lessons.md` を参照。
-> 役割分担: lessons.md = DB / Backup / ビルド等の技術領域、本ファイル = 全タスク横断の行動ルール。
+> このファイルは「**行動 lesson**」を集約。技術 lesson は `docs/reference/tasks/lessons/` (索引 = `lessons/README.md`) を参照。
+> 役割分担: lessons/ = DB / Backup / ビルド等の技術領域、本ファイル = 全タスク横断の行動ルール。
 > **R-13 以降 (専門ルール) の詳細記述は `.claude/recurrence-prevention/specialized.md` を参照** (R-24 ファイル分割対応、2026-05-16)。
 
 ---
@@ -181,7 +181,7 @@
 - `~/.claude/CLAUDE.md` — 個人横断ルール
 - `AGENTS.md` — 全 AI エージェント共通ルール
 - `.claude/CLAUDE.md` — Claude Code 固有挙動
-- `.claude/recurrence-prevention/specialized.md` — R-13 〜 R-79 詳細記述
+- `.claude/recurrence-prevention/specialized.md` — R-13 以降の詳細記述 (最新番号は本ファイルの索引が正)
 - `.claude/hooks/` — 構造的防止 Hook 群（R-16/R-18/R-19/R-20 自動化）
 - `.claude/settings.json` — Hook 登録
 - `docs/reference/tasks/lessons/` — 技術 lesson（領域別フォルダ、`lessons/db.md` 等）
