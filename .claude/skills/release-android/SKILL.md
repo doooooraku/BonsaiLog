@@ -31,7 +31,7 @@ argument-hint: '[--skip-cloud / --skip-smoke]'
 
 ### Phase 0 — 開始確認
 
-「これから GitHub Actions で AAB を build + Play Console Alpha track に Draft で上げます。 cloud build 約 12 分 + Submit + release notes + snapshot + diff 込みで約 15 分。 その後ローカル smoke test 約 5 分。 合計 約 20 分。 PC 負荷は cloud 任せでほぼゼロ。 よろしいですか？」 を user に提示し、 Yes で進行。
+「これから GitHub Actions で AAB を build + Play Console Alpha track に Draft で上げます。 cloud build + Submit + release notes + snapshot + diff 込みで約 35 分 (実測 33-35 分)。 その後ローカル smoke test 約 5 分。 合計 約 40 分。 PC 負荷は cloud 任せでほぼゼロ。 よろしいですか？」 を user に提示し、 Yes で進行。
 
 ### Phase 0.5 — git clean + branch check
 
@@ -65,7 +65,7 @@ pnpm preflight:android:fix    # 修復可能項目を一括修復
 gh workflow run build-android-play.yml --ref main
 sleep 5
 RUN_ID=$(gh run list --workflow=build-android-play.yml --limit 1 --json databaseId --jq '.[0].databaseId')
-gh run watch "${RUN_ID}" --exit-status    # 完了まで監視 (約 15 分、 Claude が口頭中継)
+gh run watch "${RUN_ID}" --exit-status    # 完了まで監視 (約 35 分 = 実測 33-35 分、 Claude が口頭中継)
 ```
 
 cloud で実行される 14 steps:
