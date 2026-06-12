@@ -14,7 +14,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   close: 'Đóng',
   done: 'Xong',
   loading: 'Đang tải...',
-  retry: 'Thử lại',
   error: 'Lỗi',
 
   // --- Settings ---
@@ -26,27 +25,7 @@ const vi: Partial<Record<TranslationKey, string>> = {
   sound: 'Âm thanh',
 
   // --- Language selector ---
-  languageChange: 'Đổi ngôn ngữ',
   currentLanguage: 'Hiện tại',
-  languageNameEn: 'Tiếng Anh',
-  languageNameJa: 'Tiếng Nhật',
-  languageNameFr: 'Tiếng Pháp',
-  languageNameEs: 'Tiếng Tây Ban Nha',
-  languageNameDe: 'Tiếng Đức',
-  languageNameIt: 'Tiếng Ý',
-  languageNamePt: 'Tiếng Bồ Đào Nha',
-  languageNameRu: 'Tiếng Nga',
-  languageNameZhHans: 'Tiếng Trung (Giản thể)',
-  languageNameZhHant: 'Tiếng Trung (Phồn thể)',
-  languageNameKo: 'Tiếng Hàn',
-  languageNameHi: 'Tiếng Hindi',
-  languageNameId: 'Tiếng Indonesia',
-  languageNameTh: 'Tiếng Thái',
-  languageNameVi: 'Tiếng Việt',
-  languageNameTr: 'Tiếng Thổ Nhĩ Kỳ',
-  languageNameNl: 'Tiếng Hà Lan',
-  languageNamePl: 'Ba Lan',
-  languageNameSv: 'Tiếng Thụy Điển',
 
   // --- Purchase / Restore ---
   restore: 'Khôi phục mua hàng',
@@ -55,7 +34,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   restoreSuccess: 'Đã khôi phục lịch sử mua hàng.',
   restoreNotFound: 'Không tìm thấy giao dịch nào để khôi phục.',
   restoreFailed: 'Khôi phục mua hàng thất bại.',
-  restoreDesc: 'Khôi phục các giao dịch mua hàng từ tài khoản này.',
 
   // --- Pro / Paywall ---
   proTitle: 'Nâng cấp lên Pro',
@@ -84,19 +62,12 @@ const vi: Partial<Record<TranslationKey, string>> = {
   settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 
   // --- Legal ---
-  legalSectionTitle: 'Pháp lý',
-  legalPrivacyPolicyLabel: 'Chính sách bảo mật',
-  legalTermsOfUseLabel: 'Điều khoản sử dụng (EULA)',
 
   // --- Errors ---
   errorLoadFailed: 'Không tải được dữ liệu.',
-  errorSaveFailed: 'Không lưu được.',
-  errorDeleteFailed: 'Không xoá được.',
 
   // --- F-01 Bonsai (P2-01 PR-D, English fallback for v1.0, localized in v1.x) ---
-  bonsaiTab: 'Bonsai',
   bonsaiListEmptyTitle: 'No bonsai registered yet',
-  bonsaiListEmptyDesc: 'Tap below to register your first bonsai.',
   bonsaiCreateNew: 'Đăng ký bonsai mới',
   bonsaiFieldName: 'Tên',
   bonsaiFieldNamePlaceholder: 'ví dụ: Tùng già',
@@ -108,7 +79,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   bonsaiPlaceholderSpecies: 'Chọn loài',
   bonsaiPlaceholderStyle: 'Chọn dáng',
   bonsaiFieldAcquiredAt: 'Ngày sở hữu',
-  bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Lưu trữ',
   bonsaiArchiveConfirmTitle: 'Lưu trữ bonsai này?',
   bonsaiArchiveConfirmDesc:
@@ -121,35 +91,25 @@ const vi: Partial<Record<TranslationKey, string>> = {
 
   // --- F-08 Photos (P2-02 PR-C, English fallback for v1.0) ---
   bonsaiFieldPhotos: 'Ảnh',
-  photoAddCta: 'Add photo',
-  photoAddTitle: 'Add a photo',
-  photoAddCamera: 'Take a photo',
-  photoAddLibrary: 'Choose from library',
   photoEmpty: 'No photos yet.',
   photoLimitTitle: 'Free limit reached',
   photoLimitDesc:
     'Free plan allows {count} photos per bonsai. Upgrade to Pro for unlimited photos.',
   // Repolog-style photoCard UI keys
-  photoCaptionPlaceholder: 'Caption (optional)',
   photoMoveUpLabel: 'Move up',
   photoMoveDownLabel: 'Move down',
   photoCoverBadge: 'Cover',
   photoSetCoverLabel: 'Set as cover',
-  photoLimitPartialAdded: 'Added {added} photos ({skipped} skipped due to limit)',
   photoDeletedBanner: 'Photo deleted',
   photoUndoLabel: 'Undo',
   photoPermissionTitle: 'Permission needed',
   photoPermissionDesc: 'Please allow camera and photo library access in Settings.',
-  photoActionTitle: 'Photo actions',
-  photoActionSetCover: 'Set as cover photo',
-  photoActionDelete: 'Delete photo',
   photoDeleteConfirmTitle: 'Delete this photo?',
   photoDeleteConfirmDesc: 'This action cannot be undone.',
 
   // --- F-02 Events (P2-03 PR-D, English fallback for v1.0) ---
   eventsTitle: 'Care log',
   eventLogCta: 'Log a care event',
-  eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: 'Chưa có bản ghi công việc',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
@@ -169,7 +129,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   settingsNotificationSection: 'Thông báo',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
-  settingsTitle: 'Settings',
   settingsBackupSection: 'Sao lưu',
   backupTitle: 'Sao lưu & khôi phục',
   backupExportTitle: 'Create a backup',
@@ -205,7 +164,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
     'Lưu ý: bản sao lưu không được mã hóa. Hãy giữ ở nơi an toàn do bạn quản lý.',
 
   // --- F-04 Watering history (Phase A、English fallback for now) ---
-  wateringSectionTitle: 'Watering',
   wateringLastNoRecord: 'No watering records yet',
   wateringLastToday: 'Watered today',
   wateringLastOneDay: '1 day since last watering',
@@ -230,14 +188,9 @@ const vi: Partial<Record<TranslationKey, string>> = {
   bulkLogConfirmTitle: 'Log {label} for {count} bonsai',
   bulkScheduleConfirmTitle: 'Schedule {label} for {count} bonsai',
   bulkLogConfirmSub: 'Same content saved to each bonsai',
-  bulkLogConfirmNoteLabel: 'Note (optional)',
-  bulkLogConfirmNotePlaceholder: 'Free note',
   bulkLogSaveCta: 'Log for {count} bonsai',
   bulkLogDoneToast: 'Logged actions for {count} bonsai',
   bulkScheduleConfirmCta: 'Schedule (×{count})',
-  bulkLogConfirmCta: 'Log (×{count})',
-  bulkLogAddNoteToggle: 'Add note',
-  bulkLogConfirmTitleMulti: 'Log {count} actions',
   detailTimelineToday: 'Hôm nay',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
@@ -251,42 +204,25 @@ const vi: Partial<Record<TranslationKey, string>> = {
   searchMinChars: 'Nhập ít nhất {count} ký tự để tìm kiếm',
   searchEmpty: 'Không có kết quả.',
   searchBonsaiSection: 'Bonsai',
-  searchSpeciesSection: 'Loài',
   searchEventSection: 'Nhật ký chăm sóc',
   searchWorkLabel: 'Work',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
   settingsExportSection: 'Xuất',
-  exportCsvTitle: 'Xuất nhật ký chăm sóc sang CSV',
-  exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
-  exportCsvAction: 'Xuất CSV',
-  exportCsvSuccess: 'Xuất hoàn tất.',
-  exportCsvSuccessDetail: 'Exported {count} care logs.',
   exportCsvFailed: 'Xuất thất bại.',
   exportCsvShareTitle: 'BonsaiLog care logs CSV',
   exportProRequiredTitle: 'Tính năng Pro',
   exportProRequiredBody: 'Tính năng xuất này dành cho thành viên Pro. Nâng cấp để mở khóa.',
-  exportShareUnavailableTitle: 'Không thể chia sẻ',
-  exportShareUnavailableBody:
-    'Sharing is not available on this device. Please update the OS and try again.',
 
   // --- F-07 Wiring duration (Phase A、English fallback) ---
-  wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'Những gì bạn nhận được với Pro',
-  proComparisonPhotos: 'Ảnh không giới hạn mỗi bonsai',
-  proComparisonCsv: 'Xuất nhật ký chăm sóc sang CSV',
-  proComparisonPdf: 'Xuất hồ sơ bonsai sang PDF',
-  proComparisonNoAds: 'Không quảng cáo',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
   tagsManagerDesc: 'Tags help you organize care logs and find them in search.',
   tagsAddPlaceholder: 'New tag name',
-  tagsAddAction: 'Add',
-  tagsRenameAction: 'Rename',
   tagsAddFailedBody: 'Could not add the tag.',
   tagsRenameDuplicateBody: 'A tag with the same name already exists.',
   tagsEmpty: 'No tags yet.',
@@ -303,36 +239,26 @@ const vi: Partial<Record<TranslationKey, string>> = {
     'Notifications are disabled in your device settings. Enable them to use this feature.',
 
   // --- F-14 Ad banner label (Phase B、English fallback) ---
-  adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
   onboardingWelcomeTitle: 'Chào mừng đến với BonsaiLog',
-  onboardingWelcomeBody:
-    'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
   onboardingWelcomeCta: 'Bắt đầu',
-  onboardingSkip: 'Later',
   onboardingLanguageTitle: 'Chọn ngôn ngữ',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
 
   // --- F-15 Outdoor mode (Phase B、English fallback) ---
-  settingsOutdoorMode: 'Outdoor mode',
-  settingsOutdoorModeDesc:
-    'When on, the app uses a high-contrast palette for outdoor visibility (full implementation in next update).',
 
   // --- F-10 PDF export (Phase B、English fallback) ---
   exportPdfTitle: 'Xuất bonsai sang PDF',
   exportPdfDesc: 'Generate a PDF report for each bonsai (Pro feature).',
-  exportPdfAction: 'PDF',
   exportPdfHeaderDate: 'Ngày',
-  exportPdfHeaderType: 'Loại',
   exportPdfHeaderNote: 'Ghi chú',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'Không tạo được PDF.',
 
   // --- F-09 Search recent tags chips (Phase B、English fallback) ---
-  searchRecentTagsLabel: 'Thẻ gần đây',
   searchTagFilterClear: 'Xoá lọc',
 
   // --- F-13 Settings → Account / Paywall entry (Phase 1b、English fallback) ---
@@ -342,12 +268,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   settingsAccountProInactiveDesc: 'See plans and upgrade.',
 
   // --- F-04 Watering heatmap (Phase B、English fallback) ---
-  statsTabTitle: 'Stats',
-  statsHeaderAllBonsai: 'All bonsai ({count})',
-  bonsaiFilterSelectAll: 'All bonsai',
-  bonsaiFilterSearchPlaceholder: 'Search bonsai',
-  bonsaiFilterRecentSection: 'Recently viewed',
-  bonsaiFilterAllSection: 'All bonsai',
 
   // --- Home empty state (Phase 1b, Issue #29, ADR-0019) ---
   homeEmptyTitle: 'Add your first bonsai',
@@ -389,23 +309,12 @@ const vi: Partial<Record<TranslationKey, string>> = {
     'You can choose whether to allow the use of an identifier to help measure ad performance.',
   attExplainerAllow: 'If allowed: ads may be more relevant to you.',
   attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
-  settingsExportListPdfTitle: 'Xuất danh sách bonsai (PDF)',
-  settingsExportListPdfDesc: 'Tạo PDF tóm tắt tất cả bonsai',
-  exportListPdfTitle: 'PDF danh sách đầy đủ',
-  exportListPdfDesc: 'Generates an A4 PDF with cover, full bonsai list and statistics.',
-  exportListPdfAction: 'Tạo',
   exportListPdfShareTitle: 'Share full list PDF',
   exportListPdfCoverTitle: 'Hồ sơ đầy đủ BonsaiLog',
   exportListPdfCoverSubtitle: '{count} bonsai total',
   exportListPdfFooter: 'Generated by BonsaiLog',
   exportStorageLowBody: 'Insufficient storage. Please free up at least 100MB and try again.',
   exportStorageLowTitle: 'Storage low',
-  onboardingTut3Title: 'Log watering and care',
-  onboardingTut3Body:
-    'Tap the bonsai detail screen to log watering, fertilizing, and wiring. BonsaiLog only records — no judgment.',
-  onboardingTut4Title: 'Read the watering heatmap',
-  onboardingTut4Body:
-    'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
     'Khi thêm lịch, bạn có thể chọn nhận thông báo. Bạn có thể thay đổi bất cứ lúc nào trong Cài đặt.',
@@ -430,26 +339,18 @@ const vi: Partial<Record<TranslationKey, string>> = {
   settingsLegalTerms: 'Điều khoản dịch vụ',
   settingsLegalPrivacy: 'Chính sách bảo mật',
   searchRecentTitle: 'Recent searches',
-  searchHistoryClear: 'Clear history',
-  outdoorModeToggleA11y: 'Toggle outdoor mode',
   // --- ADR-0020 Phase 1: 4-tab labels (English fallback for i18n.test.ts) ---
   tabBonsai: 'Bonsai',
   tabLookBack: 'Xem lại',
   tabSettings: 'Settings',
-  tabPlanComingSoon: 'Coming soon',
   // --- ADR-0020 Phase 2: bonsai tab Claude Design HomeScreen (English fallback) ---
   appName: 'BonsaiLog',
-  homeFilterAll: 'All',
-  homeCardLastWatering: 'Watered {elapsed} ago',
-  homeCardLastPruning: 'Pruned {elapsed} ago',
   elapsedToday: 'today',
   elapsedDays: '{days}d',
   elapsedWeeks: '{weeks}w',
   elapsedMonths: '{months}mo',
   elapsedYears: '{years}y',
   // --- ADR-0020 Phase 3: bonsai detail watering history (English fallback, SS 222921) ---
-  wateringSummaryStreak: 'Current streak',
-  wateringSummaryDoubleDays: 'Twice-a-day',
   workPickerTitle: 'Log a task',
   // --- ADR-0020 Phase 5: plan tab calendar (English fallback) ---
   planMonthYearSuffix: '',
@@ -489,7 +390,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   recordSelectedEmptyTitle: 'Không có ghi chép nào cho ngày này',
   recordSelectedEmptyBody:
     'Sau khi chăm sóc cây, nhấn "{cta}" bên dưới để lưu lại. Ngày có ghi chép sẽ hiển thị ● trên lịch.',
-  planEventPlanned: 'Planned',
   planGroupExpand: 'Mở rộng',
   planGroupCollapse: 'Thu gọn',
   // --- ADR-0020 v1.x-5: Paywall Claude Design (English fallback) ---
@@ -507,16 +407,10 @@ const vi: Partial<Record<TranslationKey, string>> = {
   paywallFeatureNoAdsFreeValue: 'Hiển thị',
   paywallFeatureNoAdsProValue: 'Ẩn',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
-  planWiringListLink: 'Wiring list',
-  wiringTabAll: 'All',
-  wiringTabActive: 'Active',
-  wiringTabSoon: 'Within a week',
   wiringListEmpty: 'Chưa có lịch quấn dây',
   wiringRowWeeks: '{weeks} tuần',
   wiringOverdueBadge: 'Quá hạn',
-  wiringUnwireInDays: 'Unwire in {days} day(s)',
   wiringUnwireOverdue: 'Unwire {days} day(s) overdue',
-  wiringRowGaugePart: '{gauge} trên {part}',
   wiringUnwireInWeeks: 'Tháo trong {weeks} tuần',
   wiringUnwireOverdueWeeks: 'Quá hạn {weeks} tuần',
   // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs (English fallback) ---
@@ -559,19 +453,12 @@ const vi: Partial<Record<TranslationKey, string>> = {
   workLogWirePart_miki: 'Thân',
   workLogWirePart_eda: 'Cành',
   workLogWireDuration: 'Thời lượng mục tiêu',
-  workLogWireDurationHint: 'Dùng cho thời điểm thông báo tháo dây',
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
   onboardingWelcomeNote: 'Nhật ký chăm sóc bonsai của bạn, hoàn toàn ngoại tuyến.',
-  detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
-  detailPlanTimelinePlaceholder: 'Schedule features will be available in a future update.',
-  detailBasicEdit: 'Edit',
-  detailMenuExportPdf: 'Export to PDF',
-  detailExportProTitle: 'Pro feature',
-  detailExportProDesc: 'PDF export is a Pro plan feature.',
   onboardingLanguageContinue: 'Tiếp tục',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
@@ -595,13 +482,10 @@ const vi: Partial<Record<TranslationKey, string>> = {
   fieldRequiredLabel: 'required',
   fieldOptionalLabel: 'optional',
   // --- T2-4 purchase date (schema v8) ---
-  bonsaiFieldPurchaseDate: 'Purchase date',
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Thẻ',
   bonsaiTagsEmpty: 'Chưa có thẻ',
   // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
-  presetTagName_favorite: 'Yêu thích',
-  presetTagName_flowering: 'Ra hoa',
   tagSectionPresets: 'Đề xuất',
   tagPresetBadgeMaster: 'Mặc định',
   tagPresetLockedToast: 'Không thể chỉnh sửa tag mặc định',
@@ -613,14 +497,10 @@ const vi: Partial<Record<TranslationKey, string>> = {
   settingsNotifMasterOffBanner:
     'Thông báo đang tắt. Bật công tắc chính trong Cài đặt để sử dụng các tùy chọn này.',
   wiringRowUnwireAction: 'Đánh dấu đã tháo dây',
-  wiringUnwireConfirmTitle: 'Đánh dấu quấn dây đã tháo?',
   paywallFeatureTheme: 'Themes',
   historyLabelAmountNormal: 'Bình thường',
   historyLabelAmountPlenty: 'Nhiều',
   historyLabelAmountLight: 'Ít',
-  historyLabelAmountTip: 'Chỉ ngọn',
-  historyLabelAmountMid: 'Vừa phải',
-  historyLabelAmountBold: 'Mạnh',
   historyLabelPartsEda: 'Cành',
   historyLabelPartsHa: 'Lá',
   historyLabelPartsShinme: 'Chồi mới',
@@ -631,22 +511,9 @@ const vi: Partial<Record<TranslationKey, string>> = {
   historyLabelFertKindLiquid: 'Lỏng',
   historyLabelFertKindSlow: 'Phân tan chậm',
   historyLabelFertKindOther: 'Khác',
-  historyLabelSprayPurposePrevent: 'Phòng ngừa',
-  historyLabelSprayPurposeTreat: 'Điều trị',
-  historyLabelSprayPurposeBoth: 'Cả hai',
-  historyLabelHealSymptomsYake: 'Lá cháy',
-  historyLabelHealSymptomsKare: 'Cành héo',
-  historyLabelHealSymptomsMushi: 'Côn trùng',
-  historyLabelHealSymptomsKabi: 'Nấm mốc',
-  historyLabelHealSymptomsOther: 'Triệu chứng khác',
-  historyLabelMossTasksAdd: 'Thay',
-  historyLabelMossTasksRemove: 'Gỡ bỏ',
-  historyLabelMossTasksWater: 'Làm ẩm',
   historyLabelRepotRootsNone: 'Không cắt',
   historyLabelRepotRootsLight: 'Nhẹ',
   historyLabelRepotRootsHalf: '1/3',
-  historyLabelRepotRootsHeavy: '1/2',
-  detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: 'Chưa có bản ghi',
   addScheduleTitle: 'Add a scheduled task',
   addScheduleCta: 'Thêm lịch',
@@ -666,11 +533,9 @@ const vi: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldAcquiredFrom: 'Mua từ',
   bonsaiFieldAcquiredFromPlaceholder: 'ví dụ: Tên vườn ươm',
   bonsaiFieldPotInfo: 'Chậu',
-  bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Quay lại',
   tabRecord: 'Ghi',
   planFabLabel: 'Lập lịch công việc',
-  bulkSelectModalTitle: 'Chọn bonsai',
   bulkSelectModalNotice: 'Chọn bonsai để ghi lại hoặc lên kế hoạch (đã chọn {count})',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
@@ -713,15 +578,12 @@ const vi: Partial<Record<TranslationKey, string>> = {
   photoSourceCamera: 'Máy ảnh',
   photoSourceLibrary: 'Thư viện',
   photoReorderHelp: 'Use ↑↓ to reorder, × to remove.',
-  photoCaption: 'Caption',
   photoMoveUp: 'Move up',
   photoMoveDown: 'Move down',
   inputOverLimit: 'Character limit reached',
   workLogDateField: 'Ngày',
   workLogDatePlaceholderToday: 'Hôm nay',
   workLogPhotoField: 'Ảnh',
-  workLogPhotoAdd: 'Add',
-  workLogPhotoCaptionPlaceholder: 'ví dụ: chồi mới mùa xuân',
   workLogWirePart_all: 'Tất cả',
   workLogWireUnwireDate: 'Ngày tháo dây',
   workLogWireUnwireDatePlaceholder: 'NĂM/THÁNG/NGÀY',
@@ -730,7 +592,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   workLogUnwirePart_eda: 'Cành',
   workLogUnwirePart_all: 'Tất cả',
   workLogRepotPotSize: 'Kích thước chậu',
-  workLogRepotPotSizeUnit: 'cm',
   workLogRepotPotSizePlaceholder: 'ví dụ: 18',
   workLogRepotSoilMix: 'Hỗn hợp đất',
   workLogRepotSoilMixPlaceholder: 'ví dụ: Akadama:Kiryu=7:3',
@@ -777,16 +638,13 @@ const vi: Partial<Record<TranslationKey, string>> = {
   workLogLeafAidSymptom_other: 'Khác',
   workLogLeafAidTreatment: 'Xử lý',
   workLogLeafAidTreatmentPlaceholder: 'ví dụ: Loại bỏ vùng nhiễm bệnh, bôi thuốc lành thương',
-  calendarScreenTitle: 'Calendar',
   workLogDoneToast: 'Đã ghi',
   stackSpeciesPickerTitle: 'Chọn loài',
   stackStylePickerTitle: 'Chọn dáng',
   stackBonsaiMultiSelectTitle: 'Chọn bonsai',
   stackBulkLogConfirmTitle: 'Ghi cùng nhau',
   stackBonsaiNewTitle: 'Đăng ký bonsai',
-  stackBonsaiCreateModalTitle: 'Mới',
   stackBonsaiDetailTitle: 'Chi tiết bonsai',
-  stackBonsaiWateringHistoryTitle: 'Lịch sử tưới nước',
   stackWireListTitle: 'Danh sách quấn dây',
   planLegendTitle: 'Chú giải',
   planLegendToggleShow: 'Hiện chú giải',
@@ -799,7 +657,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   planSectionRecorded: 'Đã ghi',
   planLegendDotRecordedLabel: 'Đã ghi (●)',
   planEventRecordButtonSingle: 'Ghi mục này',
-  planEventRecordButtonGroup: 'Ghi tất cả {count}',
   planEventConvertedToast: 'Đã chuyển {count} công việc đã lên kế hoạch sang ghi',
   planEventDeleteConfirmPlannedSingleTitle: 'Xóa kế hoạch này?',
   planEventDeleteConfirmLoggedSingleTitle: 'Xóa bản ghi này?',
@@ -810,7 +667,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   rowActionMenuRecordAll: 'Ghi tất cả {count}',
   undoSnackbarPlannedDeleteN: 'Đã xóa {count} kế hoạch',
   undoSnackbarLoggedDeleteN: 'Đã xóa {count} bản ghi',
-  undoSnackbarAction: 'Hoàn tác',
   recordFabLabel: 'Ghi chăm sóc',
   historyLabelPruneAmountFew: 'Một chút',
   historyLabelPruneAmountSome: 'Vừa phải',
@@ -859,16 +715,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   exportHubBonsaiPdfSub: 'One page per bonsai',
   exportHubListPdfTitle: 'Full bonsai list',
   exportHubListPdfSub: 'Cover, list and stats',
-  exportBonsaiCsvTitle: 'Export bonsai list as CSV',
-  exportBonsaiCsvDesc: 'Export basic info for all bonsai as a CSV file (Pro feature).',
-  exportBonsaiCsvAction: 'Export bonsai list',
-  exportBonsaiCsvSuccess: 'Bonsai list exported',
-  exportBonsaiCsvSuccessDetail: 'Exported {count} bonsai.',
-  exportSpeciesCsvTitle: 'Export species summary as CSV',
-  exportSpeciesCsvDesc: 'Export per-species info as a CSV file (Pro feature).',
-  exportSpeciesCsvAction: 'Export species summary',
-  exportSpeciesCsvSuccess: 'Species summary exported',
-  exportSpeciesCsvSuccessDetail: 'Exported {count} species.',
   exportOptPeriodLabel: 'Period',
   exportOptPeriodAll: 'All',
   exportOptPeriod30d: 'Last 30 days',
@@ -884,7 +730,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   exportOptFilenameLabel: 'File name',
   exportOptDateFrom: 'From',
   exportOptDateTo: 'To',
-  exportOptGenerate: 'Generate and share',
   exportOptScopeEmptyTitle: 'No target selected',
   exportOptScopeEmptyBody: 'Please select at least one bonsai.',
   exportOptTagEmptyBody: 'Please select a tag.',
@@ -987,7 +832,6 @@ const vi: Partial<Record<TranslationKey, string>> = {
   pickerSectionMaster: 'Mặc định',
   pickerSectionCustom: 'Tùy chỉnh',
   pickerCustomBadge: 'Tùy chỉnh',
-  pickerCustomCounter: '{used}/{limit}',
   rowActionMenuEdit: 'Edit',
   workLogTitleEditing: 'Edit {type}',
   workLogUpdateCta: 'Update',

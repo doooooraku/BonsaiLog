@@ -14,7 +14,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   close: 'Zamknij',
   done: 'Gotowe',
   loading: 'Ładowanie...',
-  retry: 'Ponów',
   error: 'Błąd',
 
   // --- Settings ---
@@ -26,27 +25,7 @@ const pl: Partial<Record<TranslationKey, string>> = {
   sound: 'Dźwięk',
 
   // --- Language selector ---
-  languageChange: 'Zmień język',
   currentLanguage: 'Bieżący',
-  languageNameEn: 'Angielski',
-  languageNameJa: 'Japoński',
-  languageNameFr: 'Francuski',
-  languageNameEs: 'Hiszpański',
-  languageNameDe: 'Niemiecki',
-  languageNameIt: 'Włoski',
-  languageNamePt: 'Portugalski',
-  languageNameRu: 'Rosyjski',
-  languageNameZhHans: 'Chiński (uproszczony)',
-  languageNameZhHant: 'Chiński (tradycyjny)',
-  languageNameKo: 'Koreański',
-  languageNameHi: 'Hindi',
-  languageNameId: 'Indonezyjski',
-  languageNameTh: 'Tajski',
-  languageNameVi: 'Wietnamski',
-  languageNameTr: 'Turecki',
-  languageNameNl: 'Holenderski',
-  languageNamePl: 'Polski',
-  languageNameSv: 'Szwedzki',
 
   // --- Purchase / Restore ---
   restore: 'Przywróć zakupy',
@@ -55,7 +34,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   restoreSuccess: 'Historia zakupów przywrócona.',
   restoreNotFound: 'Nie znaleziono zakupów do przywrócenia.',
   restoreFailed: 'Przywracanie nie powiodło się.',
-  restoreDesc: 'Przywróć zakupy dokonane na tym koncie.',
 
   // --- Pro / Paywall ---
   proTitle: 'Uaktualnij do Pro',
@@ -85,19 +63,12 @@ const pl: Partial<Record<TranslationKey, string>> = {
   settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 
   // --- Legal ---
-  legalSectionTitle: 'Informacje prawne',
-  legalPrivacyPolicyLabel: 'Polityka prywatności',
-  legalTermsOfUseLabel: 'Regulamin (EULA)',
 
   // --- Errors ---
   errorLoadFailed: 'Nie udało się załadować danych.',
-  errorSaveFailed: 'Nie udało się zapisać.',
-  errorDeleteFailed: 'Nie udało się usunąć.',
 
   // --- F-01 Bonsai (P2-01 PR-D, English fallback for v1.0, localized in v1.x) ---
-  bonsaiTab: 'Bonsai',
   bonsaiListEmptyTitle: 'No bonsai registered yet',
-  bonsaiListEmptyDesc: 'Tap below to register your first bonsai.',
   bonsaiCreateNew: 'Zarejestruj nowego bonsai',
   bonsaiFieldName: 'Nazwa',
   bonsaiFieldNamePlaceholder: 'np. Stara sosna',
@@ -109,7 +80,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   bonsaiPlaceholderSpecies: 'Wybierz gatunek',
   bonsaiPlaceholderStyle: 'Wybierz styl',
   bonsaiFieldAcquiredAt: 'Nabyto dnia',
-  bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Archiwizuj',
   bonsaiArchiveConfirmTitle: 'Zarchiwizować tego bonsai?',
   bonsaiArchiveConfirmDesc:
@@ -122,35 +92,25 @@ const pl: Partial<Record<TranslationKey, string>> = {
 
   // --- F-08 Photos (P2-02 PR-C, English fallback for v1.0) ---
   bonsaiFieldPhotos: 'Zdjęcia',
-  photoAddCta: 'Add photo',
-  photoAddTitle: 'Add a photo',
-  photoAddCamera: 'Take a photo',
-  photoAddLibrary: 'Choose from library',
   photoEmpty: 'No photos yet.',
   photoLimitTitle: 'Free limit reached',
   photoLimitDesc:
     'Free plan allows {count} photos per bonsai. Upgrade to Pro for unlimited photos.',
   // Repolog-style photoCard UI keys
-  photoCaptionPlaceholder: 'Caption (optional)',
   photoMoveUpLabel: 'Move up',
   photoMoveDownLabel: 'Move down',
   photoCoverBadge: 'Cover',
   photoSetCoverLabel: 'Set as cover',
-  photoLimitPartialAdded: 'Added {added} photos ({skipped} skipped due to limit)',
   photoDeletedBanner: 'Photo deleted',
   photoUndoLabel: 'Undo',
   photoPermissionTitle: 'Permission needed',
   photoPermissionDesc: 'Please allow camera and photo library access in Settings.',
-  photoActionTitle: 'Photo actions',
-  photoActionSetCover: 'Set as cover photo',
-  photoActionDelete: 'Delete photo',
   photoDeleteConfirmTitle: 'Delete this photo?',
   photoDeleteConfirmDesc: 'This action cannot be undone.',
 
   // --- F-02 Events (P2-03 PR-D, English fallback for v1.0) ---
   eventsTitle: 'Care log',
   eventLogCta: 'Log a care event',
-  eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: 'Brak rekordów pracy',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
@@ -170,7 +130,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   settingsNotificationSection: 'Powiadomienia',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
-  settingsTitle: 'Settings',
   settingsBackupSection: 'Kopia zapasowa',
   backupTitle: 'Kopia zapasowa i przywracanie',
   backupExportTitle: 'Create a backup',
@@ -206,7 +165,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
     'Uwaga: kopie zapasowe nie są szyfrowane. Przechowuj je w bezpiecznym miejscu, którym sam zarządzasz.',
 
   // --- F-04 Watering history (Phase A、English fallback for now) ---
-  wateringSectionTitle: 'Watering',
   wateringLastNoRecord: 'No watering records yet',
   wateringLastToday: 'Watered today',
   wateringLastOneDay: '1 day since last watering',
@@ -231,14 +189,9 @@ const pl: Partial<Record<TranslationKey, string>> = {
   bulkLogConfirmTitle: 'Log {label} for {count} bonsai',
   bulkScheduleConfirmTitle: 'Schedule {label} for {count} bonsai',
   bulkLogConfirmSub: 'Same content saved to each bonsai',
-  bulkLogConfirmNoteLabel: 'Note (optional)',
-  bulkLogConfirmNotePlaceholder: 'Free note',
   bulkLogSaveCta: 'Log for {count} bonsai',
   bulkLogDoneToast: 'Logged actions for {count} bonsai',
   bulkScheduleConfirmCta: 'Schedule (×{count})',
-  bulkLogConfirmCta: 'Log (×{count})',
-  bulkLogAddNoteToggle: 'Add note',
-  bulkLogConfirmTitleMulti: 'Log {count} actions',
   detailTimelineToday: 'Dziś',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
@@ -252,42 +205,25 @@ const pl: Partial<Record<TranslationKey, string>> = {
   searchMinChars: 'Wpisz co najmniej {count} znaki, aby wyszukać',
   searchEmpty: 'Nie znaleziono wyników.',
   searchBonsaiSection: 'Bonsai',
-  searchSpeciesSection: 'Gatunki',
   searchEventSection: 'Logi pielęgnacji',
   searchWorkLabel: 'Work',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
   settingsExportSection: 'Eksportuj',
-  exportCsvTitle: 'Eksportuj logi pielęgnacji do CSV',
-  exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
-  exportCsvAction: 'Eksportuj CSV',
-  exportCsvSuccess: 'Eksport zakończony.',
-  exportCsvSuccessDetail: 'Exported {count} care logs.',
   exportCsvFailed: 'Eksport nieudany.',
   exportCsvShareTitle: 'BonsaiLog care logs CSV',
   exportProRequiredTitle: 'Funkcja Pro',
   exportProRequiredBody: 'Ten eksport jest dostępny dla członków Pro. Uaktualnij, aby odblokować.',
-  exportShareUnavailableTitle: 'Udostępnianie nie jest dostępne',
-  exportShareUnavailableBody:
-    'Sharing is not available on this device. Please update the OS and try again.',
 
   // --- F-07 Wiring duration (Phase A、English fallback) ---
-  wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'Co zyskujesz w Pro',
-  proComparisonPhotos: 'Nieograniczone zdjęcia na bonsai',
-  proComparisonCsv: 'Eksportuj logi pielęgnacji do CSV',
-  proComparisonPdf: 'Eksportuj karty bonsai do PDF',
-  proComparisonNoAds: 'Bez reklam',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
   tagsManagerDesc: 'Tags help you organize care logs and find them in search.',
   tagsAddPlaceholder: 'New tag name',
-  tagsAddAction: 'Add',
-  tagsRenameAction: 'Rename',
   tagsAddFailedBody: 'Could not add the tag.',
   tagsRenameDuplicateBody: 'A tag with the same name already exists.',
   tagsEmpty: 'No tags yet.',
@@ -304,36 +240,26 @@ const pl: Partial<Record<TranslationKey, string>> = {
     'Notifications are disabled in your device settings. Enable them to use this feature.',
 
   // --- F-14 Ad banner label (Phase B、English fallback) ---
-  adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
   onboardingWelcomeTitle: 'Witaj w BonsaiLog',
-  onboardingWelcomeBody:
-    'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
   onboardingWelcomeCta: 'Zaczynamy',
-  onboardingSkip: 'Later',
   onboardingLanguageTitle: 'Wybierz swój język',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
 
   // --- F-15 Outdoor mode (Phase B、English fallback) ---
-  settingsOutdoorMode: 'Outdoor mode',
-  settingsOutdoorModeDesc:
-    'When on, the app uses a high-contrast palette for outdoor visibility (full implementation in next update).',
 
   // --- F-10 PDF export (Phase B、English fallback) ---
   exportPdfTitle: 'Eksportuj bonsai do PDF',
   exportPdfDesc: 'Generate a PDF report for each bonsai (Pro feature).',
-  exportPdfAction: 'PDF',
   exportPdfHeaderDate: 'Data',
-  exportPdfHeaderType: 'Typ',
   exportPdfHeaderNote: 'Notatka',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'Nie udało się wygenerować PDF.',
 
   // --- F-09 Search recent tags chips (Phase B、English fallback) ---
-  searchRecentTagsLabel: 'Ostatnie tagi',
   searchTagFilterClear: 'Wyczyść filtr',
 
   // --- F-13 Settings → Account / Paywall entry (Phase 1b、English fallback) ---
@@ -343,12 +269,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   settingsAccountProInactiveDesc: 'See plans and upgrade.',
 
   // --- F-04 Watering heatmap (Phase B、English fallback) ---
-  statsTabTitle: 'Stats',
-  statsHeaderAllBonsai: 'All bonsai ({count})',
-  bonsaiFilterSelectAll: 'All bonsai',
-  bonsaiFilterSearchPlaceholder: 'Search bonsai',
-  bonsaiFilterRecentSection: 'Recently viewed',
-  bonsaiFilterAllSection: 'All bonsai',
 
   // --- Home empty state (Phase 1b, Issue #29, ADR-0019) ---
   homeEmptyTitle: 'Add your first bonsai',
@@ -390,23 +310,12 @@ const pl: Partial<Record<TranslationKey, string>> = {
     'You can choose whether to allow the use of an identifier to help measure ad performance.',
   attExplainerAllow: 'If allowed: ads may be more relevant to you.',
   attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
-  settingsExportListPdfTitle: 'Eksportuj listę bonsai (PDF)',
-  settingsExportListPdfDesc: 'Wygeneruj PDF z podsumowaniem wszystkich bonsai',
-  exportListPdfTitle: 'PDF pełnej listy',
-  exportListPdfDesc: 'Generates an A4 PDF with cover, full bonsai list and statistics.',
-  exportListPdfAction: 'Wygeneruj',
   exportListPdfShareTitle: 'Share full list PDF',
   exportListPdfCoverTitle: 'Pełne rekordy BonsaiLog',
   exportListPdfCoverSubtitle: '{count} bonsai total',
   exportListPdfFooter: 'Generated by BonsaiLog',
   exportStorageLowBody: 'Insufficient storage. Please free up at least 100MB and try again.',
   exportStorageLowTitle: 'Storage low',
-  onboardingTut3Title: 'Log watering and care',
-  onboardingTut3Body:
-    'Tap the bonsai detail screen to log watering, fertilizing, and wiring. BonsaiLog only records — no judgment.',
-  onboardingTut4Title: 'Read the watering heatmap',
-  onboardingTut4Body:
-    'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
     'Dodając plan, możesz włączyć powiadomienia. Zmienisz to w każdej chwili w Ustawieniach.',
@@ -431,26 +340,18 @@ const pl: Partial<Record<TranslationKey, string>> = {
   settingsLegalTerms: 'Warunki usługi',
   settingsLegalPrivacy: 'Polityka prywatności',
   searchRecentTitle: 'Recent searches',
-  searchHistoryClear: 'Clear history',
-  outdoorModeToggleA11y: 'Toggle outdoor mode',
   // --- ADR-0020 Phase 1: 4-tab labels (English fallback for i18n.test.ts) ---
   tabBonsai: 'Bonsai',
   tabLookBack: 'Wstecz',
   tabSettings: 'Settings',
-  tabPlanComingSoon: 'Coming soon',
   // --- ADR-0020 Phase 2: bonsai tab Claude Design HomeScreen (English fallback) ---
   appName: 'BonsaiLog',
-  homeFilterAll: 'All',
-  homeCardLastWatering: 'Watered {elapsed} ago',
-  homeCardLastPruning: 'Pruned {elapsed} ago',
   elapsedToday: 'today',
   elapsedDays: '{days}d',
   elapsedWeeks: '{weeks}w',
   elapsedMonths: '{months}mo',
   elapsedYears: '{years}y',
   // --- ADR-0020 Phase 3: bonsai detail watering history (English fallback, SS 222921) ---
-  wateringSummaryStreak: 'Current streak',
-  wateringSummaryDoubleDays: 'Twice-a-day',
   workPickerTitle: 'Log a task',
   // --- ADR-0020 Phase 5: plan tab calendar (English fallback) ---
   planMonthYearSuffix: '',
@@ -490,7 +391,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   recordSelectedEmptyTitle: 'Brak wpisów na ten dzień',
   recordSelectedEmptyBody:
     'Po pielęgnacji stuknij „{cta}” poniżej, aby ją zapisać. Dni z wpisami mają ● w kalendarzu.',
-  planEventPlanned: 'Planned',
   planGroupExpand: 'Rozwiń',
   planGroupCollapse: 'Zwiń',
   // --- ADR-0020 v1.x-5: Paywall Claude Design (English fallback) ---
@@ -508,16 +408,10 @@ const pl: Partial<Record<TranslationKey, string>> = {
   paywallFeatureNoAdsFreeValue: 'Wyświetlane',
   paywallFeatureNoAdsProValue: 'Ukryte',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
-  planWiringListLink: 'Wiring list',
-  wiringTabAll: 'All',
-  wiringTabActive: 'Active',
-  wiringTabSoon: 'Within a week',
   wiringListEmpty: 'Brak drutowania w planie',
   wiringRowWeeks: '{weeks} tygodni',
   wiringOverdueBadge: 'Zaległe',
-  wiringUnwireInDays: 'Unwire in {days} day(s)',
   wiringUnwireOverdue: 'Unwire {days} day(s) overdue',
-  wiringRowGaugePart: '{gauge} na {part}',
   wiringUnwireInWeeks: 'Usunąć za {weeks} tygodni',
   wiringUnwireOverdueWeeks: 'Zaległe o {weeks} tygodni',
   // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs (English fallback) ---
@@ -560,19 +454,12 @@ const pl: Partial<Record<TranslationKey, string>> = {
   workLogWirePart_miki: 'Pień',
   workLogWirePart_eda: 'Gałąź',
   workLogWireDuration: 'Czas docelowy',
-  workLogWireDurationHint: 'Używane do powiadomienia o usunięciu',
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
   onboardingWelcomeNote: 'Twój dziennik pielęgnacji bonsai, całkowicie offline.',
-  detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
-  detailPlanTimelinePlaceholder: 'Schedule features will be available in a future update.',
-  detailBasicEdit: 'Edit',
-  detailMenuExportPdf: 'Export to PDF',
-  detailExportProTitle: 'Pro feature',
-  detailExportProDesc: 'PDF export is a Pro plan feature.',
   onboardingLanguageContinue: 'Kontynuuj',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
@@ -596,13 +483,10 @@ const pl: Partial<Record<TranslationKey, string>> = {
   fieldRequiredLabel: 'required',
   fieldOptionalLabel: 'optional',
   // --- T2-4 purchase date (schema v8) ---
-  bonsaiFieldPurchaseDate: 'Purchase date',
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Tagi',
   bonsaiTagsEmpty: 'Brak tagów',
   // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
-  presetTagName_favorite: 'Ulubione',
-  presetTagName_flowering: 'Kwitnący',
   tagSectionPresets: 'Sugerowane',
   tagPresetBadgeMaster: 'Domyślny',
   tagPresetLockedToast: 'Wstępnie ustawionych tagów nie można edytować',
@@ -614,14 +498,10 @@ const pl: Partial<Record<TranslationKey, string>> = {
   settingsNotifMasterOffBanner:
     'Powiadomienia są wyłączone. Włącz główny przełącznik w Ustawieniach, aby korzystać z tych opcji.',
   wiringRowUnwireAction: 'Oznacz jako rozdrutowane',
-  wiringUnwireConfirmTitle: 'Oznaczyć drutowanie jako usunięte?',
   paywallFeatureTheme: 'Themes',
   historyLabelAmountNormal: 'Normalna',
   historyLabelAmountPlenty: 'Obficie',
   historyLabelAmountLight: 'Lekko',
-  historyLabelAmountTip: 'Tylko końcówki',
-  historyLabelAmountMid: 'Umiarkowane',
-  historyLabelAmountBold: 'Intensywne',
   historyLabelPartsEda: 'Gałęzie',
   historyLabelPartsHa: 'Liście',
   historyLabelPartsShinme: 'Nowe pędy',
@@ -632,22 +512,9 @@ const pl: Partial<Record<TranslationKey, string>> = {
   historyLabelFertKindLiquid: 'Płynny',
   historyLabelFertKindSlow: 'O powolnym uwalnianiu',
   historyLabelFertKindOther: 'Inne',
-  historyLabelSprayPurposePrevent: 'Zapobieganie',
-  historyLabelSprayPurposeTreat: 'Leczenie',
-  historyLabelSprayPurposeBoth: 'Oba',
-  historyLabelHealSymptomsYake: 'Oparzenie liści',
-  historyLabelHealSymptomsKare: 'Usychająca gałąź',
-  historyLabelHealSymptomsMushi: 'Owady',
-  historyLabelHealSymptomsKabi: 'Grzyb',
-  historyLabelHealSymptomsOther: 'Inne objawy',
-  historyLabelMossTasksAdd: 'Wymień',
-  historyLabelMossTasksRemove: 'Usuń',
-  historyLabelMossTasksWater: 'Nawilż',
   historyLabelRepotRootsNone: 'Bez cięcia',
   historyLabelRepotRootsLight: 'Lekkie',
   historyLabelRepotRootsHalf: '1/3',
-  historyLabelRepotRootsHeavy: '1/2',
-  detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: 'Brak rekordów',
   addScheduleTitle: 'Add a scheduled task',
   addScheduleCta: 'Dodaj harmonogram',
@@ -667,11 +534,9 @@ const pl: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldAcquiredFrom: 'Nabyto od',
   bonsaiFieldAcquiredFromPlaceholder: 'np. Nazwa szkółki',
   bonsaiFieldPotInfo: 'Donica',
-  bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Wstecz',
   tabRecord: 'Zapisz',
   planFabLabel: 'Zaplanuj zadania',
-  bulkSelectModalTitle: 'Wybierz bonsai',
   bulkSelectModalNotice: 'Wybierz bonsai do zarejestrowania lub zaplanowania (wybrano {count})',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
@@ -714,15 +579,12 @@ const pl: Partial<Record<TranslationKey, string>> = {
   photoSourceCamera: 'Aparat',
   photoSourceLibrary: 'Galeria',
   photoReorderHelp: 'Use ↑↓ to reorder, × to remove.',
-  photoCaption: 'Caption',
   photoMoveUp: 'Move up',
   photoMoveDown: 'Move down',
   inputOverLimit: 'Character limit reached',
   workLogDateField: 'Data',
   workLogDatePlaceholderToday: 'Dzisiaj',
   workLogPhotoField: 'Zdjęcia',
-  workLogPhotoAdd: 'Add',
-  workLogPhotoCaptionPlaceholder: 'np. nowe wiosenne pędy',
   workLogWirePart_all: 'Wszystko',
   workLogWireUnwireDate: 'Data usunięcia',
   workLogWireUnwireDatePlaceholder: 'RRRR/MM/DD',
@@ -731,7 +593,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   workLogUnwirePart_eda: 'Gałąź',
   workLogUnwirePart_all: 'Wszystko',
   workLogRepotPotSize: 'Rozmiar donicy',
-  workLogRepotPotSizeUnit: 'cm',
   workLogRepotPotSizePlaceholder: 'np. 18',
   workLogRepotSoilMix: 'Mieszanka podłoża',
   workLogRepotSoilMixPlaceholder: 'np. Akadama:Kiryu=7:3',
@@ -778,16 +639,13 @@ const pl: Partial<Record<TranslationKey, string>> = {
   workLogLeafAidSymptom_other: 'Inne',
   workLogLeafAidTreatment: 'Leczenie',
   workLogLeafAidTreatmentPlaceholder: 'np. Usuń zainfekowane miejsce, nałóż pastę gojącą',
-  calendarScreenTitle: 'Calendar',
   workLogDoneToast: 'Zapisano',
   stackSpeciesPickerTitle: 'Wybierz gatunek',
   stackStylePickerTitle: 'Wybierz styl',
   stackBonsaiMultiSelectTitle: 'Wybierz bonsai',
   stackBulkLogConfirmTitle: 'Zapisz razem',
   stackBonsaiNewTitle: 'Zarejestruj bonsai',
-  stackBonsaiCreateModalTitle: 'Nowy',
   stackBonsaiDetailTitle: 'Szczegóły bonsai',
-  stackBonsaiWateringHistoryTitle: 'Historia podlewania',
   stackWireListTitle: 'Lista drutowania',
   planLegendTitle: 'Legenda',
   planLegendToggleShow: 'Pokaż legendę',
@@ -800,7 +658,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   planSectionRecorded: 'Zapisane',
   planLegendDotRecordedLabel: 'Zapisane (●)',
   planEventRecordButtonSingle: 'Zapisz',
-  planEventRecordButtonGroup: 'Zapisz wszystkie ({count})',
   planEventConvertedToast: 'Przekształcono {count} zaplanowane zadanie(a) w zapis',
   planEventDeleteConfirmPlannedSingleTitle: 'Usunąć ten plan?',
   planEventDeleteConfirmLoggedSingleTitle: 'Usunąć ten wpis?',
@@ -812,7 +669,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   rowActionMenuRecordAll: 'Zapisz wszystkie ({count})',
   undoSnackbarPlannedDeleteN: 'Usunięto {count} plan(ów)',
   undoSnackbarLoggedDeleteN: 'Usunięto {count} wpis(ów)',
-  undoSnackbarAction: 'Cofnij',
   recordFabLabel: 'Zapisz pielęgnację',
   historyLabelPruneAmountFew: 'Trochę',
   historyLabelPruneAmountSome: 'Umiarkowanie',
@@ -861,16 +717,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   exportHubBonsaiPdfSub: 'One page per bonsai',
   exportHubListPdfTitle: 'Full bonsai list',
   exportHubListPdfSub: 'Cover, list and stats',
-  exportBonsaiCsvTitle: 'Export bonsai list as CSV',
-  exportBonsaiCsvDesc: 'Export basic info for all bonsai as a CSV file (Pro feature).',
-  exportBonsaiCsvAction: 'Export bonsai list',
-  exportBonsaiCsvSuccess: 'Bonsai list exported',
-  exportBonsaiCsvSuccessDetail: 'Exported {count} bonsai.',
-  exportSpeciesCsvTitle: 'Export species summary as CSV',
-  exportSpeciesCsvDesc: 'Export per-species info as a CSV file (Pro feature).',
-  exportSpeciesCsvAction: 'Export species summary',
-  exportSpeciesCsvSuccess: 'Species summary exported',
-  exportSpeciesCsvSuccessDetail: 'Exported {count} species.',
   exportOptPeriodLabel: 'Period',
   exportOptPeriodAll: 'All',
   exportOptPeriod30d: 'Last 30 days',
@@ -886,7 +732,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   exportOptFilenameLabel: 'File name',
   exportOptDateFrom: 'From',
   exportOptDateTo: 'To',
-  exportOptGenerate: 'Generate and share',
   exportOptScopeEmptyTitle: 'No target selected',
   exportOptScopeEmptyBody: 'Please select at least one bonsai.',
   exportOptTagEmptyBody: 'Please select a tag.',
@@ -990,7 +835,6 @@ const pl: Partial<Record<TranslationKey, string>> = {
   pickerSectionMaster: 'Standardowe',
   pickerSectionCustom: 'Niestandardowe',
   pickerCustomBadge: 'Własne',
-  pickerCustomCounter: '{used}/{limit}',
   rowActionMenuEdit: 'Edit',
   workLogTitleEditing: 'Edit {type}',
   workLogUpdateCta: 'Update',

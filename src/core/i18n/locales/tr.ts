@@ -14,7 +14,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   close: 'Kapat',
   done: 'Bitti',
   loading: 'Yükleniyor...',
-  retry: 'Tekrar dene',
   error: 'Hata',
 
   // --- Settings ---
@@ -26,27 +25,7 @@ const tr: Partial<Record<TranslationKey, string>> = {
   sound: 'Ses',
 
   // --- Language selector ---
-  languageChange: 'Dili değiştir',
   currentLanguage: 'Mevcut',
-  languageNameEn: 'İngilizce',
-  languageNameJa: 'Japonca',
-  languageNameFr: 'Fransızca',
-  languageNameEs: 'İspanyolca',
-  languageNameDe: 'Almanca',
-  languageNameIt: 'İtalyanca',
-  languageNamePt: 'Portekizce',
-  languageNameRu: 'Rusça',
-  languageNameZhHans: 'Çince (Basitleştirilmiş)',
-  languageNameZhHant: 'Çince (Geleneksel)',
-  languageNameKo: 'Korece',
-  languageNameHi: 'Hintçe',
-  languageNameId: 'Endonezce',
-  languageNameTh: 'Tayca',
-  languageNameVi: 'Vietnamca',
-  languageNameTr: 'Türkçe',
-  languageNameNl: 'Felemenkçe',
-  languageNamePl: 'Lehçe',
-  languageNameSv: 'İsveççe',
 
   // --- Purchase / Restore ---
   restore: 'Satın alımları geri yükle',
@@ -55,7 +34,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   restoreSuccess: 'Satın alma geçmişi geri yüklendi.',
   restoreNotFound: 'Geri yüklenecek satın alma bulunamadı.',
   restoreFailed: 'Satın alımlar geri yüklenemedi.',
-  restoreDesc: 'Bu hesapla yapılan satın alımları geri yükleyin.',
 
   // --- Pro / Paywall ---
   proTitle: "Pro'ya yükselt",
@@ -85,19 +63,12 @@ const tr: Partial<Record<TranslationKey, string>> = {
   settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 
   // --- Legal ---
-  legalSectionTitle: 'Yasal',
-  legalPrivacyPolicyLabel: 'Gizlilik Politikası',
-  legalTermsOfUseLabel: 'Kullanım Koşulları (EULA)',
 
   // --- Errors ---
   errorLoadFailed: 'Veri yüklenemedi.',
-  errorSaveFailed: 'Kaydedilemedi.',
-  errorDeleteFailed: 'Silinemedi.',
 
   // --- F-01 Bonsai (P2-01 PR-D, English fallback for v1.0, localized in v1.x) ---
-  bonsaiTab: 'Bonsai',
   bonsaiListEmptyTitle: 'No bonsai registered yet',
-  bonsaiListEmptyDesc: 'Tap below to register your first bonsai.',
   bonsaiCreateNew: 'Yeni bonsai kaydet',
   bonsaiFieldName: 'İsim',
   bonsaiFieldNamePlaceholder: 'ör. Yaşlı çam',
@@ -109,7 +80,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   bonsaiPlaceholderSpecies: 'Tür seç',
   bonsaiPlaceholderStyle: 'Stil seç',
   bonsaiFieldAcquiredAt: 'Edinilme tarihi',
-  bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Arşivle',
   bonsaiArchiveConfirmTitle: 'Bu bonsayı arşivle?',
   bonsaiArchiveConfirmDesc:
@@ -122,35 +92,25 @@ const tr: Partial<Record<TranslationKey, string>> = {
 
   // --- F-08 Photos (P2-02 PR-C, English fallback for v1.0) ---
   bonsaiFieldPhotos: 'Fotoğraflar',
-  photoAddCta: 'Add photo',
-  photoAddTitle: 'Add a photo',
-  photoAddCamera: 'Take a photo',
-  photoAddLibrary: 'Choose from library',
   photoEmpty: 'No photos yet.',
   photoLimitTitle: 'Free limit reached',
   photoLimitDesc:
     'Free plan allows {count} photos per bonsai. Upgrade to Pro for unlimited photos.',
   // Repolog-style photoCard UI keys
-  photoCaptionPlaceholder: 'Caption (optional)',
   photoMoveUpLabel: 'Move up',
   photoMoveDownLabel: 'Move down',
   photoCoverBadge: 'Cover',
   photoSetCoverLabel: 'Set as cover',
-  photoLimitPartialAdded: 'Added {added} photos ({skipped} skipped due to limit)',
   photoDeletedBanner: 'Photo deleted',
   photoUndoLabel: 'Undo',
   photoPermissionTitle: 'Permission needed',
   photoPermissionDesc: 'Please allow camera and photo library access in Settings.',
-  photoActionTitle: 'Photo actions',
-  photoActionSetCover: 'Set as cover photo',
-  photoActionDelete: 'Delete photo',
   photoDeleteConfirmTitle: 'Delete this photo?',
   photoDeleteConfirmDesc: 'This action cannot be undone.',
 
   // --- F-02 Events (P2-03 PR-D, English fallback for v1.0) ---
   eventsTitle: 'Care log',
   eventLogCta: 'Log a care event',
-  eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: 'Henüz iş kaydı yok',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
@@ -170,7 +130,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   settingsNotificationSection: 'Bildirimler',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
-  settingsTitle: 'Settings',
   settingsBackupSection: 'Yedek',
   backupTitle: 'Yedekleme ve geri yükleme',
   backupExportTitle: 'Create a backup',
@@ -206,7 +165,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
     'Not: yedekler şifrelenmez. Kendi yönettiğiniz güvenli bir yerde saklayın.',
 
   // --- F-04 Watering history (Phase A、English fallback for now) ---
-  wateringSectionTitle: 'Watering',
   wateringLastNoRecord: 'No watering records yet',
   wateringLastToday: 'Watered today',
   wateringLastOneDay: '1 day since last watering',
@@ -231,14 +189,9 @@ const tr: Partial<Record<TranslationKey, string>> = {
   bulkLogConfirmTitle: 'Log {label} for {count} bonsai',
   bulkScheduleConfirmTitle: 'Schedule {label} for {count} bonsai',
   bulkLogConfirmSub: 'Same content saved to each bonsai',
-  bulkLogConfirmNoteLabel: 'Note (optional)',
-  bulkLogConfirmNotePlaceholder: 'Free note',
   bulkLogSaveCta: 'Log for {count} bonsai',
   bulkLogDoneToast: 'Logged actions for {count} bonsai',
   bulkScheduleConfirmCta: 'Schedule (×{count})',
-  bulkLogConfirmCta: 'Log (×{count})',
-  bulkLogAddNoteToggle: 'Add note',
-  bulkLogConfirmTitleMulti: 'Log {count} actions',
   detailTimelineToday: 'Bugün',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
@@ -252,42 +205,25 @@ const tr: Partial<Record<TranslationKey, string>> = {
   searchMinChars: 'Aramak için en az {count} karakter girin',
   searchEmpty: 'Sonuç bulunamadı.',
   searchBonsaiSection: 'Bonsai',
-  searchSpeciesSection: 'Türler',
   searchEventSection: 'Bakım kayıtları',
   searchWorkLabel: 'Work',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
   settingsExportSection: 'Dışa aktar',
-  exportCsvTitle: "Bakım kayıtlarını CSV'ye aktar",
-  exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
-  exportCsvAction: 'CSV dışa aktar',
-  exportCsvSuccess: 'Dışa aktarma tamamlandı.',
-  exportCsvSuccessDetail: 'Exported {count} care logs.',
   exportCsvFailed: 'Dışa aktarma başarısız.',
   exportCsvShareTitle: 'BonsaiLog care logs CSV',
   exportProRequiredTitle: 'Pro özellik',
   exportProRequiredBody: 'Bu dışa aktarma Pro üyelere açıktır. Yükselterek kilidini açın.',
-  exportShareUnavailableTitle: 'Paylaşım kullanılamıyor',
-  exportShareUnavailableBody:
-    'Sharing is not available on this device. Please update the OS and try again.',
 
   // --- F-07 Wiring duration (Phase A、English fallback) ---
-  wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'Pro ile elde edecekleriniz',
-  proComparisonPhotos: 'Bonsai başına sınırsız fotoğraf',
-  proComparisonCsv: "Bakım kayıtlarını CSV'ye aktar",
-  proComparisonPdf: "Bonsai kayıtlarını PDF'ye aktar",
-  proComparisonNoAds: 'Reklamsız',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
   tagsManagerDesc: 'Tags help you organize care logs and find them in search.',
   tagsAddPlaceholder: 'New tag name',
-  tagsAddAction: 'Add',
-  tagsRenameAction: 'Rename',
   tagsAddFailedBody: 'Could not add the tag.',
   tagsRenameDuplicateBody: 'A tag with the same name already exists.',
   tagsEmpty: 'No tags yet.',
@@ -304,36 +240,26 @@ const tr: Partial<Record<TranslationKey, string>> = {
     'Notifications are disabled in your device settings. Enable them to use this feature.',
 
   // --- F-14 Ad banner label (Phase B、English fallback) ---
-  adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
   onboardingWelcomeTitle: "BonsaiLog'a hoş geldiniz",
-  onboardingWelcomeBody:
-    'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
   onboardingWelcomeCta: 'Başla',
-  onboardingSkip: 'Later',
   onboardingLanguageTitle: 'Dilinizi seçin',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
 
   // --- F-15 Outdoor mode (Phase B、English fallback) ---
-  settingsOutdoorMode: 'Outdoor mode',
-  settingsOutdoorModeDesc:
-    'When on, the app uses a high-contrast palette for outdoor visibility (full implementation in next update).',
 
   // --- F-10 PDF export (Phase B、English fallback) ---
   exportPdfTitle: "Bonsai'yi PDF'ye aktar",
   exportPdfDesc: 'Generate a PDF report for each bonsai (Pro feature).',
-  exportPdfAction: 'PDF',
   exportPdfHeaderDate: 'Tarih',
-  exportPdfHeaderType: 'Tür',
   exportPdfHeaderNote: 'Not',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'PDF oluşturulamadı.',
 
   // --- F-09 Search recent tags chips (Phase B、English fallback) ---
-  searchRecentTagsLabel: 'Son etiketler',
   searchTagFilterClear: 'Filtreyi temizle',
 
   // --- F-13 Settings → Account / Paywall entry (Phase 1b、English fallback) ---
@@ -343,12 +269,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   settingsAccountProInactiveDesc: 'See plans and upgrade.',
 
   // --- F-04 Watering heatmap (Phase B、English fallback) ---
-  statsTabTitle: 'Stats',
-  statsHeaderAllBonsai: 'All bonsai ({count})',
-  bonsaiFilterSelectAll: 'All bonsai',
-  bonsaiFilterSearchPlaceholder: 'Search bonsai',
-  bonsaiFilterRecentSection: 'Recently viewed',
-  bonsaiFilterAllSection: 'All bonsai',
 
   // --- Home empty state (Phase 1b, Issue #29, ADR-0019) ---
   homeEmptyTitle: 'Add your first bonsai',
@@ -390,23 +310,12 @@ const tr: Partial<Record<TranslationKey, string>> = {
     'You can choose whether to allow the use of an identifier to help measure ad performance.',
   attExplainerAllow: 'If allowed: ads may be more relevant to you.',
   attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
-  settingsExportListPdfTitle: 'Bonsai listesini dışa aktar (PDF)',
-  settingsExportListPdfDesc: 'Tüm bonsailerin PDF özetini oluştur',
-  exportListPdfTitle: 'Tam liste PDF',
-  exportListPdfDesc: 'Generates an A4 PDF with cover, full bonsai list and statistics.',
-  exportListPdfAction: 'Oluştur',
   exportListPdfShareTitle: 'Share full list PDF',
   exportListPdfCoverTitle: 'BonsaiLog Tam Kayıtlar',
   exportListPdfCoverSubtitle: '{count} bonsai total',
   exportListPdfFooter: 'Generated by BonsaiLog',
   exportStorageLowBody: 'Insufficient storage. Please free up at least 100MB and try again.',
   exportStorageLowTitle: 'Storage low',
-  onboardingTut3Title: 'Log watering and care',
-  onboardingTut3Body:
-    'Tap the bonsai detail screen to log watering, fertilizing, and wiring. BonsaiLog only records — no judgment.',
-  onboardingTut4Title: 'Read the watering heatmap',
-  onboardingTut4Body:
-    'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
     'Bir plan eklediğinde bildirim almayı seçebilirsin. Bunu istediğin zaman Ayarlar’dan değiştirebilirsin.',
@@ -431,26 +340,18 @@ const tr: Partial<Record<TranslationKey, string>> = {
   settingsLegalTerms: 'Hizmet şartları',
   settingsLegalPrivacy: 'Gizlilik politikası',
   searchRecentTitle: 'Recent searches',
-  searchHistoryClear: 'Clear history',
-  outdoorModeToggleA11y: 'Toggle outdoor mode',
   // --- ADR-0020 Phase 1: 4-tab labels (English fallback for i18n.test.ts) ---
   tabBonsai: 'Bonsai',
   tabLookBack: 'Geçmiş',
   tabSettings: 'Settings',
-  tabPlanComingSoon: 'Coming soon',
   // --- ADR-0020 Phase 2: bonsai tab Claude Design HomeScreen (English fallback) ---
   appName: 'BonsaiLog',
-  homeFilterAll: 'All',
-  homeCardLastWatering: 'Watered {elapsed} ago',
-  homeCardLastPruning: 'Pruned {elapsed} ago',
   elapsedToday: 'today',
   elapsedDays: '{days}d',
   elapsedWeeks: '{weeks}w',
   elapsedMonths: '{months}mo',
   elapsedYears: '{years}y',
   // --- ADR-0020 Phase 3: bonsai detail watering history (English fallback, SS 222921) ---
-  wateringSummaryStreak: 'Current streak',
-  wateringSummaryDoubleDays: 'Twice-a-day',
   workPickerTitle: 'Log a task',
   // --- ADR-0020 Phase 5: plan tab calendar (English fallback) ---
   planMonthYearSuffix: '',
@@ -490,7 +391,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   recordSelectedEmptyTitle: 'Bu gün için kayıt yok',
   recordSelectedEmptyBody:
     'Bakımdan sonra kaydetmek için aşağıdaki "{cta}" düğmesine dokunun. Kayıt olan günler takvimde ● ile gösterilir.',
-  planEventPlanned: 'Planned',
   planGroupExpand: 'Genişlet',
   planGroupCollapse: 'Daralt',
   // --- ADR-0020 v1.x-5: Paywall Claude Design (English fallback) ---
@@ -508,16 +408,10 @@ const tr: Partial<Record<TranslationKey, string>> = {
   paywallFeatureNoAdsFreeValue: 'Gösterilir',
   paywallFeatureNoAdsProValue: 'Gizli',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
-  planWiringListLink: 'Wiring list',
-  wiringTabAll: 'All',
-  wiringTabActive: 'Active',
-  wiringTabSoon: 'Within a week',
   wiringListEmpty: 'Tel sarma planı yok',
   wiringRowWeeks: '{weeks} hafta',
   wiringOverdueBadge: 'Gecikmiş',
-  wiringUnwireInDays: 'Unwire in {days} day(s)',
   wiringUnwireOverdue: 'Unwire {days} day(s) overdue',
-  wiringRowGaugePart: '{part} üzerine {gauge}',
   wiringUnwireInWeeks: '{weeks} hafta sonra söker',
   wiringUnwireOverdueWeeks: '{weeks} hafta gecikmiş',
   // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs (English fallback) ---
@@ -560,19 +454,12 @@ const tr: Partial<Record<TranslationKey, string>> = {
   workLogWirePart_miki: 'Gövde',
   workLogWirePart_eda: 'Dal',
   workLogWireDuration: 'Hedef süre',
-  workLogWireDurationHint: 'Tel sökme bildirim zamanı için',
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
   onboardingWelcomeNote: 'Bonsai bakım günlüğünüz, tamamen çevrimdışı.',
-  detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
-  detailPlanTimelinePlaceholder: 'Schedule features will be available in a future update.',
-  detailBasicEdit: 'Edit',
-  detailMenuExportPdf: 'Export to PDF',
-  detailExportProTitle: 'Pro feature',
-  detailExportProDesc: 'PDF export is a Pro plan feature.',
   onboardingLanguageContinue: 'Devam et',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
@@ -596,13 +483,10 @@ const tr: Partial<Record<TranslationKey, string>> = {
   fieldRequiredLabel: 'required',
   fieldOptionalLabel: 'optional',
   // --- T2-4 purchase date (schema v8) ---
-  bonsaiFieldPurchaseDate: 'Purchase date',
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Etiketler',
   bonsaiTagsEmpty: 'Henüz etiket yok',
   // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
-  presetTagName_favorite: 'Favori',
-  presetTagName_flowering: 'Çiçekli',
   tagSectionPresets: 'Öneriler',
   tagPresetBadgeMaster: 'Şablon',
   tagPresetLockedToast: 'Şablon etiketler düzenlenemez',
@@ -614,14 +498,10 @@ const tr: Partial<Record<TranslationKey, string>> = {
   settingsNotifMasterOffBanner:
     "Bildirimler kapalı. Bu seçenekleri kullanmak için Ayarlar'da ana anahtarı açın.",
   wiringRowUnwireAction: 'Telleri sökülmüş olarak işaretle',
-  wiringUnwireConfirmTitle: 'Tel sarmayı sökülmüş olarak işaretle?',
   paywallFeatureTheme: 'Themes',
   historyLabelAmountNormal: 'Normal',
   historyLabelAmountPlenty: 'Bol',
   historyLabelAmountLight: 'Az',
-  historyLabelAmountTip: 'Sadece uçlar',
-  historyLabelAmountMid: 'Orta',
-  historyLabelAmountBold: 'Yoğun',
   historyLabelPartsEda: 'Dallar',
   historyLabelPartsHa: 'Yapraklar',
   historyLabelPartsShinme: 'Yeni filizler',
@@ -632,22 +512,9 @@ const tr: Partial<Record<TranslationKey, string>> = {
   historyLabelFertKindLiquid: 'Sıvı',
   historyLabelFertKindSlow: 'Yavaş salınımlı',
   historyLabelFertKindOther: 'Diğer',
-  historyLabelSprayPurposePrevent: 'Önleme',
-  historyLabelSprayPurposeTreat: 'Tedavi',
-  historyLabelSprayPurposeBoth: 'İkisi de',
-  historyLabelHealSymptomsYake: 'Yaprak yanığı',
-  historyLabelHealSymptomsKare: 'Dal solgun',
-  historyLabelHealSymptomsMushi: 'Böcekler',
-  historyLabelHealSymptomsKabi: 'Mantar',
-  historyLabelHealSymptomsOther: 'Diğer belirtiler',
-  historyLabelMossTasksAdd: 'Değiştir',
-  historyLabelMossTasksRemove: 'Çıkar',
-  historyLabelMossTasksWater: 'Nemlendir',
   historyLabelRepotRootsNone: 'Budama yok',
   historyLabelRepotRootsLight: 'Hafif',
   historyLabelRepotRootsHalf: '1/3',
-  historyLabelRepotRootsHeavy: '1/2',
-  detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: 'Henüz kayıt yok',
   addScheduleTitle: 'Add a scheduled task',
   addScheduleCta: 'Program ekle',
@@ -667,11 +534,9 @@ const tr: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldAcquiredFrom: 'Edinilen yer',
   bonsaiFieldAcquiredFromPlaceholder: 'ör. Fidanlık adı',
   bonsaiFieldPotInfo: 'Saksı',
-  bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Geri',
   tabRecord: 'Kaydet',
   planFabLabel: 'Görevleri planla',
-  bulkSelectModalTitle: 'Bonsai seç',
   bulkSelectModalNotice: 'Kaydetmek veya planlamak için bonsaileri seçin ({count} seçili)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
@@ -714,15 +579,12 @@ const tr: Partial<Record<TranslationKey, string>> = {
   photoSourceCamera: 'Kamera',
   photoSourceLibrary: 'Galeri',
   photoReorderHelp: 'Use ↑↓ to reorder, × to remove.',
-  photoCaption: 'Caption',
   photoMoveUp: 'Move up',
   photoMoveDown: 'Move down',
   inputOverLimit: 'Character limit reached',
   workLogDateField: 'Tarih',
   workLogDatePlaceholderToday: 'Bugün',
   workLogPhotoField: 'Fotoğraflar',
-  workLogPhotoAdd: 'Add',
-  workLogPhotoCaptionPlaceholder: 'örn. yeni ilkbahar sürgünleri',
   workLogWirePart_all: 'Tümü',
   workLogWireUnwireDate: 'Söküm tarihi',
   workLogWireUnwireDatePlaceholder: 'YYYY/AA/GG',
@@ -731,7 +593,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   workLogUnwirePart_eda: 'Dal',
   workLogUnwirePart_all: 'Tümü',
   workLogRepotPotSize: 'Saksı boyutu',
-  workLogRepotPotSizeUnit: 'cm',
   workLogRepotPotSizePlaceholder: 'ör. 18',
   workLogRepotSoilMix: 'Toprak karışımı',
   workLogRepotSoilMixPlaceholder: 'ör. Akadama:Kiryu=7:3',
@@ -778,16 +639,13 @@ const tr: Partial<Record<TranslationKey, string>> = {
   workLogLeafAidSymptom_other: 'Diğer',
   workLogLeafAidTreatment: 'Tedavi',
   workLogLeafAidTreatmentPlaceholder: 'ör. Enfekte bölgeyi çıkar, iyileştirici macun sür',
-  calendarScreenTitle: 'Calendar',
   workLogDoneToast: 'Kaydedildi',
   stackSpeciesPickerTitle: 'Tür seç',
   stackStylePickerTitle: 'Stil seç',
   stackBonsaiMultiSelectTitle: 'Bonsai seç',
   stackBulkLogConfirmTitle: 'Birlikte kaydet',
   stackBonsaiNewTitle: 'Bonsai kaydet',
-  stackBonsaiCreateModalTitle: 'Yeni',
   stackBonsaiDetailTitle: 'Bonsai detayı',
-  stackBonsaiWateringHistoryTitle: 'Sulama geçmişi',
   stackWireListTitle: 'Tel sarma listesi',
   planLegendTitle: 'Lejant',
   planLegendToggleShow: 'Lejantı göster',
@@ -800,7 +658,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   planSectionRecorded: 'Kaydedildi',
   planLegendDotRecordedLabel: 'Kaydedildi (●)',
   planEventRecordButtonSingle: 'Kaydet',
-  planEventRecordButtonGroup: 'Tümünü kaydet ({count})',
   planEventConvertedToast: '{count} planlanan görev kayda dönüştürüldü',
   planEventDeleteConfirmPlannedSingleTitle: 'Bu planı silmek istiyor musunuz?',
   planEventDeleteConfirmLoggedSingleTitle: 'Bu kaydı silmek istiyor musunuz?',
@@ -811,7 +668,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   rowActionMenuRecordAll: 'Tümünü kaydet ({count})',
   undoSnackbarPlannedDeleteN: '{count} plan silindi',
   undoSnackbarLoggedDeleteN: '{count} kayıt silindi',
-  undoSnackbarAction: 'Geri al',
   recordFabLabel: 'Bakımı kaydet',
   historyLabelPruneAmountFew: 'Az',
   historyLabelPruneAmountSome: 'Orta',
@@ -860,16 +716,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   exportHubBonsaiPdfSub: 'One page per bonsai',
   exportHubListPdfTitle: 'Full bonsai list',
   exportHubListPdfSub: 'Cover, list and stats',
-  exportBonsaiCsvTitle: 'Export bonsai list as CSV',
-  exportBonsaiCsvDesc: 'Export basic info for all bonsai as a CSV file (Pro feature).',
-  exportBonsaiCsvAction: 'Export bonsai list',
-  exportBonsaiCsvSuccess: 'Bonsai list exported',
-  exportBonsaiCsvSuccessDetail: 'Exported {count} bonsai.',
-  exportSpeciesCsvTitle: 'Export species summary as CSV',
-  exportSpeciesCsvDesc: 'Export per-species info as a CSV file (Pro feature).',
-  exportSpeciesCsvAction: 'Export species summary',
-  exportSpeciesCsvSuccess: 'Species summary exported',
-  exportSpeciesCsvSuccessDetail: 'Exported {count} species.',
   exportOptPeriodLabel: 'Period',
   exportOptPeriodAll: 'All',
   exportOptPeriod30d: 'Last 30 days',
@@ -885,7 +731,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   exportOptFilenameLabel: 'File name',
   exportOptDateFrom: 'From',
   exportOptDateTo: 'To',
-  exportOptGenerate: 'Generate and share',
   exportOptScopeEmptyTitle: 'No target selected',
   exportOptScopeEmptyBody: 'Please select at least one bonsai.',
   exportOptTagEmptyBody: 'Please select a tag.',
@@ -989,7 +834,6 @@ const tr: Partial<Record<TranslationKey, string>> = {
   pickerSectionMaster: 'Varsayılan',
   pickerSectionCustom: 'Özel',
   pickerCustomBadge: 'Özel',
-  pickerCustomCounter: '{used}/{limit}',
   rowActionMenuEdit: 'Edit',
   workLogTitleEditing: 'Edit {type}',
   workLogUpdateCta: 'Update',
