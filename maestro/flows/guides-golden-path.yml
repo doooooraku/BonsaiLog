@@ -18,28 +18,42 @@ appId: 'com.dooooraku.bonsailog'
 - launchApp:
     clearState: true
 
+# Dev Client menu → localhost tap (development build 専用、_template.yml 準拠)
 - tapOn:
     text: 'http://localhost:8081'
     optional: true
     retryTapIfNoChange: true
 - waitForAnimationToEnd
 
-- tapOn:
-    text: 'Continue'
-    optional: true
-    retryTapIfNoChange: true
-- waitForAnimationToEnd
+# Expo Dev Client Continue dialog 自動 dismiss (Back キー、毎回必須)
+# 注: tapOn: text: 'Continue' は Developer Menu を起動するため絶対 NG (_template.yml 正本)。
+# 初版はこの禁止 tap + 余分な wait で timing race → アプリ背面化していた (Sess102 で実証)。
 - pressKey: 'Back'
 - waitForAnimationToEnd
+
+# Continue dialog は bundle ロード完了後に「後出し」する (Sess102 実証) —
+# 出現を待ってから Back で閉じる (出ない場合は 30s で素通り)
+- extendedWaitUntil:
+    visible:
+      text: 'Continue'
+    timeout: 30000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        text: 'Continue'
+    commands:
+      - pressKey: 'Back'
+      - waitForAnimationToEnd
 
 # --- Onboarding (welcome → 言語 ja → 通知 skip) ---
 - extendedWaitUntil:
     visible:
       id: 'e2e_onboarding_welcome_cta'
-    timeout: 30000
+    timeout: 20000
 - tapOn:
     id: 'e2e_onboarding_welcome_cta'
-    retryTapIfNoChange: true
+    # retry なし — 遷移 tap の retry は二重 push の事故源 (Sess102 empty_cta で実証)
 - waitForAnimationToEnd
 - extendedWaitUntil:
     visible:
@@ -51,11 +65,11 @@ appId: 'com.dooooraku.bonsailog'
 - waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_lang_next'
-    retryTapIfNoChange: true
+    # retry なし — 遷移 tap の retry は二重 push の事故源 (Sess102 empty_cta で実証)
 - waitForAnimationToEnd
 - tapOn:
     id: 'e2e_onboarding_tut_skip_tut5'
-    retryTapIfNoChange: true
+    # retry なし — 遷移 tap の retry は二重 push の事故源 (Sess102 empty_cta で実証)
     optional: true
 - waitForAnimationToEnd
 
@@ -66,15 +80,25 @@ appId: 'com.dooooraku.bonsailog'
     timeout: 30000
 - tapOn:
     id: 'e2e_home_empty_cta'
-    retryTapIfNoChange: true
+    # retry なし — 遷移 tap の retry は二重 push の事故源 (Sess102 empty_cta で実証)
 - waitForAnimationToEnd
 - extendedWaitUntil:
     visible:
       id: 'e2e_bonsai_create_screen'
     timeout: 10000
+# 標準パターン (retryTapIfNoChange + wait) — 初版は素 tap で ghost tap → 未入力のまま
+# 保存 disabled に到達していた (Sess102 Run1 で実証)。入力後に assert で検算してから進む。
 - tapOn:
     id: 'e2e_bonsai_create_name'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
 - inputText: 'Matsu'
+- assertVisible:
+    text: 'Matsu'
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 3000
 - scrollUntilVisible:
     element:
       id: 'e2e_bonsai_create_submit'
@@ -83,7 +107,7 @@ appId: 'com.dooooraku.bonsailog'
     visibilityPercentage: 30
 - tapOn:
     id: 'e2e_bonsai_create_submit'
-    retryTapIfNoChange: true
+    # retry なし — 遷移後の同座標に別 CTA があり、再 tap が誤操作になる (Sess102 Run2 実証)
 - waitForAnimationToEnd
 
 # --- g1: Home 復帰でスポットライト → 強調タブ tap で記録タブへ ---
@@ -91,47 +115,52 @@ appId: 'com.dooooraku.bonsailog'
     visible:
       id: 'e2e_home_guide_record_tab'
     timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
 - tapOn:
     id: 'e2e_home_guide_record_tab_target'
+    # retry 可 — 2 発目は実「記録」タブ = 同じ遷移先で benign (ghost tap 対策、Sess102 実証)
     retryTapIfNoChange: true
 - waitForAnimationToEnd
-- extendedWaitUntil:
-    visible:
-      id: 'e2e_record_screen'
-    timeout: 10000
+# 注: g2 オーバーレイ表示中は下層の e2e_record_screen が UI ツリーに出ない (Modal が
+# 階層を占有、Sess102 実機実証) — 遷移確認は g2 自体の出現で行う
 
 # --- g2: 記録タブ初回でスポットライト → 強調ボタン tap で一括記録 flow ---
 - extendedWaitUntil:
     visible:
       id: 'e2e_record_guide_cta'
     timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
 - tapOn:
     id: 'e2e_record_guide_cta_target'
-    retryTapIfNoChange: true
+    # retry なし — 再 tap は多重 flow 起動リスク (遷移 tap 原則)
 - waitForAnimationToEnd
-- extendedWaitUntil:
-    visible:
-      id: 'e2e_bonsai_multi_select_screen'
-    timeout: 10000
-- tapOn:
-    text: 'Matsu'
-    retryTapIfNoChange: true
-- tapOn:
-    id: 'e2e_bonsai_multi_select_confirm'
-    retryTapIfNoChange: true
-- waitForAnimationToEnd
+# 盆栽 1 本のときは選択画面が auto-skip され作業 picker に直行 (Sess80 1 タップ動線、Sess102 実機実証)
 - extendedWaitUntil:
     visible:
       id: 'e2e_bulk_work_picker_screen'
     timeout: 10000
 - tapOn:
     id: 'e2e_bulk_work_picker_watering'
-    retryTapIfNoChange: true
+    # retry なし — 遷移 tap の retry は二重 push の事故源 (Sess102 empty_cta で実証)
 - waitForAnimationToEnd
 - extendedWaitUntil:
     visible:
       id: 'e2e_bulk_log_confirm_screen'
     timeout: 10000
+# メモ入力 (空欄回避)。tap 後の KAV 再配置を待ってから入力し、検算 assert で確実化
+- tapOn:
+    id: 'e2e_bulk_log_confirm_note_input'
+    retryTapIfNoChange: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- inputText: 'first watering'
+- assertVisible:
+    text: 'first watering'
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 3000
 - scrollUntilVisible:
     element:
       id: 'e2e_bulk_log_save_cta'
@@ -140,7 +169,7 @@ appId: 'com.dooooraku.bonsailog'
     visibilityPercentage: 30
 - tapOn:
     id: 'e2e_bulk_log_save_cta'
-    retryTapIfNoChange: true
+    # retry なし — 遷移後の同座標に別 CTA があり、再 tap が誤操作になる (Sess102 Run2 実証)
 - waitForAnimationToEnd
 
 # --- g5: お祝い Toast (標準 Toast を上書き、6 秒表示) ---
@@ -151,15 +180,37 @@ appId: 'com.dooooraku.bonsailog'
 
 # --- 再起動 (state 維持) → ガイドが再表示されない (persist 検証) ---
 - launchApp: {}
+# 再起動でも Dev Client prelude を template 準拠で通す (Continue dialog 復活対策)
+- tapOn:
+    text: 'http://localhost:8081'
+    optional: true
+    retryTapIfNoChange: true
+- waitForAnimationToEnd
+- pressKey: 'Back'
+- waitForAnimationToEnd
+# Continue dialog は bundle ロード完了後に「後出し」する (Sess102 実証) —
+# 出現を待ってから Back で閉じる (出ない場合は 30s で素通り)
+- extendedWaitUntil:
+    visible:
+      text: 'Continue'
+    timeout: 30000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        text: 'Continue'
+    commands:
+      - pressKey: 'Back'
+      - waitForAnimationToEnd
 - extendedWaitUntil:
     visible:
       id: 'e2e_bonsai_home_list'
-    timeout: 30000
+    timeout: 20000
 - assertNotVisible:
     id: 'e2e_home_guide_record_tab'
 - tapOn:
     id: 'e2e_tab_record'
-    retryTapIfNoChange: true
+    # retry なし — 遷移 tap の retry は二重 push の事故源 (Sess102 empty_cta で実証)
 - waitForAnimationToEnd
 - extendedWaitUntil:
     visible:
