@@ -11,6 +11,7 @@
  * - [DEV] テストデータ → DevSettingsSection (本番枝刈り)
  * coordinator は各 section の row 配線 + ナビゲーションのみ。AsyncStorage key / URL route / i18n 不変。
  */
+import { useIsFocused } from '@react-navigation/native';
 import { Stack, useNavigation, useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -37,6 +38,10 @@ import {
   useAlertPickerRow,
   type AlertPickerOption,
 } from '@/src/features/settings/useAlertPickerRow';
+import { GuideSpotlight } from '@/src/features/guides/GuideSpotlight';
+import { usePendingGuideStore } from '@/src/features/guides/pendingGuide';
+import { useSpotlightTarget } from '@/src/features/guides/useSpotlightTarget';
+import { useGuidesStore } from '@/src/stores/guidesStore';
 import { showAdPrivacyOptionsForm } from '@/src/services/adService';
 import { useProStore } from '@/src/stores/proStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
@@ -133,6 +138,29 @@ export default function SettingsScreen() {
     setValue: setPotUnit,
   });
 
+  // #1203 g9 (pull 専用): 使い方「通知を設定する」からの遷移時のみ通知セクションを強調。
+  // セクションは画面外にあり得るため、wrapper の onLayout (content 内 y) へ scrollTo してから
+  // measureInWindow (300ms 後 = scroll 完了待ち) する。
+  const isFocused = useIsFocused();
+  const g9Pulled = usePendingGuideStore((st) => st.pending === 'g9NotificationSettings');
+  const g9Active = isFocused && g9Pulled;
+  const markGuideSeen = useGuidesStore((st) => st.markSeen);
+  const settingsScrollRef = React.useRef<ScrollView>(null);
+  const { targetRef: g9TargetRef, rect: g9Rect, measure: measureG9Target } = useSpotlightTarget();
+  const handleG9SectionLayout = React.useCallback(
+    (e: { nativeEvent: { layout: { y: number } } }) => {
+      if (!g9Active) return;
+      const y = e.nativeEvent.layout.y;
+      settingsScrollRef.current?.scrollTo({ y: Math.max(0, y - 80), animated: true });
+      setTimeout(measureG9Target, 350);
+    },
+    [g9Active, measureG9Target],
+  );
+  const dismissG9 = React.useCallback(() => {
+    markGuideSeen('g9NotificationSettings');
+    usePendingGuideStore.getState().clear();
+  }, [markGuideSeen]);
+
   return (
     <ThemedView
       style={[styles.container, { backgroundColor: c.background }]}
@@ -143,6 +171,7 @@ export default function SettingsScreen() {
           OS HIG / Material Design 準拠で a11y / RTL / swipe-back ジェスチャを native 享受。 */}
       <Stack.Screen options={{ title: t('tabSettings') }} />
       <ScrollView
+        ref={settingsScrollRef}
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 16 }]}
         keyboardShouldPersistTaps="handled"
       >
@@ -205,7 +234,10 @@ export default function SettingsScreen() {
         </SettingsSection>
 
         {/* --- 3. F-16 通知設定 (Issue #30、ADR-0014 Amended) --- */}
-        <NotificationSettingsSection />
+        {/* #1203 g9: 計測 wrapper — onLayout で scroll-into-view → measure */}
+        <View ref={g9TargetRef} collapsable={false} onLayout={handleG9SectionLayout}>
+          <NotificationSettingsSection />
+        </View>
 
         {/* --- 4. アーカイブ (Issue #330 AC) --- */}
         <SettingsSection title={t('settingsArchiveSection')}>
@@ -363,6 +395,19 @@ export default function SettingsScreen() {
             production build (env 未設定) では枝刈りされ含まれない。 */}
         {(__DEV__ || process.env.EXPO_PUBLIC_SEED_FORCE === '1') && <DevSettingsSection />}
       </ScrollView>
+
+      {/* #1203 g9 スポットライト (pull 専用)。案内のみ (トグル操作は代行しない — OS 権限
+          ダイアログを伴うため user 自身の操作に委ねる) */}
+      {g9Active && (
+        <GuideSpotlight
+          visible
+          targetRect={g9Rect}
+          body={t('guideNotificationSectionBody')}
+          dismissLabel={t('ok')}
+          onDismiss={dismissG9}
+          testID="e2e_settings_guide_notification"
+        />
+      )}
     </ThemedView>
   );
 }

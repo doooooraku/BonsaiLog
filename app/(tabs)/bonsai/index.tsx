@@ -46,6 +46,8 @@ import { FilterEmptyState } from '@/src/features/bonsai/FilterEmptyState';
 import { HomeFilterTabs, type FilterChip } from '@/src/features/bonsai/HomeFilterTabs';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { shouldShowG1RecordTabNudge } from '@/src/features/guides/guideTriggers';
+import { usePendingGuideStore } from '@/src/features/guides/pendingGuide';
+import { useSpotlightTarget } from '@/src/features/guides/useSpotlightTarget';
 import { GuideSpotlight } from '@/src/features/guides/GuideSpotlight';
 import { toLocalDateKey } from '@/src/features/watering/dateUtils';
 import { useGuidesStore } from '@/src/stores/guidesStore';
@@ -158,8 +160,25 @@ export default function BonsaiHomeScreen() {
   const markGuideSeen = useGuidesStore((s) => s.markSeen);
   // isFocused 必須: 背景タブからの Modal 多重表示防止 (Sess102 実機実証、CalendarTabScreen と同根)
   const isFocused = useIsFocused();
+  // #1203 g7 (pull 専用): 使い方「盆栽を登録する」からの遷移時のみ、登録 CTA を強調。
+  // 自動発火しない (ADR-0058 原則 5)。empty / list 両状態の CTA に同じ計測 wrapper を張る
+  // (排他 render のため ref は常に 1 つ)。
+  const g7Pulled = usePendingGuideStore((s) => s.pending === 'g7RegisterCta');
+  const g7Active = isFocused && g7Pulled;
+  const { targetRef: g7TargetRef, rect: g7Rect, measure: measureG7Target } = useSpotlightTarget();
+  const dismissG7 = useCallback(() => {
+    markGuideSeen('g7RegisterCta');
+    usePendingGuideStore.getState().clear();
+  }, [markGuideSeen]);
+  const handleG7TargetPress = useCallback(() => {
+    markGuideSeen('g7RegisterCta');
+    usePendingGuideStore.getState().clear();
+    openCreateSheet();
+  }, [markGuideSeen, openCreateSheet]);
+
   const g1Active =
     isFocused &&
+    !g7Pulled && // pull 中はオーバーレイ 1 つ原則で g7 優先
     selectedFilter === ALL_FILTER_ID &&
     shouldShowG1RecordTabNudge(items.length, guideSeen);
   const recordTabRect = useMemo(
@@ -226,7 +245,13 @@ export default function BonsaiHomeScreen() {
             {t('homeEmptyBody')}
           </ThemedText>
         </View>
-        <View style={styles.emptyCtaWrap}>
+        {/* #1203 g7: 計測 wrapper (empty 状態の CTA — list 状態と排他 render のため ref 共用可) */}
+        <View
+          ref={g7TargetRef}
+          collapsable={false}
+          onLayout={g7Active ? measureG7Target : undefined}
+          style={styles.emptyCtaWrap}
+        >
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('homeEmptyCta')}
@@ -241,6 +266,17 @@ export default function BonsaiHomeScreen() {
           </Pressable>
         </View>
         <AdBanner />
+        {g7Active && (
+          <GuideSpotlight
+            visible
+            targetRect={g7Rect}
+            body={t('guideRegisterCtaBody')}
+            dismissLabel={t('ok')}
+            onDismiss={dismissG7}
+            onTargetPress={handleG7TargetPress}
+            testID="e2e_home_guide_register_cta"
+          />
+        )}
       </ThemedView>
     );
   }
@@ -272,11 +308,14 @@ export default function BonsaiHomeScreen() {
       />
       {/* Sess72 ADR-0054 D1: FAB -> BottomCtaBar replacement. Inline layout =
           FlatList ends above the bar naturally (R-62 Layout Contract solved). */}
-      <BottomCtaBar
-        onPress={openCreateSheet}
-        label={t('bonsaiCreateNew')}
-        testID="e2e_home_bottom_cta_create"
-      />
+      {/* #1203 g7: 計測 wrapper (list 状態の CTA) */}
+      <View ref={g7TargetRef} collapsable={false} onLayout={g7Active ? measureG7Target : undefined}>
+        <BottomCtaBar
+          onPress={openCreateSheet}
+          label={t('bonsaiCreateNew')}
+          testID="e2e_home_bottom_cta_create"
+        />
+      </View>
       <AdBanner />
 
       {/* 長押し → アーカイブ確認 (ADR-0036 D1、詳細画面と同一のカスタム確認窓) */}
@@ -304,6 +343,19 @@ export default function BonsaiHomeScreen() {
           onDismiss={dismissG1}
           onTargetPress={handleG1TargetPress}
           testID="e2e_home_guide_record_tab"
+        />
+      )}
+
+      {/* #1203 g7 (pull 専用): 使い方「盆栽を登録する」からの遷移時のみ登録 CTA を強調 */}
+      {g7Active && (
+        <GuideSpotlight
+          visible
+          targetRect={g7Rect}
+          body={t('guideRegisterCtaBody')}
+          dismissLabel={t('ok')}
+          onDismiss={dismissG7}
+          onTargetPress={handleG7TargetPress}
+          testID="e2e_home_guide_register_cta"
         />
       )}
     </ThemedView>
