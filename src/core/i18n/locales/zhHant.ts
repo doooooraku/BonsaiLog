@@ -403,27 +403,14 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   skipForLater: '稍後再說',
   settingsHelpSection: '說明',
   howtoTitle: 'How to use',
-  howtoOpenScreenCta: 'Open this screen',
   howtoGuideResetLabel: 'Show on-screen guides again',
   howtoGuideResetToast: 'On-screen guides will be shown once more',
   howtoTopicRegisterBonsaiTitle: 'Register a bonsai',
-  howtoTopicRegisterBonsaiBody:
-    'Register your trees one by one to build your own ledger.\n\n1. Open the "{tab}" tab\n2. Tap "{cta}" at the bottom\n3. Name it and save (species and photos can be added later)\n4. The tree appears as a card in the list',
   howtoTopicLogWorkTitle: 'Log your care work',
-  howtoTopicLogWorkBody:
-    'Keep a record of the days you watered, pruned, and more.\n\n1. Open the "{tab}" tab\n2. Tap "{cta}" at the bottom\n3. Pick the tree and the type of work, then save\n4. The day gets a ● on the calendar',
   howtoTopicPlanCalendarTitle: 'Plans and the calendar',
-  howtoTopicPlanCalendarBody:
-    'On the calendar, ○ means a plan and ● means a record.\n\n1. Open the "{tab}" tab\n2. Pick a date and add a plan with "{cta}" at the bottom\n3. Tap a date to see its plans and records below',
   howtoTopicRecurringTitle: 'Create recurring schedules',
-  howtoTopicRecurringBody:
-    'Create repeating plans, like weekly watering, in one go.\n\n1. Open "{hub}" in the "{tab}" tab\n2. Create one via "{add}"\n3. Choose a frequency (weekly, monthly, ...) and future plans are generated automatically',
   howtoTopicNotificationsTitle: 'Set up notifications',
-  howtoTopicNotificationsBody:
-    'Get one daily summary on days that have plans.\n\n1. Turn on notifications in Settings and pick a time\n2. You will also be asked about notifications when you create your first plan',
   howtoTopicBackupTitle: 'Backup and export',
-  howtoTopicBackupBody:
-    'Save and restore all records as a single file (handy when switching phones).\n\n1. Create or restore from "Backup" in Settings\n2. CSV / PDF export is under "Export" in Settings (Pro)',
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
   settingsArchiveSection: '封存',
   settingsArchiveTitle: '封存的盆栽',
@@ -471,6 +458,10 @@ const zhHant: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeTitle: '已登錄你的第一盆盆景',
   guideRecordTabNudgeBody: '接下來，試著記錄今天的養護吧。點按下方的「{tab}」分頁。',
   guideRecordCtaBody: '先從今天的一項養護開始，在這裡留下記錄吧。',
+  guideRegisterCtaBody: '在這裡登錄盆景。只填名字也可以，照片和樹種可以之後再補。',
+  guideRecurringCreateBody: '在這裡建立定期安排。選擇頻率後，之後的任務會自動產生。',
+  guideNotificationSectionBody: '在這裡開啟通知並選擇時間：有任務的日子每天彙總提醒一次。',
+  guideBackupExportBody: '在這裡把所有記錄儲存為一個檔案。還原也在這個頁面進行。',
   guideFirstRecordToast: '完成了第一筆記錄。日曆上的這一天已顯示 ●，可隨時在下方清單中查看。',
   guideDetailTabsBody:
     '在「{history}」查看過去的作業，在「{plan}」查看接下來的任務，每棵樹都有自己的記錄。',

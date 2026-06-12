@@ -415,27 +415,14 @@ const pl: Partial<Record<TranslationKey, string>> = {
   skipForLater: 'Pomiń na razie',
   settingsHelpSection: 'Pomoc',
   howtoTitle: 'How to use',
-  howtoOpenScreenCta: 'Open this screen',
   howtoGuideResetLabel: 'Show on-screen guides again',
   howtoGuideResetToast: 'On-screen guides will be shown once more',
   howtoTopicRegisterBonsaiTitle: 'Register a bonsai',
-  howtoTopicRegisterBonsaiBody:
-    'Register your trees one by one to build your own ledger.\n\n1. Open the "{tab}" tab\n2. Tap "{cta}" at the bottom\n3. Name it and save (species and photos can be added later)\n4. The tree appears as a card in the list',
   howtoTopicLogWorkTitle: 'Log your care work',
-  howtoTopicLogWorkBody:
-    'Keep a record of the days you watered, pruned, and more.\n\n1. Open the "{tab}" tab\n2. Tap "{cta}" at the bottom\n3. Pick the tree and the type of work, then save\n4. The day gets a ● on the calendar',
   howtoTopicPlanCalendarTitle: 'Plans and the calendar',
-  howtoTopicPlanCalendarBody:
-    'On the calendar, ○ means a plan and ● means a record.\n\n1. Open the "{tab}" tab\n2. Pick a date and add a plan with "{cta}" at the bottom\n3. Tap a date to see its plans and records below',
   howtoTopicRecurringTitle: 'Create recurring schedules',
-  howtoTopicRecurringBody:
-    'Create repeating plans, like weekly watering, in one go.\n\n1. Open "{hub}" in the "{tab}" tab\n2. Create one via "{add}"\n3. Choose a frequency (weekly, monthly, ...) and future plans are generated automatically',
   howtoTopicNotificationsTitle: 'Set up notifications',
-  howtoTopicNotificationsBody:
-    'Get one daily summary on days that have plans.\n\n1. Turn on notifications in Settings and pick a time\n2. You will also be asked about notifications when you create your first plan',
   howtoTopicBackupTitle: 'Backup and export',
-  howtoTopicBackupBody:
-    'Save and restore all records as a single file (handy when switching phones).\n\n1. Create or restore from "Backup" in Settings\n2. CSV / PDF export is under "Export" in Settings (Pro)',
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
   settingsArchiveSection: 'Archiwum',
   settingsArchiveTitle: 'Zarchiwizowane bonsai',
@@ -484,6 +471,14 @@ const pl: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeBody:
     'Teraz spróbuj zapisać dzisiejszą pielęgnację. Stuknij kartę „{tab}” poniżej.',
   guideRecordCtaBody: 'Zacznij od zapisania tu jednej dzisiejszej pielęgnacji.',
+  guideRegisterCtaBody:
+    'Tutaj dodasz bonsai. Wystarczy nazwa — zdjęcia i gatunek można dodać później.',
+  guideRecurringCreateBody:
+    'Tutaj utworzysz harmonogramy cykliczne. Wybierz częstotliwość, a przyszłe zadania powstaną automatycznie.',
+  guideNotificationSectionBody:
+    'Tutaj włączysz powiadomienia i wybierzesz godzinę: jedno dzienne podsumowanie w dni z zadaniami.',
+  guideBackupExportBody:
+    'Tutaj zapiszesz wszystkie wpisy w jednym pliku. Przywracanie też odbywa się na tym ekranie.',
   guideFirstRecordToast:
     'Twój pierwszy wpis został zapisany. Dzień ma teraz ● w kalendarzu, a wpis znajdziesz na liście poniżej.',
   guideDetailTabsBody:

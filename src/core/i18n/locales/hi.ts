@@ -415,27 +415,14 @@ const hi: Partial<Record<TranslationKey, string>> = {
   skipForLater: 'बाद के लिए छोड़ें',
   settingsHelpSection: 'सहायता',
   howtoTitle: 'How to use',
-  howtoOpenScreenCta: 'Open this screen',
   howtoGuideResetLabel: 'Show on-screen guides again',
   howtoGuideResetToast: 'On-screen guides will be shown once more',
   howtoTopicRegisterBonsaiTitle: 'Register a bonsai',
-  howtoTopicRegisterBonsaiBody:
-    'Register your trees one by one to build your own ledger.\n\n1. Open the "{tab}" tab\n2. Tap "{cta}" at the bottom\n3. Name it and save (species and photos can be added later)\n4. The tree appears as a card in the list',
   howtoTopicLogWorkTitle: 'Log your care work',
-  howtoTopicLogWorkBody:
-    'Keep a record of the days you watered, pruned, and more.\n\n1. Open the "{tab}" tab\n2. Tap "{cta}" at the bottom\n3. Pick the tree and the type of work, then save\n4. The day gets a ● on the calendar',
   howtoTopicPlanCalendarTitle: 'Plans and the calendar',
-  howtoTopicPlanCalendarBody:
-    'On the calendar, ○ means a plan and ● means a record.\n\n1. Open the "{tab}" tab\n2. Pick a date and add a plan with "{cta}" at the bottom\n3. Tap a date to see its plans and records below',
   howtoTopicRecurringTitle: 'Create recurring schedules',
-  howtoTopicRecurringBody:
-    'Create repeating plans, like weekly watering, in one go.\n\n1. Open "{hub}" in the "{tab}" tab\n2. Create one via "{add}"\n3. Choose a frequency (weekly, monthly, ...) and future plans are generated automatically',
   howtoTopicNotificationsTitle: 'Set up notifications',
-  howtoTopicNotificationsBody:
-    'Get one daily summary on days that have plans.\n\n1. Turn on notifications in Settings and pick a time\n2. You will also be asked about notifications when you create your first plan',
   howtoTopicBackupTitle: 'Backup and export',
-  howtoTopicBackupBody:
-    'Save and restore all records as a single file (handy when switching phones).\n\n1. Create or restore from "Backup" in Settings\n2. CSV / PDF export is under "Export" in Settings (Pro)',
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
   settingsArchiveSection: 'संग्रह',
   settingsArchiveTitle: 'संग्रहीत बोनसाई',
@@ -483,6 +470,14 @@ const hi: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeTitle: 'आपका पहला बोनसाई दर्ज हो गया',
   guideRecordTabNudgeBody: 'अब आज की एक देखभाल दर्ज करके देखें। नीचे "{tab}" टैब पर टैप करें।',
   guideRecordCtaBody: 'शुरुआत के लिए आज की एक देखभाल यहीं दर्ज करें।',
+  guideRegisterCtaBody:
+    'यहाँ से बोनसाई दर्ज करें। नाम काफ़ी है — फ़ोटो और प्रजाति बाद में जोड़ सकते हैं।',
+  guideRecurringCreateBody:
+    'यहाँ से आवर्ती शेड्यूल बनाएं। आवृत्ति चुनें और आगे के कार्य अपने आप बन जाते हैं।',
+  guideNotificationSectionBody:
+    'यहाँ सूचनाएं चालू करें और समय चुनें: कार्य वाले दिनों पर रोज़ एक सारांश मिलेगा।',
+  guideBackupExportBody:
+    'यहाँ से सभी रिकॉर्ड एक फ़ाइल में सहेजें। बहाली भी इसी स्क्रीन से होती है।',
   guideFirstRecordToast:
     'आपकी पहली प्रविष्टि सहेज ली गई। कैलेंडर में उस दिन पर ● दिखता है, और नीचे की सूची में उसे कभी भी देख सकते हैं।',
   guideDetailTabsBody:
