@@ -2,6 +2,8 @@
 
 > ADR-0021 (UI 差分検出パイプライン) PoC 中に踏んだ 4 つの罠と、構造的な対処を記録する。
 > **「気をつけます」ではなく仕組みで防ぐ** ため、`scripts/ui-diff/preflight.mjs` で 7 項目を実行前にチェックする。
+>
+> ⚠️ **注記 (2026-06-12 Sess103 監査)**: `scripts/ui-diff/` (preflight.mjs / capture-app.sh 含む) と `maestro/flows/ui-diff/` は ADR-0059 の ui-diff 退役で削除済み。本文の罠の知見 (CRLF / Maestro 2.0 構文 / Expo Go 衝突 / pgrep / CI polling / force-stop) 自体は現役で、adb・Maestro 作業時に引き続き有効。
 
 ## 1. WSL2 ADB ラッパーの CRLF 問題
 

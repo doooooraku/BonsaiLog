@@ -92,4 +92,4 @@ NavIcons / EventIcons の同名 `*Icon` 関数重複は **PR review 人力** で
 - scripts/check-icon-duplication.mjs (Sess36 PR-5)
 - R-53 specialized.md (Sess36 PR-6)
 - PR template §7.5.5 TabBar icon 変更時チェックリスト (Sess36 PR-6)
-- 関連 lesson: `lessons/sess9-tag-overhaul.md` (TagIcon 追加と同 pattern)
+- 関連 lesson: ~~`lessons/sess9-tag-overhaul.md`~~ (TagIcon 追加と同 pattern) ※同名ファイルは repo に存在しない (個人 memory のみ)。repo 上の Sess9 タグ改修記録 = ADR-0008 §Notes Amended 2026-05-18
