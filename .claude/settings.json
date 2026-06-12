@@ -96,6 +96,15 @@
         ]
       },
       {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/dev/check-hooks.mjs\" --quiet"
+          }
+        ]
+      },
+      {
         "matcher": "Edit|Write",
         "hooks": [
           {
