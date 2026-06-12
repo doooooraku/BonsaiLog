@@ -1,55 +1,40 @@
 /**
- * 使い方トピック定義 unit test (#1179)。
+ * 使い方トピック定義 unit test (#1179 → #1203 再設計)。
  *
+ * #1203: 詳細ページ廃止 → トピック tap = 実画面遷移 + pull ガイド。
  * 確認項目:
  * 1. 6 トピック + id 一意
- * 2. getHowtoTopic の正常 / 不正 param
- * 3. resolveHowtoBody の placeholder 置換 (複数出現含む)
- * 4. **placeholder 整合**: 本文 (en/ja 実値) 中の {x} が bodyParams のキー集合と一致
- *    (params 追加漏れ / 余剰 param の drift を機械検出)
+ * 2. 各 topic の guideId が GUIDE_IDS に存在 (typo / 消し忘れの機械検出)
+ * 3. jumpHref / testID が非空
+ * 4. titleKey が en 辞書に実在
  */
 import en from '@/src/core/i18n/locales/en';
-import ja from '@/src/core/i18n/locales/ja';
-import { getHowtoTopic, HOWTO_TOPICS, resolveHowtoBody } from '@/src/features/howto/topics';
+import { HOWTO_TOPICS } from '@/src/features/howto/topics';
+import { GUIDE_IDS } from '@/src/stores/guidesStore';
 
-describe('HOWTO_TOPICS 定義 (#1179)', () => {
+describe('HOWTO_TOPICS 定義 (#1203)', () => {
   test('6 トピック + id 一意', () => {
     expect(HOWTO_TOPICS).toHaveLength(6);
     expect(new Set(HOWTO_TOPICS.map((tp) => tp.id)).size).toBe(6);
   });
 
-  test('getHowtoTopic: 正常 id → 定義 / 不正・undefined → null', () => {
-    expect(getHowtoTopic('logWork')?.titleKey).toBe('howtoTopicLogWorkTitle');
-    expect(getHowtoTopic('unknown')).toBeNull();
-    expect(getHowtoTopic(undefined)).toBeNull();
+  test.each(HOWTO_TOPICS.map((tp) => [tp.id, tp] as const))(
+    '%s: guideId が GUIDE_IDS に存在 + href/testID 非空',
+    (_id, topic) => {
+      expect(GUIDE_IDS).toContain(topic.guideId);
+      expect(String(topic.jumpHref).length).toBeGreaterThan(0);
+      expect(topic.testID.startsWith('e2e_howto_topic_')).toBe(true);
+    },
+  );
+
+  test('titleKey が en 辞書に実在', () => {
+    const dict = en as Record<string, string>;
+    for (const tp of HOWTO_TOPICS) {
+      expect(dict[tp.titleKey]).toBeTruthy();
+    }
   });
 
-  test('resolveHowtoBody: placeholder を実ラベル値で置換 (複数出現も全置換)', () => {
-    const t = (key: string) => `<${key}>`;
-    const out = resolveHowtoBody(
-      'open {tab} then {cta}, again {tab}',
-      { tab: 'tabRecord', cta: 'recordFabLabel' },
-      t as never,
-    );
-    expect(out).toBe('open <tabRecord> then <recordFabLabel>, again <tabRecord>');
-  });
-
-  test('resolveHowtoBody: params なしは原文のまま', () => {
-    expect(resolveHowtoBody('plain', undefined, ((k: string) => k) as never)).toBe('plain');
-  });
-
-  describe.each([
-    ['en', en as Record<string, string>],
-    ['ja', ja as Record<string, string>],
-  ])('placeholder 整合 (%s)', (_label, dict) => {
-    test.each(HOWTO_TOPICS.map((tp) => [tp.id, tp] as const))('%s', (_id, topic) => {
-      const body = dict[topic.bodyKey];
-      expect(body).toBeTruthy();
-      const placeholders = new Set(
-        Array.from((body as string).matchAll(/\{(\w+)\}/g)).map((m) => m[1]),
-      );
-      const params = new Set(Object.keys(topic.bodyParams ?? {}));
-      expect(placeholders).toEqual(params);
-    });
+  test('guideId の重複なし (1 ガイド = 1 トピック)', () => {
+    expect(new Set(HOWTO_TOPICS.map((tp) => tp.guideId)).size).toBe(6);
   });
 });
