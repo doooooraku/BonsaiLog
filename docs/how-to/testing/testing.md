@@ -1,4 +1,4 @@
-# docs/how-to/testing.md
+# docs/how-to/testing/testing.md
 
 # Testing（CIと同じようにテストして、落ちたら直す）
 
@@ -77,7 +77,7 @@ pnpm type-check
 
 ## 3. E2E（必要なときだけ）：Maestro smoke
 
-このテンプレートには E2E の入口として `test:e2e` が用意されています。
+BonsaiLog には E2E の入口として `test:e2e` が用意されています。
 
 ```bash
 pnpm test:e2e

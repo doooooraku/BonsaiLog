@@ -1,6 +1,6 @@
 # Google Play 公開フロー (AAB ビルドから Closed Testing → 製品版まで)
 
-最終更新: 2026-05-31 (Sess61 PR5)
+最終更新: 2026-06-12 (Sess103 — Sess62 cloud-first 化を Phase 2/3 に反映)
 
 BonsaiLog を Google Play Store に公開する完全ガイド。 ローカル CLI / GitHub Actions / EAS Submit / Closed Testing 12 testers/14 days ルール / Pre-Launch Report / 段階公開を網羅。
 
@@ -63,7 +63,9 @@ pnpm build:android:aab:local  # AAB ビルド
 
 → Play Console → Closed Testing → Alpha → Create new release → AAB を D&D。 これ以降は EAS Submit が使える。
 
-## Phase 2: ローカル CLI (Sess61 完了)
+## Phase 2: `pnpm release:android` 1 コマンド (Sess62 PR2 で cloud-first 化)
+
+> Sess61 当時はローカル AAB build (8 ステップ、約 15 分) だったが、**Sess62 PR2 で cloud trigger 方式に転換済** (PC が落ちる原因 = ローカル Gradle build を構造的に廃止、ADR-0050 Sess62 PR2 Amendment)。
 
 ### 2-1. `pnpm release:android` 1 コマンド
 
@@ -71,16 +73,17 @@ pnpm build:android:aab:local  # AAB ビルド
 pnpm release:android   # = bash scripts/release-android-orchestrate.sh
 ```
 
-内部実行 (8 ステップ、 約 15 分):
+内部実行 (7 ステップ、 cloud 約 35 分 + smoke 約 5 分。script 冒頭 doc が正):
 
 1. `release-log.mjs init` — タイムスタンプ + `dist/release-logs/<ts>-android/` 作成
-2. `preflight:android --auto-fix` — 30 項目検査 + 修復可能項目自動修復
-3. `release-snapshot.mjs before` — Play Console 状態撮影
-4. `build:android:aab:local` — AAB ビルド (約 12 分)
-5. `submit:android` — EAS Submit (track=alpha, draft, --no-wait)
-6. `release-snapshot.mjs after` — 再撮影
-7. `release-diff.mjs` — 4 検証 (Draft +1 / versionCode +1 / whatsnew 反映 / 経過時間 < 45 min)
-8. `release-log.mjs summary` + `cleanup` — summary.md 生成 + 古いログ削除
+2. `preflight --auto-fix` — 検査 + 自動修復 (ローカル状態確認のみ)
+3. cloud trigger — `gh workflow run build-android-play.yml` + run-id 取得
+4. `gh run watch` — workflow 完了まで監視 (約 35 分 = 実測 33-35 分)。AAB build / Submit / snapshot / release notes / diff は cloud 側で実行
+5. `gh run download` — AAB + release-logs artifact をローカル DL
+6. smoke test — 実機接続あれば adb で起動確認、なければ skip
+7. `release-log.mjs summary` + `cleanup` — summary.md 生成 + 古いログ削除
+
+> diff 検証 (Draft +1 / versionCode +1 / whatsnew 反映 / 経過時間 < 45 min) は cloud workflow 内の `release-diff.mjs` が実施。
 
 ### 2-2. summary.md を読んで Console で 1 クリック
 
@@ -106,7 +109,7 @@ git tag v0.2.0
 git push --tags
 ```
 
-→ `.github/workflows/build-android-play.yml` が `ubuntu-latest` で起動 (約 25 分):
+→ `.github/workflows/build-android-play.yml` が `ubuntu-latest` で起動 (約 35 分 = 実測 33-35 分、ADR-0050 Sess103 Amendment):
 
 1. Checkout + pnpm + Node + Java 17 + EAS CLI install
 2. `.env` を vars/secrets から組み立て

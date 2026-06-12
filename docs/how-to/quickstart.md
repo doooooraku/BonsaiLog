@@ -2,7 +2,7 @@
 
 ## 重要: Expo Go では動作しません
 
-このテンプレートには AdMob、RevenueCat、SQLite などのネイティブモジュール（Native Module）が含まれているため、Expo Go では動作しません。アプリを実行するには、必ず開発ビルド（Dev Build）を作成してください。開発ビルドの作り方は「ビルド」セクションを参照してください。
+BonsaiLog には AdMob、RevenueCat、SQLite などのネイティブモジュール（Native Module）が含まれているため、Expo Go では動作しません。アプリを実行するには、必ず開発ビルド（Dev Build）を作成してください。開発ビルドの作り方は「ビルド」セクションを参照してください。
 
 ## 必要なもの
 

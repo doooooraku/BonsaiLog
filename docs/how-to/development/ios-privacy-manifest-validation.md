@@ -36,7 +36,7 @@ Google Mobile Ads SDK / UserMessagingPlatform.xcframework は SDK 自身の
 ### 2-1. prebuild 実行
 
 ```bash
-PATH=/usr/bin:/bin:/home/doooo/.nvm/versions/node/v20.19.6/bin:$PATH \
+PATH=/usr/bin:/bin:/home/doooo/.nvm/versions/node/v22.22.2/bin:$PATH \
   npx expo prebuild --platform ios --clean
 ```
 
