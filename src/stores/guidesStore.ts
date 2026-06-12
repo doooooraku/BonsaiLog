@@ -25,7 +25,12 @@ export type GuideId =
   | 'g2RecordCta'
   | 'g3PlanCta'
   | 'g5FirstRecordCelebrated'
-  | 'g6DetailTabs';
+  | 'g6DetailTabs'
+  // g7-g10 (#1203): pull 専用 (使い方からの遷移時のみ表示、自動発火 trigger なし — ADR-0058 原則 5)
+  | 'g7RegisterCta'
+  | 'g8RecurringCreate'
+  | 'g9NotificationSettings'
+  | 'g10BackupExport';
 
 export const GUIDE_IDS: readonly GuideId[] = [
   'g1RecordTabNudge',
@@ -33,6 +38,10 @@ export const GUIDE_IDS: readonly GuideId[] = [
   'g3PlanCta',
   'g5FirstRecordCelebrated',
   'g6DetailTabs',
+  'g7RegisterCta',
+  'g8RecurringCreate',
+  'g9NotificationSettings',
+  'g10BackupExport',
 ] as const;
 
 type GuidesState = {

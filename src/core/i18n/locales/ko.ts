@@ -413,27 +413,14 @@ const ko: Partial<Record<TranslationKey, string>> = {
   skipForLater: '나중에 하기',
   settingsHelpSection: '도움말',
   howtoTitle: 'How to use',
-  howtoOpenScreenCta: 'Open this screen',
   howtoGuideResetLabel: 'Show on-screen guides again',
   howtoGuideResetToast: 'On-screen guides will be shown once more',
   howtoTopicRegisterBonsaiTitle: 'Register a bonsai',
-  howtoTopicRegisterBonsaiBody:
-    'Register your trees one by one to build your own ledger.\n\n1. Open the "{tab}" tab\n2. Tap "{cta}" at the bottom\n3. Name it and save (species and photos can be added later)\n4. The tree appears as a card in the list',
   howtoTopicLogWorkTitle: 'Log your care work',
-  howtoTopicLogWorkBody:
-    'Keep a record of the days you watered, pruned, and more.\n\n1. Open the "{tab}" tab\n2. Tap "{cta}" at the bottom\n3. Pick the tree and the type of work, then save\n4. The day gets a ● on the calendar',
   howtoTopicPlanCalendarTitle: 'Plans and the calendar',
-  howtoTopicPlanCalendarBody:
-    'On the calendar, ○ means a plan and ● means a record.\n\n1. Open the "{tab}" tab\n2. Pick a date and add a plan with "{cta}" at the bottom\n3. Tap a date to see its plans and records below',
   howtoTopicRecurringTitle: 'Create recurring schedules',
-  howtoTopicRecurringBody:
-    'Create repeating plans, like weekly watering, in one go.\n\n1. Open "{hub}" in the "{tab}" tab\n2. Create one via "{add}"\n3. Choose a frequency (weekly, monthly, ...) and future plans are generated automatically',
   howtoTopicNotificationsTitle: 'Set up notifications',
-  howtoTopicNotificationsBody:
-    'Get one daily summary on days that have plans.\n\n1. Turn on notifications in Settings and pick a time\n2. You will also be asked about notifications when you create your first plan',
   howtoTopicBackupTitle: 'Backup and export',
-  howtoTopicBackupBody:
-    'Save and restore all records as a single file (handy when switching phones).\n\n1. Create or restore from "Backup" in Settings\n2. CSV / PDF export is under "Export" in Settings (Pro)',
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
   settingsArchiveSection: '보관함',
   settingsArchiveTitle: '보관된 분재',
@@ -481,6 +468,14 @@ const ko: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeTitle: '첫 분재를 등록했습니다',
   guideRecordTabNudgeBody: '다음은 오늘의 관리를 기록해 보세요. 아래 "{tab}" 탭을 탭하세요.',
   guideRecordCtaBody: '먼저 오늘의 관리 하나를 여기에서 기록해 보세요.',
+  guideRegisterCtaBody:
+    '여기에서 분재를 등록할 수 있습니다. 이름만으로 충분하며, 사진과 수종은 나중에 추가해도 됩니다.',
+  guideRecurringCreateBody:
+    '여기에서 반복 일정을 만들 수 있습니다. 빈도를 선택하면 앞으로의 예정이 자동으로 생성됩니다.',
+  guideNotificationSectionBody:
+    '여기에서 알림을 켜고 시간을 선택하면, 예정이 있는 날 하루 1번 모아서 알려 드립니다.',
+  guideBackupExportBody:
+    '여기에서 모든 기록을 하나의 파일로 저장할 수 있습니다. 복원도 이 화면에서 합니다.',
   guideFirstRecordToast:
     '첫 기록이 저장되었습니다. 달력의 해당 날짜에 ● 표시가 생겼고, 아래 목록에서 언제든 볼 수 있습니다.',
   guideDetailTabsBody:

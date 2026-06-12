@@ -11,8 +11,9 @@
  * - エラーは BackupError.code 別にメッセージ切り替え
  * - 色は BRAND_GREEN / ON_BRAND トークン経由 (旧 import.tsx の #2E7D32 直書き drift 解消)
  */
+import { useIsFocused } from '@react-navigation/native';
 import { Stack, useNavigation } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -24,6 +25,10 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 // (15765 「復元する」 outline button 沈み解消、 ADR-0015/0052 Sess69 PR-A Amendment 整合)。
 import { useColors } from '@/src/core/theme/useColors';
 import { BackupError, exportBackup, importBackup } from '@/src/features/backup/backupService';
+import { GuideSpotlight } from '@/src/features/guides/GuideSpotlight';
+import { usePendingGuideStore } from '@/src/features/guides/pendingGuide';
+import { useSpotlightTarget } from '@/src/features/guides/useSpotlightTarget';
+import { useGuidesStore } from '@/src/stores/guidesStore';
 
 export default function BackupScreen() {
   const { t, lang } = useTranslation();
@@ -120,6 +125,21 @@ export default function BackupScreen() {
     ]);
   };
 
+  // #1203 g10 (pull 専用): 使い方「バックアップと書き出し」からの遷移時のみ「作成」を強調。
+  const isFocused = useIsFocused();
+  const g10Pulled = usePendingGuideStore((st) => st.pending === 'g10BackupExport');
+  const g10Active = isFocused && g10Pulled;
+  const markGuideSeen = useGuidesStore((st) => st.markSeen);
+  const {
+    targetRef: g10TargetRef,
+    rect: g10Rect,
+    measure: measureG10Target,
+  } = useSpotlightTarget();
+  const dismissG10 = useCallback(() => {
+    markGuideSeen('g10BackupExport');
+    usePendingGuideStore.getState().clear();
+  }, [markGuideSeen]);
+
   return (
     <ThemedView style={styles.container} testID="e2e_backup_screen">
       <Stack.Screen options={{ title: t('backupTitle') }} />
@@ -136,27 +156,34 @@ export default function BackupScreen() {
             {t('backupEncryptionWarning')}
           </ThemedText>
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('backupExportAction')}
-            accessibilityHint={t('backupExportDesc')}
-            testID="e2e_backup_export_action"
-            style={[
-              styles.primaryButton,
-              { backgroundColor: c.tint },
-              busy && styles.disabledButton,
-            ]}
-            onPress={handleExport}
-            disabled={busy}
+          {/* #1203 g10: 計測 wrapper */}
+          <View
+            ref={g10TargetRef}
+            collapsable={false}
+            onLayout={g10Active ? measureG10Target : undefined}
           >
-            {exporting ? (
-              <ActivityIndicator color={c.onTint} />
-            ) : (
-              <ThemedText style={[styles.primaryButtonText, { color: c.onTint }]}>
-                {t('backupExportAction')}
-              </ThemedText>
-            )}
-          </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('backupExportAction')}
+              accessibilityHint={t('backupExportDesc')}
+              testID="e2e_backup_export_action"
+              style={[
+                styles.primaryButton,
+                { backgroundColor: c.tint },
+                busy && styles.disabledButton,
+              ]}
+              onPress={handleExport}
+              disabled={busy}
+            >
+              {exporting ? (
+                <ActivityIndicator color={c.onTint} />
+              ) : (
+                <ThemedText style={[styles.primaryButtonText, { color: c.onTint }]}>
+                  {t('backupExportAction')}
+                </ThemedText>
+              )}
+            </Pressable>
+          </View>
         </View>
 
         <View style={styles.divider} />
@@ -187,6 +214,18 @@ export default function BackupScreen() {
           </Pressable>
         </View>
       </ScrollView>
+      {/* #1203 g10 スポットライト (pull 専用)。リング tap も dismiss (作成は即実行せず案内のみ —
+          書き出しは共有ダイアログが開く重い操作のため、誤爆防止で代行しない) */}
+      {g10Active && (
+        <GuideSpotlight
+          visible
+          targetRect={g10Rect}
+          body={t('guideBackupExportBody')}
+          dismissLabel={t('ok')}
+          onDismiss={dismissG10}
+          testID="e2e_backup_guide_export"
+        />
+      )}
     </ThemedView>
   );
 }

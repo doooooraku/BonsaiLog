@@ -1,13 +1,14 @@
 /**
- * 設定 >「使い方」一覧 (#1179 / ADR-0058 pull 型ガイド)。
+ * 設定 >「使い方」一覧 (#1179 → #1203 再設計 / ADR-0058 pull 型ガイド)。
  *
- * 旧「チュートリアルを再表示」(ADR-0018 Phase H、実体 = tut5 1 枚で説明文と乖離) の構造置換。
- * - 6 トピック (定義 = src/features/howto/topics.ts) → 詳細ページへ
- * - 末尾「画面のガイドをもう一度見る」= guidesStore.resetAll (ADR-0058 原則 2 の唯一の再表示経路)
+ * #1203 (Sess102 user 提案): トピック tap = **実画面に遷移 + 対応スポットライトを 1 回表示**
+ * (pendingGuide 要求 → 遷移先画面が表示)。静的な詳細ページは廃止 — 説明文とガイド文言の
+ * 二重管理を排除し、「読む → 探す」を「押す → その場で光る」に置換。
+ * - 末尾「画面のガイドをもう一度見る」= guidesStore.resetAll (全ガイドの seen を戻す) は据え置き
  *
  * Stack header は ADR-0053 SoT (settings/_layout の screenOptions + 本画面 Stack.Screen title)。
  */
-import { Stack, useRouter, type Href } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import React, { useCallback } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -16,7 +17,8 @@ import { ThemedView } from '@/components/themed-view';
 import { useToastStore } from '@/src/components/Toast';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { useColors } from '@/src/core/theme/useColors';
-import { HOWTO_TOPICS } from '@/src/features/howto/topics';
+import { usePendingGuideStore } from '@/src/features/guides/pendingGuide';
+import { HOWTO_TOPICS, type HowtoTopic } from '@/src/features/howto/topics';
 import { useGuidesStore } from '@/src/stores/guidesStore';
 
 export default function HowtoIndexScreen() {
@@ -29,6 +31,15 @@ export default function HowtoIndexScreen() {
     resetGuides();
     useToastStore.getState().show(t('howtoGuideResetToast'));
   }, [resetGuides, t]);
+
+  // #1203: トピック tap = ガイド要求 (seen 済みでも 1 回表示) + 実画面へ遷移
+  const handleTopicPress = useCallback(
+    (topic: HowtoTopic) => {
+      usePendingGuideStore.getState().request(topic.guideId);
+      router.push(topic.jumpHref);
+    },
+    [router],
+  );
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: c.background }]}>
@@ -44,7 +55,7 @@ export default function HowtoIndexScreen() {
                 styles.row,
                 i < HOWTO_TOPICS.length - 1 && [styles.rowDivider, { borderBottomColor: c.border }],
               ]}
-              onPress={() => router.push(`/settings/how-to/${topic.id}` as Href)}
+              onPress={() => handleTopicPress(topic)}
               testID={topic.testID}
             >
               <ThemedText type="defaultSemiBold">{t(topic.titleKey)}</ThemedText>

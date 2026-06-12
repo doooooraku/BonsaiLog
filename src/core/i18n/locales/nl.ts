@@ -415,27 +415,14 @@ const nl: Partial<Record<TranslationKey, string>> = {
   skipForLater: 'Overslaan voor later',
   settingsHelpSection: 'Help',
   howtoTitle: 'How to use',
-  howtoOpenScreenCta: 'Open this screen',
   howtoGuideResetLabel: 'Show on-screen guides again',
   howtoGuideResetToast: 'On-screen guides will be shown once more',
   howtoTopicRegisterBonsaiTitle: 'Register a bonsai',
-  howtoTopicRegisterBonsaiBody:
-    'Register your trees one by one to build your own ledger.\n\n1. Open the "{tab}" tab\n2. Tap "{cta}" at the bottom\n3. Name it and save (species and photos can be added later)\n4. The tree appears as a card in the list',
   howtoTopicLogWorkTitle: 'Log your care work',
-  howtoTopicLogWorkBody:
-    'Keep a record of the days you watered, pruned, and more.\n\n1. Open the "{tab}" tab\n2. Tap "{cta}" at the bottom\n3. Pick the tree and the type of work, then save\n4. The day gets a ● on the calendar',
   howtoTopicPlanCalendarTitle: 'Plans and the calendar',
-  howtoTopicPlanCalendarBody:
-    'On the calendar, ○ means a plan and ● means a record.\n\n1. Open the "{tab}" tab\n2. Pick a date and add a plan with "{cta}" at the bottom\n3. Tap a date to see its plans and records below',
   howtoTopicRecurringTitle: 'Create recurring schedules',
-  howtoTopicRecurringBody:
-    'Create repeating plans, like weekly watering, in one go.\n\n1. Open "{hub}" in the "{tab}" tab\n2. Create one via "{add}"\n3. Choose a frequency (weekly, monthly, ...) and future plans are generated automatically',
   howtoTopicNotificationsTitle: 'Set up notifications',
-  howtoTopicNotificationsBody:
-    'Get one daily summary on days that have plans.\n\n1. Turn on notifications in Settings and pick a time\n2. You will also be asked about notifications when you create your first plan',
   howtoTopicBackupTitle: 'Backup and export',
-  howtoTopicBackupBody:
-    'Save and restore all records as a single file (handy when switching phones).\n\n1. Create or restore from "Backup" in Settings\n2. CSV / PDF export is under "Export" in Settings (Pro)',
   // Phase 1.6-T3: 8 セクション整合 (Issue #330)
   settingsArchiveSection: 'Archief',
   settingsArchiveTitle: 'Gearchiveerde bonsai',
@@ -484,6 +471,14 @@ const nl: Partial<Record<TranslationKey, string>> = {
   guideRecordTabNudgeBody:
     'Probeer nu een verzorging van vandaag vast te leggen. Tik op het tabblad "{tab}" hieronder.',
   guideRecordCtaBody: 'Begin door één verzorging van vandaag hier vast te leggen.',
+  guideRegisterCtaBody:
+    'Registreer hier een bonsai. Een naam is genoeg — foto en soort kunnen later.',
+  guideRecurringCreateBody:
+    'Maak hier een terugkerend schema. Kies een frequentie en toekomstige taken worden automatisch aangemaakt.',
+  guideNotificationSectionBody:
+    'Zet hier meldingen aan en kies een tijd: één dagelijkse samenvatting op dagen met taken.',
+  guideBackupExportBody:
+    'Sla hier alle registraties op als één bestand. Herstellen kan ook vanaf dit scherm.',
   guideFirstRecordToast:
     'Je eerste registratie is opgeslagen. De dag toont nu een ● in de kalender en je vindt hem terug in de lijst hieronder.',
   guideDetailTabsBody:

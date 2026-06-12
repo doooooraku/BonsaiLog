@@ -27,6 +27,7 @@ import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
 import { canShowGuide } from '@/src/features/guides/guideTriggers';
 import { GuideSpotlight } from '@/src/features/guides/GuideSpotlight';
+import { usePendingGuideStore } from '@/src/features/guides/pendingGuide';
 import { useSpotlightTarget } from '@/src/features/guides/useSpotlightTarget';
 import { useGuidesStore } from '@/src/stores/guidesStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
@@ -84,15 +85,21 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
   // isFocused 必須: RN Modal は非フォーカス画面 (背景タブ) からも表示されるため、ガード
   // なしだと使い方ページの reset 直後に背景タブの g2/g3 が多重表示される (Sess102 実機実証)。
   const isFocused = useIsFocused();
-  const guideActive = isFocused && canShowGuide(guideId, guideSeen);
+  // #1203: 使い方一覧からの pull 要求 (seen 済みでも 1 回表示)
+  const guidePulled = usePendingGuideStore((s) => s.pending === guideId);
+  const guideActive = isFocused && (guidePulled || canShowGuide(guideId, guideSeen));
   const {
     targetRef: guideTargetRef,
     rect: guideRect,
     measure: measureGuideTarget,
   } = useSpotlightTarget();
-  const dismissGuide = useCallback(() => markGuideSeen(guideId), [markGuideSeen, guideId]);
+  const dismissGuide = useCallback(() => {
+    markGuideSeen(guideId);
+    usePendingGuideStore.getState().clear();
+  }, [markGuideSeen, guideId]);
   const handleGuideTargetPress = useCallback(() => {
     markGuideSeen(guideId);
+    usePendingGuideStore.getState().clear();
     if (!data.isFabDisabled) handleCtaPress();
   }, [markGuideSeen, guideId, data.isFabDisabled, handleCtaPress]);
 

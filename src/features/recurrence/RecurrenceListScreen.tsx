@@ -19,6 +19,7 @@
  *        src/features/recurrence/useRecurrenceRules.ts (hook)
  *        src/db/recurrenceRuleRepository.ts (listActiveRecurrenceRules / softDeleteRecurrenceRule)
  */
+import { useIsFocused } from '@react-navigation/native';
 import { Stack, useRouter, type Href } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
@@ -34,6 +35,10 @@ import { useTranslation } from '@/src/core/i18n/i18n';
 import type { TranslationKey } from '@/src/core/i18n/locales/en';
 import { parseCustomRruleDays, parseWeeklyByDay } from '@/src/core/recurrence/rrule';
 import { useColors } from '@/src/core/theme/useColors';
+import { GuideSpotlight } from '@/src/features/guides/GuideSpotlight';
+import { usePendingGuideStore } from '@/src/features/guides/pendingGuide';
+import { useSpotlightTarget } from '@/src/features/guides/useSpotlightTarget';
+import { useGuidesStore } from '@/src/stores/guidesStore';
 import {
   FREE_RECURRENCE_GROUP_LIMIT,
   softDeleteRecurrenceRule,
@@ -89,6 +94,23 @@ export default function RecurrenceListScreen() {
     }));
     startBulkAction(allBonsais);
   }, [bonsaiMap, startBulkAction]);
+  // #1203 g8 (pull 専用): 使い方「定期予定を作る」からの遷移時のみ「+ 新規追加」を強調。
+  // 自動発火しない (ADR-0058 原則 5)。
+  const isFocused = useIsFocused();
+  const g8Pulled = usePendingGuideStore((s) => s.pending === 'g8RecurringCreate');
+  const g8Active = isFocused && g8Pulled;
+  const markGuideSeen = useGuidesStore((s) => s.markSeen);
+  const { targetRef: g8TargetRef, rect: g8Rect, measure: measureG8Target } = useSpotlightTarget();
+  const dismissG8 = useCallback(() => {
+    markGuideSeen('g8RecurringCreate');
+    usePendingGuideStore.getState().clear();
+  }, [markGuideSeen]);
+  const handleG8TargetPress = useCallback(() => {
+    markGuideSeen('g8RecurringCreate');
+    usePendingGuideStore.getState().clear();
+    handleCreateNew();
+  }, [markGuideSeen, handleCreateNew]);
+
   const [deleteTarget, setDeleteTarget] = useState<RecurrenceRuleGroup | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   // Sess82 PR-C: kebab → RowActionMenu (= 編集 + 削除 2 択、 ADR-0036 D7 整合)
@@ -274,11 +296,27 @@ export default function RecurrenceListScreen() {
       )}
 
       {/* Sess82 PR-D: BottomCtaBar 「+ 新規追加」 = useBulkActionFlow('recurring') 経由 */}
-      <BottomCtaBar
-        label={t('recurringListCreateNewLabel')}
-        onPress={handleCreateNew}
-        testID="e2e_recurrence_list_create_new"
-      />
+      {/* #1203 g8: 計測 wrapper (collapsable=false = Android measureInWindow 対応) */}
+      <View ref={g8TargetRef} collapsable={false} onLayout={g8Active ? measureG8Target : undefined}>
+        <BottomCtaBar
+          label={t('recurringListCreateNewLabel')}
+          onPress={handleCreateNew}
+          testID="e2e_recurrence_list_create_new"
+        />
+      </View>
+
+      {/* #1203 g8 スポットライト (pull 専用) */}
+      {g8Active && (
+        <GuideSpotlight
+          visible
+          targetRect={g8Rect}
+          body={t('guideRecurringCreateBody')}
+          dismissLabel={t('ok')}
+          onDismiss={dismissG8}
+          onTargetPress={handleG8TargetPress}
+          testID="e2e_recurrence_guide_create"
+        />
+      )}
 
       {/* Sess82 PR-C: kebab → RowActionMenu (= 編集 + 削除 2 択、 ADR-0036 D7 整合) */}
       <RowActionMenu
