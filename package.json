@@ -46,7 +46,7 @@
     "verify:type-check": "pnpm type-check",
     "verify:format": "pnpm format:check",
     "verify:test": "pnpm test",
-    "verify:i18n": "pnpm i18n:check && pnpm i18n:forbidden",
+    "verify:i18n": "pnpm i18n:check && pnpm i18n:forbidden && node scripts/i18n-style-ja.mjs --strict",
     "verify:hardcode": "pnpm lint:hardcode",
     "verify:config": "pnpm config:check",
     "verify:docs": "pnpm docs:lint",
