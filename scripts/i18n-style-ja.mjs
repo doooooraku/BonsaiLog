@@ -11,7 +11,7 @@
 //   4. 全角記号・全角英数字・全角スペースの混入
 //
 // モード: default = warn (報告のみ exit 0) / --strict = 違反があれば exit 1
-// 全件監査 (Issue #1208 PR-2〜5) 完了後に verify チェーンで --strict 運用 (PR-6)。
+// verify チェーン (verify:i18n) では --strict で enforce (Issue #1208 PR-6 で昇格済)。
 
 import fs from 'node:fs';
 import path from 'node:path';

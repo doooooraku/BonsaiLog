@@ -50,6 +50,15 @@ const baseEn = {
 pnpm type-check
 ```
 
+### 3.5. ja 文言はスタイルガイドに照合する (ADR-0060)
+
+ja 値を書く前に `docs/reference/copy-style-ja.md` (基準 10 項目) に照合する。
+主要ルール: 説明文 = です・ます調 + 句点 / ラベル = 体言止め + 句点なし / 英数字と和文の間に半角スペース / 半角記号 / 表記揺れ辞書 (買い切り・ください 等)。
+
+```bash
+pnpm i18n:style   # 機械検査 (verify チェーンでは --strict で enforce)
+```
+
 ### 4. 翻訳漏れ / 未使用キーをチェック
 
 ```bash
@@ -98,5 +107,6 @@ return <Text>{t('myFeatureWithVar', { count: 5 })}</Text>;
 
 - [ ] 全 19 言語ファイルにキーが追加された
 - [ ] `pnpm i18n:check` が 0 missing
+- [ ] `pnpm i18n:style` が 0 violations（ja 文体基準、ADR-0060）
 - [ ] `pnpm type-check` が pass
 - [ ] 実装で `t('keyName')` が使われている
