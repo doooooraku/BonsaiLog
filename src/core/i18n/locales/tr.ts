@@ -833,8 +833,8 @@ const tr: Partial<Record<TranslationKey, string>> = {
   customLimitDesc:
     "Free plan en fazla {count} özel tür ve stil eklemenize izin verir. Sınırsız için Pro'ya geçin.",
   // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
-  paywallFeatureCsvFreeValue: 'Kullanılamaz',
-  paywallFeatureCsvProValue: 'Kullanılabilir',
+  paywallFeatureCsvFreeValue: 'Hayır',
+  paywallFeatureCsvProValue: 'Evet',
   // --- Sess60 PR3: SpeciesPicker/StylePicker カスタム差別化 (section header + badge + counter) ---
   pickerSectionMaster: 'Hazır',
   pickerSectionCustom: 'Özel',

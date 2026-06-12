@@ -836,8 +836,8 @@ const baseEn = {
     'The Free plan allows up to {count} custom species and styles. Upgrade to Pro for unlimited.',
 
   // --- Sess60 PR2: Paywall FeatureRow 値統一 (literal "—" "◎" 排除) ---
-  paywallFeatureCsvFreeValue: 'Not available',
-  paywallFeatureCsvProValue: 'Available',
+  paywallFeatureCsvFreeValue: 'No',
+  paywallFeatureCsvProValue: 'Yes',
 
   // --- Sess60 PR3: SpeciesPicker/StylePicker カスタム差別化 (section header + badge + counter) ---
   pickerSectionMaster: 'Preset',
