@@ -12,7 +12,6 @@ const baseEn = {
   close: 'Close',
   done: 'Done',
   loading: 'Loading...',
-  retry: 'Retry',
   error: 'Error',
 
   // --- Settings ---
@@ -24,27 +23,7 @@ const baseEn = {
   sound: 'Sound',
 
   // --- Language selector ---
-  languageChange: 'Change language',
   currentLanguage: 'Current',
-  languageNameEn: 'English',
-  languageNameJa: 'Japanese',
-  languageNameFr: 'French',
-  languageNameEs: 'Spanish',
-  languageNameDe: 'German',
-  languageNameIt: 'Italian',
-  languageNamePt: 'Portuguese',
-  languageNameRu: 'Russian',
-  languageNameZhHans: 'Chinese (Simplified)',
-  languageNameZhHant: 'Chinese (Traditional)',
-  languageNameKo: 'Korean',
-  languageNameHi: 'Hindi',
-  languageNameId: 'Indonesian',
-  languageNameTh: 'Thai',
-  languageNameVi: 'Vietnamese',
-  languageNameTr: 'Turkish',
-  languageNameNl: 'Dutch',
-  languageNamePl: 'Polish',
-  languageNameSv: 'Swedish',
 
   // --- Purchase / Restore ---
   restore: 'Restore Purchases',
@@ -53,7 +32,6 @@ const baseEn = {
   restoreSuccess: 'Purchase history restored.',
   restoreNotFound: 'No purchases were found to restore.',
   restoreFailed: 'Failed to restore purchases.',
-  restoreDesc: 'Restore purchases made with this account.',
 
   // --- Pro / Paywall ---
   proTitle: 'Upgrade to Pro',
@@ -83,19 +61,12 @@ const baseEn = {
   settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 
   // --- Legal ---
-  legalSectionTitle: 'Legal',
-  legalPrivacyPolicyLabel: 'Privacy Policy',
-  legalTermsOfUseLabel: 'Terms of Use (EULA)',
 
   // --- Errors ---
   errorLoadFailed: 'Failed to load data.',
-  errorSaveFailed: 'Failed to save.',
-  errorDeleteFailed: 'Failed to delete.',
 
   // --- F-01 Bonsai (P2-01 PR-D) ---
-  bonsaiTab: 'Bonsai',
   bonsaiListEmptyTitle: 'No bonsai registered yet',
-  bonsaiListEmptyDesc: 'Tap below to register your first bonsai.',
   bonsaiCreateNew: 'Register new bonsai',
   bonsaiFieldName: 'Name',
   bonsaiFieldNamePlaceholder: 'e.g. Old pine',
@@ -110,8 +81,6 @@ const baseEn = {
   bonsaiFieldAcquiredFrom: 'Acquired from',
   bonsaiFieldAcquiredFromPlaceholder: 'e.g. Nursery name',
   bonsaiFieldPotInfo: 'Pot',
-  bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
-  bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Archive',
   bonsaiTagsAddCta: 'Add tag',
   tagShowMore: '+{count} more',
@@ -127,35 +96,25 @@ const baseEn = {
 
   // --- F-08 Photos (P2-02 PR-C) ---
   bonsaiFieldPhotos: 'Photos',
-  photoAddCta: 'Add photo',
-  photoAddTitle: 'Add a photo',
-  photoAddCamera: 'Take a photo',
-  photoAddLibrary: 'Choose from library',
   photoEmpty: 'No photos yet.',
   photoLimitTitle: 'Free limit reached',
   photoLimitDesc:
     'Free plan allows {count} photos per bonsai. Upgrade to Pro for unlimited photos.',
   // Repolog-style photoCard UI keys
-  photoCaptionPlaceholder: 'Caption (optional)',
   photoMoveUpLabel: 'Move up',
   photoMoveDownLabel: 'Move down',
   photoCoverBadge: 'Cover',
   photoSetCoverLabel: 'Set as cover',
-  photoLimitPartialAdded: 'Added {added} photos ({skipped} skipped due to limit)',
   photoDeletedBanner: 'Photo deleted',
   photoUndoLabel: 'Undo',
   photoPermissionTitle: 'Permission needed',
   photoPermissionDesc: 'Please allow camera and photo library access in Settings.',
-  photoActionTitle: 'Photo actions',
-  photoActionSetCover: 'Set as cover photo',
-  photoActionDelete: 'Delete photo',
   photoDeleteConfirmTitle: 'Delete this photo?',
   photoDeleteConfirmDesc: 'This action cannot be undone.',
 
   // --- F-02 Events (P2-03 PR-D) ---
   eventsTitle: 'Care log',
   eventLogCta: 'Log a care event',
-  eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: 'No work records yet',
 
   eventType_watering: 'Watering',
@@ -176,7 +135,6 @@ const baseEn = {
   settingsNotificationSection: 'Notifications',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
-  settingsTitle: 'Settings',
   settingsBackupSection: 'Backup',
   backupTitle: 'Backup & restore',
   backupExportTitle: 'Create a backup',
@@ -213,23 +171,14 @@ const baseEn = {
 
   // --- F-07 Wiring duration (Phase A: pure function output strings, ADR-0011) ---
   // Future use: notification body when wiring exceeds the threshold (no instructive language).
-  wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-10 Export Phase A (events CSV, Pro-only, ADR-0016) ---
   settingsExportSection: 'Export',
-  exportCsvTitle: 'Export care logs to CSV',
-  exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
-  exportCsvAction: 'Export CSV',
-  exportCsvSuccess: 'Export complete.',
-  exportCsvSuccessDetail: 'Exported {count} care logs.',
   exportCsvFailed: 'Export failed.',
   exportCsvShareTitle: 'BonsaiLog care logs CSV',
   exportProRequiredTitle: 'Pro feature',
   exportProRequiredBody: 'This export is available for Pro members. Upgrade to unlock.',
-  exportShareUnavailableTitle: 'Sharing is not available',
-  exportShareUnavailableBody:
-    'Sharing is not available on this device. Please update the OS and try again.',
 
   // --- F-09 Search (Phase A: bonsai name LIKE + events FTS5, ADR-0008 改訂) ---
   settingsSearchSection: 'Search',
@@ -244,14 +193,9 @@ const baseEn = {
   bulkLogConfirmTitle: 'Log {label} for {count} bonsai',
   bulkScheduleConfirmTitle: 'Schedule {label} for {count} bonsai',
   bulkLogConfirmSub: 'Same content saved to each bonsai',
-  bulkLogConfirmNoteLabel: 'Note (optional)',
-  bulkLogConfirmNotePlaceholder: 'Free note',
   bulkLogSaveCta: 'Log for {count} bonsai',
   bulkLogDoneToast: 'Logged actions for {count} bonsai',
   bulkScheduleConfirmCta: 'Schedule (×{count})',
-  bulkLogConfirmCta: 'Log (×{count})',
-  bulkLogAddNoteToggle: 'Add note',
-  bulkLogConfirmTitleMulti: 'Log {count} actions',
   detailTimelineToday: 'Today',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
@@ -265,7 +209,6 @@ const baseEn = {
   searchMinChars: 'Enter at least {count} characters to search',
   searchEmpty: 'No results found.',
   searchBonsaiSection: 'Bonsai',
-  searchSpeciesSection: 'Species',
   searchEventSection: 'Care logs',
   searchWorkLabel: 'Work',
 
@@ -276,7 +219,6 @@ const baseEn = {
   settingsThemeDark: 'Dark',
 
   // --- F-04 Watering history (Phase A: LastWateredText only, ADR-0013) ---
-  wateringSectionTitle: 'Watering',
   wateringLastNoRecord: 'No watering records yet',
   wateringLastToday: 'Watered today',
   wateringLastOneDay: '1 day since last watering',
@@ -285,18 +227,11 @@ const baseEn = {
   wateringLastOverYear: 'Over a year since last watering',
 
   // --- F-13 Paywall comparison table (Phase 1c, Issue #20, ADR-0009) ---
-  proComparisonTitle: 'What you get with Pro',
-  proComparisonPhotos: 'Unlimited photos per bonsai',
-  proComparisonCsv: 'Export care logs to CSV',
-  proComparisonPdf: 'Export bonsai records to PDF',
-  proComparisonNoAds: 'No ads',
 
   // --- F-09 Tags manager (Phase C, Issue #31, ADR-0008 改訂) ---
   tagsManagerTitle: 'Manage tags',
   tagsManagerDesc: 'Tags help you organize care logs and find them in search.',
   tagsAddPlaceholder: 'New tag name',
-  tagsAddAction: 'Add',
-  tagsRenameAction: 'Rename',
   tagsAddFailedBody: 'Could not add the tag.',
   tagsRenameDuplicateBody: 'A tag with the same name already exists.',
   tagsEmpty: 'No tags yet.',
@@ -313,36 +248,26 @@ const baseEn = {
     'Notifications are disabled in your device settings. Enable them to use this feature.',
 
   // --- F-14 Ad banner label (Phase B, Issue #22, functional_spec §19) ---
-  adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language picker, Issue #26, ADR-0018) ---
   onboardingWelcomeTitle: 'Welcome to BonsaiLog',
-  onboardingWelcomeBody:
-    'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
   onboardingWelcomeCta: 'Get started',
-  onboardingSkip: 'Later',
   onboardingLanguageTitle: 'Choose your language',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
 
   // --- F-15 Outdoor mode (Phase B, Issue #32, ADR-0015) ---
-  settingsOutdoorMode: 'Outdoor mode',
-  settingsOutdoorModeDesc:
-    'When on, the app uses a high-contrast palette for outdoor visibility (full implementation in next update).',
 
   // --- F-10 PDF export (Phase B, Issue #33, ADR-0016) ---
   exportPdfTitle: 'Export bonsai to PDF',
   exportPdfDesc: 'Generate a PDF report for each bonsai (Pro feature).',
-  exportPdfAction: 'PDF',
   exportPdfHeaderDate: 'Date',
-  exportPdfHeaderType: 'Type',
   exportPdfHeaderNote: 'Note',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'Failed to generate the PDF.',
 
   // --- F-09 Search recent tags chips (Phase B, Issue #31, ADR-0008 改訂) ---
-  searchRecentTagsLabel: 'Recent tags',
   searchTagFilterClear: 'Clear filter',
 
   // --- F-13 Settings → Account / Paywall entry (Phase 1b, Issue #20, ADR-0009) ---
@@ -355,13 +280,9 @@ const baseEn = {
   tabBonsai: 'Bonsai',
   tabLookBack: 'Look Back',
   tabSettings: 'Settings',
-  tabPlanComingSoon: 'Coming soon',
 
   // --- ADR-0020 Phase 2: bonsai tab = Claude Design HomeScreen ---
   appName: 'BonsaiLog',
-  homeFilterAll: 'All',
-  homeCardLastWatering: 'Watered {elapsed} ago',
-  homeCardLastPruning: 'Pruned {elapsed} ago',
   elapsedToday: 'today',
   elapsedDays: '{days}d',
   elapsedWeeks: '{weeks}w',
@@ -412,7 +333,6 @@ const baseEn = {
   workLogWirePart_miki: 'Trunk',
   workLogWirePart_eda: 'Branch',
   workLogWireDuration: 'Target duration',
-  workLogWireDurationHint: 'Used for unwire notification timing',
 
   // --- ADR-0020 v1.x-5: Paywall Claude Design (Hero + FeatureRow table) ---
   paywallHeroEyebrow: 'Unlock',
@@ -466,21 +386,14 @@ const baseEn = {
   recordSelectedEmptyTitle: 'No records on this day',
   recordSelectedEmptyBody:
     'After caring for your trees, tap "{cta}" below to keep a record. Days with records get a ● on the calendar.',
-  planEventPlanned: 'Planned',
   planGroupExpand: 'Expand',
   planGroupCollapse: 'Collapse',
-  planWiringListLink: 'Wiring list',
 
   // --- ADR-0020 v1.x-4: WiringListScreen ---
-  wiringTabAll: 'All',
-  wiringTabActive: 'Active',
-  wiringTabSoon: 'Within a week',
   wiringListEmpty: 'No wiring scheduled',
   wiringRowWeeks: '{weeks} weeks',
   wiringOverdueBadge: 'Overdue',
-  wiringUnwireInDays: 'Unwire in {days} day(s)',
   wiringUnwireOverdue: 'Unwire {days} day(s) overdue',
-  wiringRowGaugePart: '{gauge} on {part}',
   wiringUnwireInWeeks: 'Remove in {weeks} weeks',
   wiringUnwireOverdueWeeks: 'Overdue by {weeks} weeks',
 
@@ -488,15 +401,7 @@ const baseEn = {
   detailTabHistory: 'History',
 
   // --- ADR-0020 Phase 3: bonsai detail watering history (SS 222921) ---
-  wateringSummaryStreak: 'Current streak',
-  wateringSummaryDoubleDays: 'Twice-a-day',
   // Note: statsTabTitle / aggregate keys retained for back-compat during Phase 3 migration.
-  statsTabTitle: 'Stats',
-  statsHeaderAllBonsai: 'All bonsai ({count})',
-  bonsaiFilterSelectAll: 'All bonsai',
-  bonsaiFilterSearchPlaceholder: 'Search bonsai',
-  bonsaiFilterRecentSection: 'Recently viewed',
-  bonsaiFilterAllSection: 'All bonsai',
 
   // --- Home empty state (Phase 1b, Issue #29, ADR-0019) ---
   homeEmptyTitle: 'Add your first bonsai',
@@ -538,23 +443,12 @@ const baseEn = {
     'You can choose whether to allow the use of an identifier to help measure ad performance.',
   attExplainerAllow: 'If allowed: ads may be more relevant to you.',
   attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
-  settingsExportListPdfTitle: 'Export bonsai list (PDF)',
-  settingsExportListPdfDesc: 'Generate a PDF summary of all bonsai for printing or sharing',
-  exportListPdfTitle: 'Full list PDF',
-  exportListPdfDesc: 'Generates an A4 PDF with cover, full bonsai list and statistics.',
-  exportListPdfAction: 'Generate',
   exportListPdfShareTitle: 'Share full list PDF',
   exportListPdfCoverTitle: 'BonsaiLog Full Records',
   exportListPdfCoverSubtitle: '{count} bonsai total',
   exportListPdfFooter: 'Generated by BonsaiLog',
   exportStorageLowBody: 'Insufficient storage. Please free up at least 100MB and try again.',
   exportStorageLowTitle: 'Storage low',
-  onboardingTut3Title: 'Log watering and care',
-  onboardingTut3Body:
-    'Tap the bonsai detail screen to log watering, fertilizing, and wiring. BonsaiLog only records — no judgment.',
-  onboardingTut4Title: 'Read the watering heatmap',
-  onboardingTut4Body:
-    'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Notifications for plans you have set',
   onboardingTut5Body:
     'When you add a plan, you can choose to get notified. You can change this anytime in Settings.',
@@ -580,20 +474,12 @@ const baseEn = {
   settingsLegalTerms: 'Terms of Service',
   settingsLegalPrivacy: 'Privacy Policy',
   searchRecentTitle: 'Recent searches',
-  searchHistoryClear: 'Clear history',
-  outdoorModeToggleA11y: 'Toggle outdoor mode',
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
   onboardingWelcomeNote: 'Your bonsai care log, completely offline.',
-  detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
-  detailPlanTimelinePlaceholder: 'Schedule features will be available in a future update.',
-  detailBasicEdit: 'Edit',
-  detailMenuExportPdf: 'Export to PDF',
-  detailExportProTitle: 'Pro feature',
-  detailExportProDesc: 'PDF export is a Pro plan feature.',
   onboardingLanguageContinue: 'Continue',
   // --- T1-8c CareHub Hub (ADR-0020 §Decision §7) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
@@ -617,13 +503,10 @@ const baseEn = {
   fieldRequiredLabel: 'required',
   fieldOptionalLabel: 'optional',
   // --- T2-4 purchase date (schema v8) ---
-  bonsaiFieldPurchaseDate: 'Purchase date',
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Tags',
   bonsaiTagsEmpty: 'No tags yet',
   // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
-  presetTagName_favorite: 'Favorite',
-  presetTagName_flowering: 'Flowering',
   tagSectionPresets: 'Suggested',
   tagPresetBadgeMaster: 'Preset',
   tagPresetLockedToast: 'Preset tags cannot be edited',
@@ -635,14 +518,10 @@ const baseEn = {
   settingsNotifMasterOffBanner:
     'Notifications are disabled. Turn on the master switch in Settings to use these options.',
   wiringRowUnwireAction: 'Mark as unwired',
-  wiringUnwireConfirmTitle: 'Mark wiring as removed?',
   paywallFeatureTheme: 'Themes',
   historyLabelAmountNormal: 'Normal',
   historyLabelAmountPlenty: 'Plenty',
   historyLabelAmountLight: 'Light',
-  historyLabelAmountTip: 'Tips only',
-  historyLabelAmountMid: 'Moderate',
-  historyLabelAmountBold: 'Bold',
   historyLabelPartsEda: 'Branches',
   historyLabelPartsHa: 'Leaves',
   historyLabelPartsShinme: 'New shoots',
@@ -653,22 +532,9 @@ const baseEn = {
   historyLabelFertKindLiquid: 'Liquid',
   historyLabelFertKindSlow: 'Slow release',
   historyLabelFertKindOther: 'Other',
-  historyLabelSprayPurposePrevent: 'Prevention',
-  historyLabelSprayPurposeTreat: 'Treatment',
-  historyLabelSprayPurposeBoth: 'Both',
-  historyLabelHealSymptomsYake: 'Leaf burn',
-  historyLabelHealSymptomsKare: 'Withering branch',
-  historyLabelHealSymptomsMushi: 'Insects',
-  historyLabelHealSymptomsKabi: 'Fungus',
-  historyLabelHealSymptomsOther: 'Other symptoms',
-  historyLabelMossTasksAdd: 'Replace',
-  historyLabelMossTasksRemove: 'Remove',
-  historyLabelMossTasksWater: 'Moisten',
   historyLabelRepotRootsNone: 'No pruning',
   historyLabelRepotRootsLight: 'Light',
   historyLabelRepotRootsHalf: '1/3',
-  historyLabelRepotRootsHeavy: '1/2',
-  detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: 'No records yet',
   addScheduleTitle: 'Add a scheduled task',
   addScheduleCta: 'Add schedule',
@@ -680,7 +546,6 @@ const baseEn = {
   back: 'Back',
   tabRecord: 'Record',
   planFabLabel: 'Schedule tasks',
-  bulkSelectModalTitle: 'Select bonsai',
   bulkSelectModalNotice: 'Choose bonsai to record or schedule ({count} selected)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
@@ -723,15 +588,12 @@ const baseEn = {
   photoSourceCamera: 'Camera',
   photoSourceLibrary: 'Library',
   photoReorderHelp: 'Use ↑↓ to reorder, × to remove.',
-  photoCaption: 'Caption',
   photoMoveUp: 'Move up',
   photoMoveDown: 'Move down',
   inputOverLimit: 'Character limit reached',
   workLogDateField: 'Date',
   workLogDatePlaceholderToday: 'Today',
   workLogPhotoField: 'Photos',
-  workLogPhotoAdd: 'Add',
-  workLogPhotoCaptionPlaceholder: 'e.g. New spring shoots',
   workLogWirePart_all: 'All',
   workLogWireUnwireDate: 'Unwire date',
   workLogWireUnwireDatePlaceholder: 'YYYY/MM/DD',
@@ -740,7 +602,6 @@ const baseEn = {
   workLogUnwirePart_eda: 'Branch',
   workLogUnwirePart_all: 'All',
   workLogRepotPotSize: 'Pot size',
-  workLogRepotPotSizeUnit: 'cm',
   workLogRepotPotSizePlaceholder: 'e.g. 18',
   workLogRepotSoilMix: 'Soil mix',
   workLogRepotSoilMixPlaceholder: 'e.g. Akadama:Kiryu=7:3',
@@ -787,16 +648,13 @@ const baseEn = {
   workLogLeafAidSymptom_other: 'Other',
   workLogLeafAidTreatment: 'Treatment',
   workLogLeafAidTreatmentPlaceholder: 'e.g. Remove infected area, apply healing paste',
-  calendarScreenTitle: 'Calendar',
   workLogDoneToast: 'Recorded',
   stackSpeciesPickerTitle: 'Choose species',
   stackStylePickerTitle: 'Choose style',
   stackBonsaiMultiSelectTitle: 'Choose bonsai',
   stackBulkLogConfirmTitle: 'Log together',
   stackBonsaiNewTitle: 'Register bonsai',
-  stackBonsaiCreateModalTitle: 'New',
   stackBonsaiDetailTitle: 'Bonsai detail',
-  stackBonsaiWateringHistoryTitle: 'Watering history',
   stackWireListTitle: 'Wire list',
   planLegendTitle: 'Legend',
   planLegendToggleShow: 'Show legend',
@@ -809,7 +667,6 @@ const baseEn = {
   planSectionRecorded: 'Recorded',
   planLegendDotRecordedLabel: 'Recorded (●)',
   planEventRecordButtonSingle: 'Record this',
-  planEventRecordButtonGroup: 'Record all {count}',
   planEventConvertedToast: 'Changed {count} planned task(s) to records',
   planEventDeleteConfirmPlannedSingleTitle: 'Delete this plan?',
   planEventDeleteConfirmLoggedSingleTitle: 'Delete this record?',
@@ -820,7 +677,6 @@ const baseEn = {
   rowActionMenuRecordAll: 'Record all {count}',
   undoSnackbarPlannedDeleteN: 'Deleted {count} plan(s)',
   undoSnackbarLoggedDeleteN: 'Deleted {count} record(s)',
-  undoSnackbarAction: 'Undo',
   recordFabLabel: 'Log care',
   historyLabelPruneAmountFew: 'A little',
   historyLabelPruneAmountSome: 'Some',
@@ -869,16 +725,6 @@ const baseEn = {
   exportHubBonsaiPdfSub: 'One page per bonsai',
   exportHubListPdfTitle: 'Full bonsai list',
   exportHubListPdfSub: 'Cover, list and stats',
-  exportBonsaiCsvTitle: 'Export bonsai list as CSV',
-  exportBonsaiCsvDesc: 'Export basic info for all bonsai as a CSV file (Pro feature).',
-  exportBonsaiCsvAction: 'Export bonsai list',
-  exportBonsaiCsvSuccess: 'Bonsai list exported',
-  exportBonsaiCsvSuccessDetail: 'Exported {count} bonsai.',
-  exportSpeciesCsvTitle: 'Export species summary as CSV',
-  exportSpeciesCsvDesc: 'Export per-species info as a CSV file (Pro feature).',
-  exportSpeciesCsvAction: 'Export species summary',
-  exportSpeciesCsvSuccess: 'Species summary exported',
-  exportSpeciesCsvSuccessDetail: 'Exported {count} species.',
   exportOptPeriodLabel: 'Period',
   exportOptPeriodAll: 'All',
   exportOptPeriod30d: 'Last 30 days',
@@ -894,7 +740,6 @@ const baseEn = {
   exportOptFilenameLabel: 'File name',
   exportOptDateFrom: 'From',
   exportOptDateTo: 'To',
-  exportOptGenerate: 'Generate and share',
   exportOptScopeEmptyTitle: 'No target selected',
   exportOptScopeEmptyBody: 'Please select at least one bonsai.',
   exportOptTagEmptyBody: 'Please select a tag.',
@@ -1001,7 +846,6 @@ const baseEn = {
   pickerSectionMaster: 'Master',
   pickerSectionCustom: 'Custom',
   pickerCustomBadge: 'Custom',
-  pickerCustomCounter: '{used}/{limit}',
   rowActionMenuEdit: 'Edit',
   workLogTitleEditing: 'Edit {type}',
   workLogUpdateCta: 'Update',

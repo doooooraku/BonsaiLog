@@ -14,13 +14,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   close: '閉じる',
   done: '完了',
   loading: '読み込み中...',
-  retry: 'リトライ',
   error: 'エラー',
 
   // --- F-01 Bonsai (P2-01 PR-D) ---
-  bonsaiTab: '盆栽',
   bonsaiListEmptyTitle: 'まだ盆栽が登録されていません',
-  bonsaiListEmptyDesc: '下のボタンから最初の盆栽を登録しましょう。',
   bonsaiCreateNew: '盆栽を登録',
   bonsaiFieldName: '名前',
   bonsaiFieldNamePlaceholder: '木の名前 (例: 玄関の黒松)',
@@ -35,8 +32,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldAcquiredFrom: '入手元メモ',
   bonsaiFieldAcquiredFromPlaceholder: '例: 父から継承 / 高崎盆栽市',
   bonsaiFieldPotInfo: '鉢情報',
-  bonsaiFieldPotInfoPlaceholder: '例: 朱泥 楕円 12cm / 中野鉢',
-  bonsaiFieldUpdatedAt: '最終更新',
   bonsaiArchive: 'アーカイブ',
   bonsaiTagsAddCta: 'タグ追加',
   tagShowMore: '+{count} 件',
@@ -51,34 +46,24 @@ const ja: Partial<Record<TranslationKey, string>> = {
 
   // --- F-08 Photos (P2-02 PR-C) ---
   bonsaiFieldPhotos: '写真',
-  photoAddCta: '写真を追加',
-  photoAddTitle: '写真を追加',
-  photoAddCamera: 'カメラで撮影',
-  photoAddLibrary: 'ライブラリから選ぶ',
   photoEmpty: 'まだ写真がありません。',
   photoLimitTitle: 'Free プランの上限です',
   photoLimitDesc: 'Free プランは盆栽 1 つにつき {count} 枚まで。Pro にすると無制限になります。',
   // Repolog-style photoCard UI keys
-  photoCaptionPlaceholder: '画像の説明 (任意)',
   photoMoveUpLabel: '上へ移動',
   photoMoveDownLabel: '下へ移動',
   photoCoverBadge: 'カバー',
   photoSetCoverLabel: 'カバーに設定',
-  photoLimitPartialAdded: '{added} 枚追加しました（{skipped} 枚は上限超過のためスキップ）',
   photoDeletedBanner: '写真を削除しました',
   photoUndoLabel: '元に戻す',
   photoPermissionTitle: '許可が必要です',
   photoPermissionDesc: '設定からカメラと写真の利用を許可してください。',
-  photoActionTitle: '写真の操作',
-  photoActionSetCover: 'カバー写真にする',
-  photoActionDelete: '写真を削除',
   photoDeleteConfirmTitle: 'この写真を削除しますか?',
   photoDeleteConfirmDesc: 'この操作は取り消せません。',
 
   // --- F-02 Events (P2-03 PR-D) ---
   eventsTitle: '作業履歴',
   eventLogCta: '作業を記録',
-  eventTypePickerDesc: '何をしましたか?',
   eventEmpty: 'まだ記録がありません。',
 
   // --- F-02 作業種別 (13 種類、 Issue #25 由来、 F-05 撤廃後も保持) ---
@@ -105,27 +90,7 @@ const ja: Partial<Record<TranslationKey, string>> = {
   sound: 'サウンド',
 
   // --- Language selector ---
-  languageChange: '言語を変更',
   currentLanguage: '現在',
-  languageNameEn: '英語',
-  languageNameJa: '日本語',
-  languageNameFr: 'フランス語',
-  languageNameEs: 'スペイン語',
-  languageNameDe: 'ドイツ語',
-  languageNameIt: 'イタリア語',
-  languageNamePt: 'ポルトガル語',
-  languageNameRu: 'ロシア語',
-  languageNameZhHans: '中国語（簡体字）',
-  languageNameZhHant: '中国語（繁体字）',
-  languageNameKo: '韓国語',
-  languageNameHi: 'ヒンディー語',
-  languageNameId: 'インドネシア語',
-  languageNameTh: 'タイ語',
-  languageNameVi: 'ベトナム語',
-  languageNameTr: 'トルコ語',
-  languageNameNl: 'オランダ語',
-  languageNamePl: 'ポーランド語',
-  languageNameSv: 'スウェーデン語',
 
   // --- Purchase / Restore ---
   restore: '購入を復元',
@@ -134,7 +99,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   restoreSuccess: '購入履歴を復元しました。',
   restoreNotFound: '復元可能な購入が見つかりませんでした。',
   restoreFailed: '購入の復元に失敗しました。',
-  restoreDesc: 'このアカウントで行った購入を復元します。',
 
   // --- Pro / Paywall ---
   proTitle: 'Proにアップグレード',
@@ -166,20 +130,14 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsAccountProLifetimeDesc: '買切ライセンスで Pro 機能を永久にご利用いただけます。',
 
   // --- Legal ---
-  legalSectionTitle: '法的情報',
-  legalPrivacyPolicyLabel: 'プライバシーポリシー',
-  legalTermsOfUseLabel: '利用規約（EULA）',
 
   // --- Errors ---
   errorLoadFailed: 'データの読み込みに失敗しました。',
-  errorSaveFailed: '保存に失敗しました。',
-  errorDeleteFailed: '削除に失敗しました。',
 
   // --- 設定セクション (F-11 お引っ越し) ---
   settingsNotificationSection: '通知',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
-  settingsTitle: '設定',
   settingsBackupSection: 'お引っ越し',
   backupTitle: 'バックアップと復元',
   backupExportTitle: 'バックアップを作成',
@@ -216,24 +174,15 @@ const ja: Partial<Record<TranslationKey, string>> = {
 
   // --- F-07 針金がけ装着期間 (Phase A、純関数出力文言、ADR-0011) ---
   // 将来用途: しきい値超過時の事実通知文言 (推奨/命令禁止、constraints §5-2)
-  wiringDurationOverdueWeeks: '装着期間 {weeks} 週経過しました',
   wiringScheduledUnwireSet: '外す予定日時: {date}',
 
   // --- F-10 エクスポート Phase A (events CSV、Pro 限定、ADR-0016) ---
   settingsExportSection: 'エクスポート',
-  exportCsvTitle: '作業ログを CSV で出力',
-  exportCsvDesc: 'すべての作業ログを CSV ファイルにエクスポートします (Pro 機能)。',
-  exportCsvAction: 'CSV を出力',
-  exportCsvSuccess: 'エクスポートが完了しました。',
-  exportCsvSuccessDetail: '{count} 件の作業ログを書き出しました。',
   exportCsvFailed: 'エクスポートに失敗しました。',
   exportCsvShareTitle: 'BonsaiLog 作業ログ CSV',
   exportProRequiredTitle: 'Pro 機能',
   exportProRequiredBody:
     'CSV エクスポートは Pro メンバー向けの機能です。Pro にアップグレードするとご利用いただけます。',
-  exportShareUnavailableTitle: '共有を利用できません',
-  exportShareUnavailableBody:
-    'この端末では共有を利用できません。OS をアップデートしてからお試しください。',
 
   // --- F-09 検索 (Phase A、ADR-0008 改訂) ---
   settingsSearchSection: '検索',
@@ -249,14 +198,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   bulkLogConfirmTitle: '{label}を{count}件にまとめて記録',
   bulkScheduleConfirmTitle: '{label}の予定を{count}件に追加',
   bulkLogConfirmSub: '同じ内容で各盆栽に保存します',
-  bulkLogConfirmNoteLabel: 'メモ (任意)',
-  bulkLogConfirmNotePlaceholder: '自由メモ',
   bulkLogSaveCta: '{count}件にまとめて記録',
   bulkLogDoneToast: '{count}件の作業を記録しました',
   bulkScheduleConfirmCta: '予定を追加 (×{count})',
-  bulkLogConfirmCta: '記録する (×{count})',
-  bulkLogAddNoteToggle: 'メモを追加する',
-  bulkLogConfirmTitleMulti: '{count}件の作業を記録',
   detailTimelineToday: '今日',
   notificationSummaryTitle: '今日の予定',
   notificationSummaryBody: '{count} 件の作業予定があります',
@@ -270,7 +214,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   searchMinChars: '{count}文字以上で検索できます',
   searchEmpty: '見つかりませんでした。',
   searchBonsaiSection: '盆栽',
-  searchSpeciesSection: '樹種',
   searchEventSection: '作業履歴',
   searchWorkLabel: '作業',
 
@@ -281,7 +224,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsThemeDark: 'ダーク',
 
   // --- F-04 水やり履歴 (Phase A、ADR-0013) ---
-  wateringSectionTitle: '水やり',
   wateringLastNoRecord: 'まだ水やりの記録がありません',
   wateringLastToday: '今日、水やりしました',
   wateringLastOneDay: '最後の水やりから 1 日',
@@ -290,18 +232,11 @@ const ja: Partial<Record<TranslationKey, string>> = {
   wateringLastOverYear: '最後の水やりから 1 年以上',
 
   // --- F-13 Paywall 機能比較表 (Phase 1c、Issue #20、ADR-0009) ---
-  proComparisonTitle: 'Pro でできること',
-  proComparisonPhotos: '盆栽 1 鉢あたりの写真が無制限',
-  proComparisonCsv: '作業ログを CSV で出力',
-  proComparisonPdf: '盆栽記録を PDF で出力',
-  proComparisonNoAds: '広告非表示',
 
   // --- F-09 タグ管理 (Phase C、Issue #31、ADR-0008 改訂) ---
   tagsManagerTitle: 'タグを管理',
   tagsManagerDesc: 'タグを付けると作業ログを整理でき、検索からもすぐ見つけられます。',
   tagsAddPlaceholder: '新しいタグ名',
-  tagsAddAction: '追加',
-  tagsRenameAction: '名前を変更',
   tagsAddFailedBody: 'タグの追加に失敗しました。',
   tagsRenameDuplicateBody: '同じ名前のタグが既に存在します。',
   tagsEmpty: 'まだタグがありません。',
@@ -317,34 +252,26 @@ const ja: Partial<Record<TranslationKey, string>> = {
     '端末の設定で通知が無効になっています。設定から許可してください。',
 
   // --- F-14 広告バナーラベル (Phase B、Issue #22、functional_spec §19) ---
-  adBannerLabel: '広告',
 
   // --- F-26 オンボーディング (Phase A 文言のみ、Issue #26、ADR-0018) ---
   onboardingWelcomeTitle: '鉢 1 本ずつ、一生分。',
-  onboardingWelcomeBody: '盆栽 1 鉢ずつの作業・写真・樹種を記録。オフライン完結、19 言語対応。',
   onboardingWelcomeCta: 'はじめる',
-  onboardingSkip: 'あとで',
   onboardingLanguageTitle: '言語を選んでください',
   onboardingLanguageDesc: 'タップですぐにプレビューできます。\nあとで設定からも変更できます。',
   onboardingLanguageOsBadge: '端末の言語',
   next: '次へ',
 
   // --- F-15 屋外モード (Phase B、Issue #32、ADR-0015) ---
-  settingsOutdoorMode: '屋外モード',
-  settingsOutdoorModeDesc: '屋外で見やすい高コントラスト配色を使います (本実装は次回更新で対応)。',
 
   // --- F-10 PDF エクスポート (Phase B、Issue #33、ADR-0016) ---
   exportPdfTitle: '盆栽を PDF でエクスポート',
   exportPdfDesc: '個別盆栽のレポート PDF を生成します (Pro 機能)。',
-  exportPdfAction: 'PDF',
   exportPdfHeaderDate: '日付',
-  exportPdfHeaderType: '種類',
   exportPdfHeaderNote: 'メモ',
   exportPdfShareTitle: 'BonsaiLog 盆栽 PDF',
   exportPdfFailedBody: 'PDF の生成に失敗しました。',
 
   // --- F-09 検索 最近 3 タグチップ (Phase B、Issue #31、ADR-0008 改訂) ---
-  searchRecentTagsLabel: '最近のタグ',
   searchTagFilterClear: 'フィルタを解除',
 
   // --- F-13 設定 → アカウント / Paywall 導線 (Phase 1b、Issue #20、ADR-0009) ---
@@ -357,13 +284,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   tabBonsai: '盆栽',
   tabLookBack: 'ふりかえり',
   tabSettings: '設定',
-  tabPlanComingSoon: '準備中',
 
   // --- ADR-0020 Phase 2: 盆栽タブ Claude Design HomeScreen 整合 ---
   appName: 'BonsaiLog',
-  homeFilterAll: 'すべて',
-  homeCardLastWatering: '最後の水やりから{elapsed}',
-  homeCardLastPruning: '最後の剪定から{elapsed}',
   elapsedToday: '今日',
   elapsedDays: '{days}日',
   elapsedWeeks: '{weeks}週間',
@@ -411,7 +334,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogWirePart_miki: '幹',
   workLogWirePart_eda: '枝',
   workLogWireDuration: '目安期間',
-  workLogWireDurationHint: '外し時期の通知に使用',
 
   // --- ADR-0020 v1.x-5: Paywall Claude Design (Hero + FeatureRow テーブル) ---
   paywallHeroEyebrow: '解放',
@@ -464,21 +386,14 @@ const ja: Partial<Record<TranslationKey, string>> = {
   recordSelectedEmptyTitle: 'この日の記録はありません',
   recordSelectedEmptyBody:
     'お手入れをしたら、下の「{cta}」から残せます。記録した日はカレンダーに ● が付きます。',
-  planEventPlanned: '予定',
   planGroupExpand: '個別に開く',
   planGroupCollapse: 'まとめる',
-  planWiringListLink: '針金がけ一覧',
 
   // --- ADR-0020 v1.x-4: WiringListScreen ---
-  wiringTabAll: 'すべて',
-  wiringTabActive: '未外し',
-  wiringTabSoon: '1週間以内',
   wiringListEmpty: '装着中の針金記録はありません。',
   wiringRowWeeks: '{weeks}週経過',
   wiringOverdueBadge: '要確認',
-  wiringUnwireInDays: '外し予定まで{days}日',
   wiringUnwireOverdue: '外し時期を{days}日超過',
-  wiringRowGaugePart: '{gauge} · {part}',
   wiringUnwireInWeeks: '外し予定まで{weeks}週',
   wiringUnwireOverdueWeeks: '外し時期を{weeks}週超過',
 
@@ -486,14 +401,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   detailTabHistory: '作業履歴',
 
   // --- ADR-0020 Phase 3: 盆栽詳細 水やり履歴画面 (SS 222921 整合) ---
-  wateringSummaryStreak: '連続記録',
-  wateringSummaryDoubleDays: '2回の日',
-  statsTabTitle: '統計',
-  statsHeaderAllBonsai: 'すべての盆栽 ({count}本)',
-  bonsaiFilterSelectAll: 'すべての盆栽',
-  bonsaiFilterSearchPlaceholder: '盆栽を検索',
-  bonsaiFilterRecentSection: '最近見た盆栽',
-  bonsaiFilterAllSection: 'すべての盆栽 (アイウエオ順)',
 
   // --- Home empty state (Phase 1b, Issue #29, ADR-0019) ---
   homeEmptyTitle: '最初の盆栽を追加しよう',
@@ -537,11 +444,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   attExplainerBody: '広告のパフォーマンス測定のために、識別子の使用を許可するか選択できます。',
   attExplainerAllow: '許可した場合: より関連性の高い広告が表示されます。',
   attExplainerDeny: '許可しない場合: 一般的な広告が表示されます。アプリの機能制限はありません。',
-  settingsExportListPdfTitle: '全盆栽リスト PDF',
-  settingsExportListPdfDesc: '表紙 + リスト + 統計の A4 縦 PDF',
-  exportListPdfTitle: '全盆栽リスト PDF',
-  exportListPdfDesc: '表紙 + 全盆栽リスト + 統計を A4 縦 1 枚に出力します。',
-  exportListPdfAction: '生成する',
   exportListPdfShareTitle: '全盆栽リスト PDF を共有',
   exportListPdfCoverTitle: 'BonsaiLog 全盆栽記録',
   exportListPdfCoverSubtitle: '全 {count} 本',
@@ -549,12 +451,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportStorageLowBody:
     'ストレージ容量が不足しています。100MB 以上の空き容量を確保してから再度お試しください。',
   exportStorageLowTitle: 'ストレージ容量不足',
-  onboardingTut3Title: '水やりや作業を記録しましょう',
-  onboardingTut3Body:
-    '盆栽詳細画面から水やり・施肥・針金がけを記録できます。BonsaiLog は記録だけ、判定はしません。',
-  onboardingTut4Title: '水やりヒートマップの見方',
-  onboardingTut4Body:
-    '色が濃いほどその日の水やり回数が多いです。セルをタップで詳細表示。「最後の水やり」は経過日数を示します。',
   onboardingTut5Title: 'あなたが決めた予定をお知らせ',
   onboardingTut5Body:
     '予定を登録するときに、通知を受け取るか選べます。いつでも設定から変更できます。',
@@ -580,20 +476,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsLegalTerms: '利用規約',
   settingsLegalPrivacy: 'プライバシーポリシー',
   searchRecentTitle: '最近の検索',
-  searchHistoryClear: '履歴を削除',
-  outdoorModeToggleA11y: '屋外モードを切り替える',
   onboardingWelcomeValue1: '19 言語、完全オフライン',
   onboardingWelcomeValue2: '個人情報は取得しません',
   onboardingWelcomeValue3: '次世代へ引き継げる台帳',
   onboardingWelcomeNote: 'アカウント登録は不要です',
-  detailMoreMenu: 'メニュー',
   detailTabBasic: '基本情報',
   detailTabPlanTimeline: '作業予定',
-  detailPlanTimelinePlaceholder: '予定機能は v1.x で実装予定です。',
-  detailBasicEdit: '編集',
-  detailMenuExportPdf: 'PDFで書き出し',
-  detailExportProTitle: 'Pro 限定機能',
-  detailExportProDesc: 'PDF 書き出しは Pro プランの機能です。',
   onboardingLanguageContinue: '選択して続ける',
   // --- T1-8c CareHub Hub (ADR-0020 §Decision §7) ---
   lookBackHubSubtitle: '記録を振り返り、 整理するビューです。',
@@ -617,13 +505,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   fieldRequiredLabel: '必須',
   fieldOptionalLabel: '任意',
   // --- T2-4 購入日 (schema v8) ---
-  bonsaiFieldPurchaseDate: '購入日',
   // --- T2-6 タグ入力 (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'タグ',
   bonsaiTagsEmpty: '最近使ったタグはまだありません',
   // --- Sess74 PR-1: F-09 タグマスタ (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
-  presetTagName_favorite: 'お気に入り',
-  presetTagName_flowering: '花あり',
   tagSectionPresets: 'おすすめ',
   tagPresetBadgeMaster: 'マスタ',
   tagPresetLockedToast: 'マスタタグは編集できません',
@@ -635,14 +520,10 @@ const ja: Partial<Record<TranslationKey, string>> = {
   settingsNotifMasterOffBanner:
     '通知がオフです。設定画面のマスタースイッチをオンにすると、ここの項目を操作できます。',
   wiringRowUnwireAction: '外す',
-  wiringUnwireConfirmTitle: '{name} の針金を外しますか?',
   paywallFeatureTheme: 'テーマ',
   historyLabelAmountNormal: 'いつも通り',
   historyLabelAmountPlenty: 'たっぷり',
   historyLabelAmountLight: '軽く',
-  historyLabelAmountTip: '枝先のみ',
-  historyLabelAmountMid: 'そこそこ',
-  historyLabelAmountBold: '思い切り',
   historyLabelPartsEda: '枝',
   historyLabelPartsHa: '葉',
   historyLabelPartsShinme: '新芽',
@@ -653,22 +534,9 @@ const ja: Partial<Record<TranslationKey, string>> = {
   historyLabelFertKindLiquid: '液肥',
   historyLabelFertKindSlow: '緩効性',
   historyLabelFertKindOther: 'その他',
-  historyLabelSprayPurposePrevent: '予防',
-  historyLabelSprayPurposeTreat: '治療',
-  historyLabelSprayPurposeBoth: '両方',
-  historyLabelHealSymptomsYake: '葉焼け',
-  historyLabelHealSymptomsKare: '枝枯れ',
-  historyLabelHealSymptomsMushi: '虫',
-  historyLabelHealSymptomsKabi: 'カビ',
-  historyLabelHealSymptomsOther: '症状その他',
-  historyLabelMossTasksAdd: '貼り直し',
-  historyLabelMossTasksRemove: '剥がす',
-  historyLabelMossTasksWater: '湿らす',
   historyLabelRepotRootsNone: '整理なし',
   historyLabelRepotRootsLight: '軽く整理',
   historyLabelRepotRootsHalf: '1/3整理',
-  historyLabelRepotRootsHeavy: '1/2整理',
-  detailTimelineTabTitle: '予定された作業',
   detailTimelineEmpty: 'まだ予定はありません',
   addScheduleTitle: '予定を追加',
   addScheduleCta: '予定を登録',
@@ -684,7 +552,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   // 英訳許容差発動)。 動詞は addScheduleCta「予定を登録」 と「登録/追加」 で意味分離
   // (登録 = entity 永続化 / 追加 = 既存集合への要素追加)。
   planFabLabel: '予定を追加',
-  bulkSelectModalTitle: '盆栽を選ぶ',
   bulkSelectModalNotice: '盆栽を選んでください ({count}件選択中)',
   tagEditTitleAdd: 'タグを追加',
   tagEditTitleEdit: 'タグを編集',
@@ -726,15 +593,12 @@ const ja: Partial<Record<TranslationKey, string>> = {
   photoSourceCamera: 'カメラ',
   photoSourceLibrary: 'ライブラリ',
   photoReorderHelp: '↑↓で並べ替え、 ×で削除できます。',
-  photoCaption: 'キャプション',
   photoMoveUp: '上に移動',
   photoMoveDown: '下に移動',
   inputOverLimit: '上限に達しました',
   workLogDateField: '日付',
   workLogDatePlaceholderToday: '今日',
   workLogPhotoField: '写真',
-  workLogPhotoAdd: '追加',
-  workLogPhotoCaptionPlaceholder: '例: 春の新芽展開',
   workLogWirePart_all: 'すべて',
   workLogWireUnwireDate: '外し予定日',
   workLogWireUnwireDatePlaceholder: '年 / 月 / 日',
@@ -743,7 +607,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogUnwirePart_eda: '枝',
   workLogUnwirePart_all: 'すべて',
   workLogRepotPotSize: '鉢サイズ',
-  workLogRepotPotSizeUnit: 'cm',
   workLogRepotPotSizePlaceholder: '例: 18',
   workLogRepotSoilMix: '用土レシピ',
   workLogRepotSoilMixPlaceholder: '例: 赤玉土:桐生砂 = 7:3',
@@ -790,16 +653,13 @@ const ja: Partial<Record<TranslationKey, string>> = {
   workLogLeafAidSymptom_other: 'その他',
   workLogLeafAidTreatment: '処置',
   workLogLeafAidTreatmentPlaceholder: '例: 患部除去・癒合剤塗布',
-  calendarScreenTitle: 'カレンダー',
   workLogDoneToast: '記録しました',
   stackSpeciesPickerTitle: '樹種を選ぶ',
   stackStylePickerTitle: '樹形を選ぶ',
   stackBonsaiMultiSelectTitle: '盆栽を選ぶ',
   stackBulkLogConfirmTitle: 'まとめて記録',
   stackBonsaiNewTitle: '盆栽を登録',
-  stackBonsaiCreateModalTitle: '新規登録',
   stackBonsaiDetailTitle: '盆栽の詳細',
-  stackBonsaiWateringHistoryTitle: '水やり履歴',
   stackWireListTitle: '針金がけ一覧',
   planLegendTitle: '凡例',
   planLegendToggleShow: '凡例を表示',
@@ -812,7 +672,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   planSectionRecorded: '記録',
   planLegendDotRecordedLabel: '記録 (●)',
   planEventRecordButtonSingle: '作業を記録',
-  planEventRecordButtonGroup: '全 {count} 件を記録',
   planEventConvertedToast: '予定 {count} 件を記録に変更しました',
   planEventDeleteConfirmPlannedSingleTitle: 'この予定を削除しますか?',
   planEventDeleteConfirmLoggedSingleTitle: 'この記録を削除しますか?',
@@ -823,7 +682,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   rowActionMenuRecordAll: '全 {count} 件を記録',
   undoSnackbarPlannedDeleteN: '予定 {count} 件を削除しました',
   undoSnackbarLoggedDeleteN: '記録 {count} 件を削除しました',
-  undoSnackbarAction: '元に戻す',
   recordFabLabel: '作業を記録',
   historyLabelPruneAmountFew: '少し',
   historyLabelPruneAmountSome: 'そこそこ',
@@ -872,16 +730,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportHubBonsaiPdfSub: '1本ずつの1ページ',
   exportHubListPdfTitle: '全盆栽リスト',
   exportHubListPdfSub: '表紙・一覧・統計',
-  exportBonsaiCsvTitle: '盆栽一覧を CSV で出力',
-  exportBonsaiCsvDesc: '全盆栽の基本情報を CSV ファイルに書き出します (Pro 機能)。',
-  exportBonsaiCsvAction: '盆栽一覧を出力',
-  exportBonsaiCsvSuccess: '盆栽一覧を書き出しました',
-  exportBonsaiCsvSuccessDetail: '{count} 件の盆栽を書き出しました。',
-  exportSpeciesCsvTitle: '樹種別サマリを CSV で出力',
-  exportSpeciesCsvDesc: '樹種ごとの情報を CSV ファイルに書き出します (Pro 機能)。',
-  exportSpeciesCsvAction: '樹種サマリを出力',
-  exportSpeciesCsvSuccess: '樹種別サマリを書き出しました',
-  exportSpeciesCsvSuccessDetail: '{count} 種を書き出しました。',
   exportOptPeriodLabel: '期間',
   exportOptPeriodAll: 'すべて',
   exportOptPeriod30d: '過去30日',
@@ -897,7 +745,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   exportOptFilenameLabel: 'ファイル名',
   exportOptDateFrom: '開始',
   exportOptDateTo: '終了',
-  exportOptGenerate: '生成して共有',
   exportOptScopeEmptyTitle: '対象が未選択です',
   exportOptScopeEmptyBody: '盆栽を1つ以上選んでください。',
   exportOptTagEmptyBody: 'タグを1つ選んでください。',
@@ -1000,7 +847,6 @@ const ja: Partial<Record<TranslationKey, string>> = {
   pickerSectionMaster: 'マスタ',
   pickerSectionCustom: 'カスタム',
   pickerCustomBadge: 'カスタム',
-  pickerCustomCounter: '{used}/{limit}',
   rowActionMenuEdit: '編集',
   workLogTitleEditing: '{type}を編集',
   workLogUpdateCta: '更新する',

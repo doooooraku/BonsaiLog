@@ -14,7 +14,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   close: 'बंद करें',
   done: 'हो गया',
   loading: 'लोड हो रहा है...',
-  retry: 'पुनः प्रयास करें',
   error: 'त्रुटि',
 
   // --- Settings ---
@@ -26,27 +25,7 @@ const hi: Partial<Record<TranslationKey, string>> = {
   sound: 'ध्वनि',
 
   // --- Language selector ---
-  languageChange: 'भाषा बदलें',
   currentLanguage: 'वर्तमान',
-  languageNameEn: 'अंग्रेज़ी',
-  languageNameJa: 'जापानी',
-  languageNameFr: 'फ़्रेंच',
-  languageNameEs: 'स्पेनिश',
-  languageNameDe: 'जर्मन',
-  languageNameIt: 'इतालवी',
-  languageNamePt: 'पुर्तगाली',
-  languageNameRu: 'रूसी',
-  languageNameZhHans: 'चीनी (सरलीकृत)',
-  languageNameZhHant: 'चीनी (पारंपरिक)',
-  languageNameKo: 'कोरियाई',
-  languageNameHi: 'हिन्दी',
-  languageNameId: 'इंडोनेशियाई',
-  languageNameTh: 'थाई',
-  languageNameVi: 'वियतनामी',
-  languageNameTr: 'तुर्की',
-  languageNameNl: 'डच',
-  languageNamePl: 'पोलिश',
-  languageNameSv: 'स्वीडिश',
 
   // --- Purchase / Restore ---
   restore: 'खरीदारी पुनर्स्थापित करें',
@@ -55,7 +34,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   restoreSuccess: 'खरीदारी इतिहास पुनर्स्थापित हो गया।',
   restoreNotFound: 'पुनर्स्थापित करने के लिए कोई खरीदारी नहीं मिली।',
   restoreFailed: 'खरीदारी पुनर्स्थापित करने में विफल।',
-  restoreDesc: 'इस खाते से की गई खरीदारी पुनर्स्थापित करें।',
 
   // --- Pro / Paywall ---
   proTitle: 'Pro में अपग्रेड',
@@ -85,19 +63,12 @@ const hi: Partial<Record<TranslationKey, string>> = {
   settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 
   // --- Legal ---
-  legalSectionTitle: 'कानूनी जानकारी',
-  legalPrivacyPolicyLabel: 'गोपनीयता नीति',
-  legalTermsOfUseLabel: 'उपयोग की शर्तें (EULA)',
 
   // --- Errors ---
   errorLoadFailed: 'डेटा लोड करने में विफल。',
-  errorSaveFailed: 'सहेजने में विफल।',
-  errorDeleteFailed: 'हटाने में विफल।',
 
   // --- F-01 Bonsai (P2-01 PR-D, English fallback for v1.0, localized in v1.x) ---
-  bonsaiTab: 'Bonsai',
   bonsaiListEmptyTitle: 'No bonsai registered yet',
-  bonsaiListEmptyDesc: 'Tap below to register your first bonsai.',
   bonsaiCreateNew: 'नया बोनसाई पंजीकृत करें',
   bonsaiFieldName: 'नाम',
   bonsaiFieldNamePlaceholder: 'जैसे पुराना पाइन',
@@ -109,7 +80,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   bonsaiPlaceholderSpecies: 'प्रजाति चुनें',
   bonsaiPlaceholderStyle: 'शैली चुनें',
   bonsaiFieldAcquiredAt: 'अधिग्रहण की तिथि',
-  bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'संग्रह करें',
   bonsaiArchiveConfirmTitle: 'इस बोनसाई को संग्रहित करें?',
   bonsaiArchiveConfirmDesc:
@@ -122,35 +92,25 @@ const hi: Partial<Record<TranslationKey, string>> = {
 
   // --- F-08 Photos (P2-02 PR-C, English fallback for v1.0) ---
   bonsaiFieldPhotos: 'तस्वीरें',
-  photoAddCta: 'Add photo',
-  photoAddTitle: 'Add a photo',
-  photoAddCamera: 'Take a photo',
-  photoAddLibrary: 'Choose from library',
   photoEmpty: 'No photos yet.',
   photoLimitTitle: 'Free limit reached',
   photoLimitDesc:
     'Free plan allows {count} photos per bonsai. Upgrade to Pro for unlimited photos.',
   // Repolog-style photoCard UI keys
-  photoCaptionPlaceholder: 'Caption (optional)',
   photoMoveUpLabel: 'Move up',
   photoMoveDownLabel: 'Move down',
   photoCoverBadge: 'Cover',
   photoSetCoverLabel: 'Set as cover',
-  photoLimitPartialAdded: 'Added {added} photos ({skipped} skipped due to limit)',
   photoDeletedBanner: 'Photo deleted',
   photoUndoLabel: 'Undo',
   photoPermissionTitle: 'Permission needed',
   photoPermissionDesc: 'Please allow camera and photo library access in Settings.',
-  photoActionTitle: 'Photo actions',
-  photoActionSetCover: 'Set as cover photo',
-  photoActionDelete: 'Delete photo',
   photoDeleteConfirmTitle: 'Delete this photo?',
   photoDeleteConfirmDesc: 'This action cannot be undone.',
 
   // --- F-02 Events (P2-03 PR-D, English fallback for v1.0) ---
   eventsTitle: 'Care log',
   eventLogCta: 'Log a care event',
-  eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: 'अभी तक कोई कार्य रिकॉर्ड नहीं',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
@@ -170,7 +130,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   settingsNotificationSection: 'सूचनाएँ',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
-  settingsTitle: 'Settings',
   settingsBackupSection: 'बैकअप',
   backupTitle: 'बैकअप और पुनर्स्थापना',
   backupExportTitle: 'Create a backup',
@@ -206,7 +165,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
     'नोट: बैकअप एन्क्रिप्टेड नहीं होते। इन्हें अपनी प्रबंधित सुरक्षित जगह पर रखें।',
 
   // --- F-04 Watering history (Phase A、English fallback for now) ---
-  wateringSectionTitle: 'Watering',
   wateringLastNoRecord: 'No watering records yet',
   wateringLastToday: 'Watered today',
   wateringLastOneDay: '1 day since last watering',
@@ -231,14 +189,9 @@ const hi: Partial<Record<TranslationKey, string>> = {
   bulkLogConfirmTitle: 'Log {label} for {count} bonsai',
   bulkScheduleConfirmTitle: 'Schedule {label} for {count} bonsai',
   bulkLogConfirmSub: 'Same content saved to each bonsai',
-  bulkLogConfirmNoteLabel: 'Note (optional)',
-  bulkLogConfirmNotePlaceholder: 'Free note',
   bulkLogSaveCta: 'Log for {count} bonsai',
   bulkLogDoneToast: 'Logged actions for {count} bonsai',
   bulkScheduleConfirmCta: 'Schedule (×{count})',
-  bulkLogConfirmCta: 'Log (×{count})',
-  bulkLogAddNoteToggle: 'Add note',
-  bulkLogConfirmTitleMulti: 'Log {count} actions',
   detailTimelineToday: 'आज',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
@@ -252,42 +205,25 @@ const hi: Partial<Record<TranslationKey, string>> = {
   searchMinChars: 'खोज के लिए कम से कम {count} अक्षर दर्ज करें',
   searchEmpty: 'कोई परिणाम नहीं।',
   searchBonsaiSection: 'बोनसाई',
-  searchSpeciesSection: 'प्रजातियाँ',
   searchEventSection: 'देखभाल लॉग',
   searchWorkLabel: 'Work',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
   settingsExportSection: 'निर्यात',
-  exportCsvTitle: 'देखभाल लॉग CSV में निर्यात',
-  exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
-  exportCsvAction: 'CSV निर्यात',
-  exportCsvSuccess: 'निर्यात पूरा हुआ।',
-  exportCsvSuccessDetail: 'Exported {count} care logs.',
   exportCsvFailed: 'निर्यात विफल।',
   exportCsvShareTitle: 'BonsaiLog care logs CSV',
   exportProRequiredTitle: 'Pro सुविधा',
   exportProRequiredBody: 'यह निर्यात Pro सदस्यों के लिए उपलब्ध है। अनलॉक करने के लिए अपग्रेड करें।',
-  exportShareUnavailableTitle: 'साझा करना उपलब्ध नहीं है',
-  exportShareUnavailableBody:
-    'Sharing is not available on this device. Please update the OS and try again.',
 
   // --- F-07 Wiring duration (Phase A、English fallback) ---
-  wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'Pro में आपको क्या मिलता है',
-  proComparisonPhotos: 'प्रति बोनसाई असीमित तस्वीरें',
-  proComparisonCsv: 'देखभाल लॉग CSV में निर्यात',
-  proComparisonPdf: 'बोनसाई रिकॉर्ड PDF में निर्यात',
-  proComparisonNoAds: 'कोई विज्ञापन नहीं',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
   tagsManagerDesc: 'Tags help you organize care logs and find them in search.',
   tagsAddPlaceholder: 'New tag name',
-  tagsAddAction: 'Add',
-  tagsRenameAction: 'Rename',
   tagsAddFailedBody: 'Could not add the tag.',
   tagsRenameDuplicateBody: 'A tag with the same name already exists.',
   tagsEmpty: 'No tags yet.',
@@ -304,36 +240,26 @@ const hi: Partial<Record<TranslationKey, string>> = {
     'Notifications are disabled in your device settings. Enable them to use this feature.',
 
   // --- F-14 Ad banner label (Phase B、English fallback) ---
-  adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
   onboardingWelcomeTitle: 'BonsaiLog में आपका स्वागत है',
-  onboardingWelcomeBody:
-    'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
   onboardingWelcomeCta: 'शुरू करें',
-  onboardingSkip: 'Later',
   onboardingLanguageTitle: 'अपनी भाषा चुनें',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
 
   // --- F-15 Outdoor mode (Phase B、English fallback) ---
-  settingsOutdoorMode: 'Outdoor mode',
-  settingsOutdoorModeDesc:
-    'When on, the app uses a high-contrast palette for outdoor visibility (full implementation in next update).',
 
   // --- F-10 PDF export (Phase B、English fallback) ---
   exportPdfTitle: 'बोनसाई को PDF में निर्यात',
   exportPdfDesc: 'Generate a PDF report for each bonsai (Pro feature).',
-  exportPdfAction: 'PDF',
   exportPdfHeaderDate: 'तारीख',
-  exportPdfHeaderType: 'प्रकार',
   exportPdfHeaderNote: 'नोट',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'PDF बनाने में विफल।',
 
   // --- F-09 Search recent tags chips (Phase B、English fallback) ---
-  searchRecentTagsLabel: 'हाल के टैग',
   searchTagFilterClear: 'फ़िल्टर साफ़ करें',
 
   // --- F-13 Settings → Account / Paywall entry (Phase 1b、English fallback) ---
@@ -343,12 +269,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   settingsAccountProInactiveDesc: 'See plans and upgrade.',
 
   // --- F-04 Watering heatmap (Phase B、English fallback) ---
-  statsTabTitle: 'Stats',
-  statsHeaderAllBonsai: 'All bonsai ({count})',
-  bonsaiFilterSelectAll: 'All bonsai',
-  bonsaiFilterSearchPlaceholder: 'Search bonsai',
-  bonsaiFilterRecentSection: 'Recently viewed',
-  bonsaiFilterAllSection: 'All bonsai',
 
   // --- Home empty state (Phase 1b, Issue #29, ADR-0019) ---
   homeEmptyTitle: 'Add your first bonsai',
@@ -390,23 +310,12 @@ const hi: Partial<Record<TranslationKey, string>> = {
     'You can choose whether to allow the use of an identifier to help measure ad performance.',
   attExplainerAllow: 'If allowed: ads may be more relevant to you.',
   attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
-  settingsExportListPdfTitle: 'बोनसाई सूची निर्यात करें (PDF)',
-  settingsExportListPdfDesc: 'सभी बोनसाई का PDF सारांश बनाएँ',
-  exportListPdfTitle: 'पूरी सूची PDF',
-  exportListPdfDesc: 'Generates an A4 PDF with cover, full bonsai list and statistics.',
-  exportListPdfAction: 'बनाएँ',
   exportListPdfShareTitle: 'Share full list PDF',
   exportListPdfCoverTitle: 'BonsaiLog पूर्ण रिकॉर्ड',
   exportListPdfCoverSubtitle: '{count} bonsai total',
   exportListPdfFooter: 'Generated by BonsaiLog',
   exportStorageLowBody: 'Insufficient storage. Please free up at least 100MB and try again.',
   exportStorageLowTitle: 'Storage low',
-  onboardingTut3Title: 'Log watering and care',
-  onboardingTut3Body:
-    'Tap the bonsai detail screen to log watering, fertilizing, and wiring. BonsaiLog only records — no judgment.',
-  onboardingTut4Title: 'Read the watering heatmap',
-  onboardingTut4Body:
-    'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
     'जब आप कोई योजना जोड़ते हैं, तो सूचनाएं पाने का विकल्प चुन सकते हैं। इसे सेटिंग में कभी भी बदला जा सकता है।',
@@ -431,26 +340,18 @@ const hi: Partial<Record<TranslationKey, string>> = {
   settingsLegalTerms: 'सेवा की शर्तें',
   settingsLegalPrivacy: 'गोपनीयता नीति',
   searchRecentTitle: 'Recent searches',
-  searchHistoryClear: 'Clear history',
-  outdoorModeToggleA11y: 'Toggle outdoor mode',
   // --- ADR-0020 Phase 1: 4-tab labels (English fallback for i18n.test.ts) ---
   tabBonsai: 'बोन्साई',
   tabLookBack: 'अवलोकन',
   tabSettings: 'Settings',
-  tabPlanComingSoon: 'Coming soon',
   // --- ADR-0020 Phase 2: bonsai tab Claude Design HomeScreen (English fallback) ---
   appName: 'BonsaiLog',
-  homeFilterAll: 'All',
-  homeCardLastWatering: 'Watered {elapsed} ago',
-  homeCardLastPruning: 'Pruned {elapsed} ago',
   elapsedToday: 'today',
   elapsedDays: '{days}d',
   elapsedWeeks: '{weeks}w',
   elapsedMonths: '{months}mo',
   elapsedYears: '{years}y',
   // --- ADR-0020 Phase 3: bonsai detail watering history (English fallback, SS 222921) ---
-  wateringSummaryStreak: 'Current streak',
-  wateringSummaryDoubleDays: 'Twice-a-day',
   workPickerTitle: 'Log a task',
   // --- ADR-0020 Phase 5: plan tab calendar (English fallback) ---
   planMonthYearSuffix: '',
@@ -489,7 +390,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   recordSelectedEmptyTitle: 'इस दिन की कोई प्रविष्टि नहीं है',
   recordSelectedEmptyBody:
     'देखभाल के बाद, रिकॉर्ड रखने के लिए नीचे "{cta}" पर टैप करें। रिकॉर्ड वाले दिनों पर कैलेंडर में ● दिखता है।',
-  planEventPlanned: 'Planned',
   planGroupExpand: 'विस्तृत करें',
   planGroupCollapse: 'संक्षिप्त करें',
   // --- ADR-0020 v1.x-5: Paywall Claude Design (English fallback) ---
@@ -507,16 +407,10 @@ const hi: Partial<Record<TranslationKey, string>> = {
   paywallFeatureNoAdsFreeValue: 'दिखाए जाते हैं',
   paywallFeatureNoAdsProValue: 'छिपे',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
-  planWiringListLink: 'Wiring list',
-  wiringTabAll: 'All',
-  wiringTabActive: 'Active',
-  wiringTabSoon: 'Within a week',
   wiringListEmpty: 'कोई तार लपेटना तय नहीं',
   wiringRowWeeks: '{weeks} सप्ताह',
   wiringOverdueBadge: 'अवधि बीती',
-  wiringUnwireInDays: 'Unwire in {days} day(s)',
   wiringUnwireOverdue: 'Unwire {days} day(s) overdue',
-  wiringRowGaugePart: '{part} पर {gauge}',
   wiringUnwireInWeeks: '{weeks} सप्ताह में हटाएँ',
   wiringUnwireOverdueWeeks: '{weeks} सप्ताह बीते',
   // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs (English fallback) ---
@@ -559,19 +453,12 @@ const hi: Partial<Record<TranslationKey, string>> = {
   workLogWirePart_miki: 'तना',
   workLogWirePart_eda: 'शाखा',
   workLogWireDuration: 'लक्षित अवधि',
-  workLogWireDurationHint: 'तार हटाने की सूचना के लिए',
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
   onboardingWelcomeNote: 'आपका बोनसाई देखभाल लॉग, पूरी तरह ऑफ़लाइन।',
-  detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
-  detailPlanTimelinePlaceholder: 'Schedule features will be available in a future update.',
-  detailBasicEdit: 'Edit',
-  detailMenuExportPdf: 'Export to PDF',
-  detailExportProTitle: 'Pro feature',
-  detailExportProDesc: 'PDF export is a Pro plan feature.',
   onboardingLanguageContinue: 'जारी रखें',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
@@ -595,13 +482,10 @@ const hi: Partial<Record<TranslationKey, string>> = {
   fieldRequiredLabel: 'required',
   fieldOptionalLabel: 'optional',
   // --- T2-4 purchase date (schema v8) ---
-  bonsaiFieldPurchaseDate: 'Purchase date',
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'टैग',
   bonsaiTagsEmpty: 'कोई टैग नहीं',
   // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
-  presetTagName_favorite: 'पसंदीदा',
-  presetTagName_flowering: 'फूल वाला',
   tagSectionPresets: 'सुझाव',
   tagPresetBadgeMaster: 'मानक',
   tagPresetLockedToast: 'मानक टैग को संपादित नहीं किया जा सकता',
@@ -613,14 +497,10 @@ const hi: Partial<Record<TranslationKey, string>> = {
   settingsNotifMasterOffBanner:
     'सूचनाएँ बंद हैं। इन विकल्पों का उपयोग करने के लिए सेटिंग्स में मास्टर स्विच चालू करें।',
   wiringRowUnwireAction: 'तार हटाया गया',
-  wiringUnwireConfirmTitle: 'तार लपेटना हटाया गया चिह्नित करें?',
   paywallFeatureTheme: 'Themes',
   historyLabelAmountNormal: 'सामान्य',
   historyLabelAmountPlenty: 'भरपूर',
   historyLabelAmountLight: 'हल्का',
-  historyLabelAmountTip: 'केवल सिरे',
-  historyLabelAmountMid: 'मध्यम',
-  historyLabelAmountBold: 'तीव्र',
   historyLabelPartsEda: 'शाखाएँ',
   historyLabelPartsHa: 'पत्ते',
   historyLabelPartsShinme: 'नए अंकुर',
@@ -631,22 +511,9 @@ const hi: Partial<Record<TranslationKey, string>> = {
   historyLabelFertKindLiquid: 'तरल',
   historyLabelFertKindSlow: 'धीमी रिलीज़',
   historyLabelFertKindOther: 'अन्य',
-  historyLabelSprayPurposePrevent: 'रोकथाम',
-  historyLabelSprayPurposeTreat: 'उपचार',
-  historyLabelSprayPurposeBoth: 'दोनों',
-  historyLabelHealSymptomsYake: 'पत्ती जलना',
-  historyLabelHealSymptomsKare: 'मुरझाई शाखा',
-  historyLabelHealSymptomsMushi: 'कीड़े',
-  historyLabelHealSymptomsKabi: 'फफूँद',
-  historyLabelHealSymptomsOther: 'अन्य लक्षण',
-  historyLabelMossTasksAdd: 'बदलें',
-  historyLabelMossTasksRemove: 'हटाएँ',
-  historyLabelMossTasksWater: 'नम करें',
   historyLabelRepotRootsNone: 'कोई छँटाई नहीं',
   historyLabelRepotRootsLight: 'हल्की',
   historyLabelRepotRootsHalf: '1/3',
-  historyLabelRepotRootsHeavy: '1/2',
-  detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: 'अभी तक कोई रिकॉर्ड नहीं',
   addScheduleTitle: 'Add a scheduled task',
   addScheduleCta: 'कार्यक्रम जोड़ें',
@@ -666,11 +533,9 @@ const hi: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldAcquiredFrom: 'अधिग्रहण स्रोत',
   bonsaiFieldAcquiredFromPlaceholder: 'जैसे नर्सरी का नाम',
   bonsaiFieldPotInfo: 'गमला',
-  bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'वापस',
   tabRecord: 'रिकॉर्ड',
   planFabLabel: 'कार्य निर्धारित करें',
-  bulkSelectModalTitle: 'बोनसाई चुनें',
   bulkSelectModalNotice: 'रिकॉर्ड या योजना के लिए बोनसाई चुनें ({count} चयनित)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
@@ -713,15 +578,12 @@ const hi: Partial<Record<TranslationKey, string>> = {
   photoSourceCamera: 'कैमरा',
   photoSourceLibrary: 'गैलरी',
   photoReorderHelp: 'Use ↑↓ to reorder, × to remove.',
-  photoCaption: 'Caption',
   photoMoveUp: 'Move up',
   photoMoveDown: 'Move down',
   inputOverLimit: 'Character limit reached',
   workLogDateField: 'दिनांक',
   workLogDatePlaceholderToday: 'आज',
   workLogPhotoField: 'तस्वीरें',
-  workLogPhotoAdd: 'Add',
-  workLogPhotoCaptionPlaceholder: 'उदा. नए वसंत के अंकुर',
   workLogWirePart_all: 'सभी',
   workLogWireUnwireDate: 'तार हटाने की तिथि',
   workLogWireUnwireDatePlaceholder: 'वर्ष/माह/दिन',
@@ -730,7 +592,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   workLogUnwirePart_eda: 'शाखा',
   workLogUnwirePart_all: 'सभी',
   workLogRepotPotSize: 'गमले का आकार',
-  workLogRepotPotSizeUnit: 'सेमी',
   workLogRepotPotSizePlaceholder: 'जैसे 18',
   workLogRepotSoilMix: 'मिट्टी का मिश्रण',
   workLogRepotSoilMixPlaceholder: 'जैसे Akadama:Kiryu=7:3',
@@ -777,16 +638,13 @@ const hi: Partial<Record<TranslationKey, string>> = {
   workLogLeafAidSymptom_other: 'अन्य',
   workLogLeafAidTreatment: 'उपचार',
   workLogLeafAidTreatmentPlaceholder: 'जैसे संक्रमित हिस्सा हटाएँ, हीलिंग पेस्ट लगाएँ',
-  calendarScreenTitle: 'Calendar',
   workLogDoneToast: 'दर्ज किया गया',
   stackSpeciesPickerTitle: 'प्रजाति चुनें',
   stackStylePickerTitle: 'शैली चुनें',
   stackBonsaiMultiSelectTitle: 'बोनसाई चुनें',
   stackBulkLogConfirmTitle: 'एक साथ दर्ज करें',
   stackBonsaiNewTitle: 'बोनसाई पंजीकृत करें',
-  stackBonsaiCreateModalTitle: 'नया',
   stackBonsaiDetailTitle: 'बोनसाई विवरण',
-  stackBonsaiWateringHistoryTitle: 'पानी देने का इतिहास',
   stackWireListTitle: 'तार लपेटने की सूची',
   planLegendTitle: 'किंवदंती',
   planLegendToggleShow: 'किंवदंती दिखाएं',
@@ -799,7 +657,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   planSectionRecorded: 'रिकॉर्ड किया गया',
   planLegendDotRecordedLabel: 'रिकॉर्ड (●)',
   planEventRecordButtonSingle: 'रिकॉर्ड करें',
-  planEventRecordButtonGroup: 'सभी {count} रिकॉर्ड करें',
   planEventConvertedToast: '{count} नियोजित कार्य रिकॉर्ड में बदले गए',
   planEventDeleteConfirmPlannedSingleTitle: 'इस योजना को हटाएँ?',
   planEventDeleteConfirmLoggedSingleTitle: 'इस रिकॉर्ड को हटाएँ?',
@@ -810,7 +667,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   rowActionMenuRecordAll: 'सभी {count} रिकॉर्ड करें',
   undoSnackbarPlannedDeleteN: '{count} योजना(एँ) हटाई गई',
   undoSnackbarLoggedDeleteN: '{count} रिकॉर्ड हटाए गए',
-  undoSnackbarAction: 'पूर्ववत् करें',
   recordFabLabel: 'देखभाल दर्ज करें',
   historyLabelPruneAmountFew: 'थोड़ा',
   historyLabelPruneAmountSome: 'कुछ',
@@ -859,16 +715,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   exportHubBonsaiPdfSub: 'One page per bonsai',
   exportHubListPdfTitle: 'Full bonsai list',
   exportHubListPdfSub: 'Cover, list and stats',
-  exportBonsaiCsvTitle: 'Export bonsai list as CSV',
-  exportBonsaiCsvDesc: 'Export basic info for all bonsai as a CSV file (Pro feature).',
-  exportBonsaiCsvAction: 'Export bonsai list',
-  exportBonsaiCsvSuccess: 'Bonsai list exported',
-  exportBonsaiCsvSuccessDetail: 'Exported {count} bonsai.',
-  exportSpeciesCsvTitle: 'Export species summary as CSV',
-  exportSpeciesCsvDesc: 'Export per-species info as a CSV file (Pro feature).',
-  exportSpeciesCsvAction: 'Export species summary',
-  exportSpeciesCsvSuccess: 'Species summary exported',
-  exportSpeciesCsvSuccessDetail: 'Exported {count} species.',
   exportOptPeriodLabel: 'Period',
   exportOptPeriodAll: 'All',
   exportOptPeriod30d: 'Last 30 days',
@@ -884,7 +730,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   exportOptFilenameLabel: 'File name',
   exportOptDateFrom: 'From',
   exportOptDateTo: 'To',
-  exportOptGenerate: 'Generate and share',
   exportOptScopeEmptyTitle: 'No target selected',
   exportOptScopeEmptyBody: 'Please select at least one bonsai.',
   exportOptTagEmptyBody: 'Please select a tag.',
@@ -988,7 +833,6 @@ const hi: Partial<Record<TranslationKey, string>> = {
   pickerSectionMaster: 'मानक',
   pickerSectionCustom: 'कस्टम',
   pickerCustomBadge: 'कस्टम',
-  pickerCustomCounter: '{used}/{limit}',
   rowActionMenuEdit: 'Edit',
   workLogTitleEditing: 'Edit {type}',
   workLogUpdateCta: 'Update',

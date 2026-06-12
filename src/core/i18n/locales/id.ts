@@ -14,7 +14,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   close: 'Tutup',
   done: 'Selesai',
   loading: 'Memuat...',
-  retry: 'Coba lagi',
   error: 'Kesalahan',
 
   // --- Settings ---
@@ -26,27 +25,7 @@ const id: Partial<Record<TranslationKey, string>> = {
   sound: 'Suara',
 
   // --- Language selector ---
-  languageChange: 'Ganti bahasa',
   currentLanguage: 'Saat ini',
-  languageNameEn: 'Inggris',
-  languageNameJa: 'Jepang',
-  languageNameFr: 'Prancis',
-  languageNameEs: 'Spanyol',
-  languageNameDe: 'Jerman',
-  languageNameIt: 'Italia',
-  languageNamePt: 'Portugis',
-  languageNameRu: 'Rusia',
-  languageNameZhHans: 'Tionghoa (Sederhana)',
-  languageNameZhHant: 'Tionghoa (Tradisional)',
-  languageNameKo: 'Korea',
-  languageNameHi: 'Hindi',
-  languageNameId: 'Indonesia',
-  languageNameTh: 'Thailand',
-  languageNameVi: 'Vietnam',
-  languageNameTr: 'Turki',
-  languageNameNl: 'Belanda',
-  languageNamePl: 'Polandia',
-  languageNameSv: 'Swedia',
 
   // --- Purchase / Restore ---
   restore: 'Pulihkan pembelian',
@@ -55,7 +34,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   restoreSuccess: 'Riwayat pembelian dipulihkan.',
   restoreNotFound: 'Tidak ada pembelian untuk dipulihkan.',
   restoreFailed: 'Gagal memulihkan pembelian.',
-  restoreDesc: 'Pulihkan pembelian yang dilakukan dengan akun ini.',
 
   // --- Pro / Paywall ---
   proTitle: 'Tingkatkan ke Pro',
@@ -85,19 +63,12 @@ const id: Partial<Record<TranslationKey, string>> = {
   settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 
   // --- Legal ---
-  legalSectionTitle: 'Hukum',
-  legalPrivacyPolicyLabel: 'Kebijakan Privasi',
-  legalTermsOfUseLabel: 'Ketentuan Penggunaan (EULA)',
 
   // --- Errors ---
   errorLoadFailed: 'Gagal memuat data.',
-  errorSaveFailed: 'Gagal menyimpan.',
-  errorDeleteFailed: 'Gagal menghapus.',
 
   // --- F-01 Bonsai (P2-01 PR-D, English fallback for v1.0, localized in v1.x) ---
-  bonsaiTab: 'Bonsai',
   bonsaiListEmptyTitle: 'No bonsai registered yet',
-  bonsaiListEmptyDesc: 'Tap below to register your first bonsai.',
   bonsaiCreateNew: 'Daftarkan bonsai baru',
   bonsaiFieldName: 'Nama',
   bonsaiFieldNamePlaceholder: 'mis. Pinus tua',
@@ -109,7 +80,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   bonsaiPlaceholderSpecies: 'Pilih spesies',
   bonsaiPlaceholderStyle: 'Pilih gaya',
   bonsaiFieldAcquiredAt: 'Tanggal diperoleh',
-  bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: 'Arsipkan',
   bonsaiArchiveConfirmTitle: 'Arsipkan bonsai ini?',
   bonsaiArchiveConfirmDesc:
@@ -122,35 +92,25 @@ const id: Partial<Record<TranslationKey, string>> = {
 
   // --- F-08 Photos (P2-02 PR-C, English fallback for v1.0) ---
   bonsaiFieldPhotos: 'Foto',
-  photoAddCta: 'Add photo',
-  photoAddTitle: 'Add a photo',
-  photoAddCamera: 'Take a photo',
-  photoAddLibrary: 'Choose from library',
   photoEmpty: 'No photos yet.',
   photoLimitTitle: 'Free limit reached',
   photoLimitDesc:
     'Free plan allows {count} photos per bonsai. Upgrade to Pro for unlimited photos.',
   // Repolog-style photoCard UI keys
-  photoCaptionPlaceholder: 'Caption (optional)',
   photoMoveUpLabel: 'Move up',
   photoMoveDownLabel: 'Move down',
   photoCoverBadge: 'Cover',
   photoSetCoverLabel: 'Set as cover',
-  photoLimitPartialAdded: 'Added {added} photos ({skipped} skipped due to limit)',
   photoDeletedBanner: 'Photo deleted',
   photoUndoLabel: 'Undo',
   photoPermissionTitle: 'Permission needed',
   photoPermissionDesc: 'Please allow camera and photo library access in Settings.',
-  photoActionTitle: 'Photo actions',
-  photoActionSetCover: 'Set as cover photo',
-  photoActionDelete: 'Delete photo',
   photoDeleteConfirmTitle: 'Delete this photo?',
   photoDeleteConfirmDesc: 'This action cannot be undone.',
 
   // --- F-02 Events (P2-03 PR-D, English fallback for v1.0) ---
   eventsTitle: 'Care log',
   eventLogCta: 'Log a care event',
-  eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: 'Belum ada catatan kerja',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
@@ -170,7 +130,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   settingsNotificationSection: 'Notifikasi',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
-  settingsTitle: 'Settings',
   settingsBackupSection: 'Cadangan',
   backupTitle: 'Cadangkan & pulihkan',
   backupExportTitle: 'Create a backup',
@@ -206,7 +165,6 @@ const id: Partial<Record<TranslationKey, string>> = {
     'Catatan: cadangan tidak dienkripsi. Simpan di tempat aman yang Anda kelola sendiri.',
 
   // --- F-04 Watering history (Phase A、English fallback for now) ---
-  wateringSectionTitle: 'Watering',
   wateringLastNoRecord: 'No watering records yet',
   wateringLastToday: 'Watered today',
   wateringLastOneDay: '1 day since last watering',
@@ -231,14 +189,9 @@ const id: Partial<Record<TranslationKey, string>> = {
   bulkLogConfirmTitle: 'Log {label} for {count} bonsai',
   bulkScheduleConfirmTitle: 'Schedule {label} for {count} bonsai',
   bulkLogConfirmSub: 'Same content saved to each bonsai',
-  bulkLogConfirmNoteLabel: 'Note (optional)',
-  bulkLogConfirmNotePlaceholder: 'Free note',
   bulkLogSaveCta: 'Log for {count} bonsai',
   bulkLogDoneToast: 'Logged actions for {count} bonsai',
   bulkScheduleConfirmCta: 'Schedule (×{count})',
-  bulkLogConfirmCta: 'Log (×{count})',
-  bulkLogAddNoteToggle: 'Add note',
-  bulkLogConfirmTitleMulti: 'Log {count} actions',
   detailTimelineToday: 'Hari ini',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
@@ -252,42 +205,25 @@ const id: Partial<Record<TranslationKey, string>> = {
   searchMinChars: 'Masukkan minimal {count} karakter untuk mencari',
   searchEmpty: 'Tidak ada hasil.',
   searchBonsaiSection: 'Bonsai',
-  searchSpeciesSection: 'Spesies',
   searchEventSection: 'Log perawatan',
   searchWorkLabel: 'Work',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
   settingsExportSection: 'Ekspor',
-  exportCsvTitle: 'Ekspor log perawatan ke CSV',
-  exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
-  exportCsvAction: 'Ekspor CSV',
-  exportCsvSuccess: 'Ekspor selesai.',
-  exportCsvSuccessDetail: 'Exported {count} care logs.',
   exportCsvFailed: 'Ekspor gagal.',
   exportCsvShareTitle: 'BonsaiLog care logs CSV',
   exportProRequiredTitle: 'Fitur Pro',
   exportProRequiredBody: 'Ekspor ini tersedia untuk anggota Pro. Tingkatkan untuk membuka.',
-  exportShareUnavailableTitle: 'Berbagi tidak tersedia',
-  exportShareUnavailableBody:
-    'Sharing is not available on this device. Please update the OS and try again.',
 
   // --- F-07 Wiring duration (Phase A、English fallback) ---
-  wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'Yang Anda dapatkan dengan Pro',
-  proComparisonPhotos: 'Foto tak terbatas per bonsai',
-  proComparisonCsv: 'Ekspor log perawatan ke CSV',
-  proComparisonPdf: 'Ekspor catatan bonsai ke PDF',
-  proComparisonNoAds: 'Tanpa iklan',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
   tagsManagerDesc: 'Tags help you organize care logs and find them in search.',
   tagsAddPlaceholder: 'New tag name',
-  tagsAddAction: 'Add',
-  tagsRenameAction: 'Rename',
   tagsAddFailedBody: 'Could not add the tag.',
   tagsRenameDuplicateBody: 'A tag with the same name already exists.',
   tagsEmpty: 'No tags yet.',
@@ -304,36 +240,26 @@ const id: Partial<Record<TranslationKey, string>> = {
     'Notifications are disabled in your device settings. Enable them to use this feature.',
 
   // --- F-14 Ad banner label (Phase B、English fallback) ---
-  adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
   onboardingWelcomeTitle: 'Selamat datang di BonsaiLog',
-  onboardingWelcomeBody:
-    'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
   onboardingWelcomeCta: 'Mulai',
-  onboardingSkip: 'Later',
   onboardingLanguageTitle: 'Pilih bahasa Anda',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
 
   // --- F-15 Outdoor mode (Phase B、English fallback) ---
-  settingsOutdoorMode: 'Outdoor mode',
-  settingsOutdoorModeDesc:
-    'When on, the app uses a high-contrast palette for outdoor visibility (full implementation in next update).',
 
   // --- F-10 PDF export (Phase B、English fallback) ---
   exportPdfTitle: 'Ekspor bonsai ke PDF',
   exportPdfDesc: 'Generate a PDF report for each bonsai (Pro feature).',
-  exportPdfAction: 'PDF',
   exportPdfHeaderDate: 'Tanggal',
-  exportPdfHeaderType: 'Jenis',
   exportPdfHeaderNote: 'Catatan',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'Gagal membuat PDF.',
 
   // --- F-09 Search recent tags chips (Phase B、English fallback) ---
-  searchRecentTagsLabel: 'Tag terkini',
   searchTagFilterClear: 'Hapus filter',
 
   // --- F-13 Settings → Account / Paywall entry (Phase 1b、English fallback) ---
@@ -343,12 +269,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   settingsAccountProInactiveDesc: 'See plans and upgrade.',
 
   // --- F-04 Watering heatmap (Phase B、English fallback) ---
-  statsTabTitle: 'Stats',
-  statsHeaderAllBonsai: 'All bonsai ({count})',
-  bonsaiFilterSelectAll: 'All bonsai',
-  bonsaiFilterSearchPlaceholder: 'Search bonsai',
-  bonsaiFilterRecentSection: 'Recently viewed',
-  bonsaiFilterAllSection: 'All bonsai',
 
   // --- Home empty state (Phase 1b, Issue #29, ADR-0019) ---
   homeEmptyTitle: 'Add your first bonsai',
@@ -390,23 +310,12 @@ const id: Partial<Record<TranslationKey, string>> = {
     'You can choose whether to allow the use of an identifier to help measure ad performance.',
   attExplainerAllow: 'If allowed: ads may be more relevant to you.',
   attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
-  settingsExportListPdfTitle: 'Ekspor daftar bonsai (PDF)',
-  settingsExportListPdfDesc: 'Buat ringkasan PDF semua bonsai',
-  exportListPdfTitle: 'PDF daftar lengkap',
-  exportListPdfDesc: 'Generates an A4 PDF with cover, full bonsai list and statistics.',
-  exportListPdfAction: 'Buat',
   exportListPdfShareTitle: 'Share full list PDF',
   exportListPdfCoverTitle: 'Catatan lengkap BonsaiLog',
   exportListPdfCoverSubtitle: '{count} bonsai total',
   exportListPdfFooter: 'Generated by BonsaiLog',
   exportStorageLowBody: 'Insufficient storage. Please free up at least 100MB and try again.',
   exportStorageLowTitle: 'Storage low',
-  onboardingTut3Title: 'Log watering and care',
-  onboardingTut3Body:
-    'Tap the bonsai detail screen to log watering, fertilizing, and wiring. BonsaiLog only records — no judgment.',
-  onboardingTut4Title: 'Read the watering heatmap',
-  onboardingTut4Body:
-    'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
     'Saat menambahkan rencana, Anda dapat memilih menerima notifikasi. Ubah kapan saja di Pengaturan.',
@@ -431,26 +340,18 @@ const id: Partial<Record<TranslationKey, string>> = {
   settingsLegalTerms: 'Ketentuan layanan',
   settingsLegalPrivacy: 'Kebijakan privasi',
   searchRecentTitle: 'Recent searches',
-  searchHistoryClear: 'Clear history',
-  outdoorModeToggleA11y: 'Toggle outdoor mode',
   // --- ADR-0020 Phase 1: 4-tab labels (English fallback for i18n.test.ts) ---
   tabBonsai: 'Bonsai',
   tabLookBack: 'Tinjau',
   tabSettings: 'Settings',
-  tabPlanComingSoon: 'Coming soon',
   // --- ADR-0020 Phase 2: bonsai tab Claude Design HomeScreen (English fallback) ---
   appName: 'BonsaiLog',
-  homeFilterAll: 'All',
-  homeCardLastWatering: 'Watered {elapsed} ago',
-  homeCardLastPruning: 'Pruned {elapsed} ago',
   elapsedToday: 'today',
   elapsedDays: '{days}d',
   elapsedWeeks: '{weeks}w',
   elapsedMonths: '{months}mo',
   elapsedYears: '{years}y',
   // --- ADR-0020 Phase 3: bonsai detail watering history (English fallback, SS 222921) ---
-  wateringSummaryStreak: 'Current streak',
-  wateringSummaryDoubleDays: 'Twice-a-day',
   workPickerTitle: 'Log a task',
   // --- ADR-0020 Phase 5: plan tab calendar (English fallback) ---
   planMonthYearSuffix: '',
@@ -489,7 +390,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   recordSelectedEmptyTitle: 'Tidak ada catatan pada hari ini',
   recordSelectedEmptyBody:
     'Setelah merawat pohon, ketuk "{cta}" di bawah untuk mencatatnya. Hari dengan catatan ditandai ● di kalender.',
-  planEventPlanned: 'Planned',
   planGroupExpand: 'Buka',
   planGroupCollapse: 'Tutup',
   // --- ADR-0020 v1.x-5: Paywall Claude Design (English fallback) ---
@@ -507,16 +407,10 @@ const id: Partial<Record<TranslationKey, string>> = {
   paywallFeatureNoAdsFreeValue: 'Ditampilkan',
   paywallFeatureNoAdsProValue: 'Disembunyikan',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
-  planWiringListLink: 'Wiring list',
-  wiringTabAll: 'All',
-  wiringTabActive: 'Active',
-  wiringTabSoon: 'Within a week',
   wiringListEmpty: 'Tidak ada pengawatan',
   wiringRowWeeks: '{weeks} minggu',
   wiringOverdueBadge: 'Terlambat',
-  wiringUnwireInDays: 'Unwire in {days} day(s)',
   wiringUnwireOverdue: 'Unwire {days} day(s) overdue',
-  wiringRowGaugePart: '{gauge} pada {part}',
   wiringUnwireInWeeks: 'Lepas dalam {weeks} minggu',
   wiringUnwireOverdueWeeks: 'Terlambat {weeks} minggu',
   // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs (English fallback) ---
@@ -559,19 +453,12 @@ const id: Partial<Record<TranslationKey, string>> = {
   workLogWirePart_miki: 'Batang',
   workLogWirePart_eda: 'Cabang',
   workLogWireDuration: 'Durasi target',
-  workLogWireDurationHint: 'Untuk waktu notifikasi pelepasan',
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
   onboardingWelcomeNote: 'Catatan perawatan bonsai Anda, sepenuhnya offline.',
-  detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
-  detailPlanTimelinePlaceholder: 'Schedule features will be available in a future update.',
-  detailBasicEdit: 'Edit',
-  detailMenuExportPdf: 'Export to PDF',
-  detailExportProTitle: 'Pro feature',
-  detailExportProDesc: 'PDF export is a Pro plan feature.',
   onboardingLanguageContinue: 'Lanjutkan',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
@@ -595,13 +482,10 @@ const id: Partial<Record<TranslationKey, string>> = {
   fieldRequiredLabel: 'required',
   fieldOptionalLabel: 'optional',
   // --- T2-4 purchase date (schema v8) ---
-  bonsaiFieldPurchaseDate: 'Purchase date',
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: 'Tag',
   bonsaiTagsEmpty: 'Belum ada tag',
   // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
-  presetTagName_favorite: 'Favorit',
-  presetTagName_flowering: 'Berbunga',
   tagSectionPresets: 'Saran',
   tagPresetBadgeMaster: 'Standar',
   tagPresetLockedToast: 'Tag standar tidak dapat diedit',
@@ -613,14 +497,10 @@ const id: Partial<Record<TranslationKey, string>> = {
   settingsNotifMasterOffBanner:
     'Notifikasi dimatikan. Nyalakan sakelar utama di Pengaturan untuk menggunakan opsi ini.',
   wiringRowUnwireAction: 'Tandai sebagai dilepas',
-  wiringUnwireConfirmTitle: 'Tandai pengawatan sebagai dilepas?',
   paywallFeatureTheme: 'Themes',
   historyLabelAmountNormal: 'Normal',
   historyLabelAmountPlenty: 'Banyak',
   historyLabelAmountLight: 'Sedikit',
-  historyLabelAmountTip: 'Hanya ujung',
-  historyLabelAmountMid: 'Sedang',
-  historyLabelAmountBold: 'Banyak',
   historyLabelPartsEda: 'Cabang',
   historyLabelPartsHa: 'Daun',
   historyLabelPartsShinme: 'Tunas baru',
@@ -631,22 +511,9 @@ const id: Partial<Record<TranslationKey, string>> = {
   historyLabelFertKindLiquid: 'Cair',
   historyLabelFertKindSlow: 'Pelepasan lambat',
   historyLabelFertKindOther: 'Lainnya',
-  historyLabelSprayPurposePrevent: 'Pencegahan',
-  historyLabelSprayPurposeTreat: 'Pengobatan',
-  historyLabelSprayPurposeBoth: 'Keduanya',
-  historyLabelHealSymptomsYake: 'Daun terbakar',
-  historyLabelHealSymptomsKare: 'Cabang layu',
-  historyLabelHealSymptomsMushi: 'Serangga',
-  historyLabelHealSymptomsKabi: 'Jamur',
-  historyLabelHealSymptomsOther: 'Gejala lainnya',
-  historyLabelMossTasksAdd: 'Ganti',
-  historyLabelMossTasksRemove: 'Lepas',
-  historyLabelMossTasksWater: 'Basahi',
   historyLabelRepotRootsNone: 'Tanpa pemangkasan',
   historyLabelRepotRootsLight: 'Ringan',
   historyLabelRepotRootsHalf: '1/3',
-  historyLabelRepotRootsHeavy: '1/2',
-  detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: 'Belum ada catatan',
   addScheduleTitle: 'Add a scheduled task',
   addScheduleCta: 'Tambah jadwal',
@@ -666,11 +533,9 @@ const id: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldAcquiredFrom: 'Diperoleh dari',
   bonsaiFieldAcquiredFromPlaceholder: 'mis. Nama pembibitan',
   bonsaiFieldPotInfo: 'Pot',
-  bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: 'Kembali',
   tabRecord: 'Catat',
   planFabLabel: 'Jadwalkan tugas',
-  bulkSelectModalTitle: 'Pilih bonsai',
   bulkSelectModalNotice: 'Pilih bonsai untuk dicatat atau dijadwalkan ({count} dipilih)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
@@ -713,15 +578,12 @@ const id: Partial<Record<TranslationKey, string>> = {
   photoSourceCamera: 'Kamera',
   photoSourceLibrary: 'Galeri',
   photoReorderHelp: 'Use ↑↓ to reorder, × to remove.',
-  photoCaption: 'Caption',
   photoMoveUp: 'Move up',
   photoMoveDown: 'Move down',
   inputOverLimit: 'Character limit reached',
   workLogDateField: 'Tanggal',
   workLogDatePlaceholderToday: 'Hari ini',
   workLogPhotoField: 'Foto',
-  workLogPhotoAdd: 'Add',
-  workLogPhotoCaptionPlaceholder: 'mis. tunas baru musim semi',
   workLogWirePart_all: 'Semua',
   workLogWireUnwireDate: 'Tanggal pelepasan',
   workLogWireUnwireDatePlaceholder: 'TTTT/BB/HH',
@@ -730,7 +592,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   workLogUnwirePart_eda: 'Cabang',
   workLogUnwirePart_all: 'Semua',
   workLogRepotPotSize: 'Ukuran pot',
-  workLogRepotPotSizeUnit: 'cm',
   workLogRepotPotSizePlaceholder: 'mis. 18',
   workLogRepotSoilMix: 'Campuran tanah',
   workLogRepotSoilMixPlaceholder: 'mis. Akadama:Kiryu=7:3',
@@ -777,16 +638,13 @@ const id: Partial<Record<TranslationKey, string>> = {
   workLogLeafAidSymptom_other: 'Lainnya',
   workLogLeafAidTreatment: 'Pengobatan',
   workLogLeafAidTreatmentPlaceholder: 'mis. Lepas area terinfeksi, oleskan pasta penyembuh',
-  calendarScreenTitle: 'Calendar',
   workLogDoneToast: 'Tercatat',
   stackSpeciesPickerTitle: 'Pilih spesies',
   stackStylePickerTitle: 'Pilih gaya',
   stackBonsaiMultiSelectTitle: 'Pilih bonsai',
   stackBulkLogConfirmTitle: 'Catat bersama',
   stackBonsaiNewTitle: 'Daftar bonsai',
-  stackBonsaiCreateModalTitle: 'Baru',
   stackBonsaiDetailTitle: 'Detail bonsai',
-  stackBonsaiWateringHistoryTitle: 'Riwayat penyiraman',
   stackWireListTitle: 'Daftar pengawatan',
   planLegendTitle: 'Legenda',
   planLegendToggleShow: 'Tampilkan legenda',
@@ -799,7 +657,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   planSectionRecorded: 'Tercatat',
   planLegendDotRecordedLabel: 'Tercatat (●)',
   planEventRecordButtonSingle: 'Catat ini',
-  planEventRecordButtonGroup: 'Catat semua {count}',
   planEventConvertedToast: '{count} tugas terjadwal diubah menjadi catatan',
   planEventDeleteConfirmPlannedSingleTitle: 'Hapus rencana ini?',
   planEventDeleteConfirmLoggedSingleTitle: 'Hapus catatan ini?',
@@ -810,7 +667,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   rowActionMenuRecordAll: 'Catat semua {count}',
   undoSnackbarPlannedDeleteN: '{count} rencana dihapus',
   undoSnackbarLoggedDeleteN: '{count} catatan dihapus',
-  undoSnackbarAction: 'Urungkan',
   recordFabLabel: 'Catat perawatan',
   historyLabelPruneAmountFew: 'Sedikit',
   historyLabelPruneAmountSome: 'Cukup',
@@ -859,16 +715,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   exportHubBonsaiPdfSub: 'One page per bonsai',
   exportHubListPdfTitle: 'Full bonsai list',
   exportHubListPdfSub: 'Cover, list and stats',
-  exportBonsaiCsvTitle: 'Export bonsai list as CSV',
-  exportBonsaiCsvDesc: 'Export basic info for all bonsai as a CSV file (Pro feature).',
-  exportBonsaiCsvAction: 'Export bonsai list',
-  exportBonsaiCsvSuccess: 'Bonsai list exported',
-  exportBonsaiCsvSuccessDetail: 'Exported {count} bonsai.',
-  exportSpeciesCsvTitle: 'Export species summary as CSV',
-  exportSpeciesCsvDesc: 'Export per-species info as a CSV file (Pro feature).',
-  exportSpeciesCsvAction: 'Export species summary',
-  exportSpeciesCsvSuccess: 'Species summary exported',
-  exportSpeciesCsvSuccessDetail: 'Exported {count} species.',
   exportOptPeriodLabel: 'Period',
   exportOptPeriodAll: 'All',
   exportOptPeriod30d: 'Last 30 days',
@@ -884,7 +730,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   exportOptFilenameLabel: 'File name',
   exportOptDateFrom: 'From',
   exportOptDateTo: 'To',
-  exportOptGenerate: 'Generate and share',
   exportOptScopeEmptyTitle: 'No target selected',
   exportOptScopeEmptyBody: 'Please select at least one bonsai.',
   exportOptTagEmptyBody: 'Please select a tag.',
@@ -988,7 +833,6 @@ const id: Partial<Record<TranslationKey, string>> = {
   pickerSectionMaster: 'Bawaan',
   pickerSectionCustom: 'Khusus',
   pickerCustomBadge: 'Khusus',
-  pickerCustomCounter: '{used}/{limit}',
   rowActionMenuEdit: 'Edit',
   workLogTitleEditing: 'Edit {type}',
   workLogUpdateCta: 'Update',

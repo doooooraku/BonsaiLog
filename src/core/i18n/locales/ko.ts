@@ -14,7 +14,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   close: '닫기',
   done: '완료',
   loading: '로딩 중...',
-  retry: '재시도',
   error: '오류',
 
   // --- Settings ---
@@ -26,27 +25,7 @@ const ko: Partial<Record<TranslationKey, string>> = {
   sound: '사운드',
 
   // --- Language selector ---
-  languageChange: '언어 변경',
   currentLanguage: '현재',
-  languageNameEn: '영어',
-  languageNameJa: '일본어',
-  languageNameFr: '프랑스어',
-  languageNameEs: '스페인어',
-  languageNameDe: '독일어',
-  languageNameIt: '이탈리아어',
-  languageNamePt: '포르투갈어',
-  languageNameRu: '러시아어',
-  languageNameZhHans: '중국어 (간체)',
-  languageNameZhHant: '중국어 (번체)',
-  languageNameKo: '한국어',
-  languageNameHi: '힌디어',
-  languageNameId: '인도네시아어',
-  languageNameTh: '태국어',
-  languageNameVi: '베트남어',
-  languageNameTr: '튀르키예어',
-  languageNameNl: '네덜란드어',
-  languageNamePl: '폴란드어',
-  languageNameSv: '스웨덴어',
 
   // --- Purchase / Restore ---
   restore: '구매 복원',
@@ -55,7 +34,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   restoreSuccess: '구매 기록이 복원되었습니다.',
   restoreNotFound: '복원할 구매 기록이 없습니다.',
   restoreFailed: '구매 복원에 실패했습니다.',
-  restoreDesc: '이 계정으로 구매한 항목을 복원합니다.',
 
   // --- Pro / Paywall ---
   proTitle: 'Pro로 업그레이드',
@@ -84,19 +62,12 @@ const ko: Partial<Record<TranslationKey, string>> = {
   settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 
   // --- Legal ---
-  legalSectionTitle: '법적 정보',
-  legalPrivacyPolicyLabel: '개인정보 처리방침',
-  legalTermsOfUseLabel: '이용약관 (EULA)',
 
   // --- Errors ---
   errorLoadFailed: '데이터 로드에 실패했습니다.',
-  errorSaveFailed: '저장에 실패했습니다.',
-  errorDeleteFailed: '삭제에 실패했습니다.',
 
   // --- F-01 Bonsai (P2-01 PR-D, English fallback for v1.0, localized in v1.x) ---
-  bonsaiTab: 'Bonsai',
   bonsaiListEmptyTitle: 'No bonsai registered yet',
-  bonsaiListEmptyDesc: 'Tap below to register your first bonsai.',
   bonsaiCreateNew: '새 분재 등록',
   bonsaiFieldName: '이름',
   bonsaiFieldNamePlaceholder: '예: 노송',
@@ -108,7 +79,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   bonsaiPlaceholderSpecies: '수종 선택',
   bonsaiPlaceholderStyle: '수형 선택',
   bonsaiFieldAcquiredAt: '취득일',
-  bonsaiFieldUpdatedAt: 'Last updated',
   bonsaiArchive: '보관',
   bonsaiArchiveConfirmTitle: '이 분재를 보관할까요?',
   bonsaiArchiveConfirmDesc: '보관된 분재는 메인 목록에서 숨겨집니다. 언제든지 복원할 수 있습니다.',
@@ -120,35 +90,25 @@ const ko: Partial<Record<TranslationKey, string>> = {
 
   // --- F-08 Photos (P2-02 PR-C, English fallback for v1.0) ---
   bonsaiFieldPhotos: '사진',
-  photoAddCta: 'Add photo',
-  photoAddTitle: 'Add a photo',
-  photoAddCamera: 'Take a photo',
-  photoAddLibrary: 'Choose from library',
   photoEmpty: 'No photos yet.',
   photoLimitTitle: 'Free limit reached',
   photoLimitDesc:
     'Free plan allows {count} photos per bonsai. Upgrade to Pro for unlimited photos.',
   // Repolog-style photoCard UI keys
-  photoCaptionPlaceholder: 'Caption (optional)',
   photoMoveUpLabel: 'Move up',
   photoMoveDownLabel: 'Move down',
   photoCoverBadge: 'Cover',
   photoSetCoverLabel: 'Set as cover',
-  photoLimitPartialAdded: 'Added {added} photos ({skipped} skipped due to limit)',
   photoDeletedBanner: 'Photo deleted',
   photoUndoLabel: 'Undo',
   photoPermissionTitle: 'Permission needed',
   photoPermissionDesc: 'Please allow camera and photo library access in Settings.',
-  photoActionTitle: 'Photo actions',
-  photoActionSetCover: 'Set as cover photo',
-  photoActionDelete: 'Delete photo',
   photoDeleteConfirmTitle: 'Delete this photo?',
   photoDeleteConfirmDesc: 'This action cannot be undone.',
 
   // --- F-02 Events (P2-03 PR-D, English fallback for v1.0) ---
   eventsTitle: 'Care log',
   eventLogCta: 'Log a care event',
-  eventTypePickerDesc: 'Choose what you did:',
   eventEmpty: '작업 기록 없음',
   eventType_watering: 'Watering',
   eventType_pruning: 'Pruning',
@@ -168,7 +128,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   settingsNotificationSection: '알림',
 
   // --- F-11 Backup / Move (Issue #12, ADR-0007) ---
-  settingsTitle: '설정',
   settingsBackupSection: '백업',
   backupTitle: '백업 및 복원',
   backupExportTitle: '백업 만들기',
@@ -205,7 +164,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
     '참고: 백업은 암호화되지 않습니다. 직접 관리하는 안전한 곳에 보관하세요.',
 
   // --- F-04 Watering history (Phase A、English fallback for now) ---
-  wateringSectionTitle: 'Watering',
   wateringLastNoRecord: 'No watering records yet',
   wateringLastToday: 'Watered today',
   wateringLastOneDay: '1 day since last watering',
@@ -230,14 +188,9 @@ const ko: Partial<Record<TranslationKey, string>> = {
   bulkLogConfirmTitle: 'Log {label} for {count} bonsai',
   bulkScheduleConfirmTitle: 'Schedule {label} for {count} bonsai',
   bulkLogConfirmSub: 'Same content saved to each bonsai',
-  bulkLogConfirmNoteLabel: 'Note (optional)',
-  bulkLogConfirmNotePlaceholder: 'Free note',
   bulkLogSaveCta: 'Log for {count} bonsai',
   bulkLogDoneToast: 'Logged actions for {count} bonsai',
   bulkScheduleConfirmCta: 'Schedule (×{count})',
-  bulkLogConfirmCta: 'Log (×{count})',
-  bulkLogAddNoteToggle: 'Add note',
-  bulkLogConfirmTitleMulti: 'Log {count} actions',
   detailTimelineToday: '오늘',
   notificationSummaryTitle: "Today's schedule",
   notificationSummaryBody: 'You have {count} scheduled tasks',
@@ -251,42 +204,25 @@ const ko: Partial<Record<TranslationKey, string>> = {
   searchMinChars: '검색하려면 {count}자 이상 입력하세요',
   searchEmpty: '결과 없음.',
   searchBonsaiSection: '분재',
-  searchSpeciesSection: '수종',
   searchEventSection: '관리 기록',
   searchWorkLabel: 'Work',
 
   // --- F-10 Export Phase A (events CSV、English fallback) ---
   settingsExportSection: '내보내기',
-  exportCsvTitle: '관리 기록 CSV 내보내기',
-  exportCsvDesc: 'Export all care logs to a CSV file (Pro feature).',
-  exportCsvAction: 'CSV 내보내기',
-  exportCsvSuccess: '내보내기 완료.',
-  exportCsvSuccessDetail: 'Exported {count} care logs.',
   exportCsvFailed: '내보내기 실패.',
   exportCsvShareTitle: 'BonsaiLog care logs CSV',
   exportProRequiredTitle: 'Pro 기능',
   exportProRequiredBody: '이 내보내기는 Pro 회원 전용입니다. 업그레이드하여 잠금 해제하세요.',
-  exportShareUnavailableTitle: '공유할 수 없습니다',
-  exportShareUnavailableBody:
-    'Sharing is not available on this device. Please update the OS and try again.',
 
   // --- F-07 Wiring duration (Phase A、English fallback) ---
-  wiringDurationOverdueWeeks: 'Wire on for {weeks} weeks',
   wiringScheduledUnwireSet: 'Scheduled unwire date: {date}',
 
   // --- F-13 Paywall comparison (Phase 1c、English fallback) ---
-  proComparisonTitle: 'Pro에서 받는 혜택',
-  proComparisonPhotos: '분재당 무제한 사진',
-  proComparisonCsv: '관리 기록 CSV 내보내기',
-  proComparisonPdf: '분재 기록 PDF 내보내기',
-  proComparisonNoAds: '광고 없음',
 
   // --- F-09 Tags manager (Phase C、English fallback) ---
   tagsManagerTitle: 'Manage tags',
   tagsManagerDesc: 'Tags help you organize care logs and find them in search.',
   tagsAddPlaceholder: 'New tag name',
-  tagsAddAction: 'Add',
-  tagsRenameAction: 'Rename',
   tagsAddFailedBody: 'Could not add the tag.',
   tagsRenameDuplicateBody: 'A tag with the same name already exists.',
   tagsEmpty: 'No tags yet.',
@@ -302,36 +238,26 @@ const ko: Partial<Record<TranslationKey, string>> = {
     'Notifications are disabled in your device settings. Enable them to use this feature.',
 
   // --- F-14 Ad banner label (Phase B、English fallback) ---
-  adBannerLabel: 'Ad',
 
   // --- F-26 Onboarding (Phase A copy + Phase C language、English fallback) ---
   onboardingWelcomeTitle: 'BonsaiLog에 오신 것을 환영합니다',
-  onboardingWelcomeBody:
-    'Record care, photos, and species for each pot — works fully offline, in 19 languages.',
   onboardingWelcomeCta: '시작하기',
-  onboardingSkip: 'Later',
   onboardingLanguageTitle: '언어 선택',
   onboardingLanguageDesc: 'Tap to preview. You can change this later in Settings.',
   onboardingLanguageOsBadge: 'Device',
   next: 'Next',
 
   // --- F-15 Outdoor mode (Phase B、English fallback) ---
-  settingsOutdoorMode: 'Outdoor mode',
-  settingsOutdoorModeDesc:
-    'When on, the app uses a high-contrast palette for outdoor visibility (full implementation in next update).',
 
   // --- F-10 PDF export (Phase B、English fallback) ---
   exportPdfTitle: '분재 PDF 내보내기',
   exportPdfDesc: 'Generate a PDF report for each bonsai (Pro feature).',
-  exportPdfAction: 'PDF',
   exportPdfHeaderDate: '날짜',
-  exportPdfHeaderType: '유형',
   exportPdfHeaderNote: '메모',
   exportPdfShareTitle: 'BonsaiLog bonsai PDF',
   exportPdfFailedBody: 'PDF 생성에 실패했습니다.',
 
   // --- F-09 Search recent tags chips (Phase B、English fallback) ---
-  searchRecentTagsLabel: '최근 태그',
   searchTagFilterClear: '필터 지우기',
 
   // --- F-13 Settings → Account / Paywall entry (Phase 1b、English fallback) ---
@@ -341,12 +267,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   settingsAccountProInactiveDesc: 'See plans and upgrade.',
 
   // --- F-04 Watering heatmap (Phase B、English fallback) ---
-  statsTabTitle: 'Stats',
-  statsHeaderAllBonsai: 'All bonsai ({count})',
-  bonsaiFilterSelectAll: 'All bonsai',
-  bonsaiFilterSearchPlaceholder: 'Search bonsai',
-  bonsaiFilterRecentSection: 'Recently viewed',
-  bonsaiFilterAllSection: 'All bonsai',
 
   // --- Home empty state (Phase 1b, Issue #29, ADR-0019) ---
   homeEmptyTitle: 'Add your first bonsai',
@@ -388,23 +308,12 @@ const ko: Partial<Record<TranslationKey, string>> = {
     'You can choose whether to allow the use of an identifier to help measure ad performance.',
   attExplainerAllow: 'If allowed: ads may be more relevant to you.',
   attExplainerDeny: 'If not allowed: general ads will be shown. No app features are restricted.',
-  settingsExportListPdfTitle: '분재 목록 내보내기 (PDF)',
-  settingsExportListPdfDesc: '모든 분재의 PDF 요약 생성',
-  exportListPdfTitle: '전체 목록 PDF',
-  exportListPdfDesc: 'Generates an A4 PDF with cover, full bonsai list and statistics.',
-  exportListPdfAction: '생성',
   exportListPdfShareTitle: 'Share full list PDF',
   exportListPdfCoverTitle: 'BonsaiLog 전체 기록',
   exportListPdfCoverSubtitle: '{count} bonsai total',
   exportListPdfFooter: 'Generated by BonsaiLog',
   exportStorageLowBody: 'Insufficient storage. Please free up at least 100MB and try again.',
   exportStorageLowTitle: 'Storage low',
-  onboardingTut3Title: 'Log watering and care',
-  onboardingTut3Body:
-    'Tap the bonsai detail screen to log watering, fertilizing, and wiring. BonsaiLog only records — no judgment.',
-  onboardingTut4Title: 'Read the watering heatmap',
-  onboardingTut4Body:
-    'Darker cells mean more watering on that day. Tap a cell to see details. The number under "last watered" shows days since.',
   onboardingTut5Title: 'Enable notifications',
   onboardingTut5Body:
     '예정을 추가할 때 알림 받기를 선택할 수 있어요. 설정에서 언제든 바꿀 수 있습니다.',
@@ -429,26 +338,18 @@ const ko: Partial<Record<TranslationKey, string>> = {
   settingsLegalTerms: '서비스 약관',
   settingsLegalPrivacy: '개인정보 처리방침',
   searchRecentTitle: 'Recent searches',
-  searchHistoryClear: 'Clear history',
-  outdoorModeToggleA11y: 'Toggle outdoor mode',
   // --- ADR-0020 Phase 1: 4-tab labels (English fallback for i18n.test.ts) ---
   tabBonsai: '분재',
   tabLookBack: '되돌아보기',
   tabSettings: 'Settings',
-  tabPlanComingSoon: 'Coming soon',
   // --- ADR-0020 Phase 2: bonsai tab Claude Design HomeScreen (English fallback) ---
   appName: 'BonsaiLog',
-  homeFilterAll: 'All',
-  homeCardLastWatering: 'Watered {elapsed} ago',
-  homeCardLastPruning: 'Pruned {elapsed} ago',
   elapsedToday: 'today',
   elapsedDays: '{days}d',
   elapsedWeeks: '{weeks}w',
   elapsedMonths: '{months}mo',
   elapsedYears: '{years}y',
   // --- ADR-0020 Phase 3: bonsai detail watering history (English fallback, SS 222921) ---
-  wateringSummaryStreak: 'Current streak',
-  wateringSummaryDoubleDays: 'Twice-a-day',
   workPickerTitle: 'Log a task',
   // --- ADR-0020 Phase 5: plan tab calendar (English fallback) ---
   planMonthYearSuffix: '년',
@@ -487,7 +388,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   recordSelectedEmptyTitle: '이 날에는 기록이 없습니다',
   recordSelectedEmptyBody:
     '관리를 마친 후 아래 "{cta}" 버튼으로 기록을 남길 수 있습니다. 기록이 있는 날은 달력에 ● 표시가 나타납니다.',
-  planEventPlanned: 'Planned',
   planGroupExpand: '펼치기',
   planGroupCollapse: '접기',
   // --- ADR-0020 v1.x-5: Paywall Claude Design (English fallback) ---
@@ -505,16 +405,10 @@ const ko: Partial<Record<TranslationKey, string>> = {
   paywallFeatureNoAdsFreeValue: '표시',
   paywallFeatureNoAdsProValue: '숨김',
   // --- ADR-0020 v1.x-4: WiringListScreen + planWiringListLink (English fallback) ---
-  planWiringListLink: 'Wiring list',
-  wiringTabAll: 'All',
-  wiringTabActive: 'Active',
-  wiringTabSoon: 'Within a week',
   wiringListEmpty: '철사 감기 일정 없음',
   wiringRowWeeks: '{weeks}주',
   wiringOverdueBadge: '기한 초과',
-  wiringUnwireInDays: 'Unwire in {days} day(s)',
   wiringUnwireOverdue: 'Unwire {days} day(s) overdue',
-  wiringRowGaugePart: '{part}에 {gauge}',
   wiringUnwireInWeeks: '{weeks}주 후 제거',
   wiringUnwireOverdueWeeks: '{weeks}주 기한 초과',
   // --- ADR-0020 v1.x-2: bonsai detail Hero + 3 Tabs (English fallback) ---
@@ -557,19 +451,12 @@ const ko: Partial<Record<TranslationKey, string>> = {
   workLogWirePart_miki: '줄기',
   workLogWirePart_eda: '가지',
   workLogWireDuration: '목표 기간',
-  workLogWireDurationHint: '철사 제거 알림용',
   onboardingWelcomeValue1: '19 languages, fully offline',
   onboardingWelcomeValue2: 'No personal data collected',
   onboardingWelcomeValue3: 'A logbook for the next generation',
   onboardingWelcomeNote: '완전 오프라인 분재 관리 일지.',
-  detailMoreMenu: 'More menu',
   detailTabBasic: 'Basic info',
   detailTabPlanTimeline: 'Schedule',
-  detailPlanTimelinePlaceholder: 'Schedule features will be available in a future update.',
-  detailBasicEdit: 'Edit',
-  detailMenuExportPdf: 'Export to PDF',
-  detailExportProTitle: 'Pro feature',
-  detailExportProDesc: 'PDF export is a Pro plan feature.',
   onboardingLanguageContinue: '계속',
   // --- T1-8c CareHub Hub (English fallback for non-ja locales) ---
   lookBackHubSubtitle: 'Look back on your records and organize them.',
@@ -593,13 +480,10 @@ const ko: Partial<Record<TranslationKey, string>> = {
   fieldRequiredLabel: 'required',
   fieldOptionalLabel: 'optional',
   // --- T2-4 purchase date (schema v8) ---
-  bonsaiFieldPurchaseDate: 'Purchase date',
   // --- T2-6 tag input (bonsai_tags M:N、schema v9) ---
   bonsaiFieldTags: '태그',
   bonsaiTagsEmpty: '태그 없음',
   // --- Sess74 PR-1: F-09 tag presets (ADR-0049 §Notes Amended / ADR-0026 §Notes Amended) ---
-  presetTagName_favorite: '즐겨찾기',
-  presetTagName_flowering: '개화',
   tagSectionPresets: '추천',
   tagPresetBadgeMaster: '기본',
   tagPresetLockedToast: '기본 태그는 편집할 수 없습니다',
@@ -611,14 +495,10 @@ const ko: Partial<Record<TranslationKey, string>> = {
   settingsNotifMasterOffBanner:
     '알림이 꺼져 있습니다. 설정에서 마스터 스위치를 켜면 이 옵션을 사용할 수 있습니다.',
   wiringRowUnwireAction: '철사 제거 완료',
-  wiringUnwireConfirmTitle: '철사 감기를 제거 완료로 표시할까요?',
   paywallFeatureTheme: 'Themes',
   historyLabelAmountNormal: '보통',
   historyLabelAmountPlenty: '충분히',
   historyLabelAmountLight: '조금',
-  historyLabelAmountTip: '끝만',
-  historyLabelAmountMid: '보통',
-  historyLabelAmountBold: '강하게',
   historyLabelPartsEda: '가지',
   historyLabelPartsHa: '잎',
   historyLabelPartsShinme: '새순',
@@ -629,22 +509,9 @@ const ko: Partial<Record<TranslationKey, string>> = {
   historyLabelFertKindLiquid: '액체',
   historyLabelFertKindSlow: '완효성',
   historyLabelFertKindOther: '기타',
-  historyLabelSprayPurposePrevent: '예방',
-  historyLabelSprayPurposeTreat: '치료',
-  historyLabelSprayPurposeBoth: '둘 다',
-  historyLabelHealSymptomsYake: '잎 화상',
-  historyLabelHealSymptomsKare: '가지 시듦',
-  historyLabelHealSymptomsMushi: '벌레',
-  historyLabelHealSymptomsKabi: '곰팡이',
-  historyLabelHealSymptomsOther: '기타 증상',
-  historyLabelMossTasksAdd: '교체',
-  historyLabelMossTasksRemove: '제거',
-  historyLabelMossTasksWater: '수분 공급',
   historyLabelRepotRootsNone: '정리 없음',
   historyLabelRepotRootsLight: '약간',
   historyLabelRepotRootsHalf: '1/3',
-  historyLabelRepotRootsHeavy: '1/2',
-  detailTimelineTabTitle: 'Scheduled tasks',
   detailTimelineEmpty: '기록 없음',
   addScheduleTitle: 'Add a scheduled task',
   addScheduleCta: '일정 추가',
@@ -664,11 +531,9 @@ const ko: Partial<Record<TranslationKey, string>> = {
   bonsaiFieldAcquiredFrom: '취득처',
   bonsaiFieldAcquiredFromPlaceholder: '예: 묘목원 이름',
   bonsaiFieldPotInfo: '분',
-  bonsaiFieldPotInfoPlaceholder: 'e.g., Red clay, oval, 12cm / Nakano-bachi',
   back: '뒤로',
   tabRecord: '기록',
   planFabLabel: '작업 예약',
-  bulkSelectModalTitle: '분재 선택',
   bulkSelectModalNotice: '기록하거나 예정할 분재를 선택하세요 ({count}개 선택됨)',
   homeTagFilterEmptyTitle: 'No bonsai with tag "{tag}"',
   homeTagFilterEmptyBody: 'No bonsai matches this filter. Try a different tag or clear the filter.',
@@ -711,15 +576,12 @@ const ko: Partial<Record<TranslationKey, string>> = {
   photoSourceCamera: '카메라',
   photoSourceLibrary: '갤러리',
   photoReorderHelp: 'Use ↑↓ to reorder, × to remove.',
-  photoCaption: 'Caption',
   photoMoveUp: 'Move up',
   photoMoveDown: 'Move down',
   inputOverLimit: 'Character limit reached',
   workLogDateField: '날짜',
   workLogDatePlaceholderToday: '오늘',
   workLogPhotoField: '사진',
-  workLogPhotoAdd: 'Add',
-  workLogPhotoCaptionPlaceholder: '예: 봄 새싹 발달',
   workLogWirePart_all: '전체',
   workLogWireUnwireDate: '철사 제거일',
   workLogWireUnwireDatePlaceholder: 'YYYY/MM/DD',
@@ -728,7 +590,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   workLogUnwirePart_eda: '가지',
   workLogUnwirePart_all: '전체',
   workLogRepotPotSize: '분 크기',
-  workLogRepotPotSizeUnit: 'cm',
   workLogRepotPotSizePlaceholder: '예: 18',
   workLogRepotSoilMix: '용토 배합',
   workLogRepotSoilMixPlaceholder: '예: 아카다마:키류=7:3',
@@ -775,16 +636,13 @@ const ko: Partial<Record<TranslationKey, string>> = {
   workLogLeafAidSymptom_other: '기타',
   workLogLeafAidTreatment: '처치',
   workLogLeafAidTreatmentPlaceholder: '예: 감염 부위 제거, 치유 페이스트 도포',
-  calendarScreenTitle: 'Calendar',
   workLogDoneToast: '기록됨',
   stackSpeciesPickerTitle: '수종 선택',
   stackStylePickerTitle: '수형 선택',
   stackBonsaiMultiSelectTitle: '분재 선택',
   stackBulkLogConfirmTitle: '일괄 기록',
   stackBonsaiNewTitle: '분재 등록',
-  stackBonsaiCreateModalTitle: '새로 만들기',
   stackBonsaiDetailTitle: '분재 상세',
-  stackBonsaiWateringHistoryTitle: '물주기 기록',
   stackWireListTitle: '철사 감기 목록',
   planLegendTitle: '범례',
   planLegendToggleShow: '범례 표시',
@@ -797,7 +655,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   planSectionRecorded: '기록',
   planLegendDotRecordedLabel: '기록 (●)',
   planEventRecordButtonSingle: '기록하기',
-  planEventRecordButtonGroup: '전체 {count}건 기록',
   planEventConvertedToast: '예정 {count}건을 기록으로 변경했습니다',
   planEventDeleteConfirmPlannedSingleTitle: '이 계획을 삭제할까요?',
   planEventDeleteConfirmLoggedSingleTitle: '이 기록을 삭제할까요?',
@@ -808,7 +665,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   rowActionMenuRecordAll: '전체 {count} 건 기록',
   undoSnackbarPlannedDeleteN: '계획 {count} 건 삭제됨',
   undoSnackbarLoggedDeleteN: '기록 {count} 건 삭제됨',
-  undoSnackbarAction: '되돌리기',
   recordFabLabel: '관리 기록',
   historyLabelPruneAmountFew: '조금',
   historyLabelPruneAmountSome: '적당히',
@@ -857,16 +713,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   exportHubBonsaiPdfSub: 'One page per bonsai',
   exportHubListPdfTitle: 'Full bonsai list',
   exportHubListPdfSub: 'Cover, list and stats',
-  exportBonsaiCsvTitle: 'Export bonsai list as CSV',
-  exportBonsaiCsvDesc: 'Export basic info for all bonsai as a CSV file (Pro feature).',
-  exportBonsaiCsvAction: 'Export bonsai list',
-  exportBonsaiCsvSuccess: 'Bonsai list exported',
-  exportBonsaiCsvSuccessDetail: 'Exported {count} bonsai.',
-  exportSpeciesCsvTitle: 'Export species summary as CSV',
-  exportSpeciesCsvDesc: 'Export per-species info as a CSV file (Pro feature).',
-  exportSpeciesCsvAction: 'Export species summary',
-  exportSpeciesCsvSuccess: 'Species summary exported',
-  exportSpeciesCsvSuccessDetail: 'Exported {count} species.',
   exportOptPeriodLabel: 'Period',
   exportOptPeriodAll: 'All',
   exportOptPeriod30d: 'Last 30 days',
@@ -882,7 +728,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   exportOptFilenameLabel: 'File name',
   exportOptDateFrom: 'From',
   exportOptDateTo: 'To',
-  exportOptGenerate: 'Generate and share',
   exportOptScopeEmptyTitle: 'No target selected',
   exportOptScopeEmptyBody: 'Please select at least one bonsai.',
   exportOptTagEmptyBody: 'Please select a tag.',
@@ -986,7 +831,6 @@ const ko: Partial<Record<TranslationKey, string>> = {
   pickerSectionMaster: '기본',
   pickerSectionCustom: '사용자 정의',
   pickerCustomBadge: '사용자 정의',
-  pickerCustomCounter: '{used}/{limit}',
   rowActionMenuEdit: 'Edit',
   workLogTitleEditing: 'Edit {type}',
   workLogUpdateCta: 'Update',
