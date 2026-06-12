@@ -76,8 +76,8 @@ const ALLOWLIST = {
     'wiringUnwireOverdueWeeks',
     'recurringWeeklyByDaysSummary',
   ]),
-  // ブランドタグライン「鉢 1 本ずつ、一生分。」の句点は意匠。
-  period: new Set(['onboardingWelcomeTitle', 'paywallHeroTitle']),
+  // ブランドタグライン (「鉢 1 本ずつ、一生分。」等) の句点は意匠。
+  period: new Set(['onboardingWelcomeTitle', 'paywallHeroTitle', 'exportHubHeroTitle']),
   notation: new Set([]),
   fullwidth: new Set([]),
   jaSpace: new Set([]),
