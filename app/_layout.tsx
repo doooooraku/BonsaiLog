@@ -20,6 +20,7 @@ import 'react-native-reanimated';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Toast } from '@/src/components/Toast';
+import { GuideBanner } from '@/src/features/guides/GuideBanner';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { useSettingsBootstrap } from '@/src/stores/useSettingsBootstrap';
 import { buildNavigationTheme } from '@/src/core/theme/buildNavigationTheme';
@@ -184,6 +185,9 @@ export default function RootLayout() {
         <StatusBar style={effectiveScheme === 'dark' ? 'light' : 'dark'} />
         {/* Sess12 PR-B+C: 一括予定/記録追加完了の Toast (root mount で全画面に表示可) */}
         <Toast />
+        {/* #1178 g5 (ADR-0058): ガイド系お祝いバナー — Toast (深緑) と意匠分離した washi 系。
+            保存直後の画面遷移をまたいで表示するため root mount (Toast と同 pattern) */}
+        <GuideBanner />
         {/* ADR-0014 Amended: 初回予定登録時の通知 soft-ask モーダル (root mount で画面遷移後も表示可) */}
         <NotificationOptInHost />
       </ThemeProvider>
