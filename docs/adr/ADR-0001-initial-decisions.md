@@ -62,8 +62,6 @@
 
 #### (A) ローカル志向（Local-first）
 
-<!-- TODO: Fill in your app's specific details -->
-
 - BonsaiLog は **ローカル志向のアプリ** とする（自前バックエンドを持たない）
 - **ユーザー登録（メール/パスワード）を持たない**
 
@@ -86,9 +84,8 @@
 
 #### (B) Free / Pro の不変差分
 
-<!-- TODO: アプリ固有の Free/Pro 差分を書く -->
-
-- Free：**\_\_** 制限あり、広告あり
+- 機能境界の正は [ADR-0049](./ADR-0049-pro-feature-boundary-v1.md)（Pro 機能 7 項目: 写真 / タグ / 作業記録写真 / CSV・PDF / 広告非表示 / カスタム樹種樹形 / 定期予定）
+- Free：上限あり（各上限値は ADR-0049 が正）、広告あり
 - Pro：制限解除、広告は出さない（広告コンポーネントをマウントしない）
 - 課金は RevenueCat 経由、**復元（Restore）を提供**（Apple 審査必須）
 

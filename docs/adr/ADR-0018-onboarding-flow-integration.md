@@ -435,7 +435,7 @@
 
 - constraints: `docs/reference/constraints.md` (§1-4 記録のみ / §3-1 19 言語 / §5-2 禁止語 / §6 UI Figma)
 - reference: `docs/reference/personas.md` (4 ペルソナ評価)
-- glossary: `docs/reference/glossary.md` (Onboarding 関連用語多数 — 追加予定)
+- glossary: `docs/reference/glossary.md` (Onboarding 関連用語多数 — 追加予定) ※廃止 — Sess101 #1169 で glossary.md 削除 (用語の正 = basic_spec §2 + constraints + コード、翻訳禁止リストは ADR-0033 D3)
 - 行動 lesson: `.claude/recurrence-prevention.md` (R-1〜R-20)
 - 連動 ADR:
   - `docs/adr/ADR-0011-remove-recommendations-keep-record-only.md` (§86-106 機能チュート 5 ステップ既定、本 ADR で統合)
@@ -535,7 +535,7 @@
 
 ADR-0020 v1.x-2 で機能チュート (tut1/tut2) を撤去した際、「機能発見性は Settings ヘルプで代替」とした受け皿が実体未補填だった (再表示の中身が tut5 = 通知画面 1 枚のみ)。この穴を **文脈内ガイド (ADR-0058、Issue #1178)** が埋める — 本 ADR のオンボ 4 画面構成 (Splash + Welcome + Language + tut5) は不変。
 
-- Phase H「チュートリアルを再表示」(settingsTutorialReplay 系) は **#1179 で「使い方」ページに置換予定** — 説明文「5 つの機能チュートリアル」が実体と乖離 (×19 言語) のため、文言修正でなく行ごと置換が決定 (Sess102 /discuss)
+- Phase H「チュートリアルを再表示」(settingsTutorialReplay 系) は **#1179 で「使い方」ページに置換済 (PR #1189、2026-06-11)** — 説明文「5 つの機能チュートリアル」が実体と乖離 (×19 言語) のため、文言修正でなく行ごと置換が決定 (Sess102 /discuss)
 - ガイドの設計原則 / 発火条件は ADR-0058 が正
 
 **関連**: ADR-0058 / Issue #1177 (空状態道しるべ化、merged) / #1178 / #1179

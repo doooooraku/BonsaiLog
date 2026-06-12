@@ -312,7 +312,7 @@ BonsaiLog のストア審査必須項目を以下の構成で実装する。
 
 - constraints: `docs/reference/constraints.md` (§1-2 ローカル保存 / §1-3 PII / §2-3 AdMob 運用 / §5-1 秘密情報)
 - reference: `docs/reference/personas.md` (4 ペルソナ評価)
-- glossary: `docs/reference/glossary.md` (ATT / UMP / IDFA / GDPR 等 — 追加予定)
+- glossary: `docs/reference/glossary.md` (ATT / UMP / IDFA / GDPR 等 — 追加予定) ※廃止 — Sess101 #1169 で glossary.md 削除 (用語の正 = basic_spec §2 + constraints + コード、翻訳禁止リストは ADR-0033 D3)
 - 行動 lesson: `.claude/recurrence-prevention.md` (R-1〜R-20)
 - 連動 ADR:
   - `docs/adr/ADR-0005-ios-encryption-compliance.md` (TLS 通常利用、申告不要)

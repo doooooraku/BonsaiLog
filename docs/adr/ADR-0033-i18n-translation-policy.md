@@ -3,7 +3,7 @@
 - Status: Accepted
 - Date: 2026-05-21
 - Deciders: @doooooraku
-- Related: ADR-0027 (form overhaul) / ADR-0029 (form UX permanent Phase γ) / ADR-0030 (navigation patterns) / ADR-0031 (calendar unified) / ADR-0032 (planned/logged distinction) / `docs/explanation/product_strategy.md` §1-2 独自価値 / §9 多言語方針 / §11-3 R2 / `docs/reference/glossary.md` (用語集 19 言語統一表記) / Sess18 PR-5/10 (メモ placeholder 19 言語手動翻訳実証) / Sess19-4 PR-T1a #690 (作業記録 form 最重要 UI 17 keys × 17 言語実証) / Sess20 議論 (6 専門家チーム + 4 ペルソナ全員 ◎/○)
+- Related: ADR-0027 (form overhaul) / ADR-0029 (form UX permanent Phase γ) / ADR-0030 (navigation patterns) / ADR-0031 (calendar unified) / ADR-0032 (planned/logged distinction) / `docs/explanation/product_strategy.md` §1-2 独自価値 / §9 多言語方針 / §11-3 R2 / ~~`docs/reference/glossary.md`~~ (Sess101 #1169 で廃止 — 翻訳禁止リストの現行 SoT は本 ADR D3 + 末尾 Amendment 参照) / Sess18 PR-5/10 (メモ placeholder 19 言語手動翻訳実証) / Sess19-4 PR-T1a #690 (作業記録 form 最重要 UI 17 keys × 17 言語実証) / Sess20 議論 (6 専門家チーム + 4 ペルソナ全員 ◎/○)
 
 ---
 
