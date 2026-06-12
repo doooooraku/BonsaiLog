@@ -1,0 +1,73 @@
+# maestro/flows/i18n-sweep-one.yml
+# i18n 言語切替 SS 掃引の 1 言語分サブフロー (i18n-sweep.yml から runFlow で呼ばれる)。
+# 必須 env: LANG_CODE (= src/core/i18n/languageOptions.ts の code: en/ja/fr/.../sv)
+#
+# 前提: home (盆栽タブ) が表示されている状態で開始し、home に戻って終了する。
+# 撮影: dist/i18n-sweep/<code>-{settings,paywall}.png
+# R-31 遵守: 全 tap が testID 経由 (事前 grep 済: e2e_bonsai_home_settings /
+#   e2e_settings_language_row / e2e_settings_lang_<code> / e2e_view_pro_plans / e2e_paywall_close)
+appId: 'com.dooooraku.bonsailog'
+name: 'i18n sweep (1 言語分、LANG_CODE env 必須)'
+---
+- tapOn:
+    id: 'e2e_bonsai_home_settings'
+    label: '設定を開く'
+
+- scrollUntilVisible:
+    element:
+      id: 'e2e_settings_language_row'
+    direction: DOWN
+    label: '言語 row までスクロール'
+
+- tapOn:
+    id: 'e2e_settings_language_row'
+    label: '言語選択画面を開く'
+
+- scrollUntilVisible:
+    element:
+      id: 'e2e_settings_lang_${LANG_CODE}'
+    direction: DOWN
+    label: '対象言語 ${LANG_CODE} までスクロール'
+
+- tapOn:
+    id: 'e2e_settings_lang_${LANG_CODE}'
+    label: '言語 ${LANG_CODE} を選択 (即時適用)'
+
+- pressKey: Back
+
+# 言語変更はツリー再マウントを伴い、Back は home に着地する (Sess104 実機で確認)
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_settings'
+    timeout: 8000
+    label: 'home へ戻ったことを確認'
+
+- tapOn:
+    id: 'e2e_bonsai_home_settings'
+    label: '新言語で設定を開き直す'
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- scrollUntilVisible:
+    element:
+      id: 'e2e_view_pro_plans'
+    direction: DOWN
+    label: 'プラン表 + CTA を画面内に出す'
+
+- takeScreenshot: dist/i18n-sweep/${LANG_CODE}-settings
+
+- tapOn:
+    id: 'e2e_view_pro_plans'
+    label: 'paywall を開く'
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: dist/i18n-sweep/${LANG_CODE}-paywall
+
+- tapOn:
+    id: 'e2e_paywall_close'
+    label: 'paywall を閉じる'
+
+- pressKey: Back

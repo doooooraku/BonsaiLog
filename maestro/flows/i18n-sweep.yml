@@ -1,0 +1,105 @@
+# maestro/flows/i18n-sweep.yml
+# 全 19 言語切替 SS 掃引 (Sess104 retro Try の仕組み化、ADR-0033 翻訳検証用)。
+# 翻訳系 PR の実機検証 (§6-3) の標準手段: 各言語の settings (プラン表 = 最長文言の密集地)
+# + paywall を撮影し、表セルの語中折返し・見切れを目視確認する。
+#
+# 使い方:
+#   1. preview build 推奨 (dev build の場合は事前に bundle 読込済み = home 表示状態にしておく。
+#      dev client の launcher / Continue ダイアログは本 flow では操作しない)
+#   2. ~/.maestro/bin/maestro test maestro/flows/i18n-sweep.yml
+#   3. SS は dist/i18n-sweep/<code>-{settings,paywall}.png に出力 → Claude が Read 目視 (R-1)
+#
+# 順序: en → … → sv の 18 言語を回り、最後に ja へ戻して終了 (SoT 言語で復帰)。
+# 由来: Sess104 で手動掃引 (座標 tap + 再同期 6 回 / 約 45 分) → 本 flow で機械化。
+appId: 'com.dooooraku.bonsailog'
+name: 'i18n - 全 19 言語切替 SS 掃引'
+tags:
+  - i18n
+  - manual-tool
+---
+- launchApp:
+    clearState: false
+    label: '既存 state で起動 (言語設定のみを順次切替)'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_settings'
+    timeout: 20000
+    label: 'home 表示待ち (dev build で launcher が出る場合は手動で bundle 読込してから再実行)'
+
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: en
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: fr
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: es
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: de
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: it
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: pt
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: ru
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: zhHans
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: zhHant
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: ko
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: hi
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: id
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: th
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: vi
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: tr
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: nl
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: pl
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: sv
+- runFlow:
+    file: i18n-sweep-one.yml
+    env:
+      LANG_CODE: ja

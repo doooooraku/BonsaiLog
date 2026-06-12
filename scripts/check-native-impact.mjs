@@ -71,6 +71,7 @@ const JS_ONLY_PATTERNS = [
   /\.md$/,
   /^eslint-rules\//,
   /^__tests__\//,
+  /^maestro\//, // E2E flow 定義 (Sess104: i18n-sweep.yml 作成時に unknown→native 誤検知を実証)
   /^\.claude\//,
   /^scripts\//, // build 系は別途、 本 script 自身も含む
   /^\.github\//,
