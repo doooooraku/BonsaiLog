@@ -23,6 +23,7 @@ import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { RowActionMenu, type RowActionMenuItem } from '@/src/components/RowActionMenu';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 import { useColors } from '@/src/core/theme/useColors';
+import { AdBanner } from '@/src/features/ads/AdBanner';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 import { useBulkActionFlow } from '@/src/features/event/useBulkActionFlow';
 import { canShowGuide } from '@/src/features/guides/guideTriggers';
@@ -168,6 +169,12 @@ export function CalendarTabScreen({ mode }: CalendarTabScreenProps) {
           disabled={data.isFabDisabled}
         />
       </View>
+
+      {/* Sess106 PR-7 (ADR-0010 §80 Sess106 Amendment): plan/record タブにも AdBanner 配置。
+          BottomCtaBar wrapper の外 = guide spotlight 測定対象外 (ADR-0058 整合)。
+          Z-order: BottomCtaBar > AdBanner > TabBar (design_system.md §AdBanner Stacking、 ADR-0054 Sess106 Amendment)。
+          Pro 状態は AdBanner 内で即 unmount (useProStore.isPro 依存)。 */}
+      <AdBanner />
 
       {/* #1178 g2/g3 スポットライト (生涯 1 回、ADR-0058 原則 2)。
           静的 testID 一覧: testID="e2e_plan_guide_cta" / testID="e2e_record_guide_cta" */}
