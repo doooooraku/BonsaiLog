@@ -59,6 +59,22 @@ const pl: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: 'Zakup jednorazowy. Brak automatycznego odnowienia.',
   paywallChampionBannerTitle: 'Masz plan Pro (na zawsze)',
   paywallChampionBannerDesc: 'Masz Pro na własność, dlatego plany subskrypcji nie są wyświetlane.',
+
+  // --- Sess105 PR1: Paywall PlanRow rich layout (radio + sticky CTA, ClaudeDesign monetization-screens.jsx) ---
+  paywallPlanSectionLabel: 'Wybierz plan',
+  paywallTaxNotice: 'Z VAT · Anulujesz, kiedy chcesz',
+  paywallPlanRecommendedBadge: 'Polecane',
+  paywallPlanMonthlySubCopy: 'Wygodny start · anulujesz, kiedy chcesz',
+  paywallPlanYearlySubCopy: 'Najczęściej wybierany',
+  paywallPlanLifetimeSubCopy: 'Licencja dożywotnia · bez odnawiania',
+  paywallPlanYearlyPerMonth: '{amount} / mies.',
+  paywallPlanPeriodMonth: '/mies.',
+  paywallPlanPeriodYear: '/rok',
+  paywallPlanPeriodLifetime: 'jednorazowo',
+  paywallStickyCtaLabel: 'Kup',
+  paywallStickyCtaSummaryMonthly: '{price} / mies. · automatyczne odnawianie',
+  paywallStickyCtaSummaryYearly: '{price} / rok ({perMonth}) · automatyczne odnawianie',
+  paywallStickyCtaSummaryLifetime: 'Jednorazowo {price} · bez odnawiania · na zawsze',
   settingsAccountProLifetimeTitle: 'Plan Pro (na zawsze)',
   settingsAccountProLifetimeDesc:
     'Dzięki licencji jednorazowej funkcje Pro pozostają dostępne na zawsze.',

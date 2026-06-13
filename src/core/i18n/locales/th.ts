@@ -58,6 +58,22 @@ const th: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: 'ซื้อครั้งเดียว ไม่มีการต่ออายุอัตโนมัติ',
   paywallChampionBannerTitle: 'คุณเป็นสมาชิก Pro (ตลอดชีพ)',
   paywallChampionBannerDesc: 'คุณเป็นเจ้าของ Pro แบบตลอดชีพแล้ว จึงไม่แสดงแผนสมัครสมาชิก',
+
+  // --- Sess105 PR1: Paywall PlanRow rich layout (radio + sticky CTA, ClaudeDesign monetization-screens.jsx) ---
+  paywallPlanSectionLabel: 'เลือกแผน',
+  paywallTaxNotice: 'รวมภาษีแล้ว · ยกเลิกได้ทุกเมื่อ',
+  paywallPlanRecommendedBadge: 'แนะนำ',
+  paywallPlanMonthlySubCopy: 'เริ่มง่าย · ยกเลิกได้ทุกเมื่อ',
+  paywallPlanYearlySubCopy: 'ยอดนิยมที่สุด',
+  paywallPlanLifetimeSubCopy: 'สิทธิ์ตลอดชีพ · ไม่มีต่ออายุ',
+  paywallPlanYearlyPerMonth: 'เฉลี่ยเดือนละ {amount}',
+  paywallPlanPeriodMonth: '/เดือน',
+  paywallPlanPeriodYear: '/ปี',
+  paywallPlanPeriodLifetime: 'ครั้งเดียว',
+  paywallStickyCtaLabel: 'ซื้อเลย',
+  paywallStickyCtaSummaryMonthly: 'รายเดือน {price} · ต่ออายุอัตโนมัติ',
+  paywallStickyCtaSummaryYearly: 'รายปี {price} ({perMonth}) · ต่ออายุอัตโนมัติ',
+  paywallStickyCtaSummaryLifetime: 'ซื้อขาด {price} · ไม่มีต่ออายุ · ตลอดชีพ',
   settingsAccountProLifetimeTitle: 'สมาชิก Pro (ตลอดชีพ)',
   settingsAccountProLifetimeDesc: 'ใช้ฟีเจอร์ Pro ได้ตลอดไปด้วยสิทธิ์แบบตลอดชีพของคุณ',
 

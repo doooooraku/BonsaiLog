@@ -127,6 +127,22 @@ const ja: Partial<Record<TranslationKey, string>> = {
   paywallChampionBannerTitle: 'あなたは Pro メンバー (買い切り) です',
   paywallChampionBannerDesc:
     '買い切りで Pro を所有しているため、サブスクリプションは表示されません。',
+
+  // --- Sess105 PR1: Paywall PlanRow リッチ化 (radio + sticky CTA、 ClaudeDesign monetization-screens.jsx 整合) ---
+  paywallPlanSectionLabel: 'プランを選ぶ',
+  paywallTaxNotice: '税込・いつでも解約',
+  paywallPlanRecommendedBadge: 'おすすめ',
+  paywallPlanMonthlySubCopy: '気軽に始める・いつでも解約',
+  paywallPlanYearlySubCopy: 'いちばん人気の定番',
+  paywallPlanLifetimeSubCopy: '永続ライセンス・更新なし',
+  paywallPlanYearlyPerMonth: '月あたり {amount}',
+  paywallPlanPeriodMonth: '/月',
+  paywallPlanPeriodYear: '/年',
+  paywallPlanPeriodLifetime: '一括',
+  paywallStickyCtaLabel: '購入する',
+  paywallStickyCtaSummaryMonthly: '月額 {price}・自動更新',
+  paywallStickyCtaSummaryYearly: '年額 {price} ({perMonth})・自動更新',
+  paywallStickyCtaSummaryLifetime: '買い切り {price}・更新なし・永続',
   settingsAccountProLifetimeTitle: 'Pro メンバー (買い切り)',
   settingsAccountProLifetimeDesc: '買い切りライセンスで Pro 機能を永久にご利用いただけます。',
 

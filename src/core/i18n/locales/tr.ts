@@ -59,6 +59,22 @@ const tr: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: 'Tek seferlik satın alma. Otomatik yenileme yok.',
   paywallChampionBannerTitle: 'Pro üyesiniz (Ömür boyu)',
   paywallChampionBannerDesc: "Pro'ya ömür boyu sahip olduğunuz için abonelik planları gösterilmez.",
+
+  // --- Sess105 PR1: Paywall PlanRow rich layout (radio + sticky CTA, ClaudeDesign monetization-screens.jsx) ---
+  paywallPlanSectionLabel: 'Plan seçin',
+  paywallTaxNotice: 'KDV dahil · İstediğiniz zaman iptal',
+  paywallPlanRecommendedBadge: 'Önerilen',
+  paywallPlanMonthlySubCopy: 'Kolayca başlayın · İstediğiniz zaman iptal',
+  paywallPlanYearlySubCopy: 'En popüler tercih',
+  paywallPlanLifetimeSubCopy: 'Ömür boyu lisans · Yenileme yok',
+  paywallPlanYearlyPerMonth: 'Aylık {amount}',
+  paywallPlanPeriodMonth: '/ay',
+  paywallPlanPeriodYear: '/yıl',
+  paywallPlanPeriodLifetime: 'Tek seferlik',
+  paywallStickyCtaLabel: 'Satın al',
+  paywallStickyCtaSummaryMonthly: 'Aylık {price} · Otomatik yenilenir',
+  paywallStickyCtaSummaryYearly: 'Yıllık {price} ({perMonth}) · Otomatik yenilenir',
+  paywallStickyCtaSummaryLifetime: 'Tek seferlik {price} · Yenileme yok · Ömür boyu',
   settingsAccountProLifetimeTitle: 'Pro üye (Ömür boyu)',
   settingsAccountProLifetimeDesc:
     'Ömür boyu lisansınızla Pro özelliklerini kalıcı olarak kullanabilirsiniz.',

@@ -57,6 +57,22 @@ const baseEn = {
   proLifetimeFinePrint: 'One-time purchase. No auto-renewal.',
   paywallChampionBannerTitle: "You're a Pro member (Lifetime)",
   paywallChampionBannerDesc: "You own Pro for life, so subscription plans aren't shown.",
+
+  // --- Sess105 PR1: Paywall PlanRow rich layout (radio + sticky CTA, ClaudeDesign monetization-screens.jsx) ---
+  paywallPlanSectionLabel: 'Choose a plan',
+  paywallTaxNotice: 'Tax included · Cancel anytime',
+  paywallPlanRecommendedBadge: 'Recommended',
+  paywallPlanMonthlySubCopy: 'Easy to start · Cancel anytime',
+  paywallPlanYearlySubCopy: 'Most popular',
+  paywallPlanLifetimeSubCopy: 'Lifetime license · No renewal',
+  paywallPlanYearlyPerMonth: '{amount} / month',
+  paywallPlanPeriodMonth: '/mo',
+  paywallPlanPeriodYear: '/yr',
+  paywallPlanPeriodLifetime: 'one-time',
+  paywallStickyCtaLabel: 'Purchase',
+  paywallStickyCtaSummaryMonthly: 'Monthly {price} · auto-renew',
+  paywallStickyCtaSummaryYearly: 'Yearly {price} ({perMonth}) · auto-renew',
+  paywallStickyCtaSummaryLifetime: 'Lifetime {price} · no renewal · forever',
   settingsAccountProLifetimeTitle: 'Pro member (Lifetime)',
   settingsAccountProLifetimeDesc: 'You have Pro features forever with your lifetime license.',
 

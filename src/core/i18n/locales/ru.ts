@@ -59,6 +59,22 @@ const ru: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: 'Разовая покупка. Без автоматического продления.',
   paywallChampionBannerTitle: 'Вы участник Pro (навсегда)',
   paywallChampionBannerDesc: 'Подписки скрыты: Pro уже куплен навсегда.',
+
+  // --- Sess105 PR1: Paywall PlanRow rich layout (radio + sticky CTA, ClaudeDesign monetization-screens.jsx) ---
+  paywallPlanSectionLabel: 'Выберите план',
+  paywallTaxNotice: 'С учётом налога · Отмена в любой момент',
+  paywallPlanRecommendedBadge: 'Рекомендуем',
+  paywallPlanMonthlySubCopy: 'Лёгкий старт · Отмена в любой момент',
+  paywallPlanYearlySubCopy: 'Самый популярный выбор',
+  paywallPlanLifetimeSubCopy: 'Бессрочная лицензия · Без продления',
+  paywallPlanYearlyPerMonth: '{amount} в месяц',
+  paywallPlanPeriodMonth: '/мес',
+  paywallPlanPeriodYear: '/год',
+  paywallPlanPeriodLifetime: 'разово',
+  paywallStickyCtaLabel: 'Купить',
+  paywallStickyCtaSummaryMonthly: '{price} в месяц · Автопродление',
+  paywallStickyCtaSummaryYearly: '{price} в год ({perMonth}) · Автопродление',
+  paywallStickyCtaSummaryLifetime: 'Разовая покупка {price} · Без продления · Навсегда',
   settingsAccountProLifetimeTitle: 'Участник Pro (навсегда)',
   settingsAccountProLifetimeDesc: 'Разовая покупка дает доступ к функциям Pro навсегда.',
 

@@ -80,6 +80,42 @@ tags:
     id: 'e2e_paywall_champion_banner'
     label: 'Free 状態で Champion バナーは表示されない'
 
+# Sess105 PR1: sticky CTA + Lifetime warning Alert 検証
+# Free 状態では sticky CTA が画面下部に表示される (Champion 時は非表示)
+- assertVisible:
+    id: 'e2e_paywall_sticky_cta'
+    label: 'sticky CTA (画面下固定) が表示される'
+
+# Lifetime radio を選択 (radio タップで selectedPlan が lifetime に切替)
+- tapOn:
+    id: 'e2e_plan_lifetime'
+    label: '買い切り radio を選択'
+
+- waitForAnimationToEnd
+
+# Lifetime 選択状態で sticky CTA をタップ → ADR-0009 AC5 Apple Review 3.1.2(c) Lifetime warning Alert
+- tapOn:
+    id: 'e2e_paywall_sticky_cta'
+    label: 'sticky CTA をタップ (Lifetime warning Alert を起動)'
+
+# native Alert は testID 不可のため text matching で検証 (e2e routing 「testID 経由のみ」 例外、 ja locale 前提)
+# Alert title = `lifetimeWarningTitle` = 'Lifetime 購入の確認' (ja)
+- assertVisible:
+    text: 'Lifetime 購入の確認'
+    label: 'Apple Review 3.1.2(c) Lifetime warning Alert title 表示'
+
+# Cancel ボタンで Alert dismiss (購入はキャンセル、 Paywall に戻る)
+- tapOn:
+    text: 'キャンセル'
+    label: 'Alert を キャンセル で閉じる (購入しない)'
+
+- waitForAnimationToEnd
+
+# Paywall に戻ったことを確認
+- assertVisible:
+    id: 'e2e_paywall_screen'
+    label: 'キャンセル後 Paywall に復帰 (購入未実行)'
+
 # Restore 押下 (過去購入なし → 「復元する購入はありません」Alert)
 # RC sandbox 連携で Free 端末 → 購入履歴ゼロ → restoreNotFound 文言が出る
 - tapOn:

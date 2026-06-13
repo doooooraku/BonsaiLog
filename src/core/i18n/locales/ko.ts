@@ -58,6 +58,22 @@ const ko: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: '일회성 구매입니다. 자동 갱신이 없습니다.',
   paywallChampionBannerTitle: '평생 Pro 멤버입니다',
   paywallChampionBannerDesc: '평생 이용권으로 Pro를 보유하고 있어 구독 플랜은 표시되지 않습니다.',
+
+  // --- Sess105 PR1: Paywall PlanRow rich layout (radio + sticky CTA, ClaudeDesign monetization-screens.jsx) ---
+  paywallPlanSectionLabel: '플랜 선택',
+  paywallTaxNotice: '세금 포함・언제든 해지 가능',
+  paywallPlanRecommendedBadge: '추천',
+  paywallPlanMonthlySubCopy: '부담 없이 시작・언제든 해지',
+  paywallPlanYearlySubCopy: '가장 인기 있는 플랜',
+  paywallPlanLifetimeSubCopy: '평생 이용권・갱신 없음',
+  paywallPlanYearlyPerMonth: '월 {amount}',
+  paywallPlanPeriodMonth: '/월',
+  paywallPlanPeriodYear: '/년',
+  paywallPlanPeriodLifetime: '일시불',
+  paywallStickyCtaLabel: '구매하기',
+  paywallStickyCtaSummaryMonthly: '월 {price}・자동 갱신',
+  paywallStickyCtaSummaryYearly: '연 {price}（{perMonth}）・자동 갱신',
+  paywallStickyCtaSummaryLifetime: '일시불 {price}・갱신 없음・평생 이용',
   settingsAccountProLifetimeTitle: 'Pro 멤버 (평생)',
   settingsAccountProLifetimeDesc: '평생 이용권으로 Pro 기능을 영구적으로 사용할 수 있습니다.',
 

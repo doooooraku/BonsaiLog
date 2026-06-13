@@ -60,6 +60,23 @@ const id: Partial<Record<TranslationKey, string>> = {
   paywallChampionBannerTitle: 'Anda anggota Pro (Seumur hidup)',
   paywallChampionBannerDesc:
     'Karena Anda memiliki Pro seumur hidup, paket langganan tidak ditampilkan.',
+
+  // --- Sess105 PR1: Paywall PlanRow rich layout (radio + sticky CTA, ClaudeDesign monetization-screens.jsx) ---
+  paywallPlanSectionLabel: 'Pilih paket',
+  paywallTaxNotice: 'Termasuk pajak · Batal kapan saja',
+  paywallPlanRecommendedBadge: 'Rekomendasi',
+  paywallPlanMonthlySubCopy: 'Mulai santai · Batal kapan saja',
+  paywallPlanYearlySubCopy: 'Paling populer',
+  paywallPlanLifetimeSubCopy: 'Lisensi seumur hidup · Tanpa perpanjangan',
+  paywallPlanYearlyPerMonth: '{amount} / bulan',
+  paywallPlanPeriodMonth: '/bln',
+  paywallPlanPeriodYear: '/thn',
+  paywallPlanPeriodLifetime: 'Sekali bayar',
+  paywallStickyCtaLabel: 'Beli sekarang',
+  paywallStickyCtaSummaryMonthly: '{price} / bulan · perpanjangan otomatis',
+  paywallStickyCtaSummaryYearly: '{price} / tahun ({perMonth}) · perpanjangan otomatis',
+  paywallStickyCtaSummaryLifetime: 'Beli sekali {price} · tanpa perpanjangan · selamanya',
+
   settingsAccountProLifetimeTitle: 'Anggota Pro (Seumur hidup)',
   settingsAccountProLifetimeDesc:
     'Fitur Pro dapat Anda gunakan selamanya dengan lisensi seumur hidup.',
