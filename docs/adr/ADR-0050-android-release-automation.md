@@ -384,3 +384,123 @@ Sess102 の vc14 release 実走 (GitHub Actions run 27353729812) で cloud workf
 - `scripts/release-diff.mjs` の経過時間検証を < 30 min (1800s) → **< 45 min (2700s)** へ拡大 (実測 33-35 分 + 余裕)
 - `.claude/skills/release-android/SKILL.md` / `docs/how-to/workflow/google_play_release.md` の所要時間を実測値に更新 (cloud 約 35 分 + smoke 約 5 分 = 合計約 40 分)
 - GitHub Free tier 試算の更新: 2000 min/month ÷ 35 min ≈ 月 57 release まで可 (運用上問題なし)
+
+---
+
+## Sess106 Amendment (2026-06-13): iOS TestFlight 自動化統合 (案 B = macos-15 + `--local`)
+
+### Context
+
+- 既存 `.github/workflows/build-ios-testflight.yml` は Repolog 由来テンプレが 5/9 commit されたまま未稼働 (`gh run list --workflow=build-ios-testflight.yml` 実走 0 回)。
+- ASC API で実態裏付け: BonsaiLog アプリは登録済 (`ascAppId=6763495229`、`bundleId=com.dooooraku.bonsailog`、SKU=`bonsai-ios-003`)、App Store Versions 1.0 が `PREPARE_FOR_SUBMISSION` で停止、TestFlight Pre-Release Versions / Builds / Beta Groups いずれも 0 件。
+- 一方で必要情報はローカルに全て揃っている: `.p8` (`6768KZU85A`) / Issuer ID (`1f21bf99-fe11-4f44-9827-5b0bfbc3390e`、Repolog/eas.json 由来、Issuer 画面の表示と一致) / `ascAppId` (`6763495229`、config.bonsailog.json apple.appId) / Apple Team ID (`HSH4HJ72Y8`、ASC API bundleIds.seedId)。
+- ASC API キーは `App Manager` ロール (スクショ確認)、TestFlight 完全自走に必要十分。
+- 既存 iOS Distribution Certificate (`89L2ZXTPB4`、有効期限 2026-12-26) を流用可能。BonsaiLog 用 Provisioning Profile は未作成だが ASC API Key 経由で EAS が初回 build 時に自動生成可能 → user 手作業 0。
+- Repolog の同型 workflow は 4 月時点で連続 5 回 success (平均 17 分)、構成は実証済み。
+
+### User 意思
+
+- 案 B (macos-15 + `--local`) を採用。理由: EAS Free 月 30 回上限を PoC 試行で超えるリスクを避けるため、`eas build --local` で Cloud quota 消費 0 にする。
+- BonsaiLog repo は public 確定、macOS runner は無料、minute 制限の影響なし。
+- Expo Free プラン継続、Pro 切替予定なし。
+- macos-15 に pin (macos-latest でなく、突然壊れるリスク最小化)。
+- 出来るだけ user 手作業を省く方針 (= ASC API + ローカル探索で取得可能な値は全部 Claude が自動取得)。
+
+### Decision
+
+1. **iOS workflow を `macos-15` + `eas build --local` 構成に全面改修** (`.github/workflows/build-ios-testflight.yml`)。Android `build-android-play.yml` と対称構造 (verify → AdMob stage gate → ASC Key setup → prebuild env check → build --local → Privacy Manifest 検証 → submit --wait → cleanup → artifact (failure 時のみ) → summary)。
+2. **`eas.json` `submit.production.ios` 追加** (= ascAppId / ascApiKeyId / ascApiKeyIssuerId / ascApiKeyPath = `./secrets/AuthKey.p8`)。build 側は `extends: base` のみ (macos runner image を使うので cloud-specific 設定不要)。
+3. **`eas build --local` の Cloud quota 非消費を恒久前提** (公式: https://docs.expo.dev/build-reference/local-builds/)。月 30 ビルド上限を完全回避。
+4. **credentials 管理は EAS サーバー側委譲** (案 A と同方式)。初回 build 時に EAS が ASC API Key 経由で Apple Developer Portal から Distribution Cert + Provisioning Profile を自動取得・登録。証明書年次更新も EAS 自動。
+5. **Apple Team ID + Type は GitHub Variables 経由**: `APPLE_TEAM_ID=HSH4HJ72Y8` / `APPLE_TEAM_TYPE=INDIVIDUAL`。EAS CLI が `EXPO_APPLE_TEAM_ID` / `EXPO_APPLE_TEAM_TYPE` env から読み取り、初回 credentials 取得に使用。
+6. **submit は `--wait` モード** (Repolog テンプレは `--no-wait` だった、改善)。submit ジョブ完了まで watch、失敗即時検知。
+7. **Privacy Manifest 同梱検証ステップ追加** (= `unzip -l dist/app.ipa | grep PrivacyInfo.xcprivacy`、ADR-0017 §⑤ の構造防御)。アプリ側自分宣言 + SDK 同梱 (AdMob/UMP) の最低 2 件期待。
+8. **AdMob banner ID stage gate** (Android workflow と同型): RELEASE_STAGE が production 時はデモ ID を fail にして「戻し忘れ収益ゼロ事故」 を構造防止 (Sess95 PR-6 R-68 同型)。
+9. **artifact 保持は failure 時のみ** (Android workflow `if: always()` から改善): 成功時は ASC が永続保持するため不要、200MB × 7 日節約。
+10. **`/release-ios` Skill 起票** (`.claude/skills/release-ios/SKILL.md`、Android 9 Phase から流用、iOS 固有 step (Privacy Manifest 検証 / ASC Key setup) 追加)。
+11. **GitHub Secrets 6 個 + Variables 2 個を `gh secret set` / `gh variable set` で代行** (D7 と同方式):
+    - Secrets: `ASC_API_KEY_P8_BASE64` / `ASC_API_KEY_ID` / `ASC_API_KEY_ISSUER_ID` / `ADMOB_IOS_APP_ID` / `ADMOB_IOS_BANNER_ID` / `REVENUECAT_IOS_API_KEY`
+    - Variables: `APPLE_TEAM_ID` (= `HSH4HJ72Y8`) / `APPLE_TEAM_TYPE` (= `INDIVIDUAL`)
+    - EXPO_TOKEN は Android workflow と共用 (登録済)。
+12. **`docs/how-to/release/ios_release.md` 新規起票** (= iOS リリースのトラブルシュート + 初回フロー + 用語集)。
+
+### Consequences
+
+#### Positive
+
+- iOS リリースが Android 同様 cloud-first で「`/release-ios` 1 コマンド」 完結。
+- EAS Free 月 30 回上限を完全回避、PoC 試行回数の制限なし。
+- 必要情報全部ローカル + ASC API で自動取得済、user 手作業 0 で TestFlight 到達可能 (Apple ID + 2FA すら不要)。
+- Privacy Manifest 同梱が CI で構造検証、Apple 審査リスク低減。
+- 案 A への切替も eas.json + workflow yml の最小変更で可能 (= `--local` 削除 + runs-on ubuntu-latest)。
+
+#### Negative
+
+- macos-15 runner image アップデートで Xcode 互換性問題が稀に発生 → 月 1 回 Claude が macos-16 移行検討タイミングで対処。
+- 初回 build は credentials 自動登録 + Pods install で 25-35 分の見込み (Repolog 平均 17 分は warm 状態)。
+- credentials が Expo サーバー側管理 = Expo 信頼に依存 (= 案 A と同じ)。
+
+### 試走で判明 (2026-06-13、PR #1269)
+
+- 1 回目 (55s): `REVENUECAT_IOS_API_KEY` が EAS server-side env (production) 未登録 → `eas env:create --environment production` で登録、解決
+- 2-3 回目 (135s / 17m): EAS の Distribution Certificate non-interactive 自動生成は仕様外 (新規 = interactive のみ、 修復のみ非対話可)。 対処 = Claude セッション内で `pexpect` (Python pty) 経由で `eas credentials:configure-build --platform ios --profile production` を ASC API Key 環境変数 + 対話自動応答で完遂、user 手作業 0 で Distribution Cert `89L2ZXTPB4` 流用 + Provisioning Profile `28YN889XWP` 新規生成。 詳細 = Engram id=628 (= release/ios-credentials-automation topic)
+- 3 回目 (17m): Xcode 16 (macos-15 default) + Expo SDK 55 の Swift 6 strict concurrency バグ (`AnyExpoSwiftUIHostingView updateProps actor-isolated error`、 [expo/expo#42525](https://github.com/expo/expo/issues/42525) 未解決) → **`runs-on: macos-15` → `macos-14` に変更** (default Xcode 15.4 = Swift 5 で構造的回避)、 Expo SDK 56+ で fix されたら macos-15 + Xcode 16 へ昇格検討
+- 4 回目 (217s): EAS build pre-build phase の `expo doctor` 内で 3 件 fail (knip script 衝突 / `@expo/log-box` `expo-image-loader` 重複 / `@expo/metro-runtime` overridden) → `package.json` `scripts.knip` → `scripts.knip:check` rename + `pnpm.overrides` で 3 依存固定 + `pnpm install --lockfile-only` で lockfile 反映
+- 5 回目 (182s): `expo doctor` の「Check native tooling versions」 で **`Your Expo SDK version 55 is not compatible with Xcode 15.4.0. Required Xcode version: >=26.0.0`** が判明。Apple が 2025 後半に Xcode を year-based versioning へ統一 (= Xcode 26)、GitHub Actions runner image (macos-14 / macos-15 双方) は **Xcode 26 を提供していない**。**案 B (eas build --local) は物理的に成立不能**
+
+### 5 回目試走の帰結と Sess107 引き継ぎ (user 判断 2026-06-13)
+
+- **判明事実**: BonsaiLog の現状 Expo SDK 55 + GitHub Actions macOS runner では `eas build --local` が物理的に走らない。Apple Xcode の versioning 変更 (15→16→26) と Expo SDK 55 公式要件のすれ違いが原因
+- **EAS Cloud Build (案 A) は技術的に成立**: Expo のサーバー側は Xcode 26 を保有して SDK 55 を build 可
+- **user 判断**: 「Expo SDK 56 アップグレード検討」 を **別セッション (Sess107 以降)** で進める。本 PR #1269 は SDK 56 アップグレード完了後に試走 + merge
+- **本 PR #1269 の現状**: コード (eas.json + workflow yml + Skill + how-to + ADR + package.json 依存修復) は配線済、 GitHub Secrets 6 + Variables 2 投入済、 EAS server-side env + iOS credentials (Distribution Cert + Provisioning Profile) Expo サーバー側登録済。 **試走の阻害要因は Expo SDK バージョン互換性のみ**。SDK 56 へのアップグレード後の workflow 再試走で TestFlight 到達見込み
+
+### Sess107 以降 引き継ぎ task
+
+- [ ] **Expo SDK 55 → 56 アップグレード PR** (別 PR、大規模):
+  - `npx expo install --fix` で SDK 56 + RN 0.84 互換性 audit
+  - `expo upgrade` or 公式 migration guide ([Expo SDK 56 changelog](https://expo.dev/changelog/sdk-56)) に従う
+  - 全 deps の互換性確認 + `pnpm.overrides` の見直し (= SDK 56 で不要になる可能性)
+  - dev/preview ビルドで実機検証 (Android 既存パイプで先行)
+  - lint/type-check/test 全 PASS
+  - 完了後に PR #1269 (本 PR) の workflow 再試走
+- [ ] **本 PR #1269 は保留中** (= SDK 56 アップグレード PR が main に入った後に rebase + 再試走 + merge)
+- [ ] Sess107 開始時に user に「PR #1269 が保留中であり、SDK 56 アップグレード後に再開」 を冒頭で確認
+
+---
+
+## Sess107 Amendment (2026-06-13): SDK 56 アップグレード後の 道 A 切替
+
+### 経緯
+
+Sess107 で Expo SDK 55 → 56 アップグレード (PR #1270、 ADR-0062) を main merge 後、 PR #1269 を rebase + **道 A (= `ubuntu-latest` + EAS Cloud Build)** に切替。 SDK 56 でも Xcode 26.4 必須は変わらず、 GitHub Actions の macOS runner は Xcode 16 max なので、 案 B (= `eas build --local`) は物理的に不可能と再確定。
+
+### Decision (Sess107)
+
+1. **`runs-on: macos-14` → `runs-on: ubuntu-latest`** (= Linux runner、 Public repo 完全無料)
+2. **`eas build --platform ios --profile production --local --non-interactive --output=dist/app.ipa` → `eas build --platform ios --profile production --non-interactive --auto-submit`**:
+   - `--local` 削除 (= EAS Cloud で build = Xcode 26.4 で SDK 56 native compile 可能)
+   - `--auto-submit` 追加 (= build success 後に eas.json submit.production.ios プロファイルで自動 TestFlight 送信)
+   - `--output` 削除 (= EAS Cloud は artifact を Expo サーバーに永続保持)
+3. **Privacy Manifest 検証 step 削除** (= EAS Cloud build では runner 上に IPA が無いため `unzip -l` 不可。 `app.config.ts` `ios.privacyManifests` 配列を信頼)
+4. **Upload IPA artifact step 削除** (= EAS Cloud は build artifact 永続保持)
+5. **timeout-minutes: 90 → 60** (= EAS Cloud 経由なので runner 時間短縮)
+6. **`/release-ios` Skill を Sess107 道 A 用に書換**
+7. **EAS Free 月 30 ビルド上限の運用**: 実 release 月 5-10 回想定で許容、 PoC 多発時は Expo Pro $19/月 検討
+
+### Sess107 試走 + merge
+
+- `gh workflow run build-ios-testflight.yml --ref feat/release-ios-cloud-first` で試走
+- EAS Cloud build 25-40 分 + auto-submit 5-10 分 + ASC API processing 10-15 分 = 約 40-65 分
+- ASC API で `processingState=VALID` 到達確認後、 PR #1269 を merge
+
+### Acceptance
+
+- [ ] `eas.json` `submit.production.ios` 4 フィールド配線
+- [ ] `.github/workflows/build-ios-testflight.yml` macos-15 + `--local` 構成
+- [ ] GitHub Secrets 6 個 + Variables 2 個登録
+- [ ] `/release-ios` Skill 配線
+- [ ] `docs/how-to/release/ios_release.md` 起票
+- [ ] 試走 1 回 success (= TestFlight Pre-Release Versions が 1 件、Builds が 1 件、ASC `processingState=VALID` 到達)
+- [ ] Privacy Manifest 同梱検証 step pass (= IPA 内 `PrivacyInfo.xcprivacy` ≥1 件)
+- [ ] submit `--wait` で TestFlight processing 反映確認

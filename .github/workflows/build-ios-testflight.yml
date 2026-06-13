@@ -1,5 +1,9 @@
 name: Build iOS & Submit to TestFlight
 
+# 案 B (macos-15 + eas build --local) で EAS Free 月 30 回上限を回避。
+# Public repo のため macos runner は無料、PoC を何度試しても 0 円。
+# 詳細: docs/adr/ADR-0050-android-release-automation.md Sess106 Amendment
+
 on:
   workflow_dispatch:
   push:
@@ -12,7 +16,12 @@ permissions:
 jobs:
   build-and-submit:
     name: Build & Submit IPA
-    runs-on: macos-latest
+    # 道 A (Sess107 + ADR-0050 Sess107 Amendment): ubuntu-latest + EAS Cloud Build。
+    # Expo SDK 56 が要求する Xcode 26.4 は GitHub Actions の macOS runner では未提供 (= macos-14/15 は Xcode 16 max)。
+    # EAS Cloud は Xcode 26.4 保有しているので、 build を Expo サーバーに委譲。 GitHub Actions runner は
+    # 指示を出すだけなので Linux で OK (= macOS minute 課金ゼロ、 Public repo は完全無料)。
+    # EAS Free 月 30 ビルド上限あり、 実 release 月 5-10 回想定で許容、 超過時は Expo Pro 検討。
+    runs-on: ubuntu-latest
     timeout-minutes: 60
 
     steps:
@@ -35,50 +44,121 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Create .env file
+        # 案 B: EXPO_APPLE_TEAM_ID / TYPE は eas build --local 実行時に EAS CLI が
+        # 自動で credentials.json を組み立てるために env から読む (Apple Developer Portal
+        # から Provisioning Profile 自動取得に必須)。
         run: |
           cat <<'DOTENV' > .env
           APP_NAME=${{ vars.APP_NAME }}
           APP_SLUG=${{ vars.APP_SLUG }}
           IOS_BUNDLE_IDENTIFIER=${{ vars.IOS_BUNDLE_IDENTIFIER }}
           ANDROID_PACKAGE=${{ vars.ANDROID_PACKAGE }}
+          EAS_PROJECT_ID=${{ vars.EAS_PROJECT_ID }}
+          EAS_OWNER=${{ vars.EAS_OWNER }}
           ADMOB_IOS_APP_ID=${{ secrets.ADMOB_IOS_APP_ID }}
           ADMOB_IOS_BANNER_ID=${{ secrets.ADMOB_IOS_BANNER_ID }}
           REVENUECAT_IOS_API_KEY=${{ secrets.REVENUECAT_IOS_API_KEY }}
+          ADMOB_ANDROID_APP_ID=placeholder
+          ADMOB_ANDROID_BANNER_ID=placeholder
+          REVENUECAT_ANDROID_API_KEY=placeholder
           DOTENV
 
-      - name: Verify code quality
-        run: pnpm lint && pnpm type-check && pnpm test -- --passWithNoTests
-
-      - name: Build iOS IPA
+      # AdMob banner ID stage gate (Android workflow と同型、Sess95 PR-6 R-68 同型)
+      # closed-testing 中はテスターの本番広告クリック = AdMob ポリシー違反 (アカウント停止リスク)
+      # のため Google デモ ID (接頭辞 3940256099942544) 必須。production 昇格時は
+      # repo variable RELEASE_STAGE=production を設定するとデモ ID を fail にする
+      # (= 戻し忘れ収益ゼロ事故防止)。
+      - name: AdMob banner ID stage gate
         env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: eas build --platform ios --profile production --local --non-interactive --output=app.ipa
+          BANNER_ID: ${{ secrets.ADMOB_IOS_BANNER_ID }}
+          RELEASE_STAGE: ${{ vars.RELEASE_STAGE }}
+        run: |
+          STAGE="${RELEASE_STAGE:-closed-testing}"
+          case "$BANNER_ID" in
+            *3940256099942544*) IS_DEMO=1 ;;
+            *) IS_DEMO=0 ;;
+          esac
+          if [ "$STAGE" = "production" ] && [ "$IS_DEMO" = "1" ]; then
+            echo "::error::RELEASE_STAGE=production なのに AdMob iOS banner ID がデモ ID です (収益ゼロ事故)。本番 ID に戻してください。"
+            exit 1
+          fi
+          if [ "$STAGE" != "production" ] && [ "$IS_DEMO" = "0" ]; then
+            echo "::error::closed-testing 中は AdMob iOS デモ banner ID 必須です (テスターの本番広告クリック = ポリシー違反リスク)。gh secret set ADMOB_IOS_BANNER_ID でデモ ID に変更してください。"
+            exit 1
+          fi
+          echo "OK: stage=$STAGE / demo_id=$IS_DEMO (整合)"
 
       - name: Setup ASC API Key
+        # base64 化された .p8 を runner 上で復元。eas.json submit.production.ios.ascApiKeyPath
+        # が "./secrets/AuthKey.p8" を参照するため、この path に置く。
+        # ファイル権限を 600 に絞り、ログにも値が漏れないよう echo は base64 のまま。
         run: |
           mkdir -p secrets
           echo "${{ secrets.ASC_API_KEY_P8_BASE64 }}" | base64 -d > secrets/AuthKey.p8
+          chmod 600 secrets/AuthKey.p8
+          # 鍵自体は表示せず、サイズと先頭マーカーだけで存在確認
+          echo "ASC API Key: $(wc -c < secrets/AuthKey.p8) bytes, head=$(head -c 27 secrets/AuthKey.p8)"
 
-      - name: Submit to TestFlight
+      - name: Prebuild env check
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: eas submit --platform ios --path app.ipa --profile production --non-interactive --no-wait
+        run: node scripts/prebuild-env-check.mjs ios
 
-      - name: Upload IPA artifact
+      - name: Verify code quality
+        # Android workflow と同じ verify:lint + verify:type-check + verify:test の 3 点セット
+        run: pnpm verify:lint && pnpm verify:type-check && pnpm verify:test
+
+      # Expo SDK alignment (Android workflow と同型、patch/minor mismatch は warning)
+      - name: Expo SDK alignment check
+        run: pnpm expo install --check
+        continue-on-error: true
+
+      - name: Build iOS IPA + Submit (eas build --auto-submit on EAS Cloud)
+        # 道 A: ubuntu runner から EAS Cloud で build → 終了後に自動 submit。
+        # EAS Cloud は Xcode 26.4 保有 (Expo SDK 56 公式対応)、 Linux runner で OK。
+        # credentials は EAS サーバー側で管理 (Distribution Cert + Provisioning Profile を自動 fetch)。
+        # --auto-submit: build success → 自動で eas.json submit.production.ios プロファイルで TestFlight 送信。
+        # ASC API Key 経由なので Apple ID + 2FA 不要、 完全自動。
+        # Privacy Manifest 検証は app.config.ts ios.privacyManifests を信頼 (= EAS Cloud で IPA 直接展開できないため)。
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          EXPO_APPLE_TEAM_TYPE: ${{ vars.APPLE_TEAM_TYPE }}
+          EXPO_ASC_API_KEY_PATH: ${{ github.workspace }}/secrets/AuthKey.p8
+          EXPO_ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+        run: eas build --platform ios --profile production --non-interactive --auto-submit
+
+      - name: Cleanup ASC API Key
+        # 後始末: .p8 を runner 上から削除 (runner は ephemeral だが念のため)
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: iOS-IPA-${{ github.run_id }}
-          path: app.ipa
-          retention-days: 7
+        run: |
+          if [ -f secrets/AuthKey.p8 ]; then
+            rm -f secrets/AuthKey.p8
+            echo "ASC API Key 削除済"
+          fi
 
       - name: Post build summary
         if: success()
         run: |
-          echo "## iOS Build & Submit Successful" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **IPA**: app.ipa" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Profile**: production" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Submitted to**: TestFlight" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Check App Store Connect → TestFlight for the new build" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## iOS Build & Submit Successful (道 A: ubuntu + EAS Cloud --auto-submit)"
+            echo ""
+            echo "- **Build**: EAS Cloud で IPA 生成 (Xcode 26.4)"
+            echo "- **Profile**: production"
+            echo "- **Bundle ID**: ${{ vars.IOS_BUNDLE_IDENTIFIER }}"
+            echo "- **ASC App ID**: 6763495229"
+            echo "- **Submitted to**: TestFlight (--auto-submit で build success 後自動)"
+            echo ""
+            echo "### Phase 結果"
+            echo "- ✅ AdMob banner ID stage gate"
+            echo "- ✅ pnpm verify (lint + type-check + test)"
+            echo "- ✅ Expo SDK alignment (continue-on-error)"
+            echo "- ✅ EAS build (Cloud、 Xcode 26.4 + Provisioning Profile 自動取得)"
+            echo "- ✅ EAS submit --auto-submit (TestFlight processing 開始)"
+            echo ""
+            echo "### 次にやること"
+            echo "1. App Store Connect → TestFlight → BonsaiLog → 新しい build (processing 完了まで 10-15 分)"
+            echo "2. 内部テスター追加 (App Store Connect → TestFlight → 内部テスト)"
+            echo "3. (任意) Beta App Review 申請 (外部テスター向け)"
+          } >> "$GITHUB_STEP_SUMMARY"
