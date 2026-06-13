@@ -33,6 +33,7 @@ import { LegalLinksRow } from '@/src/features/legal/LegalLinksRow';
 import { openStoreListing } from '@/src/features/review/openStoreListing';
 import { NotificationSettingsSection } from '@/src/features/settings/NotificationSettingsSection';
 import { PlanSection } from '@/src/features/settings/PlanSection';
+import { ProBanner } from '@/src/features/settings/ProBanner';
 import { SettingsSection } from '@/src/features/settings/SettingsSection';
 import {
   useAlertPickerRow,
@@ -170,6 +171,9 @@ export default function SettingsScreen() {
           自前 (Sess65 PR1) は撤去、 OS native の戻るボタン + headerTintColor (c.text) を採用。
           OS HIG / Material Design 準拠で a11y / RTL / swipe-back ジェスチャを native 享受。 */}
       <Stack.Screen options={{ title: t('tabSettings') }} />
+      {/* Sess106 PR-6 (ADR-0061): Settings 画面 SearchHeader 直下に Pro CTA Banner を sticky 配置。
+          ScrollView の外で常時可視、 scroll しても header 直下に固定。 Free 限定継続 (Q5)。 */}
+      <ProBanner />
       <ScrollView
         ref={settingsScrollRef}
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 16 }]}
