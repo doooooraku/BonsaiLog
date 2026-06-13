@@ -410,7 +410,7 @@ async function resizePhoto(sourceUri: string, target: File): Promise<void> {
   if (target.exists) {
     target.delete();
   }
-  tmp.move(target);
+  await tmp.move(target);
 }
 
 // ---------------------------------------------------------------------------
@@ -700,7 +700,10 @@ export async function importBackup(): Promise<BackupImportResult | null> {
           targetFile.delete();
         }
         const sourceFile = new File(photosDir, photo.fileName);
-        sourceFile.copy(targetFile);
+        // SDK 56: File.copy() is now Promise<void>. copyPhotoFile callback signature is sync
+        // (=> string), so await is impossible here. Mark fire-and-forget explicitly with void.
+        // Structural fix (callback async 化) tracked in follow-up Issue.
+        void sourceFile.copy(targetFile);
         copiedPhotoPaths.push(targetFile.uri);
 
         return toRelativePath(targetFile.uri, PHOTO_PATH_ANCHOR);
