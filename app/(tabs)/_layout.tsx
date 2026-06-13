@@ -57,7 +57,6 @@ export default function TabLayout() {
         name="bonsai"
         options={{
           title: t('tabBonsai'),
-          // @ts-expect-error TS2322: SDK 56 で color が ColorValue (string|OpaqueColorValue) に変化、Icon は string 想定
           tabBarIcon: ({ color }) => <BonsaiIcon size={28} color={color} />,
           tabBarButtonTestID: 'e2e_tab_bonsai',
         }}
@@ -66,7 +65,6 @@ export default function TabLayout() {
         name="plan"
         options={{
           title: t('tabPlan'),
-          // @ts-expect-error TS2322: SDK 56 ColorValue 型変化 (上記同様)
           tabBarIcon: ({ color }) => <CalendarIcon size={28} color={color} />,
           tabBarButtonTestID: 'e2e_tab_plan',
         }}
@@ -78,7 +76,6 @@ export default function TabLayout() {
         name="record"
         options={{
           title: t('tabRecord'),
-          // @ts-expect-error TS2322: SDK 56 ColorValue 型変化 (上記同様)
           tabBarIcon: ({ color }) => <NotebookIcon size={28} color={color} />,
           tabBarButtonTestID: 'e2e_tab_record',
         }}
@@ -87,7 +84,6 @@ export default function TabLayout() {
         name="look-back"
         options={{
           title: t('tabLookBack'),
-          // @ts-expect-error TS2322: SDK 56 ColorValue 型変化 (上記同様)
           tabBarIcon: ({ color }) => <PencilNavIcon size={28} color={color} />,
           tabBarButtonTestID: 'e2e_tab_look_back',
         }}

@@ -16,6 +16,7 @@
  * non-null assertion fail → silent miss 防止。
  */
 import React from 'react';
+import type { ColorValue } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 // Sess95 PR-1: DANGER は dark 背景で contrast 1.9:1 → SprayIcon / LeafAidIcon は
@@ -25,7 +26,7 @@ import { useColors } from '@/src/core/theme/useColors';
 import type { EventType } from '@/src/db/schema';
 import { assertNever } from '@/src/lib/assertNever';
 
-type IconProps = { size?: number; color?: string };
+type IconProps = { size?: number; color?: ColorValue };
 
 export function DropletIcon({ size = 16, color = BRAND_GREEN }: IconProps) {
   return (

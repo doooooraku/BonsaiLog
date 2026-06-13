@@ -6,11 +6,12 @@
  *
  * default color は `TEXT_PRIMARY` (本文と同色)、size は用途別 default を持つ。
  */
+import type { ColorValue } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { BG_PRIMARY, TEXT_PRIMARY } from '@/src/core/theme/colors';
 
-type IconProps = { size?: number; color?: string };
+type IconProps = { size?: number; color?: ColorValue };
 
 /** 検索 (放大鏡)。Header 検索ボタン 24px / 検索バー内 18px。 */
 export function SearchIcon({ size = 24, color = TEXT_PRIMARY }: IconProps) {
