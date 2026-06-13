@@ -98,12 +98,62 @@ bash scripts/dev/take-ss.sh <name> <session-tag>   # dist/<tag>-verify-<ts>/SS-N
 - 既存要素が壊れていないか (R-25 構造系: タブ構成 / セクション / UI 種別 / スクロール)
 - dark mode 影響がある変更は light/dark 両方撮影
 
-## Step 6: 記録
+## Step 6: 記録 + PR コメント SS 自動添付 (Sess108 #1293)
 
 - 結果を **PR コメント or セッション報告に SS パス付きで記載** (PR テンプレ §6-3 のチェックを更新)
 - **完了報告には「やさしい説明」を必ず含める** (PR テンプレ §2.5 と同義、Sess101 #1173)
 - 不一致を見つけたら: 修正 → Step 2 から再実行 (合格するまで「済」にしない)
 - 検証不能だった項目は「vc__ smoke に委譲」として明記 (黙って省略しない)
+
+### Step 6.1: PR コメントに SS path を自動投稿 (簡易版)
+
+PR を持つ session では SS path のリストを **gh pr comment** で投稿する。 これだけでも
+レビュアが `code` ブロックの path を Read で開けるようになり、 「SS なし PR」 を防げる:
+
+```bash
+# 撮影 SS をリスト化 (Step 4 の dist/<tag>-verify-<ts>/SS-*.png)
+SS_DIR="dist/<tag>-verify-<ts>"
+SS_LIST=$(ls -1 "$SS_DIR"/SS-*.png 2>/dev/null | sed 's|^|- |')
+
+# 既存コメントを検索して重複投稿を回避 (冪等 — 同じ SS_DIR 文字列があれば skip)
+PR_NUM=$(gh pr view --json number -q .number)
+if gh pr view "$PR_NUM" --json comments -q '.comments[].body' | grep -qF "$SS_DIR"; then
+  echo "[device-verify] SS path コメントは既に投稿済 (skip)"
+else
+  gh pr comment "$PR_NUM" --body "$(cat <<EOF
+## 実機 SS (Step 6 自動添付)
+
+撮影ディレクトリ: \`$SS_DIR\`
+
+$SS_LIST
+
+> SS は worktree 内の **絶対 path** で参照してください (\`Read\` tool で開けます)。
+> GitHub Web UI で画像プレビューを見たい場合は Step 6.2 を参照。
+EOF
+)"
+fi
+```
+
+### Step 6.2: GitHub Web UI に画像を埋め込む (任意、 user 手動 step)
+
+GitHub の Issue / PR コメントに画像を**インライン表示**するには 2 通りある:
+
+1. **Web UI で drag-drop (推奨、 user 手動)**: ブラウザで該当 PR を開き、 コメント欄に
+   `dist/<tag>-verify-<ts>/SS-*.png` をエクスプローラから drag-drop する。 GitHub が
+   `https://github.com/user-attachments/...` に自動アップロード + Markdown 化する。
+2. **gh API で base64 アップロード (CI 用、 上級)**: `gh api graphql` の `uploadAsset` mutation
+   を使って画像を assets に push する手順あり (要 `gh auth refresh -s write:packages`)。
+   現在のフローでは Step 6.1 の path 投稿で十分 (Read tool で見れる) なので、 user 手動 (1)
+   を推奨する。
+
+### Step 6.3: stop-verify-gate.mjs 層 B との連携 (#1293)
+
+- 本 Skill (`/device-verify`) または `take-ss.sh` を session 内で実行することで、
+  Stop hook の **層 B (SS 不在ゲート)** が automatic に PASS する (= transcript に
+  `take-ss.sh` / `screencap` / `device-verify` / `dist/*verify` keyword が現れるため)。
+- UI 影響なしの **harness / docs / chore 変更** で誤 block されないよう、
+  commit subject prefix を `docs:` / `chore:` / `test:` / `refactor:` / `style:` /
+  `ci:` / `build:` / `perf:` のいずれかにしておくと層 B が exempt 判定する。
 
 ---
 
