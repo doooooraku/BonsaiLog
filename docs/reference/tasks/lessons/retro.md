@@ -4,6 +4,55 @@
 
 ---
 
+## [2026-06-13] Sess105 一気通貫 workflow bypass retro (= /discuss → /implement ダイレクト遷移 + Issue 化 skip)
+
+### 数値サマリ
+
+- 期間: Paywall FB 受領 → PR #1242 merged まで約 1 セッション (createdAt 06:50Z → mergedAt 07:06Z + 事前 /discuss + 17 言語翻訳)
+- PR: 1 件 (#1242 main merged) + follow-up Issue #1243 (= 事後 10 分後起票)
+- 違反 step: 親 Issue 化 (W-01〜W-05) skip = high severity / 計画承認後の再質問 = medium severity
+- 影響: 実装品質は問題なし (Jest 15/15 + Maestro 拡張 + 実機 5 SS + i18n 19 言語) — 構造課題は phase 遷移のみ
+- 関連 R: 新規 R-82 起票 (= 本 retro 還流 PR で同時起票、 #1244)
+
+### Keep
+
+- /discuss 6 専門家議論 + 案 C 採用 — UX デザイナー + PM 推薦根拠あり、 法務リスク (景表法) も /discuss で事前判定済
+- 実機検証 5 SS + mockup 整合確認 — ADR-0059 標準フロー完遂、 PR §6.3 適用済
+- follow-up Issue #1243 自発起票 — 意図的不採用 2 要素を後送り台帳化、 R-79 (先送り禁止) 同型問題を構造化
+- PR §2.5 やさしい説明 + 完了報告両方記載 — Sess101 #1173 ルール遵守、 オーナー理解 DoD 達成
+
+### Problem
+
+- ★ Issue 化 (W-01〜W-05) skip (= high severity、 初回検知) — /discuss → /implement にダイレクト遷移、 PR #1242 に親 Issue 不在。 #1243 は事後 follow-up であり親 Issue ではない
+- ★ /discuss 終了時に user 既承認事項の再質問 4 件 (= Sess102 同型 2 回目) — feedback-plan-approval-implies-execution.md L16 違反パターン、 memory 記載のみで機械 enforce 無し
+- phase 遷移 enforce hook 不在 — 既存 16 hooks は物理制約 (Read 前 Edit / worktree / verify 緑) のみ、 Workflow 論理順序 (/discuss → /plan → /implement) を観測する hook event が未確立だった
+
+### Try (= Sess106+)
+
+1. `.claude/hooks/check-phase-transition.mjs` 新設 (= P0) — UserPromptSubmit + Stop で transcript 走査、 /discuss 承認なし /implement 起動 + Issue Context 不在を warn (1 セッション後に exit 2 昇格判断)
+2. `.github/workflows/pr-issue-link-check.yml` + `scripts/ci/check-pr-issue-link.mjs` 新設 (= P0) — PR body の Closes #N / Refs #N / label:no-issue いずれか必須化、 CI で機械強制
+3. R-82 起票 (= P0) — `.claude/recurrence-prevention/specialized.md` に 「/discuss → /implement ダイレクト遷移禁止、 /plan の Issue 化 step は省略不可」 + Sess102/Sess105 同型 2 回再発記録
+4. `.claude/hooks/check-replan-reapproval.mjs` 新設 (= P1、 follow-up) — Stop event で /plan 完了報告内の再承認要求文字列 (「この計画で OK なら」 等) を検知して警告
+5. /implement SKILL.md argument-hint に validation 追加 (= P2、 follow-up) — `[#Issue番号]` hint を gh issue view 実在 + ## Context heading 確認まで拡張
+
+### 教訓 5 (= 次 app 作る時 必ず思い出す)
+
+1. Workflow phase 遷移は LLM 判断ではなく hook で機械強制 — SKILL.md 文字列ガイダンス + memory 行動 lesson は 2 回再発 (Sess102 + Sess105) で hook 化必須 (CLAUDE.md §9)
+2. PR 作成時の親 Issue 必須化は CI で gate — PR template REQUIRED 表記は人間判定、 機械 enforce が無いと skip 可能 (本セッションで実証)
+3. transcript 走査 hook pattern は phase 遷移検知に流用可能 — parallel-session-guard.mjs / stop-verify-gate.mjs の transcript 走査 pattern を check-phase-transition.mjs に展開
+4. 「計画承認 = 実行承認」 ルールは 「計画 = Issue 化済」 を暗黙前提にしている — Issue 化自体を skip するケースは R-17/R-27/R-79 のいずれも想定外、 R-82 で明文化必要
+5. 実装品質と Workflow 遵守は独立軸 — Sess105 は実装 high quality (Jest + Maestro + 実機 + i18n + 法務判定) だが phase 遷移 deviation で audit 対象、 両軸を分離して評価する
+
+### 関連
+
+- 対象 PR: #1242 (Paywall PlanCard 再設計) / follow-up Issue #1243 / 本 retro 還流 PR (#1244)
+- 起票 R: R-82 (= /discuss → /implement ダイレクト遷移禁止)
+- 関連 memory: feedback-plan-approval-implies-execution.md (Sess101 確立、 Sess102 1 回違反、 Sess105 2 回目同型) / feedback-use-ask-user-question.md (Sess105 user 指示、 AskUserQuestion 使用)
+- 関連 SoT: docs/how-to/workflow/whole_workflow.md §1.5.4 / .claude/skills/{discuss,plan,implement}/SKILL.md / .github/pull_request_template.md §1+§2.5+§14
+- mechanism 3 点セット: check-phase-transition.mjs (tool) + settings.json hooks + ci.yml 配線 (adoption) + 次 retro で PR 親 Issue 率 + hook 発火ログ確認 (auditing)
+
+---
+
 ## [2026-06-12] Sess104 ja 文言監査 + 全 18 言語ペルソナ翻訳 完遂 (#1208 + #1207 / 27 PR / 約 4.5h / CI fail 1 / revert 0)
 
 実データ: PR #1209-#1235 全 merge (ja 監査 6 + 翻訳規範 1 + 言語別 18 + 表セル fix 1 + α)。diff 面積 = locales 97.6%。CI fail 1 (#1209 初回 prettier、verify 実行中の file 編集が原因)。手戻り commit 0。ローカル verify 51 回。翻訳量 ~8,800 値、en 同一値 55% → 2.7%。実機 SS 87 枚 (全 18 言語切替)。

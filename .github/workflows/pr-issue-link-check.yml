@@ -1,0 +1,25 @@
+# R-82 (2026-06-13): PR body に親 Issue 紐付け (Closes/Refs #N) を必須化
+#
+# PR template §1 「Issue: #」 を機械チェックで強制。
+# docs-only / chore など Issue 不要の場合は "no-issue" label で bypass。
+#
+# Trigger: PR opened / edited / synchronize / labeled / unlabeled
+# Fail conditions:
+#   - PR body に Closes/Fixes/Resolves/Refs #<N> がなく、 "no-issue" label もない
+
+name: PR Issue Link Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, labeled, unlabeled]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Verify PR body has Issue link (R-82)
+        run: node scripts/ci/check-pr-issue-link.mjs
