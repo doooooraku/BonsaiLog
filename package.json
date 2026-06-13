@@ -68,7 +68,7 @@
     "verify:stack-screen-title": "node scripts/dev/check-stack-screen-title.mjs",
     "verify:manager-screen-symmetry": "node scripts/dev/check-manager-screen-symmetry.mjs",
     "verify:i18n-icon-duplicate": "node scripts/check-i18n-icon-duplicate.mjs",
-    "knip": "knip",
+    "knip:check": "knip",
     "verify:dead": "knip --no-exit-code",
     "verify:ai-sync": "node agent-tools/scripts/sync-agent-tools.mjs --check",
     "gen:doc-routing": "node scripts/gen-doc-routing.mjs",
@@ -218,7 +218,10 @@
   },
   "pnpm": {
     "overrides": {
-      "react-native-zip-archive": "7.0.2"
+      "react-native-zip-archive": "7.0.2",
+      "@expo/metro-runtime": "55.0.11",
+      "@expo/log-box": "55.0.12",
+      "expo-image-loader": "55.0.1"
     }
   },
   "private": true
