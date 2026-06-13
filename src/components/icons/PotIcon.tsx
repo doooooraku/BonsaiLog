@@ -4,7 +4,6 @@
  * Claude Design `home-screens.jsx` `HI.Empty` を React Native + react-native-svg で再現。
  * design_system.md §2-1 BRAND_GREEN (深緑 #1F3A2E) を default 色とする。
  */
-import React from 'react';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import { BRAND_GREEN } from '@/src/core/theme/colors';

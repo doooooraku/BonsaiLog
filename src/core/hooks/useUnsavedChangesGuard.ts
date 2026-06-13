@@ -42,7 +42,7 @@
  * @see docs/adr/ADR-0036-destructive-action-pattern.md (R-44 拡張)
  * @see issue #822
  */
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from 'expo-router/react-navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type UseUnsavedChangesGuardProps = {

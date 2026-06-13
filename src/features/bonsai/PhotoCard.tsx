@@ -9,7 +9,6 @@
  * 削除フローは BonsaiLog の既存 Alert 確認方式 (Repolog の undo banner は別 PR スコープ)。
  */
 import { Image } from 'expo-image';
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

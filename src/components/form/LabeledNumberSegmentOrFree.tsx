@@ -25,7 +25,6 @@
  *       src/components/form/LabeledNumberInput.tsx (内部 composer)
  *       src/components/form/LabeledSegmented.tsx (関連 atom、 segment 表示の design 整合)
  */
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

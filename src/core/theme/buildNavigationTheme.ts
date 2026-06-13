@@ -7,7 +7,7 @@
  * Source of Truth: `constants/theme.ts` Colors + `src/core/theme/colors.ts`。
  * 値の出所を 1 経路 (Colors) に集約し、ThemedView/ThemedText は同経路を参照する。
  */
-import { DefaultTheme, type Theme } from '@react-navigation/native';
+import { DefaultTheme, type Theme } from 'expo-router/react-navigation';
 
 import { Colors } from '@/constants/theme';
 import type { EffectiveScheme } from './themeResolver';

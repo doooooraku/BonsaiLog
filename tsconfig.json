@@ -6,6 +6,10 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    // Sess107 SDK 55 → 56 アップグレード: TypeScript 6.0.3 で `types` 自動検出の挙動が変わり、
+    // jest globals (expect/it/describe) が test ファイルで解決されなくなる。
+    // SDK 56 の expo/tsconfig.base は types 指定なしのため、 BonsaiLog 側で明示。
+    "types": ["jest", "node"],
     "paths": {
       "@/*": ["./*"]
     }

@@ -6,7 +6,6 @@
  *
  * default color は `TEXT_PRIMARY` (本文と同色)、size は用途別 default を持つ。
  */
-import React from 'react';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { BG_PRIMARY, TEXT_PRIMARY } from '@/src/core/theme/colors';

@@ -11,7 +11,7 @@
  * - [DEV] テストデータ → DevSettingsSection (本番枝刈り)
  * coordinator は各 section の row 配線 + ナビゲーションのみ。AsyncStorage key / URL route / i18n 不変。
  */
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from 'expo-router/react-navigation';
 import { Stack, useNavigation, useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';

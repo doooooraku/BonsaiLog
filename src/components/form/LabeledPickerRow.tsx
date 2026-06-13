@@ -10,7 +10,6 @@
  *
  * 用途: BonsaiBasicForm の 樹種 / 樹形 (DatePicker と同 pattern 統一)。
  */
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

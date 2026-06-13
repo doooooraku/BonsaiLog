@@ -11,7 +11,6 @@
  *
  * 用途: 樹齢 (年)、 鉢幅 (cm)、 鉢深さ (cm) など。
  */
-import React from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

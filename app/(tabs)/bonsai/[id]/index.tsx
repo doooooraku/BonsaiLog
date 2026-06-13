@@ -1,4 +1,4 @@
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from 'expo-router/react-navigation';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import React from 'react';
 import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';

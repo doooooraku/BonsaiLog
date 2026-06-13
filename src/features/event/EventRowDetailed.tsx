@@ -8,7 +8,7 @@
  * EventRow.tsx (dispatcher) から displayMode==='detailed' 時に委譲される。
  * ADR-0041 D2/D4/D5: 写真 strip + chips max 4 + memo 3 行 + 「もっと見る」 リンク。
  */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

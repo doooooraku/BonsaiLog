@@ -17,7 +17,6 @@
  * 関連: ADR-0036 D1 / R-44 / `docs/reference/design_system.md` §18 / Material 3 Dialog / Apple HIG Alerts
  */
 import * as Haptics from 'expo-haptics';
-import React from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

@@ -21,7 +21,6 @@
  * @see docs/reference/tasks/lessons/sess30-retro.md (Sess30 → Sess31 設計議論)
  * @see src/features/event/BulkLogConfirmScreen.tsx (利用箇所)
  */
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

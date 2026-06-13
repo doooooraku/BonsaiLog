@@ -22,7 +22,6 @@
  *       ADR-0029 D5
  *       Sess17 PR-G1
  */
-import React from 'react';
 import { View, StyleSheet } from 'react-native';
 
 import { LabeledNumberInput } from '@/src/components/form/LabeledNumberInput';

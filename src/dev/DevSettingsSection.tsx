@@ -7,7 +7,6 @@
  * 振る舞いは SettingsScreen の元実装と完全同一 (純粋な抽出)。
  */
 import { useRouter, type Href } from 'expo-router';
-import React from 'react';
 import { Alert, Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

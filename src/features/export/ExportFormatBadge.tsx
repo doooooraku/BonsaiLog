@@ -4,7 +4,6 @@
  * Hub の各行 (app/export/index.tsx) と生成中オーバーレイ (GeneratingOverlay) で共用する
  * 角丸の四角バッジ。CSV=ブランドグリーン系 / PDF=ゴールド系で色分け。
  */
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

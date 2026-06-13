@@ -18,7 +18,6 @@
  * line jitter 防止: lastAction null 時は「記録はまだありません」、commentText は常に 1 行確保。
  */
 import { Image } from 'expo-image';
-import React from 'react';
 import { Dimensions, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

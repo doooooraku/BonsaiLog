@@ -12,7 +12,6 @@
  * coordinator は header (検索入力) + フィルタチップ + section 骨格のみ。ADR-0009 検索仕様不変。
  */
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 

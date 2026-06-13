@@ -23,7 +23,6 @@
  *       src/core/util/unitConvert.ts (LengthUnit + 変換 util)
  *       src/components/form/LabeledNumberInput.tsx (内部 composer)
  */
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

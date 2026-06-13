@@ -12,7 +12,6 @@
  * Sess23 ADR-0035 D4/D5 改訂: planLegendDotLoggedLabel → planLegendDotRecordedLabel + items 順序 flip
  * (planned ○ を上に、 logged ● を下に、 時間軸「予定 → 記録」 を上→下/左→右で表現)
  */
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

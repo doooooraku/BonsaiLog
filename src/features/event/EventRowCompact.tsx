@@ -6,7 +6,6 @@
  *
  * EventRow.tsx (dispatcher) から displayMode!=='detailed' (default) 時に委譲される。
  */
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

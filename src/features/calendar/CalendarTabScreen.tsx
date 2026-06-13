@@ -13,8 +13,8 @@
  * - 月グリッド: CalendarMonthGrid / 選択日一覧: CalendarEventGroupList
  * 振る舞い・計算式 (ADR-0031/0034/0035) は完全不変、 mode prop / URL route も不変。
  */
-import { useIsFocused } from '@react-navigation/native';
-import React, { useCallback } from 'react';
+import { useIsFocused } from 'expo-router/react-navigation';
+import { useCallback } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedView } from '@/components/themed-view';

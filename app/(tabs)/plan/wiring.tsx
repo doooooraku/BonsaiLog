@@ -11,7 +11,7 @@
  */
 import { Image } from 'expo-image';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

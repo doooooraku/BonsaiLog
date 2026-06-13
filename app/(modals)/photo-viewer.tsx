@@ -21,7 +21,7 @@
  */
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Dimensions,
   FlatList,

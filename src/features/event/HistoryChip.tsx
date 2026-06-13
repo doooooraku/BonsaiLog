@@ -10,7 +10,6 @@
  *
  * @see docs/adr/ADR-0041-event-row-display-mode.md §Phase θ 改訂 D4
  */
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

@@ -12,7 +12,7 @@
  *   生成が長引く時 (PDF) だけ Modal が立ち上がる。キャンセルは best-effort
  *   (呼出側が onCancel で busy を解除し結果を破棄。OS 共有自体は中断できない場合がある)。
  */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

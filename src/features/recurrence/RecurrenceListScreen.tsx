@@ -19,9 +19,9 @@
  *        src/features/recurrence/useRecurrenceRules.ts (hook)
  *        src/db/recurrenceRuleRepository.ts (listActiveRecurrenceRules / softDeleteRecurrenceRule)
  */
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from 'expo-router/react-navigation';
 import { Stack, useRouter, type Href } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -185,7 +185,6 @@ export default function RecurrenceListScreen() {
       testID="e2e_recurrence_list_screen"
     >
       <Stack.Screen options={{ title: t('recurringListScreenTitle') }} />
-
       {!loading && rules.length === 0 ? (
         <View style={styles.emptyContainer}>
           <ThemedText style={[styles.emptyTitle, { color: c.text }]}>
@@ -294,7 +293,6 @@ export default function RecurrenceListScreen() {
           }
         />
       )}
-
       {/* Sess82 PR-D: BottomCtaBar 「+ 新規追加」 = useBulkActionFlow('recurring') 経由 */}
       {/* #1203 g8: 計測 wrapper (collapsable=false = Android measureInWindow 対応) */}
       <View ref={g8TargetRef} collapsable={false} onLayout={g8Active ? measureG8Target : undefined}>
@@ -304,7 +302,6 @@ export default function RecurrenceListScreen() {
           testID="e2e_recurrence_list_create_new"
         />
       </View>
-
       {/* #1203 g8 スポットライト (pull 専用) */}
       {g8Active && (
         <GuideSpotlight
@@ -317,7 +314,6 @@ export default function RecurrenceListScreen() {
           testID="e2e_recurrence_guide_create"
         />
       )}
-
       {/* Sess82 PR-C: kebab → RowActionMenu (= 編集 + 削除 2 択、 ADR-0036 D7 整合) */}
       <RowActionMenu
         visible={kebabTarget !== null}
@@ -325,7 +321,6 @@ export default function RecurrenceListScreen() {
         onDismiss={handleKebabDismiss}
         testID="e2e_recurrence_kebab_menu"
       />
-
       <ConfirmDialog
         visible={deleteTarget !== null}
         title={t('recurringListDeleteConfirmTitle')}

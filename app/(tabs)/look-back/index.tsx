@@ -25,7 +25,6 @@
  * カレンダー画面遷移) で hub 経由は二重動線。
  */
 import { useRouter, type Href } from 'expo-router';
-import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

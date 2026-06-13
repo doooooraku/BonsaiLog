@@ -6,7 +6,6 @@
  * - constraints §5-2 禁止語 (診断 / 判定 / 推奨 / べき / reminder / tracker / alert) を含めない。
  * - ADR-0011 「記録のみ」哲学を厳守 (推奨・指示は出さない、事実のみ表示)。
  */
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

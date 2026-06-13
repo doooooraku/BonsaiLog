@@ -24,7 +24,6 @@
  *   onChange={(v) => setWaterAmount(v)}
  * />
  */
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

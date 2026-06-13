@@ -11,7 +11,7 @@
  * - エラーは BackupError.code 別にメッセージ切り替え
  * - 色は BRAND_GREEN / ON_BRAND トークン経由 (旧 import.tsx の #2E7D32 直書き drift 解消)
  */
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from 'expo-router/react-navigation';
 import { Stack, useNavigation } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';

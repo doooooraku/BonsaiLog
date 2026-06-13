@@ -16,7 +16,6 @@
  * - 設計シンプル化、Maestro 安定性向上、ui-diff capture 全件 OK
  */
 import { Stack } from 'expo-router';
-import React from 'react';
 
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
 // Sess90 PR-A: modals 各 screen の Stack header font も統一 (ADR-0053 Sess90 Amendment、 R-75)。
