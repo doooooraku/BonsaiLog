@@ -50,7 +50,9 @@ export function GuideBanner() {
   const message = useGuideBannerStore((s) => s.message);
   const hide = useGuideBannerStore((s) => s.hide);
   const c = useColors();
-  const opacity = React.useRef(new Animated.Value(0)).current;
+  // Sess108 PR-E (React Compiler 整合): Animated.Value 初期化は useState lazy init で 1 回固定。
+  // 旧 `useRef(...).current` は render 中の ref read が react-hooks/refs 違反。
+  const [opacity] = React.useState(() => new Animated.Value(0));
 
   React.useEffect(() => {
     Animated.timing(opacity, {

@@ -76,7 +76,10 @@ export default function PaywallScreen() {
     refreshPro().catch(() => null);
   }, [initPro, refreshPro]);
 
+  // Sess108 PR-E (React Compiler 整合): 価格 fetch + loading state は典型的「外部システム sync」 effect
+  // (React 公式の "Synchronizing with External Systems")。 block disable で意図明示。
   React.useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- mount-time fetch (loading state + cleanup) */
     let mounted = true;
     setLoadingPrices(true);
     proService
@@ -93,6 +96,7 @@ export default function PaywallScreen() {
     return () => {
       mounted = false;
     };
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   const startPurchase = React.useCallback(

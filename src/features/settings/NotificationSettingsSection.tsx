@@ -12,6 +12,7 @@ import React from 'react';
 import { Alert, Pressable, StyleSheet, Switch, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess68 PR #C: BORDER_DEFAULT は inline c.border 化。
 import { useColors } from '@/src/core/theme/useColors';
@@ -33,6 +34,11 @@ export function NotificationSettingsSection() {
   const setNotifSummaryTime = useSettingsStore((s) => s.setNotificationDailySummaryTime);
   // 通知時刻ピッカーを設定画面でインライン表示 (中間サブ画面 notifications.tsx 廃止)
   const [showTimePicker, setShowTimePicker] = React.useState(false);
+  // Sess108 PR-E (React Compiler 整合): DateTimePicker の value 計算で Date.now() を render 中に
+  // 呼ぶ pattern (旧 `new Date(Date.now())`) は react-hooks/purity 違反。 base 日付は時刻のみ表示する
+  // picker の参照点なので mount 時の「今日」 で十分 (時刻入力 UI は時間のみ操作)。 useState lazy init で固定。
+  // ADR-0008 §TZ 3 層防御: new Date() 引数なし禁止 → nowUtc() 経由。
+  const [pickerBaseDate] = React.useState(() => new Date(nowUtc() as string));
 
   // ADR-0014 Amended: ON 時は通知時刻、OFF 時は「設定なし」。
   const notificationTimeRangeLabel = notifSummaryEnabled
@@ -100,7 +106,7 @@ export function NotificationSettingsSection() {
       {showTimePicker && (
         <DateTimePicker
           testID="e2e_notif_summary_time_picker"
-          value={parseHhmmToDate(notifSummaryTime, new Date(Date.now()))}
+          value={parseHhmmToDate(notifSummaryTime, pickerBaseDate)}
           mode="time"
           is24Hour
           onChange={(event: DateTimePickerEvent, date?: Date) => {

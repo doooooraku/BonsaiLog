@@ -62,7 +62,11 @@ export const useToastStore = create<ToastState>((set) => {
 
 export function Toast() {
   const message = useToastStore((s) => s.message);
-  const opacity = React.useRef(new Animated.Value(0)).current;
+  // Sess108 PR-E (React Compiler 整合): Animated.Value 初期化は useState の lazy init で 1 回固定。
+  // 旧 `useRef(new Animated.Value(0)).current` は render 中の ref read が
+  // react-hooks/refs 違反 (React 19 純粋関数原則)。 useState の lazy init は
+  // setOpacity しない限り Animated.Value インスタンスが安定する公式推奨 pattern。
+  const [opacity] = React.useState(() => new Animated.Value(0));
 
   React.useEffect(() => {
     Animated.timing(opacity, {

@@ -102,7 +102,11 @@ export function useCalendarData(mode: CalendarTabMode): UseCalendarData {
   }, []);
 
   // URL param 変化時の追従 (mode = plan は source=tab かつ urlDateKey 不在 → tomorrow)
+  // Sess108 PR-E (React Compiler 整合): URL param (= 外部システムとの sync) → 内部 state の追従は
+  // useEffect の正規用途 (React 公式 "Synchronizing with External Systems")。 ここは複数 setState を
+  // 連動して切り替える必要があるため、 react-hooks/set-state-in-effect は block disable で意図明示。
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- URL param 同期 (外部システム連携) */
     if (urlDateKey) {
       setSelectedDateKey(urlDateKey);
       setYear(Number(urlDateKey.slice(0, 4)));
@@ -112,6 +116,7 @@ export function useCalendarData(mode: CalendarTabMode): UseCalendarData {
       setYear(Number(tomorrowLocalKey.slice(0, 4)));
       setMonth(Number(tomorrowLocalKey.slice(5, 7)) - 1);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [urlDateKey, sourceIsTab, tomorrowLocalKey, setSelectedDateKey, mode]);
 
   const reload = useCallback(async () => {

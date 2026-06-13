@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { InteractionManager, type ScrollView, type View } from 'react-native';
 
 /**
@@ -27,6 +27,11 @@ export function useScrollToEvent({
     if (node) rowRefs.current.set(eventId, node);
     else rowRefs.current.delete(eventId);
   }, []);
+  // Sess108 PR-E (React Compiler 整合): self-recursive callback の宣言前アクセス
+  // (react-hooks/immutability) を ref 経由参照で解消。 callback inner からは
+  // ref.current?.(...) で間接呼出 → 「callback 宣言前アクセス」 を消す。
+  // ref.current は useEffect で最新 callback を反映 (毎 render 更新)。
+  const scrollToEventRef = useRef<((eventId: string, attempt?: number) => void) | null>(null);
   // 対象行を ScrollView 内の実 Y 座標 (measureLayout) までスクロール。
   const scrollToEvent = useCallback(
     (eventId: string, attempt = 0) => {
@@ -36,7 +41,7 @@ export function useScrollToEvent({
           const scroll = scrollRef.current;
           const content = scrollContentRef.current;
           if ((!node || !scroll || !content) && attempt < 8) {
-            setTimeout(() => scrollToEvent(eventId, attempt + 1), 120);
+            setTimeout(() => scrollToEventRef.current?.(eventId, attempt + 1), 120);
             return;
           }
           if (!node || !scroll || !content) return;
@@ -59,5 +64,9 @@ export function useScrollToEvent({
     },
     [scrollRef, scrollContentRef],
   );
+  // ref に最新 callback を反映 (再 render で deps 変化時)。
+  useEffect(() => {
+    scrollToEventRef.current = scrollToEvent;
+  }, [scrollToEvent]);
   return { highlightedEventId, registerRow, scrollToEvent };
 }

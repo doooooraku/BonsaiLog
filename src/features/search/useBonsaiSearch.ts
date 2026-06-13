@@ -170,7 +170,10 @@ export function useBonsaiSearch(): UseBonsaiSearch {
     [lang, selectedTagId, minChars, t],
   );
 
+  // Sess108 PR-E (React Compiler 整合): debounced search の clear / re-trigger は
+  // 「query 変化に追従して外部 DB を fetch」 する典型的 useEffect 用途。 block disable で意図明示。
   React.useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- debounced search (clear + fetch trigger) */
     const trimmed = query.trim();
     const hasText = trimmed.length >= minChars;
     const hasTag = selectedTagId != null;
@@ -184,6 +187,7 @@ export function useBonsaiSearch(): UseBonsaiSearch {
       void runSearchWith(trimmed);
     }, 300);
     return () => clearTimeout(timer);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [query, selectedTagId, runSearchWith, minChars]);
 
   const selectTag = useCallback(

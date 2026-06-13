@@ -228,12 +228,18 @@ export function useBonsaiBasicForm({
   }, [displayPotUnit]);
 
   // editingBonsai prefill (新規モードと編集モードを id で区別、id 変化時に再 prefill)。
+  // Sess108 PR-E: editingId 変化時の form prefill は React 19 推奨「prop 変化に対する derived state」
+  // pattern だが、 useEffect 内 setState は react-hooks/set-state-in-effect 違反 flag される。
+  // 真因は 14 種別 form state の依存解析が compiler では難しい点 (代替: render 中 condition
+  // setState で React 自動再 render or 「key prop で remount」 だが BonsaiBasicForm は単一 mount で
+  // 編集対象 swap する設計、 ADR-0029 D5)。 ここは pragmatic に effect で同期する pattern を維持。
   const editingId = editingBonsai?.id ?? null;
   useEffect(() => {
     if (editingBonsai == null) {
       originalTagIdsRef.current = new Set();
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- prefill 同期 pattern (上記 reason)
     setName(editingBonsai.name);
     setSpeciesId(editingBonsai.speciesId);
     setCustomSpeciesId(editingBonsai.customSpeciesId);

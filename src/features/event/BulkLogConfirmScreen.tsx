@@ -192,16 +192,20 @@ export default function BulkLogConfirmScreen() {
   });
 
   // Sess39 PR-2 (issue #822): 未保存 changes 確認 dialog (WorkLogConfirmScreen と同 pattern)
-  const initialNoteRef = React.useRef(note);
-  const initialOccurredAtDateRef = React.useRef(occurredAtDate);
-  const initialFormStateRef = React.useRef(formState);
+  // Sess108 PR-E (React Compiler 整合): initial value snapshot を useRef → useState lazy init に変更。
+  // 旧 `useRef(...).current` を useMemo (render 中) で read する pattern は react-hooks/refs 違反。
+  // useState lazy init は mount 時に 1 回確定 + setInitial を呼ばない限り再 render で安定するため、
+  // ref と同等の「初期値スナップショット」 として機能 (Bulk は edit mode 非対応で update なし)。
+  const [initialNote] = React.useState(note);
+  const [initialOccurredAtDate] = React.useState(occurredAtDate);
+  const [initialFormState] = React.useState(formState);
   const isDirty = React.useMemo(
     () =>
-      note !== initialNoteRef.current ||
-      occurredAtDate !== initialOccurredAtDateRef.current ||
+      note !== initialNote ||
+      occurredAtDate !== initialOccurredAtDate ||
       photos.length > 0 ||
-      JSON.stringify(formState) !== JSON.stringify(initialFormStateRef.current),
-    [note, occurredAtDate, photos, formState],
+      JSON.stringify(formState) !== JSON.stringify(initialFormState),
+    [note, occurredAtDate, photos, formState, initialNote, initialOccurredAtDate, initialFormState],
   );
   const { guardVisible, confirmDiscard, cancelDiscard } = useUnsavedChangesGuard({
     isDirty,

@@ -57,8 +57,12 @@ export function AdBanner() {
   const c = useColors();
   const bannerRef = React.useRef<BannerAd>(null);
 
-  // Sess106 PR-2 修正3: アプリ起動時刻からの経過時間で 3 秒判定 (再 mount 時にも初回起動時刻を使う)
-  const initialRemainingMs = Math.max(0, STARTUP_DELAY_MS - (Date.now() - APP_LAUNCH_TIME_MS));
+  // Sess106 PR-2 修正3: アプリ起動時刻からの経過時間で 3 秒判定 (再 mount 時にも初回起動時刻を使う)。
+  // Sess108 PR-E (React Compiler 整合): mount 時点で Date.now() を 1 回呼んで固定 (useState lazy init)。
+  // 旧 render body 直書きは react-hooks/purity 違反 (Date.now() は impure)。
+  const [initialRemainingMs] = React.useState(() =>
+    Math.max(0, STARTUP_DELAY_MS - (Date.now() - APP_LAUNCH_TIME_MS)),
+  );
   const [delayElapsed, setDelayElapsed] = React.useState(initialRemainingMs === 0);
   const [ready, setReady] = React.useState(false);
   const [attAuthorized, setAttAuthorized] = React.useState<boolean | null>(null);

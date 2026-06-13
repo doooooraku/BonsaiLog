@@ -151,19 +151,25 @@ export default function WorkLogConfirmScreen() {
   // mount 時の initial state を useRef で固定 → form state と diff 比較で isDirty 算出。
   // navigation back 試行時に dialog 表示、 「破棄」 で navigation 完遂、 「編集を続ける」 で残留。
   // ADR-0055 Sess77 PR-3: edit mode では prefill 完了後に initial refs を fetched 値で同期更新
-  // (isDirty 誤発火防止)、 prefill 中の二重 fetch は prefilledRef flag で防止。
-  const initialNoteRef = React.useRef(note);
-  const initialOccurredAtDateRef = React.useRef(occurredAtDate);
-  const initialFormStateRef = React.useRef(formState);
-  const initialWireUnwireDateRef = React.useRef(wireUnwireDate);
+  // (isDirty 誤発火防止)、 prefill 中の二重 fetch は prefilled state flag で防止 (Sess108 PR-E で ref → state 化)。
+  // Sess108 PR-E (React Compiler 整合): initial value snapshot を useRef → useState lazy init に変更。
+  // 旧 `useRef(...).current` を useMemo (render 中) で read する pattern は react-hooks/refs 違反。
+  // edit mode の prefill (effect 内) では setInitial* で snapshot を update して isDirty 誤発火を防ぐ
+  // (旧 ref.current = ... の挙動を state setter で代替、 1 frame の追加 render が発生するが無害)。
+  const [initialNote, setInitialNote] = React.useState(note);
+  const [initialOccurredAtDate, setInitialOccurredAtDate] = React.useState(occurredAtDate);
+  const [initialFormState, setInitialFormState] = React.useState(formState);
+  const [initialWireUnwireDate, setInitialWireUnwireDate] = React.useState(wireUnwireDate);
   // ADR-0055 Sess77 PR-4: 編集モードの写真差分計算用 (削除集合 = initial − current の id-set 差分)。
-  const initialPhotosRef = React.useRef<readonly PhotoFieldItem[]>(photos);
-  const prefilledRef = React.useRef(false);
+  const [initialPhotos, setInitialPhotos] = React.useState<readonly PhotoFieldItem[]>(photos);
+  // ADR-0055 Sess77 PR-3: prefill 完了 flag (state 化で render 中 read OK)。
+  const [prefilled, setPrefilled] = React.useState(false);
 
   // ADR-0055 Sess77 PR-3: edit mode の prefill effect。
-  // getEventById + getAllPhotosByEventId で fetch、 payloadToFormState で逆変換、 state + initial refs 同期更新。
+  // getEventById + getAllPhotosByEventId で fetch、 payloadToFormState で逆変換、 state + initial snapshot 同期更新。
+  // (Sess108 PR-E: setState は async iife 内のため react-hooks/set-state-in-effect は flag されない)
   React.useEffect(() => {
-    if (mode !== 'edit' || prefilledRef.current || !editingEventId || !selectedType) return;
+    if (mode !== 'edit' || prefilled || !editingEventId || !selectedType) return;
     void (async () => {
       try {
         const ev = await getEventById(editingEventId);
@@ -189,34 +195,36 @@ export default function WorkLogConfirmScreen() {
           height: p.height,
         }));
         setPhotos(photoItems);
-        // initial refs を fetched 値で同期更新 → isDirty 誤発火防止
-        initialFormStateRef.current = fs;
-        initialOccurredAtDateRef.current = occurred;
-        initialNoteRef.current = noteVal;
-        initialWireUnwireDateRef.current = wireDateVal;
-        initialPhotosRef.current = photoItems; // PR-4 写真差分計算用 base
-        prefilledRef.current = true;
+        // initial snapshot を fetched 値で同期更新 → isDirty 誤発火防止
+        setInitialFormState(fs);
+        setInitialOccurredAtDate(occurred);
+        setInitialNote(noteVal);
+        setInitialWireUnwireDate(wireDateVal);
+        setInitialPhotos(photoItems); // PR-4 写真差分計算用 base
+        setPrefilled(true);
       } catch (err) {
         // 編集対象 event が見つからない / 異常時は new mode と同様 base default のまま継続。
         // user は通常 form を「新規記録」 として完了できる (defensive、 crash 回避)。
         console.warn('[WorkLogConfirmScreen] edit mode prefill failed', err);
       }
     })();
+    // prefilled は effect 内で setPrefilled(true) するので deps に入れない (= 再 trigger 防止)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, editingEventId, selectedType, settingsPotUnit]);
   // ADR-0055 Sess77 PR-3/PR-4: edit mode の prefill 完了前は isDirty 算出を抑止 (false 固定)、
   // 完了後は通常通り diff 比較。 new/convert mode は従来通り、 photos.length > 0 で dirty 判定。
   // PR-4: photos の diff は id-set 比較で正確化 (削除集合 + 追加集合の どちらかが空でなければ dirty)。
   const isDirty = React.useMemo(() => {
-    if (mode === 'edit' && !prefilledRef.current) return false;
+    if (mode === 'edit' && !prefilled) return false;
     const baseDirty =
-      note !== initialNoteRef.current ||
-      occurredAtDate !== initialOccurredAtDateRef.current ||
-      JSON.stringify(formState) !== JSON.stringify(initialFormStateRef.current) ||
-      wireUnwireDate !== initialWireUnwireDateRef.current;
+      note !== initialNote ||
+      occurredAtDate !== initialOccurredAtDate ||
+      JSON.stringify(formState) !== JSON.stringify(initialFormState) ||
+      wireUnwireDate !== initialWireUnwireDate;
     let photosDirty = false;
     if (mode === 'edit') {
       const initialIds = new Set(
-        initialPhotosRef.current.map((p) => p.id).filter((id): id is string => Boolean(id)),
+        initialPhotos.map((p) => p.id).filter((id): id is string => Boolean(id)),
       );
       const currentIds = new Set(photos.map((p) => p.id).filter((id): id is string => Boolean(id)));
       const hasDeleted = [...initialIds].some((id) => !currentIds.has(id));
@@ -226,7 +234,20 @@ export default function WorkLogConfirmScreen() {
       photosDirty = photos.length > 0;
     }
     return baseDirty || photosDirty;
-  }, [mode, note, occurredAtDate, photos, formState, wireUnwireDate]);
+  }, [
+    mode,
+    note,
+    occurredAtDate,
+    photos,
+    formState,
+    wireUnwireDate,
+    prefilled,
+    initialNote,
+    initialOccurredAtDate,
+    initialFormState,
+    initialWireUnwireDate,
+    initialPhotos,
+  ]);
   const { guardVisible, confirmDiscard, cancelDiscard, allowNavigation } = useUnsavedChangesGuard({
     isDirty,
     bypass: isSubmitting,
@@ -251,12 +272,13 @@ export default function WorkLogConfirmScreen() {
             note: noteText,
           });
           // 2. 写真差分処理 (ADR-0055 §Decision):
-          //    - 削除集合 = initialPhotosRef にあって photos に id 不在
+          //    - 削除集合 = initialPhotos (snapshot) にあって photos に id 不在
           //    - 追加集合 = photos の id を持たない item
           //    partial failure は try/catch で吸収、 rollback はしない (記録本体は保存済が user メリット大、
           //    ADR-0055 §Negative Consequences)。
+          // Sess108 PR-E: 旧 initialPhotosRef.current → state 化 (initialPhotos) で同等参照。
           const initialMap = new Map(
-            initialPhotosRef.current
+            initialPhotos
               .filter((p): p is PhotoFieldItem & { id: string } => Boolean(p.id))
               .map((p) => [p.id, p]),
           );

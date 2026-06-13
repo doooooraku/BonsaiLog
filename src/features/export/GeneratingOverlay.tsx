@@ -54,7 +54,11 @@ export function GeneratingOverlay({
   // 多写真 PDF は数十秒かかることがあるため、表示後さらに一定時間で「お待ちください」を追加表示。
   const [slow, setSlow] = useState(false);
 
+  // Sess108 PR-E (React Compiler 整合): visible → shown の遅延表示と shown → slow の追加遅延は
+  // setTimeout 駆動の delayed display で typical useEffect 用途 (timer + cleanup の正規 pattern)。
+  // react-hooks/set-state-in-effect は block disable で意図明示。
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- delayed display (timer + cleanup) */
     if (!visible) {
       setShown(false);
       return;
@@ -65,15 +69,18 @@ export function GeneratingOverlay({
     }
     const id = setTimeout(() => setShown(true), delayMs);
     return () => clearTimeout(id);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [visible, delayMs]);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- slow hint timer (timer + cleanup) */
     if (!shown) {
       setSlow(false);
       return;
     }
     const id = setTimeout(() => setSlow(true), SLOW_HINT_DELAY_MS);
     return () => clearTimeout(id);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [shown]);
 
   return (
