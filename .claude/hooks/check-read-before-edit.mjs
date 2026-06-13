@@ -12,9 +12,12 @@
  * 例外:
  * - 新規ファイル作成 (Write で path が存在しない) は Read 不要 → 通す
  *
- * 履歴 (2026-05-02):
- * - sub-agent から Edit/Write した際、親 transcript には Read が記録されないため誤検知が頻発。
- * - 同セッション ID 配下の `subagents/agent-*.jsonl` も走査するよう拡張 (Issue #12 F-11 着手時)。
+ * 履歴:
+ * - 2026-05-02: sub-agent から Edit/Write した際、 親 transcript には Read が記録されないため誤検知が頻発。
+ *   同セッション ID 配下の `subagents/agent-*.jsonl` も走査するよう拡張 (Issue #12 F-11 着手時)。
+ * - 2026-06-14 (Sess108 案 3 / #1287): transcript path 収集ロジックは transcript-scanner lib と
+ *   同 pattern で揃えた。 Read tool_use 検出は本 hook 専用 (= lib は user/assistant message 抽出が主目的)
+ *   なので、 JSONL 直接走査は維持。 挙動は完全に維持 (exit code / stderr 完全一致)。
  */
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, basename, join } from 'node:path';

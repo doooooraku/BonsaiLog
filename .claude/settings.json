@@ -69,6 +69,15 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/parallel-session-guard.mjs\""
           }
         ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-ask-after-approval.mjs\""
+          }
+        ]
       }
     ],
     "Stop": [

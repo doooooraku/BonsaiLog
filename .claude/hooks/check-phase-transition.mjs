@@ -19,10 +19,15 @@
  * 警告レベル: exit 2 block はせず、 1 セッション運用観察後の昇格判断対象。
  *
  * 仕様参考: parallel-session-guard.mjs の UserPromptSubmit additionalContext 注入 pattern を踏襲。
+ *
+ * 履歴:
+ * - 2026-06-14 (Sess108 案 3 / #1287): transcript 走査 + phase 検出を ./lib/transcript-scanner.mjs に集約。
+ *   挙動 (= case A / case C 判定 / WARN 文 / log 形式) は完全維持、 内部 import 化のみ。
  */
 import { readFileSync, existsSync, appendFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readTranscriptMessages, detectPhase, REGEX } from './lib/transcript-scanner.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(__dirname, '..', '..');
@@ -70,69 +75,12 @@ try {
   const implementWithIssueRe = /\/implement\s+#?\d+/;
   const hasIssueArg = implementWithIssueRe.test(currentPrompt);
 
-  // --- transcript を JSONL で読み、 直近 50 turn を走査 ---
-  let content = '';
-  try {
-    content = readFileSync(transcriptPath, 'utf8');
-  } catch {
-    process.exit(0);
-  }
-  const lines = content.split('\n').filter((l) => l.trim().length > 0);
-  const lastN = lines.slice(-Math.min(lines.length, 50));
+  // --- transcript を JSONL で読み、 直近 50 turn を走査 (= transcript-scanner lib に集約) ---
+  const messages = readTranscriptMessages(transcriptPath, { limit: 50, includeSubagents: false });
+  const phase = detectPhase(messages);
+  const { discussIdx, planIdx, approvalIdx } = phase;
 
-  // user message のみ抽出
-  const userMessages = [];
-  for (const line of lastN) {
-    try {
-      const obj = JSON.parse(line);
-      // transcript 形式: { type: "user", message: { content: "..." } } or string content
-      const isUser =
-        obj.type === 'user' ||
-        obj.role === 'user' ||
-        obj.message?.role === 'user';
-      if (!isUser) continue;
-      let text = '';
-      const msg = obj.message ?? obj;
-      if (typeof msg.content === 'string') text = msg.content;
-      else if (Array.isArray(msg.content)) {
-        text = msg.content
-          .map((c) => (typeof c === 'string' ? c : c?.text ?? ''))
-          .join(' ');
-      }
-      if (text) userMessages.push(text);
-    } catch {
-      /* skip 不正 line */
-    }
-  }
-
-  const discussRe = /(^|\s)\/discuss(\b|\s|$)|<command-name>\s*discuss\s*<\/command-name>/i;
-  const planRe = /(^|\s)\/plan(\b|\s|$)|<command-name>\s*plan\s*<\/command-name>/i;
-  // 承認文字列 (= 正規表現 OR 連結)
-  const approvalRe =
-    /(✅|承認|認識合っています|認識あって|認識合って|進めて|お願いします|よろしく|OK\b|^ok$|go ahead|进行|approve|approved|了解|GO\b)/i;
-
-  // 直近の index を探す
-  let discussIdx = -1;
-  let planIdx = -1;
-  let approvalIdx = -1;
-
-  for (let i = userMessages.length - 1; i >= 0; i--) {
-    const msg = userMessages[i];
-    if (planIdx === -1 && planRe.test(msg)) planIdx = i;
-    if (discussIdx === -1 && discussRe.test(msg)) discussIdx = i;
-  }
-
-  // approval は discuss の後 (= index が discussIdx より大) を探す
-  if (discussIdx !== -1) {
-    for (let i = discussIdx + 1; i < userMessages.length; i++) {
-      if (approvalRe.test(userMessages[i])) {
-        approvalIdx = i;
-        break;
-      }
-    }
-  }
-
-  // case 判定
+  // case 判定 (= 元実装と同じ)
   // case A: /discuss 観測 + 承認文字列観測 + /plan 観測なし (or plan が discuss より前) + 現在 /implement
   const planAfterDiscuss = planIdx !== -1 && discussIdx !== -1 && planIdx > discussIdx;
   const caseA =
@@ -168,6 +116,8 @@ try {
     },
   };
   process.stdout.write(JSON.stringify(out));
+  // REGEX は使わないが lib 経由で stable な値を取得していることを示す (= 共有 SoT 確認用 import)
+  void REGEX;
   process.exit(0);
 } catch {
   process.exit(0);
