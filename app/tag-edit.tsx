@@ -20,14 +20,7 @@ import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { useToastStore } from '@/src/components/Toast';
 import { useUnsavedChangesGuard } from '@/src/core/hooks/useUnsavedChangesGuard';
 import { useTranslation } from '@/src/core/i18n/i18n';
-import {
-  BG_SURFACE,
-  BORDER_DEFAULT,
-  BRAND_GREEN,
-  DISABLED_BG,
-  ON_BRAND,
-  TEXT_SECONDARY,
-} from '@/src/core/theme/colors';
+import { BG_SURFACE, BORDER_DEFAULT, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { isPresetTagName } from '@/src/db/seedTagPresets';
 import {
@@ -222,11 +215,13 @@ export default function TagEditScreen() {
           accessibilityRole="button"
           accessibilityLabel={submitLabel}
           testID="e2e_tag_edit_submit"
-          style={[styles.primaryBtn, !canSubmit && styles.primaryBtnDisabled]}
+          style={[styles.primaryBtn, { backgroundColor: canSubmit ? c.tint : c.disabledBg }]}
           onPress={handleSubmit}
           disabled={!canSubmit}
         >
-          <ThemedText style={styles.primaryBtnText}>{submitLabel}</ThemedText>
+          <ThemedText style={[styles.primaryBtnText, { color: c.onTint }]}>
+            {submitLabel}
+          </ThemedText>
         </Pressable>
 
         {/* Sess91 PR-2: 旧 isEditMode 時 delete button (= t('tagEditDeleteCta')) を完全削除。
@@ -275,17 +270,16 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   counter: { position: 'absolute', right: 14, top: 14, fontSize: 12 },
+  // Sess108 PR-D: backgroundColor (canSubmit ? c.tint : c.disabledBg) + color (c.onTint) は inline (dark cascade)
   primaryBtn: {
     marginTop: 16,
     paddingVertical: 14,
     minHeight: 56,
     borderRadius: 14,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  primaryBtnDisabled: { backgroundColor: DISABLED_BG },
-  primaryBtnText: { color: ON_BRAND, fontSize: 17, fontWeight: '600', letterSpacing: 0.5 },
+  primaryBtnText: { fontSize: 17, fontWeight: '600', letterSpacing: 0.5 },
   // Sess91 PR-2: 旧 deleteBtn / deleteBtnText style は handleDelete + delete button 物理削除に
   // 伴い dead、 entry 撤去 (= hex literal '#B33B3B' lint warning 1 件も同時解消)。
   cancelBtn: {

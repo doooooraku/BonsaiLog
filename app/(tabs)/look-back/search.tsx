@@ -18,8 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { SearchIcon } from '@/src/components/icons';
-// Sess66 PR6a.1: theme-dependent token を inline c.* に (dark cascade)。
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess108 PR-D (ADR-0062 Notes #5): theme-dependent token は inline c.* に (dark cascade)。
 import { useColors } from '@/src/core/theme/useColors';
 import { BonsaiResultRow, EventResultRow } from '@/src/features/search/SearchResultRows';
 import { useBonsaiSearch } from '@/src/features/search/useBonsaiSearch';
@@ -120,10 +119,18 @@ export default function LookBackSearchScreen() {
                   accessibilityState={{ selected }}
                   accessibilityLabel={tg.name}
                   testID={`e2e_find_tag_chip_${tg.id}`}
-                  style={[styles.filterChip, selected && styles.filterChipSel]}
+                  style={[
+                    styles.filterChip,
+                    selected && { backgroundColor: c.tint, borderColor: c.tint },
+                  ]}
                   onPress={() => selectTag(tg.id)}
                 >
-                  <ThemedText style={[styles.filterChipText, selected && styles.filterChipTextSel]}>
+                  <ThemedText
+                    style={[
+                      styles.filterChipText,
+                      selected && { color: c.onTint, fontWeight: '600' },
+                    ]}
+                  >
                     {tg.name}
                   </ThemedText>
                 </Pressable>
@@ -284,9 +291,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     justifyContent: 'center',
   },
-  filterChipSel: { backgroundColor: BRAND_GREEN, borderColor: BRAND_GREEN },
   filterChipText: { fontSize: 12, fontWeight: '500' },
-  filterChipTextSel: { color: ON_BRAND, fontWeight: '600' },
   // スクロールエリア
   scroll: { padding: 16, gap: 16, paddingBottom: 96 },
   // 空 / 短クエリ状態

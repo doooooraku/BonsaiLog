@@ -20,7 +20,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+import { BRAND_GREEN } from '@/src/core/theme/colors';
 import { displayTitleSerif } from '@/src/core/theme/typography';
 import { useColors } from '@/src/core/theme/useColors';
 import { getNextOnboardingStep } from '@/src/features/onboarding/onboardingFlow';
@@ -104,14 +104,14 @@ export default function OnboardingTutScreen() {
           style={styles.backButton}
           hitSlop={8}
         >
-          <ThemedText style={styles.backIcon}>‹</ThemedText>
+          <ThemedText style={[styles.backIcon, { color: c.tint }]}>‹</ThemedText>
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.iconRow}>
           {/* Bell は outline SVG で mockup 整合 (Sess5 PR-2)、他 icon は将来 Lucide 導入まで絵文字 fallback で a11y 維持。 */}
           {meta.icon === 'bell' ? (
-            <BellIcon size={64} color={BRAND_GREEN} />
+            <BellIcon size={64} color={c.tint} />
           ) : (
             <ThemedText style={styles.iconText} accessibilityLabel={meta.icon}>
               {ICON_FALLBACK[meta.icon] ?? '•'}
@@ -131,10 +131,10 @@ export default function OnboardingTutScreen() {
           accessibilityRole="button"
           accessibilityLabel={ctaLabel}
           testID={`e2e_onboarding_tut_next_${meta.step}`}
-          style={styles.cta}
+          style={[styles.cta, { backgroundColor: c.tint }]}
           onPress={ctaHandler}
         >
-          <ThemedText style={styles.ctaText}>{ctaLabel}</ThemedText>
+          <ThemedText style={[styles.ctaText, { color: c.onTint }]}>{ctaLabel}</ThemedText>
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -194,7 +194,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  backIcon: { fontSize: 28, lineHeight: 32, color: BRAND_GREEN, fontWeight: '500' },
+  // Sess108 PR-D: color は inline c.tint (dark cascade)
+  backIcon: { fontSize: 28, lineHeight: 32, fontWeight: '500' },
   scroll: { flexGrow: 1, padding: 24, justifyContent: 'center', gap: 16 },
   iconRow: { alignItems: 'center', marginBottom: 16 },
   iconText: { fontSize: 64, lineHeight: 72 },
@@ -206,15 +207,15 @@ const styles = StyleSheet.create({
   },
   body: { textAlign: 'center', fontSize: 16, lineHeight: 26 },
   actions: { padding: 24, gap: 12 },
+  // Sess108 PR-D: backgroundColor / color は inline c.tint / c.onTint (dark cascade)
   cta: {
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     minHeight: 56,
     justifyContent: 'center',
   },
-  ctaText: { color: ON_BRAND, fontWeight: '600', fontSize: 17, letterSpacing: 0.5 },
+  ctaText: { fontWeight: '600', fontSize: 17, letterSpacing: 0.5 },
   skipBtn: { paddingVertical: 12, alignItems: 'center', minHeight: 48, justifyContent: 'center' },
   skipText: { fontSize: 14, opacity: 0.7, textDecorationLine: 'underline' },
 });

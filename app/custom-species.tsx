@@ -221,7 +221,7 @@ export default function CustomSpeciesManagerScreen() {
           accessibilityRole="button"
           accessibilityLabel={t('customSpeciesAddCta')}
           testID="e2e_custom_species_add_open"
-          style={styles.addBtn}
+          style={[styles.addBtn, { backgroundColor: c.tint }]}
           onPress={openAdd}
         >
           {/* Sess91 PR-1: JSX 側で `+ ` prefix を統一 (= /tags pattern 同型、 i18n 値からは prefix 撤去)。 */}
@@ -335,7 +335,7 @@ export default function CustomSpeciesManagerScreen() {
                       style={styles.moreLink}
                       onPress={() => setExpandAll(true)}
                     >
-                      <ThemedText style={styles.moreLinkText}>
+                      <ThemedText style={[styles.moreLinkText, { color: c.tint }]}>
                         {t('tagsMoreLink').replace('{count}', String(remainingCount))}
                       </ThemedText>
                     </Pressable>

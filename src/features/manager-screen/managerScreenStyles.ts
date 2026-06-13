@@ -22,7 +22,9 @@
  */
 import { StyleSheet } from 'react-native';
 
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess108 PR-D (ADR-0062 Notes #5): BRAND_GREEN は呼出側 inline c.tint 経由 (ADR-0052 dark cascade)。
+// ON_BRAND は theme-invariant ゆえ保持 (#FFFFFF brand 上の白文字、 light 専用)。
+import { ON_BRAND } from '@/src/core/theme/colors';
 
 export const managerScreenStyles = StyleSheet.create({
   /** 画面全体: flex 1 + 背景色は呼出側 inline (= scheme-aware c.background)。 */
@@ -31,12 +33,13 @@ export const managerScreenStyles = StyleSheet.create({
   scroll: { padding: 16, gap: 12 },
   /** 画面意図説明 1 行 (= addBtn 直前)。 color は呼出側 inline (= c.textSecondary)。 */
   desc: { fontSize: 13, marginBottom: 12, lineHeight: 18 },
-  /** 大型 Add button (= BRAND_GREEN 背景 + 白文字)。 */
+  /**
+   * 大型 Add button。 backgroundColor は呼出側 inline (= c.tint、 dark cascade、 Sess108 PR-D)。
+   */
   addBtn: {
     paddingVertical: 14,
     minHeight: 56,
     borderRadius: 14,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
@@ -124,7 +127,10 @@ export const managerScreenStyles = StyleSheet.create({
   /** Inline 関連盆栽展開エリア (= /tags Sess9 PR-10、 PR-3 で /custom-* にも横展開予定)。 */
   expandedArea: { gap: 8, paddingLeft: 16, paddingTop: 4 },
   expandedLoading: { textAlign: 'center', paddingVertical: 16 },
-  /** 「もっと見る (残り N 件)」 link (= peek limit 超過時)。 */
+  /**
+   * 「もっと見る (残り N 件)」 link (= peek limit 超過時)。
+   * color は呼出側 inline (= c.tint、 dark cascade、 Sess108 PR-D)。
+   */
   moreLink: { paddingVertical: 12, alignItems: 'center' },
-  moreLinkText: { color: BRAND_GREEN, fontSize: 14, fontWeight: '500' },
+  moreLinkText: { fontSize: 14, fontWeight: '500' },
 });

@@ -370,6 +370,7 @@ const styles = StyleSheet.create({
   planStatusBadgePro: { borderColor: ACCENT_GOLD, backgroundColor: ACCENT_GOLD },
   planStatusBadgeText: { fontSize: 11, fontWeight: '600', letterSpacing: 0.4 },
   // Sess70 PR-C3: ACCENT_GOLD は両 theme 同色維持、 文字色は白固定 (Pro バッジ仕様)。
+  // eslint-disable-next-line local/no-color-hex-literal-in-stylesheet -- reason: pro badge gold bg uses fixed white text (両 theme で ACCENT_GOLD bg 上の固定白、 design_system.md §2-1 Pro バッジ仕様)
   planStatusBadgeTextPro: { color: '#FFFFFF' },
   // Sess70 PR-C3: bg / color は inline c.tint / c.onTint (scheme-aware)。
   planUpgradeBadge: {

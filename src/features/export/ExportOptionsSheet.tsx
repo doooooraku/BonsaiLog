@@ -19,8 +19,8 @@ import { LabeledDateRow } from '@/src/components/form/LabeledDateRow';
 import { nowUtc } from '@/src/core/datetime/clock';
 import { LabeledSegmented } from '@/src/components/form/LabeledSegmented';
 import { type TranslationKey, useTranslation } from '@/src/core/i18n/i18n';
-// Sess68 PR #C: BG_PRIMARY / BG_SURFACE / BORDER_DEFAULT / TEXT_MUTED / TEXT_SECONDARY は inline c.* 化、 BRAND_GREEN / ON_BRAND は brand-static で保持。
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess108 PR-D (ADR-0062 Notes #5): BRAND_GREEN を撤回 (inline c.tint 経由)。 ON_BRAND は theme-invariant で保持。
+import { ON_BRAND } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
@@ -267,7 +267,7 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
                             style={[
                               styles.tagChip,
                               { borderColor: c.border, backgroundColor: c.surface },
-                              on && styles.tagChipOn,
+                              on && { borderColor: c.tint, backgroundColor: c.tint },
                             ]}
                             onPress={() => setTagId(on ? undefined : tg.id)}
                             testID={`e2e_export_opt_tag_${tg.id}`}
@@ -304,7 +304,7 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
                     style={[
                       styles.switch,
                       { backgroundColor: c.border },
-                      includeArchived && styles.switchOn,
+                      includeArchived && { backgroundColor: c.tint },
                     ]}
                   >
                     <View style={[styles.knob, includeArchived && styles.knobOn]} />
@@ -332,7 +332,7 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
               accessibilityRole="button"
               accessibilityLabel={t('exportOptExport')}
               testID="e2e_export_options_generate"
-              style={styles.cta}
+              style={[styles.cta, { backgroundColor: c.tint }]}
               onPress={handleGenerate}
             >
               <ThemedText style={styles.ctaText}>{t('exportOptExport')}</ThemedText>
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
   },
-  tagChipOn: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN },
+  // Sess108 PR-D: tagChipOn の borderColor / backgroundColor は inline c.tint (dark cascade)
   tagChipText: { fontSize: 13 },
   tagChipTextOn: { color: ON_BRAND },
   toggle: {
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
   },
   toggleLabel: { fontSize: 14 },
   switch: { width: 36, height: 22, borderRadius: 11, padding: 2 },
-  switchOn: { backgroundColor: BRAND_GREEN },
+  // Sess108 PR-D: switchOn の backgroundColor は inline c.tint (dark cascade)
   knob: { width: 18, height: 18, borderRadius: 9, backgroundColor: ON_BRAND },
   knobOn: { alignSelf: 'flex-end' },
   filenameBox: {
@@ -405,10 +405,10 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
   },
+  // Sess108 PR-D: cta の backgroundColor は inline c.tint (dark cascade)
   cta: {
     minHeight: 56,
     borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
   },

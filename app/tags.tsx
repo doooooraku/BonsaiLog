@@ -225,7 +225,7 @@ export default function TagsManagerScreen() {
           accessibilityRole="button"
           accessibilityLabel={t('tagEditTitleAdd')}
           testID="e2e_tags_add_open"
-          style={styles.addBtn}
+          style={[styles.addBtn, { backgroundColor: c.tint }]}
           onPress={openAdd}
         >
           <ThemedText style={styles.addBtnText}>+ {t('tagEditTitleAdd')}</ThemedText>
@@ -352,7 +352,7 @@ export default function TagsManagerScreen() {
                       style={styles.moreLink}
                       onPress={() => setExpandAll(true)}
                     >
-                      <ThemedText style={styles.moreLinkText}>
+                      <ThemedText style={[styles.moreLinkText, { color: c.tint }]}>
                         {t('tagsMoreLink').replace('{count}', String(remainingCount))}
                       </ThemedText>
                     </Pressable>

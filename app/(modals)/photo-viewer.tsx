@@ -130,7 +130,8 @@ export default function PhotoViewerModal() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000', // iOS Photos.app 整合、 dark mode token 経由禁止
+    // eslint-disable-next-line local/no-color-hex-literal-in-stylesheet -- reason: photo viewer uses fixed black bg (iOS Photos.app 整合、 dark mode token 経由禁止、 ADR-0041 D3)
+    backgroundColor: '#000',
   },
   page: {
     width: SCREEN_W,
@@ -149,6 +150,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyText: {
+    // eslint-disable-next-line local/no-color-hex-literal-in-stylesheet -- reason: empty-state text on fixed black bg (above) — fixed grey for contrast
     color: '#888',
     fontSize: 16,
   },

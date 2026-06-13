@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     // Sess70 PR-C2: shadowColor は brand-static literal hex を撤回し theme-invariant 暗色に
     // (両 mode で薄い shadow、 dark で過剰な発光を回避)。
+    // eslint-disable-next-line local/no-color-hex-literal-in-stylesheet -- reason: shadow uses fixed black (両 theme で elevation 表現は固定黒陰、 RN 標準 shadow API 互換)
     shadowColor: '#000000',
     shadowOpacity: 0.08,
     shadowRadius: 3,
