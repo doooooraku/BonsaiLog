@@ -102,8 +102,8 @@
 - [x] `pnpm verify:type-check` 0 errors
 - [x] `pnpm test` 0 errors (= 3 suite skip / 1 test skip)
 - [x] `expo-doctor` 21/21 PASS
-- [ ] Android dev build (= Phase B-4 で別途) → Sess107 内で実施
-- [ ] CI verify 全 PASS (= Phase C で確認)
+- [x] Android dev build (= Sess108 Amendment で完了、 Issue #1281)
+- [x] CI verify 全 PASS (= PR #1270 merge gate で確認、 Sess108 で再確認)
 
 ## Notes
 
@@ -126,3 +126,65 @@
 - `docs/adr/ADR-0050-android-release-automation.md` Sess106 Amendment (= 道 A 切替の根拠)
 - `docs/adr/ADR-0017-store-compliance-att-ump-privacy.md` §⑤ (Privacy Manifest、 SDK 56 でも継続)
 - `.claude/skills/upgrading-react-native/BONSAI-OVERRIDE.md` (= SDK upgrade 標準手順)
+
+---
+
+## Sess108 Amendment (2026-06-13): Android dev client 再ビルド + RedBox 修復
+
+### 背景
+
+PR #1270 (= 本 ADR 起票元、 Sess107 commit `eded7dac`) merge 後、 Android dev client 起動時に以下の RedBox が発生:
+
+```
+[runtime not ready]: ReferenceError: Property 'MessageQueue' doesn't exist, stack:
+  ... setUpDefaultReactNativeEnvironment@4000:11 ...
+```
+
+### 1 次資料で確定した根本原因
+
+1. **アップストリーム既知 issue**: [expo/expo#46162](https://github.com/expo/expo/issues/46162) (open / unresolved)。 SDK 56 + Android dev client + bridgeless mode (`newArchEnabled=true`) で `__DEV__` 初期化経路 (`setUpReactDevTools` / `setUpDeveloperTools` / `LogBox.install`) が `MessageQueue.<x>` を bare global として参照、 bridgeless で global 不在のため。
+2. **本プロジェクト固有原因 (A)**: [Expo SDK 56 upgrade guide](https://expo.dev/changelog/sdk-56) の **「Create a new development build after upgrading」** が本 ADR Migration Steps に含まれず、 Sess107 で dev client 再ビルド未実施のまま merge された。
+   - 既存 dev client (`com.dooooraku.bonsailog` versionCode 13、 最終ビルド 2026-06-12 09:37 = SDK 55 時代) と SDK 56 (RN 0.85) bundle で native binding 非整合。
+3. **本プロジェクト固有原因 (B)** (= 1 度目の dev rebuild 後に判明): `@expo/dom-webview` **55.0.5** が pnpm-lock.yaml に残留 (= Sess62 教訓「全 expo-\* 同 minor」 違反、 ただし `@expo/*` scoped 名は対象漏れだった)。 起動時に `NoClassDefFoundError: Failed resolution of: Lexpo/modules/kotlin/types/AnyTypeProvider;` で `expo.modules.webview.DomWebViewModule.definition(DomWebViewModule.kt:84)` から発生。
+   - `@expo/dom-webview 55.0.5` は `AnyTypeProvider` 不在の旧 API、 同居している `@expo/log-box 56.0.13` (= SDK 56) は新 API を要求 → Kotlin class resolution 失敗。
+   - 同様に `@expo/metro-runtime 55.0.10` / `@expo/log-box 55.0.11` (旧版) も lockfile に残留していた可能性 (peer dep として上書き不発、 transitive 経由)。
+
+### 影響範囲 (= 1 次資料で確定)
+
+- ✅ **Android dev client 限定** で発生 (= `__DEV__` 初期化経路のみ)
+- ✅ Android release variant (= 本番 AAB) は正常 (Sess99 vc14 実証済)
+- ✅ iOS dev client は同 JS bundle で動作 (issue #46162 報告)
+- ✅ iOS TestFlight Build #5 (= Sess107 完遂分) は VALID 到達 (起動確認は user 手元で別途)
+
+### 修正手順 (= Sess108 で実施、 2 段階)
+
+**Stage 1**: MessageQueue RedBox 解消
+
+1. クラウド dev APK build #1 (`.github/workflows/build-android-dev.yml` 経由、 ローカル build は BSOD 3 件の教訓で `guard-local-build.mjs` ブロック)
+2. `adb uninstall com.dooooraku.bonsailog` で旧 dev client 削除
+3. `adb install dist/bonsailog-dev.apk` で新 dev client 配置 (= SDK 56 native binding 入り)
+4. Metro `--clear` で再起動 → Expo Dev Client 正常起動確認 (= RedBox 消滅)
+
+**Stage 2**: `@expo/dom-webview` 55 残留問題の解消 5. logcat で `NoClassDefFoundError: Failed resolution of: Lexpo/modules/kotlin/types/AnyTypeProvider;` 検出6. `pnpm why @expo/dom-webview` で 55.0.5 残留確認 (= @expo/log-box 56.0.13 の peer) 7. `package.json` の `dependencies` に `"@expo/dom-webview": "56.0.5"` を **direct dep として追加** (= peer override では peer resolution 上書き不発のため)、 `pnpm.overrides` には保険として `@expo/dom-webview` / `@expo/metro-runtime` / `@expo/log-box` の 56.x 版を追加 8. `pnpm-lock.yaml` 削除 → `pnpm install --lockfile-only` で再生成 → peer dep 警告 全 clear 確認 9. クラウド dev APK build #2 (= 修正 lockfile で再ビルド) 10. `adb install` で新 APK 入替 → 起動 SS で `NoClassDefFoundError` 消滅 + アプリ本体到達確認
+
+**Stage 3**: 主要機能検証 11. 主要機能検証 (= 19 言語 / 課金 / 広告 / 通知 / タグ / 検索) → SS 記録 12. 本 Amendment commit + PR (= Closes #1281)
+
+### Migration Steps への追加 (= 今後の SDK upgrade に必須)
+
+- **Step 18 (新規追加)**: `gh workflow run build-android-dev.yml` でクラウド dev APK ビルド + ローカル install + 起動 SS 検証 (= bridgeless + 新アーキ + native binding 整合確認)。 SDK upgrade PR の Acceptance Criteria に **「Android dev build 実機検証完了 + SS 記録」** を **merge 前ゲート** として固定。
+
+### Sess108 教訓
+
+1. **SDK upgrade 公式手順「Create a new development build after upgrading」を ADR Migration Steps に明記必須** (本 Amendment で追加)。
+2. **PR test plan の `[ ]` 未チェック merge は完了の鉄則 (user CLAUDE.md §4) 違反**。 再発防止は別 Issue で検討 (= Stop hook 検知 or PR template 強化)。
+3. **`__DEV__` 経路 (DevTools / LogBox / HMR) は bridgeless で挙動が大きく変わる**ため、 SDK upgrade 後の dev client 再ビルドは必須プロセスとして定型化。
+4. **Sess62 教訓「全 expo-\* 同 minor 統一」 の対象に `@expo/*` scoped name も含めるべき** (本 Amendment で確定)。 `@expo/dom-webview` / `@expo/log-box` / `@expo/metro-runtime` などは pnpm-lock.yaml に旧 minor 残留しやすい。 SDK upgrade ADR の Acceptance Criteria に **「`pnpm why @expo/*` で全 SDK 同 minor 確認」** を追加すべき。
+5. **`pnpm install --lockfile-only` は既存 lockfile の resolution を尊重して transitive 旧版を上書きしない罠**。 SDK upgrade 後は **`pnpm-lock.yaml` を一度削除して再生成** する手順を Migration Steps に固定。
+6. **pnpm `overrides` は peer dependency の resolution に効きにくい**。 transitive で旧版が残る場合は **`dependencies` に direct dep として追加** が確実。
+
+### Refs
+
+- Issue #1281 (= 本 Amendment 起票元)
+- [expo/expo#46162](https://github.com/expo/expo/issues/46162)
+- [Expo SDK 56 upgrade guide](https://expo.dev/changelog/sdk-56)
+- [React Native 0.85 blog](https://reactnative.dev/blog/2026/04/07/react-native-0.85)
