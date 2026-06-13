@@ -445,6 +445,27 @@ Sess102 の vc14 release 実走 (GitHub Actions run 27353729812) で cloud workf
 - 1 回目 (55s): `REVENUECAT_IOS_API_KEY` が EAS server-side env (production) 未登録 → `eas env:create --environment production` で登録、解決
 - 2-3 回目 (135s / 17m): EAS の Distribution Certificate non-interactive 自動生成は仕様外 (新規 = interactive のみ、 修復のみ非対話可)。 対処 = Claude セッション内で `pexpect` (Python pty) 経由で `eas credentials:configure-build --platform ios --profile production` を ASC API Key 環境変数 + 対話自動応答で完遂、user 手作業 0 で Distribution Cert `89L2ZXTPB4` 流用 + Provisioning Profile `28YN889XWP` 新規生成。 詳細 = Engram id=628 (= release/ios-credentials-automation topic)
 - 3 回目 (17m): Xcode 16 (macos-15 default) + Expo SDK 55 の Swift 6 strict concurrency バグ (`AnyExpoSwiftUIHostingView updateProps actor-isolated error`、 [expo/expo#42525](https://github.com/expo/expo/issues/42525) 未解決) → **`runs-on: macos-15` → `macos-14` に変更** (default Xcode 15.4 = Swift 5 で構造的回避)、 Expo SDK 56+ で fix されたら macos-15 + Xcode 16 へ昇格検討
+- 4 回目 (217s): EAS build pre-build phase の `expo doctor` 内で 3 件 fail (knip script 衝突 / `@expo/log-box` `expo-image-loader` 重複 / `@expo/metro-runtime` overridden) → `package.json` `scripts.knip` → `scripts.knip:check` rename + `pnpm.overrides` で 3 依存固定 + `pnpm install --lockfile-only` で lockfile 反映
+- 5 回目 (182s): `expo doctor` の「Check native tooling versions」 で **`Your Expo SDK version 55 is not compatible with Xcode 15.4.0. Required Xcode version: >=26.0.0`** が判明。Apple が 2025 後半に Xcode を year-based versioning へ統一 (= Xcode 26)、GitHub Actions runner image (macos-14 / macos-15 双方) は **Xcode 26 を提供していない**。**案 B (eas build --local) は物理的に成立不能**
+
+### 5 回目試走の帰結と Sess107 引き継ぎ (user 判断 2026-06-13)
+
+- **判明事実**: BonsaiLog の現状 Expo SDK 55 + GitHub Actions macOS runner では `eas build --local` が物理的に走らない。Apple Xcode の versioning 変更 (15→16→26) と Expo SDK 55 公式要件のすれ違いが原因
+- **EAS Cloud Build (案 A) は技術的に成立**: Expo のサーバー側は Xcode 26 を保有して SDK 55 を build 可
+- **user 判断**: 「Expo SDK 56 アップグレード検討」 を **別セッション (Sess107 以降)** で進める。本 PR #1269 は SDK 56 アップグレード完了後に試走 + merge
+- **本 PR #1269 の現状**: コード (eas.json + workflow yml + Skill + how-to + ADR + package.json 依存修復) は配線済、 GitHub Secrets 6 + Variables 2 投入済、 EAS server-side env + iOS credentials (Distribution Cert + Provisioning Profile) Expo サーバー側登録済。 **試走の阻害要因は Expo SDK バージョン互換性のみ**。SDK 56 へのアップグレード後の workflow 再試走で TestFlight 到達見込み
+
+### Sess107 以降 引き継ぎ task
+
+- [ ] **Expo SDK 55 → 56 アップグレード PR** (別 PR、大規模):
+  - `npx expo install --fix` で SDK 56 + RN 0.84 互換性 audit
+  - `expo upgrade` or 公式 migration guide ([Expo SDK 56 changelog](https://expo.dev/changelog/sdk-56)) に従う
+  - 全 deps の互換性確認 + `pnpm.overrides` の見直し (= SDK 56 で不要になる可能性)
+  - dev/preview ビルドで実機検証 (Android 既存パイプで先行)
+  - lint/type-check/test 全 PASS
+  - 完了後に PR #1269 (本 PR) の workflow 再試走
+- [ ] **本 PR #1269 は保留中** (= SDK 56 アップグレード PR が main に入った後に rebase + 再試走 + merge)
+- [ ] Sess107 開始時に user に「PR #1269 が保留中であり、SDK 56 アップグレード後に再開」 を冒頭で確認
 
 ### Acceptance
 
