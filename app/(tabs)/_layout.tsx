@@ -50,8 +50,6 @@ export default function TabLayout() {
         tabBarStyle: { backgroundColor: c.surface, borderTopColor: c.border },
         tabBarLabelStyle: { color: c.textSecondary },
         headerShown: false,
-        // @ts-expect-error TS2322: SDK 56 codemod で expo-router/js-tabs の BottomTabBarButtonProps が
-        // exactOptionalPropertyTypes 下で incompatible (pressColor: ColorValue vs string)。 別 PR で型整理予定。
         tabBarButton: HapticTab,
       }}
     >
