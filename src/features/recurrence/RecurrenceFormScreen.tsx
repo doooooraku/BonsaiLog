@@ -74,6 +74,7 @@ import { BonsaiChipPickerLayout } from '@/src/features/bonsai/BonsaiChipPickerLa
 import { buildWeeklyByDayHumanLabel } from '@/src/features/recurrence/rruleHumanLabel';
 import { WorkTypeGrid } from '@/src/features/event/WorkTypeGrid';
 import type { EventType } from '@/src/db/schema';
+import { useProGuard } from '@/src/features/pro/useProGuard';
 import { useProStore } from '@/src/stores/proStore';
 import { usePickerStore, type BulkBonsaiRef } from '@/src/stores/pickerStore';
 import { useSettingsStore } from '@/src/stores/settingsStore';
@@ -199,6 +200,9 @@ export default function RecurrenceFormScreen() {
   const [activeGroupCount, setActiveGroupCount] = useState(0);
 
   const isPro = useProStore((s) => s.isPro);
+  // Sess106 PR-9 (ADR-0056 Sess106 Amendment): router.push 直起動を useProGuard 経由に統一。
+  // 他 5 feature (photo_basic / photo_worklog / tag / custom_species / settings) と同型 API。
+  const { openPaywall } = useProGuard({ feature: 'recurring_rule', currentCount: 0 });
 
   useEffect(() => {
     let cancelled = false;
@@ -291,7 +295,8 @@ export default function RecurrenceFormScreen() {
     // 編集 = グループ置換でグループ数不変 → 盆栽の増減・種別変更は Free でも常に可
     // (Grandfathered 4+ グループの編集も通す)。 新規 = +1 グループのみ判定。
     if (!isPro && mode === 'create' && activeGroupCount >= FREE_RECURRENCE_GROUP_LIMIT) {
-      router.push('/pro?source=recurring_rule' as Href);
+      // Sess106 PR-9: useProGuard 経由 (= 他 5 feature と同型 API、 ADR-0056 Sess106 Amendment)
+      openPaywall();
       return;
     }
 
