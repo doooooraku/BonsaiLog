@@ -19,6 +19,7 @@ import {
   ACCENT_GOLD,
   BADGE_SOFT_BG,
   BG_PRIMARY,
+  BG_SECONDARY,
   BG_SURFACE,
   BORDER_DEFAULT,
   BORDER_STRONG,
@@ -52,6 +53,7 @@ import {
 export const DARK_TOKENS = {
   bgPrimary: '#16140F', // 宵墨 yoizumi — 暖かい墨
   bgSurface: '#211E18', // 重ねの紙
+  bgSecondary: '#252319', // 副次背景 (AdBanner プレースホルダ等、 Sess106 PR-2 追加、 bgPrimary #16140F より約 5% 明)
   textPrimary: '#ECE6D6', // 淡 washi
   textSecondary: '#B3AA97',
   textMuted: '#837A68',
@@ -86,6 +88,7 @@ export const Colors = {
     text: TEXT_PRIMARY,
     background: BG_PRIMARY,
     surface: BG_SURFACE,
+    bgSecondary: BG_SECONDARY, // Sess106 PR-2: AdBanner プレースホルダ用
     textSecondary: TEXT_SECONDARY,
     textMuted: TEXT_MUTED,
     tint: BRAND_GREEN,
@@ -111,6 +114,7 @@ export const Colors = {
     text: DARK_TOKENS.textPrimary,
     background: DARK_TOKENS.bgPrimary,
     surface: DARK_TOKENS.bgSurface,
+    bgSecondary: DARK_TOKENS.bgSecondary, // Sess106 PR-2: AdBanner プレースホルダ用
     textSecondary: DARK_TOKENS.textSecondary,
     textMuted: DARK_TOKENS.textMuted,
     tint: DARK_TOKENS.brandGreen,

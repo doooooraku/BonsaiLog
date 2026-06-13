@@ -17,6 +17,13 @@
 export const BG_PRIMARY = '#F7F3E8';
 /** カード背景 (Surface)。 */
 export const BG_SURFACE = '#FFFFFF';
+/**
+ * 副次背景 (和紙派生、 Sess106 PR-2 追加)。
+ * - AdBanner プレースホルダ (広告ロード前の枠予約、 CLS 解消、 ADR-0010 Sess106 Amendment §22 修正1)
+ * - 将来の skeleton / divider 等の中間色背景にも展開可
+ * - BG_PRIMARY (#F7F3E8) より約 5% 暗い (= ロード中であることを視覚的に示唆)
+ */
+export const BG_SECONDARY = '#EFE9D8';
 
 // =========================================================================
 // Text
