@@ -338,3 +338,46 @@ Phase 2 の承認をスキップして Phase 1 → Phase 3 を直実行。
    - MEMORY.md: 永続ルール・設定・長期パターン (index 型)
 4. **冪等性**: 同じセッションで 2 回 `/session-end` しても壊れない
 5. **失敗時はグレースフル**: 部分失敗でも他のフェーズは完了させる
+
+
+---
+
+## Notion 完了報告 (案 7、 Sess108)
+
+Phase 3 (EXECUTE) の **最後** に `/notion-report --auto-from-session-end` を自動連結で実行する。
+
+### Phase 3.5: Notion 完了報告 (自動連結)
+
+```
+1. ENV flag を確認: BONSAI_NOTION_SYNC=off なら skip + Phase 3.4 最終レポートに「⏭ Notion report skipped (env off)」 追記
+2. /notion-report --auto-from-session-end を実行
+   - 今セッション完了 PR/Issue を gh CLI で抽出
+   - Engram の「Notion 依頼取込」 履歴 (= page_id 対応表) と join
+   - notion-create-comment で対応ページに完了報告投稿
+   - Sess<N>-summary 子ページを notion-create-pages で作成
+3. 結果を Phase 3.4 最終レポートに「✅ Notion report 投稿済 (N 件 comment + 1 子ページ)」 として追記
+```
+
+これにより `/session-end` 1 コマンドで以下 4 つが一気通貫:
+
+1. Engram 保存 (Phase 3.1)
+2. MEMORY.md 更新 (Phase 3.2)
+3. commit + push (Phase 3.3)
+4. **Notion 完了報告 (Phase 3.5、 新規)**
+
+### エッジケース
+
+| ケース                          | 挙動                                                      |
+| ------------------------------- | --------------------------------------------------------- |
+| BONSAI_NOTION_SYNC=off          | silent skip + 最終レポートに「⏭ env off」 追記            |
+| Notion MCP 未認証 / network 不調 | silent skip + 最終レポートに「⏭ Notion MCP unavailable」 |
+| 完了 PR が 0 件                  | report は子ページ作成のみ (完了内容なし summary)          |
+| Engram に page_id 履歴なし       | comment は skip、 子ページ作成のみ実行                    |
+
+### 設計理由
+
+- **対称性**: `/notion-intake` (= 入口) と対で双方向同期を完成 (Sess108 案 7 Stage C)
+- **副作用最小化**: report は comment + 子ページのみ、 Status / Stage 変更はしない
+- **idempotency**: 同 Sess<N>-summary が既にあれば update に切替 (= /session-end 2 回呼出しても壊れない)
+
+詳細は `.claude/skills/notion-report/SKILL.md` を参照。
