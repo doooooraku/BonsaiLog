@@ -82,7 +82,11 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
   const showArchived = OPTION_APPLIES.includeArchived.has(type);
 
   // sheet が開くたびに条件をリセット (前回の選択を持ち越さない)
+  // Sess108 PR-E (React Compiler 整合): visible/type 変化時の form reset は React 推奨「key prop で
+  // remount」 pattern もあり得るが、 ExportOptionsSheet は Modal wrapper を呼出側 (ExportTabScreen) で
+  // visible 制御している都合上 component swap 不可。 reset 用途は block disable + reason 明示で意図維持。
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- modal open 時の form reset (UX 要件) */
     if (visible) {
       setPeriod('all');
       setScope('all');
@@ -92,6 +96,7 @@ export function ExportOptionsSheet({ visible, type, onClose, onGenerate }: Props
       setSelectedIds([]);
       setTagId(undefined);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [visible, type]);
 
   useEffect(() => {

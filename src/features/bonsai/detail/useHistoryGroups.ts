@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from 'react';
+import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { getTzOffsetMin } from '@/src/core/datetime';
 import { EVENT_TYPES, type Event, type EventType } from '@/src/db/schema';
@@ -58,11 +51,13 @@ export function useHistoryGroups({ events }: { events: Event[] }): {
   }, [events]);
 
   // 選択中フィルタの種別が記録 0 件になった場合 (削除等) は 'all' に戻す。
-  useEffect(() => {
-    if (historyFilter !== 'all' && !presentEventTypes.includes(historyFilter)) {
-      setHistoryFilter('all');
-    }
-  }, [historyFilter, presentEventTypes]);
+  // Sess108 PR-E (React Compiler 整合): React 公式推奨「prop 変化に対する state 調整は render 中」
+  // pattern に置換 (https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)。
+  // 旧 useEffect 内 setState は cascading rerender が遅延するため、 render 中 condition setState で
+  // React が即座に再 render し抜ける (旧 effect と同等挙動 + 1 frame 削減)。
+  if (historyFilter !== 'all' && !presentEventTypes.includes(historyFilter)) {
+    setHistoryFilter('all');
+  }
 
   // logged event のみ + フィルタ適用 + occurredAtUtc 降順 + 連続日グルーピング。
   const historyGroups = useMemo<EventGroupEntry[]>(() => {
