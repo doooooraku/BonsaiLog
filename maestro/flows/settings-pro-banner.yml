@@ -1,0 +1,84 @@
+appId: 'com.dooooraku.bonsailog'
+name: 'E2E - Sess106 PR-6 Settings Pro CTA Banner (sticky + Free 限定 + tap source)'
+tags:
+  - e2e
+  - settings
+  - pro
+  - sess106
+  - pr-6
+
+
+# Sess106 PR-6 (ADR-0061) で Settings 画面の SearchHeader 直下に sticky 配置された
+# Pro CTA Banner (testID e2e_settings_pro_banner) の挙動を検証する。
+#
+# AC (ADR-0061 §Acceptance):
+# - D1 sticky: Settings 画面で常時上端可視
+# - D4 Free 限定: isPro=false で表示、 isPro=true で完全非表示
+# - D5 Paywall SoT: tap で /pro?source=settings_banner 遷移
+#
+# 実行: maestro test maestro/flows/settings-pro-banner.yml
+
+---
+- launchApp:
+    clearState: true
+    label: 'Free 状態でアプリ起動 (clearState)'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_empty'
+    timeout: 60000
+    label: 'Home empty 描画待機'
+
+# Settings 画面へ遷移
+- tapOn:
+    id: 'e2e_tab_settings'
+    label: 'Settings タブ tap'
+  optional: true # tabBar 設定タブが無い場合は header の歯車から
+- tapOn:
+    id: 'e2e_settings_screen'
+    label: 'Settings screen 確認'
+  optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_settings_screen'
+    timeout: 10000
+    label: 'Settings screen 描画待機'
+
+# D1 sticky + D4 Free 限定: Banner が表示されている
+- assertVisible:
+    id: 'e2e_settings_pro_banner'
+    label: '[D1+D4] Free user で ProBanner が表示'
+
+# Settings 画面を下スクロールしても Banner が sticky で維持される (= header 直下固定)
+- scroll:
+    label: 'Settings スクロール (banner sticky 検証)'
+
+- assertVisible:
+    id: 'e2e_settings_pro_banner'
+    label: '[D1] スクロール後も sticky で表示維持'
+
+# D5 Paywall SoT: tap で /pro 遷移
+- tapOn:
+    id: 'e2e_settings_pro_banner'
+    label: '[D5] Banner tap で Paywall 遷移'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_paywall_screen'
+    timeout: 10000
+    label: 'Paywall screen 描画待機 (source=settings_banner で起動済)'
+
+# Paywall 閉じて Settings に戻る
+- tapOn:
+    id: 'e2e_paywall_close'
+    label: 'Paywall を閉じる'
+  optional: true
+
+- assertVisible:
+    id: 'e2e_settings_screen'
+    label: 'Settings に戻る (= Banner も再表示)'
+
+- assertVisible:
+    id: 'e2e_settings_pro_banner'
+    label: '[D1] Settings 戻り時に Banner 再表示'

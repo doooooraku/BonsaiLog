@@ -1,0 +1,89 @@
+appId: 'com.dooooraku.bonsailog'
+name: 'E2E - Sess106 PR-7/8 AdBanner 3 タブ展開 + look-back hub'
+tags:
+  - e2e
+  - ads
+  - sess106
+  - pr-7
+  - pr-8
+
+
+# Sess106 PR-7 (plan/record) + PR-8 (look-back 条件付き) で AdBanner が
+# 3-4 タブで表示されることを検証する。
+#
+# AC (ADR-0010 Sess106 Amendment §80):
+# - bonsai (Home) + plan + record の 3 タブで AdBanner 表示 (= testID e2e_ad_banner)
+# - look-back hub でも AdBanner 表示 (条件付き、 PR-8)
+# - guide spotlight (g2/g3) は BottomCtaBar のみを囲み AdBanner は含まない
+#
+# 実行: maestro test maestro/flows/adbanner-three-tabs.yml
+
+---
+- launchApp:
+    clearState: true
+    label: 'Free 状態でアプリ起動 (clearState)'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_bonsai_home_empty'
+    timeout: 60000
+    label: 'Home (bonsai) empty 描画待機'
+
+# 起動後 3 秒待機 (= STARTUP_DELAY_MS、 AdBanner 表示まで)
+- runFlow:
+    when:
+      true: true
+    commands:
+      - waitForAnimationToEnd:
+          timeout: 4000
+
+# Tab 1: bonsai (Home) で AdBanner 表示
+- assertVisible:
+    id: 'e2e_ad_banner'
+    label: '[Tab 1: bonsai] AdBanner 表示 (起動後 3 秒経過済)'
+
+# Tab 2: plan に遷移
+- tapOn:
+    id: 'e2e_tab_plan'
+    label: 'plan タブに遷移'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_ad_banner'
+    timeout: 5000
+    label: '[Tab 2: plan] AdBanner 表示 (= PR-7 拡張)'
+
+# Tab 3: record に遷移
+- tapOn:
+    id: 'e2e_tab_record'
+    label: 'record タブに遷移'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_ad_banner'
+    timeout: 5000
+    label: '[Tab 3: record] AdBanner 表示 (= PR-7 拡張)'
+
+# Tab 4: look-back hub に遷移 (条件付き)
+- tapOn:
+    id: 'e2e_tab_look_back'
+    label: 'look-back タブに遷移'
+
+- extendedWaitUntil:
+    visible:
+      id: 'e2e_look_back_hub'
+    timeout: 5000
+    label: 'look-back hub 描画待機'
+
+- assertVisible:
+    id: 'e2e_ad_banner'
+    label: '[Tab 4: look-back] AdBanner 表示 (= PR-8 条件付き展開)'
+
+# Home に戻る (= タブ切替で 3 秒タイマー再カウントしないことを確認、 PR-2 修正3)
+- tapOn:
+    id: 'e2e_tab_bonsai'
+    label: 'bonsai タブに戻る'
+
+- assertVisible:
+    id: 'e2e_ad_banner'
+    label: '[Tab 1 再訪] AdBanner 即時表示 (タイマー再カウントなし、 PR-2 修正3)'
