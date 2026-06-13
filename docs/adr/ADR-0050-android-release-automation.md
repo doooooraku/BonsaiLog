@@ -440,6 +440,12 @@ Sess102 の vc14 release 実走 (GitHub Actions run 27353729812) で cloud workf
 - 初回 build は credentials 自動登録 + Pods install で 25-35 分の見込み (Repolog 平均 17 分は warm 状態)。
 - credentials が Expo サーバー側管理 = Expo 信頼に依存 (= 案 A と同じ)。
 
+### 試走で判明 (2026-06-13、PR #1269)
+
+- 1 回目 (55s): `REVENUECAT_IOS_API_KEY` が EAS server-side env (production) 未登録 → `eas env:create --environment production` で登録、解決
+- 2-3 回目 (135s / 17m): EAS の Distribution Certificate non-interactive 自動生成は仕様外 (新規 = interactive のみ、 修復のみ非対話可)。 対処 = Claude セッション内で `pexpect` (Python pty) 経由で `eas credentials:configure-build --platform ios --profile production` を ASC API Key 環境変数 + 対話自動応答で完遂、user 手作業 0 で Distribution Cert `89L2ZXTPB4` 流用 + Provisioning Profile `28YN889XWP` 新規生成。 詳細 = Engram id=628 (= release/ios-credentials-automation topic)
+- 3 回目 (17m): Xcode 16 (macos-15 default) + Expo SDK 55 の Swift 6 strict concurrency バグ (`AnyExpoSwiftUIHostingView updateProps actor-isolated error`、 [expo/expo#42525](https://github.com/expo/expo/issues/42525) 未解決) → **`runs-on: macos-15` → `macos-14` に変更** (default Xcode 15.4 = Swift 5 で構造的回避)、 Expo SDK 56+ で fix されたら macos-15 + Xcode 16 へ昇格検討
+
 ### Acceptance
 
 - [ ] `eas.json` `submit.production.ios` 4 フィールド配線
