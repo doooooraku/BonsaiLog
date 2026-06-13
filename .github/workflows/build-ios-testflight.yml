@@ -16,9 +16,12 @@ permissions:
 jobs:
   build-and-submit:
     name: Build & Submit IPA
-    # macos-15 に pin (Xcode 16.x 安定版)。突然壊れるリスク最小化。
-    # 月 1 回、image bump 時に Claude が macos-16 へ移行検討。
-    runs-on: macos-15
+    # macos-14 に pin (default Xcode 15.4 = Swift 5)。
+    # Expo SDK 55 + Xcode 16 (= macos-15 default) の Swift 6 strict concurrency バグ
+    # (expo/expo#42525, AnyExpoSwiftUIHostingView updateProps actor-isolated error) を
+    # 構造的に回避。Expo SDK 56+ で fix されたら macos-15 + Xcode 16 へ昇格検討。
+    # 月 1 回、image bump 時に Claude が macos-15 へ移行可否を再確認。
+    runs-on: macos-14
     timeout-minutes: 90
 
     steps:
