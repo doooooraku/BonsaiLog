@@ -6,7 +6,6 @@
  * - search: 盆栽検索 sub-route (旧 find/index.tsx の検索ロジックを移植)
  */
 import { Stack } from 'expo-router';
-import React from 'react';
 
 export default function LookBackStackLayout() {
   return (

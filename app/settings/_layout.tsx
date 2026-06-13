@@ -6,7 +6,6 @@
  * 継承するため screenOptions を本 _layout でも明示。
  */
 import { Stack } from 'expo-router';
-import React from 'react';
 
 import { useColors } from '@/src/core/theme/useColors';
 // Sess90 PR-A: font geometry SoT 化 (ADR-0053 Sess90 Amendment、 R-75)。

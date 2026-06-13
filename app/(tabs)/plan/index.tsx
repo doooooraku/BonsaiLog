@@ -14,7 +14,6 @@
  *
  * 関連: ADR-0035 D1/D2 (タブ名 + tomorrow default) / ADR-0038 D1/D2 (RecordTabScreen 並存)。
  */
-import React from 'react';
 
 import { CalendarTabScreen } from '@/src/features/calendar/CalendarTabScreen';
 

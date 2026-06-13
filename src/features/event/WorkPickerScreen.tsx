@@ -19,7 +19,6 @@
  * - mode: nav title 切替用 (`(modals)/work-picker.tsx` が参照)、デフォルト `'log'`
  */
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

@@ -6,7 +6,6 @@
  * そのまま表示していた不具合も解消する。
  */
 import { Stack } from 'expo-router';
-import React from 'react';
 
 export default function ExportLayout() {
   return <Stack screenOptions={{ headerShown: false }} />;

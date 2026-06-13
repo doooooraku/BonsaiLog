@@ -12,7 +12,6 @@
  *   FSD 境界 (ADR-0048) を侵さずに features/event ↔ features/export 双方から安全に呼べる。
  */
 import { Image } from 'expo-image';
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

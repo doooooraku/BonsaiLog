@@ -128,7 +128,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   });
 
   plugins = ensurePlugin(plugins, 'expo-build-properties', {
-    ios: { deploymentTarget: '15.5' },
+    ios: { deploymentTarget: '16.4' },
   });
 
   plugins = ensurePlugin(plugins, 'expo-font');

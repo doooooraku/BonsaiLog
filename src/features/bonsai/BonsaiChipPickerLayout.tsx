@@ -24,7 +24,7 @@
  *   - docs/adr/ADR-0056-recurring-schedule.md §Notes Amended (Sess92 PR-3 follow-up)
  *   - src/features/bonsai/BonsaiChipList.tsx (= 下位 chip 領域 SoT)
  */
-import React, { type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { BonsaiChipList, type BonsaiChipListProps } from './BonsaiChipList';

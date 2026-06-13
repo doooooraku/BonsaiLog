@@ -3,7 +3,6 @@
  * care-screens.jsx WIcon (viewBox 0 0 28 28, stroke-only) を React Native SVG に移植。
  * BulkWorkPickerScreen / WorkPickerScreen で共有。
  */
-import React from 'react';
 import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
 import { TEXT_PRIMARY } from '@/src/core/theme/colors';

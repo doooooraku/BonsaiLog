@@ -22,7 +22,6 @@
  * @see src/features/bonsai/SearchHeader.tsx (同種 pattern、 タブ用 Header)
  */
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 

@@ -24,7 +24,6 @@
  *   - docs/adr/ADR-0025-bulk-action.md §7 Notes Amended (Sess92 PR-3)
  *   - Sess83 ADR-0025 §7 (R-71 件数別 UX 表現契約、 CheckIcon + 自動選択 hint)
  */
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

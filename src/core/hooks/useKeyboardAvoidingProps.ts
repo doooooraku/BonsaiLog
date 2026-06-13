@@ -33,7 +33,7 @@
  * @see .claude/recurrence-prevention/specialized.md R-46
  * @see docs/reference/design_system.md §21 KeyboardAvoidingView 統一 pattern
  */
-import { useHeaderHeight } from '@react-navigation/elements';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import { Platform, type KeyboardAvoidingViewProps } from 'react-native';
 
 export type UseKeyboardAvoidingPropsResult = Pick<

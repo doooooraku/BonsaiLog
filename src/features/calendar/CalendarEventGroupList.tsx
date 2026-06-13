@@ -8,7 +8,6 @@
  * 振る舞いは CalendarTabScreen の元実装と完全同一 (純粋な抽出)。ADR-0035 D7 / ADR-0038 D3 維持。
  */
 import { useRouter, type Href } from 'expo-router';
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

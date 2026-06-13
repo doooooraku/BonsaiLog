@@ -10,7 +10,6 @@
  * 修正2 (useForeground) のテストは `__tests__/core/hooks/useForeground.test.ts` 側でカバー (AppState mock)。
  */
 import { render } from '@testing-library/react-native';
-import React from 'react';
 
 import { AdBanner, __TEST_ONLY } from '@/src/features/ads/AdBanner';
 

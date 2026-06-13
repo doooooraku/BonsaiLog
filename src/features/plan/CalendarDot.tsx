@@ -12,7 +12,6 @@
  * Sess69 PR-B: brand-static (BRAND_GREEN / ACCENT_BARK) → inline c.tint / c.accentBark。
  * dark mode で深緑/樹皮色が宵墨 bg に沈む罠を解消 (ADR-0015/ADR-0052 Amendment)。
  */
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useColors } from '@/src/core/theme/useColors';

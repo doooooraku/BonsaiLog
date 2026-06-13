@@ -20,7 +20,6 @@
  */
 import { Image } from 'expo-image';
 import { useRouter, type Href } from 'expo-router';
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

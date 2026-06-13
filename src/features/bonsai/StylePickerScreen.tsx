@@ -9,7 +9,7 @@
  * `router.back()` で caller に返却。 bonsai.style column には raw text 保存。
  */
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 // Sess15 PR-X: TextInput は既に modal 用に import 済、 search bar 追加で再利用。
 

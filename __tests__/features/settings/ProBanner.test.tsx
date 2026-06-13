@@ -7,7 +7,6 @@
  *   - D3 寸法: 高さ 64dp、 testID=e2e_settings_pro_banner
  */
 import { fireEvent, render } from '@testing-library/react-native';
-import React from 'react';
 
 import { ProBanner, __TEST_ONLY } from '@/src/features/settings/ProBanner';
 

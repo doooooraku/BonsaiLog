@@ -23,7 +23,7 @@
  *   - 将来: BulkLogConfirmScreen の occurred_at row 等 cross-feature 再利用想定
  */
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

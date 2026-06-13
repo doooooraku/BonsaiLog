@@ -24,7 +24,6 @@
  * - PlanScreen は `events.filter(x => x.bonsaiId === ev.bonsaiId)` で渡す
  * - bonsai-detail は同 component scope の `events` (= 該当 bonsai 全期間) を渡す
  */
-import React from 'react';
 
 import { EventRowPhotoStrip } from '@/src/features/event/EventRowPhotoStrip';
 

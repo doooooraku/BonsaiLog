@@ -7,7 +7,6 @@
  *
  * 関連: ADR-0008 §Notes Amended 2026-05-18、 docs/mockups/v1.0/wireframes/02-Home.html
  */
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

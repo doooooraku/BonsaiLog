@@ -28,7 +28,7 @@
  *        src/components/form/RecurrencePicker.tsx (Sess78 PR-4、 Sess93 PR-3 拡張)
  */
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter, type Href } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

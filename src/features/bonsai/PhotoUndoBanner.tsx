@@ -9,7 +9,6 @@
  * - actionLabel: アクション文言 (例: 「元に戻す」)
  * - onUndo: タップ時のコールバック (タイマーキャンセル + 復元)
  */
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

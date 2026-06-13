@@ -12,7 +12,6 @@
  *   - 派生計算は caller 側 (= 既存 rruleToHumanLabel + getNextOccurrence helper 流用)
  *   - 空 (= 未確定) の場合 何も表示しない
  */
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

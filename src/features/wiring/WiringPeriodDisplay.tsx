@@ -14,7 +14,6 @@
  * - isUnwired は呼び出し側で同盆栽 events から判定 (この component は受け取るだけ)
  * - days/weeks/kind は wiringDuration の純関数で算出済の値を受け取る
  */
-import React from 'react';
 import { StyleSheet, type StyleProp, type TextStyle } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

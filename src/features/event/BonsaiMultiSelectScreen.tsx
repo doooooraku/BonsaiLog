@@ -14,7 +14,7 @@
  * 1 画面戻り = 本画面に戻れるように)。 戻り時の選択状態は bulkContext から自動 restore。
  */
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

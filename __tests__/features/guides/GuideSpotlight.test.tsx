@@ -7,7 +7,6 @@
  * 3. dismiss tap → onDismiss、強調領域 tap → onTargetPress (未指定なら onDismiss)
  */
 import { fireEvent, render } from '@testing-library/react-native';
-import React from 'react';
 
 import { GuideSpotlight } from '@/src/features/guides/GuideSpotlight';
 

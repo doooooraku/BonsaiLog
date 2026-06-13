@@ -9,7 +9,6 @@
  * - selectedType: 指定時は該当 cell を tint 枠で highlighted (WorkPickerScreen 編集モード由来)
  * - testIDPrefix: `${testIDPrefix}_${type}` で cell testID を採番 (既存 testID 後方互換)
  */
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

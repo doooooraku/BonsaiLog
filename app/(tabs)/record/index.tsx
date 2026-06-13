@@ -14,7 +14,6 @@
  *
  * 関連: ADR-0038 D1/D2 (タブハイライト整合 + FAB log mode)。
  */
-import React from 'react';
 
 import { CalendarTabScreen } from '@/src/features/calendar/CalendarTabScreen';
 

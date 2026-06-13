@@ -4,7 +4,6 @@
  * 月ナビ (前月/月名/次月) + 凡例バー + 曜日ヘッダ (日曜赤/土曜緑/平日muted) +
  * 5-6 週グリッド (ドット 0-3 + 「+」 表示)。振る舞いは元実装と完全同一。
  */
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

@@ -10,7 +10,7 @@
  *   本 Sheet は出力処理を持たない。Pro 判定も Hub 側で実施済み。
  */
 import * as LegacyFileSystem from 'expo-file-system/legacy';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

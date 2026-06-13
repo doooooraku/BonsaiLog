@@ -16,7 +16,7 @@
 
 // React Navigation を mock (jest が自動 hoist する factory)
 import { renderHook, act } from '@testing-library/react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from 'expo-router/react-navigation';
 
 import {
   useUnsavedChangesGuard,
@@ -24,7 +24,7 @@ import {
   type UseUnsavedChangesGuardResult,
 } from '@/src/core/hooks/useUnsavedChangesGuard';
 
-jest.mock('@react-navigation/native', () => ({
+jest.mock('expo-router/react-navigation', () => ({
   useNavigation: jest.fn(() => ({
     addListener: jest.fn(() => jest.fn()), // unsubscribe function
     dispatch: jest.fn(),

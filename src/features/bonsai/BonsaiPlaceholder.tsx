@@ -5,7 +5,6 @@
  * - 旧 SVG 抽象シルエット (canopy + 鉢) + 5 色ローテは削除 (Sess1 PR-3 で導入、 user 視覚整合 △ 判断で簡略化)
  * - hashSeed は BonsaiCard で seed 用途で参照のため export 維持 (legacy 互換)
  */
-import React from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useColors } from '@/src/core/theme/useColors';

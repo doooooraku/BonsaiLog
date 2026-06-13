@@ -6,7 +6,6 @@
  * - 選択中 chip は BRAND_GREEN 背景 + ON_BRAND テキスト、未選択は border + TEXT_SECONDARY
  * - radius 8、minHeight 36 (タップ領域確保)
  */
-import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

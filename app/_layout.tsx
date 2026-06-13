@@ -9,7 +9,7 @@ import 'react-native-get-random-values';
 import { Inter_400Regular, useFonts as useInterFonts } from '@expo-google-fonts/inter';
 import { NotoSansJP_400Regular, NotoSansJP_600SemiBold } from '@expo-google-fonts/noto-sans-jp';
 import { NotoSerifJP_500Medium } from '@expo-google-fonts/noto-serif-jp';
-import { ThemeProvider } from '@react-navigation/native';
+import { ThemeProvider } from 'expo-router/react-navigation';
 import { Stack, useRouter, useSegments, type Href } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -143,7 +143,11 @@ export default function RootLayout() {
     // GestureHandlerRootView: React Navigation native presentation (modal/formSheet) の
     // swipe-down dismiss などのジェスチャ処理に必須 (react-native-gesture-handler の root wrapper)
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: headerColors.background }}>
-      <ThemeProvider value={navigationTheme}>
+      {/* SDK 56 で NativeTheme (Expo) と Theme (react-navigation) で colors.primary が ColorValue vs string で
+          incompatible。 別 PR で buildNavigationTheme.ts を Theme import 経由に整理予定。 */}
+      <ThemeProvider
+        value={navigationTheme as unknown as Parameters<typeof ThemeProvider>[0]['value']}
+      >
         <Stack
           screenOptions={{
             // Phase B-1b: Stack header を Colors 経由 (washi 背景 + 墨テキスト + brand tint)。

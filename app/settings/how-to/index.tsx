@@ -9,7 +9,7 @@
  * Stack header は ADR-0053 SoT (settings/_layout の screenOptions + 本画面 Stack.Screen title)。
  */
 import { Stack, useRouter } from 'expo-router';
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

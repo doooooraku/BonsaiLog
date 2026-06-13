@@ -6,7 +6,6 @@
  * - wiring: 針金がけ一覧 (`WiringListScreen`、タブ: すべて/未外し/1週間以内)
  */
 import { Stack } from 'expo-router';
-import React from 'react';
 
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess90 PR-A: nested Stack でも font geometry を明示 spread (= root → nested は cascade しない)。

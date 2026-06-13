@@ -16,7 +16,6 @@
  * - SearchHeader の責務はタイトル + 検索 + 歯車 のみに simplify
  */
 import { useRouter, type Href } from 'expo-router';
-import React from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 

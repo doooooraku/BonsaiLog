@@ -10,7 +10,7 @@
  *
  * 用途: BonsaiBasicForm の名前 / 入手元 / 鉢材質 / メモ / 鉢幅 / 鉢深さ など。
  */
-import React, { forwardRef, useState } from 'react';
+import { forwardRef, useState } from 'react';
 import {
   StyleSheet,
   TextInput,

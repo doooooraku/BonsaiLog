@@ -12,7 +12,6 @@
  * textShadow で写真上の可読性確保。
  */
 import { Image } from 'expo-image';
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

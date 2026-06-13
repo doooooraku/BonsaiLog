@@ -1,5 +1,4 @@
 import { Stack } from 'expo-router';
-import React from 'react';
 
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess90 PR-A: bonsai detail screen の Stack header font 統一 (ADR-0053 Sess90 Amendment、 R-75)。

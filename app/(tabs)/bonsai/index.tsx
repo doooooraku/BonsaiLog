@@ -20,11 +20,11 @@
  * 長押し → アーカイブ確認 (ADR-0025 Notes Amended): 廃止したのは「一括選択モード」であり、
  * 単一カードの長押し → カスタム ConfirmDialog 直行 → archiveBonsai は別動線として再導入 (ADR-0036 D1 整合)。
  */
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { useIsFocused } from '@react-navigation/native';
+import { useBottomTabBarHeight } from 'expo-router/js-tabs';
+import { useIsFocused } from 'expo-router/react-navigation';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Dimensions, FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';

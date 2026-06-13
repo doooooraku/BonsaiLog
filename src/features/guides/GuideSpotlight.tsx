@@ -13,7 +13,6 @@
  * tap 透過は採用しない: 強調領域 tap は onTargetPress で「本物の操作を代行」する
  * (Modal 越しの touch passthrough は platform 差異が大きく、代行が決定的で teste可能)。
  */
-import React from 'react';
 import { Dimensions, Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
