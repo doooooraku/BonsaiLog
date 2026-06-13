@@ -24,3 +24,13 @@
 - ADR-0043 (Store Product API Automation) + 本改修の Amendment
 - iap-setup-checklist.md (Sess81 起源、 Phase 8 改修では touch しない)
 - Sess81 territory 罠 + Sess82 PR-D 構造解決 を 3 SoT に分散反映
+
+## Sess108 追加改修 (2026-06-14、 PR #1282 後半)
+
+user 指摘「Claude に依頼するときの 1 行コマンドにゴールを記載してほしい。 何をもって終了とするか。 /goal が機能するようなコマンド」 を受けて、 以下を追加実施:
+
+- Notion Phase 8 ページの「Claude に依頼するときのコマンド」 セクションを **/goal 形式 + 完了条件 6 項目 + Claude 挙動契約** に書き換え
+- `docs/how-to/release/billing-setup-automation.md` §0.5 に同じ /goal テンプレートを追加 (= Notion ↔ repo の同期、 drift 防止)
+- 完了条件は §8 (健康診断) の DoD と同期: Apple 3 商品 = READY_TO_SUBMIT + Google 3 商品 = ACTIVE = 全 6 条件
+
+これにより Claude が途中離脱せず Phase 8 健康診断まで走り切ることが構造的に担保される (= /goal skill の機能と整合)。

@@ -20,6 +20,44 @@
 
 ---
 
+## 0.5. /goal 形式の呼び出しテンプレート (= 完了条件付き、 Notion Phase 8 純化版と同期)
+
+ユーザーが Notion Phase 8 ページからコピペして呼び出すコマンドのテンプレート。 本ファイルと内容を同期させ、 Claude が「途中離脱せず Phase 8 健康診断の全 6 条件達成まで走り切る」 ことを構造的に担保する。
+
+```
+/goal RevenueCat 課金まわりの完全配線
+
+具体: docs/how-to/release/billing-setup-automation.md の手順で
+Phase 1 (RC 箱 + 公開キー) / Phase 3 (ストア商品 6 作成) / Phase 5 (RC 配線) /
+Phase 7 (Apple メタデータ) / Phase 8 (健康診断) を自動実行。
+
+完了条件 (= Phase 8 健康診断、 mcp__revenuecat__get-product-store-state で全 6 商品確認):
+  ① Apple monthly subscription: raw_store_status = READY_TO_SUBMIT
+  ② Apple annual subscription: raw_store_status = READY_TO_SUBMIT
+  ③ Apple lifetime non_consumable: raw_store_status = READY_TO_SUBMIT
+  ④ Google subscription basePlan monthly: state = ACTIVE
+  ⑤ Google subscription basePlan annual: state = ACTIVE
+  ⑥ Google onetime product lifetime: state = ACTIVE
+
+全 6 条件達成で完了報告。 途中で人間作業 (Notion Phase 8 純化版 Step 1-4 =
+Google JSON アップ / Apple S2S URL / Google S2S 設定 / RC 購入記録確認)
+が必要になったら案内して一時停止。
+
+製品 ID は不可逆 (作成後変更・削除不可) → --commit 前に必ず --dry-run で
+user 承認待ち。 RC 公開キー / .p8 / Google JSON の中身は log/memory/commit
+に出さないこと。
+```
+
+### Claude 側の挙動契約 (= /goal を受けた時の Claude の振る舞い)
+
+1. **前提チェック失敗時**: §1 の前提条件 (鍵存在 / config 設定 / Phase 2 完了 / RC MCP 接続) を確認し、 1 つでも欠ければ user に欠落項目を提示して abort
+2. **不可逆操作前**: Apple/Google の `apple_create_products.py` / `google_create_products.py` を呼ぶ前に必ず `--dry-run` で作成予定を提示 → user の `--commit` 承認待ち
+3. **人間作業待ち**: Phase 3/5 後に Notion Step 1 (Google JSON アップロード) が完了していないと Phase 8 健康診断の Google 側が ACTIVE にならない可能性 → 該当時は Notion Phase 8 純化版の URL を案内して一時停止
+4. **完了判定**: `mcp__revenuecat__get-product-store-state` を 6 商品に対し実行、 全 6 条件達成を verbatim で報告 (= 条件 ①〜⑥ それぞれに対し ✅/❌ + 実値)
+5. **失敗時の対応**: 1 商品でも未達成なら原因を §9 (Sess48 で発覚した罠) と `iap-setup-checklist.md` から特定し、 修復手順を user に提示 (= 自動修復は dry-run まで、 commit は user 承認)
+
+---
+
 ## 1. 前提条件 (Claude が自動実行する前にチェックする項目)
 
 ```bash
