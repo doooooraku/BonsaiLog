@@ -42,6 +42,7 @@ import {
 } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 import { useColors } from '@/src/core/theme/useColors';
+import { AdBanner } from '@/src/features/ads/AdBanner';
 import { SearchHeader } from '@/src/features/bonsai/SearchHeader';
 
 type CardDef = {
@@ -183,13 +184,23 @@ export default function LookBackHubScreen() {
           </Pressable>
         ))}
       </ScrollView>
+
+      {/* Sess106 PR-8 (ADR-0010 §80 Sess106 Amendment): look-back hub への AdBanner 展開。
+          PR-4 AdMob policy 一次調査結果 = 公式 docs に明示的な content:ad ratio 数値基準なし
+          (原則ベース「広告がコンテンツより目立つ実装は不可」)。 本 hub は 3 カード ≈ 532px + ad 90px ≈ 5.9:1
+          で明示違反なし、 ただしグレーゾーン。 実機 test unit ID で配信制限警告がないことを確認後に本番展開。
+          配置: ScrollView の外 + TabBar の上 (BottomCtaBar 不在のため R-62 単純適用)。
+          Pro 即 unmount は AdBanner 内部で useProStore.isPro 依存。 */}
+      <AdBanner />
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scroll: { padding: 16, paddingTop: 24, paddingBottom: 96, gap: 12 },
+  // Sess106 PR-8: paddingBottom 96 → 16 に再計算。 AdBanner (~98px) を ScrollView 外に配置する
+  // ため、 旧 96 のクリアランスは不要 (AdBanner が下端で TabBar の上に挟まれる、 R-62 単純適用)。
+  scroll: { padding: 16, paddingTop: 24, paddingBottom: 16, gap: 12 },
   subtitle: {
     fontSize: 13,
     lineHeight: 20,
