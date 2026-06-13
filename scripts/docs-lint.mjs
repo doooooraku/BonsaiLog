@@ -255,6 +255,31 @@ function checkDocDirAllowlist() {
   }
 }
 
+// Check 10: 認知飽和ガード R-rule (Sess108 案 8 / ADR-0064)
+// recurrence-prevention.md の R 番号を walk して active 件数を計算し、
+// 30 件以上 (現在 79 active で既に超過) なら新規 R 追加時に
+// 退役案セットを求めるリマインダーを warning として出す (= 非ブロック)。
+// 詳細チェック (退役案の有無) は scripts/dev/r-rule-inventory.mjs で実施。
+function checkRRuleSaturation() {
+  const recurrenceFile = join(ROOT, '.claude', 'recurrence-prevention.md');
+  if (!existsSync(recurrenceFile)) return;
+  const content = readFileSync(recurrenceFile, 'utf8');
+  // ### R-N. または | **R-N** | で始まる行をカウント (Index 行 + 詳細セクション 両方)
+  const sectionMatches = content.match(/^### R-\d+\./gm) || [];
+  const tableMatches = content.match(/^\| \*\*R-\d+\*\*/gm) || [];
+  const total = sectionMatches.length + tableMatches.length;
+  const retiredCount = (content.match(/~~退役~~|\(退役/g) || []).length;
+  const activeCount = total - retiredCount;
+  const SATURATION_THRESHOLD = 30;
+  if (activeCount >= SATURATION_THRESHOLD) {
+    warnings.push(
+      `[認知飽和ガード R-rule] active R 件数 ${activeCount} (退役 ${retiredCount}) が閾値 ${SATURATION_THRESHOLD} を超過。\n` +
+        `  新規 R 追加 PR は本文に「退役案 1 件」 を明示するか、 既存 R との重複を再検証してください。\n` +
+        `  詳細: docs/adr/ADR-0064-cognitive-saturation-guard.md / scripts/dev/r-rule-inventory.mjs`,
+    );
+  }
+}
+
 // 実行
 checkCodexReferences();
 checkAdrSequence();
@@ -265,6 +290,7 @@ checkRecurrenceParity();
 checkSupersededLinks();
 checkAdrCrudCoverage();
 checkDocDirAllowlist();
+checkRRuleSaturation();
 
 // 結果出力
 if (errors.length > 0) {
