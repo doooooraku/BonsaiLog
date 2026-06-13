@@ -1646,3 +1646,42 @@ Sess72 (2026-06-07) でテスター苦情「タグ追加から戻ると先頭に
 ### Why (由来)
 
 Sess99 (2026-06-11) で並行セッションが main checkout の branch を切替え (reflog 13:43 で実証)、もう一方のセッションの作業中編集がディスク上で巻き戻る事故が実発生。成果は worktree 退避 + 再作成で復旧したが、「並行時は worktree」が R-64 + memory の運用頼みで機械強制が無かったのが根本原因。user 指示「徹底する構造・仕組みが欲しい」+ CLAUDE.md §9 (ルール違反 1 回でも自動化検討) に基づき hook 化。
+
+---
+
+## R-82 /discuss → /implement ダイレクト遷移禁止、 /plan の Issue 化 step は省略不可 (Sess102+Sess105 同型 2 回再発)
+
+/discuss で設計合意 → user 承認後、 /plan (= W-01〜W-05 で Issue 起票 + AC + Context note) を skip して /implement 相当の作業に直結すると、 親 Issue 不在の orphan PR が生まれる。 「計画承認 = 実行承認」 ルール ([feedback-plan-approval-implies-execution.md]) は 「計画 = Issue 化済」 を暗黙前提とするが、 Issue 化自体を skip するケースは R-17/R-27/R-79 想定外だった。
+
+### 再発記録
+
+- Sess102 (#1180 進行中、 2026-06-12): /plan 後に再承認要求 1 回 (= feedback-plan-approval-implies-execution.md L25 違反)
+- Sess105 (#1242、 2026-06-13): /discuss → /implement ダイレクト遷移 + Issue 化 skip。 #1243 は事後 follow-up で親 Issue ではない (= retro 検出)
+
+### 適用ルール
+
+1. /discuss で user 承認 (✅ / 「進めて」 / 「OK」 等) を観測したら、 即時 /implement に遷移してはならない
+2. 必ず /plan (W-01〜W-05.5) を起動し、 親 Issue を起票 (= AC + Context note + 関連 ADR 明記)
+3. /implement は 親 Issue 番号 を引数として受け取り、 `gh issue view <N>` で ## Context heading 実在を確認してから着手
+4. PR 本文に `Closes #<親Issue>` または `Refs #<親Issue>` を必ず含める (= CI で gate、 docs-only/chore は label:no-issue で例外)
+
+### 例外
+
+修正 1 文で説明できる typo / コメント修正 / README 微修正は `label:no-issue` で直接 PR 可 (= whole_workflow.md §1.5.3 の経路判定に従う)
+
+### enforcement
+
+- tool: `.claude/hooks/check-phase-transition.mjs` (UserPromptSubmit、 警告レベル開始 → 1 セッション運用後に block 昇格判断)
+- tool: `.github/workflows/pr-issue-link-check.yml` (CI、 PR body に Closes #N / Refs #N / label:no-issue 必須)
+- adoption: `.claude/settings.json` hooks 配線 + GitHub Actions ci 自動実行
+- auditing: 次回 retro で merged PR の親 Issue 紐付け率 + hook 発火ログ + 3 セッション連続 violation ゼロを確認
+
+### 昇華 trail
+
+CLAUDE.md §9 に従い、 (Sess102 1 回 + Sess105 1 回 = 2 回再発 + 影響大 = orphan PR merged) で hook 前倒し。 hook 警告レベル 1 セッション運用後に exit 2 block 昇格、 3 セッション連続 violation ゼロで CLAUDE.md §9 昇華完了マーク。
+
+### 関連
+
+- #1242 (= Sess105 retro 検出) / #1244 (= 本 R-82 起票 PR) / Sess102 #1180 (= 1 回目)
+- 前提ルール: feedback-plan-approval-implies-execution.md
+- 経路判定: whole_workflow.md §1.5.4
