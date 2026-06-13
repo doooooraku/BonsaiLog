@@ -22,8 +22,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { FormScreenHeader } from '@/src/components/form/FormScreenHeader';
 import { useTranslation } from '@/src/core/i18n/i18n';
-// Sess66 PR6a: BG_*/BORDER_* を inline c.* に。 BRAND_GREEN / ON_BRAND は theme-invariant ゆえ static 維持。
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess108 PR-D (ADR-0062 Notes #5): BRAND_GREEN / ON_BRAND を撤去、 全 color は useColors() の c.tint / c.onTint 経由 (ADR-0052 dark cascade)。
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsaiWithSpecies } from '@/src/db/bonsaiRepository';
 import { getCoverPhoto } from '@/src/db/photoRepository';
@@ -130,7 +129,7 @@ export default function ExportPdfScreen() {
               testID={`e2e_export_pdf_${item.id}`}
               style={[
                 styles.card,
-                { backgroundColor: c.surface, borderColor: selected ? BRAND_GREEN : c.border },
+                { backgroundColor: c.surface, borderColor: selected ? c.tint : c.border },
               ]}
               onPress={() => setSelectedId(item.id)}
             >
@@ -154,8 +153,16 @@ export default function ExportPdfScreen() {
                   </ThemedText>
                 ) : null}
               </View>
-              <View style={[styles.radio, { borderColor: c.border }, selected && styles.radioOn]}>
-                {selected ? <ThemedText style={styles.radioCheck}>✓</ThemedText> : null}
+              <View
+                style={[
+                  styles.radio,
+                  { borderColor: c.border },
+                  selected && { borderColor: c.tint, backgroundColor: c.tint },
+                ]}
+              >
+                {selected ? (
+                  <ThemedText style={[styles.radioCheck, { color: c.onTint }]}>✓</ThemedText>
+                ) : null}
               </View>
             </Pressable>
           );
@@ -177,14 +184,16 @@ export default function ExportPdfScreen() {
           accessibilityLabel={t('exportOptExport')}
           accessibilityState={{ disabled: !selectedId || busy }}
           testID="e2e_export_pdf_generate"
-          style={[styles.cta, (!selectedId || busy) && styles.ctaBusy]}
+          style={[styles.cta, { backgroundColor: c.tint }, (!selectedId || busy) && styles.ctaBusy]}
           onPress={handleExport}
           disabled={!selectedId || busy}
         >
           {busy ? (
-            <ActivityIndicator color={ON_BRAND} />
+            <ActivityIndicator color={c.onTint} />
           ) : (
-            <ThemedText style={styles.ctaText}>{t('exportOptExport')}</ThemedText>
+            <ThemedText style={[styles.ctaText, { color: c.onTint }]}>
+              {t('exportOptExport')}
+            </ThemedText>
           )}
         </Pressable>
       </View>
@@ -227,8 +236,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioOn: { borderColor: BRAND_GREEN, backgroundColor: BRAND_GREEN },
-  radioCheck: { fontSize: 14, fontWeight: '700', color: ON_BRAND },
+  // Sess108 PR-D: radioOn / cta / radioCheck / ctaText の color 系は inline c.tint / c.onTint に移動
+  radioCheck: { fontSize: 14, fontWeight: '700' },
   footer: {
     paddingHorizontal: 16,
     paddingTop: 12,
@@ -237,10 +246,9 @@ const styles = StyleSheet.create({
   cta: {
     minHeight: 56,
     borderRadius: 12,
-    backgroundColor: BRAND_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
   },
   ctaBusy: { opacity: 0.6 },
-  ctaText: { color: ON_BRAND, fontSize: 17, fontWeight: '600' },
+  ctaText: { fontSize: 17, fontWeight: '600' },
 });

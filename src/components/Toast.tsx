@@ -17,7 +17,8 @@ import { Animated, StyleSheet, View } from 'react-native';
 import { create } from 'zustand';
 
 import { ThemedText } from '@/components/themed-text';
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess108 PR-D (ADR-0062 Notes #5): BRAND_GREEN / ON_BRAND は inline c.tint / c.onTint 経由 (ADR-0052 dark cascade)。
+import { useColors } from '@/src/core/theme/useColors';
 
 export type ToastShowOptions = {
   /** default 3000ms (Material 3 Snackbar 整合) */
@@ -61,6 +62,7 @@ export const useToastStore = create<ToastState>((set) => {
 });
 
 export function Toast() {
+  const c = useColors();
   const message = useToastStore((s) => s.message);
   const opacity = React.useRef(new Animated.Value(0)).current;
 
@@ -76,8 +78,8 @@ export function Toast() {
 
   return (
     <Animated.View style={[styles.container, { opacity }]} pointerEvents="none" testID="e2e_toast">
-      <View style={styles.box}>
-        <ThemedText style={styles.text}>{message}</ThemedText>
+      <View style={[styles.box, { backgroundColor: c.tint }]}>
+        <ThemedText style={[styles.text, { color: c.onTint }]}>{message}</ThemedText>
       </View>
     </Animated.View>
   );
@@ -93,7 +95,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   box: {
-    backgroundColor: BRAND_GREEN,
+    // Sess108 PR-D: backgroundColor は inline c.tint (dark cascade)
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 20,
@@ -101,11 +103,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    // eslint-disable-next-line local/no-color-hex-literal-in-stylesheet -- reason: shadow uses fixed black (両 theme で elevation 表現は固定黒陰、 RN 標準 shadow API 互換)
     shadowColor: '#000',
     shadowOpacity: 0.2,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,
   },
-  text: { color: ON_BRAND, fontSize: 14, fontWeight: '500' },
+  // Sess108 PR-D: color は inline c.onTint (dark cascade)
+  text: { fontSize: 14, fontWeight: '500' },
 });

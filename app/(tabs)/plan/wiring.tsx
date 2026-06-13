@@ -21,7 +21,7 @@ import { nowUtc } from '@/src/core/datetime';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess66 PR6a: theme-dependent token (BG_*/TEXT_PRIMARY/BORDER_*) は inline c.* 経由。
 // TEXT_MUTED / TEXT_SECONDARY は JSX inline / function return で利用継続。
-import { ACCENT_GOLD, BRAND_GREEN, TEXT_MUTED, TEXT_SECONDARY } from '@/src/core/theme/colors';
+import { ACCENT_GOLD, TEXT_MUTED, TEXT_SECONDARY } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { getAllActiveBonsai } from '@/src/db/bonsaiRepository';
 import { getAllActivePlannedAndLoggedEvents } from '@/src/db/eventRepository';
@@ -259,14 +259,14 @@ export default function WiringListScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={`${row.bonsai?.name ?? ''} ${t('wiringRowUnwireAction')}`}
                   testID={`e2e_wiring_row_unwire_${row.event.id}`}
-                  style={styles.unwireButton}
+                  style={[styles.unwireButton, { borderColor: c.tint }]}
                   onPress={(e) => {
                     e.stopPropagation?.();
                     handleUnwire(row);
                   }}
                   hitSlop={20}
                 >
-                  <ThemedText style={styles.unwireButtonText}>
+                  <ThemedText style={[styles.unwireButtonText, { color: c.tint }]}>
                     {t('wiringRowUnwireAction')}
                   </ThemedText>
                 </Pressable>
@@ -327,12 +327,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: BRAND_GREEN,
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
+    // Sess108 PR-D: borderColor は inline c.tint (dark cascade)
   },
-  unwireButtonText: { fontSize: 13, fontWeight: '500', color: BRAND_GREEN },
+  unwireButtonText: { fontSize: 13, fontWeight: '500' /* color は inline c.tint */ },
   cardBody: { flex: 1, minWidth: 0, gap: 4 },
   cardHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   // Sess66 PR6a: color は inline c.text (dark cascade)。

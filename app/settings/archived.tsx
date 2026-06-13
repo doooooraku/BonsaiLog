@@ -18,7 +18,7 @@ import { ConfirmDialog } from '@/src/components/ConfirmDialog';
 import { PotIcon } from '@/src/components/icons';
 import { useTranslation } from '@/src/core/i18n/i18n';
 // Sess66 PR6a: BG_SURFACE / BORDER_DEFAULT / TEXT_PRIMARY / TEXT_SECONDARY を inline c.* に。
-import { BRAND_GREEN, ON_BRAND } from '@/src/core/theme/colors';
+// Sess108 PR-D (ADR-0062 Notes #5): BRAND_GREEN / ON_BRAND は inline c.tint / c.onTint 経由 (ADR-0052 dark cascade)。
 import { useColors } from '@/src/core/theme/useColors';
 import {
   getAllArchivedBonsai,
@@ -145,11 +145,13 @@ export default function ArchivedBonsaiScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('bonsaiRestore')}
-            style={[styles.actionBtn, styles.restoreBtn]}
+            style={[styles.actionBtn, { backgroundColor: c.tint }]}
             onPress={() => setPending({ id: item.id, action: 'restore' })}
             testID={`e2e_archived_restore_${item.id}`}
           >
-            <ThemedText style={styles.restoreText}>{t('bonsaiRestore')}</ThemedText>
+            <ThemedText style={[styles.restoreText, { color: c.onTint }]}>
+              {t('bonsaiRestore')}
+            </ThemedText>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -230,8 +232,8 @@ const styles = StyleSheet.create({
     minWidth: 96,
     alignItems: 'center',
   },
-  restoreBtn: { backgroundColor: BRAND_GREEN },
-  restoreText: { color: ON_BRAND, fontWeight: '600' },
+  // Sess108 PR-D: restoreBtn / restoreText の color 系は inline c.tint / c.onTint (dark cascade)
+  restoreText: { fontWeight: '600' },
   deleteBtn: { borderWidth: 1, backgroundColor: 'transparent' }, // borderColor は inline c.dangerColor
   deleteText: { fontWeight: '600' }, // color は inline c.dangerColor
   emptyContent: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, padding: 32 },
