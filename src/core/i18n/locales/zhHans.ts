@@ -58,6 +58,22 @@ const zhHans: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: '一次性购买，永久使用。无自动续费。',
   paywallChampionBannerTitle: '你已是Pro会员（永久版）',
   paywallChampionBannerDesc: '你已永久拥有Pro，因此不会显示订阅套餐。',
+
+  // --- Sess105 PR1: Paywall PlanRow rich layout (radio + sticky CTA, ClaudeDesign monetization-screens.jsx) ---
+  paywallPlanSectionLabel: '选择套餐',
+  paywallTaxNotice: '含税·可随时取消',
+  paywallPlanRecommendedBadge: '推荐',
+  paywallPlanMonthlySubCopy: '轻松开始·可随时取消',
+  paywallPlanYearlySubCopy: '最受欢迎的选择',
+  paywallPlanLifetimeSubCopy: '永久授权·无需续费',
+  paywallPlanYearlyPerMonth: '每月 {amount}',
+  paywallPlanPeriodMonth: '/月',
+  paywallPlanPeriodYear: '/年',
+  paywallPlanPeriodLifetime: '一次付费',
+  paywallStickyCtaLabel: '立即购买',
+  paywallStickyCtaSummaryMonthly: '每月 {price}·自动续费',
+  paywallStickyCtaSummaryYearly: '每年 {price}（{perMonth}）·自动续费',
+  paywallStickyCtaSummaryLifetime: '一次付费 {price}·无需续费·永久使用',
   settingsAccountProLifetimeTitle: 'Pro会员（永久版）',
   settingsAccountProLifetimeDesc: '永久版授权已生效，Pro功能可永久使用。',
 

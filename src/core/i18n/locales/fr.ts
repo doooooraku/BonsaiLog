@@ -59,6 +59,23 @@ const fr: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: 'Achat unique. Pas de renouvellement automatique.',
   paywallChampionBannerTitle: 'Vous êtes membre Pro (à vie)',
   paywallChampionBannerDesc: 'Les abonnements sont masqués, car vous possédez déjà Pro à vie.',
+
+  // --- Sess105 PR1: Paywall PlanRow rich layout (radio + sticky CTA, ClaudeDesign monetization-screens.jsx) ---
+  paywallPlanSectionLabel: 'Choisir une formule',
+  paywallTaxNotice: 'Taxes incluses · Résiliable à tout moment',
+  paywallPlanRecommendedBadge: 'Recommandé',
+  paywallPlanMonthlySubCopy: 'Sans engagement · Résiliable à tout moment',
+  paywallPlanYearlySubCopy: 'Le choix préféré',
+  paywallPlanLifetimeSubCopy: 'Licence à vie · Sans renouvellement',
+  paywallPlanYearlyPerMonth: 'Soit {amount} par mois',
+  paywallPlanPeriodMonth: '/mois',
+  paywallPlanPeriodYear: '/an',
+  paywallPlanPeriodLifetime: 'Paiement unique',
+  paywallStickyCtaLabel: 'Acheter',
+  paywallStickyCtaSummaryMonthly: '{price}/mois · Renouvellement automatique',
+  paywallStickyCtaSummaryYearly: '{price}/an ({perMonth}) · Renouvellement automatique',
+  paywallStickyCtaSummaryLifetime: 'Achat unique {price} · Sans renouvellement · À vie',
+
   settingsAccountProLifetimeTitle: 'Membre Pro (à vie)',
   settingsAccountProLifetimeDesc:
     'Votre licence à vie vous donne accès aux fonctions Pro pour toujours.',

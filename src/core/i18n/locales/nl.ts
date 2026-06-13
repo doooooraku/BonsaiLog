@@ -59,6 +59,23 @@ const nl: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: 'Eenmalige aankoop. Geen automatische verlenging.',
   paywallChampionBannerTitle: 'Je bent Pro-lid (Levenslang)',
   paywallChampionBannerDesc: 'Je bezit Pro al permanent, daarom worden abonnementen niet getoond.',
+
+  // --- Sess105 PR1: Paywall PlanRow rich layout (radio + sticky CTA, ClaudeDesign monetization-screens.jsx) ---
+  paywallPlanSectionLabel: 'Kies een abonnement',
+  paywallTaxNotice: 'Incl. btw · Altijd opzegbaar',
+  paywallPlanRecommendedBadge: 'Aanbevolen',
+  paywallPlanMonthlySubCopy: 'Makkelijk starten · Altijd opzegbaar',
+  paywallPlanYearlySubCopy: 'Meest gekozen',
+  paywallPlanLifetimeSubCopy: 'Levenslange licentie · Geen verlenging',
+  paywallPlanYearlyPerMonth: '{amount} per maand',
+  paywallPlanPeriodMonth: '/mnd',
+  paywallPlanPeriodYear: '/jr',
+  paywallPlanPeriodLifetime: 'eenmalig',
+  paywallStickyCtaLabel: 'Kopen',
+  paywallStickyCtaSummaryMonthly: '{price} per maand · Automatische verlenging',
+  paywallStickyCtaSummaryYearly: '{price} per jaar ({perMonth}) · Automatische verlenging',
+  paywallStickyCtaSummaryLifetime: 'Eenmalig {price} · Geen verlenging · Levenslang',
+
   settingsAccountProLifetimeTitle: 'Pro-lid (Levenslang)',
   settingsAccountProLifetimeDesc:
     'Met je levenslange licentie gebruik je alle Pro-functies voor altijd.',

@@ -58,6 +58,23 @@ const vi: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: 'Mua một lần, dùng vĩnh viễn. Không tự động gia hạn.',
   paywallChampionBannerTitle: 'Bạn là thành viên Pro (trọn đời)',
   paywallChampionBannerDesc: 'Bạn đã sở hữu Pro trọn đời nên các gói đăng ký không được hiển thị.',
+
+  // --- Sess105 PR1: Paywall PlanRow rich layout (radio + sticky CTA, ClaudeDesign monetization-screens.jsx) ---
+  paywallPlanSectionLabel: 'Chọn gói',
+  paywallTaxNotice: 'Đã gồm thuế · Hủy bất cứ lúc nào',
+  paywallPlanRecommendedBadge: 'Đề xuất',
+  paywallPlanMonthlySubCopy: 'Dễ bắt đầu · Hủy bất cứ lúc nào',
+  paywallPlanYearlySubCopy: 'Lựa chọn được ưa chuộng nhất',
+  paywallPlanLifetimeSubCopy: 'Giấy phép trọn đời · Không gia hạn',
+  paywallPlanYearlyPerMonth: '{amount}/tháng',
+  paywallPlanPeriodMonth: '/tháng',
+  paywallPlanPeriodYear: '/năm',
+  paywallPlanPeriodLifetime: 'một lần',
+  paywallStickyCtaLabel: 'Mua ngay',
+  paywallStickyCtaSummaryMonthly: '{price}/tháng · Tự động gia hạn',
+  paywallStickyCtaSummaryYearly: '{price}/năm ({perMonth}) · Tự động gia hạn',
+  paywallStickyCtaSummaryLifetime: 'Trả một lần {price} · Không gia hạn · Trọn đời',
+
   settingsAccountProLifetimeTitle: 'Thành viên Pro (trọn đời)',
   settingsAccountProLifetimeDesc:
     'Bạn được dùng các tính năng Pro vĩnh viễn với giấy phép trọn đời.',

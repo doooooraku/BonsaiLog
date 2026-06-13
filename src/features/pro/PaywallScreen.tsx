@@ -1,18 +1,12 @@
 /**
- * F-13 Phase 1b Paywall 骨組み (Issue #20、ADR-0009)。
+ * F-13 Phase 1b Paywall (Issue #20、ADR-0009 + ADR-0049 + ADR-0020 ClaudeDesign 整合)。
  *
- * Repolog 565 行版から最小骨組みに絞った実装。Phase 1c 以降で:
- * - Champion 方式 (Lifetime 所持時はサブスク非表示) ← 本 PR で実装
- * - Pro 状態 3 種表示 (Free / Pro 月年・期限まで / Pro 買切) ← 本 PR で実装
- * - Restore ボタン (Apple Review 3.1.1) ← 本 PR で実装
- * - 個別プラン CTA カード (3 種) ← 本 PR で実装
- *
- * Phase 1c 以降:
- * - 価格表示の locale 別フォーマット (年額月割「33% お得」バッジ等)
- * - 機能比較表 (写真∞ / CSV / PDF / 広告非表示 / 樹種別作業時期)
- * - Apple Review 3.1.2(c): サブスク中ユーザーの Lifetime 購入時の手動解約警告
- * - DPA リンク / Privacy Policy リンク (legalService 流用)
- * - Maestro `paywall_to_purchase.yaml`
+ * Sess105 PR1: ClaudeDesign monetization-screens.jsx 準拠で PlanCard 構造変換。
+ * - 旧: 各 plan ごとに独立 CTA ボタンの 3 並列カード
+ * - 新: radio 選択型 PlanRow × 3 + 単一 sticky CTA (画面下固定) + サブコピー + おすすめ pin
+ *       + 月割り表示 (年額のみ、 RC pricePerMonthString) + 「税込・いつでも解約」 セクション
+ * Champion / isPro 時の sticky CTA 制御 (Champion = 完全非表示、 isPro 非 lifetime = lifetime 選択時のみ enable)。
+ * 法務安全: 取消線元値 / 「33% お得」 % 表示は本 PR 不採用 (景品表示法 5 条リスク回避、 ADR/RC 設定整備後の別 PR で再検討)。
  */
 import React from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -21,11 +15,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTranslation, type TranslationKey } from '@/src/core/i18n/i18n';
-// Sess66 PR6c: theme-dependent token (BG_*/TEXT_*/BORDER_*) を inline c.* に移行 (dark cascade)。
-// Sess70 PR-C3: BRAND_GREEN / BRAND_GREEN_BG / DISABLED_BG / ON_BRAND を scheme-aware
-// (c.tint / c.tintSubtle / c.disabledBg / c.onTint) に移行 (ADR-0015/0052 Sess69 PR-A Amendment 整合)。
-// ACCENT_BARK は champion banner で利用継続 (PR-D で再検討、 ここでは static 維持)、
-// ACCENT_GOLD は Pro バッジ専用 brand-static (両 theme 同色維持)。
 import { ACCENT_BARK, ACCENT_GOLD } from '@/src/core/theme/colors';
 import { useColors } from '@/src/core/theme/useColors';
 import { LegalLinksRow } from '@/src/features/legal/LegalLinksRow';
@@ -75,6 +64,12 @@ export default function PaywallScreen() {
   const [priceDetails, setPriceDetails] = React.useState<PriceDetails | null>(null);
   const [loadingPrices, setLoadingPrices] = React.useState(true);
   const [action, setAction] = React.useState<PlanType | 'restore' | null>(null);
+  const hideSubscriptions = shouldHideSubscriptions(planType);
+  const isChampion = planType === 'lifetime';
+  // Sess105 PR1: Free → 年額デフォルト選択 (上位誘導)。 isPro 非 lifetime は lifetime のみ購入可能。
+  const [selectedPlan, setSelectedPlan] = React.useState<PlanType>(
+    hideSubscriptions ? 'lifetime' : 'yearly',
+  );
 
   React.useEffect(() => {
     void initPro();
@@ -99,8 +94,6 @@ export default function PaywallScreen() {
       mounted = false;
     };
   }, []);
-
-  const hideSubscriptions = shouldHideSubscriptions(planType);
 
   const startPurchase = React.useCallback(
     async (plan: PlanType) => {
@@ -157,6 +150,13 @@ export default function PaywallScreen() {
     return priceDetails[plan]?.priceString ?? t('priceUnavailable');
   };
 
+  // Sess105 PR1: 月割り表示 (年額のみ、 RC pricePerMonthString が null/未設定なら null を返す)
+  const yearlyPerMonthLabel = React.useMemo(() => {
+    const pm = priceDetails?.yearly?.pricePerMonthString;
+    if (!pm) return null;
+    return t('paywallPlanYearlyPerMonth').replace('{amount}', pm);
+  }, [priceDetails, t]);
+
   const proStateLabel = isPro
     ? planType === 'lifetime'
       ? t('proPlanLifetimeTitle')
@@ -165,197 +165,263 @@ export default function PaywallScreen() {
         : t('proPlanMonthlyTitle')
     : t('proPlanFreeTitle');
 
+  // Sess105 PR1: sticky CTA disabled / 表示判定。
+  // - Champion (lifetime) は完全非表示 (ScrollView 末尾の Champion banner で訴求済)
+  // - isPro 非 lifetime + selectedPlan が非 lifetime: disabled (購入済プラン再購入不可)
+  // - action 進行中: disabled
+  const stickyCtaDisabled =
+    action !== null ||
+    (isPro && selectedPlan !== 'lifetime') ||
+    (isChampion && selectedPlan === 'lifetime');
+  const showStickyCta = !isChampion;
+
+  // sticky CTA 上の動的サマリ
+  const stickySummary = React.useMemo(() => {
+    const price = priceLabel(selectedPlan);
+    if (selectedPlan === 'monthly') {
+      return t('paywallStickyCtaSummaryMonthly').replace('{price}', price);
+    }
+    if (selectedPlan === 'yearly') {
+      return t('paywallStickyCtaSummaryYearly')
+        .replace('{price}', price)
+        .replace('{perMonth}', yearlyPerMonthLabel ?? '');
+    }
+    return t('paywallStickyCtaSummaryLifetime').replace('{price}', price);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPlan, priceDetails, loadingPrices, yearlyPerMonthLabel, t]);
+
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: c.background }]} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll} testID="e2e_paywall_screen">
-        <View style={styles.header}>
+      <View style={styles.flex}>
+        <ScrollView
+          contentContainerStyle={[styles.scroll, showStickyCta && styles.scrollWithStickyCta]}
+          testID="e2e_paywall_screen"
+        >
+          <View style={styles.header}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('close')}
+              onPress={() => {
+                // fix/247: history が空 (deep link / 直接起動) でも安全に閉じる
+                if (router.canGoBack()) router.back();
+                else router.replace('/(tabs)/bonsai' as Href);
+              }}
+              testID="e2e_paywall_close"
+              hitSlop={8}
+              style={styles.headerSide}
+            >
+              <ThemedText style={[styles.closeText, { color: c.text }]}>{'×'}</ThemedText>
+            </Pressable>
+            <ThemedText style={[styles.headerTitle, { color: c.text }]}>
+              {t('paywallModalHeaderTitle')}
+            </ThemedText>
+            <View style={styles.headerSide} />
+          </View>
+
+          {/* ADR-0020 v1.x-5: Claude Design Hero (NotoSerifJP 32pt、letterSpacing 0.5) */}
+          <View style={styles.hero}>
+            <ThemedText style={[styles.heroEyebrow, { color: c.textMuted }]}>
+              {t('paywallHeroEyebrow')}
+            </ThemedText>
+            <ThemedText style={[styles.heroTitle, { color: c.text }]}>
+              {t('paywallHeroTitle')}
+            </ThemedText>
+            <ThemedText style={[styles.heroBody, { color: c.textSecondary }]}>
+              {t('paywallHeroBody')}
+            </ThemedText>
+          </View>
+
+          {isChampion ? (
+            <View
+              style={[styles.championBanner, { backgroundColor: c.tintSubtle }]}
+              testID="e2e_paywall_champion_banner"
+            >
+              <ThemedText style={styles.championBannerEmoji}>👑</ThemedText>
+              <View style={styles.championBannerTextWrap}>
+                <ThemedText type="defaultSemiBold" style={styles.championBannerTitle}>
+                  {t('paywallChampionBannerTitle')}
+                </ThemedText>
+                <ThemedText style={styles.championBannerDesc}>
+                  {t('paywallChampionBannerDesc')}
+                </ThemedText>
+              </View>
+            </View>
+          ) : (
+            <View style={[styles.statusBox, { borderColor: c.border }]}>
+              <ThemedText type="defaultSemiBold">{proStateLabel}</ThemedText>
+            </View>
+          )}
+
+          {/* ADR-0049 Sess59 PR2 + Sess81 PR-9: Pro 機能 7 項目 (写真/タグ/作業記録写真/CSV/広告/カスタム/定期予定) */}
+          <View
+            style={[styles.featureTable, { backgroundColor: c.surface, borderColor: c.border }]}
+            testID="e2e_paywall_comparison"
+          >
+            <View style={[styles.featureHeader, { borderBottomColor: c.border }]}>
+              <ThemedText style={[styles.featureHeaderLabel, { color: c.textMuted }]}>
+                {t('paywallFeatureColLabel')}
+              </ThemedText>
+              <ThemedText style={[styles.featureHeaderFree, { color: c.textMuted }]}>
+                FREE
+              </ThemedText>
+              <ThemedText style={[styles.featureHeaderPro, { color: c.tint }]}>PRO</ThemedText>
+            </View>
+            <FeatureRow
+              label={t('paywallFeaturePhoto')}
+              free={t('paywallFeaturePhotoFreeValue')}
+              pro={t('paywallFeaturePhotoProValue')}
+            />
+            <FeatureRow
+              label={t('paywallFeatureTag')}
+              free={t('paywallFeatureTagFreeValue')}
+              pro={t('paywallFeatureTagProValue')}
+            />
+            <FeatureRow
+              label={t('paywallFeatureWorkLogPhoto')}
+              free={t('paywallFeatureWorkLogPhotoFreeValue')}
+              pro={t('paywallFeatureWorkLogPhotoProValue')}
+            />
+            <FeatureRow
+              label={t('paywallFeatureCsv')}
+              free={t('paywallFeatureCsvFreeValue')}
+              pro={t('paywallFeatureCsvProValue')}
+            />
+            <FeatureRow
+              label={t('paywallFeatureNoAds')}
+              free={t('paywallFeatureNoAdsFreeValue')}
+              pro={t('paywallFeatureNoAdsProValue')}
+            />
+            <FeatureRow
+              label={t('paywallFeatureCustomSpecies')}
+              free={t('paywallFeatureCustomSpeciesFreeValue')}
+              pro={t('paywallFeatureCustomSpeciesProValue')}
+            />
+            <FeatureRow
+              label={t('paywallFeatureRecurringRule')}
+              free={t('paywallFeatureRecurringRuleFreeValue')}
+              pro={t('paywallFeatureRecurringRuleProValue')}
+            />
+          </View>
+
+          {/* Sess105 PR1: PlanRow セクション (radio + おすすめ pin + サブコピー + 月割り表示) */}
+          {!isChampion && (
+            <>
+              <View style={styles.plansHeader}>
+                <ThemedText style={[styles.plansHeaderLabel, { color: c.textMuted }]}>
+                  {t('paywallPlanSectionLabel')}
+                </ThemedText>
+                <ThemedText style={[styles.plansHeaderTax, { color: c.textSecondary }]}>
+                  {t('paywallTaxNotice')}
+                </ThemedText>
+              </View>
+
+              <View style={styles.plansList}>
+                {!hideSubscriptions && (
+                  <PlanRow
+                    testID="e2e_plan_yearly"
+                    title={t('proPlanYearlyTitle')}
+                    subCopy={t('paywallPlanYearlySubCopy')}
+                    perMonth={yearlyPerMonthLabel}
+                    price={priceLabel('yearly')}
+                    period={t('paywallPlanPeriodYear')}
+                    recommended
+                    recommendedBadgeLabel={t('paywallPlanRecommendedBadge')}
+                    selected={selectedPlan === 'yearly'}
+                    disabled={isPro || action !== null}
+                    onSelect={() => setSelectedPlan('yearly')}
+                  />
+                )}
+                {!hideSubscriptions && (
+                  <PlanRow
+                    testID="e2e_plan_monthly"
+                    title={t('proPlanMonthlyTitle')}
+                    subCopy={t('paywallPlanMonthlySubCopy')}
+                    perMonth={null}
+                    price={priceLabel('monthly')}
+                    period={t('paywallPlanPeriodMonth')}
+                    selected={selectedPlan === 'monthly'}
+                    disabled={isPro || action !== null}
+                    onSelect={() => setSelectedPlan('monthly')}
+                  />
+                )}
+                <PlanRow
+                  testID="e2e_plan_lifetime"
+                  title={t('proPlanLifetimeTitle')}
+                  subCopy={t('paywallPlanLifetimeSubCopy')}
+                  perMonth={null}
+                  price={priceLabel('lifetime')}
+                  period={t('paywallPlanPeriodLifetime')}
+                  selected={selectedPlan === 'lifetime'}
+                  disabled={action !== null}
+                  onSelect={() => setSelectedPlan('lifetime')}
+                />
+              </View>
+            </>
+          )}
+
+          {/* Apple Review 3.1.1: 「購入を復元」 は Paywall 内に表示必須 */}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('close')}
-            onPress={() => {
-              // fix/247: history が空 (deep link / 直接起動) でも安全に閉じる
-              if (router.canGoBack()) router.back();
-              else router.replace('/(tabs)/bonsai' as Href);
-            }}
-            testID="e2e_paywall_close"
+            accessibilityLabel={t('restore')}
+            testID="e2e_paywall_restore"
+            style={[styles.restoreBtn, { borderColor: c.border }]}
+            disabled={action !== null}
+            onPress={handleRestore}
             hitSlop={8}
-            style={styles.headerSide}
           >
-            <ThemedText style={[styles.closeText, { color: c.text }]}>{'×'}</ThemedText>
+            {action === 'restore' ? (
+              <ActivityIndicator />
+            ) : (
+              <ThemedText style={styles.restoreText}>{t('restore')}</ThemedText>
+            )}
           </Pressable>
-          <ThemedText style={[styles.headerTitle, { color: c.text }]}>
-            {t('paywallModalHeaderTitle')}
-          </ThemedText>
-          <View style={styles.headerSide} />
-        </View>
 
-        {/* ADR-0020 v1.x-5: Claude Design Hero (NotoSerifJP 32pt、letterSpacing 0.5) */}
-        <View style={styles.hero}>
-          <ThemedText style={[styles.heroEyebrow, { color: c.textMuted }]}>
-            {t('paywallHeroEyebrow')}
-          </ThemedText>
-          <ThemedText style={[styles.heroTitle, { color: c.text }]}>
-            {t('paywallHeroTitle')}
-          </ThemedText>
-          <ThemedText style={[styles.heroBody, { color: c.textSecondary }]}>
-            {t('paywallHeroBody')}
-          </ThemedText>
-        </View>
+          <ThemedText style={styles.finePrint}>{t('proFinePrint')}</ThemedText>
+          <ThemedText style={styles.finePrint}>{t('proLifetimeFinePrint')}</ThemedText>
 
-        {planType === 'lifetime' ? (
+          {/* Sess57: Apple Review 3.1.1 / Google Play Data Safety 整合で Paywall に
+              利用規約 + プライバシーポリシーリンクを掲載。Settings と共通の LegalLinksRow を流用。 */}
+          <View style={styles.legalLinks}>
+            <LegalLinksRow />
+          </View>
+        </ScrollView>
+
+        {/* Sess105 PR1: sticky 単一 CTA (画面下固定)。 Champion (lifetime) は完全非表示。 */}
+        {showStickyCta && (
           <View
-            style={[styles.championBanner, { backgroundColor: c.tintSubtle }]}
-            testID="e2e_paywall_champion_banner"
+            style={[
+              styles.stickyFooter,
+              { backgroundColor: c.background, borderTopColor: c.border },
+            ]}
           >
-            <ThemedText style={styles.championBannerEmoji}>👑</ThemedText>
-            <View style={styles.championBannerTextWrap}>
-              <ThemedText type="defaultSemiBold" style={styles.championBannerTitle}>
-                {t('paywallChampionBannerTitle')}
-              </ThemedText>
-              <ThemedText style={styles.championBannerDesc}>
-                {t('paywallChampionBannerDesc')}
-              </ThemedText>
-            </View>
-          </View>
-        ) : (
-          <View style={[styles.statusBox, { borderColor: c.border }]}>
-            <ThemedText type="defaultSemiBold">{proStateLabel}</ThemedText>
-          </View>
-        )}
-
-        {/* ADR-0049 Sess59 PR2: Sess58 確定 Pro 機能 6 項目に整合 (旧 BonsaiCount/History/
-            Backup/Theme は Sess58 で「全 Free」 確定のため row 削除、 新規 ①Photo + ②Tag +
-            ③WorkLogPhoto + ⑥CustomSpecies の 4 行追加)。 */}
-        <View
-          style={[styles.featureTable, { backgroundColor: c.surface, borderColor: c.border }]}
-          testID="e2e_paywall_comparison"
-        >
-          <View style={[styles.featureHeader, { borderBottomColor: c.border }]}>
-            <ThemedText style={[styles.featureHeaderLabel, { color: c.textMuted }]}>
-              {t('paywallFeatureColLabel')}
+            <ThemedText style={[styles.stickySummary, { color: c.textMuted }]} numberOfLines={1}>
+              {stickySummary}
             </ThemedText>
-            <ThemedText style={[styles.featureHeaderFree, { color: c.textMuted }]}>FREE</ThemedText>
-            <ThemedText style={[styles.featureHeaderPro, { color: c.tint }]}>PRO</ThemedText>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('paywallStickyCtaLabel')}
+              testID="e2e_paywall_sticky_cta"
+              style={[
+                styles.stickyCta,
+                { backgroundColor: stickyCtaDisabled ? c.disabledBg : c.tint },
+              ]}
+              disabled={stickyCtaDisabled}
+              onPress={() => handlePurchase(selectedPlan)}
+            >
+              {action === selectedPlan ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <ThemedText style={[styles.stickyCtaText, { color: c.onTint }]}>
+                  {t('paywallStickyCtaLabel')}
+                </ThemedText>
+              )}
+            </Pressable>
           </View>
-          {/* ① 基本情報 写真 (ADR-0049、 PR3 で実装) */}
-          <FeatureRow
-            label={t('paywallFeaturePhoto')}
-            free={t('paywallFeaturePhotoFreeValue')}
-            pro={t('paywallFeaturePhotoProValue')}
-          />
-          {/* ② タグ作成 (rename は無制限、 ADR-0049、 PR4 で実装) */}
-          <FeatureRow
-            label={t('paywallFeatureTag')}
-            free={t('paywallFeatureTagFreeValue')}
-            pro={t('paywallFeatureTagProValue')}
-          />
-          {/* ③ 作業記録 写真 (表示は全 Free、 ADR-0049、 PR3 で実装) */}
-          <FeatureRow
-            label={t('paywallFeatureWorkLogPhoto')}
-            free={t('paywallFeatureWorkLogPhotoFreeValue')}
-            pro={t('paywallFeatureWorkLogPhotoProValue')}
-          />
-          {/* ④ CSV/PDF エクスポート (既存実装済、 csvExport.ts L8 で Pro guard) */}
-          {/* Sess60 PR2: literal "—" "◎" を i18n key に置換 (値表記統一) */}
-          <FeatureRow
-            label={t('paywallFeatureCsv')}
-            free={t('paywallFeatureCsvFreeValue')}
-            pro={t('paywallFeatureCsvProValue')}
-          />
-          {/* ⑤ 広告非表示 (既存実装済、 adService.ts L170-174 で isPro 判定) */}
-          <FeatureRow
-            label={t('paywallFeatureNoAds')}
-            free={t('paywallFeatureNoAdsFreeValue')}
-            pro={t('paywallFeatureNoAdsProValue')}
-          />
-          {/* ⑥ カスタム樹種・樹形 (マスタ 5 + カスタム 3、 ADR-0049、 PR5 で実装) */}
-          <FeatureRow
-            label={t('paywallFeatureCustomSpecies')}
-            free={t('paywallFeatureCustomSpeciesFreeValue')}
-            pro={t('paywallFeatureCustomSpeciesProValue')}
-          />
-          {/* ⑦ 定期予定 (Free 3 件 / Pro 無制限、 Sess81 PR-9、 ADR-0056 D7) */}
-          <FeatureRow
-            label={t('paywallFeatureRecurringRule')}
-            free={t('paywallFeatureRecurringRuleFreeValue')}
-            pro={t('paywallFeatureRecurringRuleProValue')}
-          />
-        </View>
-
-        {!hideSubscriptions && (
-          <PlanCard
-            testID="e2e_plan_monthly"
-            title={t('proPlanMonthlyTitle')}
-            price={priceLabel('monthly')}
-            cta={t('proCtaMonthly')}
-            busy={action === 'monthly'}
-            disabled={isPro || action !== null}
-            onPress={() => handlePurchase('monthly')}
-          />
         )}
-
-        {!hideSubscriptions && (
-          <PlanCard
-            testID="e2e_plan_yearly"
-            title={t('proPlanYearlyTitle')}
-            badge={t('proPlanYearlyBadge')}
-            price={priceLabel('yearly')}
-            cta={t('proCtaYearly')}
-            busy={action === 'yearly'}
-            disabled={isPro || action !== null}
-            onPress={() => handlePurchase('yearly')}
-          />
-        )}
-
-        <PlanCard
-          testID="e2e_plan_lifetime"
-          title={t('proPlanLifetimeTitle')}
-          badge={t('proPlanLifetimeBadge')}
-          price={priceLabel('lifetime')}
-          cta={t('proCtaLifetime')}
-          busy={action === 'lifetime'}
-          disabled={planType === 'lifetime' || action !== null}
-          onPress={() => handlePurchase('lifetime')}
-        />
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('restore')}
-          testID="e2e_paywall_restore"
-          style={[styles.restoreBtn, { borderColor: c.border }]}
-          disabled={action !== null}
-          onPress={handleRestore}
-        >
-          {action === 'restore' ? (
-            <ActivityIndicator />
-          ) : (
-            <ThemedText style={styles.restoreText}>{t('restore')}</ThemedText>
-          )}
-        </Pressable>
-
-        <ThemedText style={styles.finePrint}>{t('proFinePrint')}</ThemedText>
-        <ThemedText style={styles.finePrint}>{t('proLifetimeFinePrint')}</ThemedText>
-
-        {/* Sess57: Apple Review 3.1.1 / Google Play Data Safety 整合で Paywall に
-            利用規約 + プライバシーポリシーリンクを掲載。Settings と共通の LegalLinksRow を流用。 */}
-        <View style={styles.legalLinks}>
-          <LegalLinksRow />
-        </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
-
-type PlanCardProps = {
-  testID: string;
-  title: string;
-  badge?: string;
-  price: string;
-  cta: string;
-  busy: boolean;
-  disabled: boolean;
-  onPress: () => void;
-};
 
 function FeatureRow({
   label,
@@ -382,36 +448,89 @@ function FeatureRow({
   );
 }
 
-function PlanCard({ testID, title, badge, price, cta, busy, disabled, onPress }: PlanCardProps) {
+type PlanRowProps = {
+  testID: string;
+  title: string;
+  subCopy: string;
+  perMonth: string | null;
+  price: string;
+  period: string;
+  recommended?: boolean;
+  recommendedBadgeLabel?: string;
+  selected: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+};
+
+function PlanRow({
+  testID,
+  title,
+  subCopy,
+  perMonth,
+  price,
+  period,
+  recommended = false,
+  recommendedBadgeLabel,
+  selected,
+  disabled,
+  onSelect,
+}: PlanRowProps) {
   const c = useColors();
   return (
-    <View style={[styles.card, { borderColor: c.border }]} testID={testID}>
-      <View style={styles.cardHeader}>
-        <ThemedText type="defaultSemiBold">{title}</ThemedText>
-        {badge && <ThemedText style={styles.badge}>{badge}</ThemedText>}
+    <Pressable
+      testID={testID}
+      accessibilityRole="radio"
+      accessibilityState={{ selected, disabled }}
+      accessibilityLabel={title}
+      onPress={disabled ? undefined : onSelect}
+      style={[
+        styles.planRow,
+        {
+          backgroundColor: selected ? c.tintSubtle : c.surface,
+          borderColor: selected ? c.tint : c.border,
+          borderWidth: selected ? 2 : 1,
+          opacity: disabled ? 0.5 : 1,
+        },
+        recommended && styles.planRowRecommendedSpacing,
+      ]}
+    >
+      {recommended && recommendedBadgeLabel && (
+        <View style={[styles.recommendedPin, { backgroundColor: c.tint }]}>
+          <View style={[styles.recommendedDot, { backgroundColor: ACCENT_GOLD }]} />
+          <ThemedText style={[styles.recommendedPinText, { color: c.onTint }]}>
+            {recommendedBadgeLabel}
+          </ThemedText>
+        </View>
+      )}
+      <View style={[styles.radio, { borderColor: selected ? c.tint : c.border }]}>
+        {selected && <View style={[styles.radioDot, { backgroundColor: c.tint }]} />}
       </View>
-      <ThemedText style={styles.price}>{price}</ThemedText>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={cta}
-        style={[styles.cta, { backgroundColor: disabled ? c.disabledBg : c.tint }]}
-        disabled={disabled}
-        onPress={onPress}
-      >
-        {busy ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <ThemedText style={[styles.ctaText, { color: c.onTint }]}>{cta}</ThemedText>
+      <View style={styles.planMiddle}>
+        <ThemedText type="defaultSemiBold" style={[styles.planTitle, { color: c.text }]}>
+          {title}
+        </ThemedText>
+        <ThemedText style={[styles.planSubCopy, { color: c.textSecondary }]}>{subCopy}</ThemedText>
+        {perMonth && (
+          <ThemedText style={[styles.planPerMonth, { color: c.textMuted }]}>{perMonth}</ThemedText>
         )}
-      </Pressable>
-    </View>
+      </View>
+      <View style={styles.planRight}>
+        <View style={styles.planPriceRow}>
+          <ThemedText style={[styles.planPrice, { color: selected ? c.tint : c.text }]}>
+            {price}
+          </ThemedText>
+          <ThemedText style={[styles.planPeriod, { color: c.textSecondary }]}>{period}</ThemedText>
+        </View>
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  // Sess66 PR6c: 全 theme-dependent 色を inline c.* に (dark cascade)。
   safe: { flex: 1 },
+  flex: { flex: 1 },
   scroll: { padding: 16, gap: 16 },
+  scrollWithStickyCta: { paddingBottom: 140 },
   header: { flexDirection: 'row', alignItems: 'center', paddingTop: 4 },
   headerSide: { width: 48, alignItems: 'flex-start', justifyContent: 'center' },
   closeText: { fontSize: 28, paddingHorizontal: 8 },
@@ -459,7 +578,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     ...featureTableHeaderValue,
   },
-  // Sess70 PR-C3: color は inline c.tint (scheme-aware)。
   featureHeaderPro: {
     width: 64,
     textAlign: 'center',
@@ -474,7 +592,6 @@ const styles = StyleSheet.create({
   featureLabel: { flex: 1, fontSize: 14 },
   featureLabelHighlight: { fontWeight: '500' },
   featureFree: { width: 64, textAlign: 'center', fontSize: 13 },
-  // Sess70 PR-C3: color は inline c.tint (scheme-aware)。
   featurePro: {
     width: 64,
     textAlign: 'center',
@@ -487,7 +604,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
   },
-  // Sess70 PR-C3: bg は inline c.tintSubtle (scheme-aware)、 ACCENT_GOLD border は static 維持。
   championBanner: {
     padding: 16,
     borderRadius: 12,
@@ -501,34 +617,77 @@ const styles = StyleSheet.create({
   championBannerTextWrap: { flex: 1, gap: 4 },
   championBannerTitle: { fontSize: 16, color: ACCENT_BARK },
   championBannerDesc: { fontSize: 13, color: ACCENT_BARK, lineHeight: 18 },
-  card: {
+  // Sess105 PR1: Plan section header (label + tax notice)
+  plansHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+    marginTop: 4,
+    marginBottom: -4,
+  },
+  plansHeaderLabel: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+  },
+  plansHeaderTax: { fontSize: 12 },
+  plansList: { gap: 10 },
+  // Sess105 PR1: PlanRow (radio + middle + price right)
+  planRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
     padding: 16,
     borderRadius: 12,
-    borderWidth: 1,
-    gap: 12,
+    position: 'relative',
+    minHeight: 88,
   },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  // pill 999 → 8 (design_system.md §5)、accent-gold で Pro 推奨マーク。
-  // Sess70 PR-C3: ACCENT_GOLD bg + 白文字は両 theme 同色 (Pro バッジ仕様、 ADR-0015 Allowed)、
-  // PR-D で hex literal rule 例外 marker 規約化予定。
-  badge: {
-    fontSize: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+  // pin (top: -10, height ≈22) が中身に重ならないよう paddingTop で content を下げる
+  planRowRecommendedSpacing: { marginTop: 14, paddingTop: 26 },
+  recommendedPin: {
+    position: 'absolute',
+    top: -10,
+    left: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
     borderRadius: 8,
-    backgroundColor: ACCENT_GOLD,
-    color: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
-  price: { fontSize: 20, fontWeight: '600' },
-  // Sess70 PR-C3: bg / color は inline c.tint / c.disabledBg / c.onTint (scheme-aware)。
-  cta: {
-    paddingVertical: 14,
-    minHeight: 56,
-    borderRadius: 12,
+  recommendedDot: { width: 4, height: 4, borderRadius: 2 },
+  recommendedPinText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    letterSpacing: 1.6,
+    textTransform: 'uppercase',
+    fontWeight: '500',
+  },
+  radio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ctaText: { fontWeight: '600' },
+  radioDot: { width: 11, height: 11, borderRadius: 6 },
+  planMiddle: { flex: 1, minWidth: 0, gap: 4 },
+  planTitle: { fontSize: 16 },
+  planSubCopy: { fontSize: 12, lineHeight: 17 },
+  planPerMonth: { fontSize: 11, marginTop: 1 },
+  planRight: { alignItems: 'flex-end' },
+  planPriceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
+  planPrice: {
+    fontFamily: SERIF_FAMILY,
+    fontSize: 24,
+    fontWeight: '500',
+    letterSpacing: 0.2,
+  },
+  planPeriod: { fontSize: 12 },
+  // Sess105 PR1: Restore (Apple Review 3.1.1)
   restoreBtn: {
     paddingVertical: 14,
     minHeight: 48,
@@ -540,4 +699,28 @@ const styles = StyleSheet.create({
   restoreText: { fontSize: 14 },
   finePrint: { fontSize: 11, opacity: 0.65, lineHeight: 16 },
   legalLinks: { marginTop: 16 },
+  // Sess105 PR1: sticky CTA footer (画面下固定)
+  stickyFooter: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 24,
+    borderTopWidth: 1,
+    gap: 8,
+  },
+  stickySummary: {
+    fontSize: 11,
+    textAlign: 'center',
+    letterSpacing: 0.2,
+  },
+  stickyCta: {
+    height: 56,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stickyCtaText: { fontSize: 17, fontWeight: '600', letterSpacing: 0.6 },
 });

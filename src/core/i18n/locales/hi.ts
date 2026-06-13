@@ -59,6 +59,22 @@ const hi: Partial<Record<TranslationKey, string>> = {
   proLifetimeFinePrint: 'एकमुश्त खरीद। कोई स्वत: नवीकरण नहीं।',
   paywallChampionBannerTitle: 'आप Pro सदस्य (आजीवन) हैं',
   paywallChampionBannerDesc: 'आपके पास आजीवन Pro है, इसलिए सदस्यता प्लान नहीं दिखाए जाते।',
+
+  // --- Sess105 PR1: Paywall PlanRow rich layout (radio + sticky CTA, ClaudeDesign monetization-screens.jsx) ---
+  paywallPlanSectionLabel: 'प्लान चुनें',
+  paywallTaxNotice: 'कर सहित · कभी भी रद्द करें',
+  paywallPlanRecommendedBadge: 'अनुशंसित',
+  paywallPlanMonthlySubCopy: 'आसानी से शुरू करें · कभी भी रद्द करें',
+  paywallPlanYearlySubCopy: 'सबसे लोकप्रिय विकल्प',
+  paywallPlanLifetimeSubCopy: 'आजीवन लाइसेंस · कोई नवीकरण नहीं',
+  paywallPlanYearlyPerMonth: 'प्रति माह {amount}',
+  paywallPlanPeriodMonth: '/माह',
+  paywallPlanPeriodYear: '/वर्ष',
+  paywallPlanPeriodLifetime: 'एकमुश्त',
+  paywallStickyCtaLabel: 'खरीदें',
+  paywallStickyCtaSummaryMonthly: 'मासिक {price} · स्वत: नवीकरण',
+  paywallStickyCtaSummaryYearly: 'वार्षिक {price} ({perMonth}) · स्वत: नवीकरण',
+  paywallStickyCtaSummaryLifetime: 'एकमुश्त खरीद {price} · कोई नवीकरण नहीं · आजीवन',
   settingsAccountProLifetimeTitle: 'Pro सदस्य (आजीवन)',
   settingsAccountProLifetimeDesc: 'आजीवन लाइसेंस के साथ Pro सुविधाएँ हमेशा के लिए आपकी हैं।',
 
