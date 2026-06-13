@@ -392,3 +392,70 @@ v1.0 リリース後 3 ヶ月で以下を計測:
 - [ ] Privacy Policy で AdMob と Google を第三者として明示 + データ保護同等性宣言
 - [ ] X ボタン 48dp 以上、誤タップ防止 5 項目すべて実装
 - [ ] パーソナライズ広告は ATT 同意時のみ、ATT 拒否時は NPA 配信
+
+### Sess106 Amendment (2026-06-13): 表示遅延 4 点修正 + 3 タブ展開
+
+**ユーザー苦情** (Sess106 /discuss): (a) Home 画面に切り替えた時、下部バナーの表示が若干遅い (b) 広告を 9 画面に追加したい。
+
+#### Amendment §22 採用 (追加): 表示遅延 4 点修正 (PR-2 = Issue #1247)
+
+PR-1 (二重 mount 統合) は本 Amendment で **PR-2 に統合**。修正4 のコード重複削除は PR-2 内で実施。
+
+1. **修正1: minHeight + bg.secondary プレースホルダ** (CLS 解消)
+   - container に `minHeight: 98` 予約 + `bg.secondary` 和紙色プレースホルダ
+   - 広告ロード前後で layout shift ゼロ、「下からニュッ」体感の構造解消
+2. **修正2: useForeground hook** (ADR-0010 §58 既要件の実装漏れ解消)
+   - iOS バックグラウンド復帰時、60 秒以内なら再 load 抑制
+   - Android は no-op
+   - WKWebView suspended state による空バナー問題解消
+3. **修正3: useRef アプリ起動時刻基準** (3 秒遅延の再 mount 耐性化)
+   - `STARTUP_DELAY_MS = 3000` を mount 時刻基準 → `appLaunchedAt` ref 基準に変更
+   - empty → list 遷移 / タブ切替 / 詳細画面遷移などの再 mount で 3 秒タイマー再カウントなし
+   - 初回 mount のみ最大 3 秒待機、以降は経過時間が 3 秒超なら即時表示
+4. **修正4: AdBanner 二重 mount 削除** (= PR-1 由来、PR-2 で吸収)
+   - `app/(tabs)/bonsai/index.tsx` L268 (empty) と L319 (list) の重複コード整理
+   - empty/list 両状態で広告表示は維持 (= Day1 Pro 誘導哲学整合、Sess106 Q user 確定)
+
+#### Amendment §80 D1 scope 拡張: AdBanner 3 タブ展開 (PR-7/8 = Issue #1252/#1253)
+
+ADR-0010 §80 D1 「Home tabBar 上のみ」を以下に拡張:
+
+- **PR-7 (段階 1)**: bonsai (Home) + plan (予定) + record (記録) の **3 タブ展開** (Sess106 Q3 user 確定)
+- **PR-8 (段階 2、条件付き)**: look-back hub への展開 = AdMob policy 一次調査結果に基づき判断
+- 配置: 各 tab の ScrollView 外、BottomCtaBar の下 (R-62 Layout Contract 準守、Z-order = BottomCtaBar > AdBanner > TabBar)
+- guide spotlight 測定 wrapper の **外** に配置 (onboarding 干渉防止、CalendarTabScreen 既存 g2/g3 guide 整合)
+- Pro 即 unmount は全 3 タブ横断で保証 (useProStore Zustand reactive)
+
+#### AdMob content:ad ratio policy 一次調査結果
+
+WebFetch で Google AdMob 公式 docs を一次確認:
+
+- [Discouraged banner implementations](https://support.google.com/admob/answer/6275345)
+- [AdSense ad placement policies](https://support.google.com/adsense/answer/1346295)
+
+**結論**: 明示的な数値基準 (例: content ≥70% / ads ≤30%) は **公式 docs に存在しない**。policy は「広告がコンテンツより目立つ実装は不可」「偶発的クリックの回避」 という **原則ベース**。
+
+**look-back hub への展開判断**:
+
+- look-back hub = 7 cards × 約 76px + padding 136px = 約 748px (内 banner 90px)
+- ratio = 約 8.3:1 (= content 89% : ad 11%) → 明示的違反なし
+- ただし AdMob 担当者主観での invalid traffic 認定リスクは残る (グレーゾーン)
+- **PR-8 で test unit ID で実機表示 → 配信制限警告なし** を確認後に本番 unit ID 切替
+- 警告メール受信時は ADR-0010 Notes 追記して look-back を scope から除外、PR-8 doc-only 縮退
+
+#### Amendment Follow-ups
+
+- [ ] PR-2 (Issue #1247) 実装後、本 §22 Amendment と実装の 1:1 整合確認
+- [ ] PR-7 (Issue #1252) で各 tab AdBanner 配置を R-62 Layout Contract 準守で実装
+- [ ] PR-8 (Issue #1253) で AdMob policy 警告受信状況に応じて look-back 展開可否判断
+- [ ] functional_spec §19.3.4-19.3.5 に修正 1-4 の実装詳細を Sess106 sprint Phase 1 (PR-3 = Issue #1248) で同期
+- [ ] constraints §2-3 に「AdBanner プレースホルダ + useForeground 60 秒判定 + 3 タブ展開」を Sess106 sprint Phase 1 で追記
+
+#### 関連: Sess106 sprint 11 PR
+
+詳細は [milestone #1 "Sess106 — AdMob/Pro 改善 sprint"](https://github.com/doooooraku/BonsaiLog/milestone/1) 参照。本 ADR Amendment が前提となる主要 PR:
+
+- PR-2 (Issue #1247): 表示遅延 4 点修正 (修正 1-4 集約)
+- PR-3 (Issue #1248): functional_spec / constraints 同期 (本 Amendment の doc 化)
+- PR-7 (Issue #1252): 3 タブ展開 段階 1
+- PR-8 (Issue #1253): look-back hub 展開 (条件付き)
