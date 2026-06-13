@@ -16,13 +16,13 @@ permissions:
 jobs:
   build-and-submit:
     name: Build & Submit IPA
-    # macos-14 に pin (default Xcode 15.4 = Swift 5)。
-    # Expo SDK 55 + Xcode 16 (= macos-15 default) の Swift 6 strict concurrency バグ
-    # (expo/expo#42525, AnyExpoSwiftUIHostingView updateProps actor-isolated error) を
-    # 構造的に回避。Expo SDK 56+ で fix されたら macos-15 + Xcode 16 へ昇格検討。
-    # 月 1 回、image bump 時に Claude が macos-15 へ移行可否を再確認。
-    runs-on: macos-14
-    timeout-minutes: 90
+    # 道 A (Sess107 + ADR-0050 Sess107 Amendment): ubuntu-latest + EAS Cloud Build。
+    # Expo SDK 56 が要求する Xcode 26.4 は GitHub Actions の macOS runner では未提供 (= macos-14/15 は Xcode 16 max)。
+    # EAS Cloud は Xcode 26.4 保有しているので、 build を Expo サーバーに委譲。 GitHub Actions runner は
+    # 指示を出すだけなので Linux で OK (= macOS minute 課金ゼロ、 Public repo は完全無料)。
+    # EAS Free 月 30 ビルド上限あり、 実 release 月 5-10 回想定で許容、 超過時は Expo Pro 検討。
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
@@ -113,11 +113,13 @@ jobs:
         run: pnpm expo install --check
         continue-on-error: true
 
-      - name: Build iOS IPA (eas build --local on macos-15)
-        # --local = EAS Cloud quota を消費しない (公式: https://docs.expo.dev/build-reference/local-builds/)。
-        # macos-15 runner 上の Xcode で archive、IPA 出力。EAS Free 月 30 回上限の影響なし。
+      - name: Build iOS IPA + Submit (eas build --auto-submit on EAS Cloud)
+        # 道 A: ubuntu runner から EAS Cloud で build → 終了後に自動 submit。
+        # EAS Cloud は Xcode 26.4 保有 (Expo SDK 56 公式対応)、 Linux runner で OK。
         # credentials は EAS サーバー側で管理 (Distribution Cert + Provisioning Profile を自動 fetch)。
-        # 初回 build 時は ASC API Key で Apple Developer Portal から BonsaiLog 専用 Provisioning Profile を自動生成。
+        # --auto-submit: build success → 自動で eas.json submit.production.ios プロファイルで TestFlight 送信。
+        # ASC API Key 経由なので Apple ID + 2FA 不要、 完全自動。
+        # Privacy Manifest 検証は app.config.ts ios.privacyManifests を信頼 (= EAS Cloud で IPA 直接展開できないため)。
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           EXPO_APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
@@ -125,30 +127,7 @@ jobs:
           EXPO_ASC_API_KEY_PATH: ${{ github.workspace }}/secrets/AuthKey.p8
           EXPO_ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
-        run: |
-          mkdir -p dist
-          eas build --platform ios --profile production --local --non-interactive --output=dist/app.ipa
-
-      - name: Verify Privacy Manifest inclusion
-        # ADR-0017 §⑤ Privacy Manifest (PrivacyInfo.xcprivacy) が IPA に同梱されているか
-        # 構造的に検証。欠落だと Apple 審査時に「Missing Privacy Manifest」 警告。
-        # 自分宣言 (アプリ側) + SDK 同梱 (AdMob/UMP) の最低 2 つを期待。
-        run: |
-          MANIFEST_COUNT=$(unzip -l dist/app.ipa | grep -c "PrivacyInfo.xcprivacy" || true)
-          echo "PrivacyInfo.xcprivacy 同梱数: $MANIFEST_COUNT"
-          if [ "$MANIFEST_COUNT" -lt 1 ]; then
-            echo "::error::Privacy Manifest が IPA に含まれていません。app.config.ts の ios.privacyManifests を確認 (ADR-0017 §⑤)"
-            exit 1
-          fi
-          echo "OK: Privacy Manifest 同梱確認"
-
-      - name: Submit to TestFlight (--wait)
-        # --no-wait でなく --wait に変更 (Repolog テンプレからの改善)。
-        # submit ジョブ完了まで watch することで、submit 失敗を即時検知。
-        # ASC API Key 経由なので Apple ID + 2FA 不要、完全自動。
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: eas submit --platform ios --path dist/app.ipa --profile production --non-interactive --wait
+        run: eas build --platform ios --profile production --non-interactive --auto-submit
 
       - name: Cleanup ASC API Key
         # 後始末: .p8 を runner 上から削除 (runner は ephemeral だが念のため)
@@ -159,36 +138,24 @@ jobs:
             echo "ASC API Key 削除済"
           fi
 
-      - name: Upload IPA artifact (失敗時のみ、debug 用)
-        # 案 B 改善: 成功時は TestFlight が永続保持するので artifact 不要。
-        # 失敗時のみ debug 用に保管 (200MB × 7 日)。
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: BonsaiLog-iOS-IPA-${{ github.run_id }}
-          path: dist/app.ipa
-          retention-days: 7
-          if-no-files-found: warn
-
       - name: Post build summary
         if: success()
         run: |
           {
-            echo "## iOS Build & Submit Successful (案 B: macos-15 + --local)"
+            echo "## iOS Build & Submit Successful (道 A: ubuntu + EAS Cloud --auto-submit)"
             echo ""
-            echo "- **IPA**: dist/app.ipa"
+            echo "- **Build**: EAS Cloud で IPA 生成 (Xcode 26.4)"
             echo "- **Profile**: production"
             echo "- **Bundle ID**: ${{ vars.IOS_BUNDLE_IDENTIFIER }}"
             echo "- **ASC App ID**: 6763495229"
-            echo "- **Submitted to**: TestFlight (--wait で完了確認済)"
+            echo "- **Submitted to**: TestFlight (--auto-submit で build success 後自動)"
             echo ""
             echo "### Phase 結果"
             echo "- ✅ AdMob banner ID stage gate"
             echo "- ✅ pnpm verify (lint + type-check + test)"
             echo "- ✅ Expo SDK alignment (continue-on-error)"
-            echo "- ✅ EAS build --local (Cloud quota 消費 0)"
-            echo "- ✅ Privacy Manifest 同梱検証"
-            echo "- ✅ EAS submit --wait (TestFlight processing 開始確認済)"
+            echo "- ✅ EAS build (Cloud、 Xcode 26.4 + Provisioning Profile 自動取得)"
+            echo "- ✅ EAS submit --auto-submit (TestFlight processing 開始)"
             echo ""
             echo "### 次にやること"
             echo "1. App Store Connect → TestFlight → BonsaiLog → 新しい build (processing 完了まで 10-15 分)"

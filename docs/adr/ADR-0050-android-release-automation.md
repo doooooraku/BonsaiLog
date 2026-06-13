@@ -467,6 +467,33 @@ Sess102 の vc14 release 実走 (GitHub Actions run 27353729812) で cloud workf
 - [ ] **本 PR #1269 は保留中** (= SDK 56 アップグレード PR が main に入った後に rebase + 再試走 + merge)
 - [ ] Sess107 開始時に user に「PR #1269 が保留中であり、SDK 56 アップグレード後に再開」 を冒頭で確認
 
+---
+
+## Sess107 Amendment (2026-06-13): SDK 56 アップグレード後の 道 A 切替
+
+### 経緯
+
+Sess107 で Expo SDK 55 → 56 アップグレード (PR #1270、 ADR-0062) を main merge 後、 PR #1269 を rebase + **道 A (= `ubuntu-latest` + EAS Cloud Build)** に切替。 SDK 56 でも Xcode 26.4 必須は変わらず、 GitHub Actions の macOS runner は Xcode 16 max なので、 案 B (= `eas build --local`) は物理的に不可能と再確定。
+
+### Decision (Sess107)
+
+1. **`runs-on: macos-14` → `runs-on: ubuntu-latest`** (= Linux runner、 Public repo 完全無料)
+2. **`eas build --platform ios --profile production --local --non-interactive --output=dist/app.ipa` → `eas build --platform ios --profile production --non-interactive --auto-submit`**:
+   - `--local` 削除 (= EAS Cloud で build = Xcode 26.4 で SDK 56 native compile 可能)
+   - `--auto-submit` 追加 (= build success 後に eas.json submit.production.ios プロファイルで自動 TestFlight 送信)
+   - `--output` 削除 (= EAS Cloud は artifact を Expo サーバーに永続保持)
+3. **Privacy Manifest 検証 step 削除** (= EAS Cloud build では runner 上に IPA が無いため `unzip -l` 不可。 `app.config.ts` `ios.privacyManifests` 配列を信頼)
+4. **Upload IPA artifact step 削除** (= EAS Cloud は build artifact 永続保持)
+5. **timeout-minutes: 90 → 60** (= EAS Cloud 経由なので runner 時間短縮)
+6. **`/release-ios` Skill を Sess107 道 A 用に書換**
+7. **EAS Free 月 30 ビルド上限の運用**: 実 release 月 5-10 回想定で許容、 PoC 多発時は Expo Pro $19/月 検討
+
+### Sess107 試走 + merge
+
+- `gh workflow run build-ios-testflight.yml --ref feat/release-ios-cloud-first` で試走
+- EAS Cloud build 25-40 分 + auto-submit 5-10 分 + ASC API processing 10-15 分 = 約 40-65 分
+- ASC API で `processingState=VALID` 到達確認後、 PR #1269 を merge
+
 ### Acceptance
 
 - [ ] `eas.json` `submit.production.ios` 4 フィールド配線

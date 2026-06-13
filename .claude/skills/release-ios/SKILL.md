@@ -1,21 +1,22 @@
 ---
 name: release-ios
-description: BonsaiLog iOS TestFlight 配信用 IPA ビルド + ASC への TestFlight 自動 Submit (案 B = macos-15 + eas build --local、EAS Free 月 30 回上限を回避、user 手作業 0)。ADR-0050 Sess106 Amendment 準拠。
+description: BonsaiLog iOS TestFlight 配信用 IPA ビルド + ASC への TestFlight 自動 Submit (道 A = ubuntu + EAS Cloud --auto-submit、Xcode 26.4 は EAS サーバー保有、user 手作業 0)。ADR-0050 Sess107 Amendment 準拠。
 user-invocable: true
 argument-hint: '[--skip-verify / --skip-watch]'
 ---
 
-# /release-ios — iOS TestFlight 自動 Submit (Sess106 Amendment 版)
+# /release-ios — iOS TestFlight 自動 Submit (Sess107 Amendment 版、 道 A 採用)
 
-ユーザーが「iOS リリース」「TestFlight に上げて」「App Store Connect にビルド送って」 と言ったらこの手順に従う。 ADR-0050 Sess106 Amendment 準拠 (案 B: macos-15 + `eas build --local`)。
+ユーザーが「iOS リリース」「TestFlight に上げて」「App Store Connect にビルド送って」 と言ったらこの手順に従う。 ADR-0050 Sess107 Amendment 準拠 (道 A: `ubuntu-latest` + `eas build --auto-submit` on EAS Cloud)。
 
-## 重要方針 (Sess106 Amendment で確立)
+## 重要方針 (Sess107 Amendment で確立)
 
-- **IPA build は必ず GitHub Actions の `macos-15` runner で実行** (= cloud-first、ローカル WSL2 では Mac 不在のため build 不可)。
-- **`eas build --local` で EAS Cloud quota を消費しない** (公式明記、PoC で何度試しても無料)。
-- **credentials は EAS サーバー側管理** (ASC API Key 経由で初回自動取得、年次更新も自動、user 手作業 0)。
-- **Public repo なので macOS runner 無料**、minute 制限の影響なし。
-- 緊急時 (= GitHub Actions 障害 / gh CLI 不通) はローカル mac 環境がある場合のみ fallback、無ければ user 待機。
+- **IPA build は EAS Cloud で実行** (= Expo サーバー側で Xcode 26.4 保有、 Expo SDK 56 公式対応)。
+- **GitHub Actions runner は `ubuntu-latest`** (= 指示を出すだけ、 Public repo は完全無料)。 macos runner + `--local` は **不可** (= Xcode 26 不在、 Sess106 5 試走で実証、 ADR-0050 Sess106 Amendment 参照)。
+- **`--auto-submit` で build success → 自動で TestFlight 送信** (eas.json `submit.production.ios` プロファイル経由)。
+- **credentials は EAS サーバー側管理** (ASC API Key 経由で初回自動取得、 年次更新も自動、 user 手作業 0)。
+- **EAS Free 月 30 ビルド上限** (= 実 release 月 5-10 回想定で許容、 超過時は Expo Pro $19/月 検討)。
+- 緊急時 (= EAS Cloud 障害) は Mac 環境がある場合のみローカル `eas build --local` fallback、 無ければ user 待機。
 
 ## 起動条件
 
