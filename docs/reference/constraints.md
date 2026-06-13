@@ -117,10 +117,16 @@ Pro 機能 **7 項目**の境界 SoT は **[ADR-0049](../adr/ADR-0049-pro-featur
 
 - 開発中は **テスト広告**を使う（本番広告を開発で表示しない）
 - 本番の広告ユニット ID は **ソースへ直書きしない**（ビルド設定 / Secrets / 環境注入）
-- バナーは **アダプティブバナー**（固定サイズ禁止）
+- バナーは **アダプティブバナー**（固定サイズ禁止、 INLINE_ADAPTIVE_BANNER + maxHeight=90、 ADR-0020 Phase 9）
 - 広告周囲に **16dp 以上の余白**、X ボタンは **48dp 以上**のタッチ領域
 - センシティブ広告カテゴリは **全拒否**
 - UMP（同意取得）を実装する（GDPR / CCPA 対応）
+- ATT 実装方針は **ADR-0017** (Sess106 Amendment 反映)
+- **AdBanner プレースホルダ**: minHeight=98 + bg.secondary 和紙派生背景色で **CLS=0 保証** (Sess106 PR-2、 ADR-0010 Sess106 Amendment §22 修正1)
+- **iOS バックグラウンド復帰判定**: useForeground hook で 60 秒以内は再 load 抑制、 60 秒超は自動再 load (Sess106 PR-2 修正2、 ADR-0010 §58)
+- **3 秒遅延の SoT**: アプリ起動時刻基準 (`APP_LAUNCH_TIME_MS = Date.now()` モジュールスコープ定数)、 再 mount でタイマー再カウントしない (Sess106 PR-2 修正3)
+- **配置範囲**: bonsai (Home) + plan (予定) + record (記録) の 3 タブ、 look-back hub は条件付き (Sess106 PR-7/8、 ADR-0010 §80 Amendment)
+- 広告 ID (IDFA / GAID) は **Free + ATT 許可時のみ**取得 (PII ではない、 AdMob 配信用、 §1-3 例外)
 
 ---
 

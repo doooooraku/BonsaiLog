@@ -1557,36 +1557,48 @@ flowchart TD
 
 - `maxAdContentRating: PG` / `tagForChildDirectedTreatment: false` / `tagForUnderAgeOfConsent: false` (実装の正: `src/services/adService.ts`)
 
-#### §19.3.4 UI 配置ルール（基本仕様 §9.4 再掲）
+#### §19.3.4 UI 配置ルール（基本仕様 §9.4 再掲、 Sess106 PR-2/4 Amendment 反映）
 
-- **位置**: Home 画面 tabBar の**上**（タブ外配置で切替 unmount 回避）
-- **サイズ**: Anchored Adaptive Banner（高さ 50-60dp）
-- **表示タイミング**: アプリ起動後 **3 秒以上経過後**
+- **位置**: Home 画面 / 予定タブ / 記録タブ の **3 タブ展開** (Sess106 PR-7 で plan/record 拡張、 PR-8 で look-back hub 条件付き)
+- **サイズ**: Anchored Adaptive Banner (INLINE_ADAPTIVE_BANNER、 maxHeight=90、 Repolog 同等)
+- **container**: minHeight=98 + bg.secondary 和紙派生プレースホルダで **CLS=0 保証** (Sess106 PR-2 ADR-0010 Amendment §22 修正1)
+- **表示タイミング**: **アプリ起動時刻基準で 3 秒以上経過後** (= 再 mount で再カウントしない、 Sess106 PR-2 修正3)
+  - module-level `APP_LAUNCH_TIME_MS = Date.now()` を SoT として AdBanner instance 間で共有
+  - empty→list 遷移 / タブ切替 / 詳細画面遷移時にタイマー継続
+- **iOS バックグラウンド復帰**: 60 秒以内は再 load 抑制、 60 秒超は `useForeground` hook で自動再 load (Sess106 PR-2 修正2、 ADR-0010 §58 実装)
+- **セーフエリア**: 広告周囲 16dp 以上の余白
+- **「広告」ラベル**: AdMob 標準の "Test Ad" / 配信元バッジに任せる (Repolog 同等、 Phase 9 で独自ラベル削除)
+- **Pro 版**: **完全非表示** (即時 unmount、 `useProStore.isPro` で分岐)
 
-- **セーフエリア**: 広告周囲 **16dp 以上の余白**
-- **「広告」ラベル**: 常時表示（小さくグレー）
-- **Pro 版**: **完全非表示**（即時反映）
+#### §19.3.5 配置 (実装準拠、 Sess106 PR-4 Amendment 反映)
 
-#### §19.3.5 配置 (実装準拠)
+AdBanner は **Home 画面 (`app/(tabs)/bonsai/index.tsx`) の empty/list 両状態の最下部** に mount する (Sess106 user Q 確定 = empty 状態でも表示、 Day1 Pro 誘導哲学整合)。
 
-AdBanner は **Home 画面 (`app/(tabs)/bonsai/index.tsx`) 内の最下部**に mount する (他画面には置かない)。当初構想の「タブ外共通配置」は不採用。
+Sess106 sprint Phase 2 で **plan/record タブ + 条件付き look-back hub** に拡張:
+
+- **PR-7 (段階 1)**: `src/features/calendar/CalendarTabScreen.tsx` (plan/record 共用) の BottomCtaBar 下、 ScrollView 外に AdBanner 配置 (R-62 Layout Contract 準守)
+- **PR-8 (段階 2、 条件付き)**: look-back hub への展開 = AdMob policy 一次調査結果 (= 明示違反なし、 グレーゾーン) に基づき、 test unit ID 実機確認後に判断
+- **Z-order**: BottomCtaBar > AdBanner > TabBar (design_system.md §AdBanner Stacking で SoT、 ADR-0054 Sess106 Amendment)
 
 ### §19.4 境界値テーブル
 
-| 項目                               | 境界         | 期待動作                             |
-| ---------------------------------- | ------------ | ------------------------------------ |
-| Free + canRequestAds=true          | 正常         | バナー表示                           |
-| Free + canRequestAds=false         | UMP 拒否     | バナー非表示（課金プロンプトは残す） |
-| Pro                                | 課金済       | バナー完全非表示、即時反映           |
-| ATT notDetermined                  | 初回         | プロンプト                           |
-| ATT denied                         | 拒否         | パーソナライズなし広告配信           |
-| UMP REQUIRED                       | GDPR         | フォーム表示                         |
-| UMP NOT_REQUIRED                   | 非GDPR       | フォームスキップ                     |
-| UMP OBTAINED                       | 再起動       | フォームスキップ                     |
-| 広告ロード失敗                     | ネットワーク | プレースホルダ                       |
-| 起動後 3 秒未満                    | 境界         | 表示しない                           |
-| iOS バックグラウンド復帰 60 秒以内 | 境界         | 再ロードしない                       |
-| Pro 購入 → バナー消失              | 即時         | 購入完了時に即 unmount               |
+| 項目                               | 境界         | 期待動作                                                          |
+| ---------------------------------- | ------------ | ----------------------------------------------------------------- |
+| Free + canRequestAds=true          | 正常         | バナー表示                                                        |
+| Free + canRequestAds=false         | UMP 拒否     | バナー非表示（課金プロンプトは残す）                              |
+| Pro                                | 課金済       | バナー完全非表示、即時反映                                        |
+| ATT notDetermined                  | 初回         | プロンプト                                                        |
+| ATT denied                         | 拒否         | パーソナライズなし広告配信                                        |
+| UMP REQUIRED                       | GDPR         | フォーム表示                                                      |
+| UMP NOT_REQUIRED                   | 非GDPR       | フォームスキップ                                                  |
+| UMP OBTAINED                       | 再起動       | フォームスキップ                                                  |
+| 広告ロード失敗                     | ネットワーク | プレースホルダ枠維持 (bg.secondary、 CLS=0)                       |
+| 起動後 3 秒未満                    | 境界         | container は表示 (枠予約)、 BannerAd は非表示                     |
+| 再 mount 時 (起動から 3 秒経過済)  | 境界         | BannerAd 即時表示 (タイマー再カウントなし、 Sess106 PR-2 修正3)   |
+| iOS バックグラウンド復帰 60 秒以内 | 境界         | 再ロードしない (useForeground 抑制)                               |
+| iOS バックグラウンド復帰 60 秒超   | 境界         | 自動再 load (useForeground hook、 WKWebView suspended state 救済) |
+| Android バックグラウンド復帰       | 境界         | 何もしない (Native 側で復帰、 useForeground no-op)                |
+| Pro 購入 → バナー消失              | 即時         | 購入完了時に即 unmount                                            |
 
 ### §19.5 エラーフロー
 
@@ -1608,8 +1620,16 @@ AdBanner は **Home 画面 (`app/(tabs)/bonsai/index.tsx`) 内の最下部**に 
 
 ### §19.7 対応テスト
 
-- Jest: `__tests__/adService.test.ts` / `__tests__/adServiceBehavior.test.ts`
-- Maestro: `maestro/flows/pro-no-ads.yml` / `att-dialog.yml` / `ump-consent-eea.yml` / `privacy-options-form.yml`
+- Jest:
+  - `__tests__/adService.test.ts` (純関数 parseConsentDebugGeography 等)
+  - `__tests__/adServiceBehavior.test.ts` (initializeAds idempotency + Production fallback)
+  - `__tests__/features/ads/AdBanner.test.tsx` (Sess106 PR-2 新規: Pro 非表示 / プレースホルダ表示 / 起動時刻基準)
+  - `__tests__/core/hooks/useForeground.test.ts` (Sess106 PR-2 新規: iOS/Android 分岐 / 60 秒判定 / unmount)
+- Maestro:
+  - `maestro/flows/pro-no-ads.yml` (Pro 状態 AdBanner 非表示確認)
+  - `maestro/flows/att-dialog.yml` / `ump-consent-eea.yml` / `privacy-options-form.yml` (法務系)
+  - `maestro/flows/adbanner-three-tabs.yml` (Sess106 PR-7 新規予定: 3 タブ展開時の Pro unmount 横断検証)
+  - `maestro/flows/adbanner-foreground-resume.yml` (Sess106 PR-10 新規予定: iOS bg 60 秒超復帰時の再 load 実機検証、 PR-2 の TODO 解消)
 
 ---
 
