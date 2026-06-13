@@ -402,3 +402,32 @@ R1-R4 で実装計画を詰めた:
 - **IAP 説明文** (Play Console / App Store Connect) に「作業記録写真 無制限」の記載がある場合は次回ストア更新時に「10 枚まで」へ修正 (user 手動、Sess58 教訓踏襲)
 
 **関連**: PhotoField.tsx (`MAX_PHOTOS_PER_EVENT`) / photoRepository.ts (`FREE_PHOTO_LIMIT_PER_EVENT`) / Sess101 user 決定 (実機スクショ指摘起点)。
+
+---
+
+## Notes Amended (Sess106、2026-06-13): 全 CTA 画面 FeatureRow 統一 + タグ Free 上限ガード
+
+Sess106 sprint の議題② (Pro 訴求 UI 強化 + タグ guard 補完) で発見された構造課題に対し、以下を Follow-up として追加:
+
+### Follow-up 1: 全 CTA 画面の FeatureRow component 統一
+
+- **対象画面**: PaywallScreen / PlanSection (現状) + 新規 ProBanner (ADR-0061、Sess106 PR-6 で追加)
+- **方針**: `paywallFeature*` 21 keys (7 機能 × label/free/pro) を SoT とし、3 画面で **同一 component / 同一キー** を再利用
+- **新規 i18n キー追加 = ゼロ** (Sess60 PR2 統一済の DRY を維持、Sess106 Q2 user 確定)
+- **将来 Pro 機能 ⑧ 追加時**: ADR-0049 §Decision 表に行追加 → 自動的に PaywallScreen / PlanSection / ProBanner に反映 (lock-step)
+
+### Follow-up 2: タグ作成 Free 上限ガード UI 実装 (Sess106 PR-5 = Issue #1250)
+
+- **構造実装漏れ発見**: Sess89 で樹種 / 樹形のカスタム上限 → Paywall ガードは実装されたが、**タグだけが BonsaiTagsSection / tag-edit で useProGuard 未連動**
+- **対応**: tag-edit.tsx の handleSave に `useProGuard({ feature: 'tag', currentCount })` 配線、`canCreateNewTag()` → Alert + `router.push('/pro?source=tag')`
+- **Grandfathered**: 既存 4+ タグは表示 / rename OK、追加のみ Paywall (ADR-0049 §Decision Grandfathered 戦略整合)
+- **master tag 除外**: `countCustomTags()` で WHERE NOT IN で preset 2 件 (favorite / flowering) を除外
+
+### Follow-up 3: RecurrenceFormScreen の useProGuard 統一 (Sess106 PR-9 = Issue #1254)
+
+- **現状**: RecurrenceFormScreen が `router.push('/pro?source=recurring_rule')` 直起動 = 他 5 feature と異なる pattern
+- **対応**: `useProGuard('recurring_rule')` hook 経由に統一 (詳細は ADR-0056 Sess106 Amendment 参照)
+- **目的**: 6 feature 全 API 統一で UX 一貫性、`canAdd/isPro/openPaywall` の 3 値 SoT 化
+
+**関連 ADR**: ADR-0061 (ProBanner、本 Follow-up 1 の実装先) / ADR-0056 (定期予定、本 Follow-up 3 の実装先)
+**関連 Issue**: #1250 (PR-5) / #1251 (PR-6) / #1254 (PR-9)

@@ -690,3 +690,30 @@ user 「関数化して同じ問題を 1 つに集約したら管理が楽とか
 4. **既知トレードオフ (user 了承済 = 案イ)**: 件数のみ表示のため「施肥 · 毎週月曜」 が 2 グループあると一覧上は見分け不能。将来の緩和候補 = 予定グループへの任意名前付け (= タグ型完成形)。
 
 **関連**: Issue #1157 / #1158 / #1159 (= Free 境界のグループ単位化、 D7 改訂は #1159 側 Amendment 参照)
+
+---
+
+## Notes Amended (Sess106、2026-06-13): RecurrenceFormScreen の useProGuard 統一
+
+Sess106 Phase B 調査で発見: 6 つの Free 上限ガード機能 (写真基本 / 写真作業記録 / タグ / カスタム樹種 / カスタム樹形 / 定期予定) のうち、**定期予定だけが useProGuard hook 経由ではなく `router.push('/pro?source=recurring_rule')` 直呼び**で実装されている。
+
+### 統一方針 (Sess106 PR-9 = Issue #1254 で実装)
+
+- RecurrenceFormScreen line 293-296 の `router.push('/pro?source=recurring_rule')` 直呼びを `useProGuard({ feature: 'recurring_rule', currentCount: activeGroupCount })` hook 経由に変更
+- `useProGuard` の `feature` enum に既に `recurring_rule` 登録済 → 無修正適用可
+- `mode='edit'` は不変 (グループ数変化なし、Grandfathered 編集 OK の D2 Decision 維持)
+
+### API 統一の効果
+
+- 6 feature 全機能で `canAdd / isPro / openPaywall` の 3 値 SoT 化 (Sess106 Q6 user 確定)
+- 既存ガード呼び出し方を踏襲できるため、新規開発時の Paywall 起動コードがコピペ可能
+- 将来 Pro 機能 ⑧ 追加時の DRY 化
+
+### 既存仕様への影響なし
+
+- D7 (Free 3 グループ / Pro 無制限) は不変
+- D2 Grandfathered (既存 4+ 編集 OK) は不変
+- Sess101 #1159 改訂 (group_id 単位カウント) は不変
+
+**関連 ADR**: ADR-0049 (Pro 機能 SoT、本 Amendment の Follow-up 3 で言及) / ADR-0061 (ProBanner、Pro 訴求動線)
+**関連 Issue**: #1254 (PR-9、本 Amendment の実装先) / #1249 (PR-4 = 本 Amendment 起票)
