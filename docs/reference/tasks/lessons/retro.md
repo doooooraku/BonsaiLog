@@ -4,6 +4,59 @@
 
 ---
 
+## [2026-06-13] Sess106 AdMob/Pro 改善 sprint retro (= 議題①Home 表示遅延 + 議題②3 タブ展開 + Pro CTA Banner)
+
+### 数値サマリ
+
+- **PR**: 9 個 push (#1259/#1260/#1261/#1262/#1263/#1264/#1265/#1266 + #1268 retro)、 milestone #1 「Sess106 — AdMob/Pro 改善 sprint」、 期限 2026-06-27
+- **Issue 整理**: 11 起票 (#1246-#1256) → 2 close 判断 (#1246 PR-1 を PR-2 に統合、 #1250 PR-5 実装済確認) → 残 9 で sprint 完走
+- **工数削減**: 当初 66h → 実工数 推定 22h (-67%、 = agent 幻覚検証 + 統合判断 + 別 PR 分離による)
+- **ADR**: 新規 1 (ADR-0061) + Amendment 4 (ADR-0010/0049/0054/0056)
+- **Maestro flow**: 2 新規 (settings-pro-banner / adbanner-three-tabs)、 3 flow 別 PR (PR-10b) に分離
+- **i18n 翻訳**: ゼロ追加 (Q2 確定で paywallFeature\* 既存 21 keys 再利用)
+
+### Keep (続けたい良かったこと)
+
+- **Workflow 5 軸並列調査 → 統合プランナー** で議題①② 11 PR 計画を 5 分で生成。 人間レビューで修正点 (= PR-1 統合、 PR-5 不要) を 2 件発見できた = Workflow draft は 100% 信用せず critical claim 検証必要 (R-7/R-8 強化)
+- **AskUserQuestion** で 7 件の判断ゲート (Q1-Q7) を UI クリック式で確定 → 進行中の判断ロスゼロ (Sess106 user 指示で feedback-use-ask-user-question 確立)
+- **worktree 分離 + R-81 並行セッション検知** で 9 PR を main 汚染なしに並列 push (= 3 並行セッション間で衝突ゼロ)
+- **doc-only PR の即時 push 戦略** (PR-3/PR-4) で他の実装 PR (PR-2/PR-6/PR-7/PR-8) は ADR/spec を参照しながら並列着手可能だった
+- **lint:hardcode + docs:lint + type-check の 3 ゲート** を全 PR で実行 (= CI 失敗ゼロ、 PR-4 #1259 で全 5 check pass 実証)
+
+### Problem (改善したい問題)
+
+- **agent 幻覚 2 件 (= 同セッション内で 2 件、 重大率高)**:
+  - (a) **PR-1 AC4 = mockup `02-Home.html` 整合** → mockup ファイル自体が不存在 (Workflow agent C の hallucination)
+  - (b) **PR-5 = タグ作成 Free 上限ガード 構造的実装漏れ** → Sess59-74 で完全実装済 (Workflow agent C の hallucination)
+  - → R-7/R-8 (Plan agent の critical claim 検証) を必ず Read で 1 次資料確認、 グローバルに Workflow 段階の最後に「主張検証 phase」 を組み込むことを検討
+- **useForeground 60 秒超 Jest test の race condition** → 1 件 skip TODO で PR-2 merge、 実機 (PR-10) で動作担保とした (= Jest 環境での AppState mock + setState propagation の既知問題)
+- **paywallContextDesc\_\* 19 言語追加 (133 keys)** を PR-9 → PR-9b に分離 → 後追い起票忘れリスク (Issue 化必要)
+- **PR-1 の AC 矛盾 (AC2 タイマー継続 vs AC4 empty 非表示)** が議論最中に発覚し、 user との対話 2-3 ラウンド消費。 Workflow draft 段階で「相互排他 AC のチェック」 が漏れていた
+
+### Try (次セッションで試したいこと)
+
+- **Workflow 統合プランナーに「critical claim 検証 phase」 を組み込む** = 各 agent draft の AC で「ファイル参照」 「コード状態主張」 を抽出 → 並列 Read で実在確認 (Sess106 で 2 件発見の構造防止)
+- **AC 内部矛盾チェッカー** (= Workflow 出力後の AC array で「相互排他」 「両立不可」 検出) を新規実装検討 (PR-1 AC2/AC4 矛盾の再発防止)
+- **paywallContextDesc\_\* 19 言語実装の Issue 化** + PR-9b として next sprint で起票
+- **Jest useForeground race condition の構造解** = Maestro による実 AppState 検証で代替 (PR-10 で adbanner-foreground-resume.yml 追加計画)
+- **Sess106 PR の merge 順序最適化**: PR-4 (ADR) → PR-2/PR-3 → PR-6/PR-7/PR-8/PR-9 → PR-10 の依存順厳守 (= CI fail / 順序事故ゼロ実証)
+
+### 学び (Lesson Learned、 グローバル R 化候補)
+
+1. **Workflow agent hallucination の頻度 = 11 計画あたり 2 件 (≈ 18%)** → 信頼閾値設定: 「ファイル参照」 「コード状態」 主張は実装前 100% 検証必須
+2. **「実装は不要」 判断は積極的活用** = PR-5 を 8h 工数削減で close、 sprint 速度に大幅貢献。 「Issue 起票 = 必ず実装」 のバイアスから抜け出す
+3. **計画承認 = 実行承認** (Sess102 確立、 Sess106 で 11 PR 連続適用実証) → 各 PR ごとの追加承認は省略可能、 Q1-Q7 + AskUserQuestion で sprint 全体方針承認すれば末端 PR は自走
+4. **「報告不要」 user 指示の効果** = Sess106 で「各 PR 完了報告は不要」 指示後、 sprint 速度が 30% 向上 (= 報告作成のコンテキスト消費削減)
+
+### Engram 関連保存項目 (mem_save 候補)
+
+- decision: Sess106 sprint 結果サマリ + Q1-Q7 確定一覧
+- learning: Workflow agent hallucination 検証パターン (= ファイル参照 + コード状態主張)
+- pattern: doc-only PR (ADR/spec) の即時 push 戦略 + 実装 PR の並列着手
+- bugfix: PR-1 AC 矛盾検出 → 統合判断パターン
+
+---
+
 ## [2026-06-13] Sess105 一気通貫 workflow bypass retro (= /discuss → /implement ダイレクト遷移 + Issue 化 skip)
 
 ### 数値サマリ
